@@ -1,9 +1,6 @@
 package org.openstack.atlas.adapter.itest;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
@@ -219,6 +216,79 @@ public class FullConfigITest extends STMTestBase {
         }
     }
 
+    @Test
+    public void updateFullyConfiguredSslLoadBalancerWithSslRollbacks() throws StingrayRestClientException, IPStringConversionException, StingrayRestClientObjectNotFoundException, InsufficientRequestException {
+        LoadBalancer clb = null;
+        try {
+            LoadBalancer nlb = new LoadBalancer();
+            clb = new LoadBalancer();
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(StmTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(StmTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(StmTestConstants.SSL_KEY);
+            lb.setSslTermination(sslTermination);
+            clb.setSslTermination(sslTermination);
+            clb.setProtocol(lb.getProtocol());
+
+            buildHydratedLb();
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+
+            lb.getSslTermination().setSecurePort(-10);
+            nlb.setSslTermination(lb.getSslTermination());
+
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            Assert.fail("Should have failed to update");
+        } catch (Exception e) {
+            verifySsltermination(clb);
+        }
+    }
+
+    @Ignore
+    @Test
+    public void updateFullyConfiguredLoadBalancerWithVirtualIpRollbacks() throws StingrayRestClientException, IPStringConversionException, StingrayRestClientObjectNotFoundException, InsufficientRequestException {
+        LoadBalancer clb = null;
+        try {
+            LoadBalancer nlb = new LoadBalancer();
+            clb = new LoadBalancer();
+
+            buildHydratedLb();
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+
+            clb.setLoadBalancerJoinVipSet(lb.getLoadBalancerJoinVipSet());
+            clb.setLoadBalancerJoinVip6Set(lb.getLoadBalancerJoinVip6Set());
+            clb.setIpv4Public(lb.getIpv4Public());
+            clb.setIpv4Servicenet(lb.getIpv4Servicenet());
+            clb.setIpv6Public(lb.getIpv6Public());
+
+            lb.getLoadBalancerJoinVipSet().iterator().next().setVirtualIp(new VirtualIp());
+            nlb.setLoadBalancerJoinVipSet(lb.getLoadBalancerJoinVipSet());
+
+
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            Assert.fail("Should have failed to update");
+        } catch (Exception e) {
+            verifyVips(clb);
+        }
+    }
+
+    @Test
+    public void updateFullyConfiguredLoadBalancerForSuspensionWithRollbacks() {
+
+    }
+
+    @Test
+    public void updateFullyConfiguredLoadBalancerForRateLimitRollbacks() {
+
+    }
+
+    @Test
+    public void updateFullyConfiguredLoadBalancerForErrorPageRollbacks() {
+
+    }
+
     private LoadBalancer buildHydratedLb() {
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
         lb.setSessionPersistence(HTTP_COOKIE);
@@ -227,6 +297,7 @@ public class FullConfigITest extends STMTestBase {
         lb.setContentCaching(false);
         lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
         lb.setHalfClosed(true);
+        lb.setProtocol(LoadBalancerProtocol.HTTP);
 
         HealthMonitor monitor = new HealthMonitor();
         monitor.setType(HealthMonitorType.CONNECT);

@@ -1382,5 +1382,4 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 //        return ret;
 //    }
 
-
 }
