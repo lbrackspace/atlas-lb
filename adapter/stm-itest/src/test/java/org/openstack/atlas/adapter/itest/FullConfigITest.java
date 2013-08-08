@@ -105,6 +105,8 @@ public class FullConfigITest extends STMTestBase {
             nlb.setHealthMonitor(mon);
             lb.setHealthMonitor(mon);
 
+            nlb.setSessionPersistence(HTTP_COOKIE);
+            lb.setSessionPersistence(HTTP_COOKIE);
 
             AccessList al = new AccessList();
             al.setIpAddress("10.1.1.76");

@@ -909,7 +909,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
             if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
                     || loadBalancer.getConnectionLimit() != null) {
-                updateProtection(config, client, sslVsName, translator.getcProtection());
+                updateProtection(config, client, vsName, translator.getcProtection());
             }
 
             if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {

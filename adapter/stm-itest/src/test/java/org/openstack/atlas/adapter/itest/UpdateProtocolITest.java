@@ -38,12 +38,12 @@ public class UpdateProtocolITest extends STMTestBase {
         StingrayRestClient client = new StingrayRestClient();
         String vsName = ZxtmNameBuilder.genVSName(lb);
 
-        Assert.assertEquals(LoadBalancerProtocol.HTTP.name(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
+        Assert.assertEquals(LoadBalancerProtocol.HTTP.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
 
         lb.setProtocol(LoadBalancerProtocol.HTTPS);
         stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
 
-        Assert.assertEquals(LoadBalancerProtocol.HTTPS.name(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
+        Assert.assertEquals(LoadBalancerProtocol.HTTPS.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
     }
 
     //These tests need to run in order -- HTTP is the second test
@@ -52,11 +52,11 @@ public class UpdateProtocolITest extends STMTestBase {
         StingrayRestClient client = new StingrayRestClient();
         String vsName = ZxtmNameBuilder.genVSName(lb);
 
-        Assert.assertEquals(LoadBalancerProtocol.HTTPS.name(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
+        Assert.assertEquals(LoadBalancerProtocol.HTTPS.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
 
         lb.setProtocol(LoadBalancerProtocol.HTTP);
         stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
 
-        Assert.assertEquals(LoadBalancerProtocol.HTTP.name(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
+        Assert.assertEquals(LoadBalancerProtocol.HTTP.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
     }
 }

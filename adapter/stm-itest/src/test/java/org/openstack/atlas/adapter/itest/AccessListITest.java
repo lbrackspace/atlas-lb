@@ -26,6 +26,7 @@ public class AccessListITest extends STMTestBase {
         list = new HashSet<AccessList>();
 
         item1 = new AccessList();
+        item1.setId(101);
         item1.setIpAddress("10.0.0.1");
         item1.setIpVersion(IpVersion.IPV4);
         item1.setUserName("anonymous");
@@ -34,6 +35,7 @@ public class AccessListITest extends STMTestBase {
         list.add(item1);
 
         item2 = new AccessList();
+        item2.setId(102);
         item2.setIpAddress("10.0.0.2");
         item2.setIpVersion(IpVersion.IPV4);
         item2.setUserName("stillAnonymous");

@@ -424,7 +424,6 @@ public class SslTerminationITest extends STMTestBase {
             lb.setConnectionLimit(throttle);
 
             setSslTermination();
-            connectionThrottleHelper(secureName, maxConnectionRate, maxConnections, minConnections, rateInterval, expectedMax10);
             connectionThrottleHelper(normalName, maxConnectionRate, maxConnections, minConnections, rateInterval, expectedMax10);
         } catch (Exception e) {
             e.printStackTrace();
