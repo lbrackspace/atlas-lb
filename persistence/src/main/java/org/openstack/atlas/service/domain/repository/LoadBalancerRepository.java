@@ -57,8 +57,7 @@ public class LoadBalancerRepository {
         return lb;
     }
 
-
-    public List<LoadBalancerIdAndName> getAllLoadbalancerIdsAndNames(){
+    public List<LoadBalancerIdAndName> getAllLoadbalancerIdsAndNames() {
         List<LoadBalancerIdAndName> lbs = new ArrayList<LoadBalancerIdAndName>();
         String queryString = "select l.id,l.accountId,l.name from LoadBalancer l";
 
@@ -1083,9 +1082,8 @@ public class LoadBalancerRepository {
         List<Usage> usageList;
 
         Query query = entityManager.createQuery(
-                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 " +
-                        "and u.numAttempts <= :numAttempts order by u.id asc")
-                .setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 "
+                + "and u.numAttempts <= :numAttempts order by u.id asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
 
         usageList = query.getResultList();
 
@@ -1100,9 +1098,8 @@ public class LoadBalancerRepository {
         List<Usage> usageList;
 
         Query query = entityManager.createQuery(
-                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 " +
-                        "and u.numAttempts >= :numAttempts order by u.startTime asc")
-                .setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 "
+                + "and u.numAttempts >= :numAttempts order by u.startTime asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
 
         usageList = query.getResultList();
 
