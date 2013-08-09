@@ -29,7 +29,7 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils;
 public class ReuploaderUtils {
 
     private static final int FileLockTTL = 2 * 60 * 60;
-    private static final int hoursToStartOn = 0;
+    private static final int hoursToStartOn = 4;
     private static final Map<String, DateTime> lockedFiles;
     private String cacheDir;
     private Map<Integer, LoadBalancerIdAndName> loadBalancerIdMap;

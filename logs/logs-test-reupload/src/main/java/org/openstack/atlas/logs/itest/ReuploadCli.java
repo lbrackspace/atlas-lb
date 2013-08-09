@@ -13,8 +13,12 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.joda.time.DateTime;
 import org.json.simple.parser.ParseException;
+import org.openstack.atlas.auth.AuthService;
+import org.openstack.atlas.auth.AuthServiceImpl;
+import org.openstack.atlas.auth.AuthUser;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.config.LbLogsConfiguration;
+import org.openstack.atlas.config.LbLogsConfigurationKeys;
 import org.openstack.atlas.exception.AuthException;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.logs.hadoop.util.CacheZipDirInfo;
@@ -27,6 +31,8 @@ import org.openstack.atlas.util.itest.hibernate.HibernateDbConf;
 import org.openstack.atlas.util.itest.hibernate.HuApp;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import org.openstack.client.keystone.KeyStoneAdminClient;
+import org.openstack.client.keystone.KeyStoneException;
 
 public class ReuploadCli {
 
@@ -110,6 +116,8 @@ public class ReuploadCli {
                     System.out.printf("setComp <size,hour> reverse=false  # Set the comparator to sort by size or by hour\n");
                     System.out.printf("showzinfo  #Display all the zipDirectories found\n");
                     System.out.printf("showzips   #Show all zips\n");
+                    System.out.printf("showAuth <accountId> #Get information on account via the god AuthClient\n");
+                    System.out.printf("keyauth <accountId> #Get service token and other user info from keystone auth\n");
                     System.out.printf("clearDirs <minusHours>    #Remove any empty directories\n");
                     System.out.printf("delDir <path> #Delete directory if its empty\n");
                     System.out.printf("utc [minusHours] #Get the time stamp in utc for the hour Key that clearDirs would scan\n");
@@ -119,6 +127,12 @@ public class ReuploadCli {
                     System.out.printf("ru #run the uploader thread\n");
                     System.out.printf("joinThreads #Join reuploader threads\n");
 
+                } else if (cmd.equals("showAuth") && args.length >= 2) {
+                    System.out.printf("showing AuthUser info for user %s\n", args[1]);
+                    showAuth(args[1]);
+                } else if (cmd.equals("auth") && args.length >= 2) {
+                    System.out.printf("getting auth tokens for user %s\n", args[1]);
+                    auth(args[1]);
                 } else if (cmd.equals("ru")) {
                     System.out.printf("Spinning up new uploader thread\n");
                     ReuploaderThread uploader = new ReuploaderThread(new ReuploaderUtils(HadoopLogsConfigs.getCacheDir(), lbMap));
@@ -298,6 +312,21 @@ public class ReuploadCli {
         System.out.printf("Locks = ");
         System.out.flush();
         System.out.printf("%s\n", ReuploaderUtils.showLocks());
+    }
+
+    private void showAuth(String userName) throws AuthException {
+        AuthService authService = new AuthServiceImpl(new LbLogsConfiguration());
+        AuthUser user = authService.getUser(userName);
+        System.out.printf("%s\n", user);
+    }
+
+    private void auth(String userName) throws AuthException, KeyStoneException {
+        KeyStoneAdminClient keyStoneAdminClient;
+        LbLogsConfiguration cfg = new LbLogsConfiguration();
+        String adminAuthUrl = cfg.getString(LbLogsConfigurationKeys.auth_management_uri);
+        String adminAuthUser = cfg.getString(LbLogsConfigurationKeys.basic_auth_user);
+        String adminAuthKey = cfg.getString(LbLogsConfigurationKeys.basic_auth_key);
+        keyStoneAdminClient = new KeyStoneAdminClient(adminAuthUrl, adminAuthKey, adminAuthUser);
     }
 
     public static void main(String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException, AuthException {
