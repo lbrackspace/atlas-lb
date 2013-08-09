@@ -15,7 +15,7 @@
     <bean id="controllerHandlerAdapter" class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
 
     <bean id="cloudFilesDao" class="org.openstack.atlas.cloudfiles.CloudFilesDaoImpl"/>
-    <bean id="logDateFormat" class="org.openstack.atlas.util.LogDateFormat"/>
+    <bean id="logDateFormat" class="org.openstack.atlas.logs.hadoop.util.LogDateFormat"/>
 
     <bean id="authService" class="org.openstack.atlas.auth.AuthServiceImpl" scope="prototype" >
         <constructor-arg index="0"  ref="conf"/>
@@ -61,12 +61,17 @@
                    <ref bean="archiveLoadBalancerLogsJobExecution"/>
                </entry>
 
+                <entry key="reuploadJobExecution">
+                   <ref bean="reuploadJobExecution"/>
+               </entry>
+
             </map>
         </property>
         <property name="triggers">
             <list>
                 <ref bean="runFileWatchdogTrigger"/>
                 <ref bean="runSystemCleanupTrigger"/>
+                <ref bean="reuploaderJobTrigger"/>
             </list>
         </property>
     </bean>
@@ -86,6 +91,21 @@
         <property name="cronExpression" value="${job.repeat.interval}" />
     </bean>
 
+    <bean name="reuploaderJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.openstack.atlas.scheduler.ReuploaderJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="reuploaderJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="reuploaderJob"/>
+        <property name="cronExpression" value="${job.logreup.interval}"/>
+    </bean>
+
     <bean name="systemCleanupJob" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass" value="org.openstack.atlas.scheduler.SystemCleanupJob"/>
         <property name="jobDataAsMap">
@@ -102,6 +122,7 @@
         <property name="cronExpression" value="0 0 0 * *  ?" />
         <!--<property name="cronExpression" value="0 0/5 * * * ?" />-->
     </bean>
+
 
     <bean id="jobScheduler" class="org.openstack.atlas.scheduler.JobScheduler">
         <property name="schedulerFactoryBean" ref="schedulerFactoryBean"/>
@@ -121,6 +142,8 @@
           class="org.openstack.atlas.scheduler.execution.SplitLoadBalancerLogsJobExecution"/>
     <bean id="archiveLoadBalancerLogsJobExecution"
           class="org.openstack.atlas.scheduler.execution.ArchiveLoadBalancerLogsJobExecution"/>
+    <bean id="reuploadJobExecution"
+          class="org.openstack.atlas.scheduler.execution.ReuploaderJobExecution"/>
 
     <!-- The EM Factory is where the magic happens :) -->
 

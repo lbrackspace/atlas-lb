@@ -1,4 +1,4 @@
-package org.openstack.atlas.logs.hadoop.util;
+package org.openstack.atlas.logs.common.util;
 
 import java.util.ArrayList;
 import java.util.Comparator;

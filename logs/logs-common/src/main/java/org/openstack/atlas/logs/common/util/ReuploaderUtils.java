@@ -1,15 +1,5 @@
-package org.openstack.atlas.logs.hadoop.util;
+package org.openstack.atlas.logs.common.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.joda.time.DateTime;
@@ -19,12 +9,20 @@ import org.openstack.atlas.auth.AuthUser;
 import org.openstack.atlas.cloudfiles.CloudFilesDao;
 import org.openstack.atlas.cloudfiles.CloudFilesDaoImpl;
 import org.openstack.atlas.exception.AuthException;
+import org.openstack.atlas.logs.hadoop.util.LogFileNameBuilder;
+import org.openstack.atlas.logs.hadoop.util.StaticLogUtils;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.regex.Matcher;
 
 public class ReuploaderUtils {
 

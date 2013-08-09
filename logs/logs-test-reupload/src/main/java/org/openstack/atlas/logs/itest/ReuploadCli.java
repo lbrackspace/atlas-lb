@@ -1,15 +1,5 @@
 package org.openstack.atlas.logs.itest;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.joda.time.DateTime;
 import org.json.simple.parser.ParseException;
@@ -20,11 +10,11 @@ import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.config.LbLogsConfigurationKeys;
 import org.openstack.atlas.exception.AuthException;
+import org.openstack.atlas.logs.common.util.CacheZipDirInfo;
+import org.openstack.atlas.logs.common.util.CacheZipInfo;
+import org.openstack.atlas.logs.common.util.ReuploaderThread;
+import org.openstack.atlas.logs.common.util.ReuploaderUtils;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
-import org.openstack.atlas.logs.hadoop.util.CacheZipDirInfo;
-import org.openstack.atlas.logs.hadoop.util.CacheZipInfo;
-import org.openstack.atlas.logs.hadoop.util.ReuploaderThread;
-import org.openstack.atlas.logs.hadoop.util.ReuploaderUtils;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.itest.hibernate.HibernateDbConf;
@@ -33,6 +23,12 @@ import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.client.keystone.KeyStoneAdminClient;
 import org.openstack.client.keystone.KeyStoneException;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 
 public class ReuploadCli {
 

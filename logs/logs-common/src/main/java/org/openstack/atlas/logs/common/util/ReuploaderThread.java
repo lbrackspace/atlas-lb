@@ -1,4 +1,4 @@
-package org.openstack.atlas.logs.hadoop.util;
+package org.openstack.atlas.logs.common.util;
 
 public class ReuploaderThread extends Thread {
 
