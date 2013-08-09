@@ -1,4 +1,4 @@
-package org.openstack.atlas.logs.hadoop.util;
+package org.openstack.atlas.logs.common.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -7,10 +7,12 @@ import org.openstack.atlas.auth.AuthService;
 import org.openstack.atlas.auth.AuthServiceImpl;
 import org.openstack.atlas.cloudfiles.CloudFilesDao;
 import org.openstack.atlas.cloudfiles.CloudFilesDaoImpl;
+import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.exception.AuthException;
+import org.openstack.atlas.logs.hadoop.util.LogFileNameBuilder;
+import org.openstack.atlas.logs.hadoop.util.StaticLogUtils;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.util.common.VerboseLogger;
-import org.openstack.atlas.util.config.LbConfiguration;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
@@ -42,7 +44,7 @@ public class ReuploaderUtils {
     public ReuploaderUtils(String cacheDir, Map<Integer, LoadBalancerIdAndName> loadBalancerIdMap) throws AuthException {
         this.cacheDir = cacheDir;
         this.loadBalancerIdMap = loadBalancerIdMap;
-        this.authService = new AuthServiceImpl(new LbConfiguration());
+        this.authService = new AuthServiceImpl(new LbLogsConfiguration());
         this.cloudFilesDao = new CloudFilesDaoImpl();
         clearOldLocks(FileLockTTL);
     }

@@ -15,7 +15,7 @@
     <bean id="controllerHandlerAdapter" class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
 
     <bean id="cloudFilesDao" class="org.openstack.atlas.cloudfiles.CloudFilesDaoImpl"/>
-    <bean id="logDateFormat" class="org.openstack.atlas.util.LogDateFormat"/>
+    <bean id="logDateFormat" class="org.openstack.atlas.logs.hadoop.util.LogDateFormat"/>
 
     <bean id="authService" class="org.openstack.atlas.auth.AuthServiceImpl" scope="prototype" >
         <constructor-arg index="0"  ref="conf"/>
@@ -61,8 +61,8 @@
                    <ref bean="archiveLoadBalancerLogsJobExecution"/>
                </entry>
 
-                <entry key="archiveLoadBalancerLogsJobExecution">
-                   <ref bean="archiveLoadBalancerLogsJobExecution"/>
+                <entry key="reuploadJobExecution">
+                   <ref bean="reuploadJobExecution"/>
                </entry>
 
             </map>
@@ -84,15 +84,26 @@
         <property name="jobClass" value="org.openstack.atlas.scheduler.FileWatchdogJob"/>
     </bean>
 
-    <bean name="reuploaderJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass" value="org.openstack.atlas.scheduler.ReuploaderJob"/>
-    </bean>
-
     <bean id="runFileWatchdogTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="fileWatchdogJob"/>
         <!--<property name="startDelay" value="300"/>-->
         <!--<property name="repeatInterval" value="${job.repeat.interval}"/>-->
         <property name="cronExpression" value="${job.repeat.interval}" />
+    </bean>
+
+    <bean name="reuploaderJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.openstack.atlas.scheduler.ReuploaderJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="reuploaderJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="reuploaderJob"/>
+        <property name="cronExpression" value="${job.logreup.interval}"/>
     </bean>
 
     <bean name="systemCleanupJob" class="org.springframework.scheduling.quartz.JobDetailBean">
@@ -112,13 +123,6 @@
         <!--<property name="cronExpression" value="0 0/5 * * * ?" />-->
     </bean>
 
-    <bean id="reuploaderJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-        <property name="jobDetail" ref="reuploaderJob"/>
-        <!--<property name="startDelay" value="300"/>-->
-        <!--<property name="repeatInterval" value="${job.repeat.interval}"/>-->
-        <property name="cronExpression" value="0 0 3 * *  ?" />
-        <!--<property name="cronExpression" value="0 0/5 * * * ?" />-->
-    </bean>
 
     <bean id="jobScheduler" class="org.openstack.atlas.scheduler.JobScheduler">
         <property name="schedulerFactoryBean" ref="schedulerFactoryBean"/>
