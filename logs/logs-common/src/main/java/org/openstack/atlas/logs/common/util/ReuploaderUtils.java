@@ -106,7 +106,9 @@ public class ReuploaderUtils {
         LoadBalancerIdAndName lb;
 
 
-        for (CacheZipInfo zipFile : zipsList) {
+        int zipListSize = zipsList.size();
+        for (int i = 0; i < zipListSize; i++) {
+            CacheZipInfo zipFile = zipsList.get(i);
             // Try to lock the file otherwise continue to the next;
 
             if (!addLock(zipFile.getZipFile())) {
@@ -123,7 +125,7 @@ public class ReuploaderUtils {
                 lb = loadBalancerIdMap.get(zipFile.getLoadbalancerId());
                 String containerName = LogFileNameBuilder.getContainerName(Integer.toString(lb.getLoadbalancerId()), lb.getName(), Long.toString(zipFile.getHourKey()));
                 String remoteFileName = LogFileNameBuilder.getRemoteFileName(Integer.toString(lb.getLoadbalancerId()), lb.getName(), Long.toString(zipFile.getHourKey()));
-                LOG.info(String.format("%s:Sending file %s to [%s]:%s %d bytes", Debug.threadName(), zipFile.getZipFile(), containerName, remoteFileName, zipFile.getFileSize()));
+                LOG.info(String.format("%s:Sending file %s %d of %d to [%s]:%s %d bytes", Debug.threadName(), zipFile.getZipFile(), i, zipListSize, containerName, remoteFileName, zipFile.getFileSize()));
                 if (!new File(zipFile.getZipFile()).canRead()) {
                     LOG.warn(String.format("%s: Coulden't read file %s perhaps its already sent", Debug.threadName(), zipFile.getZipFile()));
                     lockedFiles.remove(zipFile.getZipFile());

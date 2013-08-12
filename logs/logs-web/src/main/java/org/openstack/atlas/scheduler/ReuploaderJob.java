@@ -26,12 +26,10 @@ import java.util.Map;
 public class ReuploaderJob extends QuartzJobBean implements StatefulJob {
 
     private static final Log LOG = LogFactory.getLog(ReuploaderJob.class);
-
     private QuartzExecutable execution;
     private LoadBalancerRepository loadBalancerRepository;
     private JobStateService jobStateService;
     private static final VerboseLogger vlog = new VerboseLogger(ReuploaderJob.class);
-
 
     @Required
     public void setLoadBalancerRepository(LoadBalancerRepository loadBalancerRepository) {
@@ -49,7 +47,7 @@ public class ReuploaderJob extends QuartzJobBean implements StatefulJob {
         vlog.printf("ReuploaderJob starting: ");
 
 
-        jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD,  JobStateVal.CREATED);
+        jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.CREATED);
 
         try {
             Map<Integer, LoadBalancerIdAndName> lbId2NameMap = createLbIdAndNameMap(loadBalancerRepository.getAllLoadbalancerIdsAndNames());
@@ -57,7 +55,7 @@ public class ReuploaderJob extends QuartzJobBean implements StatefulJob {
             String dir = conf.getString(LbLogsConfigurationKeys.rawlogs_cache_dir);
             vlog.printf("cache dir: %s", dir);
             ReuploaderUtils reup = new ReuploaderUtils(dir, lbId2NameMap);
-
+            reup.clearDirs(3); // Clean before the run as well. Just incase reuploadFiles dies
             reup.reuploadFiles();
             reup.clearDirs(3);
         } catch (AuthException e) {
@@ -81,6 +79,4 @@ public class ReuploaderJob extends QuartzJobBean implements StatefulJob {
         }
         return nameMap;
     }
-
-
 }
