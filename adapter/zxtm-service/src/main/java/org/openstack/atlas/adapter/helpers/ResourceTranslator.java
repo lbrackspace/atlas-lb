@@ -135,15 +135,11 @@ public class ResourceTranslator {
         properties.setConnection_errors(ce);
 
         //trafficscript or rule settings
+        List<String> rules = new ArrayList<String>(Arrays.asList(StmConstants.XFF, StmConstants.XFP));
         if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
-            List<String> rules = Arrays.asList(StmConstants.XFF, StmConstants.XFP);
             if (loadBalancer.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_HTTP);
-            basic.setRequest_rules(rules);
-        } else {
-            List<String> rules = new ArrayList<String>();
-            if (loadBalancer.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
-            basic.setRequest_rules(rules);
-        }
+        } else if (loadBalancer.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
+        basic.setRequest_rules(rules);
 
         //Half closed proxy settings
         tcp.setProxy_close(loadBalancer.isHalfClosed());
