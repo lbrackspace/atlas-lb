@@ -60,10 +60,10 @@ public class ReuploaderJob extends QuartzJobBean implements StatefulJob {
             reup.clearDirs(3);
         } catch (AuthException e) {
             jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FAILED);
-            LOG.error("Error trying to upload to CloudFiles: ", e);
+            LOG.error("Error during ReuploaderJob: ", e);
         } catch (Exception e) {
-            jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FINISHED);
-            LOG.error("Unexpected Error trying to upload to CloudFiles: ", e);
+            jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FAILED);
+            LOG.error("Unexpected Error during ReuploaderJob: ", e);
         }
 
         jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FINISHED);

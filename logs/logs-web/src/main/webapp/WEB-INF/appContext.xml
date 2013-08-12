@@ -61,10 +61,6 @@
                    <ref bean="archiveLoadBalancerLogsJobExecution"/>
                </entry>
 
-                <entry key="reuploadJobExecution">
-                   <ref bean="reuploadJobExecution"/>
-               </entry>
-
             </map>
         </property>
         <property name="triggers">
@@ -142,8 +138,6 @@
           class="org.openstack.atlas.scheduler.execution.SplitLoadBalancerLogsJobExecution"/>
     <bean id="archiveLoadBalancerLogsJobExecution"
           class="org.openstack.atlas.scheduler.execution.ArchiveLoadBalancerLogsJobExecution"/>
-    <bean id="reuploadJobExecution"
-          class="org.openstack.atlas.scheduler.execution.ReuploaderJobExecution"/>
 
     <!-- The EM Factory is where the magic happens :) -->
 
