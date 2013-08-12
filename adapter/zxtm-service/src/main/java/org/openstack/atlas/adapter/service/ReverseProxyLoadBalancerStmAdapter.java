@@ -13,8 +13,8 @@ import java.util.Set;
 
 public interface ReverseProxyLoadBalancerStmAdapter {
 
-    public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config)
-            throws RollBackException, InsufficientRequestException;
+//    public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config)
+//            throws RollBackException, InsufficientRequestException;
 
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, RollBackException;
