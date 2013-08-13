@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.18.14-SNAPSHOT</version>
+        <version>1.18.14</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-test-reuploader</artifactId>
     <name>OpenStack :: Atlas :: Logs :: HDFS :: test reuploader</name>
-    <version>1.18.14-SNAPSHOT</version>
+    <version>1.18.14</version>
     <packaging>jar</packaging>
 
     <dependencies>
