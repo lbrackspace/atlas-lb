@@ -17,64 +17,23 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TrafficScriptHelper {
+public class TrafficScriptHelper extends StmConstants {
     public static Log LOG = LogFactory.getLog(TrafficScriptHelper.class.getName());
 
     public static String getHttpRateLimitScript() {
-        return "$load_balancer = connection.getVirtualServer();\n" +
-                "$rate_html = \"<html><head></head><body><b>Error: 503 - Service Unavailable!</body></html>\";\n" +
-                "$error_html = \"<html><head></head><body><b>Error: 500 - Internal Server Error!</body></html>\";\n" +
-                "\n" +
-                "$rate = rate.use.noQueue( $load_balancer );\n" +
-                "\n" +
-                "if ( $rate == 0 ) {\n" +
-                "   \n" +
-                "   http.sendResponse( \"503 Service Unavailable\",\n" +
-                "                      \"text/html\", $rate_html,\n" +
-                "                      \"Retry-After: 30\" );\n" +
-                "   connection.discard();\n" +
-                "   \n" +
-                "} else if ( $rate < 0 ) {\n" +
-                "   \n" +
-                "   http.sendResponse( \"500 Internal Server Error\",\n" +
-                "                      \"text/html\", $error_html, \"\" );\n" +
-                "   log.error( \"Rate class: \" . $load_balancer . \" does not exist!\" );\n" +
-                "   connection.discard();\n" +
-                "   \n" +
-                "} else {\n" +
-                "   \n" +
-                "   rate.use($load_balancer);\n" +
-                "   \n" +
-                "}";
+        return HTTP_RATE_LIMIT_SCRIPT;
     }
 
     public static String getNonHttpRateLimitScript() {
-        return "$load_balancer = connection.getVirtualServer();\n" +
-                "\n" +
-                "$rate = rate.use.noQueue( $load_balancer );\n" +
-                "\n" +
-                "if ( $rate == 0 ) {\n" +
-                "\n" +
-                "   connection.discard();\n" +
-                "   \n" +
-                "} else if ( $rate < 0 ) {\n" +
-                "\n" +
-                "   log.error( \"Rate class: \" . $load_balancer . \" does not exist!\" );\n" +
-                "   connection.discard();\n" +
-                "   \n" +
-                "} else {\n" +
-                "   \n" +
-                "   rate.use( $load_balancer );\n" +
-                "   \n" +
-                "}";
+        return NON_HTTP_RATE_LIMIT_SCRIPT;
     }
 
     public static String getXForwardedForHeaderScript() {
-        return "http.addHeader( \"X-Forwarded-For\", request.getRemoteIP() );";
+        return X_FORWARDED_FOR_SCRIPT;
     }
 
     public static String getXForwardedProtoHeaderScript() {
-        return "http.addHeader( \"X-Forwarded-Proto\", \"https\" );";
+        return X_FORWARDED_PROTO_SCRIPT;
     }
 
     public static void addRateLimitScriptsIfNeeded(ZxtmServiceStubs serviceStubs) throws RemoteException {
