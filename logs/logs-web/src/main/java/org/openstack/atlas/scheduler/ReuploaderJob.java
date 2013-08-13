@@ -7,8 +7,6 @@ import org.openstack.atlas.config.LbLogsConfigurationKeys;
 import org.openstack.atlas.exception.AuthException;
 import org.openstack.atlas.logs.common.util.ReuploaderUtils;
 import org.openstack.atlas.scheduler.execution.QuartzExecutable;
-import org.openstack.atlas.service.domain.entities.JobName;
-import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.JobStateService;
@@ -47,7 +45,7 @@ public class ReuploaderJob extends QuartzJobBean implements StatefulJob {
         vlog.printf("ReuploaderJob starting: ");
 
 
-        jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.CREATED);
+//        jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.CREATED);
 
         try {
             Map<Integer, LoadBalancerIdAndName> lbId2NameMap = createLbIdAndNameMap(loadBalancerRepository.getAllLoadbalancerIdsAndNames());
@@ -59,14 +57,14 @@ public class ReuploaderJob extends QuartzJobBean implements StatefulJob {
             reup.reuploadFiles();
             reup.clearDirs(3);
         } catch (AuthException e) {
-            jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FAILED);
+//            jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FAILED);
             LOG.error("Error during ReuploaderJob: ", e);
         } catch (Exception e) {
-            jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FAILED);
+//            jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FAILED);
             LOG.error("Unexpected Error during ReuploaderJob: ", e);
         }
 
-        jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FINISHED);
+//        jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.FINISHED);
         LOG.info("JOB COMPLETED. Total Time Taken for job to complete : ");
     }
 
