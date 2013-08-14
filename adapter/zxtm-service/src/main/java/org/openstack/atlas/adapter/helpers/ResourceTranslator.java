@@ -46,6 +46,10 @@ public class ResourceTranslator {
         zeusUtil = new ZeusUtils();
     }
 
+    public static ResourceTranslator getNewResourceTranslator() {
+        return new ResourceTranslator();
+    }
+
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
