@@ -380,11 +380,9 @@ public class FullConfigITest extends STMTestBase {
         if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
             Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF));
             Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
-            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.RATE_LIMIT_HTTP));
         } else {
             Assert.assertFalse(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF));
             Assert.assertFalse(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
-            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.RATE_LIMIT_NON_HTTP));
         }
 
         Assert.assertEquals(false, vs.getProperties().getBasic().getListen_on_any());
