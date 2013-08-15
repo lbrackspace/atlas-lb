@@ -4,6 +4,8 @@ import org.openstack.atlas.service.domain.entities.*;
 
 import java.util.*;
 
+import static org.mockito.Mockito.spy;
+
 public class StmAdapterImplTestHelper {
 
     static String username = "username";
@@ -215,6 +217,14 @@ public class StmAdapterImplTestHelper {
         loadBalancer.setUserPages(pages);
         loadBalancer.setId(id);
         loadBalancer.setUserName(username);
+        Set<LoadBalancerJoinVip> vipList = spy(new HashSet<LoadBalancerJoinVip>());
+        VirtualIp vip = new VirtualIp();
+        vip.setId(1234);
+        vip.setIpAddress("10.69.0.60");
+        LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
+        loadBalancerJoinVip.setVirtualIp(vip);
+        vipList.add(loadBalancerJoinVip);
+        loadBalancer.setLoadBalancerJoinVipSet(vipList);
         return loadBalancer;
     }
 }
