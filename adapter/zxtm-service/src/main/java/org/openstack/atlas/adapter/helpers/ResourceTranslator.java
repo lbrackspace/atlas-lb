@@ -333,7 +333,6 @@ public class ResourceTranslator {
         cProtection = new Protection();
         ProtectionBasic basic = new ProtectionBasic();
         ProtectionProperties properties = new ProtectionProperties();
-        int expectedMax10 = 0;
 
         ConnectionLimit limits = loadBalancer.getConnectionLimit();
         Set<AccessList> accessList = loadBalancer.getAccessLists();
@@ -356,8 +355,8 @@ public class ResourceTranslator {
 
         ProtectionConnectionLimiting limiting = new ProtectionConnectionLimiting();
         if (limits != null) {
-            limiting.setMax_10_connections(expectedMax10);
             limiting.setMax_1_connections(limits.getMaxConnections());
+            limiting.setMax_10_connections(limits.getMaxConnections() * 10);
             limiting.setMax_connection_rate(limits.getMaxConnectionRate());
             limiting.setMin_connections(limits.getMinConnections());
             limiting.setRate_timer(limits.getRateInterval());
