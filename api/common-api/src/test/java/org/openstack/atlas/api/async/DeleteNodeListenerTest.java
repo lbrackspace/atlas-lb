@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
@@ -28,12 +27,11 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class CreateNodesListenerITest extends STMTestBase {
+public class DeleteNodeListenerTest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
-    private Integer NODE_ID = 15;
-    private Node node;
+    private Node nodeToDelete;
 
     @Mock
     private ObjectMessage objectMessage;
@@ -46,46 +44,45 @@ public class CreateNodesListenerITest extends STMTestBase {
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
-    private CreateNodesListener createNodesListener;
+    private DeleteNodeListener deleteNodeListener;
 
     @Before
     public void standUp() {
         MockitoAnnotations.initMocks(this);
         setupIvars();
         Set<Node> nodes = new HashSet<Node>();
-        node = new Node();
-        node.setId(NODE_ID);
-        node.setIpAddress("192.168.1.1");
-        node.setPort(80);
-        nodes.add(node);
+        nodeToDelete = new Node();
+        nodeToDelete.setId(10);
+        nodes.add(nodeToDelete);
         lb.setNodes(nodes);
         LOAD_BALANCER_ID = lb.getId();
         ACCOUNT_ID = lb.getAccountId();
         lb.setUserName(USERNAME);
-        createNodesListener = new CreateNodesListener();
-        createNodesListener.setLoadBalancerService(loadBalancerService);
-        createNodesListener.setNotificationService(notificationService);
-        createNodesListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
-        createNodesListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
+        deleteNodeListener = new DeleteNodeListener();
+        deleteNodeListener.setLoadBalancerService(loadBalancerService);
+        deleteNodeListener.setNotificationService(notificationService);
+        deleteNodeListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        deleteNodeListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
     }
 
     @After
     public void tearDown() {
-        stmClient.destroy();
     }
 
     @Test
-    public void testCreateNodesWithValidNodes() throws Exception {
+    public void testDeleteNode() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
-        createNodesListener.doOnMessage(objectMessage);
+        Assert.assertTrue(lb.getNodes().contains(nodeToDelete));
+        deleteNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
+        verify(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
+        Assert.assertFalse(lb.getNodes().contains(nodeToDelete));
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService).update(lb);
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ACTIVE);
-        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), eq(EntryHelper.createNodeSummary(node)), eq(EventType.CREATE_NODE), eq(CategoryType.CREATE), eq(EventSeverity.INFO));
+        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(nodeToDelete.getId()), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
     }
 
     @Test
@@ -94,24 +91,24 @@ public class CreateNodesListenerITest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
-        createNodesListener.doOnMessage(objectMessage);
+        deleteNodeListener.doOnMessage(objectMessage);
 
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
-        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.CREATE_NODE), eq(CategoryType.CREATE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
     @Test
-    public void testCreateNodesWithInvalidNodes() throws Exception {
+    public void testDeleteInvalidNode() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).setNodes(lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
 
-        createNodesListener.doOnMessage(objectMessage);
+        deleteNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
+        verify(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
-        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.CREATE_NODE), eq(CategoryType.CREATE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(nodeToDelete.getId()), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 }

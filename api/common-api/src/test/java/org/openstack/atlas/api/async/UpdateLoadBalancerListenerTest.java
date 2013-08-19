@@ -29,7 +29,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class UpdateLoadBalancerListenerITest extends STMTestBase {
+public class UpdateLoadBalancerListenerTest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
@@ -64,7 +64,6 @@ public class UpdateLoadBalancerListenerITest extends STMTestBase {
 
     @After
     public void tearDown() {
-        stmClient.destroy();
     }
 
     private String genAtomSummary() {

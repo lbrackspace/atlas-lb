@@ -25,7 +25,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class UpdateConnectionThrottleListenerITest extends STMTestBase {
+public class UpdateConnectionThrottleListenerTest extends STMTestBase {
 
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
@@ -61,7 +61,6 @@ public class UpdateConnectionThrottleListenerITest extends STMTestBase {
 
     @After
     public void tearDown() {
-        stmClient.destroy();
     }
 
     @Test

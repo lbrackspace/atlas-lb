@@ -30,7 +30,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class CreateLoadBalancerListenerITest extends STMTestBase {
+public class CreateLoadBalancerListenerTest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
@@ -98,7 +98,6 @@ public class CreateLoadBalancerListenerITest extends STMTestBase {
 
     @After
     public void tearDown() {
-        stmClient.destroy();
     }
 
     // I started doing this with mocks, but it turns out it's easier to just use a real object

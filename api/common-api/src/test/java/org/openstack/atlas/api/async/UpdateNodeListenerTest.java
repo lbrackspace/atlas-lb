@@ -6,10 +6,9 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
@@ -19,15 +18,18 @@ import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 
 import javax.jms.ObjectMessage;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class UpdateSessionPersistenceListenerITest extends STMTestBase {
+public class UpdateNodeListenerTest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
+    private Integer NODE_ID = 15;
 
     @Mock
     private ObjectMessage objectMessage;
@@ -37,51 +39,43 @@ public class UpdateSessionPersistenceListenerITest extends STMTestBase {
     private NotificationService notificationService;
     @Mock
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    @Mock
+    private Node nodeToUpdate;
 
-    private UpdateSessionPersistenceListener updateSessionPersistenceListener;
+    private UpdateNodeListener updateNodeListener;
 
     @Before
     public void standUp() {
         MockitoAnnotations.initMocks(this);
         setupIvars();
+        Set<Node> nodes = new HashSet<Node>();
+        when(nodeToUpdate.getId()).thenReturn(NODE_ID);
+        when(nodeToUpdate.isToBeUpdated()).thenReturn(true);
+        nodes.add(nodeToUpdate);
         LOAD_BALANCER_ID = lb.getId();
         ACCOUNT_ID = lb.getAccountId();
         lb.setUserName(USERNAME);
-        updateSessionPersistenceListener = new UpdateSessionPersistenceListener();
-        updateSessionPersistenceListener.setLoadBalancerService(loadBalancerService);
-        updateSessionPersistenceListener.setNotificationService(notificationService);
-        updateSessionPersistenceListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        lb.setNodes(nodes);
+        updateNodeListener = new UpdateNodeListener();
+        updateNodeListener.setLoadBalancerService(loadBalancerService);
+        updateNodeListener.setNotificationService(notificationService);
+        updateNodeListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
     }
 
     @After
     public void tearDown() {
-        stmClient.destroy();
     }
 
     @Test
-    public void testUpdateLoadBalancerWithValidSessionPersistence() throws Exception {
-        lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
+    public void testUpdateLoadBalancerWithValidNode() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
-        updateSessionPersistenceListener.doOnMessage(objectMessage);
+        updateNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
-        verify(notificationService).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(EntryHelper.UPDATE_PERSISTENCE_TITLE), anyString(), eq(EventType.UPDATE_SESSION_PERSISTENCE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
-    }
-
-    @Test
-    public void testUpdateLoadBalancerWithValidNoSessionPersistence() throws Exception {
-        lb.setSessionPersistence(SessionPersistence.NONE);
-        when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-
-        updateSessionPersistenceListener.doOnMessage(objectMessage);
-
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
-        verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
-        verify(notificationService, never()).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(EntryHelper.UPDATE_PERSISTENCE_TITLE), anyString(), eq(EventType.UPDATE_SESSION_PERSISTENCE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
+        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.UPDATE_NODE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
     }
 
     @Test
@@ -90,10 +84,10 @@ public class UpdateSessionPersistenceListenerITest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
-        updateSessionPersistenceListener.doOnMessage(objectMessage);
+        updateNodeListener.doOnMessage(objectMessage);
 
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
-        verify(notificationService).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_SESSION_PERSISTENCE), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_NODE), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
     }
 
     @Test
@@ -101,14 +95,14 @@ public class UpdateSessionPersistenceListenerITest extends STMTestBase {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).setNodes(lb);
 
-        updateSessionPersistenceListener.doOnMessage(objectMessage);
+        updateNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
-        verify(notificationService).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_SESSION_PERSISTENCE), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.UPDATE_NODE), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
     }
 
 }

@@ -32,7 +32,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class DeleteLoadBalancerListenerITest extends STMTestBase {
+public class DeleteLoadBalancerListenerTest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
@@ -79,7 +79,6 @@ public class DeleteLoadBalancerListenerITest extends STMTestBase {
 
     @After
     public void tearDown() {
-        stmClient.destroy();
     }
 
     @Test

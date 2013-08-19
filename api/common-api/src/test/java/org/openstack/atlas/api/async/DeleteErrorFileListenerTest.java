@@ -21,7 +21,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class DeleteErrorFileListenerITest extends STMTestBase {
+public class DeleteErrorFileListenerTest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
 
@@ -55,7 +55,6 @@ public class DeleteErrorFileListenerITest extends STMTestBase {
 
     @After
     public void tearDown() {
-        stmClient.destroy();
     }
 
     @Test

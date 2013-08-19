@@ -7,6 +7,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
@@ -34,8 +37,10 @@ import org.rackspace.stingray.client.virtualserver.*;
 import java.io.IOException;
 import java.util.*;
 
+import static org.mockito.Mockito.when;
+
 @RunWith(Enclosed.class)
-public class ResourceTranslatorITest extends STMTestBase {
+public class ResourceTranslatorTest extends STMTestBase {
 
 
     public static class WhenTranslatingAVirtualServer {
@@ -53,9 +58,12 @@ public class ResourceTranslatorITest extends STMTestBase {
         private AccessList accessListAllowed;
         private String ipAddressAllowed;
         private Set<AccessList> lists;
+        @Mock
+        private LoadBalancerEndpointConfiguration config;
 
 
         public void initializeVars(String logFormat, LoadBalancerProtocol protocol) throws InsufficientRequestException {
+            MockitoAnnotations.initMocks(this);
             setupIvars();
             vsName = ZxtmNameBuilder.genVSName(lb);
             this.isConnectionLogging = true;
@@ -232,10 +240,12 @@ public class ResourceTranslatorITest extends STMTestBase {
         private String expectedVip6Ip;
 
         private ResourceTranslator translator;
+        @Mock
+        private LoadBalancerEndpointConfiguration config;
 
         @Before
         public void standUp() throws IPStringConversionException {
-
+            MockitoAnnotations.initMocks(this);
             setupIvars();
             int acctId = 1234567890;
             int ipv4Id = 1111;
@@ -267,14 +277,15 @@ public class ResourceTranslatorITest extends STMTestBase {
             expectedVip6Ip = ip6.getDerivedIpString();
             lb.setLoadBalancerJoinVip6Set(vip6s);
 
-
             //found in /etc/openstack/atlas/
             failoverHost = "development.lbaas.rackspace.net";
 
             //traffic group name Lb ID _ VIP ID
             expectedGroupName6 = Integer.toString(TEST_ACCOUNT_ID) + "_" + Integer.toString(ip6.getId());
             expectedGroupName4 = Integer.toString(TEST_ACCOUNT_ID) + "_" + Integer.toString(ip4.getId());
-
+            List<String> failoverHosts = new ArrayList<String>();
+            failoverHosts.add(failoverHost);
+            when(config.getFailoverTrafficManagerNames()).thenReturn(failoverHosts);
         }
 
         @Test
@@ -298,7 +309,6 @@ public class ResourceTranslatorITest extends STMTestBase {
             Assert.assertTrue(basic6.getMachines().contains(failoverHost));
             Assert.assertTrue(basic6.getIpaddresses().contains(expectedVip6Ip));
             Assert.assertTrue(basic6.getEnabled());
-
         }
 
 

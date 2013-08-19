@@ -26,7 +26,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class UpdateHealthMonitorListenerITest extends STMTestBase {
+public class UpdateHealthMonitorListenerTest extends STMTestBase {
 
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
@@ -62,7 +62,6 @@ public class UpdateHealthMonitorListenerITest extends STMTestBase {
 
     @After
     public void tearDown() {
-        stmClient.destroy();
     }
 
     private void setupHealthMonitor() {
