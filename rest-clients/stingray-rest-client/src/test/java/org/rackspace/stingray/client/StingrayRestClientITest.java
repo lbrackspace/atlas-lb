@@ -27,7 +27,7 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
-public class StingrayRestClientTest {
+public class StingrayRestClientITest {
 
     @Ignore
     @RunWith(MockitoJUnitRunner.class)
