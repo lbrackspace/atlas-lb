@@ -47,7 +47,7 @@ public class RequestManagerUtil {
     public void buildFaultMessage(ClientResponse response)
             throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
 
-        String objectNotFoundMessage = "The resource does not exist.";
+        String objectNotFoundMessage = "The resource does not exist. ";
         String objectNotFound = "Invalid resource URI";
         String notFound = "not found";
 
@@ -55,25 +55,20 @@ public class RequestManagerUtil {
 
         logger.info("ResponseWrapper, response status code is: " + response.getStatus());
 
-        //TODO: ClientException seems to break for certain errors: ex: Exception entity: {"error_id":"resource.not_found","error_text":"Invalid resource URI"}
-        //TODO: errors like these break response.GetEntity(ClientException.class) :::
-        //TODO: {"properties":{"basic":{"disabled":["127.0.0.2:80"],"draining":[],"monitors":[],"nodes":["127.0.0.1:80"],"passive_monitoring":false},"connection":{},"load_balancing":{"algorithm":"weighted_least_connections","node_weighting":[{"node":"127.0.0.1:80"},{"node":"127.0.0.2:80"}],"priority_enabled":false,"priority_values":["127.0.0.1:80:2"]}}}
         try {
-            error = response.getEntity(String.class);
+            error = response.getEntity(String.class); //Too many permutations of errors, catch all and pull out what we want...
             logger.debug(String.format("Client Request failed: %s", error));
         } catch (Exception ex) {
-            //TODO: Temp fix
             logger.debug(String.format("Client Request failed: %s", ex));
             throw new StingrayRestClientException(String.format("Gathering error response entity failed: %s", ex));
         }
 
-
         if (error.contains(objectNotFound) || error.contains(objectNotFoundMessage) || error.contains(notFound)) {
-            throw new StingrayRestClientObjectNotFoundException(objectNotFoundMessage);
+            throw new StingrayRestClientObjectNotFoundException(String.format("Error processing request: Caused By: %s: ",
+                    error));
         } else {
             throw new StingrayRestClientException(String.format("Error processing request: Caused By: %s: ",
                     error));
         }
-        //TODO: other messages?
     }
 }
