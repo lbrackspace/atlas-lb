@@ -1,7 +1,7 @@
 package org.openstack.atlas.scheduler;
 
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
-import org.openstack.atlas.util.LogDateFormat;
+import org.openstack.atlas.logs.hadoop.util.LogDateFormat;
 import org.quartz.JobExecutionContext;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.scheduling.quartz.QuartzJobBean;

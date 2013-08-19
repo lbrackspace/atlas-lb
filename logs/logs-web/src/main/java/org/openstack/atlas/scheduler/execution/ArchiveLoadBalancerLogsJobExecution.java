@@ -9,6 +9,8 @@ import org.openstack.atlas.config.CloudFilesZipInfo;
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.exception.AuthException;
 import org.openstack.atlas.exception.ExecutionException;
+import org.openstack.atlas.logs.hadoop.util.LogFileNameBuilder;
+import org.openstack.atlas.logs.hadoop.util.StaticLogUtils;
 import org.openstack.atlas.scheduler.JobScheduler;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobState;
@@ -17,23 +19,12 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
-import org.openstack.atlas.util.LogFileNameBuilder;
-
+import org.openstack.atlas.util.common.VerboseLogger;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.apache.tools.ant.filters.LineContains.Contains;
-import org.openstack.atlas.util.StaticLogUtils;
-import org.openstack.atlas.util.common.VerboseLogger;
-import org.openstack.atlas.util.debug.Debug;
-import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import java.util.*;
 
 public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
@@ -177,24 +168,24 @@ public class ArchiveLoadBalancerLogsJobExecution extends LoggableJobExecution im
 
                         //We will log each individual upload event only if it fails. No need to track those that succeeded.
                     } catch (EntityNotFoundException e) {
-                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.ARCHIVE, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Error trying to upload to CloudFiles for loadbalancer that doesn't exist: " + absoluteFileName, e);
                     } catch (FilesException e) {
-                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.ARCHIVE, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Error trying to upload to CloudFiles: " + absoluteFileName, e);
                     } catch (AuthException e) {
-                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.ARCHIVE, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Error trying to upload to CloudFiles: " + absoluteFileName, e);
                     } catch (Exception e) {
                         // Usually its caused by SSL Exception due to some weird staging & test accounts. So ignoring for now.
                         // Catch all so we can proceed.
-                        JobState individualState = createJob(JobName.LOG_FILE_CF_UPLOAD, schedulerConfigs.getInputString() + ":" + absoluteFileName);
+                        JobState individualState = createJob(JobName.ARCHIVE, schedulerConfigs.getInputString() + ":" + absoluteFileName);
                         failJob(individualState);
                         failed.add("absoluteFileName");
                         LOG.error("Unexpected Error trying to upload to CloudFiles: " + absoluteFileName, e);

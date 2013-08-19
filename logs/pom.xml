@@ -15,10 +15,15 @@
 
     <modules>
         <module>logs-hadoop</module>
+        <module>logs-common</module>
+        <module>logs-itest-common</module>
+        <module>logs-test-reupload</module>
+        <module>logs-archive-clients</module>
         <module>logs-web</module>
         <module>logs-hdfs-cli</module>
         <module>logs-lzo-faker</module>
         <module>logs-test-compress</module>
+        <module>logs-cache-faker</module>
     </modules>
 
     <build>
@@ -38,6 +43,8 @@
                     <configuration>
                         <source>1.6</source>
                         <target>1.6</target>
+                        <optimize>false</optimize>
+                        <debug>true</debug>
                     </configuration>
                 </plugin>
                 <plugin>

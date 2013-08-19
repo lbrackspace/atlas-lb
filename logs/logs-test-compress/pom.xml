@@ -8,9 +8,9 @@
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
-    <version>1.19.11-SNAPSHOT</version>
+        <version>1.19.11-SNAPSHOT</version>
     <artifactId>atlas-exp-logs-test-compress</artifactId>
-    <name>Openstack :: Atlqas :: Logs :: Compress LZO tester</name>
+    <name>Openstack :: Atlas :: Logs :: Compress LZO tester</name>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -41,7 +41,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.openstack.atlas.util.TestLzoCompressionMain</mainClass>
+                                <mainClass>org.openstack.atlas.logs.itest.TestLzoCompressionMain</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

@@ -11,7 +11,7 @@ import org.apache.hadoop.fs.Path;
 import org.openstack.atlas.config.LbLogsConfiguration;
 import org.openstack.atlas.config.LbLogsConfigurationKeys;
 import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
-import org.openstack.atlas.util.HdfsUtils;
+import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class HadoopLogsConfigs {

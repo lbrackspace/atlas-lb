@@ -12,7 +12,7 @@
     <artifactId>atlas-jyson</artifactId>
     <name>Openstack :: Itest :: Jyson/Jython module </name>
     <packaging>jar</packaging>
-    <version>1.19.11-SNAPSHOT</version>
+        <version>1.19.11-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
