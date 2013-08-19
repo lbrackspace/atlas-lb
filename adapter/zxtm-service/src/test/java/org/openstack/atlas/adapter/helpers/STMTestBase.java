@@ -23,6 +23,7 @@ public class STMTestBase {
 
     protected static LoadBalancer lb;
     protected static VirtualIp vip1;
+    protected static VirtualIp vip2;
     protected static Node node1;
     protected static Node node2;
 
@@ -31,8 +32,14 @@ public class STMTestBase {
         vip1 = new VirtualIp();
         vip1.setId(TEST_VIP_ID);
         vip1.setIpAddress("10.69.0.59");
+        vip2 = new VirtualIp();
+        vip2.setId(TEST_VIP_ID+1);
+        vip2.setIpAddress("10.69.0.60");
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip1);
+        vipList.add(loadBalancerJoinVip);
+        loadBalancerJoinVip = new LoadBalancerJoinVip();
+        loadBalancerJoinVip.setVirtualIp(vip2);
         vipList.add(loadBalancerJoinVip);
 
         Set<Node> nodeList = new HashSet<Node>();
@@ -58,6 +65,8 @@ public class STMTestBase {
         lb.setProtocol(HTTP);
         lb.setNodes(nodeList);
         lb.setLoadBalancerJoinVipSet(vipList);
+
+        lb.setUserPages(new UserPages());
 
         STMTestBase.lb = lb;
     }

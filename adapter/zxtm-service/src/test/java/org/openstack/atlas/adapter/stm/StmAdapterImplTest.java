@@ -95,10 +95,10 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             verify(resources).createPersistentClasses(config);
             //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
-            verify(resources).updateProtection(eq(config), eq(client), eq(vsName), Matchers.any(Protection.class));
-            verify(resources).updateVirtualIps(eq(config), eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
-            verify(resources).updatePool(eq(config), eq(client), eq(vsName), Matchers.any(Pool.class));
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(vsName), Matchers.any(VirtualServer.class));
+            verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
+            verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
+            verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
+            verify(resources).updateVirtualServer(eq(client), eq(vsName), Matchers.any(VirtualServer.class));
             verify(client).destroy();
         }
 
@@ -109,12 +109,12 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
-            verify(resources).updateProtection(eq(config), eq(client), eq(vsName), Matchers.any(Protection.class));
-            verify(resources).updateVirtualIps(eq(config), eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
+            verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
+            verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
             verify(adapterSpy).setErrorFile(config, loadBalancer, loadBalancer.getUserPages().getErrorpage());
-            verify(resources).updatePool(eq(config), eq(client), eq(vsName), Matchers.any(Pool.class));
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(vsName), Matchers.any(VirtualServer.class));
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(secureVsName), Matchers.any(VirtualServer.class));
+            verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
+            verify(resources).updateVirtualServer(eq(client), eq(vsName), Matchers.any(VirtualServer.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), Matchers.any(VirtualServer.class));
             verify(client).destroy();
         }
 
@@ -124,12 +124,12 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resources).deleteRateLimit(config, loadBalancer, vsName);
-            verify(resources).deleteHealthMonitor(config, client, vsName);
-            verify(resources).deleteProtection(config, client, vsName);
+            verify(resources).deleteHealthMonitor(client, vsName);
+            verify(resources).deleteProtection(client, vsName);
             verify(adapterSpy).deleteVirtualIps(config, loadBalancer);
-            verify(resources).deletePool(config, client, vsName);
-            verify(resources).deleteVirtualServer(config, client, vsName);
-            verify(resources).deleteVirtualServer(config, client, secureVsName);
+            verify(resources).deletePool(client, vsName);
+            verify(resources).deleteVirtualServer(client, vsName);
+            verify(resources).deleteVirtualServer(client, secureVsName);
             verify(client).destroy();
         }
     }
@@ -178,8 +178,8 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
-            verify(resources).updateVirtualIps(eq(config), eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(vsName), any(VirtualServer.class));
+            verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
+            verify(resources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
             verify(client).destroy();
         }
 
@@ -196,7 +196,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(loadBalancer.getLoadBalancerJoinVipSet()).removeAll(anySetOf(LoadBalancerJoinVip.class));
             verify(loadBalancer.getLoadBalancerJoinVipSet()).addAll(anySetOf(LoadBalancerJoinVip.class));
             verify(client).deleteTrafficIp(anyString());
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(vsName), any(VirtualServer.class));
+            verify(resources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
             verify(client).destroy();
         }
     }
@@ -244,8 +244,8 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
-            verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class));
-            verify(resources).updatePool(eq(config), eq(client), eq(vsName), Matchers.any(Pool.class));
+            verify(resources).updateHealthMonitor(eq(client), eq(vsName), Matchers.any(Monitor.class));
+            verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
             verify(client).destroy();
         }
 
@@ -254,7 +254,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.deleteHealthMonitor(config, loadBalancer);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resources).deleteHealthMonitor(config, client, vsName);
+            verify(resources).deleteHealthMonitor(client, vsName);
             verify(client).destroy();
         }
     }
@@ -302,7 +302,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateProtectionResource(vsName, loadBalancer);
-            verify(resources).updateProtection(eq(config), eq(client), eq(vsName), Matchers.any(Protection.class));
+            verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             verify(client).destroy();
         }
 
@@ -311,7 +311,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.deleteProtection(config, loadBalancer);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resources).deleteProtection(config, client, vsName);
+            verify(resources).deleteProtection(client, vsName);
             verify(client).destroy();
         }
     }
@@ -512,7 +512,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadSTMRestClient(config)).thenReturn(client);
-            doNothing().when(resources).updatePool(eq(config), eq(client), eq(vsName), Matchers.any(Pool.class));
+            doNothing().when(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
         }
 
         @After
@@ -526,7 +526,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translatePoolResource(vsName, loadBalancer, loadBalancer);
-            verify(resources).updatePool(eq(config), eq(client), eq(vsName), Matchers.any(Pool.class));
+            verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
             verify(client).destroy();
         }
 
@@ -539,7 +539,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             Assert.assertFalse(loadBalancer.getNodes().contains(doomedNodes.get(0)));
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translatePoolResource(vsName, loadBalancer, loadBalancer);
-            verify(resources).updatePool(eq(config), eq(client), eq(vsName), Matchers.any(Pool.class));
+            verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
             verify(client).destroy();
         }
     }
@@ -603,12 +603,12 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(resources).loadSTMRestClient(config);
             verify(client).getVirtualServer(vsName);
             Assert.assertFalse(virtualServer.getProperties().getBasic().getEnabled());
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(vsName), any(VirtualServer.class));
+            verify(resources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
             verify(client).getVirtualServer(secureVsName);
             Assert.assertFalse(virtualServerSecure.getProperties().getBasic().getEnabled());
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(resourceTranslator).translateTrafficIpGroupsResource(config, loadBalancer, false);
-            verify(resources).updateVirtualIps(eq(config), eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class)); //TODO: Are the VIPs using the SecureName or the normal vsName?
+            verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class)); //TODO: Are the VIPs using the SecureName or the normal vsName?
             verify(client).destroy();
         }
 
@@ -621,12 +621,12 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(resources).loadSTMRestClient(config);
             verify(client).getVirtualServer(vsName);
             Assert.assertTrue(virtualServer.getProperties().getBasic().getEnabled());
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(vsName), any(VirtualServer.class));
+            verify(resources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
             verify(client).getVirtualServer(secureVsName);
             Assert.assertTrue(virtualServerSecure.getProperties().getBasic().getEnabled());
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(resourceTranslator).translateTrafficIpGroupsResource(config, loadBalancer, true);
-            verify(resources).updateVirtualIps(eq(config), eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class)); //TODO: Are the VIPs using the SecureName or the normal vsName?
+            verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class)); //TODO: Are the VIPs using the SecureName or the normal vsName?
             verify(client).destroy();
         }
     }
@@ -666,12 +666,12 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadSTMRestClient(config)).thenReturn(client);
-            doNothing().when(resources).updateKeypair(eq(config), eq(client), eq(vsName), Matchers.any(Keypair.class));
-            doNothing().when(resources).updateProtection(eq(config), eq(client), eq(vsName), Matchers.any(Protection.class));
-            doNothing().when(resources).updateVirtualIps(eq(config), eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
-            doNothing().when(resources).updateVirtualServer(eq(config), eq(client), eq(vsName), Matchers.any(VirtualServer.class));
-            doNothing().when(resources).deleteKeypair(config, client, secureVsName);
-            doNothing().when(resources).deleteVirtualServer(config, client, secureVsName);
+            doNothing().when(resources).updateKeypair(eq(client), eq(vsName), Matchers.any(Keypair.class));
+            doNothing().when(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
+            doNothing().when(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
+            doNothing().when(resources).updateVirtualServer(eq(client), eq(vsName), Matchers.any(VirtualServer.class));
+            doNothing().when(resources).deleteKeypair(client, secureVsName);
+            doNothing().when(resources).deleteVirtualServer(client, secureVsName);
         }
 
         @After
@@ -686,16 +686,16 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateVirtualServerResource(config, vsName, loadBalancer);
             verify(resourceTranslator, times(3)).translateKeypairResource(config, loadBalancer);
-            verify(resources).updateKeypair(eq(config), eq(client), eq(secureVsName), Matchers.any(Keypair.class));
+            verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             verify(resourceTranslator).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);
-            verify(resources).updateProtection(eq(config), eq(client), eq(vsName), Matchers.any(Protection.class));
+            verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             PowerMockito.verifyStatic();
             TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
             PowerMockito.verifyStatic();
             TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
-            verify(resources).updateVirtualIps(eq(config), eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));
-            verify(resources).updateVirtualServer(eq(config), eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client).destroy();
         }
 
@@ -704,8 +704,8 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.removeSslTermination(config, loadBalancer);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resources).deleteKeypair(config, client, secureVsName);
-            verify(resources).deleteVirtualServer(config, client, secureVsName);
+            verify(resources).deleteKeypair(client, secureVsName);
+            verify(resources).deleteVirtualServer(client, secureVsName);
             verify(client).destroy();
         }
     }

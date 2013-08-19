@@ -9,13 +9,11 @@ import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.persistence.PersistenceBasic;
@@ -33,17 +31,20 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Map;
 
 public class StmAdapterResources {
     public static Log LOG = LogFactory.getLog(StmAdapterResources.class.getName());
 
     public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException {
-        LOG.debug("Building new STM client using endpoint: " + config.getRestEndpoint());
-        return new StingrayRestClient(config.getRestEndpoint(), config.getUsername(), config.getPassword());
+        URI restEndpoint = config.getRestEndpoint();
+        LOG.debug("Building new STM client using endpoint: " + restEndpoint);
+        return new StingrayRestClient(restEndpoint, config.getUsername(), config.getPassword());
     }
 
-    public void updateVirtualServer(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String vsName, VirtualServer virtualServer) throws StmRollBackException {
+    public void updateVirtualServer(StingrayRestClient client, String vsName, VirtualServer virtualServer) throws StmRollBackException {
         LOG.debug(String.format("Updating virtual server '%s'...", vsName));
 
         VirtualServer curVs = null;
@@ -63,9 +64,9 @@ public class StmAdapterResources {
             if (curVs != null) {
                 LOG.debug(String.format("Updating virtual server to previous configuration for rollback '%s'...", vsName));
                 try {
-                    client.updateVirtualServer(vsName, virtualServer);
+                    client.updateVirtualServer(vsName, curVs);
                 } catch (Exception ex2) {
-                    String em2 = String.format("Error updating virtual server while attempting to previous configuration" +
+                    String em2 = String.format("Error updating virtual server while reverting to previous configuration" +
                             ": %s RollBack aborted \n Exception: %s "
                             , vsName, ex2);
                     LOG.error(em2);
@@ -78,63 +79,7 @@ public class StmAdapterResources {
         LOG.debug(String.format("Successfully updated virtual server '%s'...", vsName));
     }
 
-    public void updateKeypair(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String vsName, Keypair keypair) throws StmRollBackException {
-        LOG.debug(String.format("Updating keypair '%s'...", vsName));
-
-        Keypair curKeypair = null;
-        try {
-            curKeypair = client.getKeypair(vsName);
-        } catch (Exception e) {
-            LOG.warn(String.format("Error retrieving keypair: %s, attempting to update...", vsName));
-        }
-        try {
-            client.updateKeypair(vsName, keypair);
-        } catch (Exception ex) {
-            String em = String.format("Error updating keypair: %s Attempting to roll back... \n Exception: %s ",
-                    vsName, ex);
-            LOG.error(em);
-            if (keypair != null) {
-                LOG.debug(String.format("Updating keypair to previous configuration for rollback '%s'...", vsName));
-                try {
-                    client.updateKeypair(vsName, curKeypair);
-                } catch (Exception ex2) {
-                    String em2 = String.format("Error updating keypair '%s' to previous configuration, Roll back aborted \n Exception: %s ",
-                            vsName, ex2);
-                    LOG.error(em2);
-                }
-            } else {
-                LOG.warn(String.format("Keypair '%s' was not rolled back since no previous configuration was available.", vsName));
-            }
-            throw new StmRollBackException(em, ex);
-        }
-        LOG.debug(String.format("Successfully updated keypair '%s'", vsName));
-    }
-
-    public void deleteKeypair(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String vsName) throws StmRollBackException {
-        LOG.info(String.format("Removing the keypair of SSL cert used on virtual server '%s'...", vsName));
-        Keypair keypair = null;
-
-        try {
-            keypair = client.getKeypair(vsName);
-            client.deleteKeypair(vsName);
-        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
-            LOG.error(String.format("Keypair '%s' not found during deletion attempt, continue...", vsName));
-        } catch (StingrayRestClientException clientException) {
-            String em = String.format("Error removing keypair '%s', Attempting to roll back... \n Exception: %s ",
-                    vsName, clientException);
-            LOG.error(em);
-            if (keypair != null) {
-                LOG.debug(String.format("Updating Keypair to keep previous configuration for '%s'...", vsName));
-                updateKeypair(config, client, vsName, keypair);
-            } else {
-                LOG.warn(String.format("Keypair was not rolled back as keypair '%s' was not retrieved.", vsName));
-            }
-            throw new StmRollBackException(em, clientException);
-        }
-    }
-
-    public void deleteVirtualServer(LoadBalancerEndpointConfiguration config,
-                                     StingrayRestClient client, String vsName)
+    public void deleteVirtualServer(StingrayRestClient client, String vsName)
             throws StmRollBackException {
 
         LOG.info(String.format("Removing  virtual server '%s'...", vsName));
@@ -151,7 +96,14 @@ public class StmAdapterResources {
             LOG.error(em);
             if (curVs != null) {
                 LOG.debug(String.format("Updating virtual server to set previous configuration for rollback '%s'", vsName));
-                updateVirtualServer(config, client, vsName, curVs);
+                try {
+                    client.updateVirtualServer(vsName, curVs);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating virtual server while reverting to previous configuration" +
+                            ": %s RollBack aborted \n Exception: %s "
+                            , vsName, ex2);
+                    LOG.error(em2);
+                }
             } else {
                 LOG.warn(String.format("Virtual server was not rolled back as no previous configuration was available. '%s' ", vsName));
             }
@@ -160,8 +112,68 @@ public class StmAdapterResources {
         LOG.info(String.format("Successfully removed virtual server '%s'...", vsName));
     }
 
-    public void updatePool(LoadBalancerEndpointConfiguration config,
-                            StingrayRestClient client, String poolName, Pool pool)
+    public void updateKeypair(StingrayRestClient client, String vsName, Keypair keypair) throws StmRollBackException {
+        LOG.debug(String.format("Updating keypair '%s'...", vsName));
+
+        Keypair curKeypair = null;
+        try {
+            curKeypair = client.getKeypair(vsName);
+        } catch (Exception e) {
+            LOG.warn(String.format("Error retrieving keypair: %s, attempting to update...", vsName));
+        }
+        try {
+            client.updateKeypair(vsName, keypair);
+        } catch (Exception ex) {
+            String em = String.format("Error updating keypair: %s Attempting to roll back... \n Exception: %s ",
+                    vsName, ex);
+            LOG.error(em);
+            if (curKeypair != null) {
+                LOG.debug(String.format("Updating keypair to previous configuration for rollback '%s'...", vsName));
+                try {
+                    client.updateKeypair(vsName, curKeypair);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating keypair '%s' to previous configuration, Roll back aborted \n Exception: %s ",
+                            vsName, ex2);
+                    LOG.error(em2);
+                }
+            } else {
+                LOG.warn(String.format("Keypair '%s' was not rolled back since no previous configuration was available.", vsName));
+            }
+            throw new StmRollBackException(em, ex);
+        }
+        LOG.debug(String.format("Successfully updated keypair '%s'", vsName));
+    }
+
+    public void deleteKeypair(StingrayRestClient client, String vsName) throws StmRollBackException {
+        LOG.info(String.format("Removing the keypair of SSL cert used on virtual server '%s'...", vsName));
+        Keypair keypair = null;
+
+        try {
+            keypair = client.getKeypair(vsName);
+            client.deleteKeypair(vsName);
+        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
+            LOG.error(String.format("Keypair '%s' not found during deletion attempt, continue...", vsName));
+        } catch (StingrayRestClientException clientException) {
+            String em = String.format("Error removing keypair '%s', Attempting to roll back... \n Exception: %s ",
+                    vsName, clientException);
+            LOG.error(em);
+            if (keypair != null) {
+                LOG.debug(String.format("Updating Keypair to keep previous configuration for '%s'...", vsName));
+                try {
+                    client.updateKeypair(vsName, keypair);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating keypair '%s' to previous configuration, Roll back aborted \n Exception: %s ",
+                            vsName, ex2);
+                    LOG.error(em2);
+                }
+            } else {
+                LOG.warn(String.format("Keypair was not rolled back as keypair '%s' was not retrieved.", vsName));
+            }
+            throw new StmRollBackException(em, clientException);
+        }
+    }
+
+    public void updatePool(StingrayRestClient client, String poolName, Pool pool)
             throws StmRollBackException {
 
         LOG.debug(String.format("Updating pool '%s' and setting nodes...", poolName));
@@ -187,7 +199,7 @@ public class StmAdapterResources {
                 try {
                     client.updatePool(poolName, curPool);
                 } catch (Exception ex2) {
-                    String em2 = String.format("Error updating node pool while attempting to previous configuration" +
+                    String em2 = String.format("Error updating node pool while reverting to previous configuration" +
                             ": %s RollBack aborted \n Exception: %s "
                             , poolName, ex2);
                     LOG.error(em2);
@@ -199,8 +211,7 @@ public class StmAdapterResources {
         }
     }
 
-    public void deletePool(LoadBalancerEndpointConfiguration config,
-                            StingrayRestClient client, String poolName)
+    public void deletePool(StingrayRestClient client, String poolName)
             throws StmRollBackException {
 
         LOG.debug(String.format("Attempting to remove pool '%s'...", poolName));
@@ -227,7 +238,7 @@ public class StmAdapterResources {
                 try {
                     client.updatePool(poolName, curPool);
                 } catch (Exception ex2) {
-                    String em2 = String.format("Error updating node pool while attempting to previous configuration" +
+                    String em2 = String.format("Error updating node pool while reverting to previous configuration" +
                             ": %s RollBack aborted \n Exception: %s "
                             , poolName, ex2);
                     LOG.error(em2);
@@ -239,8 +250,7 @@ public class StmAdapterResources {
         }
     }
 
-    public void updateVirtualIps(LoadBalancerEndpointConfiguration config,
-                                  StingrayRestClient client, String vsName, Map<String, TrafficIp> tigmap)
+    public void updateVirtualIps(StingrayRestClient client, String vsName, Map<String, TrafficIp> tigmap)
             throws StmRollBackException {
 
         LOG.debug(String.format("Updating virtual ips for '%s'...", vsName));
@@ -281,8 +291,7 @@ public class StmAdapterResources {
         }
     }
 
-    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config,
-                                     StingrayRestClient client, String monitorName, Monitor monitor)
+    public void updateHealthMonitor(StingrayRestClient client, String monitorName, Monitor monitor)
             throws StmRollBackException {
 
         LOG.debug(String.format("Update Monitor '%s' ...", monitorName));
@@ -316,8 +325,7 @@ public class StmAdapterResources {
         LOG.debug(String.format("Successfully updated Monitor '%s' ...", monitorName));
     }
 
-    public void deleteHealthMonitor(LoadBalancerEndpointConfiguration config,
-                                     StingrayRestClient client, String monitorName)
+    public void deleteHealthMonitor(StingrayRestClient client, String monitorName)
             throws StmRollBackException {
 
         LOG.info(String.format("Removing  monitor '%s'...", monitorName));
@@ -335,7 +343,13 @@ public class StmAdapterResources {
             LOG.error(em);
             if (curMon != null) {
                 LOG.debug(String.format("Updating virtual server to set previous configuration for rollback '%s'", monitorName));
-                updateHealthMonitor(config, client, monitorName, curMon);
+                try {
+                    client.updateMonitor(monitorName, curMon);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating monitor while attempting to set previous configuration" +
+                            ": %s RollBack aborted \n Exception: %s", monitorName, ex2);
+                    LOG.error(em2);
+                }
             } else {
                 LOG.warn(String.format("Monitor was not rolled back as no previous configuration was available. '%s' ", monitorName));
             }
@@ -343,7 +357,7 @@ public class StmAdapterResources {
         }
     }
 
-    public void updateProtection(LoadBalancerEndpointConfiguration config, StingrayRestClient client, String protectionName, Protection protection) throws InsufficientRequestException, StmRollBackException {
+    public void updateProtection(StingrayRestClient client, String protectionName, Protection protection) throws InsufficientRequestException, StmRollBackException {
         LOG.debug(String.format("Updating protection class on '%s'...", protectionName));
 
         Protection curProtection = null;
@@ -380,8 +394,7 @@ public class StmAdapterResources {
         LOG.debug(String.format("Successfully updated protection for %s!", protectionName));
     }
 
-    public void deleteProtection(LoadBalancerEndpointConfiguration config,
-                                  StingrayRestClient client, String protectionName)
+    public void deleteProtection(StingrayRestClient client, String protectionName)
             throws StmRollBackException, InsufficientRequestException {
 
         LOG.info(String.format("Removing  protection class '%s'...", protectionName));
@@ -399,7 +412,14 @@ public class StmAdapterResources {
             LOG.error(em);
             if (curPro != null) {
                 LOG.debug(String.format("Updating virtual server to set previous configuration for rollback '%s'", protectionName));
-                updateProtection(config, client, protectionName, curPro);
+                try {
+                    client.updateProtection(protectionName, curPro);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating protection while attempting to set previous configuration" +
+                            ": %s RollBack aborted \n Exception: %s"
+                            , protectionName, ex2);
+                    LOG.error(em2);
+                }
             } else {
                 LOG.warn(String.format("Protection was not rolled back as no previous configuration was available. '%s' ", protectionName));
             }
@@ -471,18 +491,21 @@ public class StmAdapterResources {
 
             client.createBandwidth(vsName, bandwidth);
             TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
-            updateVirtualServer(config, client, vsName, virtualServer);
+            updateVirtualServer(client, vsName, virtualServer);
 
 
             LOG.info("Successfully added a rate limit to the rate limit pool.");
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Failed to add rate limit for virtual server '%s' -- Object not found", vsName));
+            client.destroy();
             throw new StmRollBackException("Add rate limit request canceled.", e);
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("Failed to add rate limit for virtual server %s -- REST Client exception", vsName));
+            client.destroy();
             throw new StmRollBackException("Add rate limit request canceled.", e);
         } catch (IOException e) {
             LOG.error(String.format("Failed to add rate limit for virtual server %s -- IOException", vsName));
+            client.destroy();
             throw new StmRollBackException("Add rate limit request canceled.", e);
         }
         client.destroy();
@@ -505,12 +528,15 @@ public class StmAdapterResources {
             LOG.info(String.format("Successfully updated the rate limit for load balancer...'%s'...", vsName));
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Failed to update rate limit for virtual server %s -- REST Client exception", vsName));
+            client.destroy();
             throw new StmRollBackException("Update rate limit request canceled.", e);
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("Failed to update rate limit for virtual server %s -- REST Client exception", vsName));
+            client.destroy();
             throw new StmRollBackException("Update rate limit request canceled.", e);
         } catch (IOException e) {
             LOG.error(String.format("Failed to update rate limit for virtual server %s -- IOException", vsName));
+            client.destroy();
             throw new StmRollBackException("Update rate limit request canceled.", e);
         }
         client.destroy();
@@ -519,30 +545,63 @@ public class StmAdapterResources {
     public void deleteRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName) throws StmRollBackException, InsufficientRequestException {
         StingrayRestClient client = loadSTMRestClient(config);
 
+        VirtualServer curVs = null;
+        Bandwidth curBandwidth = null;
         try {
-            ResourceTranslator rt = new ResourceTranslator();
-            rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
-            VirtualServer virtualServer = rt.getcVServer();
-            VirtualServerProperties properties = virtualServer.getProperties();
-            VirtualServerBasic basic = properties.getBasic();
+            curVs = client.getVirtualServer(vsName);
+            curBandwidth = client.getBandwidth(vsName);
+        } catch (Exception e) {
+            LOG.warn(String.format("Error retrieving virtual server: %s, attempting to recreate... ", vsName));
+        }
 
-            basic.setBandwidth_class("");
+        ResourceTranslator rt = new ResourceTranslator();
+        rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+        VirtualServer virtualServer = rt.getcVServer();
+        VirtualServerProperties properties = virtualServer.getProperties();
+        VirtualServerBasic basic = properties.getBasic();
+        basic.setBandwidth_class("");
+
+        try {
             client.deleteBandwidth(vsName);
-            updateVirtualServer(config, client, vsName, virtualServer);
-
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.warn(String.format("Cannot delete rate limit '%s', it does not exist. Ignoring...", vsName));
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("Failed to delete rate limit for virtual server %s -- REST Client exception", vsName));
+            client.destroy();
+            throw new StmRollBackException("Delete rate limit request canceled.", e);
+        }
+
+        try {
+            client.updateVirtualServer(vsName, virtualServer);
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            LOG.warn(String.format("Cannot update virtual server '%s', it does not exist. Ignoring...", vsName));
+        } catch (StingrayRestClientException e) {
+            LOG.error(String.format("Failed to update virtual server %s -- REST Client exception", vsName));
+            if (curVs != null && curBandwidth != null) {
+                LOG.debug(String.format("Updating virtual server to previous configuration and re-creating bandwidth for rollback '%s'...", vsName));
+                try {
+                    client.createBandwidth(vsName, curBandwidth);
+                    client.updateVirtualServer(vsName, curVs);
+                } catch (Exception ex2) {
+                    String em2 = String.format("Error updating virtual server while reverting to previous configuration" +
+                            ": %s RollBack aborted \n Exception: %s "
+                            , vsName, ex2);
+                    LOG.error(em2);
+                }
+            } else {
+                LOG.warn(String.format("Virtual server was not rolled back as no previous configuration was available. '%s' ", vsName));
+            }
+            client.destroy();
             throw new StmRollBackException("Delete rate limit request canceled.", e);
         }
         client.destroy();
     }
 
     public void setErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer, String vsName, String content) throws InsufficientRequestException, StmRollBackException {
-        File errorFile;
+        File errorFile = null;
         String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
 
+        loadBalancer.getUserPages().setErrorpage(content);
         ResourceTranslator rt = new ResourceTranslator();
         rt.translateVirtualServerResource(config, vsName, loadBalancer);
         VirtualServer vs = rt.getcVServer();
@@ -551,21 +610,19 @@ public class StmAdapterResources {
             LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
             errorFile = getFileWithContent(content);
             client.createExtraFile(errorFileName, errorFile);
+            errorFile.delete();
             LOG.info(String.format("Successfully uploaded the error file for %s (%s)", vsName, errorFileName));
         } catch (Exception e) {
-            // Failed to create file, use "Default"
+            errorFile.delete();
             // Failed to create error file, error out..
             LOG.error(String.format("Failed to set ErrorFile for %s (%s) Exception: %s -- exception", vsName, errorFileName, e));
-            errorFileName = "Default";
             throw new StmRollBackException(String.format("Failed creating error page %s for: %s.", errorFileName, vsName), e);
         }
-
-        if (errorFile != null) errorFile.delete();
 
         try {
             LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
             // Update client with new properties
-            updateVirtualServer(config, client, vsName, vs);
+            updateVirtualServer(client, vsName, vs);
 
             LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
         } catch (StmRollBackException re) {
@@ -590,7 +647,7 @@ public class StmAdapterResources {
             VirtualServerConnectionError ce = new VirtualServerConnectionError();
             ce.setError_file("Default");
             properties.setConnection_errors(ce); // this will set the default error page
-            updateVirtualServer(config, client, vsName, vs);
+            updateVirtualServer(client, vsName, vs);
 
             // Delete the old error file
             client.deleteExtraFile(fileToDelete);
