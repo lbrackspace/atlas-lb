@@ -22,7 +22,6 @@ import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,41 +51,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Autowired
     private AtlasCache atlasCache;
-
-    @Required
-    public void setNotificationService(NotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
-
-    @Required
-    public void setVirtualIpService(VirtualIpService virtualIpService) {
-        this.virtualIpService = virtualIpService;
-    }
-
-    @Required
-    public void setAccountLimitService(AccountLimitService accountLimitService) {
-        this.accountLimitService = accountLimitService;
-    }
-
-    @Required
-    public void setHostService(HostService hostService) {
-        this.hostService = hostService;
-    }
-
-    @Required
-    public void setNodeService(NodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
-
-    @Required
-    public void setAtlasCache(AtlasCache atlasCache) {
-        this.atlasCache = atlasCache;
-    }
 
     @Override
     @Transactional
