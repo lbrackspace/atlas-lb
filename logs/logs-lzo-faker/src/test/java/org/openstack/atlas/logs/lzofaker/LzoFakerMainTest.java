@@ -4,6 +4,7 @@
  */
 package org.openstack.atlas.logs.lzofaker;
 
+import org.openstack.atlas.logs.itest.LzoFakerMain;
 import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;

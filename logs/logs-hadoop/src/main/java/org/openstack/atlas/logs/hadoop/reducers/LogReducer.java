@@ -19,6 +19,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import org.openstack.atlas.logs.hadoop.util.StaticLogUtils;
+import org.openstack.atlas.logs.hadoop.util.LogFileNameBuilder;
 
 public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue, LogReducerOutputKey, LogReducerOutputValue> {
 
@@ -56,10 +58,10 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
 
         oVal.setAccountId(accountId);
         oVal.setLoadbalancerId(loadbalancerId);
-        String zipFileName = getZipFileName(loadbalancerId, fileHour);
-        String zipContentsName = getZipContentsName(loadbalancerId, fileHour);
+        String zipFileName = LogFileNameBuilder.getZipFileName(loadbalancerId, fileHour);
+        String zipContentsName = LogFileNameBuilder.getZipContentsName(loadbalancerId, fileHour);
         CRC32 crc = new CRC32();
-        String partitionZipPath =  StaticFileUtils.joinPath(hdfsZipDir, zipFileName);
+        String partitionZipPath = StaticFileUtils.joinPath(hdfsZipDir, zipFileName);
         String fullZipPath = getTempWorkZipPath(workDir, "zips", zipFileName); // This one will replace fullZipPath
         FSDataOutputStream os = fs.create(new Path(fullZipPath), true, BUFFER_SIZE, REPL_COUNT, HDFS_BLOCK_SIZE);
         ZipOutputStream zos = new ZipOutputStream(os);
@@ -82,21 +84,13 @@ public class LogReducer extends Reducer<LogMapperOutputKey, LogMapperOutputValue
         zos.closeEntry(); // Closes the zip Contents
         zos.finish();     // Marks this as the last file in the zip arvhive
         zos.close();      // Closes the zipFile
-        os.close();       // Just inbytescase the Hdfs file is still open this closes it too.
+        os.close();       // Just incase the Hdfs file is still open this closes it too.
         oVal.setnLines(nLines);
         oVal.setLogFile(partitionZipPath);
         oVal.setCrc(crc.getValue());
         oVal.setFileSize(fileSize);
         ctx.getCounter(LogCounters.REDUCER_WRITES).increment(1);
         ctx.write(oKey, oVal);
-    }
-
-    private static String getZipFileName(int loadbalancerId, int fileHour) {
-        return "access_log_" + loadbalancerId + "_" + fileHour + ".zip";
-    }
-
-    private static String getZipContentsName(int loadbalancerId, int fileHour) {
-        return "access_log_" + loadbalancerId + "_" + fileHour;
     }
 
     private String getTempWorkZipPath(String workDir, String midDir, String zipFileName) {

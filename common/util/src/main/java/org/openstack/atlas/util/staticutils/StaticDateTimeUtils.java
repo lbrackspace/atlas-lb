@@ -6,9 +6,12 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 public class StaticDateTimeUtils {
 
+    private static final long MILLIS_COEF = 10000000L;
+    public static final DateTimeFormatter isoFormat = ISODateTimeFormat.dateTimeNoMillis();
     public static final DateTimeFormatter apacheDateTimeFormat = DateTimeFormat.forPattern("dd/MMM/yyyy:HH:mm:ss Z");
     public static final DateTimeFormatter utcApacheDateTimeFormat = apacheDateTimeFormat.withZone(DateTimeZone.UTC);
     public static final DateTimeFormatter sqlDateTimeFormat = DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss");
@@ -91,5 +94,17 @@ public class StaticDateTimeUtils {
             return new DateTime(cal).withZone(DateTimeZone.UTC);
         }
         return new DateTime(cal);
+    }
+
+    public static DateTime hourKeyToDateTime(String dateHour, boolean useUTC) {
+        return hourKeyToDateTime(Long.parseLong(dateHour), useUTC);
+    }
+
+    public static DateTime hourKeyToDateTime(long ord, boolean useUTC) {
+        return StaticDateTimeUtils.OrdinalMillisToDateTime(ord * MILLIS_COEF, useUTC);
+    }
+
+    public static long dateTimeToHourLong(DateTime dt) {
+        return StaticDateTimeUtils.dateTimeToOrdinalMillis(dt) / MILLIS_COEF;
     }
 }

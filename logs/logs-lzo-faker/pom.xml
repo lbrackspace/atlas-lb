@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.openstack.atlas</groupId>
@@ -9,13 +10,13 @@
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-lzo-faker</artifactId>
     <name>Openstack :: Atlas :: Logs :: Lzo Faker</name>
-        <version>1.19.11-SNAPSHOT</version>
+    <version>1.19.11-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.openstack.atlas</groupId>
-            <artifactId>atlas-itest-hibernate-adapter</artifactId>
+            <artifactId>atlas-logs-itest-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -52,11 +53,11 @@
             <version>4.0</version>
             <scope>compile</scope>
         </dependency>
-            <dependency>
-                <groupId>postgresql</groupId>
-                <artifactId>postgresql</artifactId>
-                <version>9.0-801.jdbc3</version>
-            </dependency>
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.0-801.jdbc3</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -79,7 +80,7 @@
                     <configuration>
                         <archive>
                             <manifest>
-                                <mainClass>org.openstack.atlas.logs.lzofaker.LzoFakerMain</mainClass>
+                                <mainClass>org.openstack.atlas.logs.itest.LzoFakerMain</mainClass>
                             </manifest>
                         </archive>
                         <descriptorRefs>

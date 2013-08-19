@@ -26,6 +26,7 @@ import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
@@ -598,5 +599,11 @@ public class StaticFileUtils {
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr, buffSize);
         return br;
+    }
+
+    public static String mergePathString(String... pathArray) {
+        List<String> pathList = new ArrayList<String>();
+        pathList.addAll(Arrays.asList(pathArray));
+        return StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathList));
     }
 }

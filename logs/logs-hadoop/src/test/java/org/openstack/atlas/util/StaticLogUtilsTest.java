@@ -6,7 +6,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openstack.atlas.util.StaticLogUtils;
+import org.openstack.atlas.logs.hadoop.util.StaticLogUtils;
 import static org.junit.Assert.*;
 
 

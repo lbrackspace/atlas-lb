@@ -1,5 +1,6 @@
 package org.openstack.atlas.util;
 
+import org.openstack.atlas.logs.hadoop.util.LogFileNameBuilder;
 import junit.framework.Assert;
 import org.junit.Test;
 

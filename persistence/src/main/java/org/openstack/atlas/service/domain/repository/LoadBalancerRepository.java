@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.repository;
 
+import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.service.domain.entities.*;
 
 import org.openstack.atlas.service.domain.entities.AccessList;
@@ -53,6 +54,29 @@ public class LoadBalancerRepository {
             throw new EntityNotFoundException(message);
         }
         return lb;
+    }
+
+    public List<LoadBalancerIdAndName> getAllLoadbalancerIdsAndNames() {
+        List<LoadBalancerIdAndName> lbs = new ArrayList<LoadBalancerIdAndName>();
+        String queryString = "select l.id,l.accountId,l.name from LoadBalancer l";
+
+
+        Query q = entityManager.createQuery(queryString);
+
+
+        List<Object> rows = q.getResultList();
+        for (Object uncastedRowArrayObj : rows) {
+            // Each element of rows is actually an Object[] whith each element representing a column
+            Object[] row = (Object[]) uncastedRowArrayObj;
+            LoadBalancerIdAndName lb = new LoadBalancerIdAndName();
+            lb.setLoadbalancerId((Integer) row[0]);
+            lb.setAccountId((Integer) row[1]);
+            lb.setName((String) row[2]);
+            lbs.add(lb);
+        }
+
+        return lbs;
+
     }
 
     public List<LoadBalancerIdAndName> getActiveLoadbalancerIdsAndNames() {
@@ -1086,9 +1110,8 @@ public class LoadBalancerRepository {
         List<Usage> usageList;
 
         Query query = entityManager.createQuery(
-                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 " +
-                        "and u.numAttempts <= :numAttempts order by u.id asc")
-                .setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 "
+                + "and u.numAttempts <= :numAttempts order by u.id asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
 
         usageList = query.getResultList();
 
@@ -1103,9 +1126,8 @@ public class LoadBalancerRepository {
         List<Usage> usageList;
 
         Query query = entityManager.createQuery(
-                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 " +
-                        "and u.numAttempts >= :numAttempts order by u.startTime asc")
-                .setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+                "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 "
+                + "and u.numAttempts >= :numAttempts order by u.startTime asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
 
         usageList = query.getResultList();
 

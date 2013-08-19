@@ -490,6 +490,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
             delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
             virtualIpRepository.deallocateVirtualIp(virtualIp);
+            Debug.nop();
         }
     }
 
@@ -513,6 +514,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
                 loadBalancerRepository.save(lbe);
             }
             virtualIpv6Repository.deleteVirtualIp(virtualIpv6);
+            Debug.nop();
         }
     }
 

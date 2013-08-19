@@ -23,7 +23,7 @@ import java.util.List;
 
 
 import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.util.HdfsUtils;
+import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.common.VerboseLogger;
