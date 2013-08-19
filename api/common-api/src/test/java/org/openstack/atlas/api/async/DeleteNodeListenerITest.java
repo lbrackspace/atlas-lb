@@ -1,36 +1,37 @@
 package org.openstack.atlas.api.async;
 
+import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
-import org.openstack.atlas.service.domain.entities.HealthMonitor;
-import org.openstack.atlas.service.domain.entities.HealthMonitorType;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 
 import javax.jms.ObjectMessage;
+import java.util.HashSet;
+import java.util.Set;
 
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class UpdateHealthMonitorListenerTest extends STMTestBase {
-
+public class DeleteNodeListenerITest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
+    private Node nodeToDelete;
 
     @Mock
     private ObjectMessage objectMessage;
@@ -41,23 +42,27 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
     @Mock
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     @Mock
-    private HealthMonitor healthMonitor;
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
-    private UpdateHealthMonitorListener updateHealthMonitorListener;
+    private DeleteNodeListener deleteNodeListener;
 
     @Before
     public void standUp() {
         MockitoAnnotations.initMocks(this);
         setupIvars();
-        setupHealthMonitor();
+        Set<Node> nodes = new HashSet<Node>();
+        nodeToDelete = new Node();
+        nodeToDelete.setId(10);
+        nodes.add(nodeToDelete);
+        lb.setNodes(nodes);
         LOAD_BALANCER_ID = lb.getId();
         ACCOUNT_ID = lb.getAccountId();
         lb.setUserName(USERNAME);
-        lb.setHealthMonitor(healthMonitor);
-        updateHealthMonitorListener = new UpdateHealthMonitorListener();
-        updateHealthMonitorListener.setLoadBalancerService(loadBalancerService);
-        updateHealthMonitorListener.setNotificationService(notificationService);
-        updateHealthMonitorListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        deleteNodeListener = new DeleteNodeListener();
+        deleteNodeListener.setLoadBalancerService(loadBalancerService);
+        deleteNodeListener.setNotificationService(notificationService);
+        deleteNodeListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        deleteNodeListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
     }
 
     @After
@@ -65,27 +70,20 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
         stmClient.destroy();
     }
 
-    private void setupHealthMonitor() {
-        when(healthMonitor.getId()).thenReturn(15);
-        when(healthMonitor.getType()).thenReturn(HealthMonitorType.CONNECT);
-        when(healthMonitor.getDelay()).thenReturn(10);
-        when(healthMonitor.getTimeout()).thenReturn(20);
-        when(healthMonitor.getAttemptsBeforeDeactivation()).thenReturn(25);
-        when(healthMonitor.getPath()).thenReturn("SOME_PATH");
-        when(healthMonitor.getStatusRegex()).thenReturn("SOME_STATUS_REGEX");
-        when(healthMonitor.getBodyRegex()).thenReturn("SOME_BODY_REGEX");
-    }
-
     @Test
-    public void testUpdateLoadBalancerWithValidMonitor() throws Exception {
+    public void testDeleteNode() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
-        updateHealthMonitorListener.doOnMessage(objectMessage);
+        Assert.assertTrue(lb.getNodes().contains(nodeToDelete));
+        deleteNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateHealthMonitor(lb);
-        verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
-        verify(notificationService).saveHealthMonitorEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, healthMonitor.getId(), EntryHelper.UPDATE_MONITOR_TITLE, EntryHelper.createHealthMonitorSummary(lb), EventType.UPDATE_HEALTH_MONITOR, CategoryType.UPDATE, EventSeverity.INFO);
+        verify(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
+        Assert.assertFalse(lb.getNodes().contains(nodeToDelete));
+        Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
+        verify(loadBalancerService).update(lb);
+        verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ACTIVE);
+        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(nodeToDelete.getId()), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
     }
 
     @Test
@@ -94,25 +92,24 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
-        updateHealthMonitorListener.doOnMessage(objectMessage);
+        deleteNodeListener.doOnMessage(objectMessage);
 
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
-        verify(notificationService).saveHealthMonitorEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.UPDATE_HEALTH_MONITOR), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
     @Test
-    public void testUpdateLoadBalancerWithInvalidMonitor() throws Exception {
+    public void testDeleteInvalidNode() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateHealthMonitor(lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
 
-        updateHealthMonitorListener.doOnMessage(objectMessage);
+        deleteNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateHealthMonitor(lb);
+        verify(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
-        verify(notificationService).saveHealthMonitorEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.UPDATE_HEALTH_MONITOR), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(nodeToDelete.getId()), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
-
 }

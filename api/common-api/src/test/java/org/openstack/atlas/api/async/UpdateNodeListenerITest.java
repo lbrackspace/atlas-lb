@@ -6,16 +6,13 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
-import org.openstack.atlas.service.domain.entities.AccessList;
-import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.services.AccessListService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
@@ -24,19 +21,15 @@ import javax.jms.ObjectMessage;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class UpdateAccessListListenerTest extends STMTestBase {
-
+public class UpdateNodeListenerITest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
-    private Integer ACCESS_LIST_ID = 15;
-    private Set<AccessList> accessLists;
-    private AccessList accessList;
+    private Integer NODE_ID = 15;
 
     @Mock
     private ObjectMessage objectMessage;
@@ -47,26 +40,26 @@ public class UpdateAccessListListenerTest extends STMTestBase {
     @Mock
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     @Mock
-    private AccessListService accessListService;
+    private Node nodeToUpdate;
 
-    private UpdateAccessListListener updateAccessListListener;
+    private UpdateNodeListener updateNodeListener;
 
     @Before
     public void standUp() {
         MockitoAnnotations.initMocks(this);
         setupIvars();
-        accessLists = new HashSet<AccessList>();
-        AccessList accessList = setupAccessList();
-        accessLists.add(accessList);
+        Set<Node> nodes = new HashSet<Node>();
+        when(nodeToUpdate.getId()).thenReturn(NODE_ID);
+        when(nodeToUpdate.isToBeUpdated()).thenReturn(true);
+        nodes.add(nodeToUpdate);
         LOAD_BALANCER_ID = lb.getId();
         ACCOUNT_ID = lb.getAccountId();
         lb.setUserName(USERNAME);
-        lb.setAccessLists(accessLists);
-        updateAccessListListener = new UpdateAccessListListener();
-        updateAccessListListener.setLoadBalancerService(loadBalancerService);
-        updateAccessListListener.setNotificationService(notificationService);
-        updateAccessListListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
-        updateAccessListListener.setAccessListService(accessListService);
+        lb.setNodes(nodes);
+        updateNodeListener = new UpdateNodeListener();
+        updateNodeListener.setLoadBalancerService(loadBalancerService);
+        updateNodeListener.setNotificationService(notificationService);
+        updateNodeListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
     }
 
     @After
@@ -74,27 +67,16 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         stmClient.destroy();
     }
 
-    private AccessList setupAccessList() {
-        accessList = mock(AccessList.class);
-
-        when(accessList.getId()).thenReturn(ACCESS_LIST_ID);
-        when(accessList.getIpVersion()).thenReturn(IpVersion.IPV4);
-        // Could set up more of this class, but not sure if it matters.
-
-        return accessList;
-    }
-
     @Test
-    public void testUpdateLoadBalancerWithValidAccessList() throws Exception {
+    public void testUpdateLoadBalancerWithValidNode() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        when(accessListService.diffRequestAccessListWithDomainAccessList(lb, lb)).thenReturn(accessLists);
 
-        updateAccessListListener.doOnMessage(objectMessage);
+        updateNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateAccessList(lb);
+        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
-        verify(notificationService).saveAccessListEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, ACCESS_LIST_ID, EntryHelper.UPDATE_ACCESS_LIST_TITLE, EntryHelper.createAccessListSummary(accessList), EventType.UPDATE_ACCESS_LIST, CategoryType.UPDATE, EventSeverity.INFO);
+        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.UPDATE_NODE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
     }
 
     @Test
@@ -103,25 +85,25 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
-        updateAccessListListener.doOnMessage(objectMessage);
+        updateNodeListener.doOnMessage(objectMessage);
 
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
-        verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.UPDATE_ACCESS_LIST), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_NODE), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
     }
 
     @Test
-    public void testUpdateLoadBalancerWithInvalidAccessList() throws Exception {
+    public void testUpdateLoadBalancerWithInvalidNode() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateAccessList(lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).setNodes(lb);
 
-        updateAccessListListener.doOnMessage(objectMessage);
+        updateNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateAccessList(lb);
+        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
-        verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.UPDATE_ACCESS_LIST), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.UPDATE_NODE), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
     }
 
 }

@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.util.*;
 
 @RunWith(Enclosed.class)
-public class ResourceTranslatorTest extends STMTestBase {
+public class ResourceTranslatorITest extends STMTestBase {
 
 
     public static class WhenTranslatingAVirtualServer {

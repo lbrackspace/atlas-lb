@@ -25,7 +25,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class UpdateErrorFileListenerTest extends STMTestBase {
+public class UpdateErrorFileListenerITest extends STMTestBase {
 
     private final String USERNAME = "SOME_USER_NAME";
     private final String ERROR_FILE_CONTENT = "SOME ERROR FILE CONTENT";
