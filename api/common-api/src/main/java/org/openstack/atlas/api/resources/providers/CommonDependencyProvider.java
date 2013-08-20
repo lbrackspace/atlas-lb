@@ -233,6 +233,10 @@ public class CommonDependencyProvider {
         List<String> errors = new ArrayList<String>();
         for (Node node : nodes) {
             String address = node.getAddress();
+            if (address.contains("\n")) {
+                address = address.replaceAll("\n", "");
+                node.setAddress(address);
+            }
             if (IPUtils.isValidIpv4String(address)) {
                 continue;// If this was an IPv4 Address don't try to validate it as a domain.
             } else if (IPUtils.isValidIpv6String(address)) {
