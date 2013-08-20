@@ -6,4 +6,8 @@ public class StmRollBackException extends RollBackException {
     public StmRollBackException(String s, Throwable throwable) {
         super(s, throwable);
     }
+
+    public StmRollBackException(String message) {
+        super(message);
+    }
 }

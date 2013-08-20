@@ -2,6 +2,7 @@ package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
@@ -10,6 +11,8 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.monitor.Monitor;
@@ -26,6 +29,7 @@ import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
@@ -35,7 +39,7 @@ import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTT
 public class FullConfigITest extends STMTestBase {
     static StingrayRestClient client;
 
-    Node n;
+    Node n1;
     Node n2;
     Node n3;
 
@@ -246,7 +250,6 @@ public class FullConfigITest extends STMTestBase {
         }
     }
 
-    @Ignore
     @Test
     public void updateFullyConfiguredLoadBalancerWithVirtualIpRollbacks() throws StingrayRestClientException, IPStringConversionException, StingrayRestClientObjectNotFoundException, InsufficientRequestException {
         LoadBalancer clb = null;
@@ -257,11 +260,7 @@ public class FullConfigITest extends STMTestBase {
             buildHydratedLb();
             stmAdapter.updateLoadBalancer(config, lb, lb);
 
-            clb.setLoadBalancerJoinVipSet(lb.getLoadBalancerJoinVipSet());
-            clb.setLoadBalancerJoinVip6Set(lb.getLoadBalancerJoinVip6Set());
-            clb.setIpv4Public(lb.getIpv4Public());
-            clb.setIpv4Servicenet(lb.getIpv4Servicenet());
-            clb.setIpv6Public(lb.getIpv6Public());
+            clb.getLoadBalancerJoinVipSet().addAll(lb.getLoadBalancerJoinVipSet());
 
             lb.getLoadBalancerJoinVipSet().iterator().next().setVirtualIp(new VirtualIp());
             nlb.setLoadBalancerJoinVipSet(lb.getLoadBalancerJoinVipSet());
@@ -275,21 +274,35 @@ public class FullConfigITest extends STMTestBase {
     }
 
     @Test
-    public void updateFullyConfiguredLoadBalancerForSuspensionWithRollbacks() {
-
-    }
-
-    @Test
-    public void updateFullyConfiguredLoadBalancerForRateLimitRollbacks() {
-
+    public void updateFullyConfiguredLoadBalancerForRateLimitRollbacks() throws StingrayRestClientException, IPStringConversionException, StingrayRestClientObjectNotFoundException, InsufficientRequestException {
+        try {
+            buildHydratedLb();
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            stmAdapter.updateRateLimit(config, lb, new RateLimit());
+            Assert.fail("Should have failed to update");
+        } catch (Exception e) {
+            verifyRateLimit(lb);
+        }
     }
 
     @Test
     public void updateFullyConfiguredLoadBalancerForErrorPageRollbacks() {
-
+        try {
+            buildHydratedLb();
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            stmAdapter.setErrorFile(config, lb, "");
+            Assert.fail("Should have failed to update");
+        } catch (Exception e) {
+            // This check is bad if there are other entries allowed in the user pages. Coded with Error Page only
+            Assert.assertNull(lb.getUserPages());
+        }
     }
 
     private LoadBalancer buildHydratedLb() {
+        lb = new LoadBalancer();
+        lb.setAccountId(TEST_ACCOUNT_ID);
+        lb.setId(TEST_LOADBALANCER_ID);
+        lb.setPort(LB_PORT);
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
         lb.setSessionPersistence(HTTP_COOKIE);
         lb.setTimeout(99);
@@ -322,16 +335,17 @@ public class FullConfigITest extends STMTestBase {
         item2.setType(ALLOW);
         networkItems.add(item1);
         networkItems.add(item2);
-
         lb.setAccessLists(networkItems);
 
-        n = new Node();
-        n.setWeight(1);
-        n.setType(NodeType.SECONDARY);
-        n.setIpAddress("10.3.3.3");
-        n.setCondition(NodeCondition.ENABLED);
-        n.setPort(8080);
-        n.setStatus(NodeStatus.ONLINE);
+        Set<Node> nodes = new HashSet<Node>();
+        n1 = new Node();
+        n1.setWeight(1);
+        n1.setType(NodeType.SECONDARY);
+        n1.setIpAddress("10.3.3.3");
+        n1.setCondition(NodeCondition.ENABLED);
+        n1.setPort(8080);
+        n1.setStatus(NodeStatus.ONLINE);
+        nodes.add(n1);
 
         n2 = new Node();
         n2.setWeight(3);
@@ -340,6 +354,7 @@ public class FullConfigITest extends STMTestBase {
         n2.setCondition(NodeCondition.DISABLED);
         n2.setPort(7070);
         n2.setStatus(NodeStatus.OFFLINE);
+        nodes.add(n2);
 
         n3 = new Node();
         n3.setWeight(3);
@@ -348,10 +363,9 @@ public class FullConfigITest extends STMTestBase {
         n3.setCondition(NodeCondition.DRAINING);
         n3.setPort(9090);
         n3.setStatus(NodeStatus.OFFLINE);
+        nodes.add(n3);
 
-        lb.getNodes().add(n);
-        lb.getNodes().add(n2);
-        lb.getNodes().add(n3);
+        lb.setNodes(nodes);
 
         return lb;
     }
@@ -399,9 +413,9 @@ public class FullConfigITest extends STMTestBase {
         Assert.assertNotNull(pool);
         Assert.assertEquals(1, pool.getProperties().getBasic().getMonitors().size());
         Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoad_balancing().getAlgorithm());
-        Assert.assertEquals(3, pool.getProperties().getBasic().getNodes().size());
-        Assert.assertEquals(2, pool.getProperties().getBasic().getDisabled().size());
-        Assert.assertEquals(1, pool.getProperties().getBasic().getDraining().size());
+        Assert.assertEquals(2, pool.getProperties().getBasic().getNodes().size()); // List contains ACTIVE and DRAINING nodes
+        Assert.assertEquals(1, pool.getProperties().getBasic().getDisabled().size()); // List contains DISABLED nodes
+        Assert.assertEquals(1, pool.getProperties().getBasic().getDraining().size()); // List contains DRAINING nodes
 
         List<PoolNodeWeight> pws = pool.getProperties().getLoad_balancing().getNode_weighting();
         for (PoolNodeWeight pnw : pws) {
@@ -506,7 +520,17 @@ public class FullConfigITest extends STMTestBase {
         Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());
         Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(normalBasic.getProtocol().toString()));
         Assert.assertEquals(lb.isSecureOnly(), !normalBasic.getEnabled());
+    }
 
+    private void verifyRateLimit(LoadBalancer lb) throws InsufficientRequestException, StingrayRestClientException {
+        String vsName = loadBalancerName();
+        try {
+            Bandwidth bandwidth = client.getBandwidth(vsName);
+            BandwidthBasic basic = bandwidth.getProperties().getBasic();
+            Assert.assertEquals(basic.getMaximum(), lb.getRateLimit().getMaxRequestsPerSecond());
+        } catch(StingrayRestClientObjectNotFoundException notFoundException) {
+            Assert.assertNull(lb.getRateLimit());
+        }
     }
 
     private String readFile(File file) throws FileNotFoundException {

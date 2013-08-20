@@ -20,6 +20,9 @@ public class StmTestConstants {
     public static final int MIN_CONNECTIONS = 4;
     public static final int RATE_INTERVAL = 60;
 
+    // Concerns Error Page
+    public static final String ERROR_PAGE_CONTENT = "Test Error Page";
+
     public static final String SSL_CERT = "-----BEGIN CERTIFICATE-----\n" +
                 "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
                 "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +

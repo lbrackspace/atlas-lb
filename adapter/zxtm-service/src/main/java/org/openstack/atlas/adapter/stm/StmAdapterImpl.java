@@ -589,14 +589,22 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws InsufficientRequestException, StmRollBackException {
-        loadBalancer.setRateLimit(rateLimit);
-        getResources().setRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (rateLimit != null && rateLimit.getExpirationTime() != null) {
+            loadBalancer.setRateLimit(rateLimit);
+            getResources().setRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        } else {
+            throw new StmRollBackException("Empty or null Rate Limit.  Roll back...");
+        }
     }
 
     @Override
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws InsufficientRequestException, StmRollBackException {
-        loadBalancer.setRateLimit(rateLimit);
-        getResources().updateRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (rateLimit != null && rateLimit.getExpirationTime() != null) {
+            loadBalancer.setRateLimit(rateLimit);
+            getResources().updateRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        } else {
+            throw new StmRollBackException("Empty or null Rate Limit.  Roll back...");
+        }
     }
 
     @Override
@@ -643,9 +651,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content) throws InsufficientRequestException, StmRollBackException {
-        StingrayRestClient client = getResources().loadSTMRestClient(config);
-        getResources().setErrorFile(config, client, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer), content);
-        client.destroy();
+        if (content != null && !(content.equals(""))) {
+            StingrayRestClient client = getResources().loadSTMRestClient(config);
+            getResources().setErrorFile(config, client, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer), content);
+            client.destroy();
+        } else {
+            throw new StmRollBackException("No content provided for error page.  Roll back...");
+        }
     }
 
     /**
