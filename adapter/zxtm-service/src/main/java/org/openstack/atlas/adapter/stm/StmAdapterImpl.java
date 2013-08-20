@@ -589,7 +589,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void setRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws InsufficientRequestException, StmRollBackException {
-        if (rateLimit != null && rateLimit.getExpirationTime() != null) {
+        if (rateLimit != null) {
             loadBalancer.setRateLimit(rateLimit);
             getResources().setRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
         } else {
@@ -599,7 +599,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
     @Override
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit) throws InsufficientRequestException, StmRollBackException {
-        if (rateLimit != null && rateLimit.getExpirationTime() != null) {
+        if (rateLimit != null) {
             loadBalancer.setRateLimit(rateLimit);
             getResources().updateRateLimit(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
         } else {

@@ -278,7 +278,7 @@ public class FullConfigITest extends STMTestBase {
         try {
             buildHydratedLb();
             stmAdapter.updateLoadBalancer(config, lb, lb);
-            stmAdapter.updateRateLimit(config, lb, new RateLimit());
+            stmAdapter.updateRateLimit(config, lb, null);
             Assert.fail("Should have failed to update");
         } catch (Exception e) {
             verifyRateLimit(lb);
