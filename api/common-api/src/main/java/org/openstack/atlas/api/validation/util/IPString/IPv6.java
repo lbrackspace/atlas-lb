@@ -5,14 +5,12 @@ import java.util.regex.Matcher;
 
 public class IPv6 {
 
-    private String ippatternstr;
     private String ip;
     private static final Pattern ipPattern;
 
     static {
-        String ippatternstr = "^(.*::)([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})$|"
-                + "^(.*):([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})$";
-
+        String ippatternstr = "\\A(.*::)([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})$|"
+                + "^(.*):([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})\\z";
         ipPattern = Pattern.compile(ippatternstr);
     }
 

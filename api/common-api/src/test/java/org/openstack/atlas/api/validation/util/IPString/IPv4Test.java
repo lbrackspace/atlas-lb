@@ -11,6 +11,7 @@ public class IPv4Test {
     private final String invalidOctetRangeIpv4 = "192.168.3.510";
     private final String notEnoughOctetsIpv4 = "129.168.3";
     private final String tooManyOctetsIpv4 = "192.168.3.51.32";
+    private final String newlineIpv4 = "192.168.3.51\n";
     private final String validIpv4 = "192.168.3.51";
     private final byte[] expected_ipv4bytes = {-64, -88, 3, 51};
     private final String expected_ipv4 = "192.168.3.51";
@@ -45,6 +46,12 @@ public class IPv4Test {
     @Test(expected=IPStringConversionException.class)
     public void shouldRejectTooManyOctetsIpv4() throws IPStringConversionException {
         IPv4 ipv4 = new IPv4(tooManyOctetsIpv4);
+        ipv4.getBytes();
+    }
+
+    @Test(expected=IPStringConversionException.class)
+    public void shouldRejectNewlineIpv4() throws IPStringConversionException {
+        IPv4 ipv4 = new IPv4(newlineIpv4);
         ipv4.getBytes();
     }
 

@@ -20,9 +20,6 @@ public class IPv6Test {
     private final String ipv4Mixed_uncompressed = "0000:0000:0000:0000:0000:FFFF:C0A8:0333";
     private final byte[] ipv4Mixed_bytes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -64, -88, 3, 51};
 
-    public IPv6Test() {
-    }
-
     @Before
     public void setUp() {
     }
@@ -65,6 +62,11 @@ public class IPv6Test {
     @Test(expected = IPStringConversionException.class)
     public void testRejectHexNot16bit() throws IPStringConversionException {
         IPv6.expand("fffff::", 8);
+    }
+
+    @Test(expected = IPStringConversionException.class)
+    public void testRejectTrailingNewline() throws IPStringConversionException {
+        IPv6.expand(middle_compressed+"\n", 8);
     }
 
     @Test

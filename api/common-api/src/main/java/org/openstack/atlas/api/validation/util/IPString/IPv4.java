@@ -7,6 +7,12 @@ import java.util.regex.Matcher;
 public class IPv4 {
 
     private String ip;
+    private static final Pattern ipPattern;
+
+    static {
+        String ippatternstr = "\\A([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\z";
+        ipPattern = Pattern.compile(ippatternstr);
+    }
 
     public static String bytes2IpString(byte[] in) throws IPStringConversionException {
         String ipStr;
@@ -58,8 +64,6 @@ public class IPv4 {
             throw new IPStringConversionException("Error ip address is null");
         }
 
-        String ippatternstr = "^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})$";
-        Pattern ipPattern = Pattern.compile(ippatternstr);
         Matcher ipMatch = ipPattern.matcher(ip);
         if (ipMatch.find()) {
             for (i = 1; i <= 4; i++) {
