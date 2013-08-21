@@ -414,7 +414,7 @@ public class SslTerminationITest extends STMTestBase {
             int maxConnections = 20;
             int minConnections = 40;
             int rateInterval = 44;
-            int expectedMax10 = 0;
+            int expectedMax10 = maxConnections * 10;
 
             throttle.setMaxConnectionRate(maxConnectionRate);
             throttle.setMaxConnections(maxConnections);

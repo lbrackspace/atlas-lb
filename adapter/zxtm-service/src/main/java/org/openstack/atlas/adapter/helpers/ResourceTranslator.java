@@ -355,8 +355,10 @@ public class ResourceTranslator {
 
         ProtectionConnectionLimiting limiting = new ProtectionConnectionLimiting();
         if (limits != null) {
-            limiting.setMax_1_connections(limits.getMaxConnections());
-            limiting.setMax_10_connections(limits.getMaxConnections() * 10);
+            Integer maxConnections = limits.getMaxConnections();
+            if (maxConnections == null) maxConnections = 0;
+            limiting.setMax_1_connections(maxConnections);
+            limiting.setMax_10_connections(maxConnections * 10);
             limiting.setMax_connection_rate(limits.getMaxConnectionRate());
             limiting.setMin_connections(limits.getMinConnections());
             limiting.setRate_timer(limits.getRateInterval());

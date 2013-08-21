@@ -10,6 +10,7 @@ import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.UserPages;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;

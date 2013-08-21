@@ -34,7 +34,6 @@ public class ConnectionThrottleITest extends STMTestBase {
         createSimpleLoadBalancer();
 
         limits = new ConnectionLimit();
-        expectedMax10Connections = 0;
         setConnectionLimitParams(54, 55, 56, 57);
 
         vsName = ZxtmNameBuilder.genVSName(lb);
@@ -105,6 +104,7 @@ public class ConnectionThrottleITest extends STMTestBase {
         this.maxConnections = maxConnections;
         this.minConnections = minConnections;
         this.maxConnectionRate = maxConnectionRate;
+        expectedMax10Connections = 10 * maxConnections;
         limits.setRateInterval(rateInterval);
         limits.setMaxConnections(maxConnections);
         limits.setMinConnections(minConnections);
@@ -131,7 +131,7 @@ public class ConnectionThrottleITest extends STMTestBase {
         Assert.assertEquals(0, (int) retrievedLimit.getMin_connections());
         Assert.assertEquals(0, (int) retrievedLimit.getMax_connection_rate());
         //The following might need to be changed when we figure out what to do about max10
-        Assert.assertEquals(expectedMax10Connections, (int) retrievedLimit.getMax_10_connections());
+        Assert.assertEquals(0, (int) retrievedLimit.getMax_10_connections());
     }
 
 
