@@ -51,6 +51,10 @@ public class AlertsResource extends ManagementDependencyProvider {
     public Response retrieveByLoadBalancerids(@QueryParam("id") List<Integer> ids,
                                               @QueryParam("startDate") String startDate,
                                               @QueryParam("endDate") String endDate) {
+
+        if (ids.isEmpty()) {
+            return ResponseFactory.getValidationFaultResponse("You must provide a valid load balancer ID.");
+        }
         Alerts rAlerts = new Alerts();
         List<Alert> alerts;
         try {
