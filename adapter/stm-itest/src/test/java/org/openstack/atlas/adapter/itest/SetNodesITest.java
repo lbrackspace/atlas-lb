@@ -1,9 +1,11 @@
 package org.openstack.atlas.adapter.itest;
 
+import org.rackspace.stingray.client.pool.Pool;
 import org.junit.*;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.rackspace.stingray.client.pool.PoolBasic;
 
 import java.util.*;
 
@@ -12,6 +14,7 @@ import static org.openstack.atlas.service.domain.entities.NodeCondition.*;
 public class SetNodesITest extends STMTestBase {
     private String vsName;
     private Set<Node> createdNodes;
+    private LoadBalancerAlgorithm algorithm = LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS;
 
     @BeforeClass
     public static void setupClass() throws InterruptedException {
@@ -29,7 +32,7 @@ public class SetNodesITest extends STMTestBase {
     @Before
     public void standUp() throws Exception {
         vsName = ZxtmNameBuilder.genVSName(lb);
-        lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
+        lb.setAlgorithm(algorithm);
         stmAdapter.updateLoadBalancer(config, lb, lb);
     }
 
@@ -99,12 +102,17 @@ public class SetNodesITest extends STMTestBase {
     public void testSetNodes() throws Exception {
         setNodes();
 
+        Pool nodePool = stmClient.getPool(vsName);
+        PoolBasic nodePoolBasic = nodePool.getProperties().getBasic();
+        Set<String> setOfDisabledNodes = nodePoolBasic.getDisabled();
+        Set<String> setOfDrainingNodes = nodePoolBasic.getDraining();
+        Set<String> setOfEnabledNodes = nodePoolBasic.getNodes();
+        String poolAlgorithm = nodePool.getProperties().getLoad_balancing().getAlgorithm();
+        Assert.assertEquals(poolAlgorithm, algorithm.name().toLowerCase());
+
         int expectedDisabledNodes = 0;
         int expectedDrainingNodes = 0;
         int expectedEnabledNodes = 0;
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
 
         for (Node node : createdNodes) {
             if (node.getCondition() == DRAINING) {
@@ -136,9 +144,13 @@ public class SetNodesITest extends STMTestBase {
 
         stmAdapter.removeNode(config, lb, nodeToRemove);
 
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+        Pool nodePool = stmClient.getPool(vsName);
+        PoolBasic nodePoolBasic = nodePool.getProperties().getBasic();
+        Set<String> setOfDisabledNodes = nodePoolBasic.getDisabled();
+        Set<String> setOfDrainingNodes = nodePoolBasic.getDraining();
+        Set<String> setOfEnabledNodes = nodePoolBasic.getNodes();
+        String poolAlgorithm = nodePool.getProperties().getLoad_balancing().getAlgorithm();
+        Assert.assertEquals(poolAlgorithm, algorithm.name().toLowerCase());
 
         int expectedDisabledNodes = 0;
         int expectedDrainingNodes = 0;
@@ -174,9 +186,13 @@ public class SetNodesITest extends STMTestBase {
 
         stmAdapter.removeNode(config, lb, nodeToRemove);
 
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+        Pool nodePool = stmClient.getPool(vsName);
+        PoolBasic nodePoolBasic = nodePool.getProperties().getBasic();
+        Set<String> setOfDisabledNodes = nodePoolBasic.getDisabled();
+        Set<String> setOfDrainingNodes = nodePoolBasic.getDraining();
+        Set<String> setOfEnabledNodes = nodePoolBasic.getNodes();
+        String poolAlgorithm = nodePool.getProperties().getLoad_balancing().getAlgorithm();
+        Assert.assertEquals(poolAlgorithm, algorithm.name().toLowerCase());
 
         Assert.assertEquals(0, setOfEnabledNodes.size());
         Assert.assertEquals(0, setOfDisabledNodes.size());
@@ -196,9 +212,13 @@ public class SetNodesITest extends STMTestBase {
 
         stmAdapter.removeNodes(config, lb, nodesToRemove);
 
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+        Pool nodePool = stmClient.getPool(vsName);
+        PoolBasic nodePoolBasic = nodePool.getProperties().getBasic();
+        Set<String> setOfDisabledNodes = nodePoolBasic.getDisabled();
+        Set<String> setOfDrainingNodes = nodePoolBasic.getDraining();
+        Set<String> setOfEnabledNodes = nodePoolBasic.getNodes();
+        String poolAlgorithm = nodePool.getProperties().getLoad_balancing().getAlgorithm();
+        Assert.assertEquals(poolAlgorithm, algorithm.name().toLowerCase());
 
         int expectedDisabledNodes = 0;
         int expectedDrainingNodes = 0;

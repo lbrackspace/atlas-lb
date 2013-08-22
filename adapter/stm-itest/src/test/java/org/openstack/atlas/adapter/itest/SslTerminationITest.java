@@ -48,6 +48,15 @@ public class SslTerminationITest extends STMTestBase {
     }
 
     @Test
+    public void testSSlTerminationOperationsWithNodelessLB() throws Exception {
+        lb.setNodes(new HashSet<Node>());
+        stmAdapter.updateLoadBalancer(config, lb, lb);
+        setSslTermination();
+        updateSslTermination();
+        deleteSslTermination();
+    }
+
+    @Test
     public void testSSlTerminationOperationsWhenUpdatingLBAttributes() throws Exception {
         setSslTermination();
         updateLoadBalancerAttributes();
@@ -438,7 +447,8 @@ public class SslTerminationITest extends STMTestBase {
         List<Integer> deletionList = new ArrayList<Integer>();
         for (AccessList item : lb.getAccessLists()) {
             deletionList.add(item.getId());
-        };
+        }
+        ;
         stmAdapter.deleteAccessList(config, lb, deletionList);
         stmClient.getProtection(normalName);
     }
