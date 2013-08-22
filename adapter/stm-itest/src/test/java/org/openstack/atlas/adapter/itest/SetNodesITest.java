@@ -1,10 +1,10 @@
 package org.openstack.atlas.adapter.itest;
 
-import org.rackspace.stingray.client.pool.Pool;
 import org.junit.*;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 
 import java.util.*;

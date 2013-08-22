@@ -11,13 +11,14 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
-import org.openstack.atlas.service.domain.util.Constants;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.*;
 
@@ -62,8 +63,8 @@ public class NodeResource extends CommonDependencyProvider {
 
             //BANDAIDed V1-D-10515:
             if (node.getType() == null) {
-              node.setType(NodeType.valueOf(
-                      nodeService.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadBalancerId, id).getType().toString()));
+                node.setType(NodeType.valueOf(
+                        nodeService.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadBalancerId, id).getType().toString()));
             }
 
             apiLb.getNodes().add(node);
@@ -96,16 +97,7 @@ public class NodeResource extends CommonDependencyProvider {
             if (requestHeaders != null) {
                 msgLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
             }
-            Set<org.openstack.atlas.service.domain.entities.Node> foundNodes;
-            foundNodes = nodeService.getAllNodesByAccountIdLoadBalancerId(accountId, loadBalancerId);
-            Set<Integer> removeIds = new HashSet<Integer>();
-            removeIds.add(id);
-            NodesPrioritiesContainer npc = new NodesPrioritiesContainer(foundNodes).removeIds(removeIds);
-//            if(!npc.hasPrimary()){
-//                 List<String> validationErrors = new ArrayList<String>();
-//                 validationErrors.add(Constants.NoPrimaryNodeError);
-//                 return getValidationFaultResponse(validationErrors);
-//            }
+
             LoadBalancer loadBalancer = nodeService.deleteNode(msgLb);
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODE, loadBalancer);
             return Response.status(Response.Status.ACCEPTED).build();

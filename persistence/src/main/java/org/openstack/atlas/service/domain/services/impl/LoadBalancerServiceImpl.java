@@ -78,14 +78,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     getLoadBalancerLimit(lb.getAccountId())));
         }
 
-        // Check if this user has at least one Primary node.
-        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
         // Drop Health Monitor code here for secNodes
-//        if (!npc.hasPrimary()) {
-//            throw new BadRequestException(Constants.NoPrimaryNodeError);
-//        }
 
         // If user wants secondary nodes they must have some kind of healthmonitoring
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
         if (lb.getHealthMonitor() == null && npc.hasSecondary()) {
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
@@ -484,8 +480,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
-            String status, LbQueryStatus qs, Calendar changedCal,
-            Integer offset, Integer limit, Integer marker) throws BadRequestException {
+                                                      String status, LbQueryStatus qs, Calendar changedCal,
+                                                      Integer offset, Integer limit, Integer marker) throws BadRequestException {
         return loadBalancerRepository.getLoadbalancersGeneric(accountId, status, qs, changedCal, offset, limit, marker);
     }
 
@@ -722,7 +718,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     private void verifySessionPersistence(LoadBalancer queueLb) throws BadRequestException {
-        //Dupelicated in sessionPersistenceServiceImpl ...
+        //Duplicated in sessionPersistenceServiceImpl ...
         SessionPersistence inpersist = queueLb.getSessionPersistence();
         LoadBalancerProtocol dbProtocol = queueLb.getProtocol();
 

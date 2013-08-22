@@ -54,11 +54,8 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 // Need to determine how to get validation working for the collections.
                 result(validationTarget().getAccessList()).if_().exist().then().must().cannotExceedSize(100).withMessage("Must not provide more than one hundred access list items");
                 result(validationTarget().getAccessList()).if_().exist().then().must().delegateTo(new NetworkItemValidator().getValidator(), POST).forContext(POST);
-                //result(validationTarget().getNodes()).must().exist().forContext(POST).withMessage("Must provide at least one node for the load balancer."); //NOT ANY MORE!
                 result(validationTarget().getNodes()).must().adhereTo(new DuplicateNodeVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
-                //result(validationTarget().getNodes()).must().adhereTo(new ActiveNodeVerifier()).forContext(POST).withMessage("Please ensure that at least one node has an ENABLED condition.");
                 result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator().getValidator(), POST).forContext(POST);
-                //result(validationTarget().getNodes()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one node.");
                 result(validationTarget().getNodes()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five nodes per load balancer.");
                 result(validationTarget().getMetadata()).if_().exist().then().must().delegateTo(new MetaValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getMetadata()).if_().exist().then().must().adhereTo(new DuplicateMetaVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
