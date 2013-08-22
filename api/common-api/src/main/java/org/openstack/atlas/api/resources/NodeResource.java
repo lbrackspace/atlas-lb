@@ -101,11 +101,11 @@ public class NodeResource extends CommonDependencyProvider {
             Set<Integer> removeIds = new HashSet<Integer>();
             removeIds.add(id);
             NodesPrioritiesContainer npc = new NodesPrioritiesContainer(foundNodes).removeIds(removeIds);
-//            if(!npc.hasPrimary()){
-//                 List<String> validationErrors = new ArrayList<String>();
-//                 validationErrors.add(Constants.NoPrimaryNodeError);
-//                 return getValidationFaultResponse(validationErrors);
-//            }
+            if(!npc.hasPrimary()){
+                 List<String> validationErrors = new ArrayList<String>();
+                 validationErrors.add(Constants.NoPrimaryNodeError);
+                 return getValidationFaultResponse(validationErrors);
+            }
             LoadBalancer loadBalancer = nodeService.deleteNode(msgLb);
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODE, loadBalancer);
             return Response.status(Response.Status.ACCEPTED).build();

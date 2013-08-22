@@ -91,9 +91,9 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             throw new LimitReachedException(String.format("Nodes must not exceed %d per load balancer.", nodeLimit));
         }
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldNodesLb.getNodes(), newNodesLb.getNodes());
-//        if (!npc.hasPrimary()) {
-//            throw new BadRequestException(Constants.NoPrimaryNodeError);
-//        }
+        if (!npc.hasPrimary()) {
+            throw new BadRequestException(Constants.NoPrimaryNodeError);
+        }
 
         // Your not alowed to add secondary nodes with out Some form of monitoring. B-16407
         if(npc.hasSecondary() && !loadBalancerRepository.loadBalancerHasHealthMonitor(oldNodesLb.getId())) {
@@ -159,7 +159,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
         isLbActive(oldLbNodes);
 
-//        Node nodeBeingUpdated = new Node();
+        Node nodeBeingUpdated = new Node();
 
         LOG.debug("Nodes on dbLoadbalancer: " + oldLbNodes.getNodes().size());
         for (Node n : oldLbNodes.getNodes()) {
@@ -187,24 +187,24 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                     n.setType(nodeToUpdate.getType());
                 }
                 n.setToBeUpdated(true);
-//                nodeBeingUpdated = n;
+                nodeBeingUpdated = n;
                 break;
             }
         }
 
-//        LOG.debug("Verifying that we have an at least one active node...");
-//        if (!activeNodeCheck(oldLbNodes, nodeBeingUpdated)) {
-//            LOG.warn("No active nodes found! Sending failure response back to client...");
-//            throw new UnprocessableEntityException("One or more nodes must remain ENABLED.");
-//        }
+        LOG.debug("Verifying that we have an at least one active node...");
+        if (!activeNodeCheck(oldLbNodes, nodeBeingUpdated)) {
+            LOG.warn("No active nodes found! Sending failure response back to client...");
+            throw new UnprocessableEntityException("One or more nodes must remain ENABLED.");
+        }
 
         // Won't delete secondary nodes untill you also delete Health Monitor
 
 
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
-//        if (!npc.hasPrimary()) {
-//            throw new UnprocessableEntityException(Constants.NoPrimaryNodeError);
-//        }
+        if (!npc.hasPrimary()) {
+            throw new UnprocessableEntityException(Constants.NoPrimaryNodeError);
+        }
         if(npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null){
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
@@ -240,19 +240,19 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
         isLbActive(dbLoadBalancer);
 
-//        Node nodeBeingDeleted = loadBalancer.getNodes().iterator().next();
-//        LOG.debug("Verifying that we have an atleast one active node...");
-//
-//        if (!nodeToDeleteIsNotLastActive(dbLoadBalancer, nodeBeingDeleted)) {
-//            LOG.warn("Last node on lb configured as ENABLED. Sending failure response back to client...");
-//            throw new UnprocessableEntityException("Last node on load balancer configured as ENABLED. One or more nodes must be configured as ENABLED.");
-//        }
-//
-//        LOG.debug("Verifying that this is not the last node");
-//        if (dbLoadBalancer.getNodes().size() <= 1) {
-//            LOG.warn("Last node! Sending failure response back to client...");
-//            throw new UnprocessableEntityException("Last node on the load balancer. One or more nodes must remain configured as ENABLED.");
-//        }
+        Node nodeBeingDeleted = loadBalancer.getNodes().iterator().next();
+        LOG.debug("Verifying that we have an atleast one active node...");
+
+        if (!nodeToDeleteIsNotLastActive(dbLoadBalancer, nodeBeingDeleted)) {
+            LOG.warn("Last node on lb configured as ENABLED. Sending failure response back to client...");
+            throw new UnprocessableEntityException("Last node on load balancer configured as ENABLED. One or more nodes must be configured as ENABLED.");
+        }
+
+        LOG.debug("Verifying that this is not the last node");
+        if (dbLoadBalancer.getNodes().size() <= 1) {
+            LOG.warn("Last node! Sending failure response back to client...");
+            throw new UnprocessableEntityException("Last node on the load balancer. One or more nodes must remain configured as ENABLED.");
+        }
 
 
         LOG.debug("Updating the lb status to pending_update");
@@ -376,7 +376,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         NodeMap nodeMap = getNodeMap(accountId, loadBalancerId);
         Set<Integer> idSet = NodeMap.listToSet(ids);
         Set<Integer> notMyIds = nodeMap.idsThatAreNotInThisMap(idSet); // Either some one elese ids or non existent ids
-//        Set<Integer> survivingEnabledNodes = nodeMap.nodesInConditionAfterDelete(NodeCondition.ENABLED, idSet);
+        Set<Integer> survivingEnabledNodes = nodeMap.nodesInConditionAfterDelete(NodeCondition.ENABLED, idSet);
         List<Node> doomedNodes = nodeMap.getNodesList(idSet);
         int doomedNodeCount = doomedNodes.size();
         int batch_delete_limit = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
@@ -397,17 +397,17 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             errMsg = String.format(format, StringConverter.integersAsString(notMyIds));
             validationErrors.add(errMsg);
         }
-//        if (survivingEnabledNodes.size() < 1) {
-//            loadBalancerService.setStatus(dlb, LoadBalancerStatus.ACTIVE);
-//            errMsg = "delete node operation would result in no Enabled nodes available. You must leave at least one node enabled";
-//            validationErrors.add(errMsg);
-//        }
-//        Set<Node> foundNodes = getAllNodesByAccountIdLoadBalancerId(accountId, loadBalancerId);
-//        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(foundNodes).removeIds(ids);
+        if (survivingEnabledNodes.size() < 1) {
+            loadBalancerService.setStatus(dlb, LoadBalancerStatus.ACTIVE);
+            errMsg = "delete node operation would result in no Enabled nodes available. You must leave at least one node enabled";
+            validationErrors.add(errMsg);
+        }
+        Set<Node> foundNodes = getAllNodesByAccountIdLoadBalancerId(accountId, loadBalancerId);
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(foundNodes).removeIds(ids);
         // Throw a fit if no primary nodes would be left
-//        if (!npc.hasPrimary()) {
-//            validationErrors.add(Constants.NoPrimaryNodeError);
-//        }
+        if (!npc.hasPrimary()) {
+            validationErrors.add(Constants.NoPrimaryNodeError);
+        }
 
         return validationErrors;
     }
