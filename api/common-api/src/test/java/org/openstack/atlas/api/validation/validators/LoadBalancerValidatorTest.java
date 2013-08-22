@@ -212,6 +212,13 @@ public class LoadBalancerValidatorTest {
 			assertTrue(result.passedValidation());
 		}
 
+        @Test
+        public void shouldAcceptWhenMissingNodes() {
+            lb.getNodes().clear();
+            ValidatorResult result = validator.validate(lb, POST);
+            assertTrue(result.passedValidation());
+        }
+
 		@Test
 		public void shouldRejectNullProtocol() {
 			lb.setProtocol(null);
@@ -222,13 +229,6 @@ public class LoadBalancerValidatorTest {
 		@Test
 		public void shouldRejectWhenMissingVirtualIps() {
 			lb.getVirtualIps().clear();
-			ValidatorResult result = validator.validate(lb, POST);
-			assertFalse(result.passedValidation());
-		}
-
-		@Test
-		public void shouldRejectWhenMissingNodes() {
-			lb.getNodes().clear();
 			ValidatorResult result = validator.validate(lb, POST);
 			assertFalse(result.passedValidation());
 		}

@@ -215,6 +215,36 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
     }
 
     @Test
+    public void testCreateValidNodelessLoadBalancer() throws Exception {
+        lb.setNodes(new HashSet<Node>());
+        when(objectMessage.getObject()).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.update(lb)).thenReturn(lb);
+
+        createLoadBalancerListener.doOnMessage(objectMessage);
+
+        verify(reverseProxyLoadBalancerStmService).createLoadBalancer(lb);
+        verify(usageEventCollection).processZeroUsageEvent(eq(lb), eq(UsageEvent.CREATE_LOADBALANCER), Matchers.any(Calendar.class));
+        Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
+        Assert.assertTrue(checkNodeHelper(lb.getNodes(), NodeStatus.ONLINE)); // This is how I decided to test NodesHelper
+        verify(loadBalancerService).update(lb);
+        verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ACTIVE);
+
+        //Atom Entries
+        verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.CREATE_LOADBALANCER), eq(CategoryType.CREATE), eq(EventSeverity.INFO));
+        verify(notificationService, never()).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.CREATE_NODE), eq(CategoryType.CREATE), eq(EventSeverity.INFO));
+        verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(VIRTUAL_IP4_ID), anyString(), anyString(), eq(EventType.CREATE_VIRTUAL_IP), eq(CategoryType.CREATE), eq(EventSeverity.INFO));
+        verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(VIRTUAL_IP6_ID), anyString(), anyString(), eq(EventType.CREATE_VIRTUAL_IP), eq(CategoryType.CREATE), eq(EventSeverity.INFO));
+        verify(notificationService).saveHealthMonitorEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(HEALTH_MONITOR_ID), anyString(), anyString(), eq(EventType.UPDATE_HEALTH_MONITOR), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
+        verify(notificationService).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_SESSION_PERSISTENCE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
+        verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_CONNECTION_LOGGING), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
+        verify(notificationService).saveConnectionLimitEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(CONNECTION_LIMIT_ID), anyString(), anyString(), eq(EventType.UPDATE_CONNECTION_THROTTLE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
+        verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(ACCESS_LIST_ID), anyString(), anyString(), eq(EventType.UPDATE_ACCESS_LIST), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
+
+        verify(usageEventHelper).processUsageEvent(eq(lb), eq(UsageEvent.CREATE_LOADBALANCER), eq(0l), eq(0l), eq(0), eq(0l), eq(0l), eq(0), Matchers.any(Calendar.class));
+    }
+
+    @Test
     public void testUpdateInvalidLoadBalancer() throws Exception { //This is named oddly for this specific test, but left it alone for consistency
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);

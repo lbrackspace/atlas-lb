@@ -18,7 +18,7 @@ public class NodesValidator implements ResourceValidator<Nodes> {
         validator = build(new ValidatorBuilder<Nodes>(Nodes.class) {
             {
                 // POST EXPECTATIONS
-                result(validationTarget().getNodes()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide at least one node");
+                //result(validationTarget().getNodes()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide at least one node"); //NOT ANY MORE!
                 result(validationTarget().getNodes()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five nodes per load balancer.");
                 result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getNodes()).must().adhereTo(new DuplicateNodeVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");

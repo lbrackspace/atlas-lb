@@ -54,18 +54,18 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 // Need to determine how to get validation working for the collections.
                 result(validationTarget().getAccessList()).if_().exist().then().must().cannotExceedSize(100).withMessage("Must not provide more than one hundred access list items");
                 result(validationTarget().getAccessList()).if_().exist().then().must().delegateTo(new NetworkItemValidator().getValidator(), POST).forContext(POST);
-                result(validationTarget().getNodes()).must().exist().forContext(POST).withMessage("Must provide at least one node for the load balancer.");
+                //result(validationTarget().getNodes()).must().exist().forContext(POST).withMessage("Must provide at least one node for the load balancer."); //NOT ANY MORE!
                 result(validationTarget().getNodes()).must().adhereTo(new DuplicateNodeVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
-                result(validationTarget().getNodes()).must().adhereTo(new ActiveNodeVerifier()).forContext(POST).withMessage("Please ensure that at least one node has an ENABLED condition.");
+                //result(validationTarget().getNodes()).must().adhereTo(new ActiveNodeVerifier()).forContext(POST).withMessage("Please ensure that at least one node has an ENABLED condition.");
                 result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator().getValidator(), POST).forContext(POST);
-                result(validationTarget().getNodes()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one node.");
+                //result(validationTarget().getNodes()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one node.");
+                result(validationTarget().getNodes()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five nodes per load balancer.");
                 result(validationTarget().getMetadata()).if_().exist().then().must().delegateTo(new MetaValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getMetadata()).if_().exist().then().must().adhereTo(new DuplicateMetaVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
                 result(validationTarget().getMetadata()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five metadata items per load balancer.");
                 result(validationTarget().getSessionPersistence()).if_().exist().then().must().delegateTo(new SessionPersistenceValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getHealthMonitor()).if_().exist().then().must().delegateTo(new HealthMonitorValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getConnectionThrottle()).if_().exist().then().must().delegateTo(new ConnectionThrottleValidator().getValidator(), POST).forContext(POST);
-                result(validationTarget().getNodes()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five nodes per load balancer.");
 
                 // PUT EXPECTATIONS
                 must().adhereTo(new Verifier<LoadBalancer>() {
@@ -79,7 +79,7 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getMetadata()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/metadata to configure metadata.");
                 result(validationTarget().getVirtualIps()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/virtualips/{virtual ip id} to configure a virtual ip.");
                 result(validationTarget().getSessionPersistence()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/sessionpersistence to configure session persistence.");
-                result(validationTarget().getHealthMonitor()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/healthmonitor to configure your health monitor.");
+                result(validationTarget().getHealthMonitor()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/healthmonitor to configure Fyour health monitor.");
                 result(validationTarget().getConnectionThrottle()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/throttles to configure connection throttling.");
                 result(validationTarget().getAccessList()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/accesslist to configure access lists.");
                 result(validationTarget().getConnectionLogging()).must().not().exist().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/connecitonlogging to configure connection logging.");

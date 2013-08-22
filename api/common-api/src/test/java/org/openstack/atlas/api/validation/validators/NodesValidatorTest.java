@@ -47,8 +47,8 @@ public class NodesValidatorTest {
         }
 
         @Test
-        public void shouldRejectNodesObjectWithNoNodes() {
-            assertFalse(validator.validate(new Nodes(), HttpRequestType.POST).passedValidation());
+        public void shouldAcceptNodesObjectWithNoNodes() {
+            assertTrue(validator.validate(new Nodes(), HttpRequestType.POST).passedValidation());
         }
 
         @Test

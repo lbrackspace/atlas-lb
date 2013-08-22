@@ -72,6 +72,25 @@ public class SetNodesITest extends STMTestBase {
         stmAdapter.setNodes(config, lb);
     }
 
+    private void setOneNode() throws Exception {
+        int node3Port = 81;
+        int node3Weight = 15;
+        String node3Ip = "127.0.0.3";
+        Node node3 = new Node();
+        node3.setId(3);
+        node3.setIpAddress(node3Ip);
+        node3.setPort(node3Port);
+        node3.setCondition(ENABLED);
+        node3.setWeight(node3Weight);
+        createdNodes = new HashSet<Node>();
+        createdNodes.add(node3);
+        lb.setNodes(createdNodes);
+
+        createdNodes = new HashSet<Node>(createdNodes);
+
+        stmAdapter.setNodes(config, lb);
+    }
+
     private String getFullAddress(Node node) {
         return node.getIpAddress() + ":" + node.getPort();
     }
@@ -144,6 +163,24 @@ public class SetNodesITest extends STMTestBase {
         Assert.assertEquals(expectedEnabledNodes, setOfEnabledNodes.size());
         Assert.assertEquals(expectedDisabledNodes, setOfDisabledNodes.size());
         Assert.assertEquals(expectedDrainingNodes, setOfDrainingNodes.size());
+    }
+
+    @Test
+    public void testRemoveLastNode() throws Exception {
+        setOneNode();
+
+        Node nodeToRemove = createdNodes.iterator().next();
+        createdNodes.remove(nodeToRemove);
+
+        stmAdapter.removeNode(config, lb, nodeToRemove);
+
+        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
+        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
+        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+
+        Assert.assertEquals(0, setOfEnabledNodes.size());
+        Assert.assertEquals(0, setOfDisabledNodes.size());
+        Assert.assertEquals(0, setOfDrainingNodes.size());
     }
 
     @Test

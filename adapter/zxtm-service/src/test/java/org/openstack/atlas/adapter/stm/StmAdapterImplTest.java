@@ -34,6 +34,7 @@ import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -85,6 +86,26 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
         @Test
         public void testCreateLoadBalancer() throws Exception {
+            adapterSpy.createLoadBalancer(config, loadBalancer);
+
+            verify(resources).loadSTMRestClient(config);
+            verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+            PowerMockito.verifyStatic();
+            TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
+            PowerMockito.verifyStatic();
+            TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
+            verify(resources).createPersistentClasses(config);
+            //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
+            verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
+            verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
+            verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
+            verify(resources).updateVirtualServer(eq(client), eq(vsName), Matchers.any(VirtualServer.class));
+            verify(client).destroy();
+        }
+
+        @Test
+        public void testCreateNodelessLoadBalancer() throws Exception {
+            loadBalancer.setNodes(new HashSet<Node>());
             adapterSpy.createLoadBalancer(config, loadBalancer);
 
             verify(resources).loadSTMRestClient(config);

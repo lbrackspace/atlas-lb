@@ -18,7 +18,7 @@ public class ZeusNodePriorityContainer {
     public ZeusNodePriorityContainer(Collection<Node> nodesIn) {
         Map<String, Integer> pMap = new HashMap<String, Integer>();
         priorityValuesSet = new HashSet<String>();
-        Node[] nodes = (Node[]) nodesIn.toArray(new Node[1]);
+        Node[] nodes = (Node[]) nodesIn.toArray(new Node[nodesIn.size()]);
         priorityValues = new ArrayList<PoolPriorityValueDefinition>();
         constainsSecondary = false;
         constainsPrimary = true;
