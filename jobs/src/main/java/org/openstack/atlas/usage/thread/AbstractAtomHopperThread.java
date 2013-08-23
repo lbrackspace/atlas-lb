@@ -19,6 +19,7 @@ import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRep
 import org.openstack.atlas.service.domain.util.Constants;
 import org.w3._2005.atom.UsageEntry;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getExtendedStackTrace;
@@ -27,17 +28,24 @@ import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.get
 public abstract class AbstractAtomHopperThread implements Runnable {
     private final Log LOG = LogFactory.getLog(AbstractAtomHopperThread.class);
     private Configuration configuration = new AtomHopperConfiguration();
+
+    private List<Usage> usages;
     private AtomHopperClient client;
     private IdentityAuthClient identityAuthClient;
+
     private AlertRepository alertRepository;
     private LoadBalancerEventRepository loadBalancerEventRepository;
-    private List<Usage> usages;
+
+    private List<Usage> successfullyPushedRecords;
+    private List<Usage> failedToPushRecords;
+
+    private boolean isVerboseLog = false;
+
+    public abstract String getThreadName();
 
     public abstract Map<Object, Object> generateAtomHopperEntry(Usage usage) throws AtomHopperMappingException;
 
     public abstract void updatePushedRecords(List<Usage> successfullyPushedRecordIds);
-
-    public abstract String getThreadName();
 
     public AbstractAtomHopperThread(List<Usage> usages, AtomHopperClient client, IdentityAuthClient identityAuthClient,
                                     LoadBalancerEventRepository loadBalancerEventRepository,
@@ -52,12 +60,17 @@ public abstract class AbstractAtomHopperThread implements Runnable {
     @Override
     public void run() {
         Calendar startTime = AtomHopperUtil.getNow();
-        LOG.info(String.format("Load Balancer AHUSL Task Started at %s (Timezone: %s)",
+        LOG.info(String.format("Load Balancer Atom Hopper USL Task Started at %s (Timezone: %s)",
                 startTime.getTime().toString(), startTime.getTimeZone().getDisplayName()));
 
-        List<Usage> successfullyPushedRecords = new ArrayList<Usage>();
-        List<Usage> failedToPushRecords = new ArrayList<Usage>();
+        isVerboseLog = configuration.getString(AtomHopperConfigurationKeys
+                .ahusl_log_requests).equals("ENABLED");
+
+        successfullyPushedRecords = new ArrayList<Usage>();
+        failedToPushRecords = new ArrayList<Usage>();
+
         try {
+            //Retrieve identity-admin user
             String authToken = identityAuthClient.getAuthToken();
             for (Usage usageRecord : usages) {
                 if (usageRecord.isNeedsPushed()) {
@@ -66,101 +79,131 @@ public abstract class AbstractAtomHopperThread implements Runnable {
                     String entrystring = (String) entryMap.get("entrystring");
                     UsageEntry entryobject = (UsageEntry) entryMap.get("entryobject");
 
+                    String body = AtomHopperUtil.processResponseBody(response);
+
                     try {
                         response = client.postEntryWithToken(entrystring, authToken);
                     } catch (ClientHandlerException che) {
                         LOG.warn("Could not post entry because client handler exception for load balancer: "
                                 + usageRecord.getLoadbalancer().getId() + "Exception: " + getStackTrace(che));
+                        logAndAlert(body, usageRecord, entrystring);
+                        failedToPushRecords.add(usageRecord);
                     } catch (ConnectionPoolTimeoutException cpe) {
                         LOG.warn("Could not post entry because of limited connections for load balancer: "
                                 + usageRecord.getLoadbalancer().getId() + "Exception: " + getStackTrace(cpe));
-                    }
-
-
-                    String message;
-                    String body = AtomHopperUtil.processResponseBody(response);
-                    int numAttempts = usageRecord.getNumAttempts();
-                    if (response != null) {
-                        if (response.getStatus() == 201) {
-                            usageRecord.setNeedsPushed(false);
-                            usageRecord.setNumAttempts(0);
-                            usageRecord.setCorrected(false);
-                            usageRecord.setUuid(entryobject.getContent().getEvent().getId());
-                            successfullyPushedRecords.add(usageRecord);
-                            response.close();
-                        } else if (response.getStatus() == 400) {
-                            usageRecord.setNeedsPushed(true);
-                            usageRecord.setNumAttempts(numAttempts + 1);
-                            failedToPushRecords.add(usageRecord);
-                            if (body != null) {
-                                message = body.split("<message>")[1].split("</message>")[0];
-                            } else {
-                                message = "Unidentified Error Please view logs and notify developer immediately!";
-                            }
-                            generateServiceEventRecord(usageRecord, entrystring, message);
-                            generateAtomHopperAlertRecord(usageRecord, "AH-FAILED-ENTRY-"
-                                    + usageRecord.getLoadbalancer().getId(), message);
-                            if (configuration.getString(AtomHopperConfigurationKeys
-                                    .ahusl_log_requests).equals("ENABLED")) {
-                                LOG.info(String.format("body %s\n", body));
-                                LOG.debug("\nFAILED ENTRY: \nACCOUNT: " + usageRecord.getAccountId()
-                                        + " \nLBID: " + usageRecord.getLoadbalancer().getId()
-                                        + " \nENTRY: " + entrystring + " \n:END FAILED ENTRY");
-                            }
-                            response.close();
-                        } else if (response.getStatus() == 500) {
-                            usageRecord.setNeedsPushed(true);
-                            usageRecord.setNumAttempts(numAttempts + 1);
-                            failedToPushRecords.add(usageRecord);
-
-                            if (body != null) {
-                                message = body.split("<message>")[1].split("</message>")[0];
-                            } else {
-                                message = "Unidentified Error Please view logs and notify developer immediately!";
-                            }
-                            generateAtomHopperAlertRecord(usageRecord, "AH-SERVICE-"
-                                    + usageRecord.getLoadbalancer().getId(),
-                                    "Atom Hopper service failure: " + message);
-                            LOG.error("Failure to process Atom Hopper usage due to Atom Hopper service error: ");
-                            LOG.error(String.format("body %s\n", body));
-
-                            response.close();
-                        }
-                    } else {
-                        LOG.error("Communication error with the Atom Hopper service occurred, " +
-                                "updating record for re-push for data base: " + usageRecord.getAccountId());
-                        usageRecord.setNeedsPushed(true);
+                        logAndAlert(body, usageRecord, entrystring);
                         failedToPushRecords.add(usageRecord);
+
                     }
+
+                    processResponse(response, body, usageRecord, entryobject, entrystring);
+                    response.close();
                 }
             }
 
-//            try {
-            LOG.info("Batch updating: " + usages.size() + " usage rows in the database...");
+            //Task complete update records...
+            LOG.info(String.format("Batch updating: %d " +
+                    "Atom Hopper usage entries in the database...", usages.size()));
             updatePushedRecords(usages);
-            LOG.info("Successfully batch updated: " + usages.size() + " usage rows in the database...");
-//            } catch (Exception lex) {
-//                LOG.error("There was batch updating usages, number of usages affected: " + usages.size() +
-//                        " Retrying because of deadlock: Exception: " + lex);
-//                batchUpdateRecords();
-//            }
+            LOG.info(String.format("Successfully batch updated: %d " +
+                    "Atom Hopper entries in the database...", usages.size()));
+
         } catch (ConcurrentModificationException cme) {
             System.out.printf("Exception: %s\n", getExtendedStackTrace(cme));
             LOG.warn(String.format("Warning: %s\n", getExtendedStackTrace(cme)));
             LOG.warn(String.format("Job attempted to access usage already being processed, " +
                     "continue processing next data set..."));
         } catch (Throwable t) {
-            System.out.printf("Exception: %s\n", getExtendedStackTrace(t));
-            LOG.error(String.format("Exception: %s\n", getExtendedStackTrace(t)));
+            LOG.error(String.format("Exception during Atom-Hopper processing: %s\n", getExtendedStackTrace(t)));
+            generateSevereAlert("Severe Failure processing Atom Hopper requests: ", getExtendedStackTrace(t));
         }
 
         Double elapsedMins = ((AtomHopperUtil.getNow()
                 .getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        LOG.info(String.format("Load Balancer AHUSL Task: " + getThreadName()
-                + " Completed at '%s' (Total Time: %f mins)",
-                AtomHopperUtil.getNow().getTime().toString(), elapsedMins));
-        LOG.debug(String.format("Load Balancer AHUSL Task: " + getThreadName()
-                + " Failed tasks count: %d out of %d", failedToPushRecords.size(), usages.size()));
+        LOG.info(String.format("Load Balancer Atom Hopper USL Task: %s Completed at '%s' (Total Time: %f mins)",
+                getThreadName(), AtomHopperUtil.getNow().getTime().toString(), elapsedMins));
+        LOG.debug(String.format("Load Balancer Atom Hopper USL Task: %s Failed tasks count: %d out of %d",
+                getThreadName(), failedToPushRecords.size(), usages.size()));
+        LOG.debug(String.format("Load Balancer Atom Hopper Task: %s Sucessfully pushed tasks count: %d out of %d",
+                getThreadName(), successfullyPushedRecords.size(), usages.size()));
+    }
+
+    private void processResponse(ClientResponse response, String body, Usage usageRecord,
+                                 UsageEntry entryobject, String entrystring) throws IOException {
+
+        int numAttempts = usageRecord.getNumAttempts();
+
+        usageRecord.setUuid(entryobject.getContent().getEvent().getId());
+
+        if (response != null) {
+            if (response.getStatus() == 201) {
+                usageRecord.setNeedsPushed(false);
+                usageRecord.setNumAttempts(0);
+                usageRecord.setCorrected(false);
+                successfullyPushedRecords.add(usageRecord);
+                logSuccess(body, usageRecord, entrystring);
+
+            } else if (response.getStatus() == 409) {
+                //Duplicate record, we will assume its been pushed, but should alert and verify...
+                usageRecord.setNeedsPushed(false);
+                usageRecord.setNumAttempts(numAttempts + 1);
+                failedToPushRecords.add(usageRecord);
+                generateServiceEventRecord(usageRecord, entrystring, buildMessage(body));
+                logAndAlert(body, usageRecord, entrystring);
+
+            } else if (response.getStatus() == 400) {
+                usageRecord.setNeedsPushed(true);
+                usageRecord.setNumAttempts(numAttempts + 1);
+                failedToPushRecords.add(usageRecord);
+                generateServiceEventRecord(usageRecord, entrystring, buildMessage(body));
+                logAndAlert(body, usageRecord, entrystring);
+
+            } else {
+                LOG.error(String.format("Error processing entry in Atom Hopper service occurred, " +
+                        "updating record for re-push for: Account: %d LBID: %d UUID: %s",
+                        usageRecord.getAccountId(), usageRecord.getLoadbalancer().getId(), usageRecord.getUuid()));
+                usageRecord.setNeedsPushed(true);
+                usageRecord.setNumAttempts(numAttempts + 1);
+                failedToPushRecords.add(usageRecord);
+                logAndAlert(body, usageRecord, entrystring);
+            }
+        }
+    }
+
+    private void logAndAlert(String body, Usage usageRecord, String entrystring) {
+        LOG.info(String.format("Creating alert for Atom hopper entry: Account: %d: LBID: %d Entry UUID: %s",
+                usageRecord.getAccountId(), usageRecord.getLoadbalancer().getId(), usageRecord.getUuid()));
+        generateAtomHopperAlertRecord(usageRecord, "AH-FAILED-ENTRY-"
+                + usageRecord.getUuid(), buildMessage(body));
+
+        if (isVerboseLog) {
+            LOG.info(buildEntryLog(body, usageRecord, entrystring));
+        }
+    }
+
+    private void logSuccess(String body, Usage usageRecord, String entrystring) {
+        if (isVerboseLog) {
+            LOG.info(String.format("Atom Hopper entry successfully pushed! : %s",
+                    buildEntryLog(body, usageRecord, entrystring)));
+        }
+    }
+
+    private String buildEntryLog(String body, Usage usageRecord, String entrystring) {
+        return String.format("Atom Hopper Request Body for LB %s:  \n%s\n" +
+                "\nACCOUNT: %d \n<ENTRY>: %s \n:</END ENTRY>",
+                usageRecord.getLoadbalancer().getId(), body,
+                usageRecord.getAccountId(), entrystring);
+    }
+
+    private String buildMessage(String body) {
+        String message;
+        if (body != null) {
+            message = body.split("<message>")[1].split("</message>")[0];
+        } else {
+            message = "Unidentified Error processing Atom Hopper entry, " +
+                    "please view logs and notify developer immediately!";
+        }
+        return message;
     }
 
     private void generateServiceEventRecord(Usage usageRecord, String entrystring, String responseMessage) {
@@ -182,6 +225,18 @@ public abstract class AbstractAtomHopperThread implements Runnable {
         alert.setAlertType(Constants.AH_USAGE_EVENT_FAILURE);
         alert.setStatus(AlertStatus.UNACKNOWLEDGED);
         alert.setLoadbalancerId(usageRecord.getLoadbalancer().getId());
+        alert.setMessageName(alertName);
+        alert.setMessage(alertMessage);
+        alertRepository.save(alert);
+    }
+
+    private void generateSevereAlert(String alertName, String alertMessage) {
+        //Severe alerts can be searched by aid/lbid = 1
+        Alert alert = new Alert();
+        alert.setAccountId(1);
+        alert.setAlertType(Constants.AH_USAGE_EVENT_FAILURE);
+        alert.setStatus(AlertStatus.UNACKNOWLEDGED);
+        alert.setLoadbalancerId(1);
         alert.setMessageName(alertName);
         alert.setMessage(alertMessage);
         alertRepository.save(alert);
