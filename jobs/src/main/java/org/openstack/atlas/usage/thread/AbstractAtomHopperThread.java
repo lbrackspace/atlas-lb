@@ -79,24 +79,27 @@ public abstract class AbstractAtomHopperThread implements Runnable {
                     String entrystring = (String) entryMap.get("entrystring");
                     UsageEntry entryobject = (UsageEntry) entryMap.get("entryobject");
 
-                    String body = AtomHopperUtil.processResponseBody(response);
 
+                    String body = null;
                     try {
                         response = client.postEntryWithToken(entrystring, authToken);
+                        body = AtomHopperUtil.processResponseBody(response);
                     } catch (ClientHandlerException che) {
                         LOG.warn("Could not post entry because client handler exception for load balancer: "
                                 + usageRecord.getLoadbalancer().getId() + "Exception: " + getStackTrace(che));
-                        logAndAlert(body, usageRecord, entrystring);
+                        logAndAlert(getStackTrace(che), usageRecord, entrystring);
                         failedToPushRecords.add(usageRecord);
                     } catch (ConnectionPoolTimeoutException cpe) {
                         LOG.warn("Could not post entry because of limited connections for load balancer: "
                                 + usageRecord.getLoadbalancer().getId() + "Exception: " + getStackTrace(cpe));
-                        logAndAlert(body, usageRecord, entrystring);
+                        logAndAlert(getStackTrace(cpe), usageRecord, entrystring);
                         failedToPushRecords.add(usageRecord);
 
                     }
 
-                    processResponse(response, body, usageRecord, entryobject, entrystring);
+                    if (body != null) {
+                        processResponse(response, body, usageRecord, entryobject, entrystring);
+                    }
                     response.close();
                 }
             }

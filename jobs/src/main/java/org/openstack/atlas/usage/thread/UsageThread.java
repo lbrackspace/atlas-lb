@@ -1,5 +1,7 @@
 package org.openstack.atlas.usage.thread;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atomhopper.exception.AtomHopperMappingException;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactory;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactoryImpl;
@@ -16,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 public class UsageThread extends AbstractAtomHopperThread {
+    private final Log LOG = LogFactory.getLog(AbstractAtomHopperThread.class);
+
     private UsageEntryFactory usageEntryFactory;
     private UsageRepository usageRepository;
 
