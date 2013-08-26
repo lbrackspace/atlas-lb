@@ -121,6 +121,7 @@ public class ReuploadCli {
                     System.out.printf("setComp <size,hour> reverse=false  # Set the comparator to sort by size or by hour\n");
                     System.out.printf("showzinfo  #Display all the zipDirectories found\n");
                     System.out.printf("showzips   #Show all zips\n");
+                    System.out.printf("countzinfo  #scan the zinfo block and count the zips by account and lid\n");
                     System.out.printf("showAuth <accountId> #Get information on account via the god AuthClient\n");
                     System.out.printf("rmlid <lid> #remove zips in the zinfolist that are for the specified loadbalancer\n");
                     System.out.printf("rmaid <aid> #remove zips in the zinfolist that are for the specified account\n");
@@ -134,6 +135,32 @@ public class ReuploadCli {
                     System.out.printf("ru #run the uploader thread\n");
                     System.out.printf("joinThreads #Join reuploader threads\n");
 
+                } else if (cmd.equals("countzinfo")) {
+                    Map<AccountIdLoadBalancerIdKey, Integer> counts = new HashMap<AccountIdLoadBalancerIdKey, Integer>();
+                    for (CacheZipInfo zipFile : zipInfoList) {
+                        AccountIdLoadBalancerIdKey aidLidKey = new AccountIdLoadBalancerIdKey();
+                        aidLidKey.setAccountId(zipFile.getAccountId());
+                        aidLidKey.setLoadbalancerId(zipFile.getLoadbalancerId());
+                        if (!counts.containsKey(aidLidKey)) {
+                            counts.put(aidLidKey, 0);
+                        }
+                        int nCount = counts.get(aidLidKey);
+                        nCount++;
+                        counts.put(aidLidKey, nCount);
+                    }
+                    List<AccountIdLoadBalancerIdKey> keys = new ArrayList<AccountIdLoadBalancerIdKey>();
+                    for (AccountIdLoadBalancerIdKey key : counts.keySet()) {
+                        keys.add(key);
+                    }
+
+                    Collections.sort(keys, new AccountIdLoadBalancerIdKeyComparator());
+                    System.out.printf("(accountId,LoadbalancerId)=count\n");
+                    for (AccountIdLoadBalancerIdKey aidLidKey : keys) {
+                        int aid = aidLidKey.getAccountId();
+                        int lid = aidLidKey.getLoadbalancerId();
+                        int count = counts.get(aidLidKey);
+                        System.out.printf("(%d,%d) = %d\n", aid, lid, count);
+                    }
                 } else if (cmd.equals("showAuth") && args.length >= 2) {
                     System.out.printf("showing AuthUser info for user %s\n", args[1]);
                     showAuth(args[1]);
