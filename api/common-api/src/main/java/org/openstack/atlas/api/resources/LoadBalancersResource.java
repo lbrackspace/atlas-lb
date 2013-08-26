@@ -9,7 +9,10 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LimitTypes;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Limits;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.LimitType;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
@@ -97,8 +100,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         }
 
         try {
-            List<Node> nodes = loadBalancer.getNodes();
-            List<String> errors = verifyNodeDomains(nodes);
+            List<String> errors = verifyNodeDomains(loadBalancer.getNodes());
             if (errors.size() > 0) {
                 return getValidationFaultResponse(errors);
             }
