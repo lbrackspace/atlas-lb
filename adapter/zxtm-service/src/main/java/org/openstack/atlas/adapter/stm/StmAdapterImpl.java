@@ -355,7 +355,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
         LOG.info(String.format("Updating protection on %s...", protectionName));
-        getResources().updateProtection(client, protectionName, translator.translateProtectionResource(protectionName, loadBalancer));
+        getResources().updateProtection(client, protectionName, translator.translateProtectionResource(loadBalancer));
         LOG.info(String.format("Successfully created protection %s", protectionName));
         client.destroy();
     }
@@ -441,7 +441,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
         translator.translateVirtualServerResource(config, sslVsName, loadBalancer);
-        translator.translateKeypairResource(config, loadBalancer);
+        translator.translateKeypairResource(loadBalancer);
         VirtualServer createdServer = translator.getcVServer();
         VirtualServerHttp http = new VirtualServerHttp();
         http.setLocation_rewrite(EnumFactory.Accept_from.NEVER.toString());

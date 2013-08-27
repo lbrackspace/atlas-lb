@@ -301,7 +301,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.updateProtection(config, loadBalancer);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resourceTranslator).translateProtectionResource(vsName, loadBalancer);
+            verify(resourceTranslator).translateProtectionResource(loadBalancer);
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             verify(client).destroy();
         }
@@ -685,7 +685,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateVirtualServerResource(config, vsName, loadBalancer);
-            verify(resourceTranslator, times(3)).translateKeypairResource(config, loadBalancer);
+            verify(resourceTranslator, times(3)).translateKeypairResource(loadBalancer);
             verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             verify(resourceTranslator).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);

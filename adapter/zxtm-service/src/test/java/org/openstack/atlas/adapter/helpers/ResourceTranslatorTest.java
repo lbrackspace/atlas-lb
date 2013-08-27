@@ -900,7 +900,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         @Test
         public void shouldCreateAValidProtection() {
             ResourceTranslator translator = new ResourceTranslator();
-            Protection createdProtection = translator.translateProtectionResource(vsName, lb);
+            Protection createdProtection = translator.translateProtectionResource(lb);
             ProtectionConnectionLimiting createdLimiting = createdProtection.getProperties().getConnection_limiting();
             Assert.assertNotNull(createdLimiting);
             Assert.assertEquals(maxConnections, (int) createdLimiting.getMax_1_connections());

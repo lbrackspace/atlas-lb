@@ -16,7 +16,6 @@ import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
 import org.rackspace.stingray.client.monitor.MonitorHttp;
 import org.rackspace.stingray.client.monitor.MonitorProperties;
-import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.pool.*;
 import org.rackspace.stingray.client.protection.*;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
@@ -37,7 +36,6 @@ public class ResourceTranslator {
     public Map<String, TrafficIp> cTrafficIpGroups;
     public VirtualServer cVServer;
     public Protection cProtection;
-    public Persistence cPersistence;
     public Bandwidth cBandwidth;
     public Keypair cKeypair;
     protected static final ZeusUtils zeusUtil;
@@ -57,12 +55,11 @@ public class ResourceTranslator {
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
 
-        boolean areTigsEnabled = true;
-        translateTrafficIpGroupsResource(config, loadBalancer, areTigsEnabled);
+        translateTrafficIpGroupsResource(config, loadBalancer, true);
 
-        if (loadBalancer.getSslTermination() != null) translateKeypairResource(config, loadBalancer);
+        if (loadBalancer.getSslTermination() != null) translateKeypairResource(loadBalancer);
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
-            translateProtectionResource(ZxtmNameBuilder.genVSName(loadBalancer), loadBalancer);
+            translateProtectionResource(loadBalancer);
 
         translatePoolResource(vsName, loadBalancer, queLb);
         translateVirtualServerResource(config, vsName, loadBalancer);
@@ -76,7 +73,7 @@ public class ResourceTranslator {
         VirtualServerProperties properties = new VirtualServerProperties();
         VirtualServerConnectionError ce = new VirtualServerConnectionError();
         VirtualServerTcp tcp = new VirtualServerTcp();
-        VirtualServerLog log = null;
+        VirtualServerLog log;
 
         //basic virtual server settings
         if (vsName.equals(ZxtmNameBuilder.genSslVSName(loadBalancer))) {
@@ -265,7 +262,7 @@ public class ResourceTranslator {
             }
         }
 
-        ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(loadBalancer.getNodes());
+        ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
         poollb.setPriority_enabled(znpc.hasSecondary());
         poollb.setPriority_values(znpc.getPriorityValuesSet());
         poollb.setAlgorithm(lbAlgo);
@@ -335,7 +332,7 @@ public class ResourceTranslator {
         return cMonitor;
     }
 
-    public Protection translateProtectionResource(String vsName, LoadBalancer loadBalancer) {
+    public Protection translateProtectionResource(LoadBalancer loadBalancer) {
         cProtection = new Protection();
         ProtectionBasic basic = new ProtectionBasic();
         ProtectionProperties properties = new ProtectionProperties();
@@ -383,7 +380,7 @@ public class ResourceTranslator {
         return cProtection;
     }
 
-    public Keypair translateKeypairResource(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public Keypair translateKeypairResource(LoadBalancer loadBalancer)
             throws InsufficientRequestException {
         ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(loadBalancer.getSslTermination().getPrivatekey(),
                 loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
@@ -477,14 +474,6 @@ public class ResourceTranslator {
 
     public void setcProtection(Protection cProtection) {
         this.cProtection = cProtection;
-    }
-
-    public Persistence getcPersistence() {
-        return cPersistence;
-    }
-
-    public void setcPersistence(Persistence cPersistence) {
-        this.cPersistence = cPersistence;
     }
 
     public Bandwidth getcBandwidth() {
