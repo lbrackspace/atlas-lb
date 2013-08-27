@@ -5,6 +5,9 @@ import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.springframework.beans.factory.annotation.Required;
 import org.w3.atom.Link;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class PaginationHelper {
     protected static RestApiConfiguration restApiConfiguration;
     final protected static Integer MIN_PAGE_LIMIT = 1;
@@ -51,5 +54,13 @@ public class PaginationHelper {
         limit = determinePageLimit(limit);
         offset = determinePageOffset(offset);
         return offset + limit;
+    }
+
+    public static Map<String, Integer> checkParameters(Integer offset, Integer marker, Integer limit) {
+        Map<String, Integer> map = new HashMap<String, Integer>();
+        map.put("offset", offset == null ? 0 : offset);
+        map.put("marker", marker == null ? 0 : marker);
+        map.put("limit", limit == null || limit > 100 ? 100 : limit);
+        return map;
     }
 }
