@@ -151,7 +151,8 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
         return content;
     }
 
-    private String genUUIDString(Usage usageRecord) {
+    @Override
+    public String genUUIDString(Usage usageRecord) {
         return SERVICE_CODE
                 + "_" + usageRecord.getId()
                 + "_" + usageRecord.getLoadbalancer().getId()
@@ -168,7 +169,8 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
         return entry;
     }
 
-    private UUID genUUIDObject(Usage usageRecord) throws NoSuchAlgorithmException {
+    @Override
+    public UUID genUUIDObject(Usage usageRecord) throws NoSuchAlgorithmException {
         return UUIDUtil.genUUIDMD5Hash(genUUIDString(usageRecord));
     }
 

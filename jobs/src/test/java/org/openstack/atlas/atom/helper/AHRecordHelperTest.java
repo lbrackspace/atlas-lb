@@ -208,7 +208,7 @@ public class AHRecordHelperTest {
         }
 
         @Test
-        public void shouldGenUUIDAndBumpNumAttempts() throws Exception {
+        public void shouldGenUUIDAndBumpNumAttemptsfor400() throws Exception {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(400);
             Assert.assertNull(baseUsage.getUuid());
@@ -216,6 +216,32 @@ public class AHRecordHelperTest {
             Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
+            Assert.assertNotNull(baseUsage.getUuid());
+            Assert.assertTrue(baseUsage.getNumAttempts() == 1);
+        }
+
+        @Test
+        public void shouldGenUUIDAndBumpNumAttemptsFor409() throws Exception {
+            when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
+            when(response.getStatus()).thenReturn(409);
+            Assert.assertNull(baseUsage.getUuid());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
+            verify(alertRepository, times(1)).save(Matchers.<Alert>any());
+            verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
+            Assert.assertNotNull(baseUsage.getUuid());
+            Assert.assertTrue(baseUsage.getNumAttempts() == 1);
+        }
+
+        @Test
+        public void shouldGenUUIDAndBumpNumAttemptsForRandomStatus() throws Exception {
+            when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
+            when(response.getStatus()).thenReturn(999);
+            Assert.assertNull(baseUsage.getUuid());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
+            verify(alertRepository, times(1)).save(Matchers.<Alert>any());
+            verify(loadBalancerEventRepository, times(0)).save(Matchers.<LoadBalancerServiceEvent>any());
             Assert.assertNotNull(baseUsage.getUuid());
             Assert.assertTrue(baseUsage.getNumAttempts() == 1);
         }
