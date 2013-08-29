@@ -1382,6 +1382,20 @@ public class UsagePollerHelperTest {
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
                     UsageEvent.DELETE_LOADBALANCER, "2013-06-24 12:31:00", mergedRecords.get(1));
         }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithcreatelbevent/case6.xml")
+        public void case6() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(1, mergedRecords.size());
+//            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+//                    UsageEvent.CREATE_LOADBALANCER, "2013-08-27 21:50:50", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-08-27 21:56:00", mergedRecords.get(0));
+        }
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
