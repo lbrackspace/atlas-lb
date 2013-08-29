@@ -25,6 +25,7 @@ import org.openstack.client.keystone.KeyStoneAdminClient;
 import org.openstack.client.keystone.KeyStoneException;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -34,6 +35,8 @@ public class ReuploadCli {
 
     public static final String DEFAULT_HADOOP_CONF_FILE = "/etc/openstack/atlas/hadoop-logs.conf";
     private static final int BUFFSIZE = 1024 * 32;
+    private static final Comparator<CacheZipInfo> lidComparator;
+    private static final Comparator<CacheZipInfo> aidComparator;
     private HdfsUtils hdfsUtils;
     private Configuration conf;
     private Map<Integer, LoadBalancerIdAndName> lbMap;
@@ -44,6 +47,12 @@ public class ReuploadCli {
     private List<CacheZipInfo> zipInfoList = new ArrayList<CacheZipInfo>();
     private Comparator<CacheZipInfo> ziComp;
     private Comparator<CacheZipDirInfo> zidComp;
+    private BufferedReader stdin;
+
+    static {
+        lidComparator = new CacheZipInfo.LidComparator();
+        aidComparator = new CacheZipInfo.AidComparator();
+    }
 
     public void run(String[] argv) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException, AuthException {
         if (argv.length < 1) {
@@ -55,7 +64,7 @@ public class ReuploadCli {
             return;
         }
         List<ReuploaderThread> uploaders = new ArrayList<ReuploaderThread>();
-        BufferedReader stdin = StaticFileUtils.inputStreamToBufferedReader(System.in, BUFFSIZE);
+        stdin = StaticFileUtils.inputStreamToBufferedReader(System.in, BUFFSIZE);
         //System.out.printf("Press enter to continue\n");
         //stdin.readLine();
 
@@ -108,11 +117,14 @@ public class ReuploadCli {
                     System.out.printf("mem        #Display memory usage\n");
                     System.out.printf("exit       #exit program\n");
                     System.out.printf("clzinfo    #reset the zipInfo from memory from memory\n");
-                    System.out.printf("getzinfo <lastHour>   #Scan the cache dir for the zips still in localcache\n");
+                    System.out.printf("getzinfo [lastHour]   #Scan the cache dir for the zips still in localcache\n");
                     System.out.printf("setComp <size,hour> reverse=false  # Set the comparator to sort by size or by hour\n");
                     System.out.printf("showzinfo  #Display all the zipDirectories found\n");
                     System.out.printf("showzips   #Show all zips\n");
+                    System.out.printf("countzinfo  #scan the zinfo block and count the zips by account and lid\n");
                     System.out.printf("showAuth <accountId> #Get information on account via the god AuthClient\n");
+                    System.out.printf("rmlid <lid> #remove zips in the zinfolist that are for the specified loadbalancer\n");
+                    System.out.printf("rmaid <aid> #remove zips in the zinfolist that are for the specified account\n");
                     System.out.printf("keyauth <accountId> #Get service token and other user info from keystone auth\n");
                     System.out.printf("clearDirs <minusHours>    #Remove any empty directories\n");
                     System.out.printf("delDir <path> #Delete directory if its empty\n");
@@ -123,6 +135,32 @@ public class ReuploadCli {
                     System.out.printf("ru #run the uploader thread\n");
                     System.out.printf("joinThreads #Join reuploader threads\n");
 
+                } else if (cmd.equals("countzinfo")) {
+                    Map<AccountIdLoadBalancerIdKey, Integer> counts = new HashMap<AccountIdLoadBalancerIdKey, Integer>();
+                    for (CacheZipInfo zipFile : zipInfoList) {
+                        AccountIdLoadBalancerIdKey aidLidKey = new AccountIdLoadBalancerIdKey();
+                        aidLidKey.setAccountId(zipFile.getAccountId());
+                        aidLidKey.setLoadbalancerId(zipFile.getLoadbalancerId());
+                        if (!counts.containsKey(aidLidKey)) {
+                            counts.put(aidLidKey, 0);
+                        }
+                        int nCount = counts.get(aidLidKey);
+                        nCount++;
+                        counts.put(aidLidKey, nCount);
+                    }
+                    List<AccountIdLoadBalancerIdKey> keys = new ArrayList<AccountIdLoadBalancerIdKey>();
+                    for (AccountIdLoadBalancerIdKey key : counts.keySet()) {
+                        keys.add(key);
+                    }
+
+                    Collections.sort(keys, new AccountIdLoadBalancerIdKeyComparator());
+                    System.out.printf("(accountId,LoadbalancerId)=count\n");
+                    for (AccountIdLoadBalancerIdKey aidLidKey : keys) {
+                        int aid = aidLidKey.getAccountId();
+                        int lid = aidLidKey.getLoadbalancerId();
+                        int count = counts.get(aidLidKey);
+                        System.out.printf("(%d,%d) = %d\n", aid, lid, count);
+                    }
                 } else if (cmd.equals("showAuth") && args.length >= 2) {
                     System.out.printf("showing AuthUser info for user %s\n", args[1]);
                     showAuth(args[1]);
@@ -172,7 +210,7 @@ public class ReuploadCli {
                     if (kwArgs.containsKey("reverse") && kwArgs.get("reverse").equals("true")) {
                         reverse = true;
                     }
-                    setComparator(args[1], reverse);
+                    setSortComparator(args[1], reverse);
                 } else if (cmd.equals("utc")) {
                     int minusHours = 0;
                     if (args.length >= 2) {
@@ -189,14 +227,38 @@ public class ReuploadCli {
                     mem();
                 } else if (cmd.equals("clzinfo")) {
                     clearZipInfo();
-                } else if (cmd.equals("getzinfo") && args.length >= 2) {
+                } else if (cmd.equals("getzinfo")) {
                     long endHourKey;
-                    try {
-                        endHourKey = Long.parseLong(args[1]);
-                        getZipInfo(endHourKey);
-                    } catch (NumberFormatException ex) {
-                        System.out.printf("lastHour parameter must be of the form YYYYMMDDHH\n");
+                    if (args.length >= 2) {
+                        try {
+                            endHourKey = Long.parseLong(args[1]);
+                        } catch (NumberFormatException ex) {
+                            System.out.printf("lastHour parameter must be of the form YYYYMMDDHH\n");
+                            continue;
+                        }
+                    } else {
+                        endHourKey = 9999999999L;
                     }
+                    System.out.printf("Searching for zips before HourKey=%d\n", endHourKey);
+                    getZipInfo(endHourKey);
+                } else if (cmd.equals("rmlid") && args.length >= 2) {
+                    int lid;
+                    try {
+                        lid = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException ex) {
+                        System.out.printf("Error converting %s to loadbalancer id\n", args[1]);
+                        continue;
+                    }
+                    deleteLidZips(lid);
+                } else if (cmd.equals("rmaid") && args.length >= 2) {
+                    int aid;
+                    try {
+                        aid = Integer.parseInt(args[1]);
+                    } catch (NumberFormatException ex) {
+                        System.out.printf("Error converting %s to loadbalancer id\n", args[1]);
+                        continue;
+                    }
+                    deleteAidZips(aid);
                 } else if (cmd.equals("showZips")) {
                     showZips();
                 } else if (cmd.equals("showzinfo")) {
@@ -211,7 +273,7 @@ public class ReuploadCli {
 
     }
 
-    public void setComparator(String arg, boolean reverse) {
+    public void setSortComparator(String arg, boolean reverse) {
         String compOption = arg;
         if (compOption.equals("size")) {
             System.out.printf("Setting comparator for size\n");
@@ -323,6 +385,70 @@ public class ReuploadCli {
         String adminAuthUser = cfg.getString(LbLogsConfigurationKeys.basic_auth_user);
         String adminAuthKey = cfg.getString(LbLogsConfigurationKeys.basic_auth_key);
         keyStoneAdminClient = new KeyStoneAdminClient(adminAuthUrl, adminAuthKey, adminAuthUser);
+    }
+
+    private void deleteLidZips(int lid) throws IOException {
+        int nDeleted = 0;
+        List<CacheZipInfo> doomedZips = new ArrayList<CacheZipInfo>();
+        List<CacheZipInfo> sortedZips = new ArrayList<CacheZipInfo>(zipInfoList);
+        Collections.sort(sortedZips, lidComparator);
+        for (CacheZipInfo zipFile : sortedZips) {
+            if (zipFile.getLoadbalancerId() == lid) {
+                System.out.printf("%s\n", zipFile.getZipFile());
+                doomedZips.add(zipFile);
+            }
+        }
+        System.out.printf("Are you sure you want to delete the above zips(Y/N): ");
+        if (CommonItestStatic.inputStream(stdin, "Y")) {
+            System.out.printf("Deleting files\n");
+            for (CacheZipInfo doomedZip : doomedZips) {
+                if (deleteFile(doomedZip.getZipFile())) {
+                    nDeleted++;
+                }
+            }
+        } else {
+            System.out.printf("Bailing out\n");
+        }
+        System.out.printf("Deleted %d files\n", nDeleted);
+    }
+
+    private void deleteAidZips(int aid) throws IOException {
+        int nDeleted = 0;
+        List<CacheZipInfo> doomedZips = new ArrayList<CacheZipInfo>();
+        List<CacheZipInfo> sortedZips = new ArrayList<CacheZipInfo>(zipInfoList);
+        Collections.sort(sortedZips, aidComparator);
+        for (CacheZipInfo zipFile : sortedZips) {
+            if (zipFile.getAccountId() == aid) {
+                System.out.printf("%s\n", zipFile.getZipFile());
+                doomedZips.add(zipFile);
+            }
+        }
+        System.out.printf("Are you sure you want to delete the above zips(Y/N): ");
+        if (CommonItestStatic.inputStream(stdin, "Y")) {
+            System.out.printf("Deleting files\n");
+            for (CacheZipInfo doomedZip : doomedZips) {
+                if (deleteFile(doomedZip.getZipFile())) {
+                    nDeleted++;
+                }
+            }
+        } else {
+            System.out.printf("Bailing out\n");
+        }
+        System.out.printf("Deleted %d files\n", nDeleted);
+    }
+
+    private static boolean deleteFile(String fileName) {
+        File doomedFile = new File(fileName);
+        try {
+            if (!doomedFile.delete()) {
+                System.out.printf("File %s didn't delete perhaps its already deleted\n", fileName);
+                return false;
+            }
+            return true;
+        } catch (Exception ex) {
+            System.out.printf("Error attempting to delete file %s: %s\n", fileName, Debug.getExtendedStackTrace(ex));
+            return false;
+        }
     }
 
     public static void main(String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException, AuthException {

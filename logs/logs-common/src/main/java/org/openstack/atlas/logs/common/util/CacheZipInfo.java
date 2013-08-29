@@ -110,6 +110,57 @@ public class CacheZipInfo {
         }
     }
 
+    public static class LidComparator implements Comparator<CacheZipInfo> {
+
+        @Override
+        public int compare(CacheZipInfo o1, CacheZipInfo o2) {
+            if (o1 == null && o2 == null) {
+                return 0;
+            }
+            if (o1 == null) {
+                return 1;
+            }
+            if (o2 == null) {
+                return -1;
+            }
+            int ol1 = o1.getLoadbalancerId();
+            int ol2 = o2.getLoadbalancerId();
+            if (ol1 < ol2) {
+                return -1;
+            }
+            if (ol2 > ol2) {
+                return 1;
+            }
+            return 0;
+        }
+    }
+
+    public static class AidComparator implements Comparator<CacheZipInfo> {
+
+        @Override
+        public int compare(CacheZipInfo o1, CacheZipInfo o2) {
+            if (o1 == null && o2 == null) {
+                return 0;
+            }
+            if (o1 == null) {
+                return 1;
+            }
+            if (o2 == null) {
+                return -1;
+            }
+            
+            int oa1 = o1.getAccountId();
+            int oa2 = o2.getAccountId();
+            if (oa1 < oa2) {
+                return -1;
+            }
+            if (oa2 > oa2) {
+                return 1;
+            }
+            return 0;
+        }
+    }
+
     public static class ByteCountComparator implements Comparator<CacheZipInfo> {
 
         @Override
