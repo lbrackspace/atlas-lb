@@ -136,31 +136,7 @@ public class ReuploadCli {
                     System.out.printf("joinThreads #Join reuploader threads\n");
 
                 } else if (cmd.equals("countzinfo")) {
-                    Map<AccountIdLoadBalancerIdKey, Integer> counts = new HashMap<AccountIdLoadBalancerIdKey, Integer>();
-                    for (CacheZipInfo zipFile : zipInfoList) {
-                        AccountIdLoadBalancerIdKey aidLidKey = new AccountIdLoadBalancerIdKey();
-                        aidLidKey.setAccountId(zipFile.getAccountId());
-                        aidLidKey.setLoadbalancerId(zipFile.getLoadbalancerId());
-                        if (!counts.containsKey(aidLidKey)) {
-                            counts.put(aidLidKey, 0);
-                        }
-                        int nCount = counts.get(aidLidKey);
-                        nCount++;
-                        counts.put(aidLidKey, nCount);
-                    }
-                    List<AccountIdLoadBalancerIdKey> keys = new ArrayList<AccountIdLoadBalancerIdKey>();
-                    for (AccountIdLoadBalancerIdKey key : counts.keySet()) {
-                        keys.add(key);
-                    }
-
-                    Collections.sort(keys, new AccountIdLoadBalancerIdKeyComparator());
-                    System.out.printf("(accountId,LoadbalancerId)=count\n");
-                    for (AccountIdLoadBalancerIdKey aidLidKey : keys) {
-                        int aid = aidLidKey.getAccountId();
-                        int lid = aidLidKey.getLoadbalancerId();
-                        int count = counts.get(aidLidKey);
-                        System.out.printf("(%d,%d) = %d\n", aid, lid, count);
-                    }
+                    countZinfo();
                 } else if (cmd.equals("showAuth") && args.length >= 2) {
                     System.out.printf("showing AuthUser info for user %s\n", args[1]);
                     showAuth(args[1]);
@@ -454,5 +430,36 @@ public class ReuploadCli {
     public static void main(String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException, AuthException {
         ReuploadCli cli = new ReuploadCli();
         cli.run(args);
+    }
+
+    private void countZinfo() {
+        int nCount;
+        Map<AccountIdLoadBalancerIdKey, Integer> counts = new HashMap<AccountIdLoadBalancerIdKey, Integer>();
+        for (CacheZipInfo zipFile : zipInfoList) {
+            AccountIdLoadBalancerIdKey aidLidKey = new AccountIdLoadBalancerIdKey();
+            aidLidKey.setAccountId(zipFile.getAccountId());
+            aidLidKey.setLoadbalancerId(zipFile.getLoadbalancerId());
+            if (!counts.containsKey(aidLidKey)) {
+                counts.put(aidLidKey, 0);
+            }
+            nCount = counts.get(aidLidKey);
+            nCount++;
+            counts.put(aidLidKey, nCount);
+        }
+        List<AccountIdLoadBalancerIdKey> keys = new ArrayList<AccountIdLoadBalancerIdKey>();
+        for (AccountIdLoadBalancerIdKey key : counts.keySet()) {
+            keys.add(key);
+        }
+        nCount = 0;
+        Collections.sort(keys, new AccountIdLoadBalancerIdKeyComparator());
+        System.out.printf("(accountId,LoadbalancerId)=count\n");
+        for (AccountIdLoadBalancerIdKey aidLidKey : keys) {
+            int aid = aidLidKey.getAccountId();
+            int lid = aidLidKey.getLoadbalancerId();
+            int count = counts.get(aidLidKey);
+            System.out.printf("(%d,%d) = %d\n", aid, lid, count);
+            nCount++;
+        }
+        System.out.printf("Total files = %d\n", nCount);
     }
 }
