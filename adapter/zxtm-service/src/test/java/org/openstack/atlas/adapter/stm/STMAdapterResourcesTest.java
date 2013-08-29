@@ -593,9 +593,6 @@ public class STMAdapterResourcesTest extends STMTestBase {
         }
     }
 
-    @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*", "javax.net.ssl.*"})
-    @PrepareForTest({TrafficScriptHelper.class})
     public static class RateLimitOperations {
         private String vsName;
         private StmAdapterResources adapterResources;
@@ -624,7 +621,6 @@ public class STMAdapterResourcesTest extends STMTestBase {
             doReturn(client).when(adapterResources).loadSTMRestClient(config);
             doReturn(rollbackBandwidth).when(client).getBandwidth(vsName);
             doReturn(new VirtualServer()).when(client).getVirtualServer(vsName);
-            PowerMockito.mockStatic(TrafficScriptHelper.class);
         }
 
         @Test
@@ -632,8 +628,6 @@ public class STMAdapterResourcesTest extends STMTestBase {
             adapterResources.setRateLimit(config, lb, vsName);
 
             verify(client).createBandwidth(vsName, bandwidth);
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
             verify(adapterResources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
             verify(client).destroy();
             verifyNoMoreInteractions(client);
@@ -643,8 +637,6 @@ public class STMAdapterResourcesTest extends STMTestBase {
         public void testUpdateRateLimit() throws Exception {
             adapterResources.updateRateLimit(config, lb, vsName);
 
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
             verify(client).updateBandwidth(vsName, bandwidth);
             verify(client).destroy();
             verifyNoMoreInteractions(client);
