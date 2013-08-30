@@ -20,12 +20,12 @@ import org.openstack.atlas.service.domain.pojos.AccountBilling;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.util.PaginationHelper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
-import javax.persistence.metamodel.MapAttribute;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DateFormat;
@@ -45,6 +45,8 @@ public class LoadBalancerRepository {
 
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
+
+    private PaginationHelper helper = new PaginationHelper();
 
     public LoadBalancer getById(Integer id) throws EntityNotFoundException {
         LoadBalancer lb = entityManager.find(LoadBalancer.class, id);
@@ -491,23 +493,25 @@ public class LoadBalancerRepository {
             cq.addParam("lb.id", ">=", "marker", marker);
         }
 
-        qStr = cq.getQueryString();
+        q = helper.addQueryParameters(cq, offset, marker, limit);
 
-        q = entityManager.createQuery(qStr);
-
-        for (QueryParameter param : cq.getQueryParameters()) {
-            q.setParameter(param.getPname(), param.getValue());
-        }
-
-        if (limit != null) {
-            cq.setLimit(limit);
-            q.setMaxResults(cq.getLimit());
-        }
-
-        if (offset != null) {
-            cq.setOffset(offset);
-            q.setFirstResult(cq.getOffset());
-        }
+//        qStr = cq.getQueryString();
+//
+//        q = entityManager.createQuery(qStr);
+//
+//        for (QueryParameter param : cq.getQueryParameters()) {
+//            q.setParameter(param.getPname(), param.getValue());
+//        }
+//
+//        if (limit != null) {
+//            cq.setLimit(limit);
+//            q.setMaxResults(cq.getLimit());
+//        }
+//
+//        if (offset != null) {
+//            cq.setOffset(offset);
+//            q.setFirstResult(cq.getOffset());
+//        }
 
         lbs = q.getResultList();
 

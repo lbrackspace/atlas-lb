@@ -21,9 +21,6 @@ public class PaginationHelper {
     final public static String NEXT = "next";
     final public static String PREVIOUS = "previous";
 
-    @PersistenceContext(unitName = "loadbalancing")
-    private static EntityManager entityManager;
-
     @Required
     public void setRestApiConfiguration(RestApiConfiguration restApiConfiguration) {
         PaginationHelper.restApiConfiguration = restApiConfiguration;
@@ -60,17 +57,5 @@ public class PaginationHelper {
         limit = determinePageLimit(limit);
         offset = determinePageOffset(offset);
         return offset + limit;
-    }
-
-    @Transactional
-    public static Query checkParameters(CustomQuery customQuery, Integer offset, Integer marker, Integer limit) {
-        if (offset != null) {
-            customQuery.setOffset(offset);
-        }
-        if (limit != null) {
-            customQuery.setLimit(limit);
-        }
-        customQuery.addParam("id", ">=", "marker", marker != null ? marker : 0);
-        return entityManager.createQuery(customQuery.getQueryString());
     }
 }
