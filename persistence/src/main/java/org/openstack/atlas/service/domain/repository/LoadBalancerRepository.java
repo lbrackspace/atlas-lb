@@ -493,25 +493,25 @@ public class LoadBalancerRepository {
             cq.addParam("lb.id", ">=", "marker", marker);
         }
 
-        q = helper.addQueryParameters(cq, offset, marker, limit);
+//        q = helper.addQueryParameters(cq, offset, marker, limit);
 
-//        qStr = cq.getQueryString();
-//
-//        q = entityManager.createQuery(qStr);
-//
-//        for (QueryParameter param : cq.getQueryParameters()) {
-//            q.setParameter(param.getPname(), param.getValue());
-//        }
-//
-//        if (limit != null) {
-//            cq.setLimit(limit);
-//            q.setMaxResults(cq.getLimit());
-//        }
-//
-//        if (offset != null) {
-//            cq.setOffset(offset);
-//            q.setFirstResult(cq.getOffset());
-//        }
+        qStr = cq.getQueryString();
+
+        q = entityManager.createQuery(qStr);
+
+        for (QueryParameter param : cq.getQueryParameters()) {
+            q.setParameter(param.getPname(), param.getValue());
+        }
+
+        if (limit != null) {
+            cq.setLimit(limit);
+            q.setMaxResults(cq.getLimit());
+        }
+
+        if (offset != null) {
+            cq.setOffset(offset);
+            q.setFirstResult(cq.getOffset());
+        }
 
         lbs = q.getResultList();
 
