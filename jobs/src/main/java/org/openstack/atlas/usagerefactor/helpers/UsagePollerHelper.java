@@ -174,7 +174,7 @@ public class UsagePollerHelper {
                             numVips = virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadbalancer).intValue();
                         } catch (EntityNotFoundException lbE) {
                             //What to do now?? Continue?????????
-                            LOG.info("Loadbalancer " + loadbalancerId + " has usage returned by SNMP but there are no" +
+                            LOG.warn("Loadbalancer " + loadbalancerId + " has usage returned by SNMP but there are no" +
                                     " entries in any table for that loadbalancer. " + lbE.getMessage());
                             continue;
                         }
@@ -222,23 +222,32 @@ public class UsagePollerHelper {
                     continue;
                 }
 
-                LoadBalancerHostUsage existingUsage = loadBalancerHostUsages.get(loadBalancerHostUsages.size() - 1);
+                LoadBalancerHostUsage usageBaseline = loadBalancerHostUsages.get(loadBalancerHostUsages.size() - 1);
+                if (loadBalancerHostUsages.size() >= 2) {
+                    LoadBalancerHostUsage eventWithSameTime = loadBalancerHostUsages.get(loadBalancerHostUsages.size() - 2);
+                    if (eventWithSameTime.getPollTime().equals(usageBaseline.getPollTime())){
+                        if (usageBaseline.getEventType() == null) {
+                            usageBaseline = eventWithSameTime;
+                        }
+                    }
+                }
                 if (newMergedRecord == null) {
-                    newMergedRecord = initializeMergedRecord(existingUsage);
+                    newMergedRecord = initializeMergedRecord(usageBaseline);
                     newMergedRecord.setPollTime(pollTime);
                     newMergedRecord.setEventType(null);
                 }
 
-                calculateUsage(currentUsage, existingUsage, newMergedRecord, pollTime);
-                 newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage.getAccountId(),
-                         loadbalancerId, existingUsage.getTagsBitmask(),
-                         existingUsage.getNumVips(), hostId, pollTime));
+                calculateUsage(currentUsage, usageBaseline, newMergedRecord, pollTime);
+                 newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, usageBaseline.getAccountId(),
+                         loadbalancerId, usageBaseline.getTagsBitmask(),
+                         usageBaseline.getNumVips(), hostId, pollTime));
             }
             mergedUsages.add(newMergedRecord);
         }
 
         return new UsageProcessorResult(mergedUsages, newLBHostUsages);
     }
+
     public List<LoadBalancerMergedHostUsage> processExistingEvents(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages) {
         List<LoadBalancerMergedHostUsage> newMergedEventRecords = new ArrayList<LoadBalancerMergedHostUsage>();
         List<Host> hosts = hostRepository.getAll();
@@ -252,14 +261,14 @@ public class UsagePollerHelper {
             //For times that do not have an entry for a host, insert null
             insertNullRecordsForHostsWithoutEntries(lbHostUsagesMapByTime, hosts);
             Map<Integer, LoadBalancerHostUsage> previousRecords = null;
-            boolean isFirstPoll = true;
+            boolean isFirstRecord = true;
             for (Calendar timeKey : lbHostUsagesMapByTime.keySet()) {
 
                 for (Integer hostId : lbHostUsagesMapByTime.get(timeKey).keySet()) {
 
                     LoadBalancerHostUsage currentUsage = lbHostUsagesMapByTime.get(timeKey).get(hostId);
 
-                    if (isFirstPoll) {
+                    if (isFirstRecord) {
                         if (currentUsage == null) {
                             if (previousRecords == null) {
                                 previousRecords = new HashMap<Integer, LoadBalancerHostUsage>();
@@ -267,13 +276,9 @@ public class UsagePollerHelper {
                             previousRecords.put(hostId, currentUsage);
                             continue;
                         }
-                        //If first record is the CREATE_LOADBALANCER event then add that event to the records to be merged.
-                        if (currentUsage.getEventType() == UsageEvent.CREATE_LOADBALANCER || currentUsage.getEventType() == UsageEvent.UNSUSPEND_LOADBALANCER) {
+                        //If an event is the first record then store merged usage as 0
+                        if (currentUsage.getEventType() != null) {
                             mergedUsagesMap.put(timeKey.getTime().toString(), initializeMergedRecord(currentUsage));
-                        }
-                        //The first record should usually be NULL from the previous poll, if it is not then at this point in the code something went wrong.
-                        else if(currentUsage.getEventType() != null) {
-                            LOG.warn("Non-CREATE_LOADBALANCER Event record encountered that did not have a previous record to compare with.");
                         }
                         //set previous record for this host to the current and continue
                         if (previousRecords == null) {
@@ -301,7 +306,7 @@ public class UsagePollerHelper {
                     previousRecords.put(hostId, currentUsage);
                 }
 
-                isFirstPoll = false;
+                isFirstRecord = false;
             }
 
             //Add all events into list that shall be returned
@@ -377,7 +382,13 @@ public class UsagePollerHelper {
                     lbHostUsagesMapByTime.put(lbHostUsage.getPollTime(), lbHostUsagesMapByHostId);
                 }
                 Map<Integer, LoadBalancerHostUsage> lbHostUsageMapByHostId = lbHostUsagesMapByTime.get(lbHostUsage.getPollTime());
-                lbHostUsageMapByHostId.put(hostId, lbHostUsage);
+                if(lbHostUsageMapByHostId.containsKey(hostId)){
+                    if (lbHostUsage.getEventType() != null) {
+                        lbHostUsageMapByHostId.put(hostId, lbHostUsage);
+                    }
+                } else {
+                    lbHostUsageMapByHostId.put(hostId, lbHostUsage);
+                }
             }
         }
 

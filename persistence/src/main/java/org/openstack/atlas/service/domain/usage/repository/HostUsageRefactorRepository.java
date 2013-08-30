@@ -104,16 +104,17 @@ public class HostUsageRefactorRepository {
     }
 
 
-    public void deleteOldHostUsage(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude) {
+    public void deleteOldHostUsage(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude, Integer maxId) {
         Query query;
         if (lbsToExclude == null || lbsToExclude.isEmpty()) {
-            query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker");
+            query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker AND u.id <= :maxId");
         } else {
             String lbIds = StringUtils.joinString(lbsToExclude, ",");
-            query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker AND loadbalancer_id not in (:lbIds)");
+            query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker AND loadbalancer_id not in (:lbIds) AND u.id <= :maxId");
             query.setParameter("lbIds", lbIds);
         }
         query.setParameter("deleteTimeMarker", deleteTimeMarker, TemporalType.TIMESTAMP);
+        query.setParameter("maxId", maxId);
         int numRowsDeleted = query.executeUpdate();
         LOG.info(String.format("Deleted %d rows with endTime before %s from 'lb_host_usage' table.",
                 numRowsDeleted, deleteTimeMarker.getTime()));
