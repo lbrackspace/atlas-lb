@@ -88,4 +88,9 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
 
         jobStateRepository.deleteByNamesOlderThanNDays(jobNames, 30);
     }
+
+    @Override
+    public boolean isJobReadyToGo() {
+        return jobStateRepository.isJobReadyToGo();
+    }
 }
