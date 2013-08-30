@@ -2,11 +2,14 @@ package org.openstack.atlas.api.helpers;
 
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
+import org.openstack.atlas.service.domain.pojos.CustomQuery;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.transaction.annotation.Transactional;
 import org.w3.atom.Link;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 public class PaginationHelper {
     protected static RestApiConfiguration restApiConfiguration;
@@ -17,6 +20,9 @@ public class PaginationHelper {
     final protected static Integer DEFAULT_PAGE_OFFSET = 0;
     final public static String NEXT = "next";
     final public static String PREVIOUS = "previous";
+
+    @PersistenceContext(unitName = "loadbalancing")
+    private static EntityManager entityManager;
 
     @Required
     public void setRestApiConfiguration(RestApiConfiguration restApiConfiguration) {
@@ -56,11 +62,15 @@ public class PaginationHelper {
         return offset + limit;
     }
 
-    public static Map<String, Integer> checkParameters(Integer offset, Integer marker, Integer limit) {
-        Map<String, Integer> map = new HashMap<String, Integer>();
-        map.put("offset", offset == null ? 0 : offset);
-        map.put("marker", marker == null ? 0 : marker);
-        map.put("limit", limit == null || limit > 100 ? 100 : limit);
-        return map;
+    @Transactional
+    public static Query checkParameters(CustomQuery customQuery, Integer offset, Integer marker, Integer limit) {
+        if (offset != null) {
+            customQuery.setOffset(offset);
+        }
+        if (limit != null) {
+            customQuery.setLimit(limit);
+        }
+        customQuery.addParam("id", ">=", "marker", marker != null ? marker : 0);
+        return entityManager.createQuery(customQuery.getQueryString());
     }
 }
