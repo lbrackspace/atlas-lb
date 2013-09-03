@@ -493,10 +493,10 @@ public class LoadBalancerRepository {
             cq.addParam("lb.id", ">=", "marker", marker);
         }
 
-//        q = helper.addQueryParameters(cq, offset, marker, limit);
-
+// Trevor - work bookmark
         qStr = cq.getQueryString();
 
+//        q = helper.addQueryParameters(entityManager, cq, "lb", offset, marker, limit);
         q = entityManager.createQuery(qStr);
 
         for (QueryParameter param : cq.getQueryParameters()) {

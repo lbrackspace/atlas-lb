@@ -1,6 +1,7 @@
 package org.openstack.atlas.service.domain.util;
 
 import org.openstack.atlas.service.domain.pojos.CustomQuery;
+import org.openstack.atlas.service.domain.pojos.QueryParameter;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -9,18 +10,20 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 public class PaginationHelper {
-    @PersistenceContext(unitName = "loadbalancing")
-    private EntityManager entityManager;
 
-    @Transactional
-    public Query addQueryParameters(CustomQuery customQuery, Integer offset, Integer marker, Integer limit) {
-        if (offset != null) {
-            customQuery.setOffset(offset);
+    public Query addQueryParameters(EntityManager entityManager, CustomQuery customQuery, String source, Integer offset, Integer marker, Integer limit) {
+
+        if (marker != null) {
+            customQuery.addParam(source + ".id", ">=", "marker", marker);
         }
-        if (limit != null) {
-            customQuery.setLimit(limit);
+
+        Query query = entityManager.createQuery(customQuery.getQueryString());
+        for (QueryParameter param : customQuery.getQueryParameters()) {
+            query.setParameter(param.getPname(), param.getValue());
         }
-        customQuery.addParam("id", ">=", "marker", marker != null ? marker : 0);
-        return entityManager.createQuery(customQuery.getQueryString());
+
+        query.setFirstResult(offset == null ? 0 : offset);
+        query.setMaxResults(limit == null || limit > 100 ? 100 : limit);
+        return query;
     }
 }
