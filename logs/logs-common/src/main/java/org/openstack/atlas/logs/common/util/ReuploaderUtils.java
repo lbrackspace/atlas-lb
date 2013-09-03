@@ -228,21 +228,24 @@ public class ReuploaderUtils {
 
     public static List<CacheZipDirInfo> getLocalCacheZipDirInfo(String cacheDir, long endHour) {
         List<CacheZipDirInfo> localCacheZipDirInfo = new ArrayList<CacheZipDirInfo>();
-        List<Long> hourKeys = new ArrayList<Long>();
-        for (Long hourKey : listHourDirectories(cacheDir)) {
-            if (hourKey > endHour) {
+        List<Long> hourKeys = listHourDirectories(cacheDir);
+        for (Long hourKey : hourKeys) {
+            long hour = hourKey;
+            if (hour > endHour) {
                 continue;
             }
-            vlog.printf("Scanning %d", hourKey);
-            for (Long accountId : listAccountDirectories(cacheDir, hourKey)) {
+            vlog.printf("Scanning %d", hour);
+            List<Long> accountIds = listAccountDirectories(cacheDir, hour);
+            for (Long accountId : accountIds) {
+                int account = accountId.intValue();
                 CacheZipDirInfo accountDirInfo = new CacheZipDirInfo();
-                String accountPath = StaticFileUtils.mergePathString(cacheDir, Long.toString(hourKey), Long.toString(accountId));
+                String accountPath = StaticFileUtils.mergePathString(cacheDir, Long.toString(hour), Long.toString(account));
                 accountDirInfo.setDirName(accountPath);
-                accountDirInfo.setAccountId((accountId.intValue()));
-                accountDirInfo.setHourKey(hourKey);
+                accountDirInfo.setAccountId(account);
+                accountDirInfo.setHourKey(hour);
                 accountDirInfo.setZipCount(0);
                 localCacheZipDirInfo.add(accountDirInfo);
-                accountDirInfo.setZips(getLocalCacheZips(cacheDir, hourKey, accountId.intValue()));
+                accountDirInfo.setZips(getLocalCacheZips(cacheDir, hour, account));
                 accountDirInfo.setZipCount(accountDirInfo.getZips().size());
             }
         }

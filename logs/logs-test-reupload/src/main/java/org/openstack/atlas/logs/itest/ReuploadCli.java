@@ -374,7 +374,7 @@ public class ReuploadCli {
                 doomedZips.add(zipFile);
             }
         }
-        System.out.printf("Are you sure you want to delete the above zips(Y/N): ");
+        System.out.printf("Are you sure you want to delete the above %d zips(Y/N): ", doomedZips.size());
         if (CommonItestStatic.inputStream(stdin, "Y")) {
             System.out.printf("Deleting files\n");
             for (CacheZipInfo doomedZip : doomedZips) {
@@ -399,7 +399,7 @@ public class ReuploadCli {
                 doomedZips.add(zipFile);
             }
         }
-        System.out.printf("Are you sure you want to delete the above zips(Y/N): ");
+        System.out.printf("Are you sure you want to delete the above %d zips(Y/N): ", doomedZips.size());
         if (CommonItestStatic.inputStream(stdin, "Y")) {
             System.out.printf("Deleting files\n");
             for (CacheZipInfo doomedZip : doomedZips) {
