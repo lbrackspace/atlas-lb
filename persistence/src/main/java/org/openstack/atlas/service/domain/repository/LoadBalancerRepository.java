@@ -448,7 +448,7 @@ public class LoadBalancerRepository {
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
                                                       String status, LbQueryStatus queryStatus, Calendar changedSince,
                                                       Integer offset, Integer limit, Integer marker) throws BadRequestException {
-        List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
+        List<LoadBalancer> lbs;
         LoadBalancerStatus lbStatus;
         String selectClause;
         String format;
@@ -456,7 +456,6 @@ public class LoadBalancerRepository {
         String msg;
         selectClause = "SELECT lb FROM LoadBalancer lb";
         String op;
-        String qStr;
         Query q;
         cq = new CustomQuery(selectClause);
         if (accountId != null) {
@@ -489,29 +488,7 @@ public class LoadBalancerRepository {
             cq.addParam("lb.updated", ">=", "updated", changedSince);
         }
 
-        if (marker != null) {
-            cq.addParam("lb.id", ">=", "marker", marker);
-        }
-
-// Trevor - work bookmark
-        qStr = cq.getQueryString();
-
-//        q = helper.addQueryParameters(entityManager, cq, "lb", offset, marker, limit);
-        q = entityManager.createQuery(qStr);
-
-        for (QueryParameter param : cq.getQueryParameters()) {
-            q.setParameter(param.getPname(), param.getValue());
-        }
-
-        if (limit != null) {
-            cq.setLimit(limit);
-            q.setMaxResults(cq.getLimit());
-        }
-
-        if (offset != null) {
-            cq.setOffset(offset);
-            q.setFirstResult(cq.getOffset());
-        }
+        q = helper.addPaginationParameters(entityManager, cq, "lb", offset, marker, limit);
 
         lbs = q.getResultList();
 
@@ -1665,18 +1642,41 @@ public class LoadBalancerRepository {
         return loadbalancers;
     }
 
-    public List<LoadBalancer> getLoadBalancersActiveInRange(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) {
-        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-        CriteriaQuery<LoadBalancer> criteria = builder.createQuery(LoadBalancer.class);
-        Root<LoadBalancer> lbRoot = criteria.from(LoadBalancer.class);
+    public List<LoadBalancer> getLoadBalancersActiveInRange(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit, Integer marker) {
+        List<LoadBalancer> lbs;
+        String selectClause;
+        CustomQuery cq;
+        selectClause = "SELECT lb FROM LoadBalancer lb";
+        Query q;
+        cq = new CustomQuery(selectClause);
+        if (accountId != null) {
+            cq.addParam("lb.accountId", "=", "accountId", accountId);
+        }
 
-        Predicate hasAccountId = builder.equal(lbRoot.get(LoadBalancer_.accountId), accountId);
-        Predicate createdBetweenDates = builder.between(lbRoot.get(LoadBalancer_.created), startTime, endTime);
-        Predicate updatedBetweenDates = builder.between(lbRoot.get(LoadBalancer_.updated), startTime, endTime);
+        //TODO: Fix this logic... its not correct at all...
+        cq.addParam("lb.updated", ">=", "updated", startTime);
+        cq.addParam("lb.updated", "<=", "updated", endTime);
+        cq.addParam("lb.created", ">=", "created", startTime);
+        cq.addParam("lb.created", "<=", "created", endTime);
 
-        criteria.select(lbRoot);
-        criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
-        return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
+        q = helper.addPaginationParameters(entityManager, cq, "lb", offset, marker, limit);
+
+        lbs = q.getResultList();
+
+        return lbs;
+        // Trevor - work bookmark
+
+//        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+//        CriteriaQuery<LoadBalancer> criteria = builder.createQuery(LoadBalancer.class);
+//        Root<LoadBalancer> lbRoot = criteria.from(LoadBalancer.class);
+//
+//        Predicate hasAccountId = builder.equal(lbRoot.get(LoadBalancer_.accountId), accountId);
+//        Predicate createdBetweenDates = builder.between(lbRoot.get(LoadBalancer_.created), startTime, endTime);
+//        Predicate updatedBetweenDates = builder.between(lbRoot.get(LoadBalancer_.updated), startTime, endTime);
+//
+//        criteria.select(lbRoot);
+//        criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
+//        return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
     }
 
     public Set<LbIdAccountId> getLoadBalancersActiveDuringPeriod(Calendar startTime, Calendar endTime) {

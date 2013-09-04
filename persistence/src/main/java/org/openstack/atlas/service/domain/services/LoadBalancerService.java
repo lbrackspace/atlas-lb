@@ -85,7 +85,7 @@ public interface LoadBalancerService {
 
     List<LoadBalancer> getLoadBalancersWithNode(String nodeAddress, Integer accountId);
 
-    List<LoadBalancer> getLoadBalancersWithUsage(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit);
+    List<LoadBalancer> getLoadBalancersWithUsage(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit, Integer marker);
 
     boolean isServiceNetLoadBalancer(Integer lbId);
 

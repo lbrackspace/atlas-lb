@@ -160,7 +160,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
     @GET
     @Path("billable")
-    public Response retrieveBillableLoadBalancers(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
+    public Response retrieveBillableLoadBalancers(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker) {
         Calendar startTime;
         Calendar endTime;
         List<org.openstack.atlas.service.domain.entities.LoadBalancer> domainLbs;
@@ -179,10 +179,11 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             }
         }
 
+        // TODO: Modify the "link" below so it reflects use of marker as well
         try {
             limit = PaginationHelper.determinePageLimit(limit);
             offset = PaginationHelper.determinePageOffset(offset);
-            domainLbs = loadBalancerService.getLoadBalancersWithUsage(accountId, startTime, endTime, offset, limit);
+            domainLbs = loadBalancerService.getLoadBalancersWithUsage(accountId, startTime, endTime, offset, limit, marker);
 
             for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
                 dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));

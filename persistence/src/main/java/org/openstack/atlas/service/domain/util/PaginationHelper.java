@@ -11,8 +11,7 @@ import javax.persistence.Query;
 
 public class PaginationHelper {
 
-    public Query addQueryParameters(EntityManager entityManager, CustomQuery customQuery, String source, Integer offset, Integer marker, Integer limit) {
-
+    public Query addPaginationParameters(EntityManager entityManager, CustomQuery customQuery, String source, Integer offset, Integer marker, Integer limit) {
         if (marker != null) {
             customQuery.addParam(source + ".id", ">=", "marker", marker);
         }
