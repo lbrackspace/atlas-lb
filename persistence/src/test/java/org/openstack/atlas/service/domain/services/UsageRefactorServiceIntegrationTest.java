@@ -70,6 +70,7 @@ public class UsageRefactorServiceIntegrationTest {
 
             usageList = new ArrayList<LoadBalancerHostUsage>();
             usage1 = new LoadBalancerHostUsage();
+            usage1.setId(1);
             usage1.setHostId(hostId);
             usage1.setPollTime(firstTime);
             usage1.setNumVips(2);
@@ -84,6 +85,7 @@ public class UsageRefactorServiceIntegrationTest {
             usage1.setLoadbalancerId(loadBalancerId);
             usageList.add(usage1);
             usage2 = new LoadBalancerHostUsage();
+            usage2.setId(2);
             usage2.setHostId(hostId);
             usage2.setPollTime(secondTime);
             usage2.setNumVips(2);
@@ -129,6 +131,7 @@ public class UsageRefactorServiceIntegrationTest {
 
         @Test
         public void shouldSuccessfullyAddOneRecordForAnEvent() {
+            usage1.setId(null);
             usageRefactorService.createUsageEvent(usage1);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> map = usageRefactorService.getAllLoadBalancerHostUsages();
             assertTrue(map.size() == 1);
@@ -159,13 +162,25 @@ public class UsageRefactorServiceIntegrationTest {
         }
 
         @Test
-        public void shouldDeleteOldHostUsages() {
+        public void shouldDeleteOldHostUsagesLessThanMaxId() {
             usageRefactorService.batchCreateLoadBalancerHostUsages(usageList);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> addMap = usageRefactorService.getAllLoadBalancerHostUsages();
             assertTrue(addMap.get(loadBalancerId).get(hostId).size() == 2);
-            usageRefactorService.deleteOldLoadBalancerHostUsages(Calendar.getInstance(), null);
+            usageRefactorService.deleteOldLoadBalancerHostUsages(Calendar.getInstance(), null, 1);
             Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> deleteMap = usageRefactorService.getAllLoadBalancerHostUsages();
-            assertTrue(deleteMap.size() == 0);
+            assertTrue(deleteMap.size() == 1);
+        }
+
+        @Test
+        public void shouldDeleteOldHostUsagesButNotLoadBalancerIdsSpecified() {
+            ArrayList<Integer> loadbalancerIdsToKeep = new ArrayList<Integer>();
+            loadbalancerIdsToKeep.add(121);
+            usageRefactorService.batchCreateLoadBalancerHostUsages(usageList);
+            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> addMap = usageRefactorService.getAllLoadBalancerHostUsages();
+            assertTrue(addMap.get(loadBalancerId).get(hostId).size() == 2);
+            usageRefactorService.deleteOldLoadBalancerHostUsages(Calendar.getInstance(), loadbalancerIdsToKeep, 2);
+            Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> deleteMap = usageRefactorService.getAllLoadBalancerHostUsages();
+            assertTrue(deleteMap.get(loadBalancerId).get(hostId).size() == 2);
         }
     }
 }
