@@ -286,6 +286,8 @@ public class UsagePollerHelper {
                         }
                         previousRecords.put(hostId, currentUsage);
                         continue;
+                    } else if (currentUsage != null && currentUsage.getEventType() == null){
+                        continue;
                     }
 
                     LoadBalancerHostUsage previousUsage = previousRecords.get(hostId);
