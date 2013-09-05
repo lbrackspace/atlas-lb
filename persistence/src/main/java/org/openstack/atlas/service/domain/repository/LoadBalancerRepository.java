@@ -1643,40 +1643,25 @@ public class LoadBalancerRepository {
     }
 
     public List<LoadBalancer> getLoadBalancersActiveInRange(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit, Integer marker) {
+        // Trevor WIP
         List<LoadBalancer> lbs;
         String selectClause;
         CustomQuery cq;
-        selectClause = "SELECT lb FROM LoadBalancer lb";
+        selectClause = "SELECT lb FROM LoadBalancer lb WHERE (lb.status != 'DELETED' OR lb.updated >= :startTime)";
         Query q;
         cq = new CustomQuery(selectClause);
         if (accountId != null) {
             cq.addParam("lb.accountId", "=", "accountId", accountId);
         }
 
-        //TODO: Fix this logic... its not correct at all...
-        cq.addParam("lb.updated", ">=", "updated", startTime);
-        cq.addParam("lb.updated", "<=", "updated", endTime);
-        cq.addParam("lb.created", ">=", "created", startTime);
-        cq.addParam("lb.created", "<=", "created", endTime);
+        cq.addParam("lb.created", "<", "endTime", endTime);
 
         q = helper.addPaginationParameters(entityManager, cq, "lb", offset, marker, limit);
+        q.setParameter("startTime", startTime);
 
         lbs = q.getResultList();
 
         return lbs;
-        // Trevor - work bookmark
-
-//        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-//        CriteriaQuery<LoadBalancer> criteria = builder.createQuery(LoadBalancer.class);
-//        Root<LoadBalancer> lbRoot = criteria.from(LoadBalancer.class);
-//
-//        Predicate hasAccountId = builder.equal(lbRoot.get(LoadBalancer_.accountId), accountId);
-//        Predicate createdBetweenDates = builder.between(lbRoot.get(LoadBalancer_.created), startTime, endTime);
-//        Predicate updatedBetweenDates = builder.between(lbRoot.get(LoadBalancer_.updated), startTime, endTime);
-//
-//        criteria.select(lbRoot);
-//        criteria.where(builder.and(hasAccountId, builder.or(createdBetweenDates, updatedBetweenDates)));
-//        return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
     }
 
     public Set<LbIdAccountId> getLoadBalancersActiveDuringPeriod(Calendar startTime, Calendar endTime) {

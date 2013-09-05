@@ -64,7 +64,11 @@ public class CustomQuery {
             return selectClause;
         }
 
-        where.append(WherePrefix);
+        if (selectClause.contains("WHERE")) {
+            where.append(" AND ");
+        } else {
+            where.append(WherePrefix);
+        }
         for (i = 0; i < queryParameters.size(); i++) {
             param = queryParameters.get(i);
             qStr = String.format("%s %s :%s", param.getQname(), param.getOp(), param.getPname());
