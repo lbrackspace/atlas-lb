@@ -188,18 +188,26 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
                 dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));
             }
-
-            if (dataModelLbs.getLoadBalancers().size() > limit) {
-                String relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, PaginationHelper.calculateNextOffset(offset, limit), limit);
+            if (limit.equals(dataModelLbs.getLoadBalancers().size())) {
+                String relativeUri;
+                if (marker == null || marker <= 0) {
+                    relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                } else {
+                    relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&marker=%d&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, marker, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                }
                 Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri);
                 dataModelLbs.getLinks().add(nextLink);
-                dataModelLbs.getLoadBalancers().remove(limit.intValue()); // Remove limit+1 item
             }
 
             if (offset > 0) {
-                String relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
-                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri);
-                dataModelLbs.getLinks().add(nextLink);
+                String relativeUri;
+                if (marker == null || marker <= 0) {
+                    relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
+                } else {
+                    relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&marker=%d&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, marker, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
+                }
+                Link prevLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri);
+                dataModelLbs.getLinks().add(prevLink);
             }
 
             return Response.status(200).entity(dataModelLbs).build();
