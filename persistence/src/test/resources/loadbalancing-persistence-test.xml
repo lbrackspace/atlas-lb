@@ -15,20 +15,17 @@
 
     <!-- Wires up the @Tx's -->
     <tx:annotation-driven order="100" transaction-manager="transactionManager"/>
-    <!--Scans the classpath for annotated components @Component, @Repository, @Service, and @Controller -->
+    <!-- Scans the classpath for annotated components @Component, @Repository, @Service, and @Controller -->
     <context:component-scan base-package="org.openstack.atlas"/>
-    <!--Activates @Required, @Autowired, @PostConstruct, @PreDestroy and @Resource -->
+    <!-- Activates @Required, @Autowired, @PostConstruct, @PreDestroy and @Resource -->
     <context:annotation-config/>
     <!-- Wires up the @PC's -->
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
-    <!--Allow aspects-->
+    <!-- Allow aspects i.e. @Aspect -->
     <aop:aspectj-autoproxy/>
-    <bean id="deadLockRetryAspect" class="org.openstack.atlas.service.domain.deadlock.DeadLockRetryAspect">
-        <property name="order" value="99"/>
-    </bean>
 
-    <!--STANDALONE SPRING SETTINGS-->
+    <!-- STANDALONE SPRING SETTINGS -->
     <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
         <property name="persistenceXmlLocation" value="META-INF/persistence.xml"/>
         <property name="persistenceUnitName" value="loadbalancing"/>

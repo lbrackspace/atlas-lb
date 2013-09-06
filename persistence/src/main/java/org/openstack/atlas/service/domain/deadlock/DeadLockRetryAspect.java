@@ -1,4 +1,4 @@
-package org.openstack.atlas.service.domain.deadlock;
+    package org.openstack.atlas.service.domain.deadlock;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.orm.jpa.JpaSystemException;
+import org.springframework.stereotype.Component;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -22,14 +23,22 @@ import javax.persistence.PersistenceException;
  * <p/>
  * <emf>Note that the aspect implements the Ordered interface so we can set the
  * precedence of the aspect higher than the transaction advice (we want a fresh
- * transaction each time we retry).</emf>
+ * transaction each time we retry). Also note that all aspects are singletons.
+ * </emf>
  */
 @Aspect
+@Component
 public class DeadLockRetryAspect implements Ordered {
     private static final Logger LOGGER = LoggerFactory.getLogger(DeadLockRetryAspect.class);
-    private int order = -1;
+    private int order = 99; // Transaction manager order should be set to 100
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
+
+    private int conncurrencyRetryCalls = 0;
+
+    public int getConncurrencyRetryCalls() {
+        return conncurrencyRetryCalls;
+    }
 
     /**
      * Deadlock retry. The aspect applies to every service method with the
@@ -38,10 +47,11 @@ public class DeadLockRetryAspect implements Ordered {
      * @param pjp           the joinpoint
      * @param deadLockRetry the concurrency retry
      * @return
-     * @throws Throwable    the throwable
+     * @throws Throwable the throwable
      */
     @Around(value = "@annotation(deadLockRetry)", argNames = "pjp,deadLockRetry")
     public Object concurrencyRetry(final ProceedingJoinPoint pjp, final DeadLockRetry deadLockRetry) throws Throwable {
+        conncurrencyRetryCalls++;
         final Integer retryCount = deadLockRetry.retryCount();
         Integer deadlockCounter = 0;
         Object result = null;
