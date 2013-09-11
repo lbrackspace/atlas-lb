@@ -32,5 +32,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     repose_via_key,
     identity_auth_url,
     identity_user,
-    identity_pass
+    identity_pass,
+    usage_poller_log_all_counters
 }

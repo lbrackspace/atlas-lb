@@ -43,7 +43,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*"})
-    @PrepareForTest({TrafficScriptHelper.class, ResourceTranslator.class})
+    @PrepareForTest({ResourceTranslator.class})
     public static class WhenModifyingLoadbalancerResources {
         private String vsName;
         private String secureVsName;
@@ -71,7 +71,6 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             PowerMockito.mockStatic(ResourceTranslator.class);
             PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
-            PowerMockito.mockStatic(TrafficScriptHelper.class);
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadSTMRestClient(config)).thenReturn(client);
             doNothing().when(adapterSpy).setErrorFile(config, loadBalancer, loadBalancer.getUserPages().getErrorpage());
@@ -89,10 +88,6 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             verify(resources).createPersistentClasses(config);
             //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
@@ -633,7 +628,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*"})
-    @PrepareForTest({TrafficScriptHelper.class, ResourceTranslator.class})
+    @PrepareForTest({ResourceTranslator.class})
     public static class WhenModifyingSSLResources {
         private String vsName;
         private String secureVsName;
@@ -662,7 +657,6 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             resourceTranslator = spy(new ResourceTranslator());
             PowerMockito.mockStatic(ResourceTranslator.class);
             PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
-            PowerMockito.mockStatic(TrafficScriptHelper.class);
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadSTMRestClient(config)).thenReturn(client);
@@ -690,10 +684,6 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             verify(resourceTranslator).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client).destroy();

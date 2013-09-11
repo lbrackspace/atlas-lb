@@ -67,13 +67,18 @@ public class ResourceTranslator {
 
     public VirtualServer translateVirtualServerResource(LoadBalancerEndpointConfiguration config,
                                                         String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
-        cVServer = new VirtualServer();
         VirtualServerBasic basic = new VirtualServerBasic();
         VirtualServerSsl ssl = new VirtualServerSsl();
         VirtualServerProperties properties = new VirtualServerProperties();
         VirtualServerConnectionError ce = new VirtualServerConnectionError();
         VirtualServerTcp tcp = new VirtualServerTcp();
         VirtualServerLog log;
+        List<String> rules = new ArrayList<String>();
+
+        properties.setBasic(basic);
+        properties.setSsl(ssl);
+        cVServer = new VirtualServer();
+        cVServer.setProperties(properties);
 
         //basic virtual server settings
         if (vsName.equals(ZxtmNameBuilder.genSslVSName(loadBalancer))) {
@@ -123,6 +128,7 @@ public class ResourceTranslator {
             VirtualServerWebcache cache = new VirtualServerWebcache();
             cache.setEnabled(true);
             properties.setWeb_cache(cache);
+            rules.add(StmConstants.CONTENT_CACHING);
         }
 
         //error file settings
@@ -136,16 +142,16 @@ public class ResourceTranslator {
         properties.setConnection_errors(ce);
 
         //trafficscript or rule settings
-        List<String> rules = new ArrayList<String>();
         if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
             rules.add(StmConstants.XFF);
             rules.add(StmConstants.XFP);
-            if (loadBalancer.getRateLimit() != null)
-                rules.add(StmConstants.RATE_LIMIT_HTTP);
-        } else {
-            if (loadBalancer.getRateLimit() != null)
-                rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
+//            if (loadBalancer.getRateLimit() != null) //Rate Limit traffic rules are only for manual use
+//                rules.add(StmConstants.RATE_LIMIT_HTTP);
         }
+//        else {
+//            if (loadBalancer.getRateLimit() != null) //Rate Limit traffic rules are only for manual use
+//                rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
+//        }
         basic.setRequest_rules(rules);
 
         //Half closed proxy settings
@@ -158,10 +164,6 @@ public class ResourceTranslator {
 
         //ssl settings
         ssl.setServer_cert_default(vsName);
-
-        properties.setBasic(basic);
-        properties.setSsl(ssl);
-        cVServer.setProperties(properties);
 
         return cVServer;
     }
