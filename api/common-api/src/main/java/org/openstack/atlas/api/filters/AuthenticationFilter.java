@@ -7,6 +7,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
 import org.openstack.atlas.api.auth.AuthInfo;
 import org.openstack.atlas.api.auth.AuthTokenValidator;
+import org.openstack.atlas.cfg.ConfigurationInitializationException;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.api.exceptions.MalformedUrlException;
@@ -63,7 +64,8 @@ public class AuthenticationFilter implements Filter {
     }
 
 
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
@@ -71,21 +73,20 @@ public class AuthenticationFilter implements Filter {
         }
     }
 
-    private void handleAuthenticationRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws IOException {
+    private void handleAuthenticationRequest(
+            HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain)
+            throws IOException {
         String token = null;
 
         if (httpServletRequest.getHeader(X_AUTH_TOKEN) != null) {
             token = httpServletRequest.getHeader(X_AUTH_TOKEN);
         }
 
-        //Rewrite headers to include only the username, no subs or quality at this time..
-        String username = (httpServletRequest.getHeader(X_AUTH_USER_NAME) != null
-                ? httpServletRequest.getHeader(X_AUTH_USER_NAME).split(";")[0]
-                : null);
-
         String accountId = null;
         if (httpServletRequest.getHeader(X_AUTH_TENANT_ID) != null) {
             accountId = httpServletRequest.getHeader(X_AUTH_TENANT_ID);
+        } else {
+            accountIdExtractor.getAccountId(httpServletRequest.getRequestURL().toString());
         }
 
         String authorization = null;
@@ -93,25 +94,64 @@ public class AuthenticationFilter implements Filter {
             authorization = httpServletRequest.getHeader(AUTHORIZATION_HEADER);
         }
 
+        //Rewrite headers to include only the username, no subs or quality at this time..
+        String xpp = httpServletRequest.getHeader(X_AUTH_USER_NAME);
+        LOG.debug("X-PP-User before parsing: " + xpp);
+        String[] xpplist = new String[0];
+        String username = null;
+        String userip = null;
+        if (xpp != null) {
+            xpplist = xpp.split(",");
+            username = xpplist[0];
+            if (username.contains(";")) {
+                username = username.split(";")[0];
+            }
+            if (xpplist.length > 0) {
+                userip = xpplist[1];
+            }
+        }
+
+        LOG.info(String.format("Incoming request method: %s and request endpoint: " +
+                "%s for Username: %s from UserIP: %s AccountID: %s Authorization: %s", httpServletRequest.getMethod(),
+                httpServletRequest.getRequestURI(), username, userip, accountId, authorization));
+
         try {
-            if (username != null && accountId != null && token != null && authorization != null) {
-                String decoded = Base64.decode(authorization.split(" ")[1]);
-                if (decoded.equals(configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_user)
-                        + ":" + configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_key))) {
-                    HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
-                    enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
-                    enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
-                    LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Token: %s Username: %s", accountId, token, username));
-                    filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
-                    return;
-                }
-            } else if (httpServletRequest.getRequestURL().toString().contains("application.wadl")) {
-                //TODO:Handle un-authorized access here when we use query param for wadl
+            //Pass along if this is a wadl request...
+            if (httpServletRequest.getRequestURL().toString().contains("application.wadl")) {
+                LOG.warn("WADL Request, allowing user to view WADL for the LBAAS API");
                 handleWadlRequest(httpServletRequest, httpServletResponse);
+            }
+
+            if (username != null && accountId != null && token != null) {
+                LOG.info(String.format("Authorizing request for Username: %s with credentials " +
+                        "from Respose service: %s", username, authorization));
+                if (authorization == null || !Base64.decode(authorization.split(" ")[1]).equals(configuration.
+                        getString(PublicApiServiceConfigurationKeys.basic_auth_user)
+                        + ":" + configuration.getString(PublicApiServiceConfigurationKeys.basic_auth_key))) {
+                    LOG.error(String.format("Basic authorization %s header provided did not validate " +
+                            "attempting to re-authenticate User: %s " +
+                            "with provided credentials, Token: %s ", authorization, username, token));
+                    handleInternalAuthenticationRequest(httpServletRequest, httpServletResponse, filterChain);
+                }
+
+                LOG.info("Request has been authorized.. continue...");
+                HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
+                enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
+                enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
+                LOG.info(String.format("Request successfully authenticated, passing control " +
+                        "to the servlet. Account: %s Token: %s Username: %s", accountId, token, username));
+                filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
             } else {
-                LOG.debug("Not a WADL nor Repose request.. attempt to validate the user with provided credentials");
+                LOG.warn("Insufficient Data:: Not a WADL nor a Repose request.. " +
+                        "attempt to validate the user with provided credentials...");
+                LOG.debug(String.format("Not a Repose request, will handle via internal authentication, " +
+                        "available information about requestor:: Username: %s, accountID: %s, Token: %s",
+                        username, accountId, token));
                 handleInternalAuthenticationRequest(httpServletRequest, httpServletResponse, filterChain);
             }
+
+        } catch (ConfigurationInitializationException e) {
+            handleErrorReposnse(httpServletRequest, httpServletResponse, 500, e);
         } catch (RuntimeException e) {
             handleErrorReposnse(httpServletRequest, httpServletResponse, 500, e);
         } catch (ServletException e) {
@@ -125,8 +165,11 @@ public class AuthenticationFilter implements Filter {
         }
     }
 
-    private void handleInternalAuthenticationRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws IOException, ServletException {
-        String INVALID_TOKEN_MESSAGE = "Invalid authentication credentials. Please review request and try again with valid credentials";
+    private void handleInternalAuthenticationRequest(
+            HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain)
+            throws IOException, ServletException {
+        String INVALID_TOKEN_MESSAGE = "Invalid authentication credentials. " +
+                "Please review request and try again with valid credentials";
         String AUTH_FAULT_MESSAGE = "There was an error while authenticating, please contact support.";
         String authToken = httpServletRequest.getHeader("X-AUTH-TOKEN");
         String MISSING_TOKEN_MESSAGE = "Missing authentication token.";
@@ -150,12 +193,15 @@ public class AuthenticationFilter implements Filter {
         }
 
         try {
-            LOG.debug(String.format("Before calling validate on account: %s with token: %s", accountId, authToken));
+            LOG.debug(String.format("Before calling internal validation on account: %s " +
+                    "with token: %s", accountId, authToken));
             String accountStr = String.format("%d", accountId);
             CacheEntry<AuthInfo> ce = userCache.getEntry(accountStr);
             AuthInfo authInfo = null;
 
+            LOG.debug(String.format("Verifying cache for %s ", accountStr));
             if (ce == null || ce.isExpired()) {
+                LOG.debug(String.format("Cache expired or invalid for %s. Purging... ", accountStr));
                 userCache.remove(accountStr);
             } else {
                 authInfo = ce.getVal();
@@ -163,53 +209,70 @@ public class AuthenticationFilter implements Filter {
             }
 
             if (authInfo == null || !authInfo.getAuthToken().equals(authToken)) {
-                LOG.info(String.format("Attempting to contact the auth service for account %s with token: %s", accountId, authToken));
+                LOG.info(String.format("Attempting to contact the auth " +
+                        "service for account %s with token: %s", accountId, authToken));
                 username = authTokenValidator.validate(authToken, String.valueOf(accountId)).getUser().getName();
                 if (username == null) {
+                    LOG.error(String.format("Unauthorized access for account %s with token: %s." +
+                            " Returning failure response...", accountId, authToken));
                     sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                     return;
                 }
 
-                LOG.info(String.format("Successfully retrieved users info from the auth service for account: %s with token: %s returned username: %s", accountId, authToken, username));
+                LOG.info(String.format("Successfully retrieved users info from the auth service for " +
+                        "account: %s with token: %s returned username: %s", accountId, authToken, username));
                 authInfo = new AuthInfo(username, authToken);
 
-                LOG.debug(String.format("insert %s-%s-%s into userCache", accountStr, authToken, username));
+                LOG.debug(String.format("inserting %s-%s-%s into userCache", accountStr, authToken, username));
                 userCache.put(accountStr, authInfo);
             } else {
+                LOG.info(String.format("Successfully retrieved users info from the caching service for " +
+                        "account: %s with token: %s returned username: %s",
+                        accountId, authToken, authInfo.getUserName()));
                 username = authInfo.getUserName();
             }
         } catch (IdentityFault kex) {
             String exceptMsg = getExtendedStackTrace(kex);
             if (kex.code == 401 || kex.code == 404) {
-                LOG.error(String.format("Error while authenticating user %s-%s-%s: ERROR CODE: %d Message: %s Full-Stack: %s\n", accountId, authToken, username, kex.code, kex.message, exceptMsg));
+                LOG.error(String.format("Error while authenticating user %s-%s-%s: ERROR CODE: %d Message: " +
+                        "%s Full-Stack: %s\n", accountId, authToken, username, kex.code, kex.message, exceptMsg));
                 sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                 return;
             } else {
-                LOG.error(String.format("Error while authenticating user %s-%s-%s: ERROR CODE: %d Message: %s Details: %s Full-Stack: %s\n", accountId, authToken, username, kex.code, kex.message, kex.details, exceptMsg));
+                LOG.error(String.format("Error while authenticating user %s-%s-%s: ERROR CODE: %d Message: " +
+                        "%s Details: %s Full-Stack: %s\n", accountId, authToken, username,
+                        kex.code, kex.message, kex.details, exceptMsg));
                 sendUnauthorizedResponse(httpServletRequest, httpServletResponse, AUTH_FAULT_MESSAGE);
                 return;
             }
         } catch (Exception e) {
             String exceptMsg = getExtendedStackTrace(e);
-            LOG.error(String.format("Error while authenticating user %s-%s-%s:%s\n", accountId, authToken, username, exceptMsg));
+            LOG.error(String.format("Error while authenticating user %s-%s-%s:%s\n",
+                    accountId, authToken, username, exceptMsg));
             httpServletResponse.sendError(500, e.getMessage());
             return;
         }
 
-        HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
-        enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
-        enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
+        if (username.contains(";")) {
+            username = username != null
+                    ? username.split(";")[0]
+                    : null;
+        }
 
         try {
-            LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Token: %s Username: %s", accountId, authToken, username));
+            HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
+            enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
+            enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
+            LOG.info(String.format("Request successfully authenticated, passing control to the servlet. " +
+                    "Account: %s Token: %s Username: %s", accountId, authToken, username));
             filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
-            return;
         } catch (RuntimeException e) {
             handleErrorReposnse(httpServletRequest, httpServletResponse, 500, e);
         }
     }
 
-    private void handleWadlRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException, ServletException {
+    private void handleWadlRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse)
+            throws IOException, ServletException {
         //Temp for fix in Repose to handle query params horrible things happen here
         LOG.info("WADL request, forwarding to CXF to produce the WADL.");
         if (httpServletRequest.getRequestURL().toString().contains("application.wadl")
@@ -222,7 +285,8 @@ public class AuthenticationFilter implements Filter {
         }
     }
 
-    private void handleErrorReposnse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, int errorCode, Exception e) throws IOException {
+    private void handleErrorReposnse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
+                                     int errorCode, Exception e) throws IOException {
         final String UNEXPECTED = "Something unexpected happened. Please contact support.";
         final String UNAUTHENTICATED = "User not authenticated, please retry the request with valid auth credentials. ";
 
@@ -239,7 +303,9 @@ public class AuthenticationFilter implements Filter {
         }
     }
 
-    private void sendUnauthorizedResponse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, String message) throws IOException {
+    private void sendUnauthorizedResponse(
+            HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, String message)
+            throws IOException {
         String contentType = accountIdExtractor.getContentType(httpServletRequest.getRequestURL().toString());
 
         LoadBalancerFault unauthorized = new LoadBalancerFault();
@@ -247,7 +313,8 @@ public class AuthenticationFilter implements Filter {
         unauthorized.setMessage(message);
         httpServletResponse.setStatus(SC_UNAUTHORIZED);
 
-        if (contentType.equals("xml") || !contentType.equals("json") && httpServletRequest.getContentType() != null && httpServletRequest.getContentType().equals("application/xml")) {
+        if (contentType.equals("xml") || !contentType.equals("json") && httpServletRequest.getContentType()
+                != null && httpServletRequest.getContentType().equals("application/xml")) {
             try {
                 httpServletResponse.setContentType("application/xml; charset=UTF-8");
                 Marshaller marshaller = JAXBContext.newInstance(unauthorized.getClass()).createMarshaller();

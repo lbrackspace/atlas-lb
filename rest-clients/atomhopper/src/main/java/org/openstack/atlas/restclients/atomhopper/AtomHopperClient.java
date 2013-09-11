@@ -8,5 +8,7 @@ public interface AtomHopperClient {
 
     ClientResponse postEntryWithToken(Object entry, String token) throws Exception;
 
+    ClientResponse getEntry(String token, String uuid) throws Exception;
+
     void destroy();
 }

@@ -56,7 +56,7 @@ public class AHRecordHelper {
 
                 response = client.postEntryWithToken(entryString, authToken);
                 if (response != null) {
-                    processResponse(response, usageRecord, entryObject, entryString);
+                    processResponse(response, authToken, usageRecord, entryObject, entryString);
                 } else {
                     LOG.error(String.format("Alert! :: Client Response is Null for LBID: %d, UUID: %s",
                             usageRecord.getLoadbalancer().getId(), usageRecord.getUuid()));
@@ -92,7 +92,7 @@ public class AHRecordHelper {
         return failedRecords;
     }
 
-    protected void processResponse(ClientResponse response, Usage usageRecord,
+    protected void processResponse(ClientResponse response, String authToken, Usage usageRecord,
                                    UsageEntry entryobject, String entrystring) throws Exception {
 
         //Set numAttempts and the UUID before processing so its saved if failure occurs.
@@ -109,8 +109,17 @@ public class AHRecordHelper {
             logSuccess(body, usageRecord, entrystring);
 
         } else if (status == 409) {
-            //Duplicate record, we will assume its been pushed, but should alert and verify...
-            usageRecord.setNeedsPushed(false);
+            boolean isDupe = isDuplicateEntry(authToken, usageRecord);
+            if (isDupe) {
+                LOG.warn(String.format("Entry UUID: %s is a duplicate record and will be removed from the list. " +
+                        "Alert created to notify of potential issues... ", usageRecord.getUuid()));
+                usageRecord.setNeedsPushed(false);
+            } else {
+                LOG.warn(String.format("Entry UUID: %s seems to NOT be a duplicate " +
+                        "record and will NOT be removed from the list. " +
+                        "Alert created to notify of potential issues... ", usageRecord.getUuid()));
+                usageRecord.setNeedsPushed(true);
+            }
             failedRecords.add(usageRecord);
             generateServiceEventRecord(usageRecord, entrystring, buildMessage(body));
             logAndAlert(body, usageRecord, entrystring);
@@ -129,6 +138,23 @@ public class AHRecordHelper {
             failedRecords.add(usageRecord);
             logAndAlert(body, usageRecord, entrystring);
         }
+    }
+
+    protected boolean isDuplicateEntry(String token, Usage usageRecord) {
+        try {
+            ClientResponse response = client.getEntry(token, usageRecord.getUuid());
+            UsageEntry entry = response.getEntity(UsageEntry.class);
+            if (response.getStatus() == 200) {
+                if (!(entry.getContent().getEvent().getId().equals(usageRecord.getUuid()))) {
+                    return false;
+                }
+            }
+
+        } catch (Exception e) {
+            LOG.warn(String.format("Could not verify duplicate entry for UUID: %s, attempt to re-push the record..."));
+            return false;
+        }
+        return true;
     }
 
     protected void logAndAlert(String body, Usage usageRecord, String entrystring) {
