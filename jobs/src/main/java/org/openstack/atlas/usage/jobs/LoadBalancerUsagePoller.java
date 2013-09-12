@@ -52,6 +52,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         Calendar pollTime = Calendar.getInstance();
         LOG.info("Set poll time to " + pollTime.getTime().toString() + "...");
         Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getRecordsBeforeTimeInclusive(pollTime);
+        Integer maxId = findMaxId(existingUsages);
         LOG.info("Retrieved records for " + existingUsages.size() + " load balancers from lb_host_usage table.");
         Map<Integer, Map<Integer, SnmpUsage>> currentUsages;
         try {
@@ -70,7 +71,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         LOG.info("Completed insertion of " + result.getMergedUsages().size() + " new records into lb_merged_host_usage table.");
         usageRefactorService.batchCreateLoadBalancerHostUsages(result.getLbHostUsages());
         LOG.info("Completed insertion of " + result.getLbHostUsages().size() + " new records into lb_host_usage table.");
-        usageRefactorService.deleteOldLoadBalancerHostUsages(pollTime, loadBalancersNotToDelete);
+        usageRefactorService.deleteOldLoadBalancerHostUsages(pollTime, loadBalancersNotToDelete, maxId);
         LOG.info("Completed deletion of records from lb_host_usage table prior to poll time: " + pollTime.getTime().toString());
     }
 
@@ -163,6 +164,22 @@ public class LoadBalancerUsagePoller extends AbstractJob {
             // Preserve interrupt status
             Thread.currentThread().interrupt();
         }
+    }
+
+    private Integer findMaxId(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages) {
+        LOG.info("Getting max record id...");
+        Integer maxId = -1;
+        for (Integer loadbalancerId : existingUsages.keySet()) {
+            for (Integer hostId : existingUsages.get(loadbalancerId).keySet()) {
+                for(LoadBalancerHostUsage usage : existingUsages.get(loadbalancerId).get(hostId)) {
+                    if(maxId <= usage.getId()){
+                        maxId = usage.getId();
+                    }
+                }
+            }
+        }
+        LOG.info("Found max record id - " + maxId);
+        return maxId;
     }
 
 }

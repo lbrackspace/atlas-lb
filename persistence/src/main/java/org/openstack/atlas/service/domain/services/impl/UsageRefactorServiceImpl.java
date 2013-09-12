@@ -52,8 +52,8 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     }
 
     @Override
-    public void deleteOldLoadBalancerHostUsages(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude) {
-        hostUsageRefactorRepository.deleteOldHostUsage(deleteTimeMarker, lbsToExclude);
+    public void deleteOldLoadBalancerHostUsages(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude, Integer maxId) {
+        hostUsageRefactorRepository.deleteOldHostUsage(deleteTimeMarker, lbsToExclude, maxId);
     }
 
     @Override
