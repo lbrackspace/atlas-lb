@@ -11,12 +11,19 @@ import javax.persistence.Query;
 
 public class PaginationHelper {
 
+    private String value;
+
     public Query addPaginationParameters(EntityManager entityManager, CustomQuery customQuery, String source, Integer offset, Integer marker, Integer limit) {
+        String cqString;
         if (marker != null) {
-            customQuery.addParam(source + ".id", ">=", "marker", marker);
+            setValue(source);
+            customQuery.addParam("(" + source + ".id", ">=", "marker", marker);
+            cqString = customQuery.getQueryString() + value;
+        } else {
+            cqString = customQuery.getQueryString();
         }
 
-        Query query = entityManager.createQuery(customQuery.getQueryString());
+        Query query = entityManager.createQuery(cqString);
         for (QueryParameter param : customQuery.getQueryParameters()) {
             query.setParameter(param.getPname(), param.getValue());
         }
@@ -24,5 +31,12 @@ public class PaginationHelper {
         query.setFirstResult(offset == null ? 0 : offset);
         query.setMaxResults(limit == null || limit > 100 ? 100 : limit);
         return query;
+    }
+
+    private void setValue(String source) {
+        if (source.equals("lb")) {
+            this.value = " or lb.id = (SELECT lb.id FROM LoadBalancer lb WHERE lb.accountId = :accountId"
+                    + " AND lb.id < :marker ORDER BY lb.id DESC LIMIT 1 OFFSET 1))";
+        }
     }
 }
