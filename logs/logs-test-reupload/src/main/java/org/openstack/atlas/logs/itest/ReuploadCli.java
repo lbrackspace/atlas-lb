@@ -34,6 +34,7 @@ import java.util.*;
 public class ReuploadCli {
 
     public static final String DEFAULT_HADOOP_CONF_FILE = "/etc/openstack/atlas/hadoop-logs.conf";
+    public static final String DEFAULT_CONF_FILE = "~/conf.json";
     private static final int BUFFSIZE = 1024 * 32;
     private static final Comparator<CacheZipInfo> lidComparator;
     private static final Comparator<CacheZipInfo> aidComparator;
@@ -61,12 +62,22 @@ public class ReuploadCli {
             System.out.printf("the json conf file will be of the form:\n%s\n", HibernateDbConf.exampleJson);
             System.out.printf("if the hadoopConfiguration.xml file param is blank the value\n");
             System.out.printf("will be deduced from the %s file\n", DEFAULT_HADOOP_CONF_FILE);
-            return;
+            System.out.printf("\n");
         }
         List<ReuploaderThread> uploaders = new ArrayList<ReuploaderThread>();
         stdin = StaticFileUtils.inputStreamToBufferedReader(System.in, BUFFSIZE);
         //System.out.printf("Press enter to continue\n");
         //stdin.readLine();
+        String jsonDbConfFileName;
+
+
+        if (argv.length <= 0) {
+            System.out.printf("using Default conf.json file %s since no conf file specified on command line\n", DEFAULT_CONF_FILE);
+            jsonDbConfFileName = StaticFileUtils.expandUser(DEFAULT_CONF_FILE);
+        } else {
+            System.out.printf("Using db conf file %s\n", argv[0]);
+            jsonDbConfFileName = StaticFileUtils.expandUser(argv[0]);
+        }
 
         if (argv.length >= 2) {
             System.out.printf("Useing confFile %s\n", argv[1]);
@@ -83,7 +94,6 @@ public class ReuploadCli {
 
         System.out.printf("ReuploadTestStatic.main Spinning up\n");
         System.out.printf("JAVA_LIBRARY_PATH=%s\n", System.getProperty("java.library.path"));
-        String jsonDbConfFileName = StaticFileUtils.expandUser(argv[0]);
         huApp = new HuApp();
         hConf = HibernateDbConf.newHibernateConf(jsonDbConfFileName);
         System.out.printf("Useing db config %s\n", hConf.toString());
@@ -122,6 +132,9 @@ public class ReuploadCli {
                     System.out.printf("showzinfo  #Display all the zipDirectories found\n");
                     System.out.printf("showzips   #Show all zips\n");
                     System.out.printf("countzinfo  #scan the zinfo block and count the zips by account and lid\n");
+                    System.out.printf("countlids #Count the zips grouping by the lids\n");
+                    System.out.printf("countaids #Count the zips grouping by the aids\n");
+                    System.out.printf("counthours #Count the zips grouping by the hours\n");
                     System.out.printf("showAuth <accountId> #Get information on account via the god AuthClient\n");
                     System.out.printf("rmlid <lid> #remove zips in the zinfolist that are for the specified loadbalancer\n");
                     System.out.printf("rmaid <aid> #remove zips in the zinfolist that are for the specified account\n");
@@ -239,6 +252,12 @@ public class ReuploadCli {
                     showZips();
                 } else if (cmd.equals("showzinfo")) {
                     showZipsDirInfo();
+                } else if (cmd.equals("countlids")) {
+                    countIds(CountTypes.LOADBALANCER);
+                } else if (cmd.equals("countaids")) {
+                    countIds(CountTypes.ACCOUNT);
+                } else if (cmd.equals("counthours")) {
+                    countIds(CountTypes.HOUR);
                 } else {
                     System.out.printf("Unknown Command %s\n", cmdLine);
                 }
@@ -430,6 +449,50 @@ public class ReuploadCli {
     public static void main(String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException, AuthException {
         ReuploadCli cli = new ReuploadCli();
         cli.run(args);
+    }
+
+    public void countIds(CountTypes countType) {
+        Map<Long, Integer> counts = new HashMap<Long, Integer>();
+        String countTypeStr;
+        switch (countType) {
+            case ACCOUNT:
+                countTypeStr = "AccountId";
+                break;
+            case LOADBALANCER:
+                countTypeStr = "LoadBalancerId";
+                break;
+            case HOUR:
+                countTypeStr = "Hour";
+                break;
+            default:
+                countTypeStr = "Unknown count type Bailing out";
+                return;
+        }
+        System.out.printf("Counting %s:\n", countTypeStr);
+        for (CacheZipInfo zipFile : zipInfoList) {
+            long key = -1; // Cause the compiler will complain if you don't initialize
+            switch (countType) {
+                case ACCOUNT:
+                    key = zipFile.getAccountId();
+                    break;
+                case HOUR:
+                    key = zipFile.getHourKey();
+                    break;
+                case LOADBALANCER:
+                    key = zipFile.getLoadbalancerId();
+                    break;
+            }
+            if (!counts.containsKey(key)) {
+                counts.put(key, 0);
+            }
+            int count = counts.get(key);
+            counts.put(key, count + 1);
+        }
+        List<Long> keys = new ArrayList<Long>(counts.keySet());
+        Collections.sort(keys);
+        for (Long key : keys) {
+            System.out.printf("    %d = %d\n", key, counts.get(key));
+        }
     }
 
     private void countZinfo() {
