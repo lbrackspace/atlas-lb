@@ -13,11 +13,11 @@ public class PaginationHelper {
 
     private String value;
 
-    public Query addPaginationParameters(EntityManager entityManager, CustomQuery customQuery, String source, Integer offset, Integer marker, Integer limit) {
+    public Query addPaginationParameters(EntityManager entityManager, CustomQuery customQuery, String source, String name, Integer offset, Integer marker, Integer limit) {
         String cqString;
         if (marker != null) {
-            setValue(source);
-            customQuery.addParam("(" + source + ".id", ">=", "marker", marker);
+            setValue(source, name);
+            customQuery.addParam("(" + name + ".id", ">=", "marker", marker);
             cqString = customQuery.getQueryString() + value;
         } else {
             cqString = customQuery.getQueryString();
@@ -33,10 +33,9 @@ public class PaginationHelper {
         return query;
     }
 
-    private void setValue(String source) {
-        if (source.equals("lb")) {
-            this.value = " or lb.id = (SELECT lb.id FROM LoadBalancer lb WHERE lb.accountId = :accountId"
-                    + " AND lb.id < :marker ORDER BY lb.id DESC LIMIT 1 OFFSET 1))";
-        }
+    private void setValue(String source, String name) {
+        this.value = String.format(" or %s.id = (SELECT %s.id FROM %s %s WHERE %s.accountId = :accountId"
+                + " AND %s.id < :marker ORDER BY %s.id DESC LIMIT 1 OFFSET 1))",
+                name, name, source, name, name, name, name);
     }
 }
