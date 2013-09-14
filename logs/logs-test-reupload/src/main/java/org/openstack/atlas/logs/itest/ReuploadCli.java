@@ -157,10 +157,20 @@ public class ReuploadCli {
                     System.out.printf("getting auth tokens for user %s\n", args[1]);
                     auth(args[1]);
                 } else if (cmd.equals("ru")) {
-                    System.out.printf("Spinning up new uploader thread\n");
-                    ReuploaderThread uploader = new ReuploaderThread(new ReuploaderUtils(HadoopLogsConfigs.getCacheDir(), lbMap));
-                    uploader.start();
-                    uploaders.add(uploader);
+                    int nThreads = (args.length >= 2) ? Integer.parseInt(args[1]) : 1;
+
+                    List<ReuploaderThread> newThreads = new ArrayList<ReuploaderThread>();
+                    for (int i = 0; i < nThreads; i++) {
+                        System.out.printf("Spinning up new uploader thread\n");
+                        ReuploaderThread uploader = new ReuploaderThread(new ReuploaderUtils(HadoopLogsConfigs.getCacheDir(), lbMap));
+                        newThreads.add(uploader);
+                    }
+                    System.out.printf("Running Threads\n");
+                    for (ReuploaderThread uploader : newThreads) {
+                        uploader.start();
+                        uploaders.add(uploader);
+                    }
+                    System.out.printf("All threads running\n");
 
                 } else if (cmd.equals("joinThreads")) {
                     int nThreads = uploaders.size();
