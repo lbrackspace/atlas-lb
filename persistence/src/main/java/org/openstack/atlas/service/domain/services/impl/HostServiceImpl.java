@@ -27,6 +27,11 @@ public class HostServiceImpl extends BaseService implements HostService {
     }
 
     @Override
+    public List<Host> getAllOnline() {
+        return hostRepository.getAllOnline();
+    }
+
+    @Override
     public List<Backup> getAllBackups() {
         return hostRepository.getAllBackups();
     }
