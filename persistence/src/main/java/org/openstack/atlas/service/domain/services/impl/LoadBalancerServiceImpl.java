@@ -480,8 +480,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
-                                                      String status, LbQueryStatus qs, Calendar changedCal,
-                                                      Integer offset, Integer limit, Integer marker) throws BadRequestException {
+            String status, LbQueryStatus qs, Calendar changedCal,
+            Integer offset, Integer limit, Integer marker) throws BadRequestException {
         return loadBalancerRepository.getLoadbalancersGeneric(accountId, status, qs, changedCal, offset, limit, marker);
     }
 
@@ -718,7 +718,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     private void verifySessionPersistence(LoadBalancer queueLb) throws BadRequestException {
-        //Duplicated in sessionPersistenceServiceImpl ...
+        //Dupelicated in sessionPersistenceServiceImpl ...
         SessionPersistence inpersist = queueLb.getSessionPersistence();
         LoadBalancerProtocol dbProtocol = queueLb.getProtocol();
 

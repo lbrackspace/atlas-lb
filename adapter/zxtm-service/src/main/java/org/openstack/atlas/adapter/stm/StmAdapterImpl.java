@@ -6,7 +6,9 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.*;
+import org.openstack.atlas.adapter.helpers.IpHelper;
+import org.openstack.atlas.adapter.helpers.ResourceTranslator;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -18,7 +20,8 @@ import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundE
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.util.EnumFactory;
-import org.rackspace.stingray.client.virtualserver.*;
+import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.client.virtualserver.VirtualServerHttp;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -29,6 +32,7 @@ import java.util.*;
 public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
     private StmAdapterResources resources;
+
     /*
     Load Balancer Resources
      */
@@ -48,11 +52,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
 
         try {
-            if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
-                TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
-            }
-
             getResources().createPersistentClasses(config);
 
             if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
@@ -355,7 +354,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String protectionName = ZxtmNameBuilder.genVSName(loadBalancer);
         LOG.info(String.format("Updating protection on %s...", protectionName));
-        getResources().updateProtection(client, protectionName, translator.translateProtectionResource(protectionName, loadBalancer));
+        getResources().updateProtection(client, protectionName, translator.translateProtectionResource(loadBalancer));
         LOG.info(String.format("Successfully created protection %s", protectionName));
         client.destroy();
     }
@@ -441,7 +440,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
         translator.translateVirtualServerResource(config, sslVsName, loadBalancer);
-        translator.translateKeypairResource(config, loadBalancer);
+        translator.translateKeypairResource(loadBalancer);
         VirtualServer createdServer = translator.getcVServer();
         VirtualServerHttp http = new VirtualServerHttp();
         http.setLocation_rewrite(EnumFactory.Accept_from.NEVER.toString());
@@ -471,11 +470,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
                     || loadBalancer.getConnectionLimit() != null) {
                 getResources().updateProtection(client, vsName, translator.getcProtection());
-            }
-
-            if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
-                TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             }
 
             getResources().updateVirtualIps(client, sslVsName, translator.getcTrafficIpGroups());

@@ -3,14 +3,12 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
-import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
@@ -25,7 +23,6 @@ import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 
 import javax.jms.ObjectMessage;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import static org.mockito.Matchers.anyString;
@@ -93,7 +90,6 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
 
         verify(usageEventCollection).getUsage(lb);
         verify(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
-        verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.DELETE_LOADBALANCER), Matchers.any(Calendar.class));
         verify(loadBalancerService).pseudoDelete(lb);
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.DELETED);
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_LOADBALANCER), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
@@ -112,7 +108,6 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         verify(usageEventCollection).getUsage(lb);
         verify(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
         verify(sslTerminationService).deleteSslTermination(LOAD_BALANCER_ID, ACCOUNT_ID);
-        verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.DELETE_LOADBALANCER), Matchers.any(Calendar.class));
         verify(loadBalancerService).pseudoDelete(lb);
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.DELETED);
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_LOADBALANCER), eq(CategoryType.DELETE), eq(EventSeverity.INFO));

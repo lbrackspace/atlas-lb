@@ -7,10 +7,8 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
-import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.UserPages;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -491,7 +489,6 @@ public class StmAdapterResources {
             virtualServer.getProperties().getBasic().setBandwidth_class(vsName);
 
             client.createBandwidth(vsName, bandwidth);
-            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
             updateVirtualServer(client, vsName, virtualServer);
 
 
@@ -502,10 +499,6 @@ public class StmAdapterResources {
             throw new StmRollBackException("Add rate limit request canceled.", e);
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("Failed to add rate limit for virtual server %s -- REST Client exception", vsName));
-            client.destroy();
-            throw new StmRollBackException("Add rate limit request canceled.", e);
-        } catch (IOException e) {
-            LOG.error(String.format("Failed to add rate limit for virtual server %s -- IOException", vsName));
             client.destroy();
             throw new StmRollBackException("Add rate limit request canceled.", e);
         }
@@ -519,8 +512,6 @@ public class StmAdapterResources {
         try {
             LOG.debug(String.format("Updating the rate limit for load balancer...'%s'...", vsName));
 
-            TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
-
             rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             Bandwidth bandwidth = rt.getcBandwidth();
 
@@ -533,10 +524,6 @@ public class StmAdapterResources {
             throw new StmRollBackException("Update rate limit request canceled.", e);
         } catch (StingrayRestClientException e) {
             LOG.error(String.format("Failed to update rate limit for virtual server %s -- REST Client exception", vsName));
-            client.destroy();
-            throw new StmRollBackException("Update rate limit request canceled.", e);
-        } catch (IOException e) {
-            LOG.error(String.format("Failed to update rate limit for virtual server %s -- IOException", vsName));
             client.destroy();
             throw new StmRollBackException("Update rate limit request canceled.", e);
         }

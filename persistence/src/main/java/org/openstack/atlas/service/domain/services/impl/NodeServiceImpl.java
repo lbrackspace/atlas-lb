@@ -185,9 +185,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             }
         }
 
-        // Won't delete secondary nodes until you also delete Health Monitor
-
-
+        // Won't delete secondary nodes untill you also delete Health Monitor
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
         if (npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null) {
             throw new BadRequestException(Constants.NoMonitorForSecNodes);

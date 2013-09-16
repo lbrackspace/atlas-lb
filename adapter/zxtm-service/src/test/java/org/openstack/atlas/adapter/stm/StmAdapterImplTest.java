@@ -34,7 +34,6 @@ import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -44,7 +43,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*"})
-    @PrepareForTest({TrafficScriptHelper.class, ResourceTranslator.class})
+    @PrepareForTest({ResourceTranslator.class})
     public static class WhenModifyingLoadbalancerResources {
         private String vsName;
         private String secureVsName;
@@ -72,7 +71,6 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             PowerMockito.mockStatic(ResourceTranslator.class);
             PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
-            PowerMockito.mockStatic(TrafficScriptHelper.class);
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadSTMRestClient(config)).thenReturn(client);
             doNothing().when(adapterSpy).setErrorFile(config, loadBalancer, loadBalancer.getUserPages().getErrorpage());
@@ -90,30 +88,6 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
-            verify(resources).createPersistentClasses(config);
-            //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
-            verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
-            verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
-            verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
-            verify(resources).updateVirtualServer(eq(client), eq(vsName), Matchers.any(VirtualServer.class));
-            verify(client).destroy();
-        }
-
-        @Test
-        public void testCreateNodelessLoadBalancer() throws Exception {
-            loadBalancer.setNodes(new HashSet<Node>());
-            adapterSpy.createLoadBalancer(config, loadBalancer);
-
-            verify(resources).loadSTMRestClient(config);
-            verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             verify(resources).createPersistentClasses(config);
             //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
@@ -322,7 +296,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.updateProtection(config, loadBalancer);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resourceTranslator).translateProtectionResource(vsName, loadBalancer);
+            verify(resourceTranslator).translateProtectionResource(loadBalancer);
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             verify(client).destroy();
         }
@@ -654,7 +628,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*"})
-    @PrepareForTest({TrafficScriptHelper.class, ResourceTranslator.class})
+    @PrepareForTest({ResourceTranslator.class})
     public static class WhenModifyingSSLResources {
         private String vsName;
         private String secureVsName;
@@ -683,7 +657,6 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             resourceTranslator = spy(new ResourceTranslator());
             PowerMockito.mockStatic(ResourceTranslator.class);
             PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
-            PowerMockito.mockStatic(TrafficScriptHelper.class);
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadSTMRestClient(config)).thenReturn(client);
@@ -706,15 +679,11 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateVirtualServerResource(config, vsName, loadBalancer);
-            verify(resourceTranslator, times(3)).translateKeypairResource(config, loadBalancer);
+            verify(resourceTranslator, times(3)).translateKeypairResource(loadBalancer);
             verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             verify(resourceTranslator).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-            PowerMockito.verifyStatic();
-            TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
             verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client).destroy();

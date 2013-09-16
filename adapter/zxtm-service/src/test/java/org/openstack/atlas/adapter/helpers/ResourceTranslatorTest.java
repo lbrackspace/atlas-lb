@@ -52,7 +52,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         private String logFormat;
         private VirtualServerTcp expectedTcp;
         private VirtualServerConnectionError expectedError;
-        private List<String> rules;
+        private ArrayList<String> rules;
         private ResourceTranslator translator;
         private String errorFile;
         private AccessList accessListAllowed;
@@ -73,9 +73,11 @@ public class ResourceTranslatorTest extends STMTestBase {
             expectedError = new VirtualServerConnectionError();
             errorFile = "Default";
             expectedError.setError_file(errorFile);
+            rules = new ArrayList<String>();
 
             if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
-                rules = java.util.Arrays.asList(StmConstants.XFF, StmConstants.XFP);
+                rules.add(StmConstants.XFF);
+                rules.add(StmConstants.XFP);
                 if (lb.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_HTTP);
             } else {
                 rules = new ArrayList<String>();
@@ -197,7 +199,10 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(vsName, createdBasic.getProtection_class());
             Assert.assertEquals(expectedTcp, createdTcp);
             Assert.assertFalse(createdBasic.getListen_on_any());
-            Assert.assertEquals(rules, createdBasic.getRequest_rules());
+            if (lb.isContentCaching() == true)
+                rules.add(StmConstants.CONTENT_CACHING);
+            Assert.assertTrue(rules.size() == createdBasic.getRequest_rules().size());
+            Assert.assertTrue(rules.containsAll(createdBasic.getRequest_rules()));
 
 //            Assert.assertEquals(expectedError, createdProperties.getConnection_errors());
         }
@@ -900,7 +905,7 @@ public class ResourceTranslatorTest extends STMTestBase {
         @Test
         public void shouldCreateAValidProtection() {
             ResourceTranslator translator = new ResourceTranslator();
-            Protection createdProtection = translator.translateProtectionResource(vsName, lb);
+            Protection createdProtection = translator.translateProtectionResource(lb);
             ProtectionConnectionLimiting createdLimiting = createdProtection.getProperties().getConnection_limiting();
             Assert.assertNotNull(createdLimiting);
             Assert.assertEquals(maxConnections, (int) createdLimiting.getMax_1_connections());

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: Testing edge case where an event can have the same time as the previous poll and come in after.
+-->
+<dataset>
+    <lb_host_usage id="3" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_in="0" bandwidth_in_ssl="0"  bandwidth_out="0"  bandwidth_out_ssl="0"   concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="1" poll_time="2013-08-27 21:56:00"/>
+    <lb_host_usage id="4" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_in="0" bandwidth_in_ssl="0"  bandwidth_out="0"  bandwidth_out_ssl="0"   concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="1" poll_time="2013-08-27 21:56:00"/>
+    <lb_host_usage id="5" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_in="0" bandwidth_in_ssl="0"  bandwidth_out="0"  bandwidth_out_ssl="0"   concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-08-27 21:56:00" event_type="SSL_MIXED_ON"/>
+    <lb_host_usage id="6" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_in="0" bandwidth_in_ssl="0"  bandwidth_out="0"  bandwidth_out_ssl="0"   concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-08-27 21:56:00" event_type="SSL_MIXED_ON"/>
+
+</dataset>

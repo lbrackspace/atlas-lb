@@ -186,13 +186,9 @@ public class SetNodesITest extends STMTestBase {
 
         stmAdapter.removeNode(config, lb, nodeToRemove);
 
-        Pool nodePool = stmClient.getPool(vsName);
-        PoolBasic nodePoolBasic = nodePool.getProperties().getBasic();
-        Set<String> setOfDisabledNodes = nodePoolBasic.getDisabled();
-        Set<String> setOfDrainingNodes = nodePoolBasic.getDraining();
-        Set<String> setOfEnabledNodes = nodePoolBasic.getNodes();
-        String poolAlgorithm = nodePool.getProperties().getLoad_balancing().getAlgorithm();
-        Assert.assertEquals(poolAlgorithm, algorithm.name().toLowerCase());
+        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
+        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
+        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
 
         Assert.assertEquals(0, setOfEnabledNodes.size());
         Assert.assertEquals(0, setOfDisabledNodes.size());

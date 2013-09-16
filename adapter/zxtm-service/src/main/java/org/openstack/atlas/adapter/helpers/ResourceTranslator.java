@@ -16,7 +16,6 @@ import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
 import org.rackspace.stingray.client.monitor.MonitorHttp;
 import org.rackspace.stingray.client.monitor.MonitorProperties;
-import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.pool.*;
 import org.rackspace.stingray.client.protection.*;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
@@ -37,7 +36,6 @@ public class ResourceTranslator {
     public Map<String, TrafficIp> cTrafficIpGroups;
     public VirtualServer cVServer;
     public Protection cProtection;
-    public Persistence cPersistence;
     public Bandwidth cBandwidth;
     public Keypair cKeypair;
     protected static final ZeusUtils zeusUtil;
@@ -57,12 +55,11 @@ public class ResourceTranslator {
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
 
-        boolean areTigsEnabled = true;
-        translateTrafficIpGroupsResource(config, loadBalancer, areTigsEnabled);
+        translateTrafficIpGroupsResource(config, loadBalancer, true);
 
-        if (loadBalancer.getSslTermination() != null) translateKeypairResource(config, loadBalancer);
+        if (loadBalancer.getSslTermination() != null) translateKeypairResource(loadBalancer);
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
-            translateProtectionResource(ZxtmNameBuilder.genVSName(loadBalancer), loadBalancer);
+            translateProtectionResource(loadBalancer);
 
         translatePoolResource(vsName, loadBalancer, queLb);
         translateVirtualServerResource(config, vsName, loadBalancer);
@@ -70,13 +67,18 @@ public class ResourceTranslator {
 
     public VirtualServer translateVirtualServerResource(LoadBalancerEndpointConfiguration config,
                                                         String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
-        cVServer = new VirtualServer();
         VirtualServerBasic basic = new VirtualServerBasic();
         VirtualServerSsl ssl = new VirtualServerSsl();
         VirtualServerProperties properties = new VirtualServerProperties();
         VirtualServerConnectionError ce = new VirtualServerConnectionError();
         VirtualServerTcp tcp = new VirtualServerTcp();
-        VirtualServerLog log = null;
+        VirtualServerLog log;
+        List<String> rules = new ArrayList<String>();
+
+        properties.setBasic(basic);
+        properties.setSsl(ssl);
+        cVServer = new VirtualServer();
+        cVServer.setProperties(properties);
 
         //basic virtual server settings
         if (vsName.equals(ZxtmNameBuilder.genSslVSName(loadBalancer))) {
@@ -126,6 +128,7 @@ public class ResourceTranslator {
             VirtualServerWebcache cache = new VirtualServerWebcache();
             cache.setEnabled(true);
             properties.setWeb_cache(cache);
+            rules.add(StmConstants.CONTENT_CACHING);
         }
 
         //error file settings
@@ -139,16 +142,16 @@ public class ResourceTranslator {
         properties.setConnection_errors(ce);
 
         //trafficscript or rule settings
-        List<String> rules = new ArrayList<String>();
         if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
             rules.add(StmConstants.XFF);
             rules.add(StmConstants.XFP);
-            if (loadBalancer.getRateLimit() != null)
-                rules.add(StmConstants.RATE_LIMIT_HTTP);
-        } else {
-            if (loadBalancer.getRateLimit() != null)
-                rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
+//            if (loadBalancer.getRateLimit() != null) //Rate Limit traffic rules are only for manual use
+//                rules.add(StmConstants.RATE_LIMIT_HTTP);
         }
+//        else {
+//            if (loadBalancer.getRateLimit() != null) //Rate Limit traffic rules are only for manual use
+//                rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
+//        }
         basic.setRequest_rules(rules);
 
         //Half closed proxy settings
@@ -161,10 +164,6 @@ public class ResourceTranslator {
 
         //ssl settings
         ssl.setServer_cert_default(vsName);
-
-        properties.setBasic(basic);
-        properties.setSsl(ssl);
-        cVServer.setProperties(properties);
 
         return cVServer;
     }
@@ -265,7 +264,7 @@ public class ResourceTranslator {
             }
         }
 
-        ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(loadBalancer.getNodes());
+        ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
         poollb.setPriority_enabled(znpc.hasSecondary());
         poollb.setPriority_values(znpc.getPriorityValuesSet());
         poollb.setAlgorithm(lbAlgo);
@@ -335,7 +334,7 @@ public class ResourceTranslator {
         return cMonitor;
     }
 
-    public Protection translateProtectionResource(String vsName, LoadBalancer loadBalancer) {
+    public Protection translateProtectionResource(LoadBalancer loadBalancer) {
         cProtection = new Protection();
         ProtectionBasic basic = new ProtectionBasic();
         ProtectionProperties properties = new ProtectionProperties();
@@ -383,7 +382,7 @@ public class ResourceTranslator {
         return cProtection;
     }
 
-    public Keypair translateKeypairResource(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public Keypair translateKeypairResource(LoadBalancer loadBalancer)
             throws InsufficientRequestException {
         ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(loadBalancer.getSslTermination().getPrivatekey(),
                 loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
@@ -477,14 +476,6 @@ public class ResourceTranslator {
 
     public void setcProtection(Protection cProtection) {
         this.cProtection = cProtection;
-    }
-
-    public Persistence getcPersistence() {
-        return cPersistence;
-    }
-
-    public void setcPersistence(Persistence cPersistence) {
-        this.cPersistence = cPersistence;
     }
 
     public Bandwidth getcBandwidth() {

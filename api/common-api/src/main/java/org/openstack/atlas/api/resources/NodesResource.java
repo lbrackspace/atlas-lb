@@ -107,12 +107,12 @@ public class NodesResource extends CommonDependencyProvider {
             List<String> errors;
             List<org.openstack.atlas.docs.loadbalancers.api.v1.Node> nodesList = nodes.getNodes();
             errors = verifyNodeDomains(nodesList);
-            if(errors.size()>0){
+            if (errors.size() > 0) {
                 return getValidationFaultResponse(errors);
             }
             loadBalancerService.get(loadBalancerId, accountId);
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer apiLb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
-            apiLb.getNodes().addAll(nodes.getNodes());
+            apiLb.getNodes().addAll(nodesList);
             LoadBalancer newNodesLb = dozerMapper.map(apiLb, LoadBalancer.class);
             newNodesLb.setId(loadBalancerId);
             newNodesLb.setAccountId(accountId);
@@ -133,7 +133,7 @@ public class NodesResource extends CommonDependencyProvider {
 
     @GET
     @Path("events")
-    @Produces({APPLICATION_XML, APPLICATION_JSON,APPLICATION_ATOM_XML})
+    @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveNodeEvents(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker, @QueryParam("page") Integer page) {
         if (requestHeaders.getRequestHeader("Accept").get(0).equals(APPLICATION_ATOM_XML)) {
             return getFeedResponse(page, FeedType.NODE_SERVICE_FEED);
