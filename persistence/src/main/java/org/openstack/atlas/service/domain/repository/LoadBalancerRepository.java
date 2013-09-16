@@ -488,7 +488,7 @@ public class LoadBalancerRepository {
             cq.addParam("lb.updated", ">=", "updated", changedSince);
         }
 
-        q = helper.addPaginationParameters(entityManager, cq, "Loadbalancer", "lb", offset, marker, limit);
+        q = helper.addPaginationParameters(entityManager, cq, "lb", offset, marker, limit);
 
         lbs = q.getResultList();
 
@@ -1656,7 +1656,7 @@ public class LoadBalancerRepository {
 
         cq.addParam("lb.created", "<", "endTime", endTime);
 
-        q = helper.addPaginationParameters(entityManager, cq, "LoadBalancer", "lb", offset, marker, limit);
+        q = helper.addPaginationParameters(entityManager, cq, "lb", offset, marker, limit);
         q.setParameter("startTime", startTime);
 
         lbs = q.getResultList();

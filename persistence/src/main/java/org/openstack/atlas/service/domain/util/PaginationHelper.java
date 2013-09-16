@@ -13,15 +13,12 @@ public class PaginationHelper {
 
     private String value;
 
-    public Query addPaginationParameters(EntityManager entityManager, CustomQuery customQuery, String source, String name, Integer offset, Integer marker, Integer limit) {
+    public Query addPaginationParameters(EntityManager entityManager, CustomQuery customQuery, String source, Integer offset, Integer marker, Integer limit) {
         String cqString;
         if (marker != null) {
-            setValue(source, name);
-            customQuery.addParam("(" + name + ".id", ">=", "marker", marker);
-            cqString = customQuery.getQueryString() + value;
-        } else {
-            cqString = customQuery.getQueryString();
+            customQuery.addParam(source + ".id", ">=", "marker", marker);
         }
+        cqString = customQuery.getQueryString();
 
         Query query = entityManager.createQuery(cqString);
         for (QueryParameter param : customQuery.getQueryParameters()) {
@@ -31,11 +28,5 @@ public class PaginationHelper {
         query.setFirstResult(offset == null ? 0 : offset);
         query.setMaxResults(limit == null || limit > 100 ? 100 : limit);
         return query;
-    }
-
-    private void setValue(String source, String name) {
-        this.value = String.format(" or %s.id = (SELECT %s.id FROM %s %s WHERE %s.accountId = :accountId"
-                + " AND %s.id < :marker ORDER BY %s.id DESC LIMIT 1 OFFSET 1))",
-                name, name, source, name, name, name, name);
     }
 }
