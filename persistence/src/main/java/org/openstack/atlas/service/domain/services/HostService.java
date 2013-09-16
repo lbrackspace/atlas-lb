@@ -17,6 +17,8 @@ public interface HostService {
 
     public List<Host> getAll(Integer... p);
 
+    public List<Host> getAllOnline();
+
     public List<Backup> getAllBackups();
 
     public List<Host> getAllActive();
