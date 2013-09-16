@@ -4,6 +4,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.config.LbConfiguration;
 import org.openstack.atlas.util.config.MossoConfigValues;
@@ -125,7 +127,7 @@ public class RdnsHelper {
     }
 
     public ClientResponse delPtrPubRecord(int lid, String ip) throws RdnsException {
-        AuthUserAndToken aut = stealUserToken();
+        AuthUserAndToken aut = getLbaasToken();//stealUserToken();
         String tokenStr = aut.getTokenString();
         DnsClient1_0 dns = new DnsClient1_0(rdnsPublicUrl,tokenStr,accountId);
         return dns.delPtrRecordPub(buildDeviceUri(accountId, lid), LB_SERVICE_NAME, ip);
@@ -144,9 +146,6 @@ public class RdnsHelper {
         AuthUserAndToken aut;
         User u;
         AuthData t;
-        String fmt;
-        String msg;
-        String stackTrace;
         String accountIdStr = Integer.valueOf(accountId).toString();
         KeyStoneConfig ksc = new KeyStoneConfig(this);
         try {
@@ -154,6 +153,26 @@ public class RdnsHelper {
             AuthPubClient pubClient = new AuthPubClient(ksc);
             u = adminClient.listUser(accountIdStr, "mosso");
             t = pubClient.getToken(u.getId(), u.getKey());
+            aut = new AuthUserAndToken(u, t);
+            return aut;
+        } catch (URISyntaxException ex) {
+            throw logAndThrowRdnsException(ex, accountId);
+        } catch (KeyStoneException ex) {
+            throw logAndThrowRdnsException(ex, accountId);
+        }
+    }
+
+    public AuthUserAndToken getLbaasToken() throws RdnsException {
+        AuthUserAndToken aut;
+        User u;
+        AuthData t;
+        KeyStoneConfig ksc = new KeyStoneConfig(this);
+        try {
+            AuthAdminClient adminClient = new AuthAdminClient(ksc);
+            AuthPubClient pubClient = new AuthPubClient(ksc);
+            u = adminClient.getUserKey(authAdminUser);
+            t = pubClient.getToken(u.getId(), u.getKey());
+
             aut = new AuthUserAndToken(u, t);
             return aut;
         } catch (URISyntaxException ex) {
