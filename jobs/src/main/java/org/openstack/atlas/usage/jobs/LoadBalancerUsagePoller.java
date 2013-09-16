@@ -104,7 +104,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
 
     private List<Host> getAccessibleHosts() {
         LOG.info("Discovering accessible hosts...");
-        List<Host> hostList = hostService.getAll();
+        List<Host> hostList = hostService.getAllOnline();
         List<Host> accessibleHosts = new ArrayList<Host>();
         for (Host host : hostList) {
             try {
