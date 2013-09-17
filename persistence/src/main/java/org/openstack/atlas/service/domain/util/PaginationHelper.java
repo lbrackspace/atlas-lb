@@ -14,6 +14,7 @@ public class PaginationHelper {
     private String value;
 
     public Query addPaginationParameters(EntityManager entityManager, CustomQuery customQuery, String source, Integer offset, Integer marker, Integer limit) {
+        Integer forceLimit = 100;
         String cqString;
         if (marker != null) {
             customQuery.addParam(source + ".id", ">=", "marker", marker);
@@ -25,8 +26,15 @@ public class PaginationHelper {
             query.setParameter(param.getPname(), param.getValue());
         }
 
-        query.setFirstResult(offset == null ? 0 : offset);
-        query.setMaxResults(limit == null || limit > 100 ? 100 : limit);
+        if (offset != null) {
+            query.setFirstResult(offset);
+        }
+
+        if (limit != null) {
+            forceLimit = limit;
+        }
+        query.setMaxResults(forceLimit);
+
         return query;
     }
 }

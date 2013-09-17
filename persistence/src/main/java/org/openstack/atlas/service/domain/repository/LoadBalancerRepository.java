@@ -712,7 +712,7 @@ public class LoadBalancerRepository {
 
     }
 
-    // A simple Question shoulden't fetch an entire loadbalancer object.
+    // A simple Question shouldn't fetch an entire loadbalancer object.
     public boolean accountOwnsLoadBalancer(Integer aid, Integer lid) {
         String qStr = "SELECT lb.id from LoadBalancer lb "
                 + "where lb.accountId=:aid and lb.id = :lid";
