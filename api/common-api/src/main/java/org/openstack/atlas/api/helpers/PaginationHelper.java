@@ -72,9 +72,14 @@ public class PaginationHelper {
         return links;
     }
 
-    public static List<Link> noMarkerLinks(String relativeUri, Integer offset, Integer limit, Integer listSize) {
+    private static List<Link> noMarkerLinks(String relativeUri, Integer offset, Integer limit, Integer listSize) {
         List<Link> links = new ArrayList<Link>();
-        if (offset >= limit) {
+
+        if (limit == null) {
+            limit = 100;
+        }
+
+        if (offset != null) {
             Link prevLink = makeLink(PREVIOUS, relativeUri, null, offset - limit, limit);
             links.add(prevLink);
         }
@@ -83,7 +88,12 @@ public class PaginationHelper {
         links.add(selfLink);
 
         if (listSize.equals(limit)) {
-            Link nextLink = makeLink(NEXT, relativeUri, null, offset + limit, limit);
+            Link nextLink;
+            if (offset != null) {
+                nextLink = makeLink(NEXT, relativeUri, null, offset + limit, limit);
+            } else {
+                nextLink = makeLink(NEXT, relativeUri, null, limit, limit);
+            }
             links.add(nextLink);
         }
 
@@ -106,6 +116,7 @@ public class PaginationHelper {
         if (limit != null && limit > 0) {
             href += String.format("&limit=%d", limit);
         }
+        href = href.replace("?&", "?");
         link.setHref(href);
         link.setRel(rel);
         return link;

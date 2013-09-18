@@ -30,7 +30,7 @@ public class PaginationHelper {
             query.setFirstResult(offset);
         }
 
-        if (limit != null) {
+        if (limit != null && limit <= 100) {
             forceLimit = limit;
         }
         query.setMaxResults(forceLimit);

@@ -54,6 +54,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers dataModelLbs = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers();
         Calendar changedCal = null;
         LbQueryStatus qs = null;
+        String relativeUri = String.format("/%d/loadbalancers?", accountId);
 
         try {
             if (nodeAddress != null) {
@@ -65,6 +66,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
                 if (status != null) {
                     qs = LbQueryStatus.INCLUDE;
+                    relativeUri += String.format("&status=%s", status);
                 } else {
                     qs = LbQueryStatus.EXCLUDE;
                     status = "DELETED";
@@ -72,10 +74,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
                 if (changedSince != null) {
                     changedCal = isoTocal(changedSince);
-                }
-
-                if (limit == null || limit < 0 || limit > 100) {
-                    limit = 100;
+                    relativeUri += String.format("&changes-since=%s", changedSince);
                 }
 
                 domainLbs = loadBalancerService.getLoadbalancersGeneric(accountId, status, qs, changedCal, offset, limit, marker);
@@ -84,6 +83,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
                     dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));
                 }
             }
+            dataModelLbs.getLinks().addAll(PaginationHelper.provideLinks(relativeUri, marker, offset, limit, domainLbs.get(domainLbs.size() - 1).getId(), domainLbs.size()));
             return Response.status(200).entity(dataModelLbs).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
@@ -179,7 +179,6 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             }
         }
 
-        // TODO: Trevor - WIP
         try {
             limit = PaginationHelper.determinePageLimit(limit);
             offset = PaginationHelper.determinePageOffset(offset);
