@@ -161,12 +161,14 @@ public class ReuploadCli {
 
                     List<ReuploaderThread> newThreads = new ArrayList<ReuploaderThread>();
                     for (int i = 0; i < nThreads; i++) {
-                        System.out.printf("Spinning up new uploader thread\n");
+                        System.out.printf("Init thread %d of %d\n", i, nThreads);
                         ReuploaderThread uploader = new ReuploaderThread(new ReuploaderUtils(HadoopLogsConfigs.getCacheDir(), lbMap));
                         newThreads.add(uploader);
                     }
                     System.out.printf("Running Threads\n");
-                    for (ReuploaderThread uploader : newThreads) {
+                    for (int i = 0; i < nThreads; i++) {
+                        System.out.printf("Running thread %d of %d\n", i, nThreads);
+                        ReuploaderThread uploader = newThreads.get(i);
                         uploader.start();
                         uploaders.add(uploader);
                     }
