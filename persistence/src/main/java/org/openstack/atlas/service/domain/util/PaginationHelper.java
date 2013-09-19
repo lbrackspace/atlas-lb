@@ -10,9 +10,6 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 public class PaginationHelper {
-
-    private String value;
-
     public Query addPaginationParameters(EntityManager entityManager, CustomQuery customQuery, String source, Integer offset, Integer marker, Integer limit) {
         Integer forceLimit = 100;
         String cqString;

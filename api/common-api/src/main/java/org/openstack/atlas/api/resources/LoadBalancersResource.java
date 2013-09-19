@@ -141,7 +141,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         if (startTimeParam == null) {
             startTime = (Calendar) endTime.clone();
             startTime.add(Calendar.DAY_OF_MONTH, -NUM_DAYS_OF_USAGE); // default to NUM_DAYS_OF_USAGE days ago
-        } else {
+        } else 
             try {
                 startTime = isoTocal(startTimeParam);
             } catch (ConverterException ex) {
@@ -180,8 +180,6 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         }
 
         try {
-            limit = PaginationHelper.determinePageLimit(limit);
-            offset = PaginationHelper.determinePageOffset(offset);
             domainLbs = loadBalancerService.getLoadBalancersWithUsage(accountId, startTime, endTime, offset, limit, marker);
             for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
                 dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));
