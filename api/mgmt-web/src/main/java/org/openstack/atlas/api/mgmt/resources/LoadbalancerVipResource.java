@@ -45,7 +45,7 @@ public class LoadbalancerVipResource extends ManagementDependencyProvider {
         try {
             // TODO: Refactor to use better dozer mappings.
             org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer apiLb = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer();
-            apiLb.getVirtualIps().add(vip);
+            apiLb.getVirtualIps().getVirtualIps().add(vip);
             LoadBalancer domainLb = getDozerMapper().map(apiLb, LoadBalancer.class);
             domainLb.setId(loadBalancerId);
 

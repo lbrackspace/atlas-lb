@@ -112,7 +112,7 @@ public class NodesResource extends CommonDependencyProvider {
             }
             loadBalancerService.get(loadBalancerId, accountId);
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer apiLb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
-            apiLb.getNodes().addAll(nodesList);
+            apiLb.getNodes().getNodes().addAll(nodesList);
             LoadBalancer newNodesLb = dozerMapper.map(apiLb, LoadBalancer.class);
             newNodesLb.setId(loadBalancerId);
             newNodesLb.setAccountId(accountId);

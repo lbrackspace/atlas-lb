@@ -60,7 +60,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
             final Metadata metadata = new Metadata();
             metadata.getMetas().add(meta1);
             metadata.getMetas().add(meta2);
-            loadBalancer.getMetadata().addAll(metadata.getMetas());
+            loadBalancer.getMetadata().getMetas().addAll(metadata.getMetas());
 
             Node node1 = new Node();
             node1.setId(4100);
@@ -78,7 +78,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
             final Nodes nodes = new Nodes();
             nodes.getNodes().add(node1);
             nodes.getNodes().add(node2);
-            loadBalancer.getNodes().addAll(nodes.getNodes());
+            loadBalancer.getNodes().getNodes().addAll(nodes.getNodes());
 
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setAddress("10.10.10.1");
@@ -86,7 +86,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
             virtualIp1.setType(VipType.PUBLIC);
             virtualIp1.setIpVersion(IpVersion.IPV4);
 
-            loadBalancer.getVirtualIps().add(virtualIp1);
+            loadBalancer.getVirtualIps().getVirtualIps().add(virtualIp1);
 
             final ConnectionThrottle throttle = new ConnectionThrottle();
             throttle.setMaxConnectionRate(101);
@@ -289,7 +289,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
         public void should_map_the_virtual_across_the_two_load_balancers_with_type_only() {
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setType(VipType.PUBLIC);
-            loadBalancer.getVirtualIps().add(virtualIp1);
+            loadBalancer.getVirtualIps().getVirtualIps().add(virtualIp1);
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             Assert.assertEquals(1, domainLoadBalancer.getLoadBalancerJoinVip6Set().size());
             Assert.assertEquals(1, domainLoadBalancer.getLoadBalancerJoinVipSet().size());
@@ -300,7 +300,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setType(VipType.PUBLIC);
             virtualIp1.setIpVersion(IpVersion.IPV4);
-            loadBalancer.getVirtualIps().add(virtualIp1);
+            loadBalancer.getVirtualIps().getVirtualIps().add(virtualIp1);
 
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             Assert.assertEquals(1, domainLoadBalancer.getLoadBalancerJoinVipSet().size());
@@ -316,7 +316,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setType(VipType.PUBLIC);
             virtualIp1.setIpVersion(IpVersion.IPV6);
-            loadBalancer.getVirtualIps().add(virtualIp1);
+            loadBalancer.getVirtualIps().getVirtualIps().add(virtualIp1);
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             Assert.assertEquals(1, domainLoadBalancer.getLoadBalancerJoinVip6Set().size());
 
@@ -327,7 +327,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setType(VipType.SERVICENET);
             virtualIp1.setIpVersion(IpVersion.IPV4);
-            loadBalancer.getVirtualIps().add(virtualIp1);
+            loadBalancer.getVirtualIps().getVirtualIps().add(virtualIp1);
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             Assert.assertEquals(1, domainLoadBalancer.getLoadBalancerJoinVipSet().size());
 
@@ -341,7 +341,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
         public void should_map_the_virtual_across_the_two_load_balancers_with_servicenet_only() {
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setType(VipType.SERVICENET);
-            loadBalancer.getVirtualIps().add(virtualIp1);
+            loadBalancer.getVirtualIps().getVirtualIps().add(virtualIp1);
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             Assert.assertEquals(1, domainLoadBalancer.getLoadBalancerJoinVipSet().size());
 
@@ -355,7 +355,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
         public void should_map_the_virtual_ipv6_across_the_two_load_balancers_with_ipv6_id() {
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setId(9000000);
-            loadBalancer.getVirtualIps().add(virtualIp1);
+            loadBalancer.getVirtualIps().getVirtualIps().add(virtualIp1);
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             Assert.assertEquals(1, domainLoadBalancer.getLoadBalancerJoinVip6Set().size());
 
@@ -369,7 +369,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
         public void should_map_the_virtual_ipv4_across_the_two_load_balancers_with_ipv4_id() {
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setId(12);
-            loadBalancer.getVirtualIps().add(virtualIp1);
+            loadBalancer.getVirtualIps().getVirtualIps().add(virtualIp1);
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             Assert.assertEquals(1, domainLoadBalancer.getLoadBalancerJoinVipSet().size());
 

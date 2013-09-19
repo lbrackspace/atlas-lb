@@ -184,7 +184,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
         @Test
         public void should_map_metadata_and_its_properties() {
-            final List<org.openstack.atlas.docs.loadbalancers.api.v1.Meta> list = dataModelLoadBalancer.getMetadata();
+            final List<org.openstack.atlas.docs.loadbalancers.api.v1.Meta> list = dataModelLoadBalancer.getMetadata().getMetas();
             Assert.assertEquals(2, list.size());
 
             for (org.openstack.atlas.docs.loadbalancers.api.v1.Meta meta : list) {
@@ -202,7 +202,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
         @Test
         public void should_map_nodes_and_its_properties() {
-            final List<org.openstack.atlas.docs.loadbalancers.api.v1.Node> list = dataModelLoadBalancer.getNodes();
+            final List<org.openstack.atlas.docs.loadbalancers.api.v1.Node> list = dataModelLoadBalancer.getNodes().getNodes();
             Assert.assertEquals(2, list.size());
 
             for (org.openstack.atlas.docs.loadbalancers.api.v1.Node node : list) {
@@ -228,7 +228,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
         @Test
         public void should_map_virtual_ips_across_two_loadbalancers() {
-            final List<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp> list = dataModelLoadBalancer.getVirtualIps();
+            final List<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp> list = dataModelLoadBalancer.getVirtualIps().getVirtualIps();
             Assert.assertEquals(3, list.size());
 
             for (org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp virtualIp : list) {

@@ -337,14 +337,14 @@ public class StubResource extends CommonDependencyProvider {
         nodes.add(newNode(1, 443, "127.0.0.20"));
         vips.add(newVip(1, "127.0.0.1"));
         vips.add(newVip(2, "127.0.0.2"));
-        lb.setVirtualIps(vips);
-        lb.setNodes(nodes);
+        lb.getVirtualIps().getVirtualIps().addAll(vips);
+        lb.getNodes().getNodes().addAll(nodes);
         SessionPersistence sp = new SessionPersistence();
         sp.setPersistenceType(PersistenceType.HTTP_COOKIE);
         lb.setSessionPersistence(sp);
         accessList.add(newNetworkItem(1, "10.0.0.0/8"));
         accessList.add(newNetworkItem(2, "192.168.0.0/24"));
-        lb.setAccessList(accessList);
+        lb.getAccessList().getNetworkItems().addAll(accessList);
         LoadBalancerUsage lu = new LoadBalancerUsage();
         lu.setLoadBalancerId(id);
         lu.setLoadBalancerName(name);

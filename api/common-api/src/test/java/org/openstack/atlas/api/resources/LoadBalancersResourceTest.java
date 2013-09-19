@@ -56,7 +56,7 @@ public class LoadBalancersResourceTest {
             vip.setType(VipType.PUBLIC);
             virtualIps.add(vip);
 
-            loadBalancer.getVirtualIps().addAll(virtualIps);
+            loadBalancer.getVirtualIps().getVirtualIps().addAll(virtualIps);
 
             Nodes nodes = new Nodes();
             Node node = new Node();
@@ -64,7 +64,7 @@ public class LoadBalancersResourceTest {
             node.setPort(80);
             node.setCondition(NodeCondition.ENABLED);
             nodes.getNodes().add(node);
-            loadBalancer.getNodes().addAll(nodes.getNodes());
+            loadBalancer.getNodes().getNodes().addAll(nodes.getNodes());
         }
 
         @Test

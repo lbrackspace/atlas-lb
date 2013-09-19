@@ -52,7 +52,7 @@ public class VirtualIpsResourceTest {
 
             List<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp> virtualIps = new ArrayList<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp>();
             virtualIps.add(virtualIp1);
-            loadBalancer.getVirtualIps().addAll(virtualIps);
+            loadBalancer.getVirtualIps().getVirtualIps().addAll(virtualIps);
 
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
         }

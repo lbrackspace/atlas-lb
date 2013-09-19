@@ -11,7 +11,7 @@ public class LoadBalancerUnmarshalListener extends Listener {
     public void beforeUnmarshal(Object target, Object parent) {
         if (target instanceof LoadBalancer) {
              LoadBalancer x = (LoadBalancer)(target);
-             if (x.getVirtualIps().isEmpty())  {
+             if (x.getVirtualIps().getVirtualIps().isEmpty())  {
 
              }
 

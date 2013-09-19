@@ -51,7 +51,7 @@ public class LoadbalancerMetaResource extends CommonDependencyProvider {
             meta.setId(id);
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer apiLb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
 
-            apiLb.getMetadata().add(meta);
+            apiLb.getMetadata().getMetas().add(meta);
             LoadBalancer domainLb = dozerMapper.map(apiLb, LoadBalancer.class);
             domainLb.setId(loadBalancerId);
             domainLb.setAccountId(accountId);

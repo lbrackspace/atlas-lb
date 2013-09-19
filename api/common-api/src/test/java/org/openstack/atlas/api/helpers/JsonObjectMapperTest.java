@@ -205,15 +205,15 @@ public class JsonObjectMapperTest {
         LoadBalancer lb = mapper.readValue(lbJson, LoadBalancer.class);
         Assert.assertEquals("a-new-loadbalancer", lb.getName());
         Assert.assertEquals(new Integer(80), lb.getPort());
-        Assert.assertEquals(1, lb.getVirtualIps().size());
-        Assert.assertEquals(new Integer(2341), lb.getVirtualIps().get(0).getId());
-        Assert.assertEquals(2, lb.getNodes().size());
+        Assert.assertEquals(1, lb.getVirtualIps().getVirtualIps().size());
+        Assert.assertEquals(new Integer(2341), lb.getVirtualIps().getVirtualIps().get(0).getId());
+        Assert.assertEquals(2, lb.getNodes().getNodes().size());
 
-        Assert.assertEquals(new Integer(80), lb.getNodes().get(0).getPort());
-        Assert.assertEquals(new Integer(443), lb.getNodes().get(1).getPort());
+        Assert.assertEquals(new Integer(80), lb.getNodes().getNodes().get(0).getPort());
+        Assert.assertEquals(new Integer(443), lb.getNodes().getNodes().get(1).getPort());
 
-        Assert.assertEquals("10.1.1.1", lb.getNodes().get(0).getAddress());
-        Assert.assertEquals("10.1.1.3", lb.getNodes().get(1).getAddress());
+        Assert.assertEquals("10.1.1.1", lb.getNodes().getNodes().get(0).getAddress());
+        Assert.assertEquals("10.1.1.3", lb.getNodes().getNodes().get(1).getAddress());
     }
 
     @Test

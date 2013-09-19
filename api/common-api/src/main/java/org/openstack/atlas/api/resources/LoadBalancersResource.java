@@ -100,7 +100,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         }
 
         try {
-            List<String> errors = verifyNodeDomains(loadBalancer.getNodes());
+            List<String> errors = verifyNodeDomains(loadBalancer.getNodes().getNodes());
             if (errors.size() > 0) {
                 return getValidationFaultResponse(errors);
             }

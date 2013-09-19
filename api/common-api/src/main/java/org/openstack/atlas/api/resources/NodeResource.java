@@ -66,7 +66,7 @@ public class NodeResource extends CommonDependencyProvider {
                       nodeService.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadBalancerId, id).getType().toString()));
             }
 
-            apiLb.getNodes().add(node);
+            apiLb.getNodes().getNodes().add(node);
             LoadBalancer domainLb = dozerMapper.map(apiLb, LoadBalancer.class);
             domainLb.setId(loadBalancerId);
             domainLb.setAccountId(accountId);
