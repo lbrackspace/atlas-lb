@@ -141,7 +141,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         if (startTimeParam == null) {
             startTime = (Calendar) endTime.clone();
             startTime.add(Calendar.DAY_OF_MONTH, -NUM_DAYS_OF_USAGE); // default to NUM_DAYS_OF_USAGE days ago
-        } else 
+        } else {
             try {
                 startTime = isoTocal(startTimeParam);
             } catch (ConverterException ex) {
