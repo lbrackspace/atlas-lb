@@ -38,15 +38,19 @@ public class ExecutionUtilities {
         for (int i = 0; i < objects.size(); i++) {
             objectBatch.add(objects.get(i));
             if ((i + 1) % batchSize == 0) {
-                LOG.debug(String.format("Executing batch # '%d' (%s)", batchNumber, batchAction.getClass().getSimpleName()));
+                logBatchNumber(objects, batchAction, batchNumber);
                 batchNumber++;
                 batchAction.execute(objectBatch);
                 objectBatch = new ArrayList<T>();
             }
         }
         if (objectBatch.size() > 0) {
-            LOG.debug(String.format("Executing batch # '%d'", batchNumber));
+            logBatchNumber(objects, batchAction, batchNumber);
             batchAction.execute(objectBatch);
         }
+    }
+
+    private static <T> void logBatchNumber(List<T> objects, BatchAction<T> batchAction, int batchNumber) {
+        LOG.debug(String.format("Executing batch # '%d' (%s, total number of items = %d)", batchNumber, batchAction.getClass().getSimpleName(), objects.size()));
     }
 }
