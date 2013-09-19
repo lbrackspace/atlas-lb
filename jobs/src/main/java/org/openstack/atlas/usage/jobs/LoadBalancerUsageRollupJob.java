@@ -13,6 +13,8 @@ import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
 import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
+import org.openstack.atlas.usage.BatchAction;
+import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usagerefactor.UsageRollupProcessor;
 import org.openstack.atlas.util.common.CalendarUtils;
 import org.quartz.JobExecutionContext;
@@ -22,12 +24,14 @@ import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 @Component
 public class LoadBalancerUsageRollupJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsageRollupJob.class);
+    private final int BATCH_SIZE = 1000;
 
     @Autowired
     private UsageRepository usageRepository;
@@ -107,7 +111,15 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
             List<Usage> usagesToInsert = usageRollupProcessor.processRecords(pollingUsages, hourToRollup, loadBalancersActiveDuringPeriod);
 
             if (!usagesToInsert.isEmpty()) {
-                usageRepository.batchCreate(usagesToInsert);
+                BatchAction<Usage> usageInsertBatchAction = new BatchAction<Usage>() {
+                    @Override
+                    public void execute(Collection<Usage> usagesToInsert) throws Exception {
+                        LOG.info(String.format("Inserting %d new records into lb_usage table...", usagesToInsert.size()));
+                        usageRepository.batchCreate(usagesToInsert);
+                        LOG.info(String.format("Inserted %d new records into lb_usage table.", usagesToInsert.size()));
+                    }
+                };
+                ExecutionUtilities.ExecuteInBatches(usagesToInsert, BATCH_SIZE, usageInsertBatchAction);
             }
 
             String lastSuccessfulHourProcessed = CalendarUtils.calendarToString(hourToRollup);
