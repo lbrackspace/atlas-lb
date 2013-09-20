@@ -29,7 +29,7 @@ public class HostUsageRefactorRepository {
         entityManager.persist(usageRecord);
     }
 
-    public void batchCreate(List<LoadBalancerHostUsage> usageRecords) {
+    public void batchCreate(Collection<LoadBalancerHostUsage> usageRecords) {
         LOG.info(String.format("batchCreate() called with %d records", usageRecords.size()));
         if (usageRecords.size() > 0) {
             String query = generateBatchInsertQuery(usageRecords);
@@ -37,7 +37,7 @@ public class HostUsageRefactorRepository {
         }
     }
 
-    private String generateBatchInsertQuery(List<LoadBalancerHostUsage> usages) {
+    private String generateBatchInsertQuery(Collection<LoadBalancerHostUsage> usages) {
         final StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO lb_host_usage (account_id, loadbalancer_id, host_id, bandwidth_out," +
                 "bandwidth_in, bandwidth_out_ssl, bandwidth_in_ssl, concurrent_connections," +
@@ -46,7 +46,7 @@ public class HostUsageRefactorRepository {
         return sb.toString();
     }
 
-    private String generateFormattedValuesForList(List<LoadBalancerHostUsage> usages) {
+    private String generateFormattedValuesForList(Collection<LoadBalancerHostUsage> usages) {
         String queryString = "";
         for (LoadBalancerHostUsage usage : usages) {
             queryString += generateFormattedValues(usage);

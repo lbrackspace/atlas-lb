@@ -9,6 +9,8 @@ import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage;
 import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage;
+import org.openstack.atlas.usage.BatchAction;
+import org.openstack.atlas.usage.ExecutionUtilities;
 import org.openstack.atlas.usagerefactor.HostThread;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.UsageProcessor;
@@ -25,6 +27,7 @@ import java.util.concurrent.*;
 @Component
 public class LoadBalancerUsagePoller extends AbstractJob {
     private final Log LOG = LogFactory.getLog(LoadBalancerUsagePoller.class);
+    private final int BATCH_SIZE = 1000;
 
     @Autowired
     private UsageRefactorService usageRefactorService;
@@ -48,7 +51,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
     }
 
     @Override
-    public void run() {
+    public void run() throws Exception {
         Calendar pollTime = Calendar.getInstance();
         LOG.info("Set poll time to " + pollTime.getTime().toString() + "...");
         Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getRecordsBeforeTimeInclusive(pollTime);
@@ -57,20 +60,40 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         Map<Integer, Map<Integer, SnmpUsage>> currentUsages;
         try {
             currentUsages = getCurrentData();
+            LOG.info("Retrieved records for " + currentUsages.size() + " hosts from stingray by SNMP.");
         } catch (Exception e) {
             LOG.error("There was an error retrieving current usage from stingray using snmp. " + e);
             return;
         }
-        LOG.info("Retrieved records for " + currentUsages.size() + " hosts from stingray by SNMP.");
+
+
         UsageProcessorResult result = usageProcessor.mergeRecords(existingUsages, currentUsages, pollTime);
         LOG.info("Completed processing of current usage");
         LOG.info("Checking if any events were inserted between the beginning of this job and now...");
         Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents = usageRefactorService.getRecordsAfterTimeInclusive(pollTime);
         Set<Integer> loadBalancersNotToDelete = removeLoadBalancerRecordsThatHadNewEvents(result, newEvents);
-        usageRefactorService.batchCreateLoadBalancerMergedHostUsages(result.getMergedUsages());
-        LOG.info("Completed insertion of " + result.getMergedUsages().size() + " new records into lb_merged_host_usage table.");
-        usageRefactorService.batchCreateLoadBalancerHostUsages(result.getLbHostUsages());
-        LOG.info("Completed insertion of " + result.getLbHostUsages().size() + " new records into lb_host_usage table.");
+
+        BatchAction<LoadBalancerMergedHostUsage> mergedUsageBatchAction = new BatchAction<LoadBalancerMergedHostUsage>() {
+            @Override
+            public void execute(Collection<LoadBalancerMergedHostUsage> mergedUsages) throws Exception {
+                LOG.info(String.format("Inserting %d new records into lb_merged_host_usage table...", mergedUsages.size()));
+                usageRefactorService.batchCreateLoadBalancerMergedHostUsages(mergedUsages);
+                LOG.info(String.format("Completed insertion of %d new records into lb_merged_host_usage table.", mergedUsages.size()));
+            }
+        };
+        ExecutionUtilities.ExecuteInBatches(result.getMergedUsages(), BATCH_SIZE, mergedUsageBatchAction);
+
+        BatchAction<LoadBalancerHostUsage> lbHostUsageBatchAction = new BatchAction<LoadBalancerHostUsage>() {
+            @Override
+            public void execute(Collection<LoadBalancerHostUsage> lbHostUsages) throws Exception {
+                LOG.info(String.format("Inserting %d new records into lb_host_usage table...", lbHostUsages.size()));
+                usageRefactorService.batchCreateLoadBalancerHostUsages(lbHostUsages);
+                LOG.info(String.format("Completed insertion of %d new records into lb_host_usage table.", lbHostUsages.size()));
+            }
+        };
+        ExecutionUtilities.ExecuteInBatches(result.getLbHostUsages(), BATCH_SIZE, lbHostUsageBatchAction);
+
+
         usageRefactorService.deleteOldLoadBalancerHostUsages(pollTime, loadBalancersNotToDelete, maxId);
         LOG.info("Completed deletion of records from lb_host_usage table prior to poll time: " + pollTime.getTime().toString());
     }
@@ -122,14 +145,14 @@ public class LoadBalancerUsagePoller extends AbstractJob {
     }
 
     private Set<Integer> removeLoadBalancerRecordsThatHadNewEvents(UsageProcessorResult recordsToInsert,
-                                                           Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents) {
+                                                                   Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents) {
         Set<Integer> loadBalancersToExcludeFromDelete = new HashSet<Integer>();
         for (Integer loadbalancerId : newEvents.keySet()) {
             loadBalancersToExcludeFromDelete.add(loadbalancerId);
             Iterator<LoadBalancerMergedHostUsage> lbmhuIter = recordsToInsert.getMergedUsages().iterator();
             while (lbmhuIter.hasNext()) {
                 LoadBalancerMergedHostUsage mergedUsage = lbmhuIter.next();
-                if(mergedUsage.getLoadbalancerId() == loadbalancerId) {
+                if (mergedUsage.getLoadbalancerId() == loadbalancerId) {
                     LOG.info(String.format("Load balancer %d had event come in during poller run.  Removing records that were to be inserted.", loadbalancerId));
                     lbmhuIter.remove();
                 }
@@ -149,7 +172,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         final int THREAD_POOL_TIMEOUT = 30;
 
         pool.shutdown(); // Disable new tasks from being submitted
-        
+
         try {
             // Wait a while for existing tasks to terminate
             if (!pool.awaitTermination(THREAD_POOL_TIMEOUT, TimeUnit.SECONDS)) {
@@ -171,8 +194,8 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         Integer maxId = -1;
         for (Integer loadbalancerId : existingUsages.keySet()) {
             for (Integer hostId : existingUsages.get(loadbalancerId).keySet()) {
-                for(LoadBalancerHostUsage usage : existingUsages.get(loadbalancerId).get(hostId)) {
-                    if(maxId <= usage.getId()){
+                for (LoadBalancerHostUsage usage : existingUsages.get(loadbalancerId).get(hostId)) {
+                    if (maxId <= usage.getId()) {
                         maxId = usage.getId();
                     }
                 }
