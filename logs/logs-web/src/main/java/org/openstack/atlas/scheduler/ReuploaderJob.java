@@ -44,6 +44,11 @@ public class ReuploaderJob extends QuartzJobBean implements StatefulJob {
         LOG.info("running " + getClass());
         vlog.printf("ReuploaderJob starting: ");
 
+        // Cancel this job too if THE_ONE_TO_RULE_THEM_ALL is not on GO.
+        if (!jobStateService.isJobReadyToGo()) {
+            LOG.warn(String.format("THE_ONE_TO_RULE_THEM_ALL jobstate is not set to GO. Not running log processing yet"));
+            return;
+        }
 
 //        jobStateService.updateJobState(JobName.LOG_FILE_CF_UPLOAD, JobStateVal.CREATED);
 

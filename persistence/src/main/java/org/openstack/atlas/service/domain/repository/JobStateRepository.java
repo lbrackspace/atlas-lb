@@ -91,6 +91,27 @@ public class JobStateRepository {
         return query.getResultList();
     }
 
+    // returns true if a row has THE_ONE_TO_RULE_THEM_ALL on GO
+    // also returns true if THE_ONE_TO_RULE_THEM_ALL doesn't exist (Legacy support)
+    // In case of multiple rows just return true if any are set to GO.
+    public boolean isJobReadyToGo() {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<JobState> criteria = builder.createQuery(JobState.class);
+        Root<JobState> jobStateRoot = criteria.from(JobState.class);
+
+        Predicate hasName = builder.equal(jobStateRoot.get(JobState_.jobName), JobName.THE_ONE_TO_RULE_THEM_ALL);
+
+        criteria.select(jobStateRoot);
+        criteria.where(hasName);
+        List<JobState> masterJobs = entityManager.createQuery(criteria).getResultList();
+        for (JobState masterJobState : masterJobs) { // serieously though there should only be one.
+            if (masterJobState.getState().equals(JobStateVal.GO)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public JobState getByName(JobName jobName) throws EntityNotFoundException {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<JobState> criteria = builder.createQuery(JobState.class);
