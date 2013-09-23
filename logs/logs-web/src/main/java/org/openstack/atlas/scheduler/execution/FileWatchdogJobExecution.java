@@ -37,6 +37,10 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
+        if (!jobStateRepository.isJobReadyToGo()) {
+            LOG.warn(String.format("THE_ONE_TO_RULE_THEM_ALL jobstate is not set to GO. Not running log processing yet"));
+            return;
+        }
         List<String> localInputFiles = hdfsUtils.getLocalInputFiles(HadoopLogsConfigs.getFileSystemRootDir());
         List<String> scheduledFilesToRun = new ArrayList<String>();
         for (String inputFile : localInputFiles) {

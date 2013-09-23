@@ -13,6 +13,8 @@ public interface JobStateService {
 
     JobState getByName(JobName jobName);
 
+    boolean isJobReadyToGo();
+
     List<JobState> getAll(Integer offset, Integer limit, Integer marker);
 
     List<JobState> getByState(String state, Integer... p);
