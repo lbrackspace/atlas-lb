@@ -11,7 +11,6 @@
     <artifactId>atlas-exp-cache-faker</artifactId>
     <name>OpenStack :: Atlas :: Logs :: HDFS :: Cache zip faker</name>
     <version>1.20.1-SNAPSHOT</version>
-
     <packaging>jar</packaging>
 
     <dependencies>
