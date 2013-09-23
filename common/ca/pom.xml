@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-common</artifactId>
-<version>1.20.1-SNAPSHOT</version>
+        <version>1.20.1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-parent</artifactId>
     <version>1.20.1-SNAPSHOT</version>
-
     <name>Openstack :: Atlas :: CA :: Parent</name>
     <packaging>pom</packaging>
 
@@ -21,15 +21,6 @@
         <module>root-ca-builder</module>
         <module>gui</module>
     </modules>
-
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.8.1</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
 
     <build>
         <pluginManagement>

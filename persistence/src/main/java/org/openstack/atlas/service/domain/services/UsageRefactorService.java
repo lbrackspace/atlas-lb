@@ -24,11 +24,11 @@ public interface UsageRefactorService {
 
     public Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> getRecordsBeforeTimeInclusive(Calendar time);
 
-    public void batchCreateLoadBalancerHostUsages(List<LoadBalancerHostUsage> usages);
+    public void batchCreateLoadBalancerHostUsages(Collection<LoadBalancerHostUsage> usages);
 
     public void deleteOldLoadBalancerHostUsages(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude, Integer maxId);
 
-    public void batchCreateLoadBalancerMergedHostUsages(List<LoadBalancerMergedHostUsage> usages);
+    public void batchCreateLoadBalancerMergedHostUsages(Collection<LoadBalancerMergedHostUsage> usages);
 
     public void batchDeleteLoadBalancerMergedHostUsages(Collection<LoadBalancerMergedHostUsage> usages);
 

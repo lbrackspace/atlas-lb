@@ -80,7 +80,7 @@ public class UsageRepository {
         deleteAllRecordsBeforeOrEqualTo(deletePoint);
     }
 
-    public void batchCreate(List<Usage> usages) {
+    public void batchCreate(Collection<Usage> usages) {
         LOG.info(String.format("batchCreate() called with %d records", usages.size()));
 
         String query = generateBatchInsertQuery(usages);
@@ -117,7 +117,7 @@ public class UsageRepository {
         entityManager.merge(usageRecord);
     }
 
-    private String generateBatchInsertQuery(List<Usage> usages) {
+    private String generateBatchInsertQuery(Collection<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed, uuid, corrected, num_attempts) values");
         sb.append(generateFormattedValues(usages));
@@ -190,11 +190,11 @@ public class UsageRepository {
 //        return sb.toString();
 //    }
 
-    private String generateFormattedValues(List<Usage> usages) {
+    private String generateFormattedValues(Collection<Usage> usages) {
         return generateFormattedValues(usages, true);
     }
 
-    private String generateFormattedValues(List<Usage> usages, boolean isUpdate) {
+    private String generateFormattedValues(Collection<Usage> usages, boolean isUpdate) {
         StringBuilder sb = new StringBuilder();
 
         for (Usage usage : usages) {

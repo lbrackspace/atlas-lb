@@ -116,7 +116,7 @@ public class LoadBalancerMergedHostUsageRepository {
         return usageItem;
     }
 
-    public void batchCreate(List<LoadBalancerMergedHostUsage> usages) {
+    public void batchCreate(Collection<LoadBalancerMergedHostUsage> usages) {
         LOG.info(String.format("batchCreate() called with %d records", usages.size()));
         if(usages.isEmpty()) {
             return;
@@ -137,14 +137,14 @@ public class LoadBalancerMergedHostUsageRepository {
                 .executeUpdate();
     }
 
-    private String generateBatchInsertQuery(List<LoadBalancerMergedHostUsage> usages) {
+    private String generateBatchInsertQuery(Collection<LoadBalancerMergedHostUsage> usages) {
         final StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO lb_merged_host_usage(account_id, loadbalancer_id, outgoing_transfer, incoming_transfer, outgoing_transfer_ssl, incoming_transfer_ssl, concurrent_connections, concurrent_connections_ssl, num_vips, tags_bitmask, poll_time, event_type) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
 
-    private String generateFormattedValues(List<LoadBalancerMergedHostUsage> usages) {
+    private String generateFormattedValues(Collection<LoadBalancerMergedHostUsage> usages) {
         StringBuilder sb = new StringBuilder();
 
         for (LoadBalancerMergedHostUsage usage : usages) {

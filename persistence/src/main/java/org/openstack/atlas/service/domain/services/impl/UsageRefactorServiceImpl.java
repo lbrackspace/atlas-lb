@@ -47,7 +47,7 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     }
 
     @Override
-    public void batchCreateLoadBalancerHostUsages(List<LoadBalancerHostUsage> usages) {
+    public void batchCreateLoadBalancerHostUsages(Collection<LoadBalancerHostUsage> usages) {
         hostUsageRefactorRepository.batchCreate(usages);
     }
 
@@ -57,7 +57,7 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
     }
 
     @Override
-    public void batchCreateLoadBalancerMergedHostUsages(List<LoadBalancerMergedHostUsage> usages) {
+    public void batchCreateLoadBalancerMergedHostUsages(Collection<LoadBalancerMergedHostUsage> usages) {
         loadBalancerMergedHostUsageRepository.batchCreate(usages);
     }
 
