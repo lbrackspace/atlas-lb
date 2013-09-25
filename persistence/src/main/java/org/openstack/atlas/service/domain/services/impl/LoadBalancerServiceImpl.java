@@ -362,6 +362,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             dbLoadBalancer.setHalfClosed(loadBalancer.isHalfClosed());
         }
 
+        LOG.debug("Updating loadbalancer httpsRedirect to " + loadBalancer.isHttpsRedirect());
+        if (loadBalancer.isHttpsRedirect() != null) {
+            dbLoadBalancer.setHttpsRedirect(loadBalancer.isHttpsRedirect());
+        }
 
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
@@ -712,6 +716,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         if (loadBalancer.isHalfClosed() == null) {
             loadBalancer.setHalfClosed(false);
+        }
+
+        if (loadBalancer.isHttpsRedirect() == null) {
+            loadBalancer.setHttpsRedirect(false);
         }
     }
 
