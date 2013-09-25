@@ -43,7 +43,7 @@ public class SyncListener extends BaseListener {
         try {
             dbLoadBalancer = loadBalancerService.get(queueSyncObject.getLoadBalancerId());
         } catch (EntityNotFoundException enfe) {
-            LOG.error(String.format("EntityNotFoundException thrown while attempting to sync Loadbalancer #%d: ",queueSyncObject.getLoadBalancerId()));
+            LOG.error(String.format("EntityNotFoundException thrown while attempting to sync Loadbalancer #%d: ", queueSyncObject.getLoadBalancerId()));
             return;
         }
 
@@ -63,9 +63,17 @@ public class SyncListener extends BaseListener {
             }
 
             try {
-                reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
+                if (isRestAdapter()) {
+                    LOG.debug(String.format("Removing loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
+                    reverseProxyLoadBalancerStmService.deleteLoadBalancer(dbLoadBalancer);
+                    LOG.debug(String.format("Successfully removed loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
+                } else {
+                    LOG.debug(String.format("Removing loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
+                    reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
+                    LOG.debug(String.format("Successfully removed loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
+                }
             } catch (Exception e) {
-                String msg = String.format("Error deleting loadbalancer #%d in SyncListener(): ",queueSyncObject.getLoadBalancerId());
+                String msg = String.format("Error deleting loadbalancer #%d in SyncListener(): ", queueSyncObject.getLoadBalancerId());
                 loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                 LOG.error(msg, e);
@@ -82,30 +90,32 @@ public class SyncListener extends BaseListener {
                     String atomSummary = "Load balancer successfully deleted";
                     notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
-                    // Notify usage processor
-                    //DEPRECATED!! Remove in future version
                     Calendar eventTime = Calendar.getInstance();
-                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
-                    //END DEPRECATION
-
                     LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
                     usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
                     LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
 
                     //Set status record
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE);
-
                 }
             } else {
 
                 //First recreate the original virtual server...
                 try {
-                    //Ssl termination will be added on second pass...
                     LoadBalancer tempLb = loadBalancerService.get(queueSyncObject.getLoadBalancerId());
                     tempLb.setSslTermination(null);
 
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.BUILD);
-                    reverseProxyLoadBalancerService.createLoadBalancer(tempLb);
+                    if (isRestAdapter()) {
+                        LOG.debug(String.format("Re-creating loadbalancer: %s in STM...", tempLb.getId()));
+                        reverseProxyLoadBalancerStmService.createLoadBalancer(tempLb);
+                        LOG.debug(String.format("Successfully Re-created loadbalancer: %s in STM...", tempLb.getId()));
+                    } else {
+                        LOG.debug(String.format("Re-creating loadbalancer: %s in ZXTM...", tempLb.getId()));
+                        reverseProxyLoadBalancerService.createLoadBalancer(tempLb);
+                        LOG.debug(String.format("Successfully Re-created loadbalancer: %s in ZXTM...", tempLb.getId()));
+                    }
+
                     loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
 
                     if (loadBalancerStatus.equals(BUILD)) {
@@ -121,14 +131,8 @@ public class SyncListener extends BaseListener {
                         String atomSummary = createAtomSummary(dbLoadBalancer).toString();
                         notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
 
-                        // Notify old usage processor
-                        //DEPRECATED!! Remove in future version
-                        Calendar eventTime = Calendar.getInstance();
-                        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0, eventTime);
-                        //END DEPRECATION
-
                         try {
-                            // Notify usage processor
+                            Calendar eventTime = Calendar.getInstance();
                             usageEventCollection.processZeroUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, eventTime);
                         } catch (UsageEventCollectionException uex) {
                             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
@@ -159,7 +163,16 @@ public class SyncListener extends BaseListener {
                         //We must re-validate cert/keys before sending to zeus  V1-D-04287
                         ZeusSslTermination zeusTermination = sslTerminationService.updateSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), domainSslTermination);
 
-                        reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, zeusTermination);
+                        if (isRestAdapter()) {
+                            LOG.debug(String.format("Updating ssl termination for load balancer: %s in STM", dbLoadBalancer.getId()));
+                            reverseProxyLoadBalancerStmService.updateSslTermination(dbLoadBalancer, zeusTermination);
+                            LOG.debug(String.format("Successfully updated ssl termination for load balancer: %s in STM", dbLoadBalancer.getId()));
+                        } else {
+                            LOG.debug(String.format("Updating ssl termination for load balancer: %s in ZXTM", dbLoadBalancer.getId()));
+                            reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, zeusTermination);
+                            LOG.debug(String.format("Successfully updated ssl termination for load balancer: %s in ZXTM", dbLoadBalancer.getId()));
+                        }
+
                         loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
                         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
@@ -168,38 +181,26 @@ public class SyncListener extends BaseListener {
 
                             if (dbLoadBalancer.isUsingSsl()) {
                                 if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
-                                    //DEPRECATED!! Remove in future version
-                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
-                                    //END DEPRECATION
-                                    //Use this.
                                     usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
                                 } else {
-                                    //DEPRECATED!! Remove in future version
-                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
-                                    //END DEPRECATION
-                                    //Use this.
                                     usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
                                 }
                             } else {
-                                //DEPRECATED!! Remove in future version
-                                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
-                                //END DEPRECATION
-                                //Use this.
                                 usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
                             }
                         }
                     }
                 } catch (Exception e) {
-                    String msg = String.format("Error re-creating ssl terminated loadbalancer #%d in SyncListener():",queueSyncObject.getLoadBalancerId());
+                    String msg = String.format("Error re-creating ssl terminated loadbalancer #%d in SyncListener():", queueSyncObject.getLoadBalancerId());
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                     LOG.error(msg, e);
                 }
             }
         } else if (queueSyncObject.getLocationToSyncFrom().equals(SyncLocation.ZEUS)) {
-            LOG.warn(String.format("Load balancers can only be synchronized with the database at this time. Warning Loadbalancer #%d wasn't actually synced",queueSyncObject.getLoadBalancerId()));
+            LOG.warn(String.format("Load balancers can only be synchronized with the database at this time. Warning Loadbalancer #%d wasn't actually synced", queueSyncObject.getLoadBalancerId()));
         }
 
-        LOG.info(String.format("Sync operation complete for loadbalancer #%d ",queueSyncObject.getLoadBalancerId()));
+        LOG.info(String.format("Sync operation complete for loadbalancer #%d ", queueSyncObject.getLoadBalancerId()));
     }
 
     private StringBuilder createAtomSummary(LoadBalancer lb) {

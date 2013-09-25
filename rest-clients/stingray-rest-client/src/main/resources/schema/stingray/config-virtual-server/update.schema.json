@@ -29,6 +29,18 @@
                      "type":          "boolean"
                   },
 
+                  "add_x_forwarded_for": {
+                     "description":   "Whether or not the virtual server should append the remote client's IP address to the X-Forwarded-For header. If the header does not exist, it will be added.",
+
+                     "type":          "boolean"
+                  },
+
+                  "add_x_forwarded_proto": {
+                     "description":   "Whether or not the virtual server should add an \"X- Forwarded-Proto\" header to the request that contains the original protocol used by the client to connect to the traffic manager.",
+
+                     "type":          "boolean"
+                  },
+
                   "bandwidth_class": {
                      "description":   "The bandwidth management class should this server should use, if any.",
 

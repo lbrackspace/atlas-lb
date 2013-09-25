@@ -12,7 +12,6 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 
 import javax.jms.Message;
-
 import java.util.Calendar;
 
 import static org.openstack.atlas.api.atom.EntryHelper.*;
@@ -51,21 +50,20 @@ public class CreateLoadBalancerListener extends BaseListener {
         }
 
         try {
-
-            LOG.debug("Creating load balancer in STM...");
-            //:(
-//            UserPages up = new UserPages();
-//            up.setErrorpage(null);
-            UserPages up = dbLoadBalancer.getUserPages();
-            LoadBalancer lb = new LoadBalancer();
-            lb = dbLoadBalancer;
-            lb.setUserPages(up);
-            reverseProxyLoadBalancerStmService.createLoadBalancer(lb);
-            LOG.debug("Successfully created a load balancer in STM.");
-
-//            LOG.debug("Creating load balancer in ZXTM...");
-//            reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
-//            LOG.debug("Successfully created a load balancer in ZXTM.");
+            if (isRestAdapter()) {
+                LOG.debug("Creating load balancer in STM...");
+                UserPages up = dbLoadBalancer.getUserPages();
+                //...lazy loading... :( //todo: find a better solution at some point.
+                LoadBalancer lb = new LoadBalancer();
+                lb = dbLoadBalancer;
+                lb.setUserPages(up);
+                reverseProxyLoadBalancerStmService.createLoadBalancer(lb);
+                LOG.debug("Successfully created a load balancer in STM.");
+            } else {
+                LOG.debug("Creating load balancer in ZXTM...");
+                reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
+                LOG.debug("Successfully created a load balancer in ZXTM.");
+            }
         } catch (Exception e) {
             dbLoadBalancer.setStatus(ERROR);
             NodesHelper.setNodesToStatus(dbLoadBalancer, OFFLINE);

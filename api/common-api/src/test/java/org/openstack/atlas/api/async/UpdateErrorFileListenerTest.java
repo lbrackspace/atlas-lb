@@ -4,10 +4,13 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
@@ -45,6 +48,8 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    @Mock
+    private RestApiConfiguration config;
 
     private UpdateErrorFileListener updateErrorFileListener;
 
@@ -59,6 +64,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         updateErrorFileListener.setNotificationService(notificationService);
         updateErrorFileListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         updateErrorFileListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateErrorFileListener.setConfiguration(config);
     }
 
     @After
@@ -73,6 +79,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getClusterId()).thenReturn(null);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
@@ -114,6 +121,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getClusterId()).thenReturn(null);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).setErrorFile(lb, ERROR_FILE_CONTENT);
@@ -136,6 +144,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getClusterId()).thenReturn(CLUSTER_ID);
         when(messageDataContainer.getUserName()).thenReturn(null);
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateErrorFileListener.doOnMessage(objectMessage);
 
@@ -151,6 +160,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getClusterId()).thenReturn(CLUSTER_ID);
         when(messageDataContainer.getUserName()).thenReturn(null);
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         doThrow(exception).when(reverseProxyLoadBalancerStmService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
 

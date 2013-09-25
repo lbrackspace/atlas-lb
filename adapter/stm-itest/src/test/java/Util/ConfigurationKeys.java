@@ -11,5 +11,6 @@ public enum ConfigurationKeys implements ConfigurationKey {
     target_host,
     failover_host_1,
     failover_host_2,
+    adapter_soap_rest,
     default_log_file_location
 }

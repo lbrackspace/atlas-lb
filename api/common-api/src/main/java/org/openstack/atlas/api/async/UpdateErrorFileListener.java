@@ -48,9 +48,15 @@ public class UpdateErrorFileListener extends BaseListener {
             }
 
             try {
-                LOG.debug("Attempting to set error file in zeus...calling setErrorFile");
-                reverseProxyLoadBalancerStmService.setErrorFile(dbLoadBalancer, content);
-                LOG.debug("Successfully updated error file in zeus.");
+                if (isRestAdapter()) {
+                    LOG.debug("Attempting to set error file in STM...calling setErrorFile");
+                    reverseProxyLoadBalancerStmService.setErrorFile(dbLoadBalancer, content);
+                    LOG.debug("Successfully updated error file in zeus.");
+                } else {
+                    LOG.debug("Attempting to set error file in ZXTM...calling setErrorFile");
+                    reverseProxyLoadBalancerService.setErrorFile(dbLoadBalancer, content);
+                    LOG.debug("Successfully updated error file in zeus.");
+                }
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
             } catch (Exception e) {
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
@@ -62,10 +68,16 @@ public class UpdateErrorFileListener extends BaseListener {
             }
 
         } else if (clusterId != null) {
-            LOG.debug("Attempting to upload default error file in zeus...calling uploadDefaultErrorFile");
             try {
-                reverseProxyLoadBalancerStmService.uploadDefaultErrorFile(clusterId, content);
-                LOG.debug("Successfully uploaded default error file in zeus.");
+                if (isRestAdapter()) {
+                    LOG.debug("Attempting to upload default error file in STM...calling uploadDefaultErrorFile");
+                    reverseProxyLoadBalancerStmService.uploadDefaultErrorFile(clusterId, content);
+                    LOG.debug("Successfully uploaded default error file in zeus.");
+                } else {
+                    LOG.debug("Attempting to upload default error file in ZXTM...calling uploadDefaultErrorFile");
+                    reverseProxyLoadBalancerService.uploadDefaultErrorFile(clusterId, content);
+                    LOG.debug("Successfully uploaded default error file in zeus.");
+                }
             } catch (Exception e) {
                 String tmpMsg = String.format("Error uploading default error file...");
                 LOG.error(tmpMsg, e);

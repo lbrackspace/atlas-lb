@@ -232,7 +232,7 @@ public class SnmpMain {
                         if (vsToHostMap.containsKey(vsFilter)) {
                             printVsMap(vsFilter, vsToHostMap);
                         } else {
-                            System.out.printf("pool %s was not in the usage map\n");
+                            System.out.printf("pool %s was not in the usage map\n",vsFilter);
                         }
                     } else {
 

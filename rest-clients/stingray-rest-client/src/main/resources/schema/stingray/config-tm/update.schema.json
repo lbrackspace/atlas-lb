@@ -34,6 +34,12 @@
                      
                      "type":          "string"
                   },
+
+                   "num_aptimizer_threads": {
+                     "description":   "How many worker threads the Aptimizer process should create to optimise content. By default, one thread will be created for each CPU on the system.",
+
+                     "type":          "integer"
+                  },
                   
                   "num_children": {
                      "description":   "The number of worker processes the software will run.  By default, one child process will be created for each CPU on the system.  You may wish to reduce this to effectively \"reserve\" CPU(s) for other processes running on the host system.",

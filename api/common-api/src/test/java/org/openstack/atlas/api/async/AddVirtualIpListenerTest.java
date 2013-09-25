@@ -8,6 +8,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -51,6 +53,8 @@ public class AddVirtualIpListenerTest extends STMTestBase {
     private UsageEventCollection usageEventCollection;
     @Mock
     private UsageEventHelper usageEventHelper;
+    @Mock
+    private RestApiConfiguration config;
 
     private AddVirtualIpListener addVirtualIpListener;
 
@@ -68,6 +72,7 @@ public class AddVirtualIpListenerTest extends STMTestBase {
         addVirtualIpListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         addVirtualIpListener.setUsageEventCollection(usageEventCollection);
         addVirtualIpListener.setUsageEventHelper(usageEventHelper);
+        addVirtualIpListener.setConfiguration(config);
     }
 
     @After
@@ -77,6 +82,7 @@ public class AddVirtualIpListenerTest extends STMTestBase {
     @Test
     public void testAddVirtualIp() throws Exception {
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
@@ -111,6 +117,7 @@ public class AddVirtualIpListenerTest extends STMTestBase {
     @Test
     public void testAddInvalidVirtualIp() throws Exception {
         Exception exception = new Exception();
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);

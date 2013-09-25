@@ -5,7 +5,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -243,8 +242,8 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
 
             VirtualServer createdServer = stmClient.getVirtualServer(normalName);
-            Assert.assertTrue(createdServer.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF.toString()) ||
-                    createdServer.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP.toString()));
+            Assert.assertTrue(createdServer.getProperties().getBasic().getAdd_x_forwarded_for());
+            Assert.assertTrue(createdServer.getProperties().getBasic().getAdd_x_forwarded_proto());
 
         } catch (Exception e) {
             e.printStackTrace();

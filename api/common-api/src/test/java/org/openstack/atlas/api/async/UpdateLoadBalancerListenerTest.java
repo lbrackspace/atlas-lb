@@ -3,10 +3,13 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -19,15 +22,12 @@ import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.util.converters.StringConverter;
 
 import javax.jms.ObjectMessage;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class UpdateLoadBalancerListenerTest extends STMTestBase {
     private Integer LOAD_BALANCER_ID;
@@ -44,6 +44,8 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
     private NotificationService notificationService;
     @Mock
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    @Mock
+    private RestApiConfiguration config;
 
     private UpdateLoadBalancerListener updateLoadBalancerListener;
 
@@ -60,6 +62,7 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
         updateLoadBalancerListener.setLoadBalancerService(loadBalancerService);
         updateLoadBalancerListener.setNotificationService(notificationService);
         updateLoadBalancerListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateLoadBalancerListener.setConfiguration(config);
     }
 
     @After
@@ -70,7 +73,8 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
         StringBuilder atomSummary = new StringBuilder("Load balancer successfully updated with ");
         List<String> updateStrList = new ArrayList<String>();
         atomSummary.append("algorithm: '").append(lb.getAlgorithm().name()).append("', ");
-        if (lb.getAlgorithm() != null) atomSummary.append("algorithm: '").append(lb.getAlgorithm().name()).append("', ");
+        if (lb.getAlgorithm() != null)
+            atomSummary.append("algorithm: '").append(lb.getAlgorithm().name()).append("', ");
         if (lb.getProtocol() != null) atomSummary.append("protocol: '").append(lb.getProtocol().name()).append("', ");
         if (lb.getPort() != null) atomSummary.append("port: '").append(lb.getPort()).append("', ");
         if (lb.getTimeout() != null) atomSummary.append("timeout: '").append(lb.getTimeout()).append("', ");
@@ -85,6 +89,7 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
         String atomSummary = genAtomSummary();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateLoadBalancerListener.doOnMessage(objectMessage);
 
@@ -111,6 +116,7 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateLoadBalancerListener.doOnMessage(objectMessage);
 

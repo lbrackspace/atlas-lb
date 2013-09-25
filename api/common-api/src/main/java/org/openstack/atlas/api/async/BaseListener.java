@@ -4,6 +4,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -24,6 +26,7 @@ public abstract class BaseListener implements MessageListener {
     protected Log LOG = LogFactory.getLog(this.getClass());
 
     protected JmsTemplate jmsTemplate;
+    protected RestApiConfiguration configuration;
     protected LoadBalancerService loadBalancerService;
     protected VirtualIpService virtualIpService;
     protected NotificationService notificationService;
@@ -41,11 +44,18 @@ public abstract class BaseListener implements MessageListener {
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     protected UsageEventHelper usageEventHelper;
-//    protected UsageEventProcessor usageEventProcessor;
+    //    protected UsageEventProcessor usageEventProcessor;
     protected UsageEventCollection usageEventCollection;
+
+    protected String REST = "REST";
+    protected String SOAP = "SOAP";
 
     public void setJmsTemplate(JmsTemplate jmsTemplate) {
         this.jmsTemplate = jmsTemplate;
+    }
+
+    public void setConfiguration(RestApiConfiguration configuration) {
+        this.configuration = configuration;
     }
 
     public void setLoadBalancerService(LoadBalancerService loadBalancerService) {
@@ -204,6 +214,11 @@ public abstract class BaseListener implements MessageListener {
         });
     }
 
+    public boolean isRestAdapter() {
+        return configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null &&
+                configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase(REST);
+    }
+
 /*    protected void notifyUsageProcessor(final Message message, final LoadBalancer loadBalancer, final UsageEvent event) throws JMSException {
         LOG.debug("Sending notification to usage processor...");
         final String finalDestination = "USAGE_EVENT";
@@ -218,18 +233,18 @@ public abstract class BaseListener implements MessageListener {
         });
     }*/
 
-    public static String getId(String name,Object obj) {
+    public static String getId(String name, Object obj) {
         int hashcode;
         String hexOut;
-        if(name==null){
+        if (name == null) {
             name = obj.getClass().getName();
         }
-        if(obj==null) {
-            return String.format("%s=null",name);
+        if (obj == null) {
+            return String.format("%s=null", name);
         }
         hashcode = System.identityHashCode(obj);
         hexOut = Integer.toHexString(hashcode);
-        return String.format("%s=%s",name,hexOut);
+        return String.format("%s=%s", name, hexOut);
     }
 
     /**
@@ -238,4 +253,5 @@ public abstract class BaseListener implements MessageListener {
     public void setAccessListService(AccessListService accessListService) {
         this.accessListService = accessListService;
     }
+
 }

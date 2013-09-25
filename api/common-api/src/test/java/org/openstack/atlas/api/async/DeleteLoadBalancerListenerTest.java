@@ -3,10 +3,13 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -51,6 +54,8 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
     private UsageEventCollection usageEventCollection;
     @Mock
     private SslTerminationService sslTerminationService;
+    @Mock
+    private RestApiConfiguration config;
 
     private DeleteLoadBalancerListener deleteLoadBalancerListener;
 
@@ -72,6 +77,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         deleteLoadBalancerListener.setUsageEventHelper(usageEventHelper);
         deleteLoadBalancerListener.setUsageEventCollection(usageEventCollection);
         deleteLoadBalancerListener.setSslTerminationService(sslTerminationService);
+        deleteLoadBalancerListener.setConfiguration(config);
     }
 
     @After
@@ -85,6 +91,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.pseudoDelete(lb)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteLoadBalancerListener.doOnMessage(objectMessage);
 
@@ -102,6 +109,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.pseudoDelete(lb)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteLoadBalancerListener.doOnMessage(objectMessage);
 
@@ -131,6 +139,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteLoadBalancerListener.doOnMessage(objectMessage);
 

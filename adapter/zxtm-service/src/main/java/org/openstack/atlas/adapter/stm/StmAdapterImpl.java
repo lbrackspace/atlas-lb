@@ -417,7 +417,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         LOG.info(String.format("Deleting Connection Throttling on '%s'...", name));
         if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) {
             ConnectionLimit nullConnectionLimit = new ConnectionLimit();
-            nullConnectionLimit.setRateInterval(0);
+            nullConnectionLimit.setRateInterval(1);
             nullConnectionLimit.setMaxConnections(0);
             nullConnectionLimit.setMinConnections(0);
             nullConnectionLimit.setMaxConnectionRate(0);

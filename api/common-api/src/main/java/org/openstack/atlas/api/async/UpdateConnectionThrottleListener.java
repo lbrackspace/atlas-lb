@@ -40,9 +40,15 @@ public class UpdateConnectionThrottleListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Updating connection throttle for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerStmService.updateConnectionThrottle(dbLoadBalancer);
-            LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+            if (isRestAdapter()) {
+                LOG.debug(String.format("Updating connection throttle for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerStmService.updateConnectionThrottle(dbLoadBalancer);
+                LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+            } else {
+                LOG.debug(String.format("Updating connection throttle for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerService.updateConnectionThrottle(dbLoadBalancer);
+                LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error updating connection throttle in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());

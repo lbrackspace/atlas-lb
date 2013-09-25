@@ -3,11 +3,14 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.HealthMonitor;
 import org.openstack.atlas.service.domain.entities.HealthMonitorType;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -42,6 +45,8 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     @Mock
     private HealthMonitor healthMonitor;
+    @Mock
+    private RestApiConfiguration config;
 
     private UpdateHealthMonitorListener updateHealthMonitorListener;
 
@@ -58,6 +63,7 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
         updateHealthMonitorListener.setLoadBalancerService(loadBalancerService);
         updateHealthMonitorListener.setNotificationService(notificationService);
         updateHealthMonitorListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateHealthMonitorListener.setConfiguration(config);
     }
 
     @After
@@ -79,6 +85,7 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithValidMonitor() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateHealthMonitorListener.doOnMessage(objectMessage);
 
@@ -105,6 +112,7 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateHealthMonitor(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateHealthMonitorListener.doOnMessage(objectMessage);
 

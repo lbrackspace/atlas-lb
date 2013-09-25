@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
-import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_ACCESS_LIST;
@@ -43,9 +42,15 @@ public class DeleteAccessListListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Deleting access list for load balancer '%s' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerStmService.deleteAccessList(dbLoadBalancer, accessListsToDelete);
-            LOG.debug(String.format("Access list successfully deleted for load balancer '%s' in Zeus.", dbLoadBalancer.getId()));
+            if (isRestAdapter()) {
+                LOG.debug(String.format("Deleting access list for load balancer '%s' in STM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerStmService.deleteAccessList(dbLoadBalancer, accessListsToDelete);
+                LOG.debug(String.format("Access list successfully deleted for load balancer '%s' in Zeus.", dbLoadBalancer.getId()));
+            } else {
+                LOG.debug(String.format("Deleting access list for load balancer '%s' in ZXTM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerService.deleteAccessList(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+                LOG.debug(String.format("Access list successfully deleted for load balancer '%s' in Zeus.", dbLoadBalancer.getId()));
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error deleting access list in Zeus for loadbalancer '%d'.", queueLb.getId());

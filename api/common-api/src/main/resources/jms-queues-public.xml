@@ -118,6 +118,7 @@
 
     <bean id="baseListener" class="org.openstack.atlas.api.async.BaseListener" abstract="true">
         <property name="jmsTemplate" ref="jmsTemplate"/>
+        <property name="configuration" ref="configuration"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
         <property name="virtualIpService" ref="virtualIpService"/>
         <property name="nodeService" ref="nodeService"/>

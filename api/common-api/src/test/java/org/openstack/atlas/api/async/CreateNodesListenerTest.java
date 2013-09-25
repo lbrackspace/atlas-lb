@@ -4,11 +4,14 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -45,6 +48,8 @@ public class CreateNodesListenerTest extends STMTestBase {
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    @Mock
+    private RestApiConfiguration config;
 
     private CreateNodesListener createNodesListener;
 
@@ -67,6 +72,7 @@ public class CreateNodesListenerTest extends STMTestBase {
         createNodesListener.setNotificationService(notificationService);
         createNodesListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         createNodesListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
+        createNodesListener.setConfiguration(config);
     }
 
     @After
@@ -77,6 +83,7 @@ public class CreateNodesListenerTest extends STMTestBase {
     public void testCreateNodesWithValidNodes() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         createNodesListener.doOnMessage(objectMessage);
 
@@ -104,6 +111,7 @@ public class CreateNodesListenerTest extends STMTestBase {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
         doThrow(exception).when(reverseProxyLoadBalancerStmService).setNodes(lb);
 
         createNodesListener.doOnMessage(objectMessage);

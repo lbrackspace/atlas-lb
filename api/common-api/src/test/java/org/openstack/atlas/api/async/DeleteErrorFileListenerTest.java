@@ -3,10 +3,13 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
@@ -37,6 +40,8 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    @Mock
+    private RestApiConfiguration config;
 
     private DeleteErrorFileListener deleteErrorFileListener;
 
@@ -51,6 +56,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
         deleteErrorFileListener.setNotificationService(notificationService);
         deleteErrorFileListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteErrorFileListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
+        deleteErrorFileListener.setConfiguration(config);
     }
 
     @After
@@ -63,6 +69,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
@@ -89,6 +96,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(null);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(null);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
@@ -106,6 +114,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteErrorFile(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
