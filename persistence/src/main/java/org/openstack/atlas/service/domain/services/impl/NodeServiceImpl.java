@@ -96,6 +96,11 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
 
+        // No secondary nodes unless there are primary nodes
+        if(npc.hasSecondary() && !npc.hasPrimary()) {
+            throw new BadRequestException(Constants.NoPrimaryNodeError);
+        }
+
         LOG.debug("Verifying that there are no duplicate nodes...");
         if (detectDuplicateNodes(oldNodesLb, newNodesLb)) {
             LOG.warn("Duplicate nodes found! Sending failure response back to client...");
@@ -189,6 +194,11 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
         if(npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null){
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
+        }
+
+        // No secondary nodes unless there are primary nodes
+        if(npc.hasSecondary() && !npc.hasPrimary()) {
+            throw new BadRequestException(Constants.NoPrimaryNodeError);
         }
 
         LOG.debug("Updating the lb status to pending_update");

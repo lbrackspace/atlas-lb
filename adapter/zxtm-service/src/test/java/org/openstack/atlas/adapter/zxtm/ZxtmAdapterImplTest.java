@@ -224,6 +224,7 @@ public class ZxtmAdapterImplTest {
             lb.setAlgorithm(ROUND_ROBIN);
             lb.setName("integration_test_lb");
             lb.setProtocol(HTTP);
+            lb.setHttpsRedirect(false);
             lb.setNodes(nodeList);
             lb.setLoadBalancerJoinVipSet(vipList);
         }
