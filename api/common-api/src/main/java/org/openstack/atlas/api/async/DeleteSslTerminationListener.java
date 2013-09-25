@@ -46,9 +46,15 @@ public class DeleteSslTerminationListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Deleting load balancer '%d' ssl termination in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerStmService.removeSslTermination(dbLoadBalancer);
-            LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId()));
+            if (isRestAdapter()) {
+                LOG.debug(String.format("Deleting load balancer '%d' ssl termination in STM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerStmService.removeSslTermination(dbLoadBalancer);
+                LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId()));
+            } else {
+                LOG.debug(String.format("Deleting load balancer '%d' ssl termination in ZXTM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerService.removeSslTermination(dbLoadBalancer);
+                LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId()));
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             LOG.error(String.format("LoadBalancer status before error was: '%s'", dbLoadBalancer.getStatus()));

@@ -4,11 +4,14 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.events.UsageEvent;
@@ -55,6 +58,8 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
     private ZeusSslTermination queTermination;
     @Mock
     private SslTermination sslTermination;
+    @Mock
+    private RestApiConfiguration config;
 
     private UpdateSslTerminationListener updateSslTerminationListener;
 
@@ -71,6 +76,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         updateSslTerminationListener.setNotificationService(notificationService);
         updateSslTerminationListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         updateSslTerminationListener.setUsageEventCollection(usageEventCollection);
+        updateSslTerminationListener.setConfiguration(config);
     }
 
     @After
@@ -92,6 +98,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         lb.setSslTermination(sslTermination);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
 
@@ -119,6 +126,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         lb.setSslTermination(sslTermination);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
 
@@ -145,6 +153,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         lb.setSslTermination(sslTermination);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
 
@@ -189,6 +198,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
 

@@ -126,7 +126,8 @@ public class ConnectionThrottleITest extends STMTestBase {
         Protection protection = stmClient.getProtection(vsName);
         Assert.assertNotNull(protection);
         ProtectionConnectionLimiting retrievedLimit = protection.getProperties().getConnection_limiting();
-        Assert.assertEquals(0, (int) retrievedLimit.getRate_timer());
+        //Their default is 1 now for rate_timer...........
+        Assert.assertEquals(1, (int) retrievedLimit.getRate_timer());
         Assert.assertEquals(0, (int) retrievedLimit.getMax_1_connections());
         Assert.assertEquals(0, (int) retrievedLimit.getMin_connections());
         Assert.assertEquals(0, (int) retrievedLimit.getMax_connection_rate());

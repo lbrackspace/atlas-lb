@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.stm.StmAdapterImpl;
@@ -184,8 +183,8 @@ public class STMTestBase extends StmTestConstants {
             Assert.assertEquals(lb.getPort(), vs.getProperties().getBasic().getPort());
             Assert.assertEquals(poolName(), vs.getProperties().getBasic().getPool());
             Assert.assertEquals("Default", vs.getProperties().getConnection_errors().getError_file());
-            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF));
-            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
+            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_for());
+            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_proto());
             Assert.assertEquals(false, vs.getProperties().getBasic().getListen_on_any());
             Assert.assertEquals(false, vs.getProperties().getTcp().getProxy_close());
             Assert.assertEquals(translator.genGroupNameSet(lb), vs.getProperties().getBasic().getListen_on_traffic_ips());

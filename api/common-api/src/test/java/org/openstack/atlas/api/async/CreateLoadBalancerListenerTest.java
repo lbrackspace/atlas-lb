@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -62,6 +64,8 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
     private UsageEventHelper usageEventHelper;
     @Mock
     private UsageEventCollection usageEventCollection;
+    @Mock
+    private RestApiConfiguration config;
 
     private CreateLoadBalancerListener createLoadBalancerListener;
 
@@ -94,6 +98,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
         createLoadBalancerListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         createLoadBalancerListener.setUsageEventHelper(usageEventHelper);
         createLoadBalancerListener.setUsageEventCollection(usageEventCollection);
+        createLoadBalancerListener.setConfiguration(config);
     }
 
     @After
@@ -190,6 +195,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(loadBalancerService.update(lb)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         createLoadBalancerListener.doOnMessage(objectMessage);
 
@@ -232,6 +238,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).createLoadBalancer(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         createLoadBalancerListener.doOnMessage(objectMessage);
 

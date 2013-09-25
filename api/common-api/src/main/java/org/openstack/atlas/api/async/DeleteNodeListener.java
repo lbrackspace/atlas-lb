@@ -2,6 +2,7 @@ package org.openstack.atlas.api.async;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
@@ -45,10 +46,16 @@ public class DeleteNodeListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Removing node '%d' from load balancer '%d' in Zeus...", nodeToDelete.getId(), queueLb.getId()));
-//            reverseProxyLoadBalancerService.setNodesPriorities(ZxtmNameBuilder.genVSName(dbLoadBalancer), dbLoadBalancer);
-            reverseProxyLoadBalancerStmService.removeNode(dbLoadBalancer, nodeToDelete);
-            LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in Zeus.", nodeToDelete.getId(), queueLb.getId()));
+            if (isRestAdapter()) {
+                LOG.debug(String.format("Removing node '%d' from load balancer '%d' in STM...", nodeToDelete.getId(), queueLb.getId()));
+                reverseProxyLoadBalancerStmService.removeNode(dbLoadBalancer, nodeToDelete);
+                LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in Zeus.", nodeToDelete.getId(), queueLb.getId()));
+            } else {
+                LOG.debug(String.format("Removing node '%d' from load balancer '%d' in ZXTM...", nodeToDelete.getId(), queueLb.getId()));
+                reverseProxyLoadBalancerService.setNodesPriorities(ZxtmNameBuilder.genVSName(dbLoadBalancer), dbLoadBalancer);
+                reverseProxyLoadBalancerService.removeNode(queueLb.getId(), queueLb.getAccountId(), nodeToDelete);
+                LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in Zeus.", nodeToDelete.getId(), queueLb.getId()));
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error removing node '%d' in Zeus for loadbalancer '%d'.", nodeToDelete.getId(), queueLb.getId());

@@ -21,12 +21,17 @@ public class UpdateRateLimitListener extends BaseListener {
         dbLoadBalancer = loadBalancerService.get(queueLb.getId());
 
 
-        LOG.debug("Rate limit attributes verified. Continuing...");
-        LOG.debug("Updating rate limit in Zeus...");
-        reverseProxyLoadBalancerService.updateRateLimit(dbLoadBalancer, queueLb.getRateLimit());
+        if (isRestAdapter()) {
+            LOG.debug("Rate limit attributes verified. Continuing...");
+            LOG.debug("Updating rate limit in STM...");
+            reverseProxyLoadBalancerStmService.updateRateLimit(dbLoadBalancer, queueLb.getRateLimit());
+        } else {
+            LOG.debug("Rate limit attributes verified. Continuing...");
+            LOG.debug("Updating rate limit in ZXTM...");
+            reverseProxyLoadBalancerService.updateRateLimit(dbLoadBalancer, queueLb.getRateLimit());
+        }
         LOG.debug("Setting loadbalancer status to 'ACTIVE'...");
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
-
         LOG.info("Update rate limit operation complete.");
     }
 }

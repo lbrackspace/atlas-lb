@@ -3,11 +3,14 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -37,6 +40,8 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
     private NotificationService notificationService;
     @Mock
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    @Mock
+    private RestApiConfiguration config;
 
     private UpdateSessionPersistenceListener updateSessionPersistenceListener;
 
@@ -51,6 +56,7 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
         updateSessionPersistenceListener.setLoadBalancerService(loadBalancerService);
         updateSessionPersistenceListener.setNotificationService(notificationService);
         updateSessionPersistenceListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateSessionPersistenceListener.setConfiguration(config);
     }
 
     @After
@@ -62,6 +68,7 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
         lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
@@ -75,6 +82,7 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
         lb.setSessionPersistence(SessionPersistence.NONE);
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
@@ -101,6 +109,7 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 

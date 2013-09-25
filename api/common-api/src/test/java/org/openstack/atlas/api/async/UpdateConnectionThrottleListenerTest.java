@@ -3,11 +3,14 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -40,6 +43,8 @@ public class UpdateConnectionThrottleListenerTest extends STMTestBase {
     private NotificationService notificationService;
     @Mock
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    @Mock
+    private RestApiConfiguration config;
 
     private UpdateConnectionThrottleListener updateConnectionThrottleListener;
 
@@ -57,6 +62,7 @@ public class UpdateConnectionThrottleListenerTest extends STMTestBase {
         updateConnectionThrottleListener.setLoadBalancerService(loadBalancerService);
         updateConnectionThrottleListener.setNotificationService(notificationService);
         updateConnectionThrottleListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateConnectionThrottleListener.setConfiguration(config);
     }
 
     @After
@@ -67,6 +73,7 @@ public class UpdateConnectionThrottleListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithValidThrottle() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateConnectionThrottleListener.doOnMessage(objectMessage);
 
@@ -93,6 +100,7 @@ public class UpdateConnectionThrottleListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateConnectionThrottle(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateConnectionThrottleListener.doOnMessage(objectMessage);
 

@@ -36,7 +36,7 @@ public class AddVirtualIpListener extends BaseListener {
 
         try {
             dbLoadBalancer = loadBalancerService.getWithUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
-            if(dataContainer.getAccountId() == null) dataContainer.setAccountId(dbLoadBalancer.getAccountId());
+            if (dataContainer.getAccountId() == null) dataContainer.setAccountId(dbLoadBalancer.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, enfe);
@@ -46,9 +46,15 @@ public class AddVirtualIpListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Adding Virtual ip to load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerStmService.addVirtualIps(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer);
-            LOG.debug("Successfully added virtual ip in Zeus.");
+            if (isRestAdapter()) {
+                LOG.debug(String.format("Adding Virtual ip to load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerStmService.addVirtualIps(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer);
+                LOG.debug("Successfully added virtual ip in Zeus.");
+            } else {
+                LOG.debug(String.format("Adding Virtual ip to load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerService.addVirtualIps(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer);
+                LOG.debug("Successfully added virtual ip in Zeus.");
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error adding virtual ip in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
@@ -74,7 +80,7 @@ public class AddVirtualIpListener extends BaseListener {
                     ":: Exception: %s", dbLoadBalancer.getId(), uex));
         }
 
-         // Update load balancer in DB
+        // Update load balancer in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
         // Add atom entry

@@ -6,7 +6,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
 import org.openstack.atlas.service.domain.entities.Node;
@@ -117,8 +116,8 @@ public class Ipv6ITest extends STMTestBase {
             Assert.assertEquals(lb.getPort(), vs.getProperties().getBasic().getPort());
             Assert.assertEquals(poolName(), vs.getProperties().getBasic().getPool());
             Assert.assertEquals("Default", vs.getProperties().getConnection_errors().getError_file());
-            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF));
-            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
+            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_for());
+            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_proto());
             Assert.assertEquals(false, vs.getProperties().getBasic().getListen_on_any());
             Assert.assertEquals(false, vs.getProperties().getTcp().getProxy_close());
             Assert.assertEquals(vs.getProperties().getBasic().getListen_on_traffic_ips(), translator.genGroupNameSet(lb));

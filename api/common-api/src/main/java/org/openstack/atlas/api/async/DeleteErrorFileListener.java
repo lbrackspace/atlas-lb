@@ -37,10 +37,17 @@ public class DeleteErrorFileListener extends BaseListener {
             LOG.debug("About to remove the error file from zeus... ");
 
             try {
-                reverseProxyLoadBalancerStmService.deleteErrorFile(dbLoadBalancer);
+                if (isRestAdapter()) {
+                    LOG.debug(String.format("Deleting error file for %s in STM...", dbLoadBalancer.getId()));
+                    reverseProxyLoadBalancerStmService.deleteErrorFile(dbLoadBalancer);
+                    LOG.debug(String.format("Successfully deleted error file for %s in Zeus...", dbLoadBalancer.getId()));
+                } else {
+                    LOG.debug(String.format("Deleting error file for %s in ZXTM...", dbLoadBalancer.getId()));
+                    reverseProxyLoadBalancerService.deleteErrorFile(dbLoadBalancer);
+                    LOG.debug(String.format("Successfully deleted error file for %s in Zeus...", dbLoadBalancer.getId()));
+                }
             } catch (Exception e) {
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-
                 String tmpMsg = String.format("Error setting Errorfile for %d_%d", data.getAccountId(), data.getLoadBalancerId());
                 LOG.error(tmpMsg, e);
                 notificationService.saveAlert(data.getAccountId(), data.getLoadBalancerId(), e, AlertType.ZEUS_FAILURE.name(), msg);

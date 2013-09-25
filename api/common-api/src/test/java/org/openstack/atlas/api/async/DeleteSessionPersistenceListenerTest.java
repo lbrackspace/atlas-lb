@@ -4,10 +4,13 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -40,6 +43,8 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    @Mock
+    private RestApiConfiguration config;
 
     private DeleteSessionPersistenceListener deleteSessionPersistenceListener;
 
@@ -55,6 +60,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
         deleteSessionPersistenceListener.setNotificationService(notificationService);
         deleteSessionPersistenceListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteSessionPersistenceListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
+        deleteSessionPersistenceListener.setConfiguration(config);
     }
 
     @After
@@ -65,6 +71,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
     public void testDeleteSessionPersistence() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteSessionPersistenceListener.doOnMessage(objectMessage);
 
@@ -94,6 +101,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteSessionPersistenceListener.doOnMessage(objectMessage);
 

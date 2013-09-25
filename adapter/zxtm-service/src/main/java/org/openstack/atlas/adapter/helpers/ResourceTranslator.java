@@ -141,17 +141,13 @@ public class ResourceTranslator {
         }
         properties.setConnection_errors(ce);
 
-        //trafficscript or rule settings
+        //X_forwarded headers
         if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
-            rules.add(StmConstants.XFF);
-            rules.add(StmConstants.XFP);
-//            if (loadBalancer.getRateLimit() != null) //Rate Limit traffic rules are only for manual use
-//                rules.add(StmConstants.RATE_LIMIT_HTTP);
+            basic.setAdd_x_forwarded_for(true);
+            basic.setAdd_x_forwarded_proto(true);
         }
-//        else {
-//            if (loadBalancer.getRateLimit() != null) //Rate Limit traffic rules are only for manual use
-//                rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
-//        }
+
+        //trafficscript or rule settings
         basic.setRequest_rules(rules);
 
         //Half closed proxy settings
@@ -372,7 +368,7 @@ public class ResourceTranslator {
             limiting.setMax_1_connections(0);
             limiting.setMax_connection_rate(0);
             limiting.setMin_connections(0);
-            limiting.setRate_timer(0);
+            limiting.setRate_timer(1);
         }
         properties.setConnection_limiting(limiting);
 

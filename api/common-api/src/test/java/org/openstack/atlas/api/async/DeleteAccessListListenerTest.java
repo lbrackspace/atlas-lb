@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -31,6 +33,7 @@ import java.util.Set;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.*;
 
 public class DeleteAccessListListenerTest extends STMTestBase {
@@ -53,6 +56,8 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
     private AccessListService accessListService;
+    @Mock
+    private RestApiConfiguration config;
 
     private DeleteAccessListListener deleteAccessListListener;
 
@@ -75,6 +80,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
         deleteAccessListListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteAccessListListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteAccessListListener.setAccessListService(accessListService);
+        deleteAccessListListener.setConfiguration(config);
     }
 
     @After
@@ -95,6 +101,8 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     public void testDeleteAccessListItem() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
+
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
@@ -109,6 +117,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     public void testDeleteAccessList() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
@@ -136,6 +145,8 @@ public class DeleteAccessListListenerTest extends STMTestBase {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
+
         doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteAccessList(eq(lb), anyList());
 
         deleteAccessListListener.doOnMessage(objectMessage);

@@ -39,9 +39,15 @@ public class UpdateHealthMonitorListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Updating health monitor for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            reverseProxyLoadBalancerStmService.updateHealthMonitor(dbLoadBalancer);
-            LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+            if (isRestAdapter()) {
+                LOG.debug(String.format("Updating health monitor for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerStmService.updateHealthMonitor(dbLoadBalancer);
+                LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+            } else {
+                LOG.debug(String.format("Updating health monitor for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerService.updateHealthMonitor(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getHealthMonitor());
+                LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error updating health monitor in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
@@ -71,5 +77,5 @@ public class UpdateHealthMonitorListener extends BaseListener {
             itemId = lb.getId();
         }
         notificationService.saveHealthMonitorEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), itemId, title, desc, UPDATE_HEALTH_MONITOR, UPDATE, CRITICAL);
-   }
+    }
 }

@@ -4,10 +4,13 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -50,6 +53,8 @@ public class DeleteNodesListenerTest extends STMTestBase {
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
     private NodeService nodeService;
+    @Mock
+    private RestApiConfiguration config;
 
     private DeleteNodesListener deleteNodesListener;
 
@@ -76,6 +81,7 @@ public class DeleteNodesListenerTest extends STMTestBase {
         deleteNodesListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteNodesListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteNodesListener.setNodeService(nodeService);
+        deleteNodesListener.setConfiguration(config);
     }
 
     @After
@@ -91,6 +97,7 @@ public class DeleteNodesListenerTest extends STMTestBase {
         when(messageDataContainer.getIds()).thenReturn(doomedNodeIds);
         when(nodeService.getNodesByIds(doomedNodeIds)).thenReturn(doomedNodes);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteNodesListener.doOnMessage(objectMessage);
 
@@ -131,6 +138,7 @@ public class DeleteNodesListenerTest extends STMTestBase {
         when(nodeService.getNodesByIds(doomedNodeIds)).thenReturn(doomedNodes);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).removeNodes(lb, doomedNodes);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteNodesListener.doOnMessage(objectMessage);
 

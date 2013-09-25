@@ -9,6 +9,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -57,6 +59,8 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
     private UsageEventHelper usageEventHelper;
     @Mock
     private UsageEventCollection usageEventCollection;
+    @Mock
+    private RestApiConfiguration config;
 
     private DeleteVirtualIpsListener deleteVirtualIpsListener;
 
@@ -76,6 +80,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         deleteVirtualIpsListener.setVirtualIpService(virtualIpService);
         deleteVirtualIpsListener.setUsageEventHelper(usageEventHelper);
         deleteVirtualIpsListener.setUsageEventCollection(usageEventCollection);
+        deleteVirtualIpsListener.setConfiguration(config);
     }
 
     @After
@@ -90,6 +95,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 
@@ -127,6 +133,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 

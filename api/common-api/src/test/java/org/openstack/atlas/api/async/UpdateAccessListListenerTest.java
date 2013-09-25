@@ -3,11 +3,14 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -48,6 +51,8 @@ public class UpdateAccessListListenerTest extends STMTestBase {
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     @Mock
     private AccessListService accessListService;
+    @Mock
+    private RestApiConfiguration config;
 
     private UpdateAccessListListener updateAccessListListener;
 
@@ -67,6 +72,7 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         updateAccessListListener.setNotificationService(notificationService);
         updateAccessListListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         updateAccessListListener.setAccessListService(accessListService);
+        updateAccessListListener.setConfiguration(config);
     }
 
     @After
@@ -88,6 +94,7 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(accessListService.diffRequestAccessListWithDomainAccessList(lb, lb)).thenReturn(accessLists);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateAccessListListener.doOnMessage(objectMessage);
 
@@ -114,6 +121,7 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateAccessList(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateAccessListListener.doOnMessage(objectMessage);
 

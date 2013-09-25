@@ -3,10 +3,13 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.HealthMonitor;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -44,6 +47,8 @@ public class DeleteHealthMonitorListenerTest extends STMTestBase {
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
     private HealthMonitorService healthMonitorService;
+    @Mock
+    private RestApiConfiguration config;
 
     private DeleteHealthMonitorListener deleteHealthMonitorListener;
 
@@ -63,6 +68,7 @@ public class DeleteHealthMonitorListenerTest extends STMTestBase {
         deleteHealthMonitorListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteHealthMonitorListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteHealthMonitorListener.setHealthMonitorService(healthMonitorService);
+        deleteHealthMonitorListener.setConfiguration(config);
     }
 
     @After
@@ -73,6 +79,7 @@ public class DeleteHealthMonitorListenerTest extends STMTestBase {
     public void testDeleteHealthMonitor() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteHealthMonitorListener.doOnMessage(objectMessage);
 
@@ -100,6 +107,7 @@ public class DeleteHealthMonitorListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).removeHealthMonitor(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteHealthMonitorListener.doOnMessage(objectMessage);
 

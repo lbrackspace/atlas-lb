@@ -3,10 +3,13 @@ package org.openstack.atlas.api.async;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
@@ -35,6 +38,8 @@ public class UpdateContentCachingListenerTest extends STMTestBase {
     private NotificationService notificationService;
     @Mock
     private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    @Mock
+    private RestApiConfiguration config;
 
     private UpdateContentCachingListener updateContentCachingListener;
 
@@ -49,6 +54,7 @@ public class UpdateContentCachingListenerTest extends STMTestBase {
         updateContentCachingListener.setLoadBalancerService(loadBalancerService);
         updateContentCachingListener.setNotificationService(notificationService);
         updateContentCachingListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateContentCachingListener.setConfiguration(config);
     }
 
     @After
@@ -60,6 +66,7 @@ public class UpdateContentCachingListenerTest extends STMTestBase {
         lb.setContentCaching(true);
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateContentCachingListener.doOnMessage(objectMessage);
 
@@ -73,6 +80,7 @@ public class UpdateContentCachingListenerTest extends STMTestBase {
         lb.setContentCaching(false);
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateContentCachingListener.doOnMessage(objectMessage);
 
@@ -99,6 +107,7 @@ public class UpdateContentCachingListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateContentCachingListener.doOnMessage(objectMessage);
 

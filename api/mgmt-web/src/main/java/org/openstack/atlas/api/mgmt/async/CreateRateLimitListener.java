@@ -40,9 +40,15 @@ public class CreateRateLimitListener extends BaseListener {
         }
 
         try {
-            LOG.debug("Creating rate limit in Zeus...");
-            reverseProxyLoadBalancerStmService.setRateLimit(dbLoadBalancer, queueLb.getRateLimit());
-            LOG.debug("Successfully created rate limit in STM.");
+            if (isRestAdapter()) {
+                LOG.debug("Creating rate limit in STM...");
+                reverseProxyLoadBalancerStmService.setRateLimit(dbLoadBalancer, queueLb.getRateLimit());
+                LOG.debug("Successfully created rate limit in STM.");
+            } else {
+                LOG.debug("Creating rate limit in ZXTM...");
+                reverseProxyLoadBalancerService.setRateLimit(dbLoadBalancer, queueLb.getRateLimit());
+                LOG.debug("Successfully created rate limit in ZXTM.");
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
 

@@ -38,9 +38,15 @@ public class DeleteConnectionThrottleListener extends BaseListener {
         }
 
         try {
-            LOG.debug("Deleting connection throttle in Zeus...");
-            reverseProxyLoadBalancerStmService.deleteConnectionThrottle(dbLoadBalancer);
-            LOG.debug("Successfully deleted connection throttle in Zeus.");
+            if (isRestAdapter()) {
+                LOG.debug("Deleting connection throttle in STM...");
+                reverseProxyLoadBalancerStmService.deleteConnectionThrottle(dbLoadBalancer);
+                LOG.debug("Successfully deleted connection throttle in Zeus.");
+            } else {
+                LOG.debug("Deleting connection throttle in ZXTM...");
+                reverseProxyLoadBalancerService.deleteConnectionThrottle(dbLoadBalancer);
+                LOG.debug("Successfully deleted connection throttle in Zeus.");
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error deleting connection throttle in Zeus for loadbalancer '%d'.", queueLb.getId());

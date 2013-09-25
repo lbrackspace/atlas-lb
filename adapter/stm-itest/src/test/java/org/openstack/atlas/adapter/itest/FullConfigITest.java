@@ -1,10 +1,11 @@
 package org.openstack.atlas.adapter.itest;
 
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -29,7 +30,6 @@ import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.AccessListType.ALLOW;
@@ -392,11 +392,11 @@ public class FullConfigITest extends STMTestBase {
         }
 
         if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
-            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF));
-            Assert.assertTrue(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
+            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_for());
+            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_proto());
         } else {
-            Assert.assertFalse(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFF));
-            Assert.assertFalse(vs.getProperties().getBasic().getRequest_rules().contains(StmConstants.XFP));
+            Assert.assertFalse(vs.getProperties().getBasic().getAdd_x_forwarded_for());
+            Assert.assertFalse(vs.getProperties().getBasic().getAdd_x_forwarded_proto());
         }
 
         Assert.assertEquals(false, vs.getProperties().getBasic().getListen_on_any());

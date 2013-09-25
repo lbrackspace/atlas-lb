@@ -40,11 +40,17 @@ public class CreateNodesListener extends BaseListener {
             sendErrorToEventResource(queueLb);
             return;
         }
-        
+
         try {
-            LOG.debug("Setting nodes in Zeus...");
-            reverseProxyLoadBalancerStmService.setNodes(dbLoadBalancer);
-            LOG.debug("Nodes successfully set.");
+            if (isRestAdapter()) {
+                LOG.debug("Setting nodes in STM...");
+                reverseProxyLoadBalancerStmService.setNodes(dbLoadBalancer);
+                LOG.debug("Nodes successfully set.");
+            } else {
+                LOG.debug("Setting nodes in ZXTM...");
+                reverseProxyLoadBalancerService.setNodes(dbLoadBalancer);
+                LOG.debug("Nodes successfully set.");
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = "Error setting nodes in Zeus for loadbalancer #" + dbLoadBalancer.getId();
@@ -61,7 +67,7 @@ public class CreateNodesListener extends BaseListener {
         loadBalancerService.update(dbLoadBalancer);
 
         //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
         // Add atom entries for new nodes only
         for (Node dbNode : dbLoadBalancer.getNodes()) {

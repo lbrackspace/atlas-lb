@@ -4,10 +4,13 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -52,6 +55,8 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
     private UsageEventCollection usageEventCollection;
     @Mock
     private SslTerminationService sslTerminationService;
+    @Mock
+    private RestApiConfiguration config;
 
     private DeleteSslTerminationListener deleteSslTerminationListener;
 
@@ -70,6 +75,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
         deleteSslTerminationListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteSslTerminationListener.setUsageEventCollection(usageEventCollection);
         deleteSslTerminationListener.setSslTerminationService(sslTerminationService);
+        deleteSslTerminationListener.setConfiguration(config);
     }
 
     @After
@@ -84,6 +90,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteSslTerminationListener.doOnMessage(objectMessage);
 
@@ -119,6 +126,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).removeSslTermination(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteSslTerminationListener.doOnMessage(objectMessage);
 
