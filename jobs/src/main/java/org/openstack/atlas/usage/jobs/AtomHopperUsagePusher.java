@@ -149,5 +149,4 @@ public class AtomHopperUsagePusher extends AbstractJob {
             }
         });
     }
-
 }
