@@ -134,19 +134,19 @@
             <b>algorithm</b>
         </field>
         <field>
-            <a>metadata</a>
+            <a>metadata.metas</a>
             <b>loadbalancerMetadata</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</b-hint>
         </field>
         <field map-id="HIDE_NODE_META">
-            <a>nodes</a>
+            <a>nodes.nodes</a>
             <b>nodes</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Node</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.Node</b-hint>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
-            <a>virtualIps</a>
+            <a>virtualIps.virtualIps</a>
             <b>virtualIpDozerWrapper</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp</a-hint>
             <b-hint>org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper</b-hint>
@@ -236,7 +236,7 @@
             <b>ipAddress</b>
         </field>
         <field>
-            <a>metadata</a>
+            <a>metadata.metas</a>
             <b>nodeMetadata</b>
         </field>
     </mapping>
@@ -273,7 +273,7 @@
             <b>address</b>
         </field>
         <field-exclude>
-            <a>metadata</a>
+            <a>metadata.metas</a>
             <b>nodeMetadata</b>
         </field-exclude>
     </mapping>

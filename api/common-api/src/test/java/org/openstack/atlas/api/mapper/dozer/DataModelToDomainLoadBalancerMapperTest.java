@@ -57,10 +57,11 @@ public class DataModelToDomainLoadBalancerMapperTest {
             meta2.setKey("metaKey2");
             meta2.setValue("metaValue2");
 
+            loadBalancer.setMetadata(new Metadata());
             final Metadata metadata = new Metadata();
             metadata.getMetas().add(meta1);
             metadata.getMetas().add(meta2);
-            loadBalancer.getMetadata().getMetas().addAll(metadata.getMetas());
+            loadBalancer.setMetadata(metadata);
 
             Node node1 = new Node();
             node1.setId(4100);
@@ -75,17 +76,18 @@ public class DataModelToDomainLoadBalancerMapperTest {
             node2.setCondition(NodeCondition.DRAINING);
             node2.setStatus(NodeStatus.OFFLINE);
 
+            loadBalancer.setNodes(new Nodes());
             final Nodes nodes = new Nodes();
             nodes.getNodes().add(node1);
             nodes.getNodes().add(node2);
             loadBalancer.getNodes().getNodes().addAll(nodes.getNodes());
 
+            loadBalancer.setVirtualIps(new VirtualIps());
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setAddress("10.10.10.1");
             virtualIp1.setId(2000);
             virtualIp1.setType(VipType.PUBLIC);
             virtualIp1.setIpVersion(IpVersion.IPV4);
-
             loadBalancer.getVirtualIps().getVirtualIps().add(virtualIp1);
 
             final ConnectionThrottle throttle = new ConnectionThrottle();
@@ -283,6 +285,11 @@ public class DataModelToDomainLoadBalancerMapperTest {
             loadBalancer.setProtocol("IMAPv4");
             loadBalancer.setAlgorithm("ROUND_ROBIN");
             loadBalancer.setStatus("SUSPENDED");
+
+            loadBalancer.setNodes(new Nodes());
+            loadBalancer.setVirtualIps(new VirtualIps());
+            loadBalancer.setAccessList(new AccessList());
+            loadBalancer.setMetadata(new Metadata());
         }
 
         @Test

@@ -51,12 +51,11 @@ public class LoadBalancersResourceTest {
             loadBalancer.setName("a-new-loadbalancer");
             loadBalancer.setProtocol("IMAPv4");
 
-            List<VirtualIp> virtualIps = new ArrayList<VirtualIp>();
+            VirtualIps virtualIps = new VirtualIps();
             VirtualIp vip = new VirtualIp();
             vip.setType(VipType.PUBLIC);
-            virtualIps.add(vip);
-
-            loadBalancer.getVirtualIps().getVirtualIps().addAll(virtualIps);
+            virtualIps.getVirtualIps().add(vip);
+            loadBalancer.setVirtualIps(virtualIps);
 
             Nodes nodes = new Nodes();
             Node node = new Node();
@@ -64,7 +63,7 @@ public class LoadBalancersResourceTest {
             node.setPort(80);
             node.setCondition(NodeCondition.ENABLED);
             nodes.getNodes().add(node);
-            loadBalancer.getNodes().getNodes().addAll(nodes.getNodes());
+            loadBalancer.setNodes(nodes);
         }
 
         @Test

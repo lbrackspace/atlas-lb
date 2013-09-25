@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.entities.VirtualIpType;
 
@@ -50,9 +51,9 @@ public class VirtualIpsResourceTest {
             virtualIp1.setId(2000);
             virtualIp1.setType(VipType.PUBLIC);
 
-            List<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp> virtualIps = new ArrayList<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp>();
-            virtualIps.add(virtualIp1);
-            loadBalancer.getVirtualIps().getVirtualIps().addAll(virtualIps);
+            VirtualIps virtualIps = new VirtualIps();
+            virtualIps.getVirtualIps().add(virtualIp1);
+            loadBalancer.setVirtualIps(virtualIps);
 
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
         }
