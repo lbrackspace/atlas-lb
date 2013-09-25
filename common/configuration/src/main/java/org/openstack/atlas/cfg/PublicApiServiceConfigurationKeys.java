@@ -31,5 +31,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     identity_auth_url,
     identity_user,
     identity_pass,
-    usage_poller_log_all_counters
+    usage_poller_log_all_counters,
+    usage_deletion_limit
 }
