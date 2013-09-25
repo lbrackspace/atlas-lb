@@ -31,7 +31,7 @@ public class LoadBalancerValidatorTest {
         public void standUp() {
             lbvalidator = new LoadBalancerValidator();
             loadBalancer = new LoadBalancer();
-            loadBalancer.getVirtualIps().clear();
+            loadBalancer.setVirtualIps(new VirtualIps());
             host = new Host();
             host.setId(23);
 
@@ -63,14 +63,25 @@ public class LoadBalancerValidatorTest {
             lb.setName("a-new-loadbalancer");
             lb.setProtocol("HTTP");
 
-            lb.getVirtualIps().add(vip);
+            if (lb.getVirtualIps() == null) {
+                VirtualIps vips = new VirtualIps();
+                vips.getVirtualIps().add(vip);
+            } else {
+                lb.getVirtualIps().getVirtualIps().add(vip);
+            }
 
             node = new Node();
             node.setAddress("10.1.1.1");
             node.setPort(80);
             node.setCondition(ENABLED);
 
-            lb.getNodes().add(node);
+            if (lb.getNodes() == null) {
+                Nodes nodes = new Nodes();
+                nodes.getNodes().add(node);
+                lb.setNodes(nodes);
+            } else {
+                lb.getNodes().getNodes().add(node);
+            }
             lb.setAlgorithm("ROUND_ROBIN");
             lb.setProtocol("HTTP");
             lb.setPort(80);

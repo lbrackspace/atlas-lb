@@ -68,17 +68,20 @@ public class DataModelToDomainLoadBalancerTest {
             node2.setCondition(NodeCondition.DRAINING);
             node2.setStatus(NodeStatus.OFFLINE);
 
-            loadBalancer.getNodes().add(node1);
-            loadBalancer.getNodes().add(node2);
+            Nodes nodes = new Nodes();
+            nodes.getNodes().add(node1);
+            nodes.getNodes().add(node2);
+
+            loadBalancer.setNodes(nodes);
 
             VirtualIp virtualIp1 = new VirtualIp();
             virtualIp1.setAddress("10.10.10.1");
             virtualIp1.setId(2000);
             virtualIp1.setType(VipType.PUBLIC);
 
-            List<VirtualIp> virtualIps = new ArrayList<VirtualIp>();
-            virtualIps.add(virtualIp1);
-            loadBalancer.getVirtualIps().addAll(virtualIps);
+            VirtualIps virtualIps = new VirtualIps();
+            virtualIps.getVirtualIps().add(virtualIp1);
+            loadBalancer.setVirtualIps(virtualIps);
 
             final ConnectionThrottle throttle = new ConnectionThrottle();
             throttle.setMaxConnectionRate(101);

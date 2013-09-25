@@ -83,15 +83,25 @@ public class LoadBalancersValidatorTest {
             lb = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer();
             lb.setName("a-new-loadbalancer");
             lb.setProtocol("HTTP");
-
-            lb.getVirtualIps().add(vip);
+            if (lb.getVirtualIps() == null) {
+                VirtualIps vips = new VirtualIps();
+                vips.getVirtualIps().add(vip);
+                lb.setVirtualIps(vips);
+            } else {
+                lb.getVirtualIps().getVirtualIps().add(vip);
+            }
 
             node = new Node();
             node.setAddress("10.1.1.1");
             node.setPort(80);
             node.setCondition(ENABLED);
 
-            lb.getNodes().add(node);
+            if (lb.getNodes() == null) {
+                Nodes nodes = new Nodes();
+                nodes.getNodes().add(node);
+            } else {
+                lb.getNodes().getNodes().add(node);
+            }
             lb.setAlgorithm("ROUND_ROBIN");
             lb.setProtocol("HTTP");
             lb.setPort(80);
