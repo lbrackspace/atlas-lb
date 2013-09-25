@@ -149,9 +149,9 @@ public class AHRecordHelper {
                     return false;
                 }
             }
-
         } catch (Exception e) {
-            LOG.warn(String.format("Could not verify duplicate entry for UUID: %s, attempt to re-push the record..."));
+            LOG.warn(String.format("Could not verify duplicate entry for UUID: %s, attempt to re-push the record...",
+                    usageRecord.getUuid()));
             return false;
         }
         return true;
@@ -163,9 +163,8 @@ public class AHRecordHelper {
         generateAtomHopperAlertRecord(usageRecord, "AH-FAILED-ENTRY-"
                 + usageRecord.getUuid(), buildMessage(body));
 
-        if (isVerboseLog) {
-            LOG.info(buildEntryLog(body, usageRecord, entrystring));
-        }
+        //LOG all failures regardless of log mode...
+        LOG.info(buildEntryLog(body, usageRecord, entrystring));
     }
 
     protected void logSuccess(String body, Usage usageRecord, String entrystring) {
