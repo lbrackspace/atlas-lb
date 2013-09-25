@@ -19,7 +19,7 @@ public class AtomHopperClientImpl implements AtomHopperClient {
 
 
     private String endPoint;
-    private static final String TOKEN_HEADER = "X-AUTH-TOKEN" ;
+    private static final String TOKEN_HEADER = "X-AUTH-TOKEN";
     private ApacheHttpClient client;
 
     public AtomHopperClientImpl(String endPoint, ApacheHttpClient client) {
@@ -86,6 +86,25 @@ public class AtomHopperClientImpl implements AtomHopperClient {
                     .header(TOKEN_HEADER, token)
                     .type(MediaType.APPLICATION_ATOM_XML)
                     .post(ClientResponse.class, entry);
+        } catch (ClientHandlerException cpe) {
+            throw new ClientHandlerException(AtomHopperUtil.getStackTrace(cpe));
+        } catch (Exception ex) {
+            throw new Exception(AtomHopperUtil.getStackTrace(ex));
+        }
+        return response;
+    }
+
+    @Override
+    public ClientResponse getEntry(String token, String uuid) throws Exception {
+        ClientResponse response = null;
+        String q = String.format("?marker=urn:uuid:%s&limit=1", uuid);
+        try {
+            LOG.debug("Retrieving from AH endpoint: " + endPoint + q);
+            response = client.resource(endPoint + q)
+                    .accept(MediaType.APPLICATION_XML)
+                    .header(TOKEN_HEADER, token)
+                    .type(MediaType.APPLICATION_ATOM_XML)
+                    .get(ClientResponse.class);
         } catch (ClientHandlerException cpe) {
             throw new ClientHandlerException(AtomHopperUtil.getStackTrace(cpe));
         } catch (Exception ex) {
