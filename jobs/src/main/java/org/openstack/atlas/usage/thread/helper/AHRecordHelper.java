@@ -132,8 +132,8 @@ public class AHRecordHelper {
 
         } else {
             LOG.error(String.format("Error processing entry in Atom Hopper service occurred, " +
-                    "updating record for re-push for: Account: %d LBID: %d UUID: %s",
-                    usageRecord.getAccountId(), usageRecord.getLoadbalancer().getId(), usageRecord.getUuid()));
+                    "updating record for re-push for: Account: %d LBID: %d UUID: %s. Error status code: %d",
+                    usageRecord.getAccountId(), usageRecord.getLoadbalancer().getId(), usageRecord.getUuid(), status));
             usageRecord.setNeedsPushed(true);
             failedRecords.add(usageRecord);
             logAndAlert(body, usageRecord, entrystring);
