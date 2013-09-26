@@ -133,8 +133,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
                 attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
 
-                TrafficScriptHelper.addForceHttpsRedirectScriptIfNeeded(serviceStubs);
-                attachForceHttpsRedirectRuleToVirtualServer(serviceStubs, virtualServerName);
+                if (lb.isHttpsRedirect() != null && lb.isHttpsRedirect() == true) {
+                    TrafficScriptHelper.addForceHttpsRedirectScriptIfNeeded(serviceStubs);
+                    attachForceHttpsRedirectRuleToVirtualServer(serviceStubs, virtualServerName);
+                }
 
                 setDefaultErrorFile(config, lb);
             }
@@ -183,8 +185,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
                 attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
 
-                TrafficScriptHelper.addForceHttpsRedirectScriptIfNeeded(serviceStubs);
-                attachForceHttpsRedirectRuleToVirtualServer(serviceStubs, virtualServerName);
+                if (lb.isHttpsRedirect() != null && lb.isHttpsRedirect() == true) {
+                    TrafficScriptHelper.addForceHttpsRedirectScriptIfNeeded(serviceStubs);
+                    attachForceHttpsRedirectRuleToVirtualServer(serviceStubs, virtualServerName);
+                }
 
                 LOG.info(String.format("Enabling SSL Headers for virtual server: %s", virtualServerName));
                 serviceStubs.getVirtualServerBinding().setSSLHeaders(new String[]{virtualServerName}, new boolean[]{true});
