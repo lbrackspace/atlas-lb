@@ -146,7 +146,7 @@
             <b-hint>org.openstack.atlas.service.domain.entities.Node</b-hint>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
-            <a>virtualIps.virtualIps</a>
+            <a>virtualIps</a>
             <b>virtualIpDozerWrapper</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp</a-hint>
             <b-hint>org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper</b-hint>

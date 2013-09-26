@@ -29,7 +29,7 @@ public class VirtualIpConverter implements CustomConverter {
 
         if (sourceFieldValue instanceof VirtualIpDozerWrapper) {
             VirtualIpDozerWrapper dozerWrapper = (VirtualIpDozerWrapper) sourceFieldValue;
-            ArrayList<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp> vips = new ArrayList<org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp>();
+            VirtualIps vips = new VirtualIps();
 
             try {
                 for (LoadBalancerJoinVip loadBalancerJoinVip : dozerWrapper.getLoadBalancerJoinVipSet()) {
@@ -48,7 +48,7 @@ public class VirtualIpConverter implements CustomConverter {
                         default:
                             throw new RuntimeException(String.format("Unsupported vip type '%s' given while mapping.", loadBalancerJoinVip.getVirtualIp().getVipType().name()));
                     }
-                    vips.add(vip);
+                    vips.getVirtualIps().add(vip);
                 }
             } catch (NullPointerException e) {
                 //Ignore, there is nothing to map
@@ -66,7 +66,7 @@ public class VirtualIpConverter implements CustomConverter {
                     } catch (IPStringConversionException e) {
                         throw new RuntimeException("Cannot map ipv6 address. Dozer mapping canceled.");
                     }
-                    vips.add(vip);
+                    vips.getVirtualIps().add(vip);
                 }
             }
             return vips;
