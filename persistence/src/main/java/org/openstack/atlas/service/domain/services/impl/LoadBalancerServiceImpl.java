@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
+import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
@@ -613,6 +614,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
+    @DeadLockRetry
     @Transactional
     public LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
