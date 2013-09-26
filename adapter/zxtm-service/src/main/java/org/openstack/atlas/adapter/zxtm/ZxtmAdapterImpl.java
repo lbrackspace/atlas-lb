@@ -38,11 +38,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final String CONTENT_CACHING = "content_caching";
     public static final String XFF = "add_x_forwarded_for_header";
     public static final String XFP = "add_x_forwarded_proto";
+    public static final String HTTPS_REDIRECT = "force_https_redirect";
     public static final VirtualServerRule ruleRateLimitHttp = new VirtualServerRule(RATE_LIMIT_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleRateLimitNonHttp = new VirtualServerRule(RATE_LIMIT_NON_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedProto = new VirtualServerRule(XFP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleContentCaching = new VirtualServerRule(CONTENT_CACHING, true, VirtualServerRuleRunFlag.run_every);
+    public static final VirtualServerRule ruleForceHttpsRedirect = new VirtualServerRule(HTTPS_REDIRECT, true, VirtualServerRuleRunFlag.run_every);
     protected static final ZeusUtils zeusUtil;
 
     static {
@@ -131,6 +133,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
                 attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
 
+                TrafficScriptHelper.addForceHttpsRedirectScriptIfNeeded(serviceStubs);
+                attachForceHttpsRedirectRuleToVirtualServer(serviceStubs, virtualServerName);
+
                 setDefaultErrorFile(config, lb);
             }
         } catch (Exception e) {
@@ -177,6 +182,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
                 TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
                 attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
+
+                TrafficScriptHelper.addForceHttpsRedirectScriptIfNeeded(serviceStubs);
+                attachForceHttpsRedirectRuleToVirtualServer(serviceStubs, virtualServerName);
 
                 LOG.info(String.format("Enabling SSL Headers for virtual server: %s", virtualServerName));
                 serviceStubs.getVirtualServerBinding().setSSLHeaders(new String[]{virtualServerName}, new boolean[]{true});
@@ -853,6 +861,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
+    private void attachForceHttpsRedirectRuleToVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+        if (serviceStubs.getVirtualServerBinding().getProtocol(new String[]{virtualServerName})[0].equals(VirtualServerProtocol.http)) {
+            LOG.debug(String.format("Attaching the Https Redirect rule and enabling it on load balancer '%s'...", virtualServerName));
+            serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{ZxtmAdapterImpl.ruleForceHttpsRedirect}});
+            LOG.debug(String.format("Https Redirect rule successfully enabled on load balancer '%s'.", virtualServerName));
+        }
+    }
+
     private void attachXFFRuleToVirtualServers(ZxtmServiceStubs serviceStubs, String[] virtualServerNames) throws RemoteException {
         for (String vsName : virtualServerNames) {
             attachXFFRuleToVirtualServer(serviceStubs, vsName);
@@ -895,6 +911,19 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
         }
         LOG.debug(String.format("XFP rule successfully removed from load balancer '%s'.", virtualServerName));
+    }
+
+    private void removeForceHttpsRedirectRuleFromVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+        LOG.debug(String.format("Removing the Https Redirect rule from load balancer '%s'...", virtualServerName));
+        VirtualServerRule[][] virtualServerRules = serviceStubs.getVirtualServerBinding().getRules(new String[]{virtualServerName});
+        if (virtualServerRules.length > 0) {
+            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
+                if (virtualServerRule.getName().equals(ZxtmAdapterImpl.ruleForceHttpsRedirect.getName())) {
+                    serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{ZxtmAdapterImpl.ruleForceHttpsRedirect.getName()}});
+                }
+            }
+        }
+        LOG.debug(String.format("Https Redirect rule successfully removed from load balancer '%s'.", virtualServerName));
     }
 
     private void removeXFFRuleFromVirtualServers(ZxtmServiceStubs serviceStubs, String[] virtualServerNames) throws RemoteException {
