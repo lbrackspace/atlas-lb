@@ -6,7 +6,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.openstack.atlas.restclients.atomhopper.AtomHopperClient;
-import org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.entities.*;
 import org.openstack.atlas.service.domain.events.repository.AlertRepository;
@@ -99,8 +98,8 @@ public class AHRecordHelper {
         usageRecord.setNumAttempts(usageRecord.getNumAttempts() + 1);
         usageRecord.setUuid(entryobject.getContent().getEvent().getId());
 
-        String body = AtomHopperUtil.processResponseBody(response);
         int status = response.getStatus();
+        String body = response.getEntity(String.class);
 
         if (status == 201) {
             usageRecord.setNeedsPushed(false);
