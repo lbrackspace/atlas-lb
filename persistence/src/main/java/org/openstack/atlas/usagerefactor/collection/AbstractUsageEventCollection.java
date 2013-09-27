@@ -64,7 +64,7 @@ public abstract class AbstractUsageEventCollection {
         try {
             hosts = gatherHostsData(lb);
         } catch (EntityNotFoundException e) {
-            LOG.error(String.format("On %s event, load balancer %d was assigned to host %d and it does not exist.", event.name(), lb.getId(), lb.getHost().getId()));
+            LOG.error(String.format("On an event, load balancer %d was assigned to host %d and it does not exist.", lb.getId(), lb.getHost().getId()));
         }
 
         List<SnmpUsage> usages;
