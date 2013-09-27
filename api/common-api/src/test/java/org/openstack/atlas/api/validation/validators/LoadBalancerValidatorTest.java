@@ -227,10 +227,10 @@ public class LoadBalancerValidatorTest {
 		}
 
 		@Test
-		public void shouldRejectWhenMissingNodes() {
+		public void shouldAcceptWhenMissingNodes() {
 			lb.getNodes().clear();
 			ValidatorResult result = validator.validate(lb, POST);
-			assertFalse(result.passedValidation());
+			assertTrue(result.passedValidation());
 		}
 
 		@Test

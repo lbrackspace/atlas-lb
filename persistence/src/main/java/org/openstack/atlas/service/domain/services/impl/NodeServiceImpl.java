@@ -18,7 +18,6 @@ import org.openstack.atlas.util.ip.IPv6;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -91,11 +90,8 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             throw new LimitReachedException(String.format("Nodes must not exceed %d per load balancer.", nodeLimit));
         }
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldNodesLb.getNodes(), newNodesLb.getNodes());
-        if (!npc.hasPrimary()) {
-            throw new BadRequestException(Constants.NoPrimaryNodeError);
-        }
 
-        // Your not alowed to add secondary nodes with out Some form of monitoring. B-16407
+        // You are not allowed to add secondary nodes with out Some form of monitoring. B-16407
         if(npc.hasSecondary() && !loadBalancerRepository.loadBalancerHasHealthMonitor(oldNodesLb.getId())) {
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
@@ -159,8 +155,6 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
         isLbActive(oldLbNodes);
 
-        Node nodeBeingUpdated = new Node();
-
         LOG.debug("Nodes on dbLoadbalancer: " + oldLbNodes.getNodes().size());
         for (Node n : oldLbNodes.getNodes()) {
             if (n.getId().equals(nodeToUpdate.getId())) {
@@ -187,24 +181,12 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                     n.setType(nodeToUpdate.getType());
                 }
                 n.setToBeUpdated(true);
-                nodeBeingUpdated = n;
                 break;
             }
         }
 
-        LOG.debug("Verifying that we have an at least one active node...");
-        if (!activeNodeCheck(oldLbNodes, nodeBeingUpdated)) {
-            LOG.warn("No active nodes found! Sending failure response back to client...");
-            throw new UnprocessableEntityException("One or more nodes must remain ENABLED.");
-        }
-
         // Won't delete secondary nodes untill you also delete Health Monitor
-
-
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
-        if (!npc.hasPrimary()) {
-            throw new UnprocessableEntityException(Constants.NoPrimaryNodeError);
-        }
         if(npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null){
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
@@ -230,7 +212,6 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     public LoadBalancer deleteNode(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
-
         Node nodeToDelete = loadBalancer.getNodes().iterator().next();
         if (!loadBalancerContainsNode(dbLoadBalancer, nodeToDelete)) {
             LOG.warn("Node to delete not found. Sending response to client...");
@@ -239,21 +220,6 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         }
 
         isLbActive(dbLoadBalancer);
-
-        Node nodeBeingDeleted = loadBalancer.getNodes().iterator().next();
-        LOG.debug("Verifying that we have an atleast one active node...");
-
-        if (!nodeToDeleteIsNotLastActive(dbLoadBalancer, nodeBeingDeleted)) {
-            LOG.warn("Last node on lb configured as ENABLED. Sending failure response back to client...");
-            throw new UnprocessableEntityException("Last node on load balancer configured as ENABLED. One or more nodes must be configured as ENABLED.");
-        }
-
-        LOG.debug("Verifying that this is not the last node");
-        if (dbLoadBalancer.getNodes().size() <= 1) {
-            LOG.warn("Last node! Sending failure response back to client...");
-            throw new UnprocessableEntityException("Last node on the load balancer. One or more nodes must remain configured as ENABLED.");
-        }
-
 
         LOG.debug("Updating the lb status to pending_update");
         dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
@@ -376,7 +342,6 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         NodeMap nodeMap = getNodeMap(accountId, loadBalancerId);
         Set<Integer> idSet = NodeMap.listToSet(ids);
         Set<Integer> notMyIds = nodeMap.idsThatAreNotInThisMap(idSet); // Either some one elese ids or non existent ids
-        Set<Integer> survivingEnabledNodes = nodeMap.nodesInConditionAfterDelete(NodeCondition.ENABLED, idSet);
         List<Node> doomedNodes = nodeMap.getNodesList(idSet);
         int doomedNodeCount = doomedNodes.size();
         int batch_delete_limit = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
@@ -396,17 +361,6 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             format = "Node ids %s are not a part of your loadbalancer";
             errMsg = String.format(format, StringConverter.integersAsString(notMyIds));
             validationErrors.add(errMsg);
-        }
-        if (survivingEnabledNodes.size() < 1) {
-            loadBalancerService.setStatus(dlb, LoadBalancerStatus.ACTIVE);
-            errMsg = "delete node operation would result in no Enabled nodes available. You must leave at least one node enabled";
-            validationErrors.add(errMsg);
-        }
-        Set<Node> foundNodes = getAllNodesByAccountIdLoadBalancerId(accountId, loadBalancerId);
-        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(foundNodes).removeIds(ids);
-        // Throw a fit if no primary nodes would be left
-        if (!npc.hasPrimary()) {
-            validationErrors.add(Constants.NoPrimaryNodeError);
         }
 
         return validationErrors;
