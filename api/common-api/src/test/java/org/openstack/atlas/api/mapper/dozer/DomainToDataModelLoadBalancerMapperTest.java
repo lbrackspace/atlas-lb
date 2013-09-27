@@ -1,5 +1,11 @@
 package org.openstack.atlas.api.mapper.dozer;
 
+import org.dozer.DozerBeanMapper;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
@@ -10,21 +16,15 @@ import org.openstack.atlas.service.domain.entities.HealthMonitorType;
 import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeCondition;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
-import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
-import org.dozer.DozerBeanMapper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-import org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper;
 
-import java.util.*;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @RunWith(Enclosed.class)
 public class DomainToDataModelLoadBalancerMapperTest {
@@ -296,6 +296,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
             loadBalancer.setNodes(new HashSet<Node>());
             loadBalancer.setLoadBalancerJoinVipSet(new HashSet<LoadBalancerJoinVip>());
             loadBalancer.setUsage(new HashSet<Usage>());
+            loadBalancer.setLoadbalancerMetadata(new HashSet<LoadbalancerMeta>());
 
             dataModelLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class);
         }

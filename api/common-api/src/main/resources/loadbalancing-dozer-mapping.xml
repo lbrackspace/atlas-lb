@@ -124,7 +124,7 @@
         </field>
     </mapping>
 
-    <mapping map-null="false">
+    <mapping map-null="false" >
         <class-a bean-factory="org.openstack.atlas.api.mapper.dozer.factory.LoadBalancerFactory">
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer
         </class-a>
@@ -134,13 +134,13 @@
             <b>algorithm</b>
         </field>
         <field>
-            <a>metadata.metas</a>
+            <a is-accessible="true">metadata.metas</a>
             <b>loadbalancerMetadata</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</b-hint>
         </field>
         <field map-id="HIDE_NODE_META">
-            <a>nodes.nodes</a>
+            <a is-accessible="true">nodes.nodes</a>
             <b>nodes</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Node</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.Node</b-hint>
@@ -164,7 +164,7 @@
             <b-hint>org.openstack.atlas.service.domain.entities.HealthMonitor</b-hint>
         </field>
         <field>
-            <a>accessList</a>
+            <a is-accessible="true">accessList.networkItems</a>
             <b>accessLists</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.AccessList</b-hint>
