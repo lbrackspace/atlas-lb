@@ -59,7 +59,7 @@ public abstract class AbstractUsageEventCollection {
 
     public List<SnmpUsage> getUsage(LoadBalancer lb) throws UsageEventCollectionException {
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
-        List<Host> hosts = gatherHostsData();
+        List<Host> hosts = gatherHostsData(lb);
 
         List<SnmpUsage> usages;
         if (hosts != null && !hosts.isEmpty()) {
@@ -84,7 +84,7 @@ public abstract class AbstractUsageEventCollection {
      * @throws UsageEventCollectionException
      */
     public void processZeroUsageEvent(LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
-        List<Host> hosts = gatherHostsData();
+        List<Host> hosts = gatherHostsData(lb);
 
         if (hosts != null && !hosts.isEmpty()) {
             List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
@@ -104,8 +104,8 @@ public abstract class AbstractUsageEventCollection {
         usageEventProcessor.processUsageEvent(usages, lb, event, eventTime);
     }
 
-    private List<Host> gatherHostsData() {
-        return hostRepository.getAll();
+    private List<Host> gatherHostsData(LoadBalancer lb) {
+        return hostRepository.getOnlineHostsByLoadBalancerHostCluster(lb);
     }
 
 }
