@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
@@ -59,7 +60,12 @@ public abstract class AbstractUsageEventCollection {
 
     public List<SnmpUsage> getUsage(LoadBalancer lb) throws UsageEventCollectionException {
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
-        List<Host> hosts = gatherHostsData(lb);
+        List<Host> hosts = null;
+        try {
+            hosts = gatherHostsData(lb);
+        } catch (EntityNotFoundException e) {
+            LOG.error(String.format("On %s event, load balancer %d was assigned to host %d and it does not exist.", event.name(), lb.getId(), lb.getHost().getId()));
+        }
 
         List<SnmpUsage> usages;
         if (hosts != null && !hosts.isEmpty()) {
@@ -84,7 +90,12 @@ public abstract class AbstractUsageEventCollection {
      * @throws UsageEventCollectionException
      */
     public void processZeroUsageEvent(LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
-        List<Host> hosts = gatherHostsData(lb);
+        List<Host> hosts = null;
+        try {
+            hosts = gatherHostsData(lb);
+        } catch (EntityNotFoundException e) {
+            LOG.error(String.format("On %s event, load balancer %d was assigned to host %d and it does not exist.", event.name(), lb.getId(), lb.getHost().getId()));
+        }
 
         if (hosts != null && !hosts.isEmpty()) {
             List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
@@ -104,7 +115,7 @@ public abstract class AbstractUsageEventCollection {
         usageEventProcessor.processUsageEvent(usages, lb, event, eventTime);
     }
 
-    private List<Host> gatherHostsData(LoadBalancer lb) {
+    private List<Host> gatherHostsData(LoadBalancer lb) throws EntityNotFoundException {
         return hostRepository.getOnlineHostsByLoadBalancerHostCluster(lb);
     }
 
