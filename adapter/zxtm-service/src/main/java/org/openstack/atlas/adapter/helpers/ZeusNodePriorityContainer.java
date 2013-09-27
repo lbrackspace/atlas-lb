@@ -16,7 +16,7 @@ public class ZeusNodePriorityContainer {
     private boolean constainsPrimary;
 
     public ZeusNodePriorityContainer(Collection<Node> nodesIn) {
-        Node[] nodes = (Node[]) nodesIn.toArray(new Node[1]);
+        Node[] nodes = (Node[]) nodesIn.toArray(new Node[nodesIn.size()]);
         priorityValues = new ArrayList<PoolPriorityValueDefinition>();
         constainsSecondary = false;
         constainsPrimary = true;
