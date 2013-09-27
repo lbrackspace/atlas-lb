@@ -279,6 +279,15 @@ public class UsagePollerHelper {
 
                     LoadBalancerHostUsage currentUsage = lbHostUsagesMapByTime.get(timeKey).get(hostId);
 
+                    if (currentUsage != null) {
+                        if (currentUsage.getConcurrentConnections() < 0) {
+                            currentUsage.setConcurrentConnections(0);
+                        }
+                        if (currentUsage.getConcurrentConnectionsSsl() < 0) {
+                            currentUsage.setConcurrentConnectionsSsl(0);
+                        }
+                    }
+
                     if (isFirstRecord) {
                         if (currentUsage == null) {
                             if (previousRecords == null) {
