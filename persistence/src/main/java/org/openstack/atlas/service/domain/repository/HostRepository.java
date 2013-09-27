@@ -50,10 +50,9 @@ public class HostRepository {
     }
 
     public List<Host> getOnlineHostsByLoadBalancerHostCluster(LoadBalancer lb) throws EntityNotFoundException {
-        Host host = getById(lb.getHost().getId());
-        String hqlStr = "from Host h where h.hostStatus not in ('OFFLINE') and h.clusterId = :clusterId";
+        String hqlStr = "from Host h where h.hostStatus not in ('OFFLINE') and h.cluster.id = :clusterId";
         List<Host> hosts;
-        hosts = entityManager.createQuery(hqlStr).setParameter("clusterId", host.getCluster().getId()).getResultList();
+        hosts = entityManager.createQuery(hqlStr).setParameter("clusterId", lb.getHost().getCluster().getId()).getResultList();
         return hosts;
     }
 
