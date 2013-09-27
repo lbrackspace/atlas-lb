@@ -153,8 +153,9 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
 
     private String genUUIDString(Usage usageRecord) {
         return SERVICE_CODE
-                + "_" + usageRecord.getId()
                 + "_" + usageRecord.getLoadbalancer().getId()
+                + "_" + usageRecord.getStartTime()
+                + "_" + usageRecord.getEndTime()
                 + "_" + atomHopperConfig.getString(AtomHopperConfigurationKeys.ahusl_region)
                 + "_" + usageRecord.getEntryVersion();
     }
