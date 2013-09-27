@@ -111,7 +111,7 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
                 continue;
             }
 
-            setNegativeUsageToZero(usage);
+            //setNegativeUsageToZero(usage);
 
             LOG.info(String.format("Creating usage event for load balancer '%d'...", loadBalancer.getId()));
             usageRecordToProcess = new UsageEventMapper(loadBalancer, usage, usageEvent, pollTime, tagsBitmask, numVips)

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details:
+    Last stored poll information for 2 Load Balancers stored in table with 2 hosts.
+    With Events.
+    Usage from Snmp will not be 0.
+    Previous poll is missing a record for a host for a load balancer.
+-->
+<dataset>
+    <lb_host_usage id="1" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_out="50" bandwidth_out_ssl="100" bandwidth_in="150" bandwidth_in_ssl="200" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:01:00" />
+    <lb_host_usage id="2" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="0" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:01:00" />
+
+    <lb_host_usage id="5" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_out="-1" bandwidth_out_ssl="150" bandwidth_in="-1" bandwidth_in_ssl="225" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-04-10 20:03:00" event_type="SSL_MIXED_ON" />
+    <lb_host_usage id="6" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="0" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-04-10 20:03:00" event_type="SSL_MIXED_ON" />
+
+    <lb_host_usage id="7" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_out="100" bandwidth_out_ssl="200" bandwidth_in="300" bandwidth_in_ssl="250" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-04-10 20:04:00" event_type="SSL_MIXED_ON" />
+    <lb_host_usage id="8" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="0" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-04-10 20:04:00" event_type="SSL_MIXED_ON" />
+</dataset>
