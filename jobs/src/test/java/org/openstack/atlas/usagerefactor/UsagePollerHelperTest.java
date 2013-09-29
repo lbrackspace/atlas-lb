@@ -451,6 +451,20 @@ public class UsagePollerHelperTest {
             AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
                     UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:00", mergedRecords.get(1));
         }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/processrecordswithevents/case15.xml")
+        public void shouldShowZeroBandwidthOnSSLModeToggling() throws Exception {
+
+            List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(2, mergedRecords.size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 50L, 0L, 100L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.SSL_OFF, "2013-04-10 20:04:00", mergedRecords.get(1));
+        }
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)
@@ -958,6 +972,38 @@ public class UsagePollerHelperTest {
             AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, -1L, 200L, -1L, 400L, 0, 0, 1, 1, null, pollTimeStr,
                     result.getLbHostUsages().get(0));
             AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages().get(1));
+        }
+
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/usagepollerhelper/processcurrentusage/case12.xml")
+        public void shouldShowZeroUsageOnFirstPollAfterSSLOFFEvent() throws Exception{
+            snmpMap.remove(124);
+            snmpMap.get(123).get(1).setBytesIn(100);
+            snmpMap.get(123).get(2).setBytesIn(0);
+            snmpMap.get(123).get(1).setBytesInSsl(0);
+            snmpMap.get(123).get(2).setBytesInSsl(0);
+            snmpMap.get(123).get(1).setBytesOut(200);
+            snmpMap.get(123).get(2).setBytesOut(0);
+            snmpMap.get(123).get(1).setBytesOutSsl(0);
+            snmpMap.get(123).get(2).setBytesOutSsl(0);
+            snmpMap.get(123).get(1).setConcurrentConnections(0);
+            snmpMap.get(123).get(2).setConcurrentConnections(0);
+            snmpMap.get(123).get(1).setConcurrentConnectionsSsl(0);
+            snmpMap.get(123).get(2).setConcurrentConnectionsSsl(0);
+
+            UsageProcessorResult result = usagePollerHelper.processCurrentUsage(lbHostMap, snmpMap, pollTime);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(1, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(0));
+
+            //New lb_host_usage records assertions
+            Assert.assertEquals(2, result.getLbHostUsages().size());
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 100L, 0L, 200L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(0));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
                     result.getLbHostUsages().get(1));
         }
 
