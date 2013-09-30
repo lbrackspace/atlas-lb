@@ -69,7 +69,7 @@ public class VirtualIpConverter implements CustomConverter {
                     vips.getVirtualIps().add(vip);
                 }
             }
-            return vips;
+            return vips.getVirtualIps();
         }
 
         if (sourceFieldValue instanceof ArrayList) {

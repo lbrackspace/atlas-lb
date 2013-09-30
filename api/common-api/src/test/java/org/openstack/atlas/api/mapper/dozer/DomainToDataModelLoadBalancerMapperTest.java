@@ -20,6 +20,7 @@ import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeCondition;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
+import org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper;
 
 import java.util.GregorianCalendar;
 import java.util.HashSet;

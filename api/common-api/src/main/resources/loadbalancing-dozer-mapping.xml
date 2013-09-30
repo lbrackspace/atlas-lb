@@ -96,7 +96,7 @@
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
             <a>virtualIpDozerWrapper</a>
-            <b>virtualIps</b>
+            <b is-accessible="true">virtualIps.virtualIps</b>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CollectionCountConverter">
             <a>nodes</a>
@@ -146,7 +146,7 @@
             <b-hint>org.openstack.atlas.service.domain.entities.Node</b-hint>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
-            <a>virtualIps</a>
+            <a is-accessible="true">virtualIps.virtualIps</a>
             <b>virtualIpDozerWrapper</b>
             <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp</a-hint>
             <b-hint>org.openstack.atlas.service.domain.pojos.VirtualIpDozerWrapper</b-hint>
@@ -236,7 +236,7 @@
             <b>ipAddress</b>
         </field>
         <field>
-            <a>metadata.metas</a>
+            <a is-accessible="true">metadata.metas</a>
             <b>nodeMetadata</b>
         </field>
     </mapping>
@@ -273,7 +273,7 @@
             <b>address</b>
         </field>
         <field-exclude>
-            <a>metadata.metas</a>
+            <a is-accessible="true">metadata.metas</a>
             <b>nodeMetadata</b>
         </field-exclude>
     </mapping>
