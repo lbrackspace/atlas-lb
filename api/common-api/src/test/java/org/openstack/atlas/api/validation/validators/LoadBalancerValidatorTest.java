@@ -374,8 +374,7 @@ public class LoadBalancerValidatorTest {
 
 		@Test
 		public void shouldFailWhenNoAttributesToUpdate() {
-			ValidatorResult result = validator
-					.validate(new LoadBalancer(), PUT);
+			ValidatorResult result = validator.validate(new LoadBalancer(), PUT);
 			assertFalse(result.passedValidation());
 		}
 
