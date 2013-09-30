@@ -112,7 +112,8 @@ public class UsagePollerHelper {
                                                     long previousOutgoing, Calendar currentPollTime, Calendar previousPollTime) {
         ResetBandwidth ret = new ResetBandwidth();
         if ( isReset(currentIncoming, previousIncoming) ||
-                isReset(currentOutgoing, previousOutgoing)) {
+                isReset(currentOutgoing, previousOutgoing) ||
+                previousIncoming < 0 || previousOutgoing < 0) {
             return ret;
         }
         ret.incomingTransfer = currentIncoming - previousIncoming;
@@ -129,6 +130,16 @@ public class UsagePollerHelper {
         List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
 
         for (Integer loadbalancerId : currentUsages.keySet()) {
+            for (Integer hostId : currentUsages.get(loadbalancerId).keySet()) {
+                SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(hostId);
+                //Zeus SNMP will sometimes return a negative number for these if it is under heavy load, like it can't give us this information at the moment.
+                if (currentUsage.getConcurrentConnections() < 0) {
+                    currentUsage.setConcurrentConnections(0);
+                }
+                if (currentUsage.getConcurrentConnectionsSsl() < 0) {
+                    currentUsage.setConcurrentConnectionsSsl(0);
+                }
+            }
             if(buildingLoadBalancers.containsKey(loadbalancerId)){
                 //This is to handle an issue when zeus is under heavy load on the create load balancer call and the
                 //api has not inserted the create load balancer record yet.
@@ -267,6 +278,15 @@ public class UsagePollerHelper {
                 for (Integer hostId : lbHostUsagesMapByTime.get(timeKey).keySet()) {
 
                     LoadBalancerHostUsage currentUsage = lbHostUsagesMapByTime.get(timeKey).get(hostId);
+
+                    if (currentUsage != null) {
+                        if (currentUsage.getConcurrentConnections() < 0) {
+                            currentUsage.setConcurrentConnections(0);
+                        }
+                        if (currentUsage.getConcurrentConnectionsSsl() < 0) {
+                            currentUsage.setConcurrentConnectionsSsl(0);
+                        }
+                    }
 
                     if (isFirstRecord) {
                         if (currentUsage == null) {

@@ -5,14 +5,14 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-itest</artifactId>
-        <version>1.19.15-SNAPSHOT</version>
+        <version>1.19.16-SNAPSHOT</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-jyson</artifactId>
     <name>Openstack :: Itest :: Jyson/Jython module </name>
     <packaging>jar</packaging>
-        <version>1.19.15-SNAPSHOT</version>
+        <version>1.19.16-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
