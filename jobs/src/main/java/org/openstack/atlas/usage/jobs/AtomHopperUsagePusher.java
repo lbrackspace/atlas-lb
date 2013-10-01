@@ -137,6 +137,11 @@ public class AtomHopperUsagePusher extends AbstractJob {
             };
 
             ExecutionUtilities.ExecuteInBatches(allUsages, BATCH_SIZE, batchAction);
+            // :/ Block to properly time the job...
+            while (poolExecutor.getTaskCount() != poolExecutor.getCompletedTaskCount()) {
+               LOG.info("Atom Hopper usage task count totals=" + poolExecutor.getTaskCount() + "," + poolExecutor.getCompletedTaskCount());
+                Thread.sleep(5000);
+            }
         } else {
             LOG.debug("No usages to push to ATOM Hopper at this time.");
         }
