@@ -144,8 +144,8 @@ public class AHRecordHelper {
             ClientResponse response = client.getEntry(token, usageRecord.getUuid());
             UsageEntry entry = response.getEntity(UsageEntry.class);
             if (response.getStatus() == 200) {
-                if (!(entry.getContent().getEvent().getId().equals(usageRecord.getUuid()))) {
-                    return false;
+                if ((entry.getContent().getEvent().getId().equals(usageRecord.getUuid()))) {
+                    return true;
                 }
             }
         } catch (Exception e) {
@@ -153,7 +153,7 @@ public class AHRecordHelper {
                     usageRecord.getUuid()));
             return false;
         }
-        return true;
+        return false;
     }
 
     protected void logAndAlert(String body, Usage usageRecord, String entrystring) {
