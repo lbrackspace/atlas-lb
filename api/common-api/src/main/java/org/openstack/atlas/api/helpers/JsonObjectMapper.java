@@ -71,6 +71,7 @@ public class JsonObjectMapper extends ObjectMapper {
 
         cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
         cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
+//        cdf.addSpecificMapping(VirtualIps.class, new PropertyListDeserializer(VirtualIps.class, VirtualIp.class, "getVirtualIps"));
 
 
         this.setSerializerFactory(csf);

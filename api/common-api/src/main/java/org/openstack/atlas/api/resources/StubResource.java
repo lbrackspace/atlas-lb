@@ -42,8 +42,20 @@ import javax.ws.rs.core.Response;
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.w3.atom.Link;
 
 public class StubResource extends CommonDependencyProvider {
+
+    private static Link makeLink(String href, String rel) {
+        Link link = new Link();
+        if (href == null || href.equals("")) {
+            link.setHref("http://localhost:8080/test/blah");
+        }
+        if (rel == null || rel.equals("")) {
+            link.setRel("self");
+        }
+        return link;
+    }
 
     @GET
     @Path("loadbalancers")
@@ -51,6 +63,7 @@ public class StubResource extends CommonDependencyProvider {
         LoadBalancers loadbalancers = new LoadBalancers();
         loadbalancers.getLoadBalancers().add(newLoadBalancer(1, "LB1"));
         loadbalancers.getLoadBalancers().add(newLoadBalancer(2, "LB2"));
+        loadbalancers.getLinks().add(makeLink(null, null));
         return Response.status(200).entity(loadbalancers).build();
     }
 
@@ -74,6 +87,7 @@ public class StubResource extends CommonDependencyProvider {
         VirtualIps vips = new VirtualIps();
         vips.getVirtualIps().add(newVip(1, "127.0.0.1"));
         vips.getVirtualIps().add(newVip(2, "127.0.0.2"));
+        vips.getLinks().add(makeLink(null, null));
         return Response.status(200).entity(vips).build();
     }
 
@@ -337,13 +351,16 @@ public class StubResource extends CommonDependencyProvider {
         nodes.add(newNode(1, 443, "127.0.0.20"));
         vips.add(newVip(1, "127.0.0.1"));
         vips.add(newVip(2, "127.0.0.2"));
+        lb.setVirtualIps(new VirtualIps());
         lb.getVirtualIps().getVirtualIps().addAll(vips);
+        lb.setNodes(new Nodes());
         lb.getNodes().getNodes().addAll(nodes);
         SessionPersistence sp = new SessionPersistence();
         sp.setPersistenceType(PersistenceType.HTTP_COOKIE);
         lb.setSessionPersistence(sp);
         accessList.add(newNetworkItem(1, "10.0.0.0/8"));
         accessList.add(newNetworkItem(2, "192.168.0.0/24"));
+        lb.setAccessList(new AccessList());
         lb.getAccessList().getNetworkItems().addAll(accessList);
         LoadBalancerUsage lu = new LoadBalancerUsage();
         lu.setLoadBalancerId(id);

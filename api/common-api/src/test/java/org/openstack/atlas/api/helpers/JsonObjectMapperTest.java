@@ -202,6 +202,7 @@ public class JsonObjectMapperTest {
     @Test
     public void shouldMapLoadBalancerDeserialize() throws IOException {
         String lbJson = "{\"loadBalancer\":{\"protocol\":\"HTTP\",\"name\":\"a-new-loadbalancer\",\"virtualIps\":[{\"id\":2341}],\"accessList\":[],\"nodes\":[{\"port\":80,\"condition\":\"ENABLED\",\"address\":\"10.1.1.1\"},{\"port\":443,\"condition\":\"ENABLED\",\"address\":\"10.1.1.3\"}],\"port\":80}}";
+//        String lbJson = "{\"loadBalancer\":{\"protocol\":\"HTTP\",\"name\":\"a-new-loadbalancer\",\"virtualIps\":{\"virtualIps\":[{\"id\":2341}]},\"accessList\":[],\"nodes\":[{\"port\":80,\"condition\":\"ENABLED\",\"address\":\"10.1.1.1\"},{\"port\":443,\"condition\":\"ENABLED\",\"address\":\"10.1.1.3\"}],\"port\":80}}";
         LoadBalancer lb = mapper.readValue(lbJson, LoadBalancer.class);
         Assert.assertEquals("a-new-loadbalancer", lb.getName());
         Assert.assertEquals(new Integer(80), lb.getPort());
