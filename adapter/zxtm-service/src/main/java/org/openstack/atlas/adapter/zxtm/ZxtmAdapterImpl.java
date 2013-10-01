@@ -253,6 +253,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (lb.isHalfClosed() != null) {
             updateHalfClosed(config, lb);
         }
+
+        if (lb.isHttpsRedirect() != null) {
+            updateHttpsRedirect(config, lb);
+        }
     }
 
     private void isVSListeningOnAllAddresses(ZxtmServiceStubs serviceStubs, String virtualServerName, String poolName) throws RemoteException, VirtualServerListeningOnAllAddressesException {
@@ -269,6 +273,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException {
         Set<Node> nodes = lb.getNodes();
+        if (nodes == null || nodes.isEmpty())
+            return;
         ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
         String[] poolNames = new String[]{poolName};
 
@@ -1437,6 +1443,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        if (nodes == null || nodes.isEmpty())
+            return;
         final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
         final String rollBackMessage = "Update node weights request canceled.";
 
@@ -1896,6 +1904,24 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.error("Could not update half close support for virtual server: " + ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId()));
         }
 
+    }
+
+    @Override
+    public void updateHttpsRedirect(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        try {
+            LOG.debug(String.format("Updating HTTPS Redirect for virtual server '%s': Value: '%s'...", ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId()), loadBalancer.isHalfClosed()));
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+            if (loadBalancer.isHttpsRedirect() == true) {
+                TrafficScriptHelper.addForceHttpsRedirectScriptIfNeeded(serviceStubs);
+                attachForceHttpsRedirectRuleToVirtualServer(serviceStubs, vsName);
+            } else {
+                removeForceHttpsRedirectRuleFromVirtualServer(serviceStubs, vsName);
+            }
+        } catch (Exception e) {
+            LOG.error("Could not update HTTPS Redirect for virtual server: " + vsName);
+        }
     }
 
     private void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String protectionClassName)
