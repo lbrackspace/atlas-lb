@@ -7,6 +7,7 @@ import org.openstack.atlas.api.validation.verifiers.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AlgorithmType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
+import org.openstack.atlas.api.validation.validators.VirtualIpsValidator_New;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
@@ -45,9 +46,10 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getName()).must().not().beEmptyOrNull().forContext(POST).withMessage("Load balancer name is invalid. Please specify a valid name");
                 result(validationTarget().getProtocol()).must().exist().forContext(POST).withMessage("Must provide a valid protocol for the load balancer.");
                 result(validationTarget().getVirtualIps()).must().exist().forContext(POST).withMessage("Must provide at least one virtual ip for the load balancer.");
-                result(validationTarget().getVirtualIps().getVirtualIps()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one virtual ip for the load balancer");
-                result(validationTarget().getVirtualIps().getVirtualIps()).if_().exist().then().must().adhereTo(new SharedOrNewVipVerifier()).forContext(POST).withMessage("Must specify either a shared or new virtual ip.");
-                result(validationTarget().getVirtualIps().getVirtualIps()).if_().exist().then().must().delegateTo(new VirtualIpValidator().getValidator(), POST).forContext(POST);
+                result(validationTarget().getVirtualIps()).must().delegateTo(new VirtualIpsValidator_New().getValidator(), POST);
+//                result(validationTarget().getVirtualIps().getVirtualIps()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one virtual ip for the load balancer");
+//                result(validationTarget().getVirtualIps().getVirtualIps()).if_().exist().then().must().adhereTo(new SharedOrNewVipVerifier()).forContext(POST).withMessage("Must specify either a shared or new virtual ip.");
+//                result(validationTarget().getVirtualIps().getVirtualIps()).if_().exist().then().must().delegateTo(new VirtualIpValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getConnectionLogging()).if_().exist().then().must().delegateTo(new ConnectionLoggingValidator().getValidator(), POST);
                 result(validationTarget().getContentCaching()).if_().exist().then().must().delegateTo(new ContentCachingValidator().getValidator(), POST);
 
