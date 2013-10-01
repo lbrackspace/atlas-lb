@@ -40,7 +40,7 @@ public class LoadBalancerValidatorTest {
 			lb.setProtocol("HTTP");
 
 			vip.setType(VipType.PUBLIC);
-
+            lb.setVirtualIps(new VirtualIps());
 			lb.getVirtualIps().getVirtualIps().add(vip);
 
 			node1 = new Node();
@@ -53,6 +53,7 @@ public class LoadBalancerValidatorTest {
 			node2.setPort(80);
 			node2.setCondition(ENABLED);
 
+            lb.setNodes(new Nodes());
 			lb.getNodes().getNodes().add(node1);
 			lb.getNodes().getNodes().add(node2);
 		}
@@ -127,6 +128,7 @@ public class LoadBalancerValidatorTest {
             VirtualIp vipper = new VirtualIp();
             vipper.setId(23);
             vipper.setType(VipType.SERVICENET);
+            lb.setVirtualIps(new VirtualIps());
             lb.getVirtualIps().getVirtualIps().add(vipper);
             
             ValidatorResult result = validator.validate(lb, POST);
@@ -399,14 +401,16 @@ public class LoadBalancerValidatorTest {
 
 		@Test
 		public void shouldRejectWhenNodesIsNotEmpty() {
-                        lb.getNodes().getNodes().add(new Node());
+            lb.setNodes(new Nodes());
+            lb.getNodes().getNodes().add(new Node());
 			ValidatorResult result = validator.validate(lb, PUT);
 			assertFalse(result.passedValidation());
 		}
 
 		@Test
 		public void shouldRejectWhenVirtualIpsIsNotEmpty() {
-                        lb.getVirtualIps().getVirtualIps().add(new org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp());
+            lb.setVirtualIps(new VirtualIps());
+            lb.getVirtualIps().getVirtualIps().add(new org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp());
 			ValidatorResult result = validator.validate(lb, PUT);
 			assertFalse(result.passedValidation());
 		}

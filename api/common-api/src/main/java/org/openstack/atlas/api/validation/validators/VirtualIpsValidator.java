@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.validation.validators;
 
+import org.openstack.atlas.api.validation.verifiers.SharedOrNewVipVerifier;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.api.validation.Validator;
 import org.openstack.atlas.api.validation.ValidatorBuilder;
@@ -18,6 +19,7 @@ public class VirtualIpsValidator implements ResourceValidator<VirtualIps> {
                 // SHARED EXPECTATIONS
                 result(validationTarget().getVirtualIps()).must().exist().withMessage("Must provide at least one virtual Ip.");
                 result(validationTarget().getVirtualIps()).if_().exist().then().must().haveSizeOfAtLeast(1).withMessage("Must provide at least one virtual Ip.");
+                result(validationTarget().getVirtualIps()).if_().exist().then().must().adhereTo(new SharedOrNewVipVerifier()).forContext(POST).withMessage("Must specify either a shared or new virtual ip.");
                 result(validationTarget().getVirtualIps()).must().delegateTo(new VirtualIpValidator().getValidator(), POST);
             }
         });

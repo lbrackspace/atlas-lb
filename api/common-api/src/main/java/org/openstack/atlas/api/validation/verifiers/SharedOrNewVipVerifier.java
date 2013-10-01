@@ -7,18 +7,18 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SharedOrNewVipVerifier implements Verifier<VirtualIps> {
+public class SharedOrNewVipVerifier implements Verifier<List<VirtualIp>> {
 
     @Override
-    public VerifierResult verify(VirtualIps virtualIps) {
+    public VerifierResult verify(List<VirtualIp> virtualIps) {
         List<ValidationResult> validationResults = new ArrayList<ValidationResult>();
 
-        if (virtualIps == null || virtualIps.getVirtualIps().size() > 2) {
+        if (virtualIps == null || virtualIps.size() > 2) {
             validationResults.add(new ValidationResult(false, "Must have exactly one virtual ip"));
             return new VerifierResult(false, validationResults);
         }
 
-        for (VirtualIp virtualIp : virtualIps.getVirtualIps()) {
+        for (VirtualIp virtualIp : virtualIps) {
             if (virtualIp.getType() != null) {
                 if (virtualIp.getId() != null) {
                     validationResults.add(new ValidationResult(false, "Must specify either a shared or new virtual ip."));
@@ -32,8 +32,8 @@ public class SharedOrNewVipVerifier implements Verifier<VirtualIps> {
             }
         }
 
-        if (virtualIps.getVirtualIps().size() >= 2) {
-            for (VirtualIp virtualIp : virtualIps.getVirtualIps()) {
+        if (virtualIps.size() >= 2) {
+            for (VirtualIp virtualIp : virtualIps) {
                 if (virtualIp.getIpVersion() != null || virtualIp.getType() != null) {
                     validationResults.add(new ValidationResult(false, "Must supply one virtual ip for a non-shared virtual ip request."));
                     return new VerifierResult(false, validationResults);
