@@ -1,5 +1,17 @@
 package org.openstack.atlas.api.filters;
 
+import javax.servlet.ServletResponse;
+import javax.servlet.ServletRequest;
+import javax.servlet.FilterChain;
+import javax.servlet.Filter;
+import javax.servlet.ServletException;
+import javax.servlet.FilterConfig;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.io.StringWriter;
+import java.io.ByteArrayInputStream;
+import java.io.PrintWriter;
+import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
@@ -16,7 +28,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
@@ -25,7 +36,7 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
-import java.io.*;
+
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -159,7 +170,7 @@ public class ValidationFilter implements Filter {
         mapper.init();
     }
 
-    protected Object xml2pojo(String xml, JAXBContext ctx, Schema schema, XmlValidationExceptionHandler errHandler) throws JAXBException, UnsupportedEncodingException, IOException {
+    public static Object xml2pojo(String xml, JAXBContext ctx, Schema schema, XmlValidationExceptionHandler errHandler) throws JAXBException, UnsupportedEncodingException, IOException {
         Object out = null;
         XMLInputFactory xif = XMLInputFactory.newFactory();
         xif.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
@@ -178,11 +189,11 @@ public class ValidationFilter implements Filter {
             u.setEventHandler(errHandler);
         }
         out = u.unmarshal(xsr);
-        //out = u.unmarshal(bytes);
+
         return out;
     }
 
-    protected String pojo2xml(Object pojo, JAXBContext ctx, Schema schema) throws JAXBException {
+    public static String pojo2xml(Object pojo, JAXBContext ctx, Schema schema) throws JAXBException {
         String result;
         StringWriter sw = new StringWriter();
         Marshaller m = ctx.createMarshaller();
@@ -331,7 +342,7 @@ public class ValidationFilter implements Filter {
         return out;
     }
 
-        public static String getExtendedStackTrace(Throwable th) {
+    public static String getExtendedStackTrace(Throwable th) {
         Throwable t;
         StringBuilder sb = new StringBuilder(PAGESIZE);
         Throwable currThrowable;
