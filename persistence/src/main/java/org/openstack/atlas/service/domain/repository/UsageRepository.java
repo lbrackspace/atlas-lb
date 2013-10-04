@@ -138,7 +138,7 @@ public class UsageRepository {
 
     private String generateBatchInsertQuery(Collection<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed, uuid, corrected, num_attempts) values");
+        sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed, uuid, corrected, num_attempts, reference_id) values");
         sb.append(generateFormattedValues(usages));
         return sb.toString();
     }
@@ -149,7 +149,7 @@ public class UsageRepository {
 
     private String generateBatchUpdateQuery(List<Usage> usages, boolean isUsageUpdate) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed, uuid, corrected, num_attempts) values");
+        sb.append("REPLACE INTO lb_usage(id, loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed, uuid, corrected, num_attempts, reference_id) values");
         sb.append(generateFormattedValues(usages, isUsageUpdate));
         return sb.toString();
     }
@@ -264,6 +264,7 @@ public class UsageRepository {
     private String generateUpdatedFormattedValue(Usage usage, boolean isUsageUpdate) {
         StringBuilder sb = new StringBuilder();
         if (isUsageUpdate) {
+            //This is a record created by the usage poller.
             int versionBump;
             if (usage.getEntryVersion() == null) {
                 versionBump = 0;
@@ -273,6 +274,7 @@ public class UsageRepository {
             versionBump += 1;
             sb.append(versionBump);
             sb.append(",");
+            //needs_pushed
             sb.append(1);
             sb.append(",");
             if (usage.getUuid() == null) {
@@ -286,9 +288,18 @@ public class UsageRepository {
             sb.append(usage.isCorrected());
             sb.append(",");
             sb.append(usage.getNumAttempts());
+            sb.append(",");
+            if (usage.getReferenceId() == null) {
+                sb.append("NULL");
+            } else {
+                sb.append("'");
+                sb.append(usage.getReferenceId());
+                sb.append("'");
+            }
             sb.append("),");
             return sb.toString();
         } else {
+            //This is a record update by the ah poller...
             sb.append(usage.getEntryVersion());
             sb.append(",");
             sb.append(usage.isNeedsPushed());
@@ -304,6 +315,14 @@ public class UsageRepository {
             sb.append(usage.isCorrected());
             sb.append(",");
             sb.append(usage.getNumAttempts());
+            sb.append(",");
+            if (usage.getReferenceId() == null) {
+                sb.append("NULL");
+            } else {
+                sb.append("'");
+                sb.append(usage.getReferenceId());
+                sb.append("'");
+            }
             sb.append("),");
         }
         return sb.toString();
