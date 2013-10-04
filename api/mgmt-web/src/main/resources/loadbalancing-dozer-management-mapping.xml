@@ -303,21 +303,21 @@
         </class-a>
         <class-b>org.openstack.atlas.service.domain.entities.LoadBalancer</class-b>
         <field>
-            <a>metadata</a>
+            <a is-accessible="true">metadata.metas</a>
             <b>loadbalancerMetadata</b>
-            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Meta</a-hint>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Metadata</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</b-hint>
         </field>
         <field>
-            <a>nodes</a>
+            <a is-accessible="true">nodes.nodes</a>
             <b>nodes</b>
-            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Node</a-hint>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.Nodes</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.Node</b-hint>
         </field>
         <field>
-            <a>virtualIps</a>
+            <a is-accessible="true">virtualIps.virtualIps</a>
             <b>loadBalancerJoinVipSet</b>
-            <a-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp</a-hint>
+            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip</b-hint>
         </field>
         <field>

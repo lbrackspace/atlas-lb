@@ -391,6 +391,7 @@ public class StubFactory {
 //        l.setHosts(rndHosts(3));
         l.setId(rndInt(0, 10000));
         l.setName(String.format("LB.%d", l.getId()));
+        l.setNodes(new Nodes());
         l.getNodes().getNodes().addAll(StubFactory.rndNodes(10).getNodes());
         l.setPort(rndInt(0, 32000));
         List<String> protocolNames = ProtocolPortBindings.getKeys();
