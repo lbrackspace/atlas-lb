@@ -122,6 +122,7 @@
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/list</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/exception</sourcePath>
                     </sourcePaths>
+                    <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
@@ -138,15 +139,6 @@
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>attached</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -154,6 +146,8 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
+                    <optimize>false</optimize>
+                    <debug>true</debug>
                 </configuration>
             </plugin>
             <plugin>

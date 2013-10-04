@@ -35,16 +35,16 @@
     </distributionManagement>
 
     <modules>
-        <module>adapter</module>
-        <module>api</module>
         <module>common</module>
         <module>data-model</module>
-        <module>itest</module>
-        <module>jobs</module>
-        <module>logs</module>
-        <module>migration</module>
-        <module>persistence</module>
         <module>rest-clients</module>
+        <module>persistence</module>
+        <module>adapter</module>
+        <module>api</module>
+        <module>logs</module>
+        <module>jobs</module>
+        <module>migration</module>
+        <module>itest</module>
     </modules>
 
     <build>
