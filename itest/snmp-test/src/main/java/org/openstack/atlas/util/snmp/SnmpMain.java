@@ -104,7 +104,7 @@ public class SnmpMain {
                     System.out.printf("\n");
                 } else if (cmd.equals("show_threads")) {
                     System.out.printf("Running Threads\n");
-                    System.out.printf("%s\n", Debug.getThreadStacksString());
+                    System.out.printf("%s\n", Debug.getThreadStackTraces());
                 } else if (cmd.equals("show_config")) {
                     System.out.printf("Configs\n");
                     System.out.printf("useing config = %s\n", conf.toString());
@@ -232,7 +232,7 @@ public class SnmpMain {
                         if (vsToHostMap.containsKey(vsFilter)) {
                             printVsMap(vsFilter, vsToHostMap);
                         } else {
-                            System.out.printf("pool %s was not in the usage map\n",vsFilter);
+                            System.out.printf("pool %s was not in the usage map\n", vsFilter);
                         }
                     } else {
 
