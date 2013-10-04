@@ -107,12 +107,12 @@ public class XmlValidationFilterTest {
         assertEquals(lb.getName(), "a-new-loadbalancer");
         assertEquals(lb.getPort(), new Integer(80));
         assertEquals(lb.getProtocol(), "HTTP");
-        assertEquals(lb.getVirtualIps().size(), 1);
-        assertEquals(lb.getVirtualIps().get(0).getType(), VipType.PUBLIC);
-        assertEquals(lb.getNodes().size(), 1);
-        assertEquals(lb.getNodes().get(0).getAddress(), "10.1.1.1");
-        assertEquals(lb.getNodes().get(0).getPort(), new Integer(80));
-        assertEquals(lb.getNodes().get(0).getCondition(), NodeCondition.ENABLED);
+        assertEquals(lb.getVirtualIps().getVirtualIps().size(), 1);
+        assertEquals(lb.getVirtualIps().getVirtualIps().get(0).getType(), VipType.PUBLIC);
+        assertEquals(lb.getNodes().getNodes().size(), 1);
+        assertEquals(lb.getNodes().getNodes().get(0).getAddress(), "10.1.1.1");
+        assertEquals(lb.getNodes().getNodes().get(0).getPort(), new Integer(80));
+        assertEquals(lb.getNodes().getNodes().get(0).getCondition(), NodeCondition.ENABLED);
     }
 
     @Test
