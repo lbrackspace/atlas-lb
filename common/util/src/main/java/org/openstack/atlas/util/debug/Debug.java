@@ -169,6 +169,7 @@ public class Debug {
         return sb.toString();
     }
     // Tests to see if the throwable exc was caused by any of the exceptions in causeClasses
+
     public static Class getThrowableCausedByOrAssignableFrom(Throwable exc, Class... causeClasses) {
         Throwable t;
         Class causeClass;
@@ -326,6 +327,16 @@ public class Debug {
             prog = "prog";
         }
         return prog;
+    }
+
+    public static String stripStringBeg(String str, int colNum) {
+        int i;
+        int lineSize = str.length();
+        char[] tmpChrArray = new char[lineSize - colNum];
+        for (i = colNum; i < lineSize; i++) {
+            tmpChrArray[i - colNum] = str.charAt(i);
+        }
+        return new String(tmpChrArray);
     }
 
     public static String threadName() {

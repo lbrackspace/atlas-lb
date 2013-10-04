@@ -13,6 +13,8 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.util.debug.Debug;
 
 import java.io.IOException;
+import org.openstack.atlas.api.helpers.JsonDeserializer.ObjectWrapperDeserializer;
+import org.openstack.atlas.api.helpers.JsonDeserializer.PropertyListDeserializer;
 
 public class JsonObjectMapperTest {
 
@@ -201,9 +203,16 @@ public class JsonObjectMapperTest {
 
     @Test
     public void shouldMapLoadBalancerDeserialize() throws IOException {
-        String lbJson = "{\"loadBalancer\":{\"protocol\":\"HTTP\",\"name\":\"a-new-loadbalancer\",\"virtualIps\":[{\"id\":2341}],\"accessList\":[],\"nodes\":[{\"port\":80,\"condition\":\"ENABLED\",\"address\":\"10.1.1.1\"},{\"port\":443,\"condition\":\"ENABLED\",\"address\":\"10.1.1.3\"}],\"port\":80}}";
-//        String lbJson = "{\"loadBalancer\":{\"protocol\":\"HTTP\",\"name\":\"a-new-loadbalancer\",\"virtualIps\":{\"virtualIps\":[{\"id\":2341}]},\"accessList\":[],\"nodes\":[{\"port\":80,\"condition\":\"ENABLED\",\"address\":\"10.1.1.1\"},{\"port\":443,\"condition\":\"ENABLED\",\"address\":\"10.1.1.3\"}],\"port\":80}}";
-        LoadBalancer lb = mapper.readValue(lbJson, LoadBalancer.class);
+//        String lbJson = "{\"loadBalancer\":{\"protocol\":\"HTTP\",\"name\":\"a-new-loadbalancer\",\"virtualIps\":[{\"id\":2341}],\"accessList\":[],\"nodes\":[{\"port\":80,\"condition\":\"ENABLED\",\"address\":\"10.1.1.1\"},{\"port\":443,\"condition\":\"ENABLED\",\"address\":\"10.1.1.3\"}],\"port\":80}}";
+        String lbJson = "{\"loadBalancer\":{\"protocol\":\"HTTP\",\"name\":\"a-new-loadbalancer\",\"virtualIps\":{\"virtualIps\":[{\"id\":2341}]},\"accessList\":[],\"nodes\":[{\"port\":80,\"condition\":\"ENABLED\",\"address\":\"10.1.1.1\"},{\"port\":443,\"condition\":\"ENABLED\",\"address\":\"10.1.1.3\"}],\"port\":80}}";
+        LoadBalancer lb = null;
+        try {
+            lb = mapper.readValue(lbJson, LoadBalancer.class);
+        } catch (Exception ex) {
+            String exMsg = Debug.getExtendedStackTrace(ex);
+            Debug.nop();
+            return;
+        }
         Assert.assertEquals("a-new-loadbalancer", lb.getName());
         Assert.assertEquals(new Integer(80), lb.getPort());
         Assert.assertEquals(1, lb.getVirtualIps().getVirtualIps().size());
@@ -226,7 +235,7 @@ public class JsonObjectMapperTest {
             loadBalancer = (LoadBalancer) stub.stubLoadBalancer().getEntity();
         } catch (Throwable th) {
             exMsg = Debug.getEST(th);
-            System.out.printf("Error %s\n",exMsg);
+            System.out.printf("Error %s\n", exMsg);
             nop();
         }
         LoadBalancers loadbalancers = (LoadBalancers) stub.stubLoadBalancers().getEntity();

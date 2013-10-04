@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.helpers.JsonDeserializer;
 
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -19,7 +20,6 @@ import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtende
 public class PropertyListDeserializer extends JsonDeserializer {
 
     private final Log LOG = LogFactory.getLog(PropertyListDeserializer.class);
-
     private ObjectMapper cleanObjectMapper = new ObjectMapper();
     private Class forClass;
     private Class itemClass;
@@ -28,7 +28,7 @@ public class PropertyListDeserializer extends JsonDeserializer {
     public PropertyListDeserializer() {
     }
 
-    public PropertyListDeserializer(Class forClass,Class itemClass,String getterName) {
+    public PropertyListDeserializer(Class forClass, Class itemClass, String getterName) {
         this.forClass = forClass;
         this.itemClass = itemClass;
         this.getterName = getterName;
@@ -36,8 +36,12 @@ public class PropertyListDeserializer extends JsonDeserializer {
 
     @Override
     public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        String className = forClass.getName();
+        String itemClassName = itemClass.getName();
+
         Object out = null;
         List childList;
+        String itemJson = "";
         String nodeStr = "";
         String rootName = ClassReflectionTools.getXmlRootElementName(this.forClass);
         String errMsg = "";
@@ -46,27 +50,28 @@ public class PropertyListDeserializer extends JsonDeserializer {
         JsonNode childNode = null;
         Object nodeObj = null;
         if (node.has(rootName)) { // If a root name is found on input strip it off
-                                  //and continue decoding
+            //and continue decoding
             childNode = node.get(rootName);
             JsonParser childParser = childNode.traverse();
         } else {
             childNode = node; // If its not wrapped don't worry about it cause 
-                              // its probably a nested child. For example Node fro Nodes
+            // its probably a nested child. For example Node fro Nodes
         }
         nodeStr = childNode.toString();
         try {
             out = ClassReflectionTools.newInstance(forClass);
             childList = (List) ClassReflectionTools.invokeGetter(out, getterName);
-            for(JsonNode itemNode:childNode) {
-                String itemJson = itemNode.toString();
-                Object item = cleanObjectMapper.readValue(itemJson,itemClass);
+            for (JsonNode itemNode : childNode) {
+                itemJson = itemNode.toString();
+                Object item = cleanObjectMapper.readValue(itemJson, itemClass);
                 childList.add(item);
             }
         } catch (Exception ex) {
-            excMsg = getExtendedStackTrace(ex);
-            errMsg = String.format("Error converting \"%s\" into class %s\n",nodeStr,forClass.toString());
+            excMsg = Debug.getExtendedStackTrace(ex);
+            String location = (jp.getCurrentLocation() != null) ? jp.getCurrentLocation().toString() : "null";
+            errMsg = String.format("Error converting \"%s\" into class %s at %s\n", nodeStr, forClass.toString(), location);
             LOG.error(errMsg);
-            throw JsonMappingException.from(jp,errMsg);
+            throw new JsonMappingException(errMsg, ex);
         }
         return out;
     }

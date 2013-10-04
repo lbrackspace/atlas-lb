@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.helpers.JsonDeserializer;
 
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,7 +19,6 @@ import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtende
 public class ObjectWrapperDeserializer extends JsonDeserializer {
 
     private final Log LOG = LogFactory.getLog(ObjectWrapperDeserializer.class);
-
     private Class forClass;
     private ObjectMapper cleanObjectMapper = new ObjectMapper();
 
@@ -39,21 +39,22 @@ public class ObjectWrapperDeserializer extends JsonDeserializer {
         JsonNode childNode = null;
         Object nodeObj = null;
         if (node.has(rootName)) { // If a root name is found on input strip it off
-                                  //and continue decoding
+            //and continue decoding
             childNode = node.get(rootName);
             JsonParser childParser = childNode.traverse();
         } else {
             childNode = node; // If its not wrapped don't worry about it cause 
-                              // its probably a nested child. For example Node fro Nodes
+            // its probably a nested child. For example Node fro Nodes
         }
         nodeStr = childNode.toString();
         try {
             nodeObj = cleanObjectMapper.readValue(nodeStr, forClass);
         } catch (Exception ex) {
-            excMsg = getExtendedStackTrace(ex);
-            errMsg = String.format("Error converting \"%s\" into class %s\n",nodeStr,forClass.toString());
+            excMsg = Debug.getExtendedStackTrace(ex);
+            errMsg = String.format("Error converting \"%s\" into class %s\n", nodeStr, forClass.toString());
             LOG.error(errMsg);
-            throw JsonMappingException.from(jp,errMsg);
+            String location = (jp.getCurrentLocation() != null) ? jp.getCurrentLocation().toString() : "null";
+            throw new JsonMappingException(errMsg,ex);
         }
         return nodeObj;
     }

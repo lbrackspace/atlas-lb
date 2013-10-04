@@ -40,7 +40,7 @@ public class JsonObjectMapper extends ObjectMapper {
             Node.class, RateLimit.class, Errorpage.class,SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
 
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, Meta.class, VirtualIp.class, VirtualIps.class,
+            SessionPersistence.class, ConnectionLogging.class, Meta.class, 
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
             Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
 
