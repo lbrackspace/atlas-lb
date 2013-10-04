@@ -1,6 +1,6 @@
 
-import org.openstack.atlas.logs.hibernatetoy.HibernateDbConf as HibernateDbConf
-import org.openstack.atlas.logs.hibernatetoy.HuApp as HuApp
+import org.openstack.atlas.util.itest.hibernate.HibernateDbConf as HibernateDbConf
+import org.openstack.atlas.util.itest.hibernate.HuApp as HuApp
 import org.openstack.atlas.util.crypto.CryptoUtil as CryptoUtil
 
 import utils

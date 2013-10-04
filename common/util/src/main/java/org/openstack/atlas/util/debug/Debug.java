@@ -151,7 +151,21 @@ public class Debug {
         return sbw.toString();
     }
 
-    public static String getThreadStacksString() {
+    public static String getStackTrace() {
+        StringBuilder sb = new StringBuilder();
+        StackTraceElement[] seArray = Thread.currentThread().getStackTrace();
+        if (seArray == null) {
+            sb.append("null");
+            return sb.toString();
+        }
+        int steArraySize = seArray.length;
+        for (StackTraceElement ste : seArray) {
+            sb.append("    ").append(ste.toString()).append("\n");
+        }
+        return sb.toString();
+    }
+
+    public static String getThreadStackTraces() {
         StringBuilder sb = new StringBuilder();
         Map<Thread, StackTraceElement[]> stMap = Thread.getAllStackTraces();
         for (Thread th : stMap.keySet()) {
@@ -161,9 +175,8 @@ public class Debug {
                 sb.append("    No StackTrace\n");
                 continue;
             }
-            for (int i = 0; i < seArray.length; i++) {
-                String se = seArray[i].toString();
-                sb.append("    ").append(se).append("\n");
+            for (StackTraceElement ste : seArray) {
+                sb.append("    ").append(ste.toString()).append("\n");
             }
         }
         return sb.toString();

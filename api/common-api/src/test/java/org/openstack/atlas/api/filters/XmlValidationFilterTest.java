@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.springframework.core.io.ClassPathResource;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.bind.JAXBException;
@@ -19,16 +20,27 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
 import org.openstack.atlas.api.filters.helpers.XmlValidationExceptionHandler;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
+import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.xml.sax.SAXException;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertEquals;
+import org.junit.Assert;
+import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItemType;
 
 public class XmlValidationFilterTest {
 
@@ -91,6 +103,16 @@ public class XmlValidationFilterTest {
         }
         assertFalse(errHandler.getErrList().size() > 0);
         assertTrue(obj instanceof LoadBalancer);
+        LoadBalancer lb = (LoadBalancer) obj;
+        assertEquals(lb.getName(), "a-new-loadbalancer");
+        assertEquals(lb.getPort(), new Integer(80));
+        assertEquals(lb.getProtocol(), "HTTP");
+        assertEquals(lb.getVirtualIps().size(), 1);
+        assertEquals(lb.getVirtualIps().get(0).getType(), VipType.PUBLIC);
+        assertEquals(lb.getNodes().size(), 1);
+        assertEquals(lb.getNodes().get(0).getAddress(), "10.1.1.1");
+        assertEquals(lb.getNodes().get(0).getPort(), new Integer(80));
+        assertEquals(lb.getNodes().get(0).getCondition(), NodeCondition.ENABLED);
     }
 
     @Test
@@ -113,6 +135,22 @@ public class XmlValidationFilterTest {
         }
         assertFalse(errHandler.getErrList().size() > 0);
         assertTrue(obj instanceof Nodes);
+        Nodes nodes = (Nodes) obj;
+        assertEquals(nodes.getNodes().size(), 3);
+        assertEquals(nodes.getNodes().get(0).getAddress(), "10.1.1.1");
+        assertEquals(nodes.getNodes().get(0).getPort(), new Integer(80));
+        assertEquals(nodes.getNodes().get(0).getCondition(), NodeCondition.ENABLED);
+        assertEquals(nodes.getNodes().get(0).getType(), NodeType.PRIMARY);
+
+        assertEquals(nodes.getNodes().get(1).getAddress(), "10.2.2.1");
+        assertEquals(nodes.getNodes().get(1).getPort(), new Integer(80));
+        assertEquals(nodes.getNodes().get(1).getCondition(), NodeCondition.ENABLED);
+        assertEquals(nodes.getNodes().get(1).getType(), NodeType.SECONDARY);
+
+        assertEquals(nodes.getNodes().get(2).getAddress(), "www.myrackspace.com");
+        assertEquals(nodes.getNodes().get(2).getPort(), new Integer(88));
+        assertEquals(nodes.getNodes().get(2).getCondition(), NodeCondition.ENABLED);
+        assertEquals(nodes.getNodes().get(2).getType(), NodeType.SECONDARY);
     }
 
     @Test
@@ -128,6 +166,9 @@ public class XmlValidationFilterTest {
         }
         assertFalse(errHandler.getErrList().size() > 0);
         assertTrue(obj instanceof VirtualIp);
+        VirtualIp vip = (VirtualIp) obj;
+        assertEquals(vip.getType(), VipType.PUBLIC);
+        assertEquals(vip.getIpVersion(), IpVersion.IPV6);
     }
 
     public void shouldNotThrowExceptionOnValidMonitor() {
@@ -144,6 +185,11 @@ public class XmlValidationFilterTest {
         }
         assertFalse(errHandler.getErrList().size() > 0);
         assertTrue(obj instanceof HealthMonitor);
+        HealthMonitor hm = (HealthMonitor) obj;
+        assertEquals(hm.getType(), HealthMonitorType.CONNECT);
+        assertEquals(hm.getDelay(), new Integer(10));
+        assertEquals(hm.getTimeout(), new Integer(10));
+        assertEquals(hm.getAttemptsBeforeDeactivation(), new Integer(3));
     }
 
     @Test
@@ -172,6 +218,17 @@ public class XmlValidationFilterTest {
         }
         assertFalse(errHandler.getErrList().size() > 0);
         assertTrue(obj instanceof AccessList);
+        AccessList al = (AccessList) obj;
+        assertEquals(al.getNetworkItems().size(), 2);
+
+        assertEquals(al.getNetworkItems().get(0).getId(), new Integer(1000));
+        assertEquals(al.getNetworkItems().get(0).getAddress(), "206.160.165.40");
+        assertEquals(al.getNetworkItems().get(0).getType(), NetworkItemType.ALLOW);
+
+        assertEquals(al.getNetworkItems().get(1).getId(), new Integer(1001));
+        assertEquals(al.getNetworkItems().get(1).getAddress(), "206.160.165.0/24");
+        assertEquals(al.getNetworkItems().get(1).getType(), NetworkItemType.DENY);
+
     }
 
     @Test
@@ -216,7 +273,6 @@ public class XmlValidationFilterTest {
         }
         assertFalse(errHandler.getErrList().size() > 0);
         assertTrue(obj instanceof SslTermination);
-
     }
 
     @Test
@@ -237,6 +293,13 @@ public class XmlValidationFilterTest {
         }
         assertFalse(errHandler.getErrList().size() > 0);
         assertTrue(obj instanceof Metadata);
+        Metadata md = (Metadata) obj;
+        assertEquals(md.getMetas().size(), 2);
+        assertEquals(md.getMetas().get(0).getKey(), "color");
+        assertEquals(md.getMetas().get(0).getValue(), "red");
+        assertEquals(md.getMetas().get(1).getKey(), "label");
+        assertEquals(md.getMetas().get(1).getValue(), "web-load-balancer");
+
     }
 
     private Object xml2pojo(String xml) throws JAXBException, UnsupportedEncodingException, IOException {
