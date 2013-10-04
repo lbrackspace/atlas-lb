@@ -20,7 +20,7 @@ import org.openstack.atlas.util.ca.StringUtils;
 
 public class RsaConst {
 
-    public static final String DEFAULT_SIGNATURE_ALGO = "SHA1WITHRSA";
+    public static final String DEFAULT_SIGNATURE_ALGO = "SHA256WITHRSA";
     public static final String USASCII = "US-ASCII";
     public static final BigInteger E = new BigInteger("65537");
     public static final int PAGESIZE = 4096;
