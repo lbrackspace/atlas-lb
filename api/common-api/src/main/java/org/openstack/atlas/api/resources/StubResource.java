@@ -48,12 +48,8 @@ public class StubResource extends CommonDependencyProvider {
 
     private static Link makeLink(String href, String rel) {
         Link link = new Link();
-        if (href == null || href.equals("")) {
-            link.setHref("http://localhost:8080/test/blah");
-        }
-        if (rel == null || rel.equals("")) {
-            link.setRel("self");
-        }
+        link.setHref(href);
+        link.setRel(rel);
         return link;
     }
 
@@ -353,8 +349,10 @@ public class StubResource extends CommonDependencyProvider {
         vips.add(newVip(2, "127.0.0.2"));
         lb.setVirtualIps(new VirtualIps());
         lb.getVirtualIps().getVirtualIps().addAll(vips);
+        lb.getVirtualIps().getLinks().add(makeLink("http://virtualIpLink", "self"));
         lb.setNodes(new Nodes());
         lb.getNodes().getNodes().addAll(nodes);
+        lb.getNodes().getLinks().add(makeLink("http://nodesLink", "self"));
         SessionPersistence sp = new SessionPersistence();
         sp.setPersistenceType(PersistenceType.HTTP_COOKIE);
         lb.setSessionPersistence(sp);
@@ -362,6 +360,7 @@ public class StubResource extends CommonDependencyProvider {
         accessList.add(newNetworkItem(2, "192.168.0.0/24"));
         lb.setAccessList(new AccessList());
         lb.getAccessList().getNetworkItems().addAll(accessList);
+        lb.getAccessList().getLinks().add(makeLink("http://AccessListLink", "self"));
         LoadBalancerUsage lu = new LoadBalancerUsage();
         lu.setLoadBalancerId(id);
         lu.setLoadBalancerName(name);
