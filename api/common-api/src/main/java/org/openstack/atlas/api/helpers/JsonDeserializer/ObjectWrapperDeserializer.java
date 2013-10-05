@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.helpers.JsonDeserializer;
 
+import org.openstack.atlas.api.helpers.JsonObjectMapper;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 import org.apache.commons.logging.Log;
@@ -29,8 +30,14 @@ public class ObjectWrapperDeserializer extends JsonDeserializer {
         this.forClass = forClass;
     }
 
+    public String getInfo() {
+        return String.format("ObjectWrapperDeserializer:%s", forClass.getSimpleName());
+    }
+
     @Override
     public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        JsonObjectMapper.addCallInfo(getInfo());
+        String st = Debug.getStackTrace();
         String nodeStr = "";
         String rootName = ClassReflectionTools.getXmlRootElementName(this.forClass);
         String errMsg = "";
@@ -54,7 +61,7 @@ public class ObjectWrapperDeserializer extends JsonDeserializer {
             errMsg = String.format("Error converting \"%s\" into class %s\n", nodeStr, forClass.toString());
             LOG.error(errMsg);
             String location = (jp.getCurrentLocation() != null) ? jp.getCurrentLocation().toString() : "null";
-            throw new JsonMappingException(errMsg,ex);
+            throw new JsonMappingException(errMsg, ex);
         }
         return nodeObj;
     }

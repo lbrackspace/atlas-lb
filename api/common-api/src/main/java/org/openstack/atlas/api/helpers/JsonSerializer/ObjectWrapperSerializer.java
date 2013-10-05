@@ -13,12 +13,15 @@ import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 
 import java.io.IOException;
 import java.util.GregorianCalendar;
+import org.openstack.atlas.api.helpers.JsonObjectMapper;
+import org.openstack.atlas.util.debug.Debug;
 
 public class ObjectWrapperSerializer extends JsonSerializer<Object> {
 
     private final SerializationConfig config;
     private final String wrapperFieldName;
 
+    private Class forClass;
     public ObjectWrapperSerializer(SerializationConfig config, Class someClass) {
         String rootName;
         this.config = config;
@@ -32,11 +35,19 @@ public class ObjectWrapperSerializer extends JsonSerializer<Object> {
             return;
         }
         this.wrapperFieldName = rootName;
+        forClass = someClass;
+    }
+
+    public String getInfo(){
+        String fmt = "ObjectWrapperSerializer:%s:%s";
+        return String.format("ObjectWrapperSerializer:%s:%s",wrapperFieldName,forClass.getSimpleName());
     }
 
     @Override
     public void serialize(Object object, JsonGenerator jgen, SerializerProvider sp) throws IOException {
         //BeanSerializerFactory bsf = BeanSerializerFactory.instance;
+        JsonObjectMapper.addCallInfo(getInfo());
+        String st = Debug.getStackTrace();
         CustomSerializerFactory csf = new CustomSerializerFactory();
         csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
 

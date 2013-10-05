@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.helpers;
 
+import java.util.ArrayList;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -20,13 +21,42 @@ import org.w3.atom.Link;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
+import org.openstack.atlas.util.debug.Debug;
 
 /* import org.openstack.atlas.docs.loadbalancers.api.v1.*; STOP splat codeing this. Yes that means you Trevor */
 /* import org.openstack.atlas.docs.loadbalancers.api.v1.*; STOP splat codeing this. Yes that means you Trevor */
-
 public class JsonObjectMapper extends ObjectMapper {
 
+    private static String initStackTrace;
+    private static List<String> callInfo = new ArrayList<String>();
+
+    public static String getInitStackTrace() {
+        return initStackTrace;
+    }
+
+    public static List<String> getCallInfo() {
+        return callInfo;
+    }
+
+    public static String getCallInfoString() {
+        StringBuilder sb = new StringBuilder();
+        for (String info : callInfo) {
+            sb.append(info).append("\n");
+        }
+        return sb.toString();
+    }
+
+    public static void addCallInfo(String msg) {
+        callInfo.add(msg);
+    }
+
+    public static void resetCallInfo() {
+        callInfo = new ArrayList<String>();
+    }
+
     public void init() {
+        initStackTrace = Debug.getStackTrace();
         CustomSerializerFactory csf = new CustomSerializerFactory();
         CustomDeserializerFactory cdf = new CustomDeserializerFactory();
         SerializationConfig serConf = this.getSerializationConfig();
@@ -38,10 +68,10 @@ public class JsonObjectMapper extends ObjectMapper {
 
         Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class,
-            Node.class, RateLimit.class, Errorpage.class,SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
+            Node.class, RateLimit.class, Errorpage.class, SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
 
         Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, Meta.class, 
+            SessionPersistence.class, ConnectionLogging.class, Meta.class,
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
             Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
 

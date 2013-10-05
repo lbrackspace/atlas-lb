@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.helpers.JsonDeserializer;
 
+import org.openstack.atlas.api.helpers.JsonObjectMapper;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 import org.apache.commons.logging.Log;
@@ -34,11 +35,17 @@ public class PropertyListDeserializer extends JsonDeserializer {
         this.getterName = getterName;
     }
 
+    public String getInfo() {
+        String fmt = "PropertyListDeserializer:%s:%s%s";
+        return String.format(fmt, forClass.getSimpleName(), itemClass.getSimpleName(), getterName);
+    }
+
     @Override
     public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+        JsonObjectMapper.addCallInfo(getInfo());
         String className = forClass.getName();
         String itemClassName = itemClass.getName();
-
+        String st = Debug.getStackTrace();
         Object out = null;
         List childList;
         String itemJson = "";

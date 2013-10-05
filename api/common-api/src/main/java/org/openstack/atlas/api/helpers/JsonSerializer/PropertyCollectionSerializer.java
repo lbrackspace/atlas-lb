@@ -15,6 +15,8 @@ import org.openstack.atlas.api.helpers.reflection.ClassReflectionToolsException;
 import java.io.IOException;
 import java.util.GregorianCalendar;
 import java.util.List;
+import org.openstack.atlas.api.helpers.JsonObjectMapper;
+import org.openstack.atlas.util.debug.Debug;
 
 /**
  * This serializer overrides any custom serializers defined for types via a
@@ -28,8 +30,8 @@ import java.util.List;
  * Optionally, a wrapperFieldName can be supplied that will be used to write a
  * wrapping object around the JSON output.
  */
-
 public class PropertyCollectionSerializer extends JsonSerializer<Object> {
+
     private SerializationConfig config;
     private String wrapperFieldName;
     private String getterName;
@@ -48,11 +50,17 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         this.hasLinks = links;
     }
 
+    public String getInfo() {
+        String fmt = "PropertyCollectionSerializer:wrapperFielName=%s:getterName=%s,hasLinks=%s";
+        return String.format(fmt, wrapperFieldName, getterName, hasLinks);
+    }
+
     @Override
     public void serialize(Object value, JsonGenerator jgen, SerializerProvider sp) throws IOException {
+        JsonObjectMapper.addCallInfo(getInfo());
+        String st = Debug.getStackTrace();
         String valClassName = value.getClass().getName();
         List propList;
-
         try {
             propList = (List) ClassReflectionTools.invokeGetter(value, getterName);
         } catch (ClassReflectionToolsException ex) {
@@ -112,7 +120,9 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
     }
 
     private void writeJsonArrayWithFieldName(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty, String fieldName) throws IOException {
-        if (writeWhenNullOrEmpty || !propList.isEmpty()) jgen.writeFieldName(fieldName);
+        if (writeWhenNullOrEmpty || !propList.isEmpty()) {
+            jgen.writeFieldName(fieldName);
+        }
         writeJsonArray(jgen, propList, writeWhenNullOrEmpty);
     }
 

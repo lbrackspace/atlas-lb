@@ -23,6 +23,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
+import org.openstack.atlas.api.helpers.JsonObjectMapper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
@@ -43,6 +44,8 @@ public class BounceResource extends CommonDependencyProvider {
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("loadbalancer")
     public Response echoLoadBalancer(LoadBalancer lb) {
+        String st = JsonObjectMapper.getInitStackTrace();
+        String callInfo = JsonObjectMapper.getCallInfoString();
         return Response.status(200).entity(lb).build();
     }
 
