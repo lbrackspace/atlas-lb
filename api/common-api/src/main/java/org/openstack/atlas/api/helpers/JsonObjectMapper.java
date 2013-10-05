@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 
 /* import org.openstack.atlas.docs.loadbalancers.api.v1.*; STOP splat codeing this. Yes that means you Trevor */
+/* import org.openstack.atlas.docs.loadbalancers.api.v1.*; STOP splat codeing this. Yes that means you Trevor */
 
 public class JsonObjectMapper extends ObjectMapper {
 

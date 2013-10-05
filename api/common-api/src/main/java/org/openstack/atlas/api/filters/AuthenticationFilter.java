@@ -33,13 +33,13 @@ import static javax.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace;
 
 public class AuthenticationFilter implements Filter {
+
     private final Log LOG = LogFactory.getLog(AuthenticationFilter.class);
-
-    private final String X_AUTH_TENANT_ID = "X-Tenant-Name";
-    private final String X_AUTH_USER_NAME = "X-PP-User";
-    private final String X_AUTH_TOKEN = "X-Auth-Token";
-    private final String AUTHORIZATION_HEADER = "Authorization";
-
+    private static final String X_AUTH_TENANT_ID = "X-Tenant-Name";
+    private static final String X_AUTH_USER_NAME = "X-PP-User";
+    private static final String X_AUTH_TOKEN = "X-Auth-Token";
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BYPASS_AUTH = "bypass_auth";
     private UrlAccountIdExtractor accountIdExtractor;
     private AuthTokenValidator authTokenValidator;
     private RestApiConfiguration configuration;
@@ -61,7 +61,6 @@ public class AuthenticationFilter implements Filter {
         this.authTokenValidator = authTokenValidator;
         this.accountIdExtractor = urlAccountIdExtractor;
     }
-
 
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         if (servletRequest instanceof HttpServletRequest) {
@@ -126,6 +125,7 @@ public class AuthenticationFilter implements Filter {
     }
 
     private void handleInternalAuthenticationRequest(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws IOException, ServletException {
+
         String INVALID_TOKEN_MESSAGE = "Invalid authentication credentials. Please review request and try again with valid credentials";
         String AUTH_FAULT_MESSAGE = "There was an error while authenticating, please contact support.";
         String authToken = httpServletRequest.getHeader("X-AUTH-TOKEN");
@@ -134,8 +134,25 @@ public class AuthenticationFilter implements Filter {
         Integer accountId;
         int purged;
 
+        if (isByPassAuth(httpServletRequest)) {
+            HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
+            enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
+            enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, "bypassed-auth");
+
+            try {
+                LOG.info("RequestAuth bypassed Sending request to next filter\n");
+                filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
+                return;
+            } catch (RuntimeException e) {
+                handleErrorReposnse(httpServletRequest, httpServletResponse, 500, e);
+            }
+            return;
+        }
+
         purged = userCache.cleanExpiredByCount(); // Prevent unchecked entries from Living forever
-        if (purged > 0) LOG.debug(String.format("cleaning auth userCache: purged %d stale entries", purged));
+        if (purged > 0) {
+            LOG.debug(String.format("cleaning auth userCache: purged %d stale entries", purged));
+        }
 
         if (authToken == null || authToken.isEmpty()) {
             sendUnauthorizedResponse(httpServletRequest, httpServletResponse, MISSING_TOKEN_MESSAGE);
@@ -285,5 +302,24 @@ public class AuthenticationFilter implements Filter {
 
     public RestApiConfiguration getConfiguration() {
         return configuration;
+    }
+
+    private boolean isByPassAuth(HttpServletRequest httpServletRequest) {
+        String allow_bypassauth = configuration.getString(PublicApiServiceConfigurationKeys.allow_bypassauth);
+        String bypass_auth = httpServletRequest.getHeader("bypass-auth");
+        if (allow_bypassauth == null) {
+            return false;
+        }
+        if (!allow_bypassauth.equalsIgnoreCase("true")) {
+            return false;
+        }
+        if (bypass_auth == null) {
+            return false;
+        }
+        if (!bypass_auth.equalsIgnoreCase("true")) {
+            return false;
+        }
+
+        return true;
     }
 }
