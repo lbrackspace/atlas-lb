@@ -7,6 +7,7 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     basic_auth_user,
     basic_auth_key,
     base_uri,
+    allow_bypassauth,
     esb_queue_name,
     service_bus_endpoint_uri,
     db_host,
