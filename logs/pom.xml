@@ -19,7 +19,7 @@
         <module>logs-itest-common</module>
         <module>logs-test-reupload</module>
         <module>logs-archive-clients</module>
-        <module>logs-web</module>
+<!--        <module>logs-web</module> -->
         <module>logs-hdfs-cli</module>
         <module>logs-lzo-faker</module>
         <module>logs-test-compress</module>

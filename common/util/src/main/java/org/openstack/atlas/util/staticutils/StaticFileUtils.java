@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.debug.Debug;
@@ -69,6 +70,10 @@ public class StaticFileUtils {
 
     public static DataInputStream openDataInputStreamFile(String fileName, int buffsize) throws FileNotFoundException {
         return new DataInputStream(new BufferedInputStream(new FileInputStream(new File(expandUser(fileName))), buffsize));
+    }
+
+    public static String readFileToString(String fileName) throws FileNotFoundException, UnsupportedEncodingException, IOException {
+        return new String(readFile(new File(expandUser(fileName))), "utf-8");
     }
 
     public static byte[] readFile(File file) throws FileNotFoundException, IOException {
