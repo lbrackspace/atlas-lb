@@ -1,4 +1,4 @@
-package org.openstack.atlas.api.helpers;
+package org.openstack.atlas.api.helpers.JsonUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,11 +70,5 @@ public class JsonParserUtils {
             map.put(field.getKey(), field.getValue());
         }
         return map;
-    }
-
-    public static List<String> inspectJsonParser(JsonParser jp) throws JsonProcessingException, IOException {
-        List<String> inspectList = new ArrayList<String>();
-        JsonNode jn = jp.readValueAsTree();
-        return inspectList;
     }
 }
