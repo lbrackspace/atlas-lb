@@ -88,6 +88,16 @@ public class V1StubFactory {
         return vip;
     }
 
+    public static AccessList newAccessList() {
+        AccessList al = new AccessList();
+        al.getNetworkItems().add(V1StubFactory.newNetworkItem(1, "10.0.0.0/8"));
+        al.getNetworkItems().add(V1StubFactory.newNetworkItem(2, "192.168.0.0/24"));
+        al.getLinks().add(V1StubFactory.makeLink("href1", "prev"));
+        al.getLinks().add(V1StubFactory.makeLink("href2", "self"));
+        al.getLinks().add(V1StubFactory.makeLink("href3", "next"));
+        return al;
+    }
+
     public static NetworkItem newNetworkItem(Integer id, String address) {
         NetworkItem n = new NetworkItem();
         n.setId(id);
