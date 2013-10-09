@@ -1,5 +1,10 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
@@ -31,6 +36,10 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.openstack.atlas.util.converters.DateTimeConverters;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.node.ObjectNode;
+import org.codehaus.jackson.node.ArrayNode;
 
 public class JsonPublicDeserializers {
 
@@ -59,6 +68,20 @@ public class JsonPublicDeserializers {
             // Links is ignored.
         }
         return virtualIps;
+    }
+    public static Calendar decodeDate(JsonNode jn, String prop) throws JsonParseException {
+        Calendar out;
+        if (jn.get(prop) != null && jn.get(prop).isTextual()) {
+            String dateString = jn.get(prop).getTextValue();
+            try {
+                out = DateTimeConverters.isoTocal(dateString);
+                return out;
+            } catch (ConverterException ex) {
+                String msg = String.format("Error converting %s to Date. Value must be in anISO 8601", dateString);
+                throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+            }
+        }
+        return null;
     }
 
     public static VirtualIp decodeVirtualIp(ObjectNode jsonNodeIn) throws JsonParseException {
@@ -124,19 +147,55 @@ public class JsonPublicDeserializers {
         return networkItemType;
     }
 
-    public static IpVersion getIpVersion(ObjectNode on, String prop) throws JsonParseException {
-        String ipVersionString = getString(on, prop);
-        IpVersion ipVersion;
-        if (ipVersionString == null) {
-            return null;
+    public static Nodes decodeNodes(JsonNode jn) throws JsonParseException {
+        Nodes nodes = new Nodes();
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("nodes") != null
+                && jn.get("nodes").size() > 0) {
+            an = (ArrayNode) jn.get("nodes");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format("Error was expecting an ObjectNode({}) or an ArrayNode([]) but found %s", jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
         }
-        try {
-            ipVersion = IpVersion.fromValue(ipVersionString);
-        } catch (IllegalStateException ex) {
-            String msg = String.format("Illegal IPVersion found %s in %s", ipVersionString, on.toString());
-            throw new JsonParseException(msg, on.traverse().getCurrentLocation());
+        for (i = 0; i < an.size(); i++) {
+            JsonNode jnode = an.get(i);
+            if (!(jnode instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", jnode.toString());
+                throw new JsonParseException(msg, jnode.traverse().getTokenLocation());
+            }
+            Node node = decodeNode((ObjectNode) jnode);
+            nodes.getNodes().add(node);
         }
-        return ipVersion;
+        return nodes;
+    }
+
+    public static Node decodeNode(ObjectNode jnode) throws JsonParseException {
+        Node node = new Node();
+        ObjectNode jn = jnode;
+        if (jn.get("node") != null) {
+            if (!(jn.get("node") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("node").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("node");
+            }
+        }
+        node.setId(getInt(jn, "id"));
+        node.setAddress(getString(jn, "address"));
+        node.setPort(getInt(jn, "port"));
+        node.setWeight(getInt(jn, "port"));
+
+        node.setCondition(getNodeCondition(jn, "condition"));
+        node.setStatus(getNodeStatus(jn, "status"));
+        node.setType(getNodeType(jn, "type"));
+        if (jn.get("metadata") != null) {
+            node.setMetadata(decodeMetadata(jn.get("metadata")));
+        }
+        return node;
     }
 
     public static Metadata decodeMetadata(JsonNode jn) throws JsonParseException {
@@ -156,8 +215,8 @@ public class JsonPublicDeserializers {
         for (i = 0; i < an.size(); i++) {
             JsonNode node = an.get(i);
             if (!(node instanceof ObjectNode)) {
-                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", an.get(i).toString());
-                throw new JsonParseException(msg, an.get(i).traverse().getTokenLocation());
+                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", node.toString());
+                throw new JsonParseException(msg, node.traverse().getTokenLocation());
             }
             Meta meta = decodeMeta((ObjectNode) node);
             metadata.getMetas().add(meta);
@@ -183,6 +242,82 @@ public class JsonPublicDeserializers {
         return meta;
     }
 
+    public static IpVersion getIpVersion(JsonNode jn, String prop) throws JsonParseException {
+        String ipVersionString = getString(jn, prop);
+        IpVersion ipVersion;
+        if (ipVersionString == null) {
+            return null;
+        }
+        try {
+            ipVersion = IpVersion.fromValue(ipVersionString);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal IPVersion found %s in %s", ipVersionString, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        return ipVersion;
+    }
+
+    public static VipType getVipType(JsonNode jn, String prop) throws JsonParseException {
+        String vipTypeString = getString(jn, prop);
+        VipType vipType;
+        if (vipTypeString == null) {
+            return null;
+        }
+        try {
+            vipType = VipType.fromValue(vipTypeString);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal vipType found %s in %s", vipTypeString, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        return vipType;
+    }
+
+    public static NodeStatus getNodeStatus(JsonNode jn, String prop) throws JsonParseException {
+        String nodeStatus = getString(jn, prop);
+        NodeStatus status;
+        if (nodeStatus == null) {
+            return null;
+        }
+        try {
+            status = NodeStatus.fromValue(nodeStatus);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal vipType found %s in %s", nodeStatus, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        return status;
+
+    }
+
+    public static NodeCondition getNodeCondition(JsonNode jn, String prop) throws JsonParseException {
+        String nodeCondition = getString(jn, prop);
+        NodeCondition condition;
+        if (nodeCondition == null) {
+            return null;
+        }
+        try {
+            condition = NodeCondition.fromValue(nodeCondition);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal vipType found %s in %s", nodeCondition, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        return condition;
+    }
+
+    public static NodeType getNodeType(JsonNode jn, String prop) throws JsonParseException {
+        String nodeType = getString(jn, prop);
+        NodeType type;
+        if (nodeType == null) {
+            return null;
+        }
+        try {
+            type = NodeType.fromValue(nodeType);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal vipType found %s in %s", nodeType, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        return type;
+    }
+
     public static Integer getInt(JsonNode jn, String prop) {
         if (jn.get(prop) != null && jn.get(prop).isInt()) {
             return new Integer(jn.get(prop).getValueAsInt());
@@ -193,21 +328,6 @@ public class JsonPublicDeserializers {
     public static String getString(JsonNode jn, String prop) {
         if (jn.get(prop) != null && jn.get(prop).isTextual()) {
             return jn.get(prop).getValueAsText();
-        }
-        return null;
-    }
-
-    public static Calendar decodeDate(JsonNode jn, String prop) throws JsonParseException {
-        Calendar out;
-        if (jn.get(prop) != null && jn.get(prop).isTextual()) {
-            String dateString = jn.get(prop).getTextValue();
-            try {
-                out = DateTimeConverters.isoTocal(dateString);
-                return out;
-            } catch (ConverterException ex) {
-                String msg = String.format("Error converting %s to Date. Value must be in anISO 8601", dateString);
-                throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
-            }
         }
         return null;
     }

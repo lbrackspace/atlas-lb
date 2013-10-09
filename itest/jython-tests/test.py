@@ -19,6 +19,12 @@ metadatan = JPU.getNode(metadataj)
 metaj = readFile("./meta.json")
 metan = JPU.getNode(metaj)
 
+nodesj = readFile("./nodes.json")
+nodesn = JPU.getNode(nodesj)
+
+nodej = readFile("./node.json")
+noden = JPU.getNode(nodej)
+
 vips = V1SF.newVirtualIps(3,3)
 
 n = JPU.newObjectNode()
