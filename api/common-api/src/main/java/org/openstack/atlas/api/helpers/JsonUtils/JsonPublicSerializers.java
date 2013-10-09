@@ -15,6 +15,8 @@ import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.TextNode;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.w3.atom.Link;
@@ -54,6 +56,53 @@ public class JsonPublicSerializers {
         }
         if (virtualIp.getType() != null) {
             objectNode.put("type", virtualIp.getType().value());
+        }
+    }
+
+    public static void attachNodes(ObjectNode objectNode, Nodes nodes, boolean includeLinks) {
+        List<Node> nodeList = nodes.getNodes();
+        List<Link> atomLinks = nodes.getLinks();
+
+        if (nodeList != null && nodeList.size() > 0) {
+            ArrayNode an = objectNode.putArray("nodes");
+            for (Node node : nodeList) {
+                ObjectNode nodeNode = an.addObject();
+                attachNode(nodeNode, node);
+            }
+        }
+        if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
+            ArrayNode an = objectNode.putArray("links");
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
+        }
+    }
+
+    public static void attachNode(ObjectNode objectNode, Node node) {
+        if (node.getId() != null) {
+            objectNode.put("id", node.getId().intValue());
+        }
+        if (node.getAddress() != null) {
+            objectNode.put("address", node.getAddress());
+        }
+        if (node.getCondition() != null) {
+            objectNode.put("condition", node.getCondition().value());
+        }
+        if (node.getMetadata() != null) {
+            attachMetadata(objectNode, node.getMetadata(), false);
+        }
+        if (node.getPort() != null) {
+            objectNode.put("port", node.getPort().intValue());
+        }
+        if (node.getStatus() != null) {
+            objectNode.put("status", node.getStatus().value());
+        }
+        if (node.getType() != null) {
+            objectNode.put("type", node.getType().value());
+        }
+        if (node.getWeight() != null) {
+            objectNode.put("weight", node.getWeight().intValue());
         }
     }
 
