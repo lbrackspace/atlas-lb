@@ -1,8 +1,13 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,9 +15,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.JsonToken;
@@ -30,45 +37,56 @@ public class JsonParserUtils {
         mapper = new ObjectMapper();
     }
 
+    public static ObjectMapper getObjectMapper() {
+        return mapper;
+    }
+
     public static JsonFactory getJsonFactory() {
         return mapper.getJsonFactory();
+    }
+
+    public static JsonNode getNode(String jsonStr) throws JsonParseException, JsonProcessingException, IOException {
+        return mapper.getJsonFactory().createJsonParser(jsonStr).readValueAsTree();
+    }
+
+    public static JsonNode getNodeFromFile(String fileName) throws FileNotFoundException, UnsupportedEncodingException, JsonProcessingException, IOException {
+        return mapper.getJsonFactory().createJsonParser(StaticFileUtils.readFileToString(fileName)).readValueAsTree();
     }
 
     public static JsonParser getJsonParser(String jsonStr) throws JsonParseException, IOException {
         return mapper.getJsonFactory().createJsonParser(jsonStr);
     }
 
+    public static JsonGenerator getJsonGenerator(Writer wr) throws IOException {
+        return mapper.getJsonFactory().createJsonGenerator(wr);
+    }
+
     public static JsonParser getJsonParserFromFile(String fileNameStr) throws JsonParseException, IOException {
-        String data = StaticFileUtils.readFileToString(fileNameStr);
-        JsonParser jp = mapper.getJsonFactory().createJsonParser(data);
-        return jp;
+        return mapper.getJsonFactory().createJsonParser(StaticFileUtils.readFileToString(fileNameStr));
     }
 
-    public static List<JsonNode> getChildrenNodes(ArrayNode on) {
-        List<JsonNode> children = new ArrayList<JsonNode>();
-        for (JsonNode jn : on) {
-            children.add(jn);
-        }
-        return children;
-    }
-
-    public static List<String> getChildrenNodeKeys(ObjectNode on) {
+    public static List<String> getKeys(ObjectNode on) {
         List<String> keys = new ArrayList<String>();
-        Iterator<String> keyIterator = on.getFieldNames();
-        while (keyIterator.hasNext()) {
-            String key = keyIterator.next();
-            keys.add(key);
+        Iterator<String> keyIter = on.getFieldNames();
+        while (keyIter.hasNext()) {
+            keys.add(keyIter.next());
         }
         return keys;
     }
 
-    public static Map<String, JsonNode> getChildrenNodes(ObjectNode on) {
-        Map<String, JsonNode> map = new HashMap<String, JsonNode>();
-        Iterator<Entry<String, JsonNode>> fields = on.getFields();
-        while (fields.hasNext()) {
-            Entry<String, JsonNode> field = fields.next();
-            map.put(field.getKey(), field.getValue());
-        }
-        return map;
+    public static ObjectNode newObjectNode() {
+        ObjectNode ob = mapper.createObjectNode();
+        return ob;
+    }
+
+    public static ArrayNode newArrayNode() {
+        ArrayNode an = mapper.createArrayNode();
+        return an;
+    }
+
+    public static JsonGeneratorWriter newJsonGeneratorStringWriter() throws IOException {
+        StringWriter wr = new StringWriter();
+        JsonGenerator jg = JsonParserUtils.getObjectMapper().getJsonFactory().createJsonGenerator(wr);
+        return new JsonGeneratorWriter(jg, wr);
     }
 }

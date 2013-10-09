@@ -1,5 +1,8 @@
 package org.openstack.atlas.api.resources;
 
+import java.math.BigInteger;
+import java.util.Map;
+import javax.xml.namespace.QName;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
@@ -42,6 +45,7 @@ import javax.ws.rs.core.Response;
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.docs.loadbalancers.api.v1.V1StubFactory;
 import org.w3.atom.Link;
 
 public class StubResource extends CommonDependencyProvider {
@@ -51,6 +55,24 @@ public class StubResource extends CommonDependencyProvider {
         link.setHref(href);
         link.setRel(rel);
         return link;
+    }
+
+    @GET
+    @Path("atomlink")
+    public Response stubAtomLink() {
+        Link atomLink = new Link();
+        atomLink.setBase("SomeBase");
+        atomLink.setContent("SomeContent");
+        atomLink.setHref("SomeHref");
+        atomLink.setHreflang("SomeLangRef");
+        atomLink.setLang("SomeLang");
+        atomLink.setLength(new BigInteger("10000000000000000000"));
+        atomLink.setRel("somRel");
+        atomLink.setTitle("someTitle");
+        atomLink.setType("someType");
+        atomLink.getOtherAttributes().put(new QName("someNSURI", "SomelocalPart", "somePrefix"), "SomeAttr");
+        atomLink.getOtherAttributes().put(new QName("anotherNSURI", "anotherLocalPart", "AnoterPrefix"), "AnotherAttr");
+        return Response.status(200).entity(atomLink).build();
     }
 
     @GET
@@ -80,10 +102,7 @@ public class StubResource extends CommonDependencyProvider {
     @GET
     @Path("virtualips")
     public Response stubVirtualIps() {
-        VirtualIps vips = new VirtualIps();
-        vips.getVirtualIps().add(newVip(1, "127.0.0.1"));
-        vips.getVirtualIps().add(newVip(2, "127.0.0.2"));
-        vips.getLinks().add(makeLink(null, null));
+        VirtualIps vips = V1StubFactory.newVirtualIps(10, 10);
         return Response.status(200).entity(vips).build();
     }
 

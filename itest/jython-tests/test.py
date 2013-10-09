@@ -7,17 +7,19 @@ from db import *
 #getDb()
 #zt = getZeusTest(hid=1)
 
-obj = """
-{"root":
-   {"array":[1,2,3,"4"],
-    "dict":{"k1":"v1","k2":"v2"}
-   }
-}
-"""
+vipsj = readFile("./vips.json")
+vipsn = JPU.getNode(vipsj)
 
-jp = JsonParserUtils.getJsonParser(obj)
+vipj = readFile("./vip.json")
+vipn = JPU.getNode(vipj)
 
-n = jp.readValueAsTree()
+vips = JPD.decodeVirtualIps(JPU.getNode(vipsj))
+vip = vips.getVirtualIps()[0]
 
+obj = JPS.encodeVirtualIp(vips.getVirtualIps()[0],None)
 
-JsonParserUtils.getChildrenNodeKeys(root)
+jgw = JPU.newJsonGeneratorStringWriter()
+jg = jgw.getJsonGenerator()
+wr = jgw.getWriter()
+
+jg.writeTree(obj)

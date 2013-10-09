@@ -5,8 +5,11 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils as StaticFileUtils
 import org.openstack.atlas.util.staticutils.StaticStringUtils as StaticStringUtils
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils as StaticDateTimeUtils
 import org.openstack.atlas.util.debug.Debug as Debug
-import org.openstack.atlas.api.helpers.JsonUtils.JsonParserUtils as JsonParserUtils
-
+import org.openstack.atlas.api.helpers.JsonUtils.JsonParserUtils as JPU
+import org.openstack.atlas.api.helpers.JsonUtils.JsonPublicDeserializers as JPD
+import org.openstack.atlas.api.helpers.JsonUtils.JsonPublicSerializers as JPS
+import org.openstack.atlas.api.helpers.JsonUtils.JsonGeneratorWriter as JGW
+import org.openstack.atlas.docs.loadbalancers.api.v1.V1StubFactory as V1SF
 import com.xhaus.jyson.JysonCodec as json
 
 import java.util.List as List
@@ -19,6 +22,9 @@ import sys
 import os
 
 conf_file = "./stag.json"
+
+def readFile(fileName):
+    return StaticFileUtils.readFileToString(fileName)
 
 def setConfFile(filePath):
     global conf_file

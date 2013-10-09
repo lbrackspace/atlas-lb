@@ -1,0 +1,16 @@
+{
+  "virtualIps": [
+    {"virtualIp":{
+      "type": "PUBLIC", 
+      "id": 1000, 
+      "address": "206.10.10.210",
+      "ipVersion":"IPV4"}
+    },
+    {
+      "type": "PUBLIC", 
+      "id": 1001, 
+      "address": "206.10.10.210"
+    }
+  ]
+}
+

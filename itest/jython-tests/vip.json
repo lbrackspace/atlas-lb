@@ -1,0 +1,9 @@
+{
+ "virtualIp": {
+      "type": "PUBLIC", 
+      "id": 1000, 
+      "address": "206.10.10.210",
+      "ipVersion":"IPV4"
+    }
+}
+
