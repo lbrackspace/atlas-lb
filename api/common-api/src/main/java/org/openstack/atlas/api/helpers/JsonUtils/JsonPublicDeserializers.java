@@ -1,8 +1,43 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
+import java.io.IOException;
+import java.util.Calendar;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.codehaus.jackson.JsonLocation;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.codehaus.jackson.JsonProcessingException;
+import org.openstack.atlas.api.helpers.JsonUtils.JsonParserUtils;
+import org.codehaus.jackson.node.ObjectNode;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.IntNode;
+import org.codehaus.jackson.node.BooleanNode;
+import org.codehaus.jackson.node.TextNode;
+import org.codehaus.jackson.node.DoubleNode;
+import org.codehaus.jackson.node.NullNode;
+import org.codehaus.jackson.node.LongNode;
+import org.codehaus.jackson.node.BigIntegerNode;
+import org.codehaus.jackson.node.BinaryNode;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
+import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItemType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
+import org.openstack.atlas.util.converters.DateTimeConverters;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.ArrayNode;
 
@@ -93,6 +128,20 @@ public class JsonPublicDeserializers {
         }
         return virtualIps;
     }
+    public static Calendar decodeDate(JsonNode jn, String prop) throws JsonParseException {
+        Calendar out;
+        if (jn.get(prop) != null && jn.get(prop).isTextual()) {
+            String dateString = jn.get(prop).getTextValue();
+            try {
+                out = DateTimeConverters.isoTocal(dateString);
+                return out;
+            } catch (ConverterException ex) {
+                String msg = String.format("Error converting %s to Date. Value must be in anISO 8601", dateString);
+                throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+            }
+        }
+        return null;
+    }
 
     public static VirtualIp decodeVirtualIp(ObjectNode jsonNodeIn) throws JsonParseException {
         ObjectNode jn = jsonNodeIn;
@@ -110,6 +159,51 @@ public class JsonPublicDeserializers {
         virtualIp.setIpVersion(getIpVersion(jn, "ipVersion"));
         virtualIp.setType(getVipType(jn, "type"));
         return virtualIp;
+    }
+
+    public static NetworkItem decodeNetworkItem(ObjectNode jn) throws JsonParseException {
+        NetworkItem networkItem = new NetworkItem();
+        networkItem.setId(getInt(jn, "id"));
+        networkItem.setAddress(getString(jn, "address"));
+        networkItem.setIpVersion(getIpVersion(jn, "ipVersion"));
+        networkItem.setType(getNetworkItemType(jn, "type"));
+        return networkItem;
+    }
+
+    public static AccessList decodeAccessList(ObjectNode on){
+        AccessList al = new AccessList();
+
+        return al;
+    }
+
+    public static VipType getVipType(ObjectNode jn, String prop) throws JsonParseException {
+        String vipTypeString = getString(jn, prop);
+        VipType vipType;
+        if (vipTypeString == null) {
+            return null;
+        }
+        try {
+            vipType = VipType.fromValue(vipTypeString);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal vipType found %s in %s", vipTypeString, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        return vipType;
+    }
+
+    public static NetworkItemType getNetworkItemType(ObjectNode on, String prop) throws JsonParseException {
+        String itemTypeString = getString(on, prop);
+        NetworkItemType networkItemType;
+        if (itemTypeString == null) {
+            return null;
+        }
+        try {
+            networkItemType = NetworkItemType.fromValue(itemTypeString);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illega NetworkItem type found %s in %s", itemTypeString, on.toString());
+            throw new JsonParseException(msg, on.traverse().getCurrentLocation());
+        }
+        return networkItemType;
     }
 
     public static Nodes decodeNodes(JsonNode jn) throws JsonParseException {

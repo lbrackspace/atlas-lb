@@ -50,13 +50,6 @@ import org.w3.atom.Link;
 
 public class StubResource extends CommonDependencyProvider {
 
-    private static Link makeLink(String href, String rel) {
-        Link link = new Link();
-        link.setHref(href);
-        link.setRel(rel);
-        return link;
-    }
-
     @GET
     @Path("atomlink")
     public Response stubAtomLink() {
@@ -79,23 +72,23 @@ public class StubResource extends CommonDependencyProvider {
     @Path("loadbalancers")
     public Response stubLoadBalancers() {
         LoadBalancers loadbalancers = new LoadBalancers();
-        loadbalancers.getLoadBalancers().add(newLoadBalancer(1, "LB1"));
-        loadbalancers.getLoadBalancers().add(newLoadBalancer(2, "LB2"));
-        loadbalancers.getLinks().add(makeLink("someHref", "somRel"));
+        loadbalancers.getLoadBalancers().add(V1StubFactory.newLoadBalancer(1, "LB1"));
+        loadbalancers.getLoadBalancers().add(V1StubFactory.newLoadBalancer(2, "LB2"));
+        loadbalancers.getLinks().add(V1StubFactory.makeLink("someHref", "somRel"));
         return Response.status(200).entity(loadbalancers).build();
     }
 
     @GET
     @Path("loadbalancer")
     public Response stubLoadBalancer() {
-        LoadBalancer lb = newLoadBalancer(1, "LB1");
+        LoadBalancer lb = V1StubFactory.newLoadBalancer(1, "LB1");
         return Response.status(200).entity(lb).build();
     }
 
     @GET
     @Path("virtualip")
     public Response stubVirtualIp() {
-        VirtualIp virtualIp = newVip(1, "127.0.0.1");
+        VirtualIp virtualIp = V1StubFactory.newVip(1, "127.0.0.1");
         return Response.status(200).entity(virtualIp).build();
     }
 
@@ -122,7 +115,7 @@ public class StubResource extends CommonDependencyProvider {
     @Path("node")
     public Response stubNode() {
         Node node;
-        node = newNode(64, 80, "127.0.0.1");
+        node = V1StubFactory.newNode(64, 80, "127.0.0.1");
         return Response.status(200).entity(node).build();
     }
 
@@ -172,13 +165,14 @@ public class StubResource extends CommonDependencyProvider {
     @GET
     @Path("nodes")
     public Response stubNodes() {
-        List<Node> nodeList;
         Nodes nodes;
-        Node node;
         nodes = new Nodes();
-        nodeList = nodes.getNodes();
-        nodeList.add(newNode(64, 80, "127.0.0.1"));
-        nodeList.add(newNode(64, 443, "127.0.0.2"));
+        nodes.getNodes().add(V1StubFactory.newNode(1, 80, "127.0.0.1"));
+        nodes.getNodes().add(V1StubFactory.newNode(2, 443, "127.0.0.2"));
+        nodes.getNodes().add(V1StubFactory.newNode(3, 8080, "127.0.0.3"));
+        nodes.getLinks().add(V1StubFactory.makeLink("href1", "prev"));
+        nodes.getLinks().add(V1StubFactory.makeLink("href2", "self"));
+        nodes.getLinks().add(V1StubFactory.makeLink("href3", "next"));
         return Response.status(200).entity(nodes).build();
     }
 
@@ -186,8 +180,11 @@ public class StubResource extends CommonDependencyProvider {
     @Path("accesslist")
     public Response stubAccessList() {
         AccessList al = new AccessList();
-        al.getNetworkItems().add(newNetworkItem(1, "10.0.0.0/8"));
-        al.getNetworkItems().add(newNetworkItem(2, "192.168.0.0/24"));
+        al.getNetworkItems().add(V1StubFactory.newNetworkItem(1, "10.0.0.0/8"));
+        al.getNetworkItems().add(V1StubFactory.newNetworkItem(2, "192.168.0.0/24"));
+        al.getLinks().add(V1StubFactory.makeLink("href1", "prev"));
+        al.getLinks().add(V1StubFactory.makeLink("href2", "self"));
+        al.getLinks().add(V1StubFactory.makeLink("href3", "next"));
         return Response.status(200).entity(al).build();
     }
 
@@ -301,104 +298,5 @@ public class StubResource extends CommonDependencyProvider {
         sslTermination.setSecurePort(443);
         sslTermination.setSecureTrafficOnly(false);
         return Response.status(Response.Status.OK).entity(sslTermination).build();
-    }
-
-    private Node newNode(Integer id, Integer port, String address) {
-        Node node;
-        node = new Node();
-        node.setAddress(address);
-        node.setCondition(NodeCondition.ENABLED);
-        node.setId(id);
-        node.setPort(port);
-        node.setStatus(NodeStatus.ONLINE);
-        node.setWeight(1);
-        return node;
-    }
-
-    private VirtualIp newVip(Integer id, String address) {
-        VirtualIp vip;
-        vip = new VirtualIp();
-        vip.setId(id);
-        vip.setAddress(address);
-        vip.setIpVersion(IpVersion.IPV4);
-        vip.setType(VipType.PUBLIC);
-        return vip;
-    }
-
-    private NetworkItem newNetworkItem(Integer id, String address) {
-        NetworkItem n = new NetworkItem();
-        n.setId(id);
-        n.setAddress(address);
-        n.setIpVersion(IpVersion.IPV4);
-        n.setType(NetworkItemType.DENY);
-        return n;
-    }
-
-    private LoadBalancer newLoadBalancer(Integer id, String name) {
-        List<Node> nodes = new ArrayList<Node>();
-        List<VirtualIp> vips = new ArrayList<VirtualIp>();
-        List<NetworkItem> accessList = new ArrayList<NetworkItem>();
-        LoadBalancer lb = new LoadBalancer();
-        Created created = new Created();
-        Updated updated = new Updated();
-        created.setTime(Calendar.getInstance());
-        updated.setTime(Calendar.getInstance());
-        ConnectionThrottle ct = new ConnectionThrottle();
-        Cluster cl = new Cluster();
-        ConnectionLogging cnl = new ConnectionLogging();
-        cnl.setEnabled(Boolean.TRUE);
-        ct.setMaxConnectionRate(100);
-        ct.setMaxConnections(200);
-        ct.setMinConnections(300);
-        ct.setRateInterval(60);
-        cl.setName("TestCluster");
-        lb.setName(name);
-        lb.setAlgorithm("RANDOM");
-        lb.setCluster(cl);
-        lb.setConnectionLogging(cnl);
-        lb.setConnectionThrottle(ct);
-        lb.setPort(80);
-        lb.setProtocol("HTTP");
-        lb.setStatus("BUILD");
-        lb.setCreated(created);
-        lb.setUpdated(updated);
-        nodes.add(newNode(1, 80, "127.0.0.10"));
-        nodes.add(newNode(1, 443, "127.0.0.20"));
-        vips.add(newVip(1, "127.0.0.1"));
-        vips.add(newVip(2, "127.0.0.2"));
-        lb.setVirtualIps(new VirtualIps());
-        lb.getVirtualIps().getVirtualIps().addAll(vips);
-        lb.getVirtualIps().getLinks().add(makeLink("http://virtualIpLink", "self"));
-        lb.setNodes(new Nodes());
-        lb.getNodes().getNodes().addAll(nodes);
-        lb.getNodes().getLinks().add(makeLink("http://nodesLink", "self"));
-        SessionPersistence sp = new SessionPersistence();
-        sp.setPersistenceType(PersistenceType.HTTP_COOKIE);
-        lb.setSessionPersistence(sp);
-        accessList.add(newNetworkItem(1, "10.0.0.0/8"));
-        accessList.add(newNetworkItem(2, "192.168.0.0/24"));
-        lb.setAccessList(new AccessList());
-        lb.getAccessList().getNetworkItems().addAll(accessList);
-        lb.getAccessList().getLinks().add(makeLink("http://AccessListLink", "self"));
-        LoadBalancerUsage lu = new LoadBalancerUsage();
-        lu.setLoadBalancerId(id);
-        lu.setLoadBalancerName(name);
-        lu.getLoadBalancerUsageRecords().add(newLoadBalancerUsageRecord(1));
-        lu.getLoadBalancerUsageRecords().add(newLoadBalancerUsageRecord(2));
-        lb.setLoadBalancerUsage(lu);
-        return lb;
-    }
-
-    private LoadBalancerUsageRecord newLoadBalancerUsageRecord(Integer id) {
-        LoadBalancerUsageRecord ur = new LoadBalancerUsageRecord();
-        ur.setAverageNumConnections(3.0);
-        ur.setId(id);
-        ur.setEventType("EmptyEvent");
-        ur.setIncomingTransfer(new Long(20));
-        ur.setNumPolls(50);
-        ur.setNumVips(30);
-        ur.setOutgoingTransfer(new Long(30));
-        ur.setEndTime(Calendar.getInstance());
-        return ur;
     }
 }
