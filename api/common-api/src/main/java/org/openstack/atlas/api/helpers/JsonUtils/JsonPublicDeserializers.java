@@ -20,9 +20,12 @@ import org.codehaus.jackson.node.NullNode;
 import org.codehaus.jackson.node.LongNode;
 import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.BinaryNode;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItemType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
@@ -76,8 +79,53 @@ public class JsonPublicDeserializers {
         return virtualIp;
     }
 
-    public static IpVersion getIpVersion(JsonNode jn, String prop) throws JsonParseException {
-        String ipVersionString = getString(jn, prop);
+    public static NetworkItem decodeNetworkItem(ObjectNode jn) throws JsonParseException {
+        NetworkItem networkItem = new NetworkItem();
+        networkItem.setId(getInt(jn, "id"));
+        networkItem.setAddress(getString(jn, "address"));
+        networkItem.setIpVersion(getIpVersion(jn, "ipVersion"));
+        networkItem.setType(getNetworkItemType(jn, "type"));
+        return networkItem;
+    }
+
+    public static AccessList decodeAccessList(ObjectNode on){
+        AccessList al = new AccessList();
+
+        return al;
+    }
+
+    public static VipType getVipType(ObjectNode jn, String prop) throws JsonParseException {
+        String vipTypeString = getString(jn, prop);
+        VipType vipType;
+        if (vipTypeString == null) {
+            return null;
+        }
+        try {
+            vipType = VipType.fromValue(vipTypeString);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal vipType found %s in %s", vipTypeString, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        return vipType;
+    }
+
+    public static NetworkItemType getNetworkItemType(ObjectNode on, String prop) throws JsonParseException {
+        String itemTypeString = getString(on, prop);
+        NetworkItemType networkItemType;
+        if (itemTypeString == null) {
+            return null;
+        }
+        try {
+            networkItemType = NetworkItemType.fromValue(itemTypeString);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illega NetworkItem type found %s in %s", itemTypeString, on.toString());
+            throw new JsonParseException(msg, on.traverse().getCurrentLocation());
+        }
+        return networkItemType;
+    }
+
+    public static IpVersion getIpVersion(ObjectNode on, String prop) throws JsonParseException {
+        String ipVersionString = getString(on, prop);
         IpVersion ipVersion;
         if (ipVersionString == null) {
             return null;
@@ -85,8 +133,8 @@ public class JsonPublicDeserializers {
         try {
             ipVersion = IpVersion.fromValue(ipVersionString);
         } catch (IllegalStateException ex) {
-            String msg = String.format("Illegal IPVersion found %s in %s", ipVersionString, jn.toString());
-            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+            String msg = String.format("Illegal IPVersion found %s in %s", ipVersionString, on.toString());
+            throw new JsonParseException(msg, on.traverse().getCurrentLocation());
         }
         return ipVersion;
     }
@@ -135,21 +183,6 @@ public class JsonPublicDeserializers {
         return meta;
     }
 
-    public static VipType getVipType(JsonNode jn, String prop) throws JsonParseException {
-        String vipTypeString = getString(jn, prop);
-        VipType vipType;
-        if (vipTypeString == null) {
-            return null;
-        }
-        try {
-            vipType = VipType.fromValue(vipTypeString);
-        } catch (IllegalStateException ex) {
-            String msg = String.format("Illegal vipType found %s in %s", vipTypeString, jn.toString());
-            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
-        }
-        return vipType;
-    }
-
     public static Integer getInt(JsonNode jn, String prop) {
         if (jn.get(prop) != null && jn.get(prop).isInt()) {
             return new Integer(jn.get(prop).getValueAsInt());
@@ -164,7 +197,7 @@ public class JsonPublicDeserializers {
         return null;
     }
 
-    public static Calendar getDate(JsonNode jn, String prop) throws JsonParseException {
+    public static Calendar decodeDate(JsonNode jn, String prop) throws JsonParseException {
         Calendar out;
         if (jn.get(prop) != null && jn.get(prop).isTextual()) {
             String dateString = jn.get(prop).getTextValue();

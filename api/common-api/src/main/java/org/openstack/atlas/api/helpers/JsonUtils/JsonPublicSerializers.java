@@ -2,10 +2,13 @@ package org.openstack.atlas.api.helpers.JsonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.namespace.QName;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
@@ -13,10 +16,14 @@ import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.TextNode;
+import org.openstack.atlas.api.helpers.JsonSerializeException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
+import org.openstack.atlas.util.converters.DateTimeConverters;
 import org.w3.atom.Link;
 
 public class JsonPublicSerializers {
@@ -77,6 +84,21 @@ public class JsonPublicSerializers {
         }
     }
 
+    public static void attachNetworkItem(ObjectNode objectNode, NetworkItem networkItem) {
+        if (networkItem.getId() != null) {
+            objectNode.put("id", networkItem.getId().intValue());
+        }
+        if (networkItem.getAddress() != null) {
+            objectNode.put("address", networkItem.getAddress());
+        }
+        if (networkItem.getIpVersion() != null) {
+            objectNode.put("ipVersion", networkItem.getIpVersion().value());
+        }
+        if (networkItem.getType() != null) {
+            objectNode.put("type", networkItem.getType().value());
+        }
+    }
+
     public static void attachMeta(ObjectNode objectNode, Meta meta) {
         if (meta.getId() != null) {
             objectNode.put("id", meta.getId().intValue());
@@ -126,5 +148,16 @@ public class JsonPublicSerializers {
         if (atomLink.getType() != null) {
             objectNode.put("type", atomLink.getType());
         }
+    }
+
+    public void attachDateTime(ObjectNode on, String prop, Calendar cal) throws JsonSerializeException {
+        String isoString;
+        try {
+            isoString = DateTimeConverters.calToiso(cal);
+        } catch (ConverterException ex) {
+            String msg = String.format("Error converting Calendar %s to iso8601 format", cal.toString());
+            throw new JsonSerializeException(msg, ex);
+        }
+        on.put(prop, isoString);
     }
 }
