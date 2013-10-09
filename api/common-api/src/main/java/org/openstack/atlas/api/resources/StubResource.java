@@ -81,7 +81,7 @@ public class StubResource extends CommonDependencyProvider {
         LoadBalancers loadbalancers = new LoadBalancers();
         loadbalancers.getLoadBalancers().add(newLoadBalancer(1, "LB1"));
         loadbalancers.getLoadBalancers().add(newLoadBalancer(2, "LB2"));
-        loadbalancers.getLinks().add(makeLink(null, null));
+        loadbalancers.getLinks().add(makeLink("someHref", "somRel"));
         return Response.status(200).entity(loadbalancers).build();
     }
 
@@ -102,7 +102,7 @@ public class StubResource extends CommonDependencyProvider {
     @GET
     @Path("virtualips")
     public Response stubVirtualIps() {
-        VirtualIps vips = V1StubFactory.newVirtualIps(10, 10);
+        VirtualIps vips = V1StubFactory.newVirtualIps(3, 3);
         return Response.status(200).entity(vips).build();
     }
 
