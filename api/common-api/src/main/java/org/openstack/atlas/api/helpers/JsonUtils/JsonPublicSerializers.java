@@ -13,6 +13,8 @@ import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.TextNode;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.w3.atom.Link;
@@ -52,6 +54,38 @@ public class JsonPublicSerializers {
         }
         if (virtualIp.getType() != null) {
             objectNode.put("type", virtualIp.getType().value());
+        }
+    }
+
+    public static void attachMetadata(ObjectNode objectNode, Metadata metadata, boolean includeLinks) {
+        List<Meta> metaList = metadata.getMetas();
+        List<Link> atomLinks = metadata.getLinks();
+
+        if (metaList != null && metaList.size() > 0) {
+            ArrayNode an = objectNode.putArray("metadata");
+            for (Meta meta : metaList) {
+                ObjectNode metaNode = an.addObject();
+                attachMeta(metaNode, meta);
+            }
+        }
+        if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
+            ArrayNode an = objectNode.putArray("links");
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
+        }
+    }
+
+    public static void attachMeta(ObjectNode objectNode, Meta meta) {
+        if (meta.getId() != null) {
+            objectNode.put("id", meta.getId().intValue());
+        }
+        if (meta.getKey() != null) {
+            objectNode.put("key", meta.getKey());
+        }
+        if (meta.getValue() != null) {
+            objectNode.put("value", meta.getValue());
         }
     }
 

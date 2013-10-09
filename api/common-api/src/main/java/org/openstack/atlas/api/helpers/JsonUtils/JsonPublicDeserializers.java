@@ -7,7 +7,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonProcessingException;
 import org.openstack.atlas.api.helpers.JsonUtils.JsonParserUtils;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.IntNode;
@@ -18,10 +18,6 @@ import org.codehaus.jackson.node.NullNode;
 import org.codehaus.jackson.node.LongNode;
 import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.BinaryNode;
-import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
-
-import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 
 public class JsonPublicDeserializers {
 
@@ -83,6 +79,50 @@ public class JsonPublicDeserializers {
             throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
         }
         return ipVersion;
+    }
+
+    public static Metadata decodeMetadata(JsonNode jn) throws JsonParseException {
+        Metadata metadata = new Metadata();
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("metadata") != null
+                && (jn.get("metadata") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("metadata");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format("Error was expecting an ObjectNode({}) or an ArrayNode([]) but found %s", jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        for (i = 0; i < an.size(); i++) {
+            JsonNode node = an.get(i);
+            if (!(node instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", an.get(i).toString());
+                throw new JsonParseException(msg, an.get(i).traverse().getTokenLocation());
+            }
+            Meta meta = decodeMeta((ObjectNode) node);
+            metadata.getMetas().add(meta);
+            // Links is ignored.
+        }
+        return metadata;
+    }
+
+    public static Meta decodeMeta(ObjectNode jsonNodeIn) throws JsonParseException {
+        Meta meta = new Meta();
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("meta") != null) {
+            if (!(jn.get("meta") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("meta").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("meta");
+            }
+        }
+        meta.setId(getInt(jn, "id"));
+        meta.setKey(getString(jn, "key"));
+        meta.setValue(getString(jn, "value"));
+        return meta;
     }
 
     public static VipType getVipType(JsonNode jn, String prop) throws JsonParseException {
