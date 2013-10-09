@@ -2,80 +2,80 @@ package org.openstack.atlas.api.helpers.JsonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.xml.namespace.QName;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.TextNode;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.w3.atom.Link;
 
 public class JsonPublicSerializers {
 
-    public static ObjectNode encodeVirtualIp(VirtualIp virtualIp, boolean addRoot) {
-        ObjectNode jsonVipNode;
-        ObjectNode topNode;
+    public static void attachVirtualIps(ObjectNode objectNode, VirtualIps virtualIps, boolean includeLinks) {
+        List<VirtualIp> virtualIpList = virtualIps.getVirtualIps();
+        List<Link> atomLinks = virtualIps.getLinks();
 
-        if (addRoot) {
-            jsonVipNode = JsonParserUtils.newObjectNode();
-            topNode = jsonVipNode;
-        } else {
-            topNode = JsonParserUtils.newObjectNode();
-            jsonVipNode = topNode.putObject("virtualIp");
+        if (virtualIpList != null && virtualIpList.size() > 0) {
+            ArrayNode an = objectNode.putArray("virtualIps");
+            for (VirtualIp virtualIp : virtualIpList) {
+                ObjectNode vipNode = an.addObject();
+                attachVirtualIp(vipNode, virtualIp);
+            }
         }
-
-        if (virtualIp.getId() != null) {
-            jsonVipNode.put("id", virtualIp.getId().intValue());
+        if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
+            ArrayNode an = objectNode.putArray("links");
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
         }
-        if (virtualIp.getAddress() != null) {
-            jsonVipNode.put("address", virtualIp.getAddress());
-        }
-        if (virtualIp.getIpVersion() != null) {
-            jsonVipNode.put("ipVersion", virtualIp.getIpVersion().value());
-        }
-        if (virtualIp.getType() != null) {
-            jsonVipNode.put("type", virtualIp.getType().value());
-        }
-        return topNode;
     }
 
-    
+    public static void attachVirtualIp(ObjectNode objectNode, VirtualIp virtualIp) {
 
-    public static ObjectNode encodeAtomLink(Link atomLink, boolean addRoot) {
-        ObjectNode topNode;
-        ObjectNode jsonAtomLink;
-        if (addRoot) {
-            jsonAtomLink = JsonParserUtils.newObjectNode();
-            topNode = jsonAtomLink;
-        } else {
-            topNode = JsonParserUtils.newObjectNode();
-            jsonAtomLink = topNode.putObject("link");
+        if (virtualIp.getId() != null) {
+            objectNode.put("id", virtualIp.getId().intValue());
         }
+        if (virtualIp.getAddress() != null) {
+            objectNode.put("address", virtualIp.getAddress());
+        }
+        if (virtualIp.getIpVersion() != null) {
+            objectNode.put("ipVersion", virtualIp.getIpVersion().value());
+        }
+        if (virtualIp.getType() != null) {
+            objectNode.put("type", virtualIp.getType().value());
+        }
+    }
 
+    public static void attachAtomLink(ObjectNode objectNode, Link atomLink) {
         if (atomLink.getBase() != null) {
-            jsonAtomLink.put("base", atomLink.getBase());
+            objectNode.put("base", atomLink.getBase());
         }
         if (atomLink.getContent() != null) {
-            jsonAtomLink.put("content", atomLink.getContent());
+            objectNode.put("content", atomLink.getContent());
         }
         if (atomLink.getHref() != null) {
-            jsonAtomLink.put("href", atomLink.getHref());
+            objectNode.put("href", atomLink.getHref());
         }
         if (atomLink.getHreflang() != null) {
-            jsonAtomLink.put("hreflang", atomLink.getHreflang());
+            objectNode.put("hreflang", atomLink.getHreflang());
         }
         if (atomLink.getLang() != null) {
-            jsonAtomLink.put("lang", atomLink.getLang());
+            objectNode.put("lang", atomLink.getLang());
         }
         if (atomLink.getLength() != null) {
-            jsonAtomLink.put("length", new BigIntegerNode(atomLink.getLength()));
+            objectNode.put("length", new BigIntegerNode(atomLink.getLength()));
         }
         if (atomLink.getOtherAttributes() != null && !atomLink.getOtherAttributes().isEmpty()) {
-            ObjectNode oa = jsonAtomLink.putObject("otherAttributes");
+            ObjectNode oa = objectNode.putObject("otherAttributes");
             for (Entry<QName, String> ent : atomLink.getOtherAttributes().entrySet()) {
                 String nsUri = ent.getKey().getNamespaceURI();
                 String localPart = ent.getKey().getLocalPart();
@@ -84,14 +84,13 @@ public class JsonPublicSerializers {
             }
         }
         if (atomLink.getRel() != null) {
-            jsonAtomLink.put("rel", atomLink.getRel());
+            objectNode.put("rel", atomLink.getRel());
         }
         if (atomLink.getTitle() != null) {
-            jsonAtomLink.put("title", atomLink.getTitle());
+            objectNode.put("title", atomLink.getTitle());
         }
         if (atomLink.getType() != null) {
-            jsonAtomLink.put("type", atomLink.getType());
+            objectNode.put("type", atomLink.getType());
         }
-        return topNode;
     }
 }

@@ -13,13 +13,6 @@ vipsn = JPU.getNode(vipsj)
 vipj = readFile("./vip.json")
 vipn = JPU.getNode(vipj)
 
-vips = JPD.decodeVirtualIps(JPU.getNode(vipsj))
-vip = vips.getVirtualIps()[0]
+vips = V1SF.newVirtualIps(3,3)
 
-obj = JPS.encodeVirtualIp(vips.getVirtualIps()[0],None)
-
-jgw = JPU.newJsonGeneratorStringWriter()
-jg = jgw.getJsonGenerator()
-wr = jgw.getWriter()
-
-jg.writeTree(obj)
+n = JPU.newObjectNode()

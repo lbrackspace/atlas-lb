@@ -49,6 +49,14 @@ public class JsonParserUtils {
         return mapper.getJsonFactory().createJsonParser(jsonStr).readValueAsTree();
     }
 
+    public static ObjectNode newObjectNode() {
+        return mapper.createObjectNode();
+    }
+
+    public static ArrayNode newArrayNode() {
+        return mapper.createArrayNode();
+    }
+
     public static JsonNode getNodeFromFile(String fileName) throws FileNotFoundException, UnsupportedEncodingException, JsonProcessingException, IOException {
         return mapper.getJsonFactory().createJsonParser(StaticFileUtils.readFileToString(fileName)).readValueAsTree();
     }
@@ -74,19 +82,9 @@ public class JsonParserUtils {
         return keys;
     }
 
-    public static ObjectNode newObjectNode() {
-        ObjectNode ob = mapper.createObjectNode();
-        return ob;
-    }
-
-    public static ArrayNode newArrayNode() {
-        ArrayNode an = mapper.createArrayNode();
-        return an;
-    }
-
     public static JsonGeneratorWriter newJsonGeneratorStringWriter() throws IOException {
         StringWriter wr = new StringWriter();
-        JsonGenerator jg = JsonParserUtils.getObjectMapper().getJsonFactory().createJsonGenerator(wr);
+        JsonGenerator jg = JsonParserUtils.getObjectMapper().getJsonFactory().createJsonGenerator(new StringWriter());
         return new JsonGeneratorWriter(jg, wr);
     }
 }
