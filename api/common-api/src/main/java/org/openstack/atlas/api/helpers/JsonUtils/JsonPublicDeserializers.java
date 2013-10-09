@@ -8,6 +8,65 @@ import org.codehaus.jackson.node.ArrayNode;
 
 public class JsonPublicDeserializers {
 
+    public static LoadBalancers decodeLoadBalancers(JsonNode jn) throws JsonParseException {
+        LoadBalancers loadbalancers = new LoadBalancers();
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("loadBalancers") != null
+                && (jn.get("loadBalancers") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("loadBalancers");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format("Error was expecting an ObjectNode({}) or an ArrayNode([]) but found %s", jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        for (i = 0; i < an.size(); i++) {
+            JsonNode lbNode = an.get(i);
+            if (!(lbNode instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", lbNode.toString());
+                throw new JsonParseException(msg, lbNode.traverse().getTokenLocation());
+            }
+            LoadBalancer lb = decodeLoadBalancer((ObjectNode) lbNode);
+            loadbalancers.getLoadBalancers().add(lb);
+        }
+        return loadbalancers;
+    }
+
+    public static LoadBalancer decodeLoadBalancer(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("loadBalancer") != null) {
+            if (!(jn.get("loadBalancer") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("virtualIp").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("loadBalancer");
+            }
+        }
+        LoadBalancer lb = new LoadBalancer();
+        lb.setId(getInt(jn, "id"));
+        lb.setName(getString(jn, "name"));
+        lb.setNodeCount(getInt(jn, "nodeCount"));
+        lb.setPort(getInt(jn, "port"));
+        lb.setTimeout(getInt(jn, "timeout"));
+
+        if (jn.get("accessList") != null) {
+            //Todo: Uncomment when method implemented
+//            lb.setAccessList(decodeAccessList(jn.get("accessList")));
+        }
+        if (jn.get("nodes") != null) {
+            lb.setNodes(decodeNodes(jn.get("nodes")));
+        }
+        if (jn.get("virtualIps") != null) {
+            lb.setVirtualIps(decodeVirtualIps(jn.get("virtualIps")));
+        }
+        if (jn.get("metadata") != null) {
+            lb.setMetadata(decodeMetadata(jn.get("metadata")));
+        }
+        return lb;
+    }
+
     public static VirtualIps decodeVirtualIps(JsonNode jn) throws JsonParseException {
         VirtualIps virtualIps = new VirtualIps();
         ArrayNode an;
@@ -80,7 +139,6 @@ public class JsonPublicDeserializers {
     }
 
     public static Node decodeNode(ObjectNode jnode) throws JsonParseException {
-        Node node = new Node();
         ObjectNode jn = jnode;
         if (jn.get("node") != null) {
             if (!(jn.get("node") instanceof ObjectNode)) {
@@ -90,6 +148,7 @@ public class JsonPublicDeserializers {
                 jn = (ObjectNode) jn.get("node");
             }
         }
+        Node node = new Node();
         node.setId(getInt(jn, "id"));
         node.setAddress(getString(jn, "address"));
         node.setPort(getInt(jn, "port"));
@@ -132,7 +191,6 @@ public class JsonPublicDeserializers {
     }
 
     public static Meta decodeMeta(ObjectNode jsonNodeIn) throws JsonParseException {
-        Meta meta = new Meta();
         ObjectNode jn = jsonNodeIn;
         if (jn.get("meta") != null) {
             if (!(jn.get("meta") instanceof ObjectNode)) {
@@ -142,6 +200,7 @@ public class JsonPublicDeserializers {
                 jn = (ObjectNode) jn.get("meta");
             }
         }
+        Meta meta = new Meta();
         meta.setId(getInt(jn, "id"));
         meta.setKey(getString(jn, "key"));
         meta.setValue(getString(jn, "value"));
