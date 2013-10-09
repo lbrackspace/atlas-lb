@@ -1,13 +1,15 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.codehaus.jackson.JsonLocation;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonProcessingException;
 import org.openstack.atlas.api.helpers.JsonUtils.JsonParserUtils;
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.IntNode;
@@ -18,6 +20,14 @@ import org.codehaus.jackson.node.NullNode;
 import org.codehaus.jackson.node.LongNode;
 import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.BinaryNode;
+import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
+import org.openstack.atlas.util.converters.DateTimeConverters;
 
 public class JsonPublicDeserializers {
 
@@ -150,6 +160,21 @@ public class JsonPublicDeserializers {
     public static String getString(JsonNode jn, String prop) {
         if (jn.get(prop) != null && jn.get(prop).isTextual()) {
             return jn.get(prop).getValueAsText();
+        }
+        return null;
+    }
+
+    public static Calendar getDate(JsonNode jn, String prop) throws JsonParseException {
+        Calendar out;
+        if (jn.get(prop) != null && jn.get(prop).isTextual()) {
+            String dateString = jn.get(prop).getTextValue();
+            try {
+                out = DateTimeConverters.isoTocal(dateString);
+                return out;
+            } catch (ConverterException ex) {
+                String msg = String.format("Error converting %s to Date. Value must be in anISO 8601", dateString);
+                throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+            }
         }
         return null;
     }
