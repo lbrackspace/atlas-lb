@@ -42,6 +42,7 @@ import javax.ws.rs.core.Response;
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.w3.atom.Link;
 
 public class StubResource extends CommonDependencyProvider {
 
@@ -51,6 +52,15 @@ public class StubResource extends CommonDependencyProvider {
         LoadBalancers loadbalancers = new LoadBalancers();
         loadbalancers.getLoadBalancers().add(newLoadBalancer(1, "LB1"));
         loadbalancers.getLoadBalancers().add(newLoadBalancer(2, "LB2"));
+        List<Link> links = loadbalancers.getLinks();
+        Link link = new Link();
+        link.setHref("someHref");
+        link.setRel("someRel");
+        links.add(link);
+        link = new Link();
+        link.setHref("anotherHref");
+        link.setRel("someOtherRel");
+        links.add(link);
         return Response.status(200).entity(loadbalancers).build();
     }
 
