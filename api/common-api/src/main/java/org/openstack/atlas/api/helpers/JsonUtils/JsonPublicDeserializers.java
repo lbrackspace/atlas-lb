@@ -1,5 +1,9 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.Cluster;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
@@ -31,6 +35,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItemType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
@@ -85,9 +90,31 @@ public class JsonPublicDeserializers {
         lb.setNodeCount(getInt(jn, "nodeCount"));
         lb.setPort(getInt(jn, "port"));
         lb.setTimeout(getInt(jn, "timeout"));
+        lb.setHalfClosed(getBoolean(jn, "halfClosed"));
+        lb.setIsSticky(getBoolean(jn, "isSticky"));
+        lb.setAlgorithm(getString(jn, "algorithm"));
+        lb.setProtocol(getString(jn, "protocol"));
+        lb.setStatus(getString(jn, "status"));
+        lb.setConnectionLogging(null);
+        lb.setConnectionThrottle(null);
+        lb.setContentCaching(null);
+        lb.setHealthMonitor(null);
+        lb.setLoadBalancerUsage(null);
+        lb.setSessionPersistence(null);
+        lb.setSourceAddresses(null);
+        lb.setSslTermination(null);
 
+        if (jn.get("created") != null) {
+            lb.setCreated(getCreated((ObjectNode) jn.get("created")));
+        }
+        if (jn.get("updated") != null) {
+            lb.setUpdated(getUpdated((ObjectNode) jn.get("updated")));
+        }
+        if (jn.get("cluster") != null) {
+            lb.setCluster(decodeCluster((ObjectNode) jn.get("cluster")));
+        }
         if (jn.get("accessList") != null) {
-            //Todo: Uncomment when method implemented
+            // Todo: Argument to method should be JsonNode to match behavior for vips/nodes/metadata
 //            lb.setAccessList(decodeAccessList(jn.get("accessList")));
         }
         if (jn.get("nodes") != null) {
@@ -100,6 +127,33 @@ public class JsonPublicDeserializers {
             lb.setMetadata(decodeMetadata(jn.get("metadata")));
         }
         return lb;
+    }
+
+    public static Cluster decodeCluster(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("cluster") != null) {
+            if (!(jn.get("cluster") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("cluster").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("cluster");
+            }
+        }
+        Cluster cluster = new Cluster();
+        cluster.setName(getString(jn, "name"));
+        return cluster;
+    }
+
+    public static Created getCreated(ObjectNode jsonNodeIn) throws JsonParseException {
+        Created created = new Created();
+        created.setTime(decodeDate(jsonNodeIn, "time"));
+        return created;
+    }
+
+    public static Updated getUpdated(ObjectNode jsonNodeIn) throws JsonParseException {
+        Updated updated = new Updated();
+        updated.setTime(decodeDate(jsonNodeIn, "time"));
+        return updated;
     }
 
     public static VirtualIps decodeVirtualIps(JsonNode jn) throws JsonParseException {
@@ -128,6 +182,7 @@ public class JsonPublicDeserializers {
         }
         return virtualIps;
     }
+
     public static Calendar decodeDate(JsonNode jn, String prop) throws JsonParseException {
         Calendar out;
         if (jn.get(prop) != null && jn.get(prop).isTextual()) {
@@ -174,21 +229,6 @@ public class JsonPublicDeserializers {
         AccessList al = new AccessList();
 
         return al;
-    }
-
-    public static VipType getVipType(ObjectNode jn, String prop) throws JsonParseException {
-        String vipTypeString = getString(jn, prop);
-        VipType vipType;
-        if (vipTypeString == null) {
-            return null;
-        }
-        try {
-            vipType = VipType.fromValue(vipTypeString);
-        } catch (IllegalStateException ex) {
-            String msg = String.format("Illegal vipType found %s in %s", vipTypeString, jn.toString());
-            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
-        }
-        return vipType;
     }
 
     public static NetworkItemType getNetworkItemType(ObjectNode on, String prop) throws JsonParseException {
@@ -340,7 +380,7 @@ public class JsonPublicDeserializers {
         try {
             status = NodeStatus.fromValue(nodeStatus);
         } catch (IllegalStateException ex) {
-            String msg = String.format("Illegal vipType found %s in %s", nodeStatus, jn.toString());
+            String msg = String.format("Illegal nodeStatus found %s in %s", nodeStatus, jn.toString());
             throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
         }
         return status;
@@ -356,7 +396,7 @@ public class JsonPublicDeserializers {
         try {
             condition = NodeCondition.fromValue(nodeCondition);
         } catch (IllegalStateException ex) {
-            String msg = String.format("Illegal vipType found %s in %s", nodeCondition, jn.toString());
+            String msg = String.format("Illegal nodeCondition found %s in %s", nodeCondition, jn.toString());
             throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
         }
         return condition;
@@ -371,7 +411,7 @@ public class JsonPublicDeserializers {
         try {
             type = NodeType.fromValue(nodeType);
         } catch (IllegalStateException ex) {
-            String msg = String.format("Illegal vipType found %s in %s", nodeType, jn.toString());
+            String msg = String.format("Illegal nodeType found %s in %s", nodeType, jn.toString());
             throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
         }
         return type;
@@ -387,6 +427,13 @@ public class JsonPublicDeserializers {
     public static String getString(JsonNode jn, String prop) {
         if (jn.get(prop) != null && jn.get(prop).isTextual()) {
             return jn.get(prop).getValueAsText();
+        }
+        return null;
+    }
+
+    public static Boolean getBoolean(JsonNode jn, String prop) {
+        if (jn.get(prop) != null && jn.get(prop).isBoolean()) {
+            return jn.get(prop).getBooleanValue();
         }
         return null;
     }
