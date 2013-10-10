@@ -17,6 +17,7 @@ import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.TextNode;
 import org.openstack.atlas.api.helpers.JsonSerializeException;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
@@ -84,6 +85,26 @@ public class JsonPublicSerializers {
                 attachAtomLink(atomNode, atomLink);
             }
         }
+    }
+
+    public static void attachAccessList(ObjectNode objectNode, AccessList accessList, boolean includeLinks) {
+        List<NetworkItem> networkItemsList = accessList.getNetworkItems();
+        List<Link> atomLinks = accessList.getLinks();
+        if (networkItemsList != null && networkItemsList.size() > 0) {
+            ArrayNode an = objectNode.putArray("accessList");
+            for (NetworkItem networkItem : networkItemsList) {
+                ObjectNode networkItemNode = an.addObject();
+                attachNetworkItem(networkItemNode, networkItem);
+            }
+        }
+        if (includeLinks && accessList.getLinks() != null && accessList.getLinks().size() > 0) {
+            ArrayNode an = objectNode.putArray("links");
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
+        }
+
     }
 
     public static void attachNode(ObjectNode objectNode, Node node) {

@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
 import org.openstack.atlas.docs.loadbalancers.api.v1.Cluster;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
@@ -47,6 +48,8 @@ import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.ArrayNode;
 
 public class JsonPublicDeserializers {
+
+    private static final String NOT_OBJ_OR_ARRAY = "Error was expecting an ObjectNode({}) but instead found %s";
 
     public static LoadBalancers decodeLoadBalancers(JsonNode jn) throws JsonParseException {
         LoadBalancers loadbalancers = new LoadBalancers();
@@ -114,8 +117,7 @@ public class JsonPublicDeserializers {
             lb.setCluster(decodeCluster((ObjectNode) jn.get("cluster")));
         }
         if (jn.get("accessList") != null) {
-            // Todo: Argument to method should be JsonNode to match behavior for vips/nodes/metadata
-//            lb.setAccessList(decodeAccessList(jn.get("accessList")));
+            lb.setAccessList(decodeAccessList(jn.get("accessList")));
         }
         if (jn.get("nodes") != null) {
             lb.setNodes(decodeNodes(jn.get("nodes")));
@@ -127,6 +129,12 @@ public class JsonPublicDeserializers {
             lb.setMetadata(decodeMetadata(jn.get("metadata")));
         }
         return lb;
+    }
+
+    public static ConnectionThrottle decodeConnectionThrottle(ObjectNode jsonNodeIn) throws JsonParseException {
+        ConnectionThrottle throttle = new ConnectionThrottle();
+
+        return throttle;
     }
 
     public static Cluster decodeCluster(ObjectNode jsonNodeIn) throws JsonParseException {
@@ -142,18 +150,6 @@ public class JsonPublicDeserializers {
         Cluster cluster = new Cluster();
         cluster.setName(getString(jn, "name"));
         return cluster;
-    }
-
-    public static Created getCreated(ObjectNode jsonNodeIn) throws JsonParseException {
-        Created created = new Created();
-        created.setTime(decodeDate(jsonNodeIn, "time"));
-        return created;
-    }
-
-    public static Updated getUpdated(ObjectNode jsonNodeIn) throws JsonParseException {
-        Updated updated = new Updated();
-        updated.setTime(decodeDate(jsonNodeIn, "time"));
-        return updated;
     }
 
     public static VirtualIps decodeVirtualIps(JsonNode jn) throws JsonParseException {
@@ -202,7 +198,7 @@ public class JsonPublicDeserializers {
         ObjectNode jn = jsonNodeIn;
         if (jn.get("virtualIp") != null) {
             if (!(jn.get("virtualIp") instanceof ObjectNode)) {
-                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("virtualIp").toString());
+                String msg = String.format(NOT_OBJ_OR_ARRAY, jn.get("virtualIp").toString());
                 throw new JsonParseException(msg, jn.traverse().getTokenLocation());
             } else {
                 jn = (ObjectNode) jn.get("virtualIp");
@@ -225,9 +221,26 @@ public class JsonPublicDeserializers {
         return networkItem;
     }
 
-    public static AccessList decodeAccessList(ObjectNode on){
+    public static AccessList decodeAccessList(JsonNode jn) throws JsonParseException {
         AccessList al = new AccessList();
-
+        ArrayNode an;
+        if ((jn instanceof ObjectNode) && jn.get("accessList") != null && (jn.get("accessList") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("accessList");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARRAY, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        for (int i = 0; i < an.size(); i++) {
+            if (!(an.get(i) instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting Object({}) but instead found %s", an.get(i).toString());
+                throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+            }
+            ObjectNode networkItemNode = (ObjectNode) an.get(i);
+            NetworkItem networkItem = decodeNetworkItem(networkItemNode);
+            al.getNetworkItems().add(networkItem);
+        }
         return al;
     }
 
@@ -257,13 +270,13 @@ public class JsonPublicDeserializers {
         } else if (jn instanceof ArrayNode) {
             an = (ArrayNode) jn;
         } else {
-            String msg = String.format("Error was expecting an ObjectNode({}) or an ArrayNode([]) but found %s", jn.toString());
+            String msg = String.format(NOT_OBJ_OR_ARRAY, jn.toString());
             throw new JsonParseException(msg, jn.traverse().getTokenLocation());
         }
         for (i = 0; i < an.size(); i++) {
             JsonNode jnode = an.get(i);
             if (!(jnode instanceof ObjectNode)) {
-                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", jnode.toString());
+                String msg = String.format(NOT_OBJ_OR_ARRAY, jnode.toString());
                 throw new JsonParseException(msg, jnode.traverse().getTokenLocation());
             }
             Node node = decodeNode((ObjectNode) jnode);
@@ -308,7 +321,7 @@ public class JsonPublicDeserializers {
         } else if (jn instanceof ArrayNode) {
             an = (ArrayNode) jn;
         } else {
-            String msg = String.format("Error was expecting an ObjectNode({}) or an ArrayNode([]) but found %s", jn.toString());
+            String msg = String.format(NOT_OBJ_OR_ARRAY, jn.toString());
             throw new JsonParseException(msg, jn.traverse().getTokenLocation());
         }
         for (i = 0; i < an.size(); i++) {
@@ -328,7 +341,7 @@ public class JsonPublicDeserializers {
         ObjectNode jn = jsonNodeIn;
         if (jn.get("meta") != null) {
             if (!(jn.get("meta") instanceof ObjectNode)) {
-                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("meta").toString());
+                String msg = String.format(NOT_OBJ_OR_ARRAY, jn.get("meta").toString());
                 throw new JsonParseException(msg, jn.traverse().getTokenLocation());
             } else {
                 jn = (ObjectNode) jn.get("meta");
@@ -415,6 +428,18 @@ public class JsonPublicDeserializers {
             throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
         }
         return type;
+    }
+
+    public static Created getCreated(ObjectNode jsonNodeIn) throws JsonParseException {
+        Created created = new Created();
+        created.setTime(decodeDate(jsonNodeIn, "time"));
+        return created;
+    }
+
+    public static Updated getUpdated(ObjectNode jsonNodeIn) throws JsonParseException {
+        Updated updated = new Updated();
+        updated.setTime(decodeDate(jsonNodeIn, "time"));
+        return updated;
     }
 
     public static Integer getInt(JsonNode jn, String prop) {

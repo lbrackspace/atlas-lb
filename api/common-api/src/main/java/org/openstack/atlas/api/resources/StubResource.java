@@ -179,12 +179,7 @@ public class StubResource extends CommonDependencyProvider {
     @GET
     @Path("accesslist")
     public Response stubAccessList() {
-        AccessList al = new AccessList();
-        al.getNetworkItems().add(V1StubFactory.newNetworkItem(1, "10.0.0.0/8"));
-        al.getNetworkItems().add(V1StubFactory.newNetworkItem(2, "192.168.0.0/24"));
-        al.getLinks().add(V1StubFactory.makeLink("href1", "prev"));
-        al.getLinks().add(V1StubFactory.makeLink("href2", "self"));
-        al.getLinks().add(V1StubFactory.makeLink("href3", "next"));
+        AccessList al = V1StubFactory.newAccessList();
         return Response.status(200).entity(al).build();
     }
 

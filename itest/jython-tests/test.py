@@ -28,3 +28,18 @@ noden = JPU.getNode(nodej)
 vips = V1SF.newVirtualIps(3,3)
 
 n = JPU.newObjectNode()
+
+
+
+al = V1SF.newAccessList()	
+
+n = JPU.newObjectNode()
+JPS.attachAccessList(n,al,True)
+
+
+n = JPU.getNode(n.toString())
+
+al = JPD.decodeAccessList(n)
+
+
+
