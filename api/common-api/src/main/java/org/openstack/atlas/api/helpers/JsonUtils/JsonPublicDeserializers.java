@@ -1,9 +1,15 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
 import org.openstack.atlas.docs.loadbalancers.api.v1.Cluster;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
+import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
+import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
@@ -11,6 +17,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
@@ -36,6 +43,9 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItemType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
@@ -98,15 +108,31 @@ public class JsonPublicDeserializers {
         lb.setAlgorithm(getString(jn, "algorithm"));
         lb.setProtocol(getString(jn, "protocol"));
         lb.setStatus(getString(jn, "status"));
-        lb.setConnectionLogging(null);
-        lb.setConnectionThrottle(null);
-        lb.setContentCaching(null);
-        lb.setHealthMonitor(null);
-        lb.setLoadBalancerUsage(null);
-        lb.setSessionPersistence(null);
-        lb.setSourceAddresses(null);
-        lb.setSslTermination(null);
 
+        if (jn.get("connectionLogging") != null) {
+            lb.setConnectionLogging(decodeConnectionLogging((ObjectNode) jn.get("connectionLogging")));
+        }
+        if (jn.get("connectionThrottle") != null) {
+            lb.setConnectionThrottle(decodeConnectionThrottle((ObjectNode) jn.get("connectionThrottle")));
+        }
+        if (jn.get("contentCaching") != null) {
+            lb.setContentCaching(decodeContentCaching((ObjectNode) jn.get("contentCaching")));
+        }
+        if (jn.get("healthMonitor") != null) {
+            lb.setHealthMonitor(decodeHealthMonitor((ObjectNode) jn.get("healthMonitor")));
+        }
+        if (jn.get("loadBalancerUsage") != null) {
+            lb.setLoadBalancerUsage(null);
+        }
+        if (jn.get("sessionPersistence") != null) {
+            lb.setSessionPersistence(decodeSessionPersistence((ObjectNode) jn.get("sessionPersistence")));
+        }
+        if (jn.get("sourceAddresses") != null) {
+            lb.setSourceAddresses(decodeSourceAddresses((ObjectNode) jn.get("sessionPersistence")));
+        }
+        if (jn.get("sslTermination") != null) {
+            lb.setSslTermination(null);
+        }
         if (jn.get("created") != null) {
             lb.setCreated(getCreated((ObjectNode) jn.get("created")));
         }
@@ -131,9 +157,90 @@ public class JsonPublicDeserializers {
         return lb;
     }
 
-    public static ConnectionThrottle decodeConnectionThrottle(ObjectNode jsonNodeIn) throws JsonParseException {
-        ConnectionThrottle throttle = new ConnectionThrottle();
+    public static SessionPersistence decodeSessionPersistence(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("sessionPersistence") != null) {
+            if (!(jn.get("sessionPersistence") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("sessionPersistence").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("sessionPersistence");
+            }
+        }
+        SessionPersistence persistence = new SessionPersistence();
+        persistence.setPersistenceType(getPersistenceType(jn, "persistenceType"));
+        return persistence;
+    }
 
+    public static HealthMonitor decodeHealthMonitor(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("healthMonitor") != null) {
+            if (!(jn.get("healthMonitor") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("healthMonitor").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("healthMonitor");
+            }
+        }
+
+        HealthMonitor monitor = new HealthMonitor();
+        monitor.setAttemptsBeforeDeactivation(getInt(jn, "attemptsBeforeDeactivation"));
+        monitor.setTimeout(getInt(jn, "timeout"));
+        monitor.setDelay(getInt(jn, "delay"));
+        monitor.setId(getInt(jn, "id"));
+        monitor.setStatusRegex(getString(jn, "statusRegex"));
+        monitor.setHostHeader(getString(jn, "hostHeader"));
+        monitor.setBodyRegex(getString(jn, "bodyRegex"));
+        monitor.setPath(getString(jn, "path"));
+        monitor.setType(getHealthMonitorType(jn, "healthMonitorType"));
+        return monitor;
+    }
+
+    public static ConnectionLogging decodeConnectionLogging(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("connectionLogging") != null) {
+            if (!(jn.get("connectionLogging") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("connectionLogging").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("connectionLogging");
+            }
+        }
+        ConnectionLogging logging = new ConnectionLogging();
+        logging.setEnabled(getBoolean(jn, "enabled"));
+        return logging;
+    }
+
+    public static ContentCaching decodeContentCaching(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("contentCaching") != null) {
+            if (!(jn.get("contentCaching") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("contentCaching").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("contentCaching");
+            }
+        }
+        ContentCaching caching = new ContentCaching();
+        caching.setEnabled(getBoolean(jn, "enabled"));
+        return caching;
+    }
+
+    public static ConnectionThrottle decodeConnectionThrottle(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("connectionThrottle") != null) {
+            if (!(jn.get("connectionThrottle") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("connectionThrottle").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("connectionThrottle");
+            }
+        }
+        ConnectionThrottle throttle = new ConnectionThrottle();
+        throttle.setMaxConnectionRate(getInt(jn, "maxConnectionRate"));
+        throttle.setMaxConnections(getInt(jn, "maxConnections"));
+        throttle.setMinConnections(getInt(jn, "minConnections"));
+        throttle.setRateInterval(getInt(jn, "rateInterval"));
         return throttle;
     }
 
@@ -150,6 +257,61 @@ public class JsonPublicDeserializers {
         Cluster cluster = new Cluster();
         cluster.setName(getString(jn, "name"));
         return cluster;
+    }
+
+    public static SourceAddresses decodeSourceAddresses(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("sourceAddresses") != null) {
+            if (!(jn.get("sourceAddresses") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("sourceAddresses").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("sourceAddresses");
+            }
+        }
+        SourceAddresses addresses = new SourceAddresses();
+        addresses.setIpv4Public(getString(jn, "ipv4Public"));
+        addresses.setIpv6Public(getString(jn, "ipv6Public"));
+        addresses.setIpv4Servicenet(getString(jn, "ipv4Servicenet"));
+        addresses.setIpv6Servicenet(getString(jn, "ipv6Servicenet"));
+        return addresses;
+    }
+
+    // TODO: Figure out why this would have to happen, and why the XSD object includes this in the first place.
+    public static LoadBalancerUsage decodeLoadBalancerUsage(JsonNode jn) throws JsonParseException {
+        LoadBalancerUsage usage = new LoadBalancerUsage();
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("loadBalancerUsage") != null
+                && (jn.get("loadBalancerUsage") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("loadBalancerUsage");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format("Error was expecting an ObjectNode({}) or an ArrayNode([]) but found %s", jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        for (i = 0; i < an.size(); i++) {
+            JsonNode usageNode = an.get(i);
+            if (!(usageNode instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", usageNode.toString());
+                throw new JsonParseException(msg, usageNode.traverse().getTokenLocation());
+            }
+            LoadBalancerUsageRecord record = decodeLoadBalancerUsageRecord((ObjectNode) usageNode);
+            usage.getLoadBalancerUsageRecords().add(record);
+        }
+        return usage;
+    }
+
+    public static List<LoadBalancerUsageRecord> decodeLoadBalancerUsageRecords(JsonNode jn) throws JsonParseException {
+        List<LoadBalancerUsageRecord> records = new ArrayList<LoadBalancerUsageRecord>();
+        return records;
+    }
+
+    public static LoadBalancerUsageRecord decodeLoadBalancerUsageRecord(JsonNode jn) throws JsonParseException {
+        LoadBalancerUsageRecord record = new LoadBalancerUsageRecord();
+        return record;
     }
 
     public static VirtualIps decodeVirtualIps(JsonNode jn) throws JsonParseException {
@@ -425,6 +587,36 @@ public class JsonPublicDeserializers {
             type = NodeType.fromValue(nodeType);
         } catch (IllegalStateException ex) {
             String msg = String.format("Illegal nodeType found %s in %s", nodeType, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        return type;
+    }
+
+    public static HealthMonitorType getHealthMonitorType(JsonNode jn, String prop) throws JsonParseException {
+        String monitorType = getString(jn, prop);
+        HealthMonitorType type;
+        if (monitorType == null) {
+            return null;
+        }
+        try {
+            type = HealthMonitorType.fromValue(monitorType);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal monitorType found %s in %s", monitorType, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
+        }
+        return type;
+    }
+
+    public static PersistenceType getPersistenceType(JsonNode jn, String prop) throws JsonParseException {
+        String persistenceType = getString(jn, prop);
+        PersistenceType type;
+        if (persistenceType == null) {
+            return null;
+        }
+        try {
+            type = PersistenceType.fromValue(persistenceType);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal persistenceType found %s in %s", persistenceType, jn.toString());
             throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
         }
         return type;
