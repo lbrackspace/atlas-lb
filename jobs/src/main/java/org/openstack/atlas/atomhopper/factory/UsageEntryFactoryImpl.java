@@ -230,6 +230,8 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
             return Region.SYD;
         } else if (configRegion.equals("IAD")) {
             return Region.IAD;
+        } else if (configRegion.equals("HKG")) {
+            return Region.HKG;
         } else {
             LOG.error("Region could not be mapped from config, using default");
             return Region.GLOBAL;
