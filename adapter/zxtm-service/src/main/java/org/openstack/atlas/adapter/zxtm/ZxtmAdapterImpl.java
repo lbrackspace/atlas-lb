@@ -263,13 +263,16 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         LOG.debug(String.format("setNodePriority for pool %s priority=%s Starting....", poolNames[0], znpc));
         ZxtmServiceStubs stubs = getServiceStubs(config);
-        stubs.getPoolBinding().setNodesPriorityValue(poolNames, znpc.getPriorityValues());
-        if (znpc.hasSecondary()) {
-            boolean[] setTrue = new boolean[]{true};
-            stubs.getPoolBinding().setPriorityEnabled(poolNames, setTrue);
-        } else {
-            boolean[] setFalse = new boolean[]{false};
-            stubs.getPoolBinding().setPriorityEnabled(poolNames, setFalse);
+        PoolPriorityValueDefinition[][] priorities = znpc.getPriorityValues();
+        if (priorities != null) {
+            stubs.getPoolBinding().setNodesPriorityValue(poolNames, znpc.getPriorityValues());
+            if (znpc.hasSecondary()) {
+                boolean[] setTrue = new boolean[]{true};
+                stubs.getPoolBinding().setPriorityEnabled(poolNames, setTrue);
+            } else {
+                boolean[] setFalse = new boolean[]{false};
+                stubs.getPoolBinding().setPriorityEnabled(poolNames, setFalse);
+            }
         }
         LOG.debug(String.format("setNodePriority for pool %s priority=%s Finished....", poolNames[0], znpc));
     }
