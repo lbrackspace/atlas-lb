@@ -4,3 +4,4 @@ target/*
 !example.json
 !vips.json
 !vip.json
+cp.txt

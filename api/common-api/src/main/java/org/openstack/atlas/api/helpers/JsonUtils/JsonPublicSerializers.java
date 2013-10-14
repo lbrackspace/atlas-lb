@@ -17,19 +17,104 @@ import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.TextNode;
 import org.openstack.atlas.api.helpers.JsonSerializeException;
-import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
-import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.openstack.atlas.util.converters.DateTimeConverters;
 import org.w3.atom.Link;
 
 public class JsonPublicSerializers {
+
+    public static void attachLoadBalancers(ObjectNode objectNode, LoadBalancers loadBalancers, boolean includeLinks) {
+        List<LoadBalancer> loadBalancerList = loadBalancers.getLoadBalancers();
+        List<Link> atomLinks = loadBalancers.getLinks();
+        if (loadBalancerList != null && loadBalancerList.size() > 0) {
+            ArrayNode an = objectNode.putArray("loadBalancers");
+            for (LoadBalancer lb : loadBalancerList) {
+                ObjectNode lbNode = an.addObject();
+                attachLoadBalancer(lbNode, lb);
+            }
+        }
+
+        if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
+            ArrayNode an = objectNode.putArray("links");
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
+        }
+    }
+
+    public static void attachLoadBalancer(ObjectNode objectNode, LoadBalancer loadBalancer) {
+        if (loadBalancer.getNodes() != null) {
+            attachNodes(objectNode, loadBalancer.getNodes(), false);
+        }
+        if (loadBalancer.getAccessList() != null) {
+            attachAccessList(objectNode, loadBalancer.getAccessList(), false);
+        }
+        if (loadBalancer.getVirtualIps() != null) {
+            attachVirtualIps(objectNode, loadBalancer.getVirtualIps(), false);
+        }
+        if (loadBalancer.getMetadata() != null) {
+            attachMetadata(objectNode, loadBalancer.getMetadata(), false);
+        }
+        if (loadBalancer.getLoadBalancerUsage() != null) {
+
+        }
+        if (loadBalancer.getSessionPersistence() != null) {
+
+        }
+        if (loadBalancer.getHealthMonitor() != null) {
+
+        }
+        if (loadBalancer.getConnectionThrottle() != null) {
+
+        }
+        if (loadBalancer.getCluster() != null) {
+
+        }
+        if (loadBalancer.getCreated() != null) {
+
+        }
+        if (loadBalancer.getUpdated() != null) {
+
+        }
+        if (loadBalancer.getConnectionLogging() != null) {
+
+        }
+        if (loadBalancer.getContentCaching() != null) {
+
+        }
+        if (loadBalancer.getSslTermination() != null) {
+
+        }
+        if (loadBalancer.getSourceAddresses() != null) {
+
+        }
+        if (loadBalancer.getAlgorithm() != null) {
+
+        }
+        if (loadBalancer.getId() != null) {
+
+        }
+        if (loadBalancer.getName() != null) {
+
+        }
+        if (loadBalancer.getNodeCount() != null) {
+
+        }
+        if (loadBalancer.getPort() != null) {
+
+        }
+        if (loadBalancer.getProtocol() != null) {
+
+        }
+        if (loadBalancer.getStatus() != null) {
+
+        }
+        if (loadBalancer.getTimeout() != null) {
+
+        }
+    }
 
     public static void attachVirtualIps(ObjectNode objectNode, VirtualIps virtualIps, boolean includeLinks) {
         List<VirtualIp> virtualIpList = virtualIps.getVirtualIps();

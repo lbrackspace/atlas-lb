@@ -122,7 +122,7 @@ public class JsonPublicDeserializers {
             lb.setHealthMonitor(decodeHealthMonitor((ObjectNode) jn.get("healthMonitor")));
         }
         if (jn.get("loadBalancerUsage") != null) {
-            lb.setLoadBalancerUsage(null);
+            lb.setLoadBalancerUsage(decodeLoadBalancerUsage((ObjectNode) jn.get("loadBalancerUsage")));
         }
         if (jn.get("sessionPersistence") != null) {
             lb.setSessionPersistence(decodeSessionPersistence((ObjectNode) jn.get("sessionPersistence")));
@@ -277,40 +277,79 @@ public class JsonPublicDeserializers {
         return addresses;
     }
 
-    // TODO: Figure out why this would have to happen, and why the XSD object includes this in the first place.
-    public static LoadBalancerUsage decodeLoadBalancerUsage(JsonNode jn) throws JsonParseException {
+    public static LoadBalancerUsage decodeLoadBalancerUsage(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("loadBalancerUsage") != null) {
+            if (!(jn.get("loadBalancerUsage") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_OR_ARRAY, jn.get("loadBalancerUsage").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("loadBalancerUsage");
+            }
+        }
         LoadBalancerUsage usage = new LoadBalancerUsage();
+        usage.setLoadBalancerId(getInt(jn, "id"));
+        usage.setLoadBalancerName(getString(jn, "name"));
+        if (jn.get("loadBalancerUsageRecords") != null) {
+            usage.getLoadBalancerUsageRecords().addAll(decodeLoadBalancerUsageRecords(jn));
+        }
+        return usage;
+    }
+
+    public static List<LoadBalancerUsageRecord> decodeLoadBalancerUsageRecords(JsonNode jn) throws JsonParseException {
         ArrayNode an;
         int i;
         if ((jn instanceof ObjectNode)
-                && jn.get("loadBalancerUsage") != null
-                && (jn.get("loadBalancerUsage") instanceof ArrayNode)) {
-            an = (ArrayNode) jn.get("loadBalancerUsage");
+                && jn.get("loadBalancerUsageRecords") != null
+                && (jn.get("loadBalancerUsageRecords") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("loadBalancerUsageRecords"); // Strip the root node if its there
         } else if (jn instanceof ArrayNode) {
             an = (ArrayNode) jn;
         } else {
             String msg = String.format("Error was expecting an ObjectNode({}) or an ArrayNode([]) but found %s", jn.toString());
             throw new JsonParseException(msg, jn.traverse().getTokenLocation());
         }
-        for (i = 0; i < an.size(); i++) {
-            JsonNode usageNode = an.get(i);
-            if (!(usageNode instanceof ObjectNode)) {
-                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", usageNode.toString());
-                throw new JsonParseException(msg, usageNode.traverse().getTokenLocation());
-            }
-            LoadBalancerUsageRecord record = decodeLoadBalancerUsageRecord((ObjectNode) usageNode);
-            usage.getLoadBalancerUsageRecords().add(record);
-        }
-        return usage;
-    }
-
-    public static List<LoadBalancerUsageRecord> decodeLoadBalancerUsageRecords(JsonNode jn) throws JsonParseException {
         List<LoadBalancerUsageRecord> records = new ArrayList<LoadBalancerUsageRecord>();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode recordNode = an.get(i);
+            if (!(recordNode instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", recordNode.toString());
+                throw new JsonParseException(msg, recordNode.traverse().getTokenLocation());
+            }
+            LoadBalancerUsageRecord record = decodeLoadBalancerUsageRecord((ObjectNode)recordNode);
+            records.add(record);
+        }
         return records;
     }
 
-    public static LoadBalancerUsageRecord decodeLoadBalancerUsageRecord(JsonNode jn) throws JsonParseException {
+    public static LoadBalancerUsageRecord decodeLoadBalancerUsageRecord(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("loadBalancerUsageRecord") != null) {
+            if (!(jn.get("loadBalancerUsageRecord") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_OR_ARRAY, jn.get("loadBalancerUsageRecord").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("loadBalancerUsageRecord");
+            }
+        }
         LoadBalancerUsageRecord record = new LoadBalancerUsageRecord();
+        record.setAverageNumConnectionsSsl(getDouble(jn, "averageNumConnectionsSsl"));
+        record.setAverageNumConnections(getDouble(jn, "averageNumConnections"));
+        record.setIncomingTransferSsl(getLong(jn, "incomingTransferSsl"));
+        record.setOutgoingTransferSsl(getLong(jn, "outgoingTransferSsl"));
+        record.setIncomingTransfer(getLong(jn, "incomingTransfer"));
+        record.setOutgoingTransfer(getLong(jn, "outgoingTransfer"));
+        record.setEntryVersion(getInt(jn, "entryVersion"));
+        record.setNeedsPushed(getInt(jn, "needsPushed"));
+        record.setEventType(getString(jn, "eventType"));
+        record.setStartTime(decodeDate(jn, "startTime"));
+        record.setNumPolls(getInt(jn, "numPolls"));
+        record.setNumVips(getInt(jn, "numVips"));
+        record.setSslMode(getString(jn, "sslMode"));
+        record.setVipType(getVipType(jn, "vipType"));
+        record.setEndTime(decodeDate(jn, "endTime"));
+        record.setUuid(getString(jn, "uuid"));
+        record.setId(getInt(jn, "id"));
         return record;
     }
 
@@ -637,6 +676,20 @@ public class JsonPublicDeserializers {
     public static Integer getInt(JsonNode jn, String prop) {
         if (jn.get(prop) != null && jn.get(prop).isInt()) {
             return new Integer(jn.get(prop).getValueAsInt());
+        }
+        return null;
+    }
+
+    public static Double getDouble(JsonNode jn, String prop) {
+        if (jn.get(prop) != null && jn.get(prop).isDouble()) {
+            return new Double(jn.get(prop).getValueAsDouble());
+        }
+        return null;
+    }
+
+    public static Long getLong(JsonNode jn, String prop) {
+        if (jn.get(prop) != null && jn.get(prop).isLong()) {
+            return new Long(jn.get(prop).getValueAsLong());
         }
         return null;
     }
