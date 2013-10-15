@@ -46,6 +46,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItemType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
@@ -131,7 +132,7 @@ public class JsonPublicDeserializers {
             lb.setSourceAddresses(decodeSourceAddresses((ObjectNode) jn.get("sessionPersistence")));
         }
         if (jn.get("sslTermination") != null) {
-            lb.setSslTermination(null);
+            lb.setSslTermination(decodeSslTermination((ObjectNode) jn.get("sslTermination")));
         }
         if (jn.get("created") != null) {
             lb.setCreated(getCreated((ObjectNode) jn.get("created")));
@@ -155,6 +156,27 @@ public class JsonPublicDeserializers {
             lb.setMetadata(decodeMetadata(jn.get("metadata")));
         }
         return lb;
+    }
+
+    public static SslTermination decodeSslTermination(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("sslTermination") != null) {
+            if (!(jn.get("sslTermination") instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but instead found %s", jn.get("sslTermination").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("sslTermination");
+            }
+        }
+        SslTermination termination = new SslTermination();
+        termination.setId(getInt(jn, "id"));
+        termination.setSecureTrafficOnly(getBoolean(jn, "secureTrafficOnly"));
+        termination.setEnabled(getBoolean(jn, "enabled"));
+        termination.setSecurePort(getInt(jn, "securePort"));
+        termination.setCertificate(getString(jn, "certificate"));
+        termination.setPrivatekey(getString(jn, "privateKey"));
+        termination.setIntermediateCertificate(getString(jn, "intermediateCertificate"));
+        return termination;
     }
 
     public static SessionPersistence decodeSessionPersistence(ObjectNode jsonNodeIn) throws JsonParseException {
