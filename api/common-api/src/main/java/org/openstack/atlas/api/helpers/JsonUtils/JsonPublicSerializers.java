@@ -24,7 +24,7 @@ import org.w3.atom.Link;
 
 public class JsonPublicSerializers {
 
-    public static void attachLoadBalancers(ObjectNode objectNode, LoadBalancers loadBalancers, boolean includeLinks) {
+    public static void attachLoadBalancers(ObjectNode objectNode, LoadBalancers loadBalancers, boolean includeLinks) throws JsonSerializeException {
         List<LoadBalancer> loadBalancerList = loadBalancers.getLoadBalancers();
         List<Link> atomLinks = loadBalancers.getLinks();
         if (loadBalancerList != null && loadBalancerList.size() > 0) {
@@ -44,7 +44,7 @@ public class JsonPublicSerializers {
         }
     }
 
-    public static void attachLoadBalancer(ObjectNode objectNode, LoadBalancer loadBalancer) {
+    public static void attachLoadBalancer(ObjectNode objectNode, LoadBalancer loadBalancer) throws JsonSerializeException {
         if (loadBalancer.getNodes() != null) {
             attachNodes(objectNode, loadBalancer.getNodes(), false);
         }
@@ -58,61 +58,271 @@ public class JsonPublicSerializers {
             attachMetadata(objectNode, loadBalancer.getMetadata(), false);
         }
         if (loadBalancer.getLoadBalancerUsage() != null) {
-
+            objectNode.putObject("loadBalancerUsage");
+            attachLoadBalancerUsage((ObjectNode) objectNode.get("loadBalancerUsage"), loadBalancer.getLoadBalancerUsage(), false);
         }
         if (loadBalancer.getSessionPersistence() != null) {
-
+            objectNode.putObject("sessionPersistence");
+            attachSessionPersistence((ObjectNode) objectNode.get("sessionPersistence"), loadBalancer.getSessionPersistence());
         }
         if (loadBalancer.getHealthMonitor() != null) {
-
+            objectNode.putObject("healthMonitor");
+            attachHealthMonitor((ObjectNode) objectNode.get("healthMonitor"), loadBalancer.getHealthMonitor());
         }
         if (loadBalancer.getConnectionThrottle() != null) {
-
+            objectNode.putObject("connectionThrottle");
+            attachConnectionThrottle((ObjectNode) objectNode.get("connectionThrottle"), loadBalancer.getConnectionThrottle());
         }
         if (loadBalancer.getCluster() != null) {
-
+            objectNode.putObject("cluster");
+            attachCluster((ObjectNode) objectNode.get("cluster"), loadBalancer.getCluster());
         }
         if (loadBalancer.getCreated() != null) {
-
+            objectNode.putObject("created");
+            attachCreated((ObjectNode) objectNode.get("created"), loadBalancer.getCreated());
         }
         if (loadBalancer.getUpdated() != null) {
-
+            objectNode.putObject("updated");
+            attachUpdated((ObjectNode) objectNode.get("updated"), loadBalancer.getUpdated());
         }
         if (loadBalancer.getConnectionLogging() != null) {
-
+            objectNode.putObject("connectionLogging");
+            attachConnectionLogging((ObjectNode) objectNode.get("connectionLogging"), loadBalancer.getConnectionLogging());
         }
         if (loadBalancer.getContentCaching() != null) {
-
+            objectNode.putObject("contentCaching");
+            attachContentCaching((ObjectNode) objectNode.get("contentCaching"), loadBalancer.getContentCaching());
         }
         if (loadBalancer.getSslTermination() != null) {
-
+            objectNode.putObject("sslTermination");
+            attachSslTermination((ObjectNode) objectNode.get("sslTermination"), loadBalancer.getSslTermination());
         }
         if (loadBalancer.getSourceAddresses() != null) {
-
+            objectNode.putObject("sourceAddresses");
+            attachSourceAddresses((ObjectNode) objectNode.get("sourceAddresses"), loadBalancer.getSourceAddresses());
         }
         if (loadBalancer.getAlgorithm() != null) {
-
+            objectNode.put("algorithm", loadBalancer.getAlgorithm());
         }
         if (loadBalancer.getId() != null) {
-
+            objectNode.put("id", loadBalancer.getId());
         }
         if (loadBalancer.getName() != null) {
-
+            objectNode.put("name", loadBalancer.getName());
         }
         if (loadBalancer.getNodeCount() != null) {
-
+            objectNode.put("nodeCount", loadBalancer.getNodeCount());
         }
         if (loadBalancer.getPort() != null) {
-
+            objectNode.put("port", loadBalancer.getPort());
         }
         if (loadBalancer.getProtocol() != null) {
-
+            objectNode.put("protocol", loadBalancer.getProtocol());
         }
         if (loadBalancer.getStatus() != null) {
-
+            objectNode.put("status", loadBalancer.getStatus());
         }
         if (loadBalancer.getTimeout() != null) {
+            objectNode.put("timeout", loadBalancer.getTimeout());
+        }
+    }
 
+    public static void attachSslTermination(ObjectNode objectNode, SslTermination termination) {
+        if (termination.getCertificate() != null) {
+            objectNode.put("certificate", termination.getCertificate());
+        }
+        if (termination.getId() != null) {
+            objectNode.put("id", termination.getId());
+        }
+        if (termination.getIntermediateCertificate() != null) {
+            objectNode.put("intermediateCertificate", termination.getIntermediateCertificate());
+        }
+        if (termination.getPrivatekey() != null) {
+            objectNode.put("privateKey", termination.getPrivatekey());
+        }
+        if (termination.getSecurePort() != null) {
+            objectNode.put("securePort", termination.getSecurePort());
+        }
+    }
+
+    public static void attachSourceAddresses(ObjectNode objectNode, SourceAddresses addresses) {
+        if (addresses.getIpv4Public() != null) {
+            objectNode.put("ipv4PUblic", addresses.getIpv4Public());
+        }
+        if (addresses.getIpv6Public() != null) {
+            objectNode.put("ipv6Public", addresses.getIpv6Public());
+        }
+        if (addresses.getIpv4Servicenet() != null) {
+            objectNode.put("ipv4Servicenet", addresses.getIpv4Servicenet());
+        }
+        if (addresses.getIpv6Servicenet() != null) {
+            objectNode.put("ipv6Servicenet", addresses.getIpv6Servicenet());
+        }
+    }
+
+    public static void attachLoadBalancerUsage(ObjectNode objectNode, LoadBalancerUsage usage, boolean includeLinks) throws JsonSerializeException {
+        if (usage.getLoadBalancerUsageRecords() != null && usage.getLoadBalancerUsageRecords().size() > 0) {
+            attachLoadBalancerUsageRecords(objectNode, usage.getLoadBalancerUsageRecords());
+        }
+        if (usage.getLoadBalancerId() != null) {
+            objectNode.put("loadBalancerId", usage.getLoadBalancerId());
+        }
+        if (usage.getLoadBalancerName() != null) {
+            objectNode.put("loadBalancerName", usage.getLoadBalancerName());
+        }
+        if (includeLinks && usage.getLinks() != null && usage.getLinks().size() > 0) {
+            ArrayNode an = objectNode.putArray("links");
+            List<Link> atomLinks = usage.getLinks();
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
+        }
+    }
+
+    public static void attachLoadBalancerUsageRecords(ObjectNode objectNode, List<LoadBalancerUsageRecord> recordList) throws JsonSerializeException {
+        List<LoadBalancerUsageRecord> records = recordList;
+        if (records != null && records.size() > 0) {
+            ArrayNode an = objectNode.putArray("loadBalancerUsageRecords");
+            for (LoadBalancerUsageRecord record : records) {
+                ObjectNode recordNode = an.addObject();
+                attachLoadBalancerUsageRecord(recordNode, record);
+            }
+        }
+    }
+
+    public static void attachLoadBalancerUsageRecord(ObjectNode objectNode, LoadBalancerUsageRecord record) throws JsonSerializeException {
+        if (record.getAverageNumConnections() != null) {
+            objectNode.put("averageNumConnections", record.getAverageNumConnections());
+        }
+        if (record.getAverageNumConnectionsSsl() != null) {
+            objectNode.put("averageNumConnectionsSsl", record.getAverageNumConnectionsSsl());
+        }
+        if (record.getIncomingTransfer() != null) {
+            objectNode.put("incomingTransfer", record.getIncomingTransfer());
+        }
+        if (record.getIncomingTransferSsl() != null) {
+            objectNode.put("incomingTransferSsl", record.getIncomingTransferSsl());
+        }
+        if (record.getOutgoingTransfer() != null) {
+            objectNode.put("outgoingTransfer", record.getOutgoingTransfer());
+        }
+        if (record.getOutgoingTransferSsl() != null) {
+            objectNode.put("outgoingTransferSsl", record.getOutgoingTransferSsl());
+        }
+        if (record.getNeedsPushed() != null) {
+            objectNode.put("needsPush", record.getNeedsPushed());
+        }
+        if (record.getNumPolls() != null) {
+            objectNode.put("numPolls", record.getNumPolls());
+        }
+        if (record.getNumVips() != null) {
+            objectNode.put("numVips", record.getNumVips());
+        }
+        if (record.getEntryVersion() != null) {
+            objectNode.put("entryVersion", record.getEntryVersion());
+        }
+        if (record.getEventType() != null) {
+            objectNode.put("eventType", record.getEventType());
+        }
+        if (record.getId() != null) {
+            objectNode.put("id", record.getId());
+        }
+        if (record.getSslMode() != null) {
+            objectNode.put("sslMode", record.getSslMode());
+        }
+        if (record.getUuid() != null) {
+            objectNode.put("uuid", record.getUuid());
+        }
+        if (record.getVipType() != null) {
+            objectNode.put("vipType", record.getVipType().value());
+        }
+        if (record.getStartTime() != null) {
+            attachDateTime(objectNode, "startTime", record.getStartTime());
+        }
+        if (record.getEndTime() != null) {
+            attachDateTime(objectNode, "endTime", record.getEndTime());
+        }
+    }
+
+    public static void attachHealthMonitor(ObjectNode objectNode, HealthMonitor monitor) {
+        if (monitor.getId() != null) {
+            objectNode.put("id", monitor.getId());
+        }
+        if (monitor.getAttemptsBeforeDeactivation() != null) {
+            objectNode.put("attemptsBeforeDeactivation", monitor.getAttemptsBeforeDeactivation());
+        }
+        if (monitor.getBodyRegex() != null) {
+            objectNode.put("bodyRegex", monitor.getBodyRegex());
+        }
+        if (monitor.getDelay() != null) {
+            objectNode.put("delay", monitor.getDelay());
+        }
+        if (monitor.getHostHeader() != null) {
+            objectNode.put("hostHeader", monitor.getHostHeader());
+        }
+        if (monitor.getPath() != null) {
+            objectNode.put("path", monitor.getPath());
+        }
+        if (monitor.getStatusRegex() != null) {
+            objectNode.put("statusRegex", monitor.getStatusRegex());
+        }
+        if (monitor.getTimeout() != null) {
+            objectNode.put("timeout", monitor.getTimeout());
+        }
+        if (monitor.getType() != null) {
+            objectNode.put("type", monitor.getType().value());
+        }
+    }
+
+    public static void attachSessionPersistence(ObjectNode objectNode, SessionPersistence persistence) {
+        if (persistence.getPersistenceType() != null) {
+            objectNode.put("persistenceType", persistence.getPersistenceType().value());
+        }
+    }
+
+    public static void attachConnectionThrottle(ObjectNode objectNode, ConnectionThrottle throttle) {
+        if (throttle.getMaxConnectionRate() != null) {
+            objectNode.put("maxConnectionRate", throttle.getMaxConnectionRate());
+        }
+        if (throttle.getMaxConnections() != null) {
+            objectNode.put("maxConnections", throttle.getMaxConnections());
+        }
+        if (throttle.getMinConnections() != null) {
+            objectNode.put("minConnections", throttle.getMinConnections());
+        }
+        if (throttle.getRateInterval() != null) {
+            objectNode.put("rateInterval", throttle.getRateInterval());
+        }
+    }
+
+    public static void attachConnectionLogging(ObjectNode objectNode, ConnectionLogging logging) {
+        if (logging.isEnabled()) {
+            objectNode.put("enabled", logging.isEnabled());
+        }
+    }
+
+    public static void attachContentCaching(ObjectNode objectNode, ContentCaching caching) {
+        if (caching.isEnabled()) {
+            objectNode.put("enabled", caching.isEnabled());
+        }
+    }
+
+    public static void attachCluster(ObjectNode objectNode, Cluster cluster) {
+        if (cluster.getName() != null) {
+            objectNode.put("name", cluster.getName());
+        }
+    }
+
+    public static void attachCreated(ObjectNode objectNode, Created created) throws JsonSerializeException {
+        if (created.getTime() != null) {
+            attachDateTime(objectNode, "time", created.getTime());
+        }
+    }
+
+    public static void attachUpdated(ObjectNode objectNode, Updated updated) throws JsonSerializeException {
+        if (updated.getTime() != null) {
+            attachDateTime(objectNode, "time", updated.getTime());
         }
     }
 
@@ -305,7 +515,7 @@ public class JsonPublicSerializers {
         }
     }
 
-    public void attachDateTime(ObjectNode on, String prop, Calendar cal) throws JsonSerializeException {
+    public static void attachDateTime(ObjectNode on, String prop, Calendar cal) throws JsonSerializeException {
         String isoString;
         try {
             isoString = DateTimeConverters.calToiso(cal);

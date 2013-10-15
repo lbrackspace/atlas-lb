@@ -1,6 +1,7 @@
 target/*
 *.class
 *.json
+*.sh
 !example.json
 !vips.json
 !vip.json
