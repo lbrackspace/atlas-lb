@@ -129,7 +129,7 @@ public class JsonPublicDeserializers {
             lb.setSessionPersistence(decodeSessionPersistence((ObjectNode) jn.get("sessionPersistence")));
         }
         if (jn.get("sourceAddresses") != null) {
-            lb.setSourceAddresses(decodeSourceAddresses((ObjectNode) jn.get("sessionPersistence")));
+            lb.setSourceAddresses(decodeSourceAddresses((ObjectNode) jn.get("sourceAddresses")));
         }
         if (jn.get("sslTermination") != null) {
             lb.setSslTermination(decodeSslTermination((ObjectNode) jn.get("sslTermination")));
@@ -310,10 +310,10 @@ public class JsonPublicDeserializers {
             }
         }
         LoadBalancerUsage usage = new LoadBalancerUsage();
-        usage.setLoadBalancerId(getInt(jn, "id"));
-        usage.setLoadBalancerName(getString(jn, "name"));
+        usage.setLoadBalancerId(getInt(jn, "loadBalancerId"));
+        usage.setLoadBalancerName(getString(jn, "loadBalancerName"));
         if (jn.get("loadBalancerUsageRecords") != null) {
-            usage.getLoadBalancerUsageRecords().addAll(decodeLoadBalancerUsageRecords(jn));
+            usage.getLoadBalancerUsageRecords().addAll(decodeLoadBalancerUsageRecords(jn.get("loadBalancerUsageRecords")));
         }
         return usage;
     }
@@ -322,9 +322,9 @@ public class JsonPublicDeserializers {
         ArrayNode an;
         int i;
         if ((jn instanceof ObjectNode)
-                && jn.get("loadBalancerUsageRecords") != null
-                && (jn.get("loadBalancerUsageRecords") instanceof ArrayNode)) {
-            an = (ArrayNode) jn.get("loadBalancerUsageRecords"); // Strip the root node if its there
+                && jn.get("loadBalancerUsageRecord") != null
+                && (jn.get("loadBalancerUsageRecord") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("loadBalancerUsageRecord");
         } else if (jn instanceof ArrayNode) {
             an = (ArrayNode) jn;
         } else {
@@ -522,7 +522,7 @@ public class JsonPublicDeserializers {
         node.setId(getInt(jn, "id"));
         node.setAddress(getString(jn, "address"));
         node.setPort(getInt(jn, "port"));
-        node.setWeight(getInt(jn, "port"));
+        node.setWeight(getInt(jn, "weight"));
 
         node.setCondition(getNodeCondition(jn, "condition"));
         node.setStatus(getNodeStatus(jn, "status"));
