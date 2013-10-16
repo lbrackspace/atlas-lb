@@ -547,6 +547,18 @@ public class JsonPublicSerializers {
         }
     }
 
+    public static void attachAlgorithms(ObjectNode objectNode, Algorithms algorithms) {
+        List<Algorithm> algorithmList = algorithms.getAlgorithms();
+
+        if (algorithmList != null && algorithmList.size() > 0) {
+            ArrayNode an = objectNode.putArray("algorithms");
+            for (Algorithm algorithm : algorithmList) {
+                ObjectNode node = an.addObject();
+                node.put("name", algorithm.getName());
+            }
+        }
+    }
+
     public static void attachAtomLink(ObjectNode objectNode, Link atomLink) {
         if (atomLink.getBase() != null) {
             objectNode.put("base", atomLink.getBase());

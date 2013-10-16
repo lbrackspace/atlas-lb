@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.Algorithms;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Algorithm;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Cluster;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
@@ -632,6 +634,33 @@ public class JsonPublicDeserializers {
         event.setAuthor(getString(jn, "author"));
         event.setCreated(getString(jn, "created"));
         return event;
+    }
+
+    public static Algorithms decodeAlgorithms(JsonNode jn) throws JsonParseException {
+        Algorithms algorithms = new Algorithms();
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("algorithms") != null
+                && (jn.get("algorithms") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("algorithms");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARRAY, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        for (i = 0; i < an.size(); i++) {
+            JsonNode node = an.get(i);
+            if (!(node instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", node.toString());
+                throw new JsonParseException(msg, node.traverse().getTokenLocation());
+            }
+            Algorithm algorithm = new Algorithm();
+            algorithm.setName(getString(node, "name"));
+            algorithms.getAlgorithms().add(algorithm);
+        }
+        return algorithms;
     }
 
     public static IpVersion getIpVersion(JsonNode jn, String prop) throws JsonParseException {
