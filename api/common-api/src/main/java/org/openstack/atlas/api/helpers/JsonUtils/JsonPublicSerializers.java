@@ -187,6 +187,70 @@ public class JsonPublicSerializers {
         }
     }
 
+    public static void attachNodeServiceEvents(ObjectNode objectNode, NodeServiceEvents events, boolean includeLinks) {
+        if (events.getLoadbalancerId() != null) {
+            objectNode.put("loadbalancerId", events.getLoadbalancerId());
+        }
+        if (events.getNodeServiceEvents() != null && events.getNodeServiceEvents().size() > 0) {
+            ArrayNode an = objectNode.putArray("nodeServiceEvents");
+            List<NodeServiceEvent> eventList = events.getNodeServiceEvents();
+            for (NodeServiceEvent event : eventList) {
+                ObjectNode eventNode = an.addObject();
+                attachNodeServiceEvent(eventNode, event);
+            }
+        }
+        if (includeLinks && events.getLinks() != null && events.getLinks().size() > 0) {
+            ArrayNode an = objectNode.putArray("links");
+            List<Link> atomLinks = events.getLinks();
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
+        }
+    }
+
+    public static void attachNodeServiceEvent(ObjectNode objectNode, NodeServiceEvent event) {
+        if (event.getLoadbalancerId() != null) {
+            objectNode.put("loadbalancerId", event.getLoadbalancerId());
+        }
+        if (event.getDetailedMessage() != null) {
+            objectNode.put("detailedMessage", event.getDetailedMessage());
+        }
+        if (event.getNodeId() != null) {
+            objectNode.put("nodeId", event.getNodeId());
+        }
+        if (event.getAccountId() != null) {
+            objectNode.put("accountId", event.getAccountId());
+        }
+        if (event.getAuthor() != null) {
+            objectNode.put("author", event.getAuthor());
+        }
+        if (event.getCategory() != null) {
+            objectNode.put("category", event.getCategory());
+        }
+        if (event.getCreated() != null) {
+            objectNode.put("created", event.getCreated());
+        }
+        if (event.getDescription() != null) {
+            objectNode.put("description", event.getDescription());
+        }
+        if (event.getId() != null) {
+            objectNode.put("id", event.getId());
+        }
+        if (event.getRelativeUri() != null) {
+            objectNode.put("relativeUri", event.getRelativeUri());
+        }
+        if (event.getSeverity() != null) {
+            objectNode.put("severity", event.getSeverity());
+        }
+        if (event.getTitle() != null) {
+            objectNode.put("title", event.getTitle());
+        }
+        if (event.getType() != null) {
+            objectNode.put("type", event.getType());
+        }
+    }
+
     public static void attachLoadBalancerUsageRecords(ObjectNode objectNode, List<LoadBalancerUsageRecord> recordList) throws JsonSerializeException {
         List<LoadBalancerUsageRecord> records = recordList;
         if (records != null && records.size() > 0) {

@@ -13,6 +13,8 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvent;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
@@ -575,6 +577,61 @@ public class JsonPublicDeserializers {
         meta.setKey(getString(jn, "key"));
         meta.setValue(getString(jn, "value"));
         return meta;
+    }
+
+    public static NodeServiceEvents decodeNodeServiceEvents(JsonNode jn) throws JsonParseException {
+        ObjectNode objectNode = (ObjectNode) jn;
+        NodeServiceEvents events = new NodeServiceEvents();
+        events.setLoadbalancerId(getInt(objectNode, "loadbalancerId"));
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("nodeServiceEvents") != null
+                && (jn.get("nodeServiceEvents") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("nodeServiceEvents");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARRAY, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        for (i = 0; i < an.size(); i++) {
+            JsonNode node = an.get(i);
+            if (!(node instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", node.toString());
+                throw new JsonParseException(msg, node.traverse().getTokenLocation());
+            }
+            NodeServiceEvent event = decodeNodeServiceEvent((ObjectNode) node);
+            events.getNodeServiceEvents().add(event);
+        }
+        return events;
+    }
+
+    public static NodeServiceEvent decodeNodeServiceEvent(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("nodeServiceEvent") != null) {
+            if (!(jn.get("nodeServiceEvent") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_OR_ARRAY, jn.get("nodeServiceEvent").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("nodeServiceEvent");
+            }
+        }
+        NodeServiceEvent event = new NodeServiceEvent();
+        event.setId(getInt(jn, "id"));
+        event.setLoadbalancerId(getInt(jn, "loadbalancerId"));
+        event.setNodeId(getInt(jn, "nodeId"));
+        event.setType(getString(jn, "type"));
+        event.setDescription(getString(jn, "description"));
+        event.setDetailedMessage(getString(jn, "detailedMessage"));
+        event.setCategory(getString(jn, "category"));
+        event.setSeverity(getString(jn, "severity"));
+        event.setRelativeUri(getString(jn, "relativeUri"));
+        event.setAccountId(getInt(jn, "accountId"));
+        event.setTitle(getString(jn, "title"));
+        event.setAuthor(getString(jn, "author"));
+        event.setCreated(getString(jn, "created"));
+        return event;
     }
 
     public static IpVersion getIpVersion(JsonNode jn, String prop) throws JsonParseException {

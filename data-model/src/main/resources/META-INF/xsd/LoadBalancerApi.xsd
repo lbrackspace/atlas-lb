@@ -61,9 +61,6 @@
 
     <xsd:element name="stats" type="tns:stats"/>
     <xsd:complexType name="stats">
-        <xsd:sequence>
-            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
         <xsd:attribute name="connectTimeOut" type="xsd:int"/>
         <xsd:attribute name="connectError" type="xsd:int"/>
         <xsd:attribute name="connectFailure" type="xsd:int"/>
