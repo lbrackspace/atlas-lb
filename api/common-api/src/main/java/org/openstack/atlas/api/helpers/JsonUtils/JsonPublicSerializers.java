@@ -638,6 +638,19 @@ public class JsonPublicSerializers {
         }
     }
 
+    public static void attachProtocols(ObjectNode objectNode, Protocols protocols) {
+        List<Protocol> protocolList = protocols.getProtocols();
+
+        if (protocolList != null && protocolList.size() > 0) {
+            ArrayNode an = objectNode.putArray("algorithms");
+            for (Protocol protocol : protocolList) {
+                ObjectNode node = an.addObject();
+                node.put("name", protocol.getName());
+                node.put("port", protocol.getPort());
+            }
+        }
+    }
+
     public static void attachAtomLink(ObjectNode objectNode, Link atomLink) {
         if (atomLink.getBase() != null) {
             objectNode.put("base", atomLink.getBase());

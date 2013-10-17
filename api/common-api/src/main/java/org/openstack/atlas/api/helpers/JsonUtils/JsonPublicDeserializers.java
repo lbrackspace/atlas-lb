@@ -39,6 +39,8 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItemType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Protocol;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Protocols;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
@@ -754,6 +756,34 @@ public class JsonPublicDeserializers {
         event.setAuthor(getString(jn, "author"));
         event.setCreated(getString(jn, "created"));
         return event;
+    }
+
+    public static Protocols decodeProtocols(JsonNode jn) throws JsonParseException {
+        Protocols protocols = new Protocols();
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("protocols") != null
+                && (jn.get("protocols") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("protocols");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        for (i = 0; i < an.size(); i++) {
+            JsonNode node = an.get(i);
+            if (!(node instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, node.toString());
+                throw new JsonParseException(msg, node.traverse().getTokenLocation());
+            }
+            Protocol protocol = new Protocol();
+            protocol.setName(getString(node, "name"));
+            protocol.setPort(getInt(node, "port"));
+            protocols.getProtocols().add(protocol);
+        }
+        return protocols;
     }
 
     public static Algorithms decodeAlgorithms(JsonNode jn) throws JsonParseException {
