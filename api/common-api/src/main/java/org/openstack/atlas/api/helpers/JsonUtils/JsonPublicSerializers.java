@@ -651,6 +651,39 @@ public class JsonPublicSerializers {
         }
     }
 
+    public static void attachOperationsuccess(ObjectNode objectNode, Operationsuccess op) {
+        if (op.getMessage() != null) {
+            objectNode.put("message", op.getMessage());
+        }
+        if (op.getStatus() != null) {
+            objectNode.put("status", op.getStatus());
+        }
+    }
+
+    public static void attachAllowedDomains(ObjectNode objectNode, AllowedDomains domains) {
+        List<AllowedDomain> domainList = domains.getAllowedDomains();
+        if (domainList != null && domainList.size() > 0) {
+            ArrayNode an = objectNode.putArray("allowedDomain");
+            for (AllowedDomain domain : domainList) {
+                ObjectNode node = an.addObject();
+                attachAllowedDomain(node, domain);
+            }
+        }
+    }
+
+    public static void attachAllowedDomain(ObjectNode objectNode, AllowedDomain domain) {
+        if (domain.getName() != null) {
+            objectNode.put("name", domain.getName());
+        }
+    }
+
+    public static void attachErrorPage(ObjectNode objectNode, Errorpage page) {
+        ObjectNode node = objectNode.putObject("errorpage");
+        if (page.getContent() != null) {
+            node.put("content", page.getContent());
+        }
+    }
+
     public static void attachAtomLink(ObjectNode objectNode, Link atomLink) {
         if (atomLink.getBase() != null) {
             objectNode.put("base", atomLink.getBase());

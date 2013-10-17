@@ -1,15 +1,21 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.node.ObjectNode;
+import org.codehaus.jackson.node.ArrayNode;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsageRecord;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Algorithms;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Algorithm;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomains;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Cluster;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
@@ -23,21 +29,13 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.node.ObjectNode;
-import org.codehaus.jackson.node.ArrayNode;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItemType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Operationsuccess;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Protocol;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Protocols;
@@ -48,8 +46,13 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.openstack.atlas.util.converters.DateTimeConverters;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 public class JsonPublicDeserializers {
 
@@ -676,7 +679,7 @@ public class JsonPublicDeserializers {
         for (i = 0; i < an.size(); i++) {
             JsonNode node = an.get(i);
             if (!(node instanceof ObjectNode)) {
-                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", node.toString());
+                String msg = String.format(NOT_OBJ_NODE, node.toString());
                 throw new JsonParseException(msg, node.traverse().getTokenLocation());
             }
             Meta meta = decodeMeta((ObjectNode) node);
@@ -811,6 +814,78 @@ public class JsonPublicDeserializers {
             algorithms.getAlgorithms().add(algorithm);
         }
         return algorithms;
+    }
+
+    public static Operationsuccess decodeOperationsuccess(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("operationsuccess") != null) {
+            if (!(jn.get("operationsuccess") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("operationsuccess").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("operationsuccess");
+            }
+        }
+        Operationsuccess op = new Operationsuccess();
+        op.setMessage(getString(jn, "message"));
+        op.setStatus(getInt(jn, "status"));
+        return op;
+    }
+
+    public static AllowedDomains decodeAllowedDomains(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("allowedDomain") != null
+                && jn.get("allowedDomain").size() > 0) {
+            an = (ArrayNode) jn.get("allowedDomain");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        AllowedDomains domains = new AllowedDomains();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode node = an.get(i);
+            if (!(node instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, node.toString());
+                throw new JsonParseException(msg, node.traverse().getTokenLocation());
+            }
+            AllowedDomain domain = decodeAllowedDomain((ObjectNode) node);
+            domains.getAllowedDomains().add(domain);
+        }
+        return domains;
+    }
+
+    public static AllowedDomain decodeAllowedDomain(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("allowedDomain") != null) {
+            if (!(jn.get("allowedDomain") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("allowedDomain").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("allowedDomain");
+            }
+        }
+        AllowedDomain domain = new AllowedDomain();
+        domain.setName(getString(jn, "name"));
+        return domain;
+    }
+
+    public static Errorpage decodeErrorPage(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("errorpage") != null) {
+            if (!(jn.get("errorpage") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("errorpage").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("errorpage");
+            }
+        }
+        Errorpage page = new Errorpage();
+        page.setContent(getString(jn, "content"));
+        return page;
     }
 
     public static IpVersion getIpVersion(JsonNode jn, String prop) throws JsonParseException {
