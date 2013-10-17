@@ -34,7 +34,6 @@ public class JsonPublicSerializers {
                 attachLoadBalancer(lbNode, lb, false);
             }
         }
-
         if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
             ArrayNode an = objectNode.putArray("links");
             for (Link atomLink : atomLinks) {
@@ -164,6 +163,86 @@ public class JsonPublicSerializers {
         }
         if (addresses.getIpv6Servicenet() != null) {
             objectNode.put("ipv6Servicenet", addresses.getIpv6Servicenet());
+        }
+    }
+
+    public static void attachAccountBillings(ObjectNode objectNode, List<AccountBilling> accountBillings) throws JsonSerializeException {
+        ArrayNode an = objectNode.putArray("accountBillings");
+        for (AccountBilling billing : accountBillings) {
+            ObjectNode billingNode = an.addObject();
+            attachAccountBilling(billingNode, billing);
+        }
+    }
+
+    public static void attachAccountBilling(ObjectNode objectNode, AccountBilling billing) throws JsonSerializeException {
+        if (billing.getAccountId() != null) {
+            objectNode.put("accountId", billing.getAccountId());
+        }
+        if (billing.getAccountUsage() != null) {
+            objectNode.putObject("accountUsage");
+            attachAccountUsage((ObjectNode) objectNode.get("accountUsage"), billing.getAccountUsage());
+        }
+        if (billing.getLoadBalancerUsages() != null) {
+            attachLoadBalancerUsages(objectNode, billing.getLoadBalancerUsages());
+        }
+        List<Link> atomLinks = billing.getLinks();
+        if (atomLinks != null && atomLinks.size() > 0) {
+            ArrayNode an = objectNode.putArray("links");
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
+        }
+    }
+
+    public static void attachAccountUsage(ObjectNode objectNode, AccountUsage usage) throws JsonSerializeException{
+        if (usage.getAccountUsageRecords() != null && usage.getAccountUsageRecords().size()> 0) {
+            attachAccountUsageRecords(objectNode, usage.getAccountUsageRecords());
+        }
+        List<Link> atomLinks = usage.getLinks();
+        if (atomLinks != null && atomLinks.size() > 0) {
+            ArrayNode an = objectNode.putArray("links");
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
+        }
+    }
+
+    public static void attachAccountUsageRecords(ObjectNode objectNode, List<AccountUsageRecord> records) throws JsonSerializeException {
+        List<AccountUsageRecord> recordList = records;
+        if (recordList != null && recordList.size() > 0) {
+            ArrayNode an = objectNode.putArray("accountUsageRecords");
+            for (AccountUsageRecord record : recordList) {
+                ObjectNode recordNode = an.addObject();
+                attachAccountUsageRecord(recordNode, record);
+            }
+        }
+    }
+
+    public static void attachAccountUsageRecord(ObjectNode objectNode, AccountUsageRecord record) throws JsonSerializeException {
+        if (record.getNumLoadBalancers() != null) {
+            objectNode.put("numLoadBalancers", record.getNumLoadBalancers());
+        }
+        if (record.getNumPublicVips() != null) {
+            objectNode.put("numPublicVips", record.getNumPublicVips());
+        }
+        if (record.getNumServicenetVips() != null) {
+            objectNode.put("numServicenetVips", record.getNumServicenetVips());
+        }
+        if (record.getStartTime() != null) {
+            attachDateTime(objectNode, "startTime", record.getStartTime());
+        }
+    }
+
+    public static void attachLoadBalancerUsages(ObjectNode objectNode, List<LoadBalancerUsage> usages) throws JsonSerializeException {
+        List<LoadBalancerUsage> usageList = usages;
+        if (usageList != null && usageList.size() > 0) {
+            ArrayNode an = objectNode.putArray("LoadBalancerUsages");
+            for (LoadBalancerUsage usage : usageList) {
+                ObjectNode usageNode = an.addObject();
+                attachLoadBalancerUsage(usageNode, usage, false);
+            }
         }
     }
 
