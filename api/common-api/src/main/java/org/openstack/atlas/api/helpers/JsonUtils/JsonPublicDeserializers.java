@@ -4,6 +4,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.node.ObjectNode;
 import org.codehaus.jackson.node.ArrayNode;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Absolute;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsageRecord;
@@ -18,6 +19,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Limit;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
@@ -49,6 +51,8 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.openstack.atlas.util.converters.DateTimeConverters;
+import org.openstack.docs.common.api.v1.AbsoluteLimit;
+import org.openstack.docs.common.api.v1.AbsoluteLimitList;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -886,6 +890,49 @@ public class JsonPublicDeserializers {
         Errorpage page = new Errorpage();
         page.setContent(getString(jn, "content"));
         return page;
+    }
+
+    public static Absolute decodeAbsoluteLimits(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("absolute") != null
+                && jn.get("absolute").size() > 0) {
+            an = (ArrayNode) jn.get("absolute");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        Absolute limits = new Absolute();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode node = an.get(i);
+            if (!(node instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, node.toString());
+                throw new JsonParseException(msg, node.traverse().getTokenLocation());
+            }
+            Limit limit = decodeLimit((ObjectNode) node);
+            limits.getLimits().add(limit);
+        }
+        return limits;
+    }
+
+    public static Limit decodeLimit(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("limit") != null) {
+            if (!(jn.get("limit") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("limit").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("limit");
+            }
+        }
+        Limit limit = new Limit();
+        limit.setName(getString(jn, "name"));
+        limit.setValue(getInt(jn, "value"));
+        limit.setId(getInt(jn, "id"));
+        return limit;
     }
 
     public static IpVersion getIpVersion(JsonNode jn, String prop) throws JsonParseException {

@@ -20,6 +20,8 @@ import org.openstack.atlas.api.helpers.JsonSerializeException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.openstack.atlas.util.converters.DateTimeConverters;
+import org.openstack.docs.common.api.v1.AbsoluteLimit;
+import org.openstack.docs.common.api.v1.AbsoluteLimitList;
 import org.w3.atom.Link;
 
 public class JsonPublicSerializers {
@@ -681,6 +683,26 @@ public class JsonPublicSerializers {
         ObjectNode node = objectNode.putObject("errorpage");
         if (page.getContent() != null) {
             node.put("content", page.getContent());
+        }
+    }
+
+    public static void attachAbsoluteLimits(ObjectNode objectNode, Absolute limits) {
+        List<Limit> limitList = limits.getLimits();
+        if (limitList != null && limitList.size() > 0) {
+            ArrayNode an = objectNode.putArray("absolute");
+            for (Limit limit : limitList) {
+                ObjectNode node = an.addObject();
+                attachAbsoluteLimit(node, limit);
+            }
+        }
+    }
+
+    public static void attachAbsoluteLimit(ObjectNode objectNode, Limit limit) {
+        if (limit.getName() != null) {
+            objectNode.put("name", limit.getName());
+        }
+        if (limit.getValue() != null) {
+            objectNode.put("value", limit.getValue());
         }
     }
 
