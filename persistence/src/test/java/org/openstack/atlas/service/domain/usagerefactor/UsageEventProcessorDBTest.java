@@ -329,6 +329,10 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -373,6 +377,10 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -412,6 +420,10 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -453,6 +465,10 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -498,6 +514,10 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -540,6 +560,10 @@ public class UsageEventProcessorDBTest {
             usageEventProcessor.setLoadBalancerRepository(loadBalancerRepository);
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -601,6 +625,10 @@ public class UsageEventProcessorDBTest {
             Assert.assertEquals(0, lbusages.get(0).getTagsBitmask());
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             Calendar nextEventTime = Calendar.getInstance();
             nextEventTime.setTime(lbusages.get(0).getPollTime().getTime());
             nextEventTime.add(Calendar.MINUTE, 1);
@@ -666,6 +694,10 @@ public class UsageEventProcessorDBTest {
             Assert.assertEquals(BitTag.SSL.tagValue(), lbusages.get(0).getTagsBitmask());
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -730,6 +762,10 @@ public class UsageEventProcessorDBTest {
                     + BitTag.SSL_MIXED_MODE.tagValue(), lbusages.get(0).getTagsBitmask());
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -794,6 +830,10 @@ public class UsageEventProcessorDBTest {
             Assert.assertEquals(BitTag.SERVICENET_LB.tagValue(), lbusages.get(0).getTagsBitmask());
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -858,6 +898,10 @@ public class UsageEventProcessorDBTest {
             Assert.assertEquals(BitTag.SSL.tagValue() + BitTag.SERVICENET_LB.tagValue(), lbusages.get(0).getTagsBitmask());
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
@@ -925,6 +969,10 @@ public class UsageEventProcessorDBTest {
                     + BitTag.SERVICENET_LB.tagValue(), lbusages.get(0).getTagsBitmask());
 
             SnmpUsage usage = new SnmpUsage();
+            usage.setBytesOut(0);
+            usage.setBytesIn(0);
+            usage.setBytesOutSsl(0);
+            usage.setBytesInSsl(0);
             usage.setHostId(1);
             snmpUsages.clear();
             snmpUsages.add(usage);
