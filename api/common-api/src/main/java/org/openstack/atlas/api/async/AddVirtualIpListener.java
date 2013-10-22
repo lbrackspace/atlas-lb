@@ -61,11 +61,6 @@ public class AddVirtualIpListener extends BaseListener {
 
         Calendar eventTime = Calendar.getInstance();
 
-        // DEPRECATED
-        // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP, eventTime);
-        // END DEPRECATION
-
         // Notify usage processor
         try {
             usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.CREATE_VIRTUAL_IP, eventTime);

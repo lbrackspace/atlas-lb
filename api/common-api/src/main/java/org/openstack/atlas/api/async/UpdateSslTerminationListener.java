@@ -34,18 +34,6 @@ public class UpdateSslTerminationListener extends BaseListener {
         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
         ZeusSslTermination queTermination = dataContainer.getZeusSslTermination();
         LoadBalancer dbLoadBalancer = new LoadBalancer();
-        @Deprecated
-        Long bytesOut = null;
-        @Deprecated
-        Long bytesIn = null;
-        @Deprecated
-        Integer concurrentConns = null;
-        @Deprecated
-        Long bytesOutSsl = null;
-        @Deprecated
-        Long bytesInSsl = null;
-        @Deprecated
-        Integer concurrentConnsSsl = null;
 
         try {
             LOG.debug("Grabbing loadbalancer...");
@@ -58,46 +46,6 @@ public class UpdateSslTerminationListener extends BaseListener {
 //            notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dbLoadBalancer);
             return;
-        }
-
-        // DEPRECATED
-        // Try to get non-ssl usage 1st pass
-        try {
-            bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer outbound bandwidth counter.");
-        }
-
-        try {
-            bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer inbound bandwidth counter.");
-        }
-
-        try {
-            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
-        }
-
-        // DEPRECATED
-        // Try to get ssl usage 1st pass
-        try {
-            bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer outbound bandwidth counter.");
-        }
-
-        try {
-            bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer inbound bandwidth counter.");
-        }
-
-        try {
-            concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
         }
 
         //First pass
@@ -128,46 +76,6 @@ public class UpdateSslTerminationListener extends BaseListener {
             sendErrorToEventResource(dbLoadBalancer);
 
             return;
-        }
-
-        // DEPRECATED
-        // Try to get non-ssl usage (2nd pass)
-        try {
-            if (bytesOut == null) bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer outbound bandwidth counter.");
-        }
-
-        try {
-            if (bytesIn == null) bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer inbound bandwidth counter.");
-        }
-
-        try {
-            if (concurrentConns == null) concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
-        }
-
-        // DEPRECATED
-        // Try to get ssl usage (2nd pass)
-        try {
-            if (bytesOutSsl == null) bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer outbound bandwidth counter.");
-        }
-
-        try {
-            if (bytesInSsl == null) bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer inbound bandwidth counter.");
-        }
-
-        try {
-            if (concurrentConnsSsl == null) concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer concurrent connections counter.");
         }
 
         //Second pass
@@ -221,22 +129,13 @@ public class UpdateSslTerminationListener extends BaseListener {
         if (queTermination.getSslTermination().isEnabled()) {
             LOG.debug(String.format("SSL Termination is enabled for load balancer: %s", dbLoadBalancer.getId()));
             if (queTermination.getSslTermination().isSecureTrafficOnly()) {
-                // DEPRECATED
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
-
                 LOG.debug(String.format("SSL Termination is Secure Traffic Only for load balancer: %s", dbLoadBalancer.getId()));
                 usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
             } else {
-                // DEPRECATED
-                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
-
                 LOG.debug(String.format("SSL Termination is Mixed Traffic for load balancer: %s", dbLoadBalancer.getId()));
                 usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
             }
         } else {
-            // DEPRECATED
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
-
             LOG.debug(String.format("SSL Termination is NOT Enabled for load balancer: %s", dbLoadBalancer.getId()));
             usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
         }
