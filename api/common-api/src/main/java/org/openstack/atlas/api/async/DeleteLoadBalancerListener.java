@@ -33,18 +33,6 @@ public class DeleteLoadBalancerListener extends BaseListener {
 
         LoadBalancer queueLb = getLoadbalancerFromMessage(message);
         LoadBalancer dbLoadBalancer;
-        @Deprecated
-        Long bytesOut;
-        @Deprecated
-        Long bytesIn;
-        @Deprecated
-        Integer concurrentConns;
-        @Deprecated
-        Long bytesOutSsl;
-        @Deprecated
-        Long bytesInSsl;
-        @Deprecated
-        Integer concurrentConnsSsl;
 
         try {
             dbLoadBalancer = loadBalancerService.get(queueLb.getId());
@@ -54,32 +42,6 @@ public class DeleteLoadBalancerListener extends BaseListener {
             notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
             return;
-        }
-
-        // DEPRECATED
-        // Try to get non-ssl usage
-        try {
-            bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
-            bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
-            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
-            bytesOut = null;
-            bytesIn = null;
-            concurrentConns = null;
-        }
-
-        //DEPRECATED
-        // Try to get ssl usage
-        try {
-            bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
-            bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
-            concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer usage stats for ssl virtual server. Setting them to null.");
-            bytesOutSsl = null;
-            bytesInSsl = null;
-            concurrentConnsSsl = null;
         }
 
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
@@ -105,9 +67,6 @@ public class DeleteLoadBalancerListener extends BaseListener {
             sendErrorToEventResource(queueLb);
 
             //Do not store usage here because the load balancer went into ERROR status and thus is not really deleted.
-            // Notify usage processor
-            Calendar eventTime = Calendar.getInstance();
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
             return;
         }
 
@@ -131,10 +90,6 @@ public class DeleteLoadBalancerListener extends BaseListener {
         LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
         usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
         LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
-
-        // Notify usage processor
-        // DEPRECATED
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
 
         LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
     }

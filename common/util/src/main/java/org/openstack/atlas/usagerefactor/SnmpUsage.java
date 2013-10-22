@@ -6,10 +6,10 @@ public class SnmpUsage {
     private int hostId = 0;
     private int concurrentConnections = 0;
     private int concurrentConnectionsSsl = 0;
-    private long bytesIn = 0;
-    private long bytesOut = 0;
-    private long bytesInSsl = 0;
-    private long bytesOutSsl = 0;
+    private long bytesIn = -1;
+    private long bytesOut = -1;
+    private long bytesInSsl = -1;
+    private long bytesOutSsl = -1;
 
     @Override
     public String toString() {

@@ -67,12 +67,8 @@ public class CreateLoadBalancerListener extends BaseListener {
             loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ERROR);
 
             // Notify usage processor
-            // DEPRECATED
             Calendar usageEventTime = Calendar.getInstance();
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0, usageEventTime);
-
             try {
-                // Notify usage processor
                 usageEventCollection.processZeroUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, usageEventTime);
             } catch (UsageEventCollectionException uex) {
                 LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
@@ -94,6 +90,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         // Update load balancer in DB
         dbLoadBalancer.setStatus(ACTIVE);
         NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
+        dbLoadBalancer.setProvisioned(usageEventTime);
         dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
 
         //Set status history record
@@ -107,10 +104,6 @@ public class CreateLoadBalancerListener extends BaseListener {
         addAtomEntryForConnectionLogging(queueLb, dbLoadBalancer);
         addAtomEntryForConnectionLimit(queueLb, dbLoadBalancer);
         addAtomEntriesForAccessList(queueLb, dbLoadBalancer);
-
-        // Notify usage processor
-        // DEPRECATED
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0, usageEventTime);
 
         LOG.info(String.format("Created load balancer '%d' successfully.", dbLoadBalancer.getId()));
     }

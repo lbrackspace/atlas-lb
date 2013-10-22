@@ -81,16 +81,18 @@ public class UsageRepository {
         }
         int numRowsDeleted;
         int totalRowsDeleted = 0;
+        int batchCount = 0;
 
         do {
             Query nativeQ = entityManager.createNativeQuery("DELETE FROM lb_usage WHERE end_time <= :timestamp AND needs_pushed = 0 LIMIT :limit")
                     .setParameter("timestamp", time, TemporalType.TIMESTAMP).setParameter("limit", limitInt);
             numRowsDeleted = nativeQ.executeUpdate();
             totalRowsDeleted += numRowsDeleted;
-            LOG.info(String.format("Deleted %d rows with endTime before %s in this batch.", numRowsDeleted, time.getTime()));
+            batchCount++;
+            LOG.info(String.format("Deleted %d rows with endTime before %s in batch %d.", numRowsDeleted, time.getTime(), batchCount));
         } while(numRowsDeleted > 0);
 
-        LOG.info(String.format("Finished deleting rows. Deleted %d rows (in total) with endTime before %s", totalRowsDeleted, time.getTime()));
+        LOG.info(String.format("Finished deleting rows. Deleted %d total rows in %d batch(es) with endTime before %s.", totalRowsDeleted, batchCount, time.getTime()));
     }
 
     public void deleteOldRecords() {

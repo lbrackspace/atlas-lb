@@ -23,6 +23,7 @@ import java.util.*;
 @Component
 public class UsagePollerHelper {
     private final org.apache.commons.logging.Log LOG = LogFactory.getLog(UsagePollerHelper.class);
+    public static final long MAX_BANDWIDTH_BYTES_THRESHHOLD = 1099511627776L; //1 Terabyte
 
     @Autowired
     private LoadBalancerMergedHostUsageRepository mergedHostUsageRepository;
@@ -111,13 +112,20 @@ public class UsagePollerHelper {
     public ResetBandwidth getPossibleResetBandwidth(long currentIncoming, long previousIncoming, long currentOutgoing,
                                                     long previousOutgoing, Calendar currentPollTime, Calendar previousPollTime) {
         ResetBandwidth ret = new ResetBandwidth();
+        long outDiff = currentOutgoing - previousOutgoing;
+        long inDiff = currentIncoming - previousIncoming;
         if ( isReset(currentIncoming, previousIncoming) ||
                 isReset(currentOutgoing, previousOutgoing) ||
                 previousIncoming < 0 || previousOutgoing < 0) {
             return ret;
         }
-        ret.incomingTransfer = currentIncoming - previousIncoming;
-        ret.outgoingTransfer = currentOutgoing - previousOutgoing;
+        //If the bandwidth to be charged to this load balancer exceeds a certain amount then we assume a bug happened and store 0 bandwidth.
+        if (inDiff < MAX_BANDWIDTH_BYTES_THRESHHOLD) {
+            ret.incomingTransfer = currentIncoming - previousIncoming;
+        }
+        if (outDiff < MAX_BANDWIDTH_BYTES_THRESHHOLD) {
+            ret.outgoingTransfer = currentOutgoing - previousOutgoing;
+        }
         return ret;
     }
 

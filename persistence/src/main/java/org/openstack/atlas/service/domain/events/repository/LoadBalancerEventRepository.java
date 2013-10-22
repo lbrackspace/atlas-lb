@@ -7,10 +7,7 @@ import org.openstack.atlas.service.domain.events.entities.*;
 import org.openstack.atlas.service.domain.events.pojos.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.pojos.CustomQuery;
-import org.openstack.atlas.service.domain.pojos.DateTimeToolException;
-import org.openstack.atlas.service.domain.pojos.DateTimeTools;
-import org.openstack.atlas.service.domain.pojos.QueryParameter;
+import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -439,5 +436,25 @@ public class LoadBalancerEventRepository {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, -90);
         entityManager.createQuery("DELETE FROM LoadBalancerEvent a where a.created <= :days").setParameter("days", cal).executeUpdate();
+    }
+
+    public Set<LbIdAccountId> getLoadBalancersActiveDuringPeriod(Calendar startTime, Calendar endTime) {
+        Set<LbIdAccountId> lbIds = new HashSet<LbIdAccountId>();
+
+//        Query query = entityManager.createQuery("SELECT l.loadbalancerId, l.accountId FROM LoadBalancerEvent l where (l.status != 'DELETED' or l.updated >= :startTime) and l.created < :endTime and l.status not in ('BUILD', 'PENDING_DELETE')")
+        Query query = entityManager.createQuery("SELECT l.loadbalancerId, l.accountId FROM LoadBalancerEvent l where (l.type != 'DELETED' or l.updated >= :startTime) and l.created < :endTime and l.status not in ('BUILD', 'PENDING_DELETE')")
+                .setParameter("startTime", startTime)
+                .setParameter("endTime", endTime);
+
+        final List<Object[]> resultList = query.getResultList();
+
+        for (Object[] row : resultList) {
+            Integer loadBalancerId = (Integer) row[0];
+            Integer accountId = (Integer) row[1];
+            LbIdAccountId lbIdAccountId = new LbIdAccountId(loadBalancerId, accountId);
+            lbIds.add(lbIdAccountId);
+        }
+
+        return lbIds;
     }
 }
