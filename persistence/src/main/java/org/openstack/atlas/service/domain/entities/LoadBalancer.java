@@ -109,6 +109,9 @@ public class LoadBalancer extends Entity implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar updated;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Calendar provisioned;
+
     @Column(name = "is_sticky", nullable = false)
     private boolean isSticky;
 
@@ -268,6 +271,14 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public void setUpdated(Calendar updated) {
         this.updated = updated;
+    }
+
+    public Calendar getProvisioned() {
+        return provisioned;
+    }
+
+    public void setProvisioned(Calendar provisioned) {
+        this.provisioned = provisioned;
     }
 
     public LoadBalancerAlgorithm getAlgorithm() {

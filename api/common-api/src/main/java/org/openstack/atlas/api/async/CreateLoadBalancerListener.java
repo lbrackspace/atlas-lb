@@ -94,6 +94,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         // Update load balancer in DB
         dbLoadBalancer.setStatus(ACTIVE);
         NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
+        dbLoadBalancer.setProvisioned(usageEventTime);
         dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
 
         //Set status history record
