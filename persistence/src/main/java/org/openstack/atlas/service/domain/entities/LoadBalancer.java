@@ -69,6 +69,9 @@ public class LoadBalancer extends Entity implements Serializable {
     @Column(name = "content_caching", nullable = false)
     private Boolean contentCaching;
 
+    @Column(name = "https_redirect", nullable = false)
+    private Boolean httpsRedirect;
+
     @JoinColumn(name = "protocol", nullable = false)
     @Enumerated(EnumType.STRING)
     private LoadBalancerProtocol protocol;
@@ -228,6 +231,14 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public void setContentCaching(Boolean contentCaching) {
         this.contentCaching = contentCaching;
+    }
+
+    public Boolean isHttpsRedirect() {
+        return httpsRedirect;
+    }
+
+    public void setHttpsRedirect(Boolean httpsRedirect) {
+        this.httpsRedirect = httpsRedirect;
     }
 
     public ConnectionLimit getConnectionLimit() {

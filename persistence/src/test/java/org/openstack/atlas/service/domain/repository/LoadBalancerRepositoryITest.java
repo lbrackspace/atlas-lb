@@ -33,6 +33,7 @@ public class LoadBalancerRepositoryITest {
             loadBalancer.setPort(80);
             loadBalancer.setConnectionLogging(false);
             loadBalancer.setContentCaching(false);
+            loadBalancer.setHttpsRedirect(false);
             loadBalancer.setHalfClosed(false);
             loadBalancer.setTimeout(100);
 
