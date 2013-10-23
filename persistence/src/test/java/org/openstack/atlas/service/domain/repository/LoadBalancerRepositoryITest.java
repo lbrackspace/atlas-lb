@@ -54,16 +54,16 @@ public class LoadBalancerRepositoryITest {
 
         @Test
         public void shouldReturnLoadBalancerWhenTimestampsMatchPeriod() throws Exception {
-            String created = "2013-04-10 05:00:00";
+            String provisioned = "2013-04-10 05:00:00";
             loadBalancer = loadBalancerRepository.getById(loadBalancer.getId());
-            loadBalancer.setCreated(CalendarUtils.stringToCalendar(created));
+            loadBalancer.setProvisioned(CalendarUtils.stringToCalendar(provisioned));
             loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
             loadBalancer = loadBalancerService.update(loadBalancer);
 
-            Assert.assertEquals(created, CalendarUtils.calendarToString(loadBalancer.getCreated()));
+            Assert.assertEquals(provisioned, CalendarUtils.calendarToString(loadBalancer.getProvisioned()));
 
             final Calendar now = Calendar.getInstance();
-            final Set<LbIdAccountId> loadBalancersActiveDuringPeriod = loadBalancerRepository.getLoadBalancersActiveDuringPeriod(loadBalancer.getCreated(), now);
+            final Set<LbIdAccountId> loadBalancersActiveDuringPeriod = loadBalancerRepository.getLoadBalancersActiveDuringPeriod(loadBalancer.getProvisioned(), now);
             Assert.assertFalse(loadBalancersActiveDuringPeriod.isEmpty());
         }
     }

@@ -51,6 +51,7 @@ public class LoadBalancerServiceImplDeleteTest {
             loadBalancer.setNodes(nodes);
 
             loadBalancer = loadBalancerService.create(loadBalancer);
+            System.out.println();
         }
 
         @After

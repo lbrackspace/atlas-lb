@@ -1553,6 +1553,31 @@ public class UsagePollerHelperTest {
             Assert.assertEquals(50, newMergedRecord.getIncomingTransferSsl());
             Assert.assertEquals(100, newMergedRecord.getOutgoingTransferSsl());
         }
+
+        @Test
+        public void shouldHaveZeroBandwidthWhenMaximumThresholdIsReachedOrExceeded(){
+            previousRecord.setOutgoingTransfer(0);
+            currentRecord.setOutgoingTransfer(UsagePollerHelper.MAX_BANDWIDTH_BYTES_THRESHHOLD);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransferSsl());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransferSsl());
+
+            previousRecord.setOutgoingTransfer(1000L);
+            currentRecord.setOutgoingTransfer(UsagePollerHelper.MAX_BANDWIDTH_BYTES_THRESHHOLD + 1001L);
+            previousRecord.setIncomingTransfer(0);
+            currentRecord.setIncomingTransfer(100);
+            previousRecord.setOutgoingTransferSsl(0L);
+            currentRecord.setOutgoingTransferSsl(500L);
+            previousRecord.setIncomingTransferSsl(5000L);
+            currentRecord.setIncomingTransferSsl(UsagePollerHelper.MAX_BANDWIDTH_BYTES_THRESHHOLD + 5001L);
+            usagePollerHelper.calculateUsage(currentRecord, previousRecord, newMergedRecord);
+            Assert.assertEquals(100, newMergedRecord.getIncomingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getOutgoingTransfer());
+            Assert.assertEquals(0, newMergedRecord.getIncomingTransferSsl());
+            Assert.assertEquals(500, newMergedRecord.getOutgoingTransferSsl());
+        }
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)

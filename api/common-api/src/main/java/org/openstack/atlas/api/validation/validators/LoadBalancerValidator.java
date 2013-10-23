@@ -40,7 +40,6 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().isHalfClosed()).if_().exist().then().must().adhereTo(new MustBeBooleanVerifier()).withMessage("Must provide valid boolean value of either true or false. ");
                 result(validationTarget().isHttpsRedirect()).if_().exist().then().must().adhereTo(new MustBeBooleanVerifier()).withMessage("Must provide valid boolean value of either true or false. ");
 
-
                 // POST EXPECTATIONS
                 result(validationTarget().getName()).must().exist().forContext(POST).withMessage("Must provide a name for the load balancer.");
                 result(validationTarget().getName()).must().not().beEmptyOrNull().forContext(POST).withMessage("Load balancer name is invalid. Please specify a valid name");
