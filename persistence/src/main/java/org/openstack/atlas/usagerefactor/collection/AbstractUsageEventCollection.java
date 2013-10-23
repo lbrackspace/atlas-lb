@@ -102,6 +102,11 @@ public abstract class AbstractUsageEventCollection {
             for (Host h : hosts) {
                 SnmpUsage snmpUsage = new SnmpUsage();
                 snmpUsage.setHostId(h.getId());
+                snmpUsage.setLoadbalancerId(lb.getId());
+                snmpUsage.setBytesIn(0L);
+                snmpUsage.setBytesInSsl(0L);
+                snmpUsage.setBytesOutSsl(0L);
+                snmpUsage.setBytesOut(0L);
                 snmpUsages.add(snmpUsage);
             }
             usageEventProcessor.processUsageEvent(snmpUsages, lb, event, eventTime);

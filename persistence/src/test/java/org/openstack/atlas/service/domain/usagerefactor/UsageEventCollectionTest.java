@@ -127,11 +127,13 @@ public class UsageEventCollectionTest {
     @RunWith(PowerMockRunner.class)
     @PrepareForTest(Executors.class)
     public static class WhenProcessingSingleUsageEvent {
-        LoadBalancer lb;
         SnmpUsage snmpUsage;
         SnmpUsage snmpUsage1;
         List<SnmpUsage> snmpUsages;
         Calendar eventTime;
+
+        @Mock
+        LoadBalancer lb;
 
         @Mock
         VirtualIpRepository virtualIpRepository;
