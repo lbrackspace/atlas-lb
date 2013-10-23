@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.services.helpers;
 import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.restclients.auth.IdentityClientImpl;
 import org.openstack.atlas.restclients.dns.DnsClient1_0;
 import org.openstack.atlas.service.domain.exceptions.RdnsException;
 import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthAdminClient;
@@ -18,6 +19,7 @@ import org.openstack.client.keystone.auth.AuthData;
 import org.openstack.client.keystone.user.User;
 
 import java.io.*;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 public class RdnsHelper {
@@ -111,12 +113,11 @@ public class RdnsHelper {
     }
 
     public ClientResponse delPtrPubRecord(int lid, String ip) throws RdnsException {
-        AuthUserAndToken aut = getLbaasToken();//stealUserToken();
-        String tokenStr = aut.getTokenString();
+//        AuthUserAndToken aut = getLbaasToken();//stealUserToken();
+        String tokenStr = getLbaasToken2();//aut.getTokenString();
         DnsClient1_0 dns = new DnsClient1_0(rdnsPublicUrl, tokenStr, accountId);
         return dns.delPtrRecordPub(buildDeviceUri(accountId, lid), LB_SERVICE_NAME, ip);
     }
-
 
     public String buildDeviceUri(int aid, int lid) {
         return String.format("%s/%d/loadbalancers/%d", lbaasBaseUrl, aid, lid);
@@ -163,6 +164,18 @@ public class RdnsHelper {
             throw logAndThrowRdnsException(ex, accountId);
         } catch (KeyStoneException ex) {
             throw logAndThrowRdnsException(ex, accountId);
+        }
+    }
+
+    public String getLbaasToken2() throws RdnsException {
+        try {
+            return (new IdentityClientImpl()).getAuthToken();
+        } catch (URISyntaxException e) {
+            throw logAndThrowRdnsException(e, accountId);
+        } catch (org.openstack.identity.client.fault.IdentityFault identityFault) {
+            throw logAndThrowRdnsException(identityFault, accountId);
+        } catch (MalformedURLException e) {
+            throw logAndThrowRdnsException(e, accountId);
         }
     }
 
