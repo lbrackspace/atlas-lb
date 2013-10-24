@@ -1,0 +1,22 @@
+<system-model xmlns="http://docs.rackspacecloud.com/repose/system-model/v2.0">
+  <repose-cluster id="repose">
+    <nodes>
+      <node id="node2" hostname="localhost" http-port="8888"/>
+      <node id="node1" hostname="external.addy.com" http-port="8888"/>
+    </nodes>
+    <filters>
+      <!--
+      <filter name="header-id-mapping" />
+      -->
+      <filter name="dist-datastore" />
+      <filter name="client-auth" />
+      <filter name="ip-identity" />
+      <filter name="rate-limiting" />
+      <filter name="http-logging" />
+      <filter name="default-router"/>
+    </filters>
+    <destinations>
+      <endpoint id="openrepose" protocol="http" hostname="localhost" root-path="/" port="8080" default="true"/>
+    </destinations>
+  </repose-cluster>
+</system-model>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<rate-limiting datastore="distributed/hash-ring" delegation="false" xmlns="http://docs.rackspacecloud.com/repose/rate-limiting/v1.0">
+	<request-endpoint uri-regex="/limits.*" /> 
+   <!--
+        Defining a limit group.
+
+        The following headers can be found in the class
+        com.rackspace.cloud.powerapi.http.PowerApiHeader in the Power API
+        Filterlet library, maven group id com.rackspace.cloud.powerapi, artifact
+        id filterlet.
+
+        Groups are matched on the HTTP header: X-PP-Groups
+        User information is matched on the HTTP header: X-PP-User
+    -->
+    <limit-group id="standard-ip-limits" groups="IP_Standard" default="true">
+        <limit uri="/*" uri-regex="/(.*)" http-methods="GET" unit="MINUTE" value="5" />
+    </limit-group>
+
+    <limit-group id="standard-ip-limits-superuser" groups="IP_Super" default="false">
+        <limit uri="/*" uri-regex="/(.*)" http-methods="GET" unit="SECOND" value="5" />
+    </limit-group>
+</rate-limiting>
