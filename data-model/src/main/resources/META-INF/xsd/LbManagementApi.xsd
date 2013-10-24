@@ -17,6 +17,7 @@
     <xsd:complexType name="loadBalancers">
         <xsd:sequence>
             <xsd:element name="loadBalancer" type="tns:loadBalancer" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -42,6 +43,7 @@
     <xsd:complexType name="loadBalancersStatusHistory">
         <xsd:sequence>
             <xsd:element name="loadBalancerStatusHistory" type="tns:loadBalancerStatusHistory" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -63,6 +65,7 @@
     <xsd:complexType name="accountLoadBalancers">
         <xsd:sequence>
             <xsd:element name="accountLoadBalancer" type="tns:accountLoadBalancer" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="accountId" type="xsd:int"/>
     </xsd:complexType>
@@ -134,6 +137,7 @@
     <xsd:complexType name="accountsInCluster">
         <xsd:sequence>
             <xsd:element name="accountInCluster" type="tns:accountInCluster" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="totalAccounts" type="xsd:int"/>
     </xsd:complexType>
@@ -149,6 +153,7 @@
     <xsd:complexType name="accountsInHost">
         <xsd:sequence>
             <xsd:element name="accountInHost" type="tns:accountInHost" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="totalAccounts" type="xsd:int"/>
     </xsd:complexType>
@@ -278,6 +283,7 @@
     <xsd:complexType name="alerts">
         <xsd:sequence>
             <xsd:element name="alert" type="tns:alert" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -332,6 +338,7 @@
     <xsd:complexType name="virtualIps">
         <xsd:sequence>
             <xsd:element name="virtualIp" type="tns:virtualIp" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -482,6 +489,7 @@
     <xsd:complexType name="accountBillings">
         <xsd:sequence>
             <xsd:element ref="papi:accountBilling" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -672,6 +680,7 @@
     <xsd:complexType name="hostUsages">
         <xsd:sequence>
             <xsd:element name="hostUsage" minOccurs="1" maxOccurs="unbounded" type="tns:hostUsage"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -705,6 +714,7 @@
     <xsd:complexType name="accounts">
         <xsd:sequence>
             <xsd:element name="account" minOccurs="1" maxOccurs="unbounded" type="tns:account"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -717,6 +727,7 @@
     <xsd:complexType name="tickets">
         <xsd:sequence>
             <xsd:element name="ticket" minOccurs="1" maxOccurs="unbounded" type="tns:ticket"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
@@ -739,6 +750,7 @@
     <xsd:complexType name="loadBalancerServiceEvents">
         <xsd:sequence>
             <xsd:element name="loadBalancerServiceEvent" type="tns:loadBalancerServiceEvent" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="loadbalancerId" type="xsd:int"/>
     </xsd:complexType>
@@ -758,6 +770,7 @@
     <xsd:complexType name="accountLoadBalancerServiceEvents">
         <xsd:sequence>
             <xsd:element name="loadBalancerServiceEvents" type="tns:loadBalancerServiceEvents" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="accountId" type="xsd:int"/>
     </xsd:complexType>

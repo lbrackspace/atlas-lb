@@ -77,7 +77,7 @@
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
             <a>virtualIpDozerWrapper</a>
-            <b>virtualIps</b>
+            <b is-accessible="true">virtualIps.virtualIps</b>
         </field>
         <field>
             <a>host</a>
@@ -118,7 +118,7 @@
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.VirtualIpConverter">
             <a>virtualIpDozerWrapper</a>
-            <b>virtualIps</b>
+            <b is-accessible="true">virtualIps.virtualIps</b>
         </field>
     </mapping>
 
@@ -215,6 +215,10 @@
     <mapping map-null="false">
         <class-a>org.openstack.atlas.service.domain.pojos.HostUsageRecord</class-a>
         <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.HostUsageRecord</class-b>
+        <field>
+            <a>hostUsages</a>
+            <b is-accessible="true">hostUsages.hostUsages</b>
+        </field>
     </mapping>
 
     <mapping map-null="false">

@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Tickets;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ZeusRateLimitedLoadBalancer;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Range;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges;
@@ -86,11 +87,13 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
         for (LoadBalancer lb : lblist) {
             for (Host host : hostList) {
                 if (lb.getHost().getId() == host.getId()) {
+                    Tickets tickets = new Tickets();
                     zeusRateLimitedLoadBalancer = new ZeusRateLimitedLoadBalancer();
                     zeusRateLimitedLoadBalancer.setAccountId(lb.getAccountId());
                     zeusRateLimitedLoadBalancer.setLoadbalancerId(lb.getId());
                     zeusRateLimitedLoadBalancer.setExpirationTime(lb.getRateLimit().getExpirationTime().getTime().toString());
-                    zeusRateLimitedLoadBalancer.setTickets(ticketService.customTicketMapper(loadBalancerRepository.getTickets(lb.getId())));
+                    tickets.getTickets().addAll(ticketService.customTicketMapper(loadBalancerRepository.getTickets(lb.getId())));
+                    zeusRateLimitedLoadBalancer.setTickets(tickets);
                     zeusRateLimitedLoadBalancerList.add(zeusRateLimitedLoadBalancer);
                 }
             }

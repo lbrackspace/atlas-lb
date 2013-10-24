@@ -1,4 +1,9 @@
-target/*
+rget/*
 *.class
 *.json
+*.sh
+t_test.py
 !example.json
+!vips.json
+!vip.json
+cp.txt

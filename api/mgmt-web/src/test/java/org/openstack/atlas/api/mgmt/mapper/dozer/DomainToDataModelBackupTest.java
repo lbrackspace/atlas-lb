@@ -128,9 +128,9 @@ public class DomainToDataModelBackupTest {
         @Test
         public void ShouldHaveIdenticalBandwidths() {
             rae = mapper.map(dae, rae.getClass());
-            Assert.assertEquals(new Long(23), rae.getHostUsageRecords().get(0).getHostUsages().get(0).getBandwidthIn());
-            Assert.assertEquals(new Long(44), rae.getHostUsageRecords().get(0).getHostUsages().get(0).getBandwidthOut());
-            Assert.assertEquals(dae.getHostUsageRecords().get(0).getHostUsages().get(0).getDay(), rae.getHostUsageRecords().get(0).getHostUsages().get(0).getDay());
+            Assert.assertEquals(new Long(23), rae.getHostUsageRecords().get(0).getHostUsages().getHostUsages().get(0).getBandwidthIn());
+            Assert.assertEquals(new Long(44), rae.getHostUsageRecords().get(0).getHostUsages().getHostUsages().get(0).getBandwidthOut());
+            Assert.assertEquals(dae.getHostUsageRecords().get(0).getHostUsages().get(0).getDay(), rae.getHostUsageRecords().get(0).getHostUsages().getHostUsages().get(0).getDay());
         }
 
 
