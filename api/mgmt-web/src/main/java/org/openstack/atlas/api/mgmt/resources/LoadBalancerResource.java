@@ -3,6 +3,7 @@ package org.openstack.atlas.api.mgmt.resources;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Tickets;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Ticket;
 import org.openstack.atlas.service.domain.entities.Usage;
@@ -239,9 +240,9 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
             LoadBalancer rlb = getDozerMapper().map(dlb, LoadBalancer.class);
             // Attach tickets
             if (dlb.getTickets() != null && !dlb.getTickets().isEmpty()) {
-                rlb.setTickets(new ArrayList<org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket>());
+                rlb.setTickets(new Tickets());
                 for (Ticket ticket : dlb.getTickets()) {
-                    rlb.getTickets().add(dozerMapper.map(ticket, org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket.class));
+                    rlb.getTickets().getTickets().add(dozerMapper.map(ticket, org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket.class));
                 }
             }
             // Attach usage for last 24 hours

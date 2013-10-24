@@ -1,4 +1,4 @@
-target/*
+rget/*
 *.class
 *.json
 *.sh

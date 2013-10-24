@@ -140,8 +140,11 @@ public class HostsResource extends ManagementDependencyProvider {
             for (org.openstack.atlas.service.domain.pojos.Customer dcustomer : dcustomerList) {
                 rcustomer = new Customer();
                 rcustomer.setAccountId(dcustomer.getAccountId());
+                LoadBalancers lbs = new LoadBalancers();
+                rcustomer.setLoadBalancers(lbs);
+                rcustomer.getLoadBalancers().getLoadBalancers();
                 for (org.openstack.atlas.service.domain.entities.LoadBalancer dloadbalancer : dcustomer.getLoadBalancers()) {
-                    rcustomer.getLoadBalancers().add(getDozerMapper().map(dloadbalancer, LoadBalancer.class, "SIMPLE_CUSTOMER_LB"));
+                    rcustomer.getLoadBalancers().getLoadBalancers().add(getDozerMapper().map(dloadbalancer, LoadBalancer.class, "SIMPLE_CUSTOMER_LB"));
                 }
                 rcustomerList.getCustomers().add(rcustomer);
             }

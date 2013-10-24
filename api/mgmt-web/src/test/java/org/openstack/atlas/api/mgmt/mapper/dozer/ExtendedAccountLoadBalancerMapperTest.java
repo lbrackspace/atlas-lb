@@ -169,7 +169,7 @@ public class ExtendedAccountLoadBalancerMapperTest {
         public void shoulMapVipType() {
             try {
                 ExtendedAccountLoadbalancer ealb1 = mapper.map(ealb, ExtendedAccountLoadbalancer.class, "SIMPLE_VIP_CPLB");
-                org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp vip = ealb1.getVirtualIps().get(0);
+                org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp vip = ealb1.getVirtualIps().getVirtualIps().get(0);
                 Assert.assertEquals(VipType.PUBLIC, vip.getType());
             } catch (Exception e) {
                 System.out.println(Arrays.toString(e.getStackTrace()));
@@ -181,7 +181,7 @@ public class ExtendedAccountLoadBalancerMapperTest {
         public void shoulMapVipVersion() {
             try {
                 ExtendedAccountLoadbalancer ealb1 = mapper.map(ealb, ExtendedAccountLoadbalancer.class, "SIMPLE_VIP_CPLB");
-                org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp vip = ealb1.getVirtualIps().get(0);
+                org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp vip = ealb1.getVirtualIps().getVirtualIps().get(0);
                 Assert.assertEquals(org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion.IPV4, vip.getIpVersion());
             } catch (Exception e) {
                 System.out.println(Arrays.toString(e.getStackTrace()));
@@ -193,7 +193,7 @@ public class ExtendedAccountLoadBalancerMapperTest {
         public void shoulMapVipID() {
             try {
                 ExtendedAccountLoadbalancer ealb1 = mapper.map(ealb, ExtendedAccountLoadbalancer.class, "SIMPLE_VIP_CPLB");
-                org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp vip = ealb1.getVirtualIps().get(0);
+                org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp vip = ealb1.getVirtualIps().getVirtualIps().get(0);
                 Assert.assertEquals((Integer)2000, vip.getId());
             } catch (Exception e) {
                 System.out.println(Arrays.toString(e.getStackTrace()));

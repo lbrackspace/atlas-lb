@@ -3,6 +3,7 @@ package org.openstack.atlas.api.mgmt.mapper.dozer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Suspension;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Tickets;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
@@ -116,8 +117,8 @@ public class DataModelToDomainLoadBalancerTest {
             rateLimit.setExpirationTime(Calendar.getInstance());
             rateLimit.setMaxRequestsPerSecond(10);
             loadBalancer.setRateLimit(rateLimit);
-
-            loadBalancer.getTickets().add(ticket);
+            loadBalancer.setTickets(new Tickets());
+            loadBalancer.getTickets().getTickets().add(ticket);
 
             domainLoadBalancer = mapper.map(loadBalancer,
                     org.openstack.atlas.service.domain.entities.LoadBalancer.class);
