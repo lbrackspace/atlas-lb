@@ -15,7 +15,6 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Cluster;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
@@ -44,24 +43,18 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Protocols;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.openstack.atlas.util.converters.DateTimeConverters;
-import org.openstack.docs.common.api.v1.AbsoluteLimit;
-import org.openstack.docs.common.api.v1.AbsoluteLimitList;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-public class JsonPublicDeserializers {
-
-    private static final String NOT_OBJ_NODE = "Error was expecting an ObjectNode({}) but instead found %s";
-    private static final String NOT_OBJ_OR_ARR = "Error was expecting an ObjectNode({}) or an ArrayNode([]) but found %s";
+public class JsonPublicDeserializers extends DeserializationHelper {
 
     public static LoadBalancers decodeLoadBalancers(JsonNode jn) throws JsonParseException {
         LoadBalancers loadbalancers = new LoadBalancers();
@@ -402,7 +395,7 @@ public class JsonPublicDeserializers {
         record.setNumLoadBalancers(getInt(jn, "numLoadBalancers"));
         record.setNumPublicVips(getInt(jn, "numPublicVips"));
         record.setNumServicenetVips(getInt(jn, "numServicenetVips"));
-        record.setStartTime(decodeDate(jn, "startTime"));
+        record.setStartTime(getDate(jn, "startTime"));
         return record;
     }
 
@@ -497,12 +490,12 @@ public class JsonPublicDeserializers {
         record.setEntryVersion(getInt(jn, "entryVersion"));
         record.setNeedsPushed(getInt(jn, "needsPushed"));
         record.setEventType(getString(jn, "eventType"));
-        record.setStartTime(decodeDate(jn, "startTime"));
+        record.setStartTime(getDate(jn, "startTime"));
         record.setNumPolls(getInt(jn, "numPolls"));
         record.setNumVips(getInt(jn, "numVips"));
         record.setSslMode(getString(jn, "sslMode"));
         record.setVipType(getVipType(jn, "vipType"));
-        record.setEndTime(decodeDate(jn, "endTime"));
+        record.setEndTime(getDate(jn, "endTime"));
         record.setUuid(getString(jn, "uuid"));
         record.setId(getInt(jn, "id"));
         return record;
@@ -533,21 +526,6 @@ public class JsonPublicDeserializers {
             // Links is ignored.
         }
         return virtualIps;
-    }
-
-    public static Calendar decodeDate(JsonNode jn, String prop) throws JsonParseException {
-        Calendar out;
-        if (jn.get(prop) != null && jn.get(prop).isTextual()) {
-            String dateString = jn.get(prop).getTextValue();
-            try {
-                out = DateTimeConverters.isoTocal(dateString);
-                return out;
-            } catch (ConverterException ex) {
-                String msg = String.format("Error converting %s to Date. Value must be in anISO 8601", dateString);
-                throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
-            }
-        }
-        return null;
     }
 
     public static VirtualIp decodeVirtualIp(ObjectNode jsonNodeIn) throws JsonParseException {
@@ -1039,52 +1017,5 @@ public class JsonPublicDeserializers {
             throw new JsonParseException(msg, jn.traverse().getCurrentLocation());
         }
         return type;
-    }
-
-    public static Created getCreated(ObjectNode jsonNodeIn) throws JsonParseException {
-        Created created = new Created();
-        created.setTime(decodeDate(jsonNodeIn, "time"));
-        return created;
-    }
-
-    public static Updated getUpdated(ObjectNode jsonNodeIn) throws JsonParseException {
-        Updated updated = new Updated();
-        updated.setTime(decodeDate(jsonNodeIn, "time"));
-        return updated;
-    }
-
-    public static Integer getInt(JsonNode jn, String prop) {
-        if (jn.get(prop) != null && jn.get(prop).isInt()) {
-            return new Integer(jn.get(prop).getValueAsInt());
-        }
-        return null;
-    }
-
-    public static Double getDouble(JsonNode jn, String prop) {
-        if (jn.get(prop) != null) {
-            return new Double(jn.get(prop).getValueAsDouble());
-        }
-        return null;
-    }
-
-    public static Long getLong(JsonNode jn, String prop) {
-        if (jn.get(prop) != null) {
-            return new Long(jn.get(prop).getValueAsLong());
-        }
-        return null;
-    }
-
-    public static String getString(JsonNode jn, String prop) {
-        if (jn.get(prop) != null && jn.get(prop).isTextual()) {
-            return jn.get(prop).getValueAsText();
-        }
-        return null;
-    }
-
-    public static Boolean getBoolean(JsonNode jn, String prop) {
-        if (jn.get(prop) != null && jn.get(prop).isBoolean()) {
-            return jn.get(prop).getBooleanValue();
-        }
-        return null;
     }
 }
