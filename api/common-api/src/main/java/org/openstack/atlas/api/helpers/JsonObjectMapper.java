@@ -1,6 +1,13 @@
 package org.openstack.atlas.api.helpers;
 
 import java.util.ArrayList;
+import org.openstack.atlas.api.helpers.JsonUtils.JsonPublicDeserializers;
+import org.openstack.atlas.api.helpers.JsonUtils.GenericJsonObjectMapperDeserializer;
+import org.openstack.atlas.api.helpers.JsonUtils.GenericJsonObjectMapperSerializer;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ObjectNode;
+import org.codehaus.jackson.node.ArrayNode;
+
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
@@ -39,39 +46,12 @@ import org.w3.atom.Link;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
+import org.openstack.atlas.api.helpers.JsonUtils.JsonPublicSerializers;
 import org.openstack.atlas.util.debug.Debug;
 
 public class JsonObjectMapper extends ObjectMapper {
 
-    private static String initStackTrace;
-    private static List<String> callInfo = new ArrayList<String>();
-
-    public static String getInitStackTrace() {
-        return initStackTrace;
-    }
-
-    public static List<String> getCallInfo() {
-        return callInfo;
-    }
-
-    public static String getCallInfoString() {
-        StringBuilder sb = new StringBuilder();
-        for (String info : callInfo) {
-            sb.append(info).append("\n");
-        }
-        return sb.toString();
-    }
-
-    public static void addCallInfo(String msg) {
-        callInfo.add(msg);
-    }
-
-    public static void resetCallInfo() {
-        callInfo = new ArrayList<String>();
-    }
-
-    public void init() {
-        initStackTrace = Debug.getStackTrace();
+    public void init() throws NoSuchMethodException {
         CustomSerializerFactory csf = new CustomSerializerFactory();
         CustomDeserializerFactory cdf = new CustomDeserializerFactory();
         SerializationConfig serConf = this.getSerializationConfig();
@@ -100,8 +80,9 @@ public class JsonObjectMapper extends ObjectMapper {
             cdf.addSpecificMapping(wrapperClass, new ObjectWrapperDeserializer(wrapperClass));
         }
 
-        cdf.addSpecificMapping(LoadBalancer.class, new ObjectWrapperDeserializer(LoadBalancer.class));
         cdf.addSpecificMapping(VirtualIps.class, new ObjectWrapperDeserializer(VirtualIps.class));
+        cdf.addSpecificMapping(LoadBalancers.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeLoadBalancers", JsonNode.class)));
+        cdf.addSpecificMapping(LoadBalancer.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeLoadBalancer", ObjectNode.class)));
         // Define any collections utilizing the custom serializers above to
         // use the clean collections serializer, which will ensure proper JSON
         // formatting.
@@ -109,8 +90,10 @@ public class JsonObjectMapper extends ObjectMapper {
         // Load balancer is a bit of a special case since we want loadbalancer
         // wrapped, but none of the collections within loadbalancer.
 
-        csf.addSpecificMapping(LoadBalancer.class, new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class));
-        csf.addSpecificMapping(LoadBalancers.class, new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers", true));
+        //csf.addSpecificMapping(LoadBalancer.class, new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class));
+        csf.addSpecificMapping(LoadBalancer.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachLoadBalancer", ObjectNode.class, LoadBalancer.class, boolean.class), Boolean.TRUE));
+        csf.addSpecificMapping(LoadBalancers.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachLoadBalancers", ObjectNode.class, LoadBalancers.class, boolean.class), Boolean.TRUE));
+
 
         csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
         csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));

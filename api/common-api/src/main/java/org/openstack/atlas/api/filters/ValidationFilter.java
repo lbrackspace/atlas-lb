@@ -167,7 +167,11 @@ public class ValidationFilter implements Filter {
         pSchema = sf.newSchema((new ClassPathResource(pXSD)).getURL());
         fSchema = sf.newSchema((new ClassPathResource(fXSD)).getURL());
         mapper = new JsonObjectMapper();
-        mapper.init();
+        try {
+            mapper.init();
+        } catch (NoSuchMethodException ex) {
+            throw new JAXBException(ex);
+        }
     }
 
     public static Object xml2pojo(String xml, JAXBContext ctx, Schema schema, XmlValidationExceptionHandler errHandler) throws JAXBException, UnsupportedEncodingException, IOException {
