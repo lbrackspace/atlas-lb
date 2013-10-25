@@ -16,6 +16,9 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.Suspension;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Tickets;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JsonManagementDeserializers extends DeserializationHelper {
 
     public static LoadBalancers decodeLoadBalancers(JsonNode jn) throws JsonParseException {
@@ -133,8 +136,30 @@ public class JsonManagementDeserializers extends DeserializationHelper {
         return lb;
     }
 
-    public static AccountLoadBalancerServiceEvents decodeAccountLoadBalancerServiceEvents(JsonNode jn) {
-        return new AccountLoadBalancerServiceEvents();
+    public static AccountLoadBalancerServiceEvents decodeAccountLoadBalancerServiceEvents(JsonNode jn) throws JsonParseException {
+        AccountLoadBalancerServiceEvents events = new AccountLoadBalancerServiceEvents();
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("accountLoadBalancerServiceEvents") != null
+                && (jn.get("accountLoadBalancerServiceEvents") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("accountLoadBalancerServiceEvents");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        for (i = 0; i < an.size(); i++) {
+            JsonNode eventsNode = an.get(i);
+            if (!(eventsNode instanceof ObjectNode)) {
+                String msg = String.format("Error was expecting an ObjectNode({}) but found %s instead", eventsNode.toString());
+                throw new JsonParseException(msg, eventsNode.traverse().getTokenLocation());
+            }
+            LoadBalancerServiceEvents lbevents = decodeLoadBalancerServiceEvents(eventsNode);
+            events.getLoadBalancerServiceEvents().add(lbevents);
+        }
+        return events;
     }
 
     public static LoadBalancerServiceEvents decodeLoadBalancerServiceEvents(JsonNode jn) {
