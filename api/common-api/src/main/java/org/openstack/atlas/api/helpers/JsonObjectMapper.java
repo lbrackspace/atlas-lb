@@ -43,35 +43,9 @@ import org.openstack.atlas.util.debug.Debug;
 
 public class JsonObjectMapper extends ObjectMapper {
 
-    private static String initStackTrace;
-    private static List<String> callInfo = new ArrayList<String>();
 
-    public static String getInitStackTrace() {
-        return initStackTrace;
-    }
-
-    public static List<String> getCallInfo() {
-        return callInfo;
-    }
-
-    public static String getCallInfoString() {
-        StringBuilder sb = new StringBuilder();
-        for (String info : callInfo) {
-            sb.append(info).append("\n");
-        }
-        return sb.toString();
-    }
-
-    public static void addCallInfo(String msg) {
-        callInfo.add(msg);
-    }
-
-    public static void resetCallInfo() {
-        callInfo = new ArrayList<String>();
-    }
 
     public void init() {
-        initStackTrace = Debug.getStackTrace();
         CustomSerializerFactory csf = new CustomSerializerFactory();
         CustomDeserializerFactory cdf = new CustomDeserializerFactory();
         SerializationConfig serConf = this.getSerializationConfig();

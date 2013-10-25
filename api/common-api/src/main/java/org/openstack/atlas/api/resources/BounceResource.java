@@ -44,8 +44,6 @@ public class BounceResource extends CommonDependencyProvider {
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("loadbalancer")
     public Response echoLoadBalancer(LoadBalancer lb) {
-        String st = JsonObjectMapper.getInitStackTrace();
-        String callInfo = JsonObjectMapper.getCallInfoString();
         return Response.status(200).entity(lb).build();
     }
 

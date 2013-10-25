@@ -42,7 +42,6 @@ public class PropertyListDeserializer extends JsonDeserializer {
 
     @Override
     public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        JsonObjectMapper.addCallInfo(getInfo());
         String className = forClass.getName();
         String itemClassName = itemClass.getName();
         String st = Debug.getStackTrace();

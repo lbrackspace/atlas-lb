@@ -46,7 +46,6 @@ public class ObjectWrapperSerializer extends JsonSerializer<Object> {
     @Override
     public void serialize(Object object, JsonGenerator jgen, SerializerProvider sp) throws IOException {
         //BeanSerializerFactory bsf = BeanSerializerFactory.instance;
-        JsonObjectMapper.addCallInfo(getInfo());
         String st = Debug.getStackTrace();
         CustomSerializerFactory csf = new CustomSerializerFactory();
         csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));

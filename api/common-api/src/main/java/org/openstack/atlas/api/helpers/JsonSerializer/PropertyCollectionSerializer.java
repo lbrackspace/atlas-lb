@@ -57,7 +57,6 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
 
     @Override
     public void serialize(Object value, JsonGenerator jgen, SerializerProvider sp) throws IOException {
-        JsonObjectMapper.addCallInfo(getInfo());
         String st = Debug.getStackTrace();
         String valClassName = value.getClass().getName();
         List propList;

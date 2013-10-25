@@ -36,7 +36,6 @@ public class ObjectWrapperDeserializer extends JsonDeserializer {
 
     @Override
     public Object deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-        JsonObjectMapper.addCallInfo(getInfo());
         String st = Debug.getStackTrace();
         String nodeStr = "";
         String rootName = ClassReflectionTools.getXmlRootElementName(this.forClass);
