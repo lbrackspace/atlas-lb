@@ -6,8 +6,8 @@ import com.rackspacecloud.client.cloudfiles.FilesNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.auth.AuthUser;
+import org.openstack.atlas.restclients.auth.IdentityClientImpl;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
-import org.springframework.beans.factory.annotation.Required;
 
 import javax.activation.FileTypeMap;
 import java.io.File;
@@ -44,6 +44,7 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
                     // try again to log in, sometimes this fails randomly
                     client.login();
                 }
+                client.useAlternativeAuth((new IdentityClientImpl()).getAuthToken()); //use the Admin auth token instead of the user's token
                 client.setCurrentRegion(user.getRegion());
                 if (!client.containerExists(containerName)) {
                     client.createContainer(containerName);
