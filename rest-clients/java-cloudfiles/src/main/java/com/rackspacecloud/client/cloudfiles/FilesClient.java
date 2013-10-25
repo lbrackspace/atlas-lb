@@ -321,6 +321,15 @@ public class FilesClient
     	this.authToken = authToken;
     	return true;
     }
+
+    /**
+     * Allow the user to set a different token to use for authorization, without clearing all the Regions/Endpoints.
+     * Should allow for a sub-account user or an admin user to use someone else's regions if they have the appropriate rights.
+     * @param authToken
+     */
+    public void useAlternativeAuth(String authToken) {
+        this.authToken = authToken;
+    }
     
     /**
      * List all of the containers available in an account, ordered by container name.
