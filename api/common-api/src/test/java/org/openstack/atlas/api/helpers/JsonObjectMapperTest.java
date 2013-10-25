@@ -4,6 +4,8 @@
  */
 package org.openstack.atlas.api.helpers;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.*;
 import org.openstack.atlas.api.resources.StubResource;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
@@ -32,7 +34,7 @@ public class JsonObjectMapperTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws NoSuchMethodException {
         mapper = new JsonObjectMapper();
         mapper.init();
     }
