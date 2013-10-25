@@ -16,7 +16,24 @@ import org.openstack.atlas.api.helpers.JsonSerializer.ObjectWrapperSerializer;
 import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
+import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.w3.atom.Link;
 
 import java.util.Calendar;
@@ -24,8 +41,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import org.openstack.atlas.util.debug.Debug;
 
-/* import org.openstack.atlas.docs.loadbalancers.api.v1.*; STOP splat codeing this. Yes that means you Trevor */
-/* import org.openstack.atlas.docs.loadbalancers.api.v1.*; STOP splat codeing this. Yes that means you Trevor */
 public class JsonObjectMapper extends ObjectMapper {
 
     private static String initStackTrace;
