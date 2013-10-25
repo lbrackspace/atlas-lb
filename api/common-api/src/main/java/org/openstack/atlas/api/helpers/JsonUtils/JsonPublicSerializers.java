@@ -102,8 +102,7 @@ public class JsonPublicSerializers {
             attachContentCaching((ObjectNode) node.get("contentCaching"), loadBalancer.getContentCaching());
         }
         if (loadBalancer.getSslTermination() != null) {
-            node.putObject("sslTermination");
-            attachSslTermination((ObjectNode) node.get("sslTermination"), loadBalancer.getSslTermination());
+            attachSslTermination((ObjectNode) node.get("sslTermination"), loadBalancer.getSslTermination(), true);
         }
         if (loadBalancer.getSourceAddresses() != null) {
             node.putObject("sourceAddresses");
@@ -135,21 +134,26 @@ public class JsonPublicSerializers {
         }
     }
 
-    public static void attachSslTermination(ObjectNode objectNode, SslTermination termination) {
+    public static void attachSslTermination(ObjectNode objectNode, SslTermination termination, boolean includeName) {
+        ObjectNode node = objectNode;
+        if (includeName) {
+            objectNode.putObject("sslTermination");
+            node = (ObjectNode) objectNode.get("sslTermination");
+        }
         if (termination.getCertificate() != null) {
-            objectNode.put("certificate", termination.getCertificate());
+            node.put("certificate", termination.getCertificate());
         }
         if (termination.getId() != null) {
-            objectNode.put("id", termination.getId());
+            node.put("id", termination.getId());
         }
         if (termination.getIntermediateCertificate() != null) {
-            objectNode.put("intermediateCertificate", termination.getIntermediateCertificate());
+            node.put("intermediateCertificate", termination.getIntermediateCertificate());
         }
         if (termination.getPrivatekey() != null) {
-            objectNode.put("privateKey", termination.getPrivatekey());
+            node.put("privateKey", termination.getPrivatekey());
         }
         if (termination.getSecurePort() != null) {
-            objectNode.put("securePort", termination.getSecurePort());
+            node.put("securePort", termination.getSecurePort());
         }
     }
 
@@ -522,7 +526,7 @@ public class JsonPublicSerializers {
             ArrayNode an = objectNode.putArray("nodes");
             for (Node node : nodeList) {
                 ObjectNode nodeNode = an.addObject();
-                attachNode(nodeNode, node);
+                attachNode(nodeNode, node, false);
             }
         }
         if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
@@ -554,30 +558,35 @@ public class JsonPublicSerializers {
 
     }
 
-    public static void attachNode(ObjectNode objectNode, Node node) {
+    public static void attachNode(ObjectNode objectNode, Node node, boolean includeName) {
+        ObjectNode oNode = objectNode;
+        if (includeName) {
+            objectNode.putObject("node");
+            oNode = (ObjectNode) objectNode.get("node");
+        }
         if (node.getId() != null) {
-            objectNode.put("id", node.getId().intValue());
+            oNode.put("id", node.getId().intValue());
         }
         if (node.getAddress() != null) {
-            objectNode.put("address", node.getAddress());
+            oNode.put("address", node.getAddress());
         }
         if (node.getCondition() != null) {
-            objectNode.put("condition", node.getCondition().value());
+            oNode.put("condition", node.getCondition().value());
         }
         if (node.getMetadata() != null) {
             attachMetadata(objectNode, node.getMetadata(), false);
         }
         if (node.getPort() != null) {
-            objectNode.put("port", node.getPort().intValue());
+            oNode.put("port", node.getPort().intValue());
         }
         if (node.getStatus() != null) {
-            objectNode.put("status", node.getStatus().value());
+            oNode.put("status", node.getStatus().value());
         }
         if (node.getType() != null) {
-            objectNode.put("type", node.getType().value());
+            oNode.put("type", node.getType().value());
         }
         if (node.getWeight() != null) {
-            objectNode.put("weight", node.getWeight().intValue());
+            oNode.put("weight", node.getWeight().intValue());
         }
     }
 
