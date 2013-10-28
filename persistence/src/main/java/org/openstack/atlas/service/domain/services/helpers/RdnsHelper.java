@@ -38,6 +38,7 @@ public class RdnsHelper {
     private String authPublicUrl;
     private String authAdminUser;
     private String authAdminKey;
+    private boolean useAdminAuth;
 
     public RdnsHelper(int aid) {
         this.accountId = aid;
@@ -51,6 +52,7 @@ public class RdnsHelper {
         //authPublicUrl = conf.getString(MossoConfigValues.auth_public_uri);
         authPublicUrl = authAdminUrl; // So wayne doesn't need to duplicate configs.
         authAdminKey = conf.getString(MossoConfigValues.basic_auth_key);
+        useAdminAuth = Boolean.parseBoolean(conf.getString(MossoConfigValues.rdns_use_service_admin));
 
         String key = conf.getString(MossoConfigValues.rdns_crypto_key);
         String ctext = conf.getString(MossoConfigValues.rdns_admin_passwd);
@@ -113,8 +115,14 @@ public class RdnsHelper {
     }
 
     public ClientResponse delPtrPubRecord(int lid, String ip) throws RdnsException {
-//        AuthUserAndToken aut = getLbaasToken();//stealUserToken();
-        String tokenStr = getLbaasToken2();//aut.getTokenString();
+        String tokenStr;
+        if (useAdminAuth) {
+            tokenStr = getLbaasToken2();
+        } else {
+            AuthUserAndToken aut = stealUserToken();
+            tokenStr = aut.getTokenString();
+        }
+
         DnsClient1_0 dns = new DnsClient1_0(rdnsPublicUrl, tokenStr, accountId);
         return dns.delPtrRecordPub(buildDeviceUri(accountId, lid), LB_SERVICE_NAME, ip);
     }
@@ -225,4 +233,6 @@ public class RdnsHelper {
     public String getAuthAdminKey() {
         return authAdminKey;
     }
+
+    public Boolean getUseAdminAuth() { return useAdminAuth; }
 }
