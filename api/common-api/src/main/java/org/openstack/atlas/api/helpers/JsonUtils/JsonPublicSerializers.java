@@ -1,27 +1,17 @@
 package org.openstack.atlas.api.helpers.JsonUtils;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.namespace.QName;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonNode;
+
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.ObjectNode;
-import org.codehaus.jackson.node.TextNode;
 import org.openstack.atlas.api.helpers.JsonSerializeException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.openstack.atlas.util.converters.DateTimeConverters;
-import org.openstack.docs.common.api.v1.AbsoluteLimit;
-import org.openstack.docs.common.api.v1.AbsoluteLimitList;
 import org.w3.atom.Link;
 
 public class JsonPublicSerializers {
@@ -44,8 +34,6 @@ public class JsonPublicSerializers {
             }
         }
     }
-
-
 
     public static void attachLoadBalancer(ObjectNode objectNode, LoadBalancer loadBalancer, boolean includeName) throws JsonSerializeException {
         ObjectNode node;
@@ -72,43 +60,34 @@ public class JsonPublicSerializers {
             attachLoadBalancerUsage((ObjectNode) node.get("loadBalancerUsage"), loadBalancer.getLoadBalancerUsage(), false);
         }
         if (loadBalancer.getSessionPersistence() != null) {
-            node.putObject("sessionPersistence");
-            attachSessionPersistence((ObjectNode) node.get("sessionPersistence"), loadBalancer.getSessionPersistence());
+            attachSessionPersistence(node, loadBalancer.getSessionPersistence());
         }
         if (loadBalancer.getHealthMonitor() != null) {
-            node.putObject("healthMonitor");
-            attachHealthMonitor((ObjectNode) node.get("healthMonitor"), loadBalancer.getHealthMonitor());
+            attachHealthMonitor(node, loadBalancer.getHealthMonitor());
         }
         if (loadBalancer.getConnectionThrottle() != null) {
-            node.putObject("connectionThrottle");
-            attachConnectionThrottle((ObjectNode) node.get("connectionThrottle"), loadBalancer.getConnectionThrottle());
+            attachConnectionThrottle(node, loadBalancer.getConnectionThrottle());
         }
         if (loadBalancer.getCluster() != null) {
-            node.putObject("cluster");
-            attachCluster((ObjectNode) node.get("cluster"), loadBalancer.getCluster());
+            attachCluster(node, loadBalancer.getCluster());
         }
         if (loadBalancer.getCreated() != null) {
-            node.putObject("created");
-            attachCreated((ObjectNode) node.get("created"), loadBalancer.getCreated());
+            attachCreated(node, loadBalancer.getCreated());
         }
         if (loadBalancer.getUpdated() != null) {
-            node.putObject("updated");
-            attachUpdated((ObjectNode) node.get("updated"), loadBalancer.getUpdated());
+            attachUpdated(node, loadBalancer.getUpdated());
         }
         if (loadBalancer.getConnectionLogging() != null) {
-            node.putObject("connectionLogging");
-            attachConnectionLogging((ObjectNode) node.get("connectionLogging"), loadBalancer.getConnectionLogging());
+            attachConnectionLogging(node, loadBalancer.getConnectionLogging());
         }
         if (loadBalancer.getContentCaching() != null) {
-            node.putObject("contentCaching");
-            attachContentCaching((ObjectNode) node.get("contentCaching"), loadBalancer.getContentCaching());
+            attachContentCaching(node, loadBalancer.getContentCaching());
         }
         if (loadBalancer.getSslTermination() != null) {
-            attachSslTermination((ObjectNode) node.get("sslTermination"), loadBalancer.getSslTermination(), true);
+            attachSslTermination(node, loadBalancer.getSslTermination());
         }
         if (loadBalancer.getSourceAddresses() != null) {
-            node.putObject("sourceAddresses");
-            attachSourceAddresses((ObjectNode) node.get("sourceAddresses"), loadBalancer.getSourceAddresses());
+            attachSourceAddresses(node, loadBalancer.getSourceAddresses());
         }
         if (loadBalancer.getAlgorithm() != null) {
             node.put("algorithm", loadBalancer.getAlgorithm());
@@ -136,12 +115,9 @@ public class JsonPublicSerializers {
         }
     }
 
-    public static void attachSslTermination(ObjectNode objectNode, SslTermination termination, boolean includeName) {
-        ObjectNode node = objectNode;
-        if (includeName) {
-            objectNode.putObject("sslTermination");
-            node = (ObjectNode) objectNode.get("sslTermination");
-        }
+    public static void attachSslTermination(ObjectNode objectNode, SslTermination termination) {
+        objectNode.putObject("sslTermination");
+        ObjectNode node = (ObjectNode) objectNode.get("sslTermination");
         if (termination.getCertificate() != null) {
             node.put("certificate", termination.getCertificate());
         }
@@ -160,17 +136,19 @@ public class JsonPublicSerializers {
     }
 
     public static void attachSourceAddresses(ObjectNode objectNode, SourceAddresses addresses) {
+        objectNode.putObject("sourceAddresses");
+        ObjectNode node = (ObjectNode) objectNode.get("sourceAddresses");
         if (addresses.getIpv4Public() != null) {
-            objectNode.put("ipv4PUblic", addresses.getIpv4Public());
+            node.put("ipv4PUblic", addresses.getIpv4Public());
         }
         if (addresses.getIpv6Public() != null) {
-            objectNode.put("ipv6Public", addresses.getIpv6Public());
+            node.put("ipv6Public", addresses.getIpv6Public());
         }
         if (addresses.getIpv4Servicenet() != null) {
-            objectNode.put("ipv4Servicenet", addresses.getIpv4Servicenet());
+            node.put("ipv4Servicenet", addresses.getIpv4Servicenet());
         }
         if (addresses.getIpv6Servicenet() != null) {
-            objectNode.put("ipv6Servicenet", addresses.getIpv6Servicenet());
+            node.put("ipv6Servicenet", addresses.getIpv6Servicenet());
         }
     }
 
@@ -255,17 +233,19 @@ public class JsonPublicSerializers {
     }
 
     public static void attachLoadBalancerUsage(ObjectNode objectNode, LoadBalancerUsage usage, boolean includeLinks) throws JsonSerializeException {
+        objectNode.putObject("loadBalancerUsage");
+        ObjectNode node = (ObjectNode) objectNode.get("loadBalancerUsage");
         if (usage.getLoadBalancerUsageRecords() != null && usage.getLoadBalancerUsageRecords().size() > 0) {
-            attachLoadBalancerUsageRecords(objectNode, usage.getLoadBalancerUsageRecords());
+            attachLoadBalancerUsageRecords(node, usage.getLoadBalancerUsageRecords());
         }
         if (usage.getLoadBalancerId() != null) {
-            objectNode.put("loadBalancerId", usage.getLoadBalancerId());
+            node.put("loadBalancerId", usage.getLoadBalancerId());
         }
         if (usage.getLoadBalancerName() != null) {
-            objectNode.put("loadBalancerName", usage.getLoadBalancerName());
+            node.put("loadBalancerName", usage.getLoadBalancerName());
         }
         if (includeLinks && usage.getLinks() != null && usage.getLinks().size() > 0) {
-            ArrayNode an = objectNode.putArray("links");
+            ArrayNode an = node.putArray("links");
             List<Link> atomLinks = usage.getLinks();
             for (Link atomLink : atomLinks) {
                 ObjectNode atomNode = an.addObject();
@@ -404,83 +384,99 @@ public class JsonPublicSerializers {
     }
 
     public static void attachHealthMonitor(ObjectNode objectNode, HealthMonitor monitor) {
+        objectNode.putObject("healthMonitor");
+        ObjectNode node = (ObjectNode) objectNode.get("healthMonitor");
         if (monitor.getId() != null) {
-            objectNode.put("id", monitor.getId());
+            node.put("id", monitor.getId());
         }
         if (monitor.getAttemptsBeforeDeactivation() != null) {
-            objectNode.put("attemptsBeforeDeactivation", monitor.getAttemptsBeforeDeactivation());
+            node.put("attemptsBeforeDeactivation", monitor.getAttemptsBeforeDeactivation());
         }
         if (monitor.getBodyRegex() != null) {
-            objectNode.put("bodyRegex", monitor.getBodyRegex());
+            node.put("bodyRegex", monitor.getBodyRegex());
         }
         if (monitor.getDelay() != null) {
-            objectNode.put("delay", monitor.getDelay());
+            node.put("delay", monitor.getDelay());
         }
         if (monitor.getHostHeader() != null) {
-            objectNode.put("hostHeader", monitor.getHostHeader());
+            node.put("hostHeader", monitor.getHostHeader());
         }
         if (monitor.getPath() != null) {
-            objectNode.put("path", monitor.getPath());
+            node.put("path", monitor.getPath());
         }
         if (monitor.getStatusRegex() != null) {
-            objectNode.put("statusRegex", monitor.getStatusRegex());
+            node.put("statusRegex", monitor.getStatusRegex());
         }
         if (monitor.getTimeout() != null) {
-            objectNode.put("timeout", monitor.getTimeout());
+            node.put("timeout", monitor.getTimeout());
         }
         if (monitor.getType() != null) {
-            objectNode.put("type", monitor.getType().value());
+            node.put("type", monitor.getType().value());
         }
     }
 
     public static void attachSessionPersistence(ObjectNode objectNode, SessionPersistence persistence) {
+        objectNode.putObject("sessionPersistence");
+        ObjectNode node = (ObjectNode) objectNode.get("sessionsPersistence");
         if (persistence.getPersistenceType() != null) {
-            objectNode.put("persistenceType", persistence.getPersistenceType().value());
+            node.put("persistenceType", persistence.getPersistenceType().value());
         }
     }
 
     public static void attachConnectionThrottle(ObjectNode objectNode, ConnectionThrottle throttle) {
+        objectNode.putObject("connectionThrottle");
+        ObjectNode node = (ObjectNode) objectNode.get("connectionThrottle");
         if (throttle.getMaxConnectionRate() != null) {
-            objectNode.put("maxConnectionRate", throttle.getMaxConnectionRate());
+            node.put("maxConnectionRate", throttle.getMaxConnectionRate());
         }
         if (throttle.getMaxConnections() != null) {
-            objectNode.put("maxConnections", throttle.getMaxConnections());
+            node.put("maxConnections", throttle.getMaxConnections());
         }
         if (throttle.getMinConnections() != null) {
-            objectNode.put("minConnections", throttle.getMinConnections());
+            node.put("minConnections", throttle.getMinConnections());
         }
         if (throttle.getRateInterval() != null) {
-            objectNode.put("rateInterval", throttle.getRateInterval());
+            node.put("rateInterval", throttle.getRateInterval());
         }
     }
 
     public static void attachConnectionLogging(ObjectNode objectNode, ConnectionLogging logging) {
+        objectNode.putObject("connectionLogging");
+        ObjectNode node = (ObjectNode) objectNode.get("connectionLogging");
         if (logging.isEnabled()) {
-            objectNode.put("enabled", logging.isEnabled());
+            node.put("enabled", logging.isEnabled());
         }
     }
 
     public static void attachContentCaching(ObjectNode objectNode, ContentCaching caching) {
+        objectNode.putObject("contentCaching");
+        ObjectNode node = (ObjectNode) objectNode.get("contentCaching");
         if (caching.isEnabled()) {
-            objectNode.put("enabled", caching.isEnabled());
+            node.put("enabled", caching.isEnabled());
         }
     }
 
     public static void attachCluster(ObjectNode objectNode, Cluster cluster) {
+        objectNode.putObject("cluster");
+        ObjectNode node = (ObjectNode) objectNode.get("cluster");
         if (cluster.getName() != null) {
-            objectNode.put("name", cluster.getName());
+            node.put("name", cluster.getName());
         }
     }
 
     public static void attachCreated(ObjectNode objectNode, Created created) throws JsonSerializeException {
+        objectNode.putObject("created");
+        ObjectNode node = (ObjectNode) objectNode.get("created");
         if (created.getTime() != null) {
-            attachDateTime(objectNode, "time", created.getTime());
+            attachDateTime(node, "time", created.getTime());
         }
     }
 
     public static void attachUpdated(ObjectNode objectNode, Updated updated) throws JsonSerializeException {
+        objectNode.putObject("updated");
+        ObjectNode node = (ObjectNode) objectNode.get("updated");
         if (updated.getTime() != null) {
-            attachDateTime(objectNode, "time", updated.getTime());
+            attachDateTime(node, "time", updated.getTime());
         }
     }
 
