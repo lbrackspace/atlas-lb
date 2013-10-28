@@ -7,7 +7,6 @@ import org.openstack.atlas.api.validation.verifiers.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AlgorithmType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
-import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;

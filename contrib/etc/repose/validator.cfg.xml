@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<validators xmlns="http://openrepose.org/repose/validator/v1.0"
+            xmlns:xs="http://www.w3.org/2001/XMLSchema"
+            multi-role-match="true">
+   <!--
+       RBAC:  Adding default role with no capabilities.
+   -->
+   <validator role="default"
+              dot-output="default.dot"
+              default="true">
+      <application xmlns="http://wadl.dev.java.net/2009/02">
+         <resources>
+            <resource path="/" />
+         </resources>
+      </application>
+   </validator>
+
+   <!--
+      RBAC:  Allow access for DNSaaS service-admin role to GET /loadbalancers/{id}
+   -->
+   <validator role="dnsaas:service-admin" dot-output="dnsaas.dot">
+      <application xmlns="http://wadl.dev.java.net/2009/02" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+         <resources base="http://10.1.9.1:8080">
+            <resource path="/v1.0/{tenantId}"
+                      type="capabilities.wadl.xml#List_Load_Balancers_Details">
+               <param name="tenantId" style="template" type="xsd:string"/>
+            </resource>
+         </resources>
+      </application>
+   </validator>
+
+   <!--
+       RBAC:  removing default status from LBaaS:observer.
+   -->  
+   <validator role="LBaaS:observer" dot-output="observer.dot">
+      <application xmlns="http://wadl.dev.java.net/2009/02"
+                   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+         <resources base="http://10.1.9.1:8080">
+            <resource path="/v1.0/{tenantId}"
+                      type="capabilities.wadl.xml#List_User_Limits capabilities.wadl.xml#List_Load_Balancers capabilities.wadl.xml#List_Load_Balancers_Details capabilities.wadl.xml#List_Error_page capabilities.wadl.xml#List_Load_Balancer_Stats capabilities.wadl.xml#List_Nodes capabilities.wadl.xml#List_details_of_specific_node capabilities.wadl.xml#List_Virtual_Ips capabilities.wadl.xml#List_Allowed_Domains capabilities.wadl.xml#List_Billable_LBs capabilities.wadl.xml#List_account_level_usage capabilities.wadl.xml#List_historical_usage capabilities.wadl.xml#List_Current_Usage capabilities.wadl.xml#List_Access_List capabilities.wadl.xml#Retreive_Health_Monitor_configuration capabilities.wadl.xml#List_Session_Persistence_Configuration capabilities.wadl.xml#List_Connection_Logging_Configuration capabilities.wadl.xml#List_Connection_Throttling_Configuration capabilities.wadl.xml#List_Content_Caching_Configuration capabilities.wadl.xml#List_Load_balancer_protocols capabilities.wadl.xml#List_Load_balancer_algorithms capabilities.wadl.xml#List_SSL_Termination_Configuration capabilities.wadl.xml#List_Metadata_for_specific_LB capabilities.wadl.xml#List_details_of_specific_metadata_for_specified_LB capabilities.wadl.xml#List_all_metadata_associated_with_specified_node_and_LB capabilities.wadl.xml#List_details_for_specific_metadata_item_for_specified_node_and_LB">
+               <param name="tenantId" style="template" type="xsd:string"/>
+            </resource>
+         </resources>
+      </application>
+   </validator>
+   <!--
+       RBAC:  Adding observer role with same capabilities as LBaaS:observer.
+   -->
+   <validator role="observer" dot-output="cross-platform-observer.dot">
+      <application xmlns="http://wadl.dev.java.net/2009/02"
+                   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+         <resources base="http://10.1.9.1:8080">
+            <resource path="/v1.0/{tenantId}"
+                      type="capabilities.wadl.xml#List_User_Limits capabilities.wadl.xml#List_Load_Balancers capabilities.wadl.xml#List_Load_Balancers_Details capabilities.wadl.xml#List_Error_page capabilities.wadl.xml#List_Load_Balancer_Stats capabilities.wadl.xml#List_Nodes capabilities.wadl.xml#List_details_of_specific_node capabilities.wadl.xml#List_Virtual_Ips capabilities.wadl.xml#List_Allowed_Domains capabilities.wadl.xml#List_Billable_LBs capabilities.wadl.xml#List_account_level_usage capabilities.wadl.xml#List_historical_usage capabilities.wadl.xml#List_Current_Usage capabilities.wadl.xml#List_Access_List capabilities.wadl.xml#Retreive_Health_Monitor_configuration capabilities.wadl.xml#List_Session_Persistence_Configuration capabilities.wadl.xml#List_Connection_Logging_Configuration capabilities.wadl.xml#List_Connection_Throttling_Configuration capabilities.wadl.xml#List_Content_Caching_Configuration capabilities.wadl.xml#List_Load_balancer_protocols capabilities.wadl.xml#List_Load_balancer_algorithms capabilities.wadl.xml#List_SSL_Termination_Configuration capabilities.wadl.xml#List_Metadata_for_specific_LB capabilities.wadl.xml#List_details_of_specific_metadata_for_specified_LB capabilities.wadl.xml#List_all_metadata_associated_with_specified_node_and_LB capabilities.wadl.xml#List_details_for_specific_metadata_item_for_specified_node_and_LB">
+               <param name="tenantId" style="template" type="xsd:string"/>
+            </resource>
+         </resources>
+      </application>
+   </validator>
+   <validator role="LBaaS:creator" dot-output="creator.dot">
+      <application xmlns="http://wadl.dev.java.net/2009/02"
+                   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+         <resources base="http://10.1.9.1:8080">
+            <resource path="/v1.0/{tenantId}"
+                      type="capabilities.wadl.xml#List_User_Limits capabilities.wadl.xml#List_Load_Balancers capabilities.wadl.xml#List_Load_Balancers_Details capabilities.wadl.xml#Create_Load_Balancer capabilities.wadl.xml#Update_Load_Balancer_Attributes capabilities.wadl.xml#List_Error_page capabilities.wadl.xml#Update_Error_page capabilities.wadl.xml#List_Load_Balancer_Stats capabilities.wadl.xml#List_Nodes capabilities.wadl.xml#List_details_of_specific_node capabilities.wadl.xml#Add_Nodes capabilities.wadl.xml#Modify_Nodes capabilities.wadl.xml#List_Virtual_Ips capabilities.wadl.xml#List_Allowed_Domains capabilities.wadl.xml#Add_Virtual_IP_Version_6 capabilities.wadl.xml#List_Billable_LBs capabilities.wadl.xml#List_account_level_usage capabilities.wadl.xml#List_historical_usage capabilities.wadl.xml#List_Current_Usage capabilities.wadl.xml#List_Access_List capabilities.wadl.xml#Create_New_Access_list capabilities.wadl.xml#Retreive_Health_Monitor_configuration capabilities.wadl.xml#Update_Health_Monitor capabilities.wadl.xml#List_Session_Persistence_Configuration capabilities.wadl.xml#Enable_Session_Persistence capabilities.wadl.xml#List_Connection_Logging_Configuration capabilities.wadl.xml#Enable_Disable_Connection_Logging capabilities.wadl.xml#List_Connection_Throttling_Configuration capabilities.wadl.xml#Update_Connection_throttling_config capabilities.wadl.xml#List_Content_Caching_Configuration capabilities.wadl.xml#Enable_Disable_Content_Caching capabilities.wadl.xml#List_Load_balancer_protocols capabilities.wadl.xml#List_Load_balancer_algorithms capabilities.wadl.xml#List_SSL_Termination_Configuration capabilities.wadl.xml#Update_SSL_Termination capabilities.wadl.xml#List_Metadata_for_specific_LB capabilities.wadl.xml#List_details_of_specific_metadata_for_specified_LB capabilities.wadl.xml#List_all_metadata_associated_with_specified_node_and_LB capabilities.wadl.xml#List_details_for_specific_metadata_item_for_specified_node_and_LB capabilities.wadl.xml#Add_Metadata_to_LB capabilities.wadl.xml#Add_Metadata_to_Node capabilities.wadl.xml#Modify_config_of_metadata_on_the_LB capabilities.wadl.xml#Modify_config_of_metadata_item_on_the_node">
+               <param name="tenantId" style="template" type="xsd:string"/>
+            </resource>
+         </resources>
+      </application>
+   </validator>
+   <validator role="LBaaS:admin" dot-output="admin.dot">
+      <application xmlns="http://wadl.dev.java.net/2009/02"
+                   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+         <resources base="http://10.1.9.1:8080">
+            <resource path="/v1.0/{tenantId}"
+                      type="capabilities.wadl.xml#List_User_Limits capabilities.wadl.xml#List_Load_Balancers capabilities.wadl.xml#List_Load_Balancers_Details capabilities.wadl.xml#Create_Load_Balancer capabilities.wadl.xml#Update_Load_Balancer_Attributes capabilities.wadl.xml#Remove_Load_Balancer capabilities.wadl.xml#Remove_Load_Balancer_Batch_Delete capabilities.wadl.xml#List_Error_page capabilities.wadl.xml#Update_Error_page capabilities.wadl.xml#Delete_Error_page capabilities.wadl.xml#List_Load_Balancer_Stats capabilities.wadl.xml#List_Nodes capabilities.wadl.xml#List_details_of_specific_node capabilities.wadl.xml#Add_Nodes capabilities.wadl.xml#Modify_Nodes capabilities.wadl.xml#Remove_Nodes capabilities.wadl.xml#Remove_Nodes_Batch_Delete capabilities.wadl.xml#List_Virtual_Ips capabilities.wadl.xml#List_Allowed_Domains capabilities.wadl.xml#Add_Virtual_IP_Version_6 capabilities.wadl.xml#Remove_Virtual_IP capabilities.wadl.xml#Remove_Virtual_IP_Batch_Delete capabilities.wadl.xml#List_Billable_LBs capabilities.wadl.xml#List_account_level_usage capabilities.wadl.xml#List_historical_usage capabilities.wadl.xml#List_Current_Usage capabilities.wadl.xml#List_Access_List capabilities.wadl.xml#Create_New_Access_list capabilities.wadl.xml#Remove_a_network_item_from_access_list capabilities.wadl.xml#Remove_the_entire_access_list capabilities.wadl.xml#Batch_Delete_the_access_list_network_items capabilities.wadl.xml#Retreive_Health_Monitor_configuration capabilities.wadl.xml#Update_Health_Monitor capabilities.wadl.xml#Remove_Health_Monitor capabilities.wadl.xml#List_Session_Persistence_Configuration capabilities.wadl.xml#Enable_Session_Persistence capabilities.wadl.xml#Disable_Session_Persistence capabilities.wadl.xml#List_Connection_Logging_Configuration capabilities.wadl.xml#Enable_Disable_Connection_Logging capabilities.wadl.xml#List_Connection_Throttling_Configuration capabilities.wadl.xml#Update_Connection_throttling_config capabilities.wadl.xml#Remove_connection_throttling_configs capabilities.wadl.xml#List_Content_Caching_Configuration capabilities.wadl.xml#Enable_Disable_Content_Caching capabilities.wadl.xml#List_Load_balancer_protocols capabilities.wadl.xml#List_Load_balancer_algorithms capabilities.wadl.xml#List_SSL_Termination_Configuration capabilities.wadl.xml#Update_SSL_Termination capabilities.wadl.xml#Remove_SSL_Termination capabilities.wadl.xml#List_Metadata_for_specific_LB capabilities.wadl.xml#List_details_of_specific_metadata_for_specified_LB capabilities.wadl.xml#List_all_metadata_associated_with_specified_node_and_LB capabilities.wadl.xml#List_details_for_specific_metadata_item_for_specified_node_and_LB capabilities.wadl.xml#Add_Metadata_to_LB capabilities.wadl.xml#Add_Metadata_to_Node capabilities.wadl.xml#Modify_config_of_metadata_on_the_LB capabilities.wadl.xml#Modify_config_of_metadata_item_on_the_node capabilities.wadl.xml#Remove_metadata_item_from_LB capabilities.wadl.xml#Batch_Delete_metadata_items_given_specified_ID_list capabilities.wadl.xml#Remove_a_metadata_item_from_the_node capabilities.wadl.xml#Batch_Delete_node_metadata_items_given_specified_ID_list">
+               <param name="tenantId" style="template" type="xsd:string"/>
+            </resource>
+         </resources>
+      </application>
+   </validator>
+   <!--
+       RBAC:  Adding admin role with same capabilities as LBaaS:admin.
+   -->
+   <validator role="admin" dot-output="cross-platform-admin.dot">
+      <application xmlns="http://wadl.dev.java.net/2009/02"
+                   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <resources base="http://10.1.9.1:8080">
+            <resource path="/v1.0/{tenantId}"
+                      type="capabilities.wadl.xml#List_User_Limits capabilities.wadl.xml#List_Load_Balancers capabilities.wadl.xml#List_Load_Balancers_Details capabilities.wadl.xml#Create_Load_Balancer capabilities.wadl.xml#Update_Load_Balancer_Attributes capabilities.wadl.xml#Remove_Load_Balancer capabilities.wadl.xml#Remove_Load_Balancer_Batch_Delete capabilities.wadl.xml#List_Error_page capabilities.wadl.xml#Update_Error_page capabilities.wadl.xml#Delete_Error_page capabilities.wadl.xml#List_Load_Balancer_Stats capabilities.wadl.xml#List_Nodes capabilities.wadl.xml#List_details_of_specific_node capabilities.wadl.xml#Add_Nodes capabilities.wadl.xml#Modify_Nodes capabilities.wadl.xml#Remove_Nodes capabilities.wadl.xml#Remove_Nodes_Batch_Delete capabilities.wadl.xml#List_Virtual_Ips capabilities.wadl.xml#List_Allowed_Domains capabilities.wadl.xml#Add_Virtual_IP_Version_6 capabilities.wadl.xml#Remove_Virtual_IP capabilities.wadl.xml#Remove_Virtual_IP_Batch_Delete capabilities.wadl.xml#List_Billable_LBs capabilities.wadl.xml#List_account_level_usage capabilities.wadl.xml#List_historical_usage capabilities.wadl.xml#List_Current_Usage capabilities.wadl.xml#List_Access_List capabilities.wadl.xml#Create_New_Access_list capabilities.wadl.xml#Remove_a_network_item_from_access_list capabilities.wadl.xml#Remove_the_entire_access_list capabilities.wadl.xml#Batch_Delete_the_access_list_network_items capabilities.wadl.xml#Retreive_Health_Monitor_configuration capabilities.wadl.xml#Update_Health_Monitor capabilities.wadl.xml#Remove_Health_Monitor capabilities.wadl.xml#List_Session_Persistence_Configuration capabilities.wadl.xml#Enable_Session_Persistence capabilities.wadl.xml#Disable_Session_Persistence capabilities.wadl.xml#List_Connection_Logging_Configuration capabilities.wadl.xml#Enable_Disable_Connection_Logging capabilities.wadl.xml#List_Connection_Throttling_Configuration capabilities.wadl.xml#Update_Connection_throttling_config capabilities.wadl.xml#Remove_connection_throttling_configs capabilities.wadl.xml#List_Content_Caching_Configuration capabilities.wadl.xml#Enable_Disable_Content_Caching capabilities.wadl.xml#List_Load_balancer_protocols capabilities.wadl.xml#List_Load_balancer_algorithms capabilities.wadl.xml#List_SSL_Termination_Configuration capabilities.wadl.xml#Update_SSL_Termination capabilities.wadl.xml#Remove_SSL_Termination capabilities.wadl.xml#List_Metadata_for_specific_LB capabilities.wadl.xml#List_details_of_specific_metadata_for_specified_LB capabilities.wadl.xml#List_all_metadata_associated_with_specified_node_and_LB capabilities.wadl.xml#List_details_for_specific_metadata_item_for_specified_node_and_LB capabilities.wadl.xml#Add_Metadata_to_LB capabilities.wadl.xml#Add_Metadata_to_Node capabilities.wadl.xml#Modify_config_of_metadata_on_the_LB capabilities.wadl.xml#Modify_config_of_metadata_item_on_the_node capabilities.wadl.xml#Remove_metadata_item_from_LB capabilities.wadl.xml#Batch_Delete_metadata_items_given_specified_ID_list capabilities.wadl.xml#Remove_a_metadata_item_from_the_node capabilities.wadl.xml#Batch_Delete_node_metadata_items_given_specified_ID_list">
+               <param name="tenantId" style="template" type="xsd:string"/>
+            </resource>
+         </resources>
+      </application>
+   </validator>
+   <validator role="identity:user-admin" dot-output="identity.dot">
+      <application xmlns="http://wadl.dev.java.net/2009/02"
+                   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+          <resources base="http://10.1.9.1:8080">
+            <resource path="/v1.0/{tenantId}"
+                      type="capabilities.wadl.xml#List_User_Limits capabilities.wadl.xml#List_Load_Balancers capabilities.wadl.xml#List_Load_Balancers_Details capabilities.wadl.xml#Create_Load_Balancer capabilities.wadl.xml#Update_Load_Balancer_Attributes capabilities.wadl.xml#Remove_Load_Balancer capabilities.wadl.xml#Remove_Load_Balancer_Batch_Delete capabilities.wadl.xml#List_Error_page capabilities.wadl.xml#Update_Error_page capabilities.wadl.xml#Delete_Error_page capabilities.wadl.xml#List_Load_Balancer_Stats capabilities.wadl.xml#List_Nodes capabilities.wadl.xml#List_details_of_specific_node capabilities.wadl.xml#Add_Nodes capabilities.wadl.xml#Modify_Nodes capabilities.wadl.xml#Remove_Nodes capabilities.wadl.xml#Remove_Nodes_Batch_Delete capabilities.wadl.xml#List_Virtual_Ips capabilities.wadl.xml#List_Allowed_Domains capabilities.wadl.xml#Add_Virtual_IP_Version_6 capabilities.wadl.xml#Remove_Virtual_IP capabilities.wadl.xml#Remove_Virtual_IP_Batch_Delete capabilities.wadl.xml#List_Billable_LBs capabilities.wadl.xml#List_account_level_usage capabilities.wadl.xml#List_historical_usage capabilities.wadl.xml#List_Current_Usage capabilities.wadl.xml#List_Access_List capabilities.wadl.xml#Create_New_Access_list capabilities.wadl.xml#Remove_a_network_item_from_access_list capabilities.wadl.xml#Remove_the_entire_access_list capabilities.wadl.xml#Batch_Delete_the_access_list_network_items capabilities.wadl.xml#Retreive_Health_Monitor_configuration capabilities.wadl.xml#Update_Health_Monitor capabilities.wadl.xml#Remove_Health_Monitor capabilities.wadl.xml#List_Session_Persistence_Configuration capabilities.wadl.xml#Enable_Session_Persistence capabilities.wadl.xml#Disable_Session_Persistence capabilities.wadl.xml#List_Connection_Logging_Configuration capabilities.wadl.xml#Enable_Disable_Connection_Logging capabilities.wadl.xml#List_Connection_Throttling_Configuration capabilities.wadl.xml#Update_Connection_throttling_config capabilities.wadl.xml#Remove_connection_throttling_configs capabilities.wadl.xml#List_Content_Caching_Configuration capabilities.wadl.xml#Enable_Disable_Content_Caching capabilities.wadl.xml#List_Load_balancer_protocols capabilities.wadl.xml#List_Load_balancer_algorithms capabilities.wadl.xml#List_SSL_Termination_Configuration capabilities.wadl.xml#Update_SSL_Termination capabilities.wadl.xml#Remove_SSL_Termination capabilities.wadl.xml#List_Metadata_for_specific_LB capabilities.wadl.xml#List_details_of_specific_metadata_for_specified_LB capabilities.wadl.xml#List_all_metadata_associated_with_specified_node_and_LB capabilities.wadl.xml#List_details_for_specific_metadata_item_for_specified_node_and_LB capabilities.wadl.xml#Add_Metadata_to_LB capabilities.wadl.xml#Add_Metadata_to_Node capabilities.wadl.xml#Modify_config_of_metadata_on_the_LB capabilities.wadl.xml#Modify_config_of_metadata_item_on_the_node capabilities.wadl.xml#Remove_metadata_item_from_LB capabilities.wadl.xml#Batch_Delete_metadata_items_given_specified_ID_list capabilities.wadl.xml#Remove_a_metadata_item_from_the_node capabilities.wadl.xml#Batch_Delete_node_metadata_items_given_specified_ID_list">
+               <param name="tenantId" style="template" type="xsd:string"/>
+            </resource>
+         </resources>
+      </application>
+   </validator>
+</validators>

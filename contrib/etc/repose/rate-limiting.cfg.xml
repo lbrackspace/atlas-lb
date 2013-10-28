@@ -1,23 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<rate-limiting datastore="distributed/hash-ring" xmlns="http://docs.rackspacecloud.com/repose/rate-limiting/v1.0">
+    <request-endpoint uri-regex=".*/([0-9]+)/limits" include-absolute-limits="false"/>
 
-<rate-limiting datastore="distributed/hash-ring" delegation="false" xmlns="http://docs.rackspacecloud.com/repose/rate-limiting/v1.0">
-	<request-endpoint uri-regex="/limits.*" /> 
-   <!--
-        Defining a limit group.
+    <!-- Refer to groups IDs at https://one.rackspace.com/display/clb/Repose+Auth+Group+Mappings -->
 
-        The following headers can be found in the class
-        com.rackspace.cloud.powerapi.http.PowerApiHeader in the Power API
-        Filterlet library, maven group id com.rackspace.cloud.powerapi, artifact
-        id filterlet.
-
-        Groups are matched on the HTTP header: X-PP-Groups
-        User information is matched on the HTTP header: X-PP-User
-    -->
-    <limit-group id="standard-ip-limits" groups="IP_Standard" default="true">
-        <limit uri="/*" uri-regex="/(.*)" http-methods="GET" unit="MINUTE" value="5" />
+    <limit-group id="restricted-limits" groups="1461">
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="GET" unit="HOUR" value="3" />
     </limit-group>
 
-    <limit-group id="standard-ip-limits-superuser" groups="IP_Super" default="false">
-        <limit uri="/*" uri-regex="/(.*)" http-methods="GET" unit="SECOND" value="5" />
+    <limit-group id="very_low_traffic" groups="1463" default="false">
+      <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="GET" unit="MINUTE" value="3" />
+      <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="POST" unit="MINUTE" value="1" />
+      <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="PUT" unit="MINUTE" value="1" />
+      <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="DELETE" unit="MINUTE" value="1" />
     </limit-group>
+
+    <limit-group id="low_traffic" groups="1464" default="false">
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="GET" unit="HOUR" value="600" />
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="POST" unit="HOUR" value="30"/>
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="PUT" unit="HOUR" value="600" />
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="DELETE" unit="HOUR" value="30" />
+    </limit-group>
+
+    <limit-group id="standard_traffic" groups="1465" default="true">
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="GET" unit="SECOND" value="5" />
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="PUT" unit="SECOND" value="5" />
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="DELETE" unit="SECOND" value="2" />
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="POST" unit="SECOND" value="2" />
+    </limit-group>
+
+    <limit-group id="trusted_users_heavy_traffic" groups="1466" default="false">
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="GET" unit="MINUTE" value="1200" />
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="PUT" unit="MINUTE" value="120" />
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="DELETE" unit="MINUTE" value="120" />
+        <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="POST" unit="MINUTE" value="60" />
+    </limit-group>
+
+    <limit-group id="load_testing" groups="1414" default="false">
+	    <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="GET" unit="MINUTE" value="120000" />
+	    <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="PUT" unit="MINUTE" value="120000" />
+	    <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="DELETE" unit="MINUTE" value="120000" />
+	    <limit uri="/v1.0/*" uri-regex=".*/([0-9]+)/loadbalancers.*" http-methods="POST" unit="MINUTE" value="120000" />
+    </limit-group>
+
 </rate-limiting>

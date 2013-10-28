@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 import org.openstack.atlas.atomhopper.exception.AtomHopperMappingException;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactory;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactoryImpl;
+import org.openstack.atlas.atomhopper.factory.UsageEntryWrapper;
 import org.openstack.atlas.atomhopper.util.UUIDUtil;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfiguration;
@@ -21,7 +22,6 @@ import org.w3._2005.atom.UsageEntry;
 
 import javax.xml.bind.JAXBElement;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 @RunWith(Enclosed.class)
 public class LbaasUsageDataMapperTest {
@@ -64,8 +64,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapAvgCC() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -74,8 +74,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapAvgCCSSL() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
             Assert.assertEquals((Object) usageRecord1.getAverageConcurrentConnectionsSsl(), lbaasEntry.getValue().getAvgConcurrentConnectionsSsl());
@@ -83,8 +83,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapProductSchemaVersion() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -93,8 +93,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapBandwidthIn() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -103,8 +103,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapBandwidthInSSL() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -113,8 +113,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapBandwidthOut() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -123,8 +123,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapBandwidthOutSSL() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -133,8 +133,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapNumPolls() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -143,8 +143,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapNumVips() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -153,8 +153,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapCoreEntryTitle() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             Assert.assertEquals("cloudLoadBalancers", entry.getTitle().getValue());
             Assert.assertEquals(Type.TEXT, entry.getTitle().getType());
@@ -162,8 +162,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapCategory() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             Assert.assertEquals("loadBalancerUsage", entry.getCategory().get(0).getLabel());
             Assert.assertEquals("plain", entry.getCategory().get(0).getTerm());
@@ -171,8 +171,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldGenerateUUIDMD5Hash() throws AtomHopperMappingException, NoSuchAlgorithmException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             String usageID = entry.getContent().getEvent().getId();
 
@@ -183,8 +183,8 @@ public class LbaasUsageDataMapperTest {
         @Test
         public void shouldMapStatusSuspendedIfLBSuspended() throws AtomHopperMappingException {
             usageRecord1.setEventType("SUSPEND_LOADBALANCER");
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -193,8 +193,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapStatusActive() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
@@ -204,8 +204,8 @@ public class LbaasUsageDataMapperTest {
         @Test
         public void shouldSetEventTimeForDelete() throws AtomHopperMappingException {
             usageRecord1.setEventType("DELETE_LOADBALANCER");
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             Assert.assertNotNull(entry.getContent().getEvent().getEventTime());
             Assert.assertNull(entry.getContent().getEvent().getStartTime());
@@ -214,8 +214,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldNotSetEventTimeforNonDelete() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             Assert.assertNull(entry.getContent().getEvent().getEventTime());
             Assert.assertNotNull(entry.getContent().getEvent().getStartTime());
@@ -224,38 +224,40 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldNotUpdateRefIdIfUUIDIsNull() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
 
             Assert.assertNull(entry.getContent().getEvent().getReferenceId());
         }
 
         @Test
-        public void shouldUpdateRefIdIfCorrectedUsage() throws AtomHopperMappingException {
-            usageRecord1.setUuid("52ab8665-1a1c-3765-96cd-29d54d0f7624");
+        public void shouldUpdateRefIdIfCorrectedUsage() throws AtomHopperMappingException, NoSuchAlgorithmException {
+            usageRecord1.setUuid(usageEntryFactory.genUUIDObject(usageRecord1).toString());
+            usageRecord1.setReferenceId("52ab8665-1a1c-3765-96cd-29d54d0f7627");
             usageRecord1.setCorrected(true);
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
             Assert.assertNotNull(entry.getContent().getEvent().getReferenceId());
-            Assert.assertNotSame(entry.getId(), entry.getContent().getEvent().getReferenceId());
-            Assert.assertNotSame(entry.getId(), usageRecord1.getUuid());
+            Assert.assertEquals(entry.getContent().getEvent().getReferenceId(), usageRecord1.getReferenceId());
+            Assert.assertNotSame(entry.getContent().getEvent().getId(), entry.getContent().getEvent().getReferenceId());
+            Assert.assertEquals(entry.getContent().getEvent().getId(), usageRecord1.getUuid());
         }
 
         @Test
         public void shouldNotUpdateRefIdIfUUIDNotNullAndCorrectedUsageFalse() throws AtomHopperMappingException {
             usageRecord1.setUuid("52ab8665-1a1c-3765-96cd-29d54d0f7624");
             usageRecord1.setCorrected(false);
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntry entry = entryMap.getEntryObject();
             Assert.assertNull(entry.getContent().getEvent().getReferenceId());
         }
 
         @Test
         public void shouldNotMapRefIdForNewEntry() throws AtomHopperMappingException {
-            Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
+            UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord1);
             usageRecord1.setCorrected(true);
-            UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
-            String entrystring = (String) entryMap.get("entrystring");
+            UsageEntry entry = entryMap.getEntryObject();
+            String entrystring = entryMap.getEntryString();
 //            System.out.print(entrystring);
             Assert.assertFalse(entrystring.contains("referenceId"));
             Assert.assertNull(entry.getContent().getEvent().getReferenceId());

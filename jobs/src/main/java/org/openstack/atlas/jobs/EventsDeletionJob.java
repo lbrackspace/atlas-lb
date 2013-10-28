@@ -58,6 +58,12 @@ public class EventsDeletionJob extends AbstractJob {
             loadBalancerEventRepository.removeNodeEventEntries();
             LOG.info("Node events deletion job completed.");
 
+            //NodeServiceEvent
+            LOG.info("Node service events deletion job started...");
+            LOG.info(String.format("Attempting to remove old node service events from the database... "));
+            loadBalancerEventRepository.removeNodeServiceEventEntries();
+            LOG.info("Node service events deletion job completed.");
+
             //VirtualIpEvent
             LOG.info("Virtual ip events deletion job started...");
             LOG.info(String.format("Attempting to remove virtual ip events from the database... "));

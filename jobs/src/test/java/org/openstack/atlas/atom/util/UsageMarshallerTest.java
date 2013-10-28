@@ -7,13 +7,13 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.atomhopper.exception.AtomHopperMappingException;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactoryImpl;
+import org.openstack.atlas.atomhopper.factory.UsageEntryWrapper;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.w3._2005.atom.ObjectFactory;
 
 import javax.xml.bind.JAXBException;
 import java.util.Calendar;
-import java.util.Map;
 import java.util.UUID;
 
 
@@ -59,8 +59,8 @@ public class UsageMarshallerTest {
         @Test
         public void shouldSuccessfullyMarshallEntry() throws AtomHopperMappingException, JAXBException {
             UsageEntryFactoryImpl usageEntryFactory = new UsageEntryFactoryImpl();
-            Map<Object, Object> mappedobj = usageEntryFactory.createEntry(baseUsage);
-            String entry = (String) mappedobj.get("entrystring");
+            UsageEntryWrapper mappedobj = usageEntryFactory.createEntry(baseUsage);
+            String entry = mappedobj.getEntryString();
             Assert.assertTrue(entry.contains("54321"));
         }
 
@@ -68,8 +68,8 @@ public class UsageMarshallerTest {
         public void shouldSuccessfullyMarshallDeleteEntry() throws AtomHopperMappingException, JAXBException {
             UsageEntryFactoryImpl usageEntryFactory = new UsageEntryFactoryImpl();
             baseUsage.setEventType(org.openstack.atlas.service.domain.events.entities.EventType.DELETE_LOADBALANCER.name());
-            Map<Object, Object> mappedobj = usageEntryFactory.createEntry(baseUsage);
-            String entry = (String) mappedobj.get("entrystring");
+            UsageEntryWrapper mappedobj = usageEntryFactory.createEntry(baseUsage);
+            String entry = mappedobj.getEntryString();
             Assert.assertTrue(entry.contains("54321"));
         }
     }

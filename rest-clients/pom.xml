@@ -19,6 +19,7 @@
         <module>atomhopper</module>
         <module>objs</module>
         <module>dns</module>
+        <module>java-cloudfiles</module>
     </modules>
 
     <build>
