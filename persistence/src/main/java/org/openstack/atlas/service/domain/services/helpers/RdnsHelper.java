@@ -1,26 +1,38 @@
 package org.openstack.atlas.service.domain.services.helpers;
 
-import com.sun.jersey.api.client.ClientResponse;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openstack.atlas.util.b64aes.Aes;
+import org.openstack.atlas.util.config.LbConfiguration;
+import org.openstack.atlas.util.config.MossoConfigValues;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.restclients.auth.IdentityClientImpl;
+import org.openstack.atlas.util.debug.Debug;
+import com.sun.jersey.api.client.ClientResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import org.openstack.atlas.restclients.dns.DnsClient1_0;
 import org.openstack.atlas.service.domain.exceptions.RdnsException;
 import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthAdminClient;
 import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthPubClient;
 import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthUserAndToken;
 import org.openstack.atlas.service.domain.services.helpers.authmangler.KeyStoneConfig;
-import org.openstack.atlas.util.b64aes.Aes;
-import org.openstack.atlas.util.config.LbConfiguration;
-import org.openstack.atlas.util.config.MossoConfigValues;
-import org.openstack.atlas.util.debug.Debug;
+import org.openstack.client.keystone.KeyStoneAdminClient;
+import org.openstack.client.keystone.KeyStoneClient;
 import org.openstack.client.keystone.KeyStoneException;
+import org.osgi.framework.AdminPermission;
 import org.openstack.client.keystone.auth.AuthData;
 import org.openstack.client.keystone.user.User;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
+import org.json.simple.JSONObject;
+
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 public class RdnsHelper {
 
@@ -38,7 +50,6 @@ public class RdnsHelper {
     private String authPublicUrl;
     private String authAdminUser;
     private String authAdminKey;
-    private boolean useAdminAuth;
 
     public RdnsHelper(int aid) {
         this.accountId = aid;
@@ -47,12 +58,11 @@ public class RdnsHelper {
         rdnsPublicUrl = conf.getString(MossoConfigValues.rdns_public_url);
         rdnsAdminUrl = conf.getString(MossoConfigValues.rdns_admin_url);
         rdnsAdminUser = conf.getString(MossoConfigValues.rdns_admin_user);
-        authAdminUrl = conf.getString(MossoConfigValues.auth_management_uri);
+        authAdminUrl = conf.getString(MossoConfigValues.auth_management_uri);       
         authAdminUser = conf.getString(MossoConfigValues.basic_auth_user);
         //authPublicUrl = conf.getString(MossoConfigValues.auth_public_uri);
         authPublicUrl = authAdminUrl; // So wayne doesn't need to duplicate configs.
         authAdminKey = conf.getString(MossoConfigValues.basic_auth_key);
-        useAdminAuth = Boolean.parseBoolean(conf.getString(MossoConfigValues.rdns_use_service_admin));
 
         String key = conf.getString(MossoConfigValues.rdns_crypto_key);
         String ctext = conf.getString(MossoConfigValues.rdns_admin_passwd);
@@ -115,17 +125,12 @@ public class RdnsHelper {
     }
 
     public ClientResponse delPtrPubRecord(int lid, String ip) throws RdnsException {
-        String tokenStr;
-        if (useAdminAuth) {
-            tokenStr = getLbaasToken2();
-        } else {
-            AuthUserAndToken aut = stealUserToken();
-            tokenStr = aut.getTokenString();
-        }
-
-        DnsClient1_0 dns = new DnsClient1_0(rdnsPublicUrl, tokenStr, accountId);
+        AuthUserAndToken aut = stealUserToken();
+        String tokenStr = aut.getTokenString();
+        DnsClient1_0 dns = new DnsClient1_0(rdnsPublicUrl,tokenStr,accountId);
         return dns.delPtrRecordPub(buildDeviceUri(accountId, lid), LB_SERVICE_NAME, ip);
     }
+
 
     public String buildDeviceUri(int aid, int lid) {
         return String.format("%s/%d/loadbalancers/%d", lbaasBaseUrl, aid, lid);
@@ -139,6 +144,9 @@ public class RdnsHelper {
         AuthUserAndToken aut;
         User u;
         AuthData t;
+        String fmt;
+        String msg;
+        String stackTrace;
         String accountIdStr = Integer.valueOf(accountId).toString();
         KeyStoneConfig ksc = new KeyStoneConfig(this);
         try {
@@ -152,38 +160,6 @@ public class RdnsHelper {
             throw logAndThrowRdnsException(ex, accountId);
         } catch (KeyStoneException ex) {
             throw logAndThrowRdnsException(ex, accountId);
-        }
-    }
-
-    public AuthUserAndToken getLbaasToken() throws RdnsException {
-        AuthUserAndToken aut;
-        User u;
-        AuthData t;
-        KeyStoneConfig ksc = new KeyStoneConfig(this);
-        try {
-            AuthAdminClient adminClient = new AuthAdminClient(ksc);
-            AuthPubClient pubClient = new AuthPubClient(ksc);
-            u = adminClient.getUserKey(authAdminUser);
-            t = pubClient.getToken(u.getId(), u.getKey());
-
-            aut = new AuthUserAndToken(u, t);
-            return aut;
-        } catch (URISyntaxException ex) {
-            throw logAndThrowRdnsException(ex, accountId);
-        } catch (KeyStoneException ex) {
-            throw logAndThrowRdnsException(ex, accountId);
-        }
-    }
-
-    public String getLbaasToken2() throws RdnsException {
-        try {
-            return (new IdentityClientImpl()).getAuthToken();
-        } catch (URISyntaxException e) {
-            throw logAndThrowRdnsException(e, accountId);
-        } catch (org.openstack.identity.client.fault.IdentityFault identityFault) {
-            throw logAndThrowRdnsException(identityFault, accountId);
-        } catch (MalformedURLException e) {
-            throw logAndThrowRdnsException(e, accountId);
         }
     }
 
@@ -233,6 +209,4 @@ public class RdnsHelper {
     public String getAuthAdminKey() {
         return authAdminKey;
     }
-
-    public Boolean getUseAdminAuth() { return useAdminAuth; }
 }

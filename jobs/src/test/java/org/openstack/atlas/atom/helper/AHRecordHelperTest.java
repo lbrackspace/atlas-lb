@@ -11,8 +11,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactoryImpl;
-import org.openstack.atlas.atomhopper.factory.UsageEntryWrapper;
-import org.openstack.atlas.atomhopper.factory.UsageWrapper;
 import org.openstack.atlas.atomhopper.util.AHUSLServiceUtil;
 import org.openstack.atlas.restclients.atomhopper.AtomHopperClient;
 import org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil;
@@ -28,6 +26,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.Calendar;
 import java.util.ConcurrentModificationException;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -64,7 +63,7 @@ public class AHRecordHelperTest {
 
         private UsageEntryFactoryImpl entryFactory;
         private String token;
-        private UsageEntryWrapper emap;
+        private Map<Object, Object> emap;
 
         @Before
         public void standUp() throws Exception {
@@ -113,8 +112,8 @@ public class AHRecordHelperTest {
         @Test
         public void shouldFailAndAlertForClientFailure() throws Exception {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(null);
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
         }
 
@@ -122,8 +121,8 @@ public class AHRecordHelperTest {
         public void shouldFailAndAlertForClientHandlerException() throws Exception {
             doThrow(ClientHandlerException.class)
                     .when(client).postEntryWithToken(Matchers.any(), Matchers.<String>any());
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
         }
 
@@ -131,8 +130,8 @@ public class AHRecordHelperTest {
         public void shouldFailAndAlertForPoolTimeoutException() throws Exception {
             doThrow(ConnectionPoolTimeoutException.class)
                     .when(client).postEntryWithToken(Matchers.any(), Matchers.<String>any());
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
         }
 
@@ -140,8 +139,8 @@ public class AHRecordHelperTest {
         public void shouldFailAndWarmForPoolTimeoutException() throws Exception {
             doThrow(ConcurrentModificationException.class)
                     .when(client).postEntryWithToken(Matchers.any(), Matchers.<String>any());
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(0, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(0, ahelper.getFailedRecords().size());
             verify(alertRepository, times(0)).save(Matchers.<Alert>any());
         }
 
@@ -149,8 +148,8 @@ public class AHRecordHelperTest {
         public void shouldFailAlertAndEventForException() throws Exception {
             doThrow(Exception.class)
                     .when(client).postEntryWithToken(Matchers.any(), Matchers.<String>any());
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
         }
@@ -159,8 +158,8 @@ public class AHRecordHelperTest {
         public void shouldFailAndAlertForRandomStatus() throws Exception {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(9735);
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(0)).save(Matchers.<LoadBalancerServiceEvent>any());
         }
@@ -169,8 +168,8 @@ public class AHRecordHelperTest {
         public void shouldFailAlertAndEventFor400Status() throws Exception {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(400);
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
         }
@@ -179,8 +178,8 @@ public class AHRecordHelperTest {
         public void shouldFailAndAlertFor409Status() throws Exception {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(409);
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
         }
@@ -189,8 +188,8 @@ public class AHRecordHelperTest {
         public void shouldNotFailOrAlertFor201Status() throws Exception {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(201);
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(0, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(0, ahelper.getFailedRecords().size());
             verify(alertRepository, times(0)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(0)).save(Matchers.<LoadBalancerServiceEvent>any());
         }
@@ -200,8 +199,8 @@ public class AHRecordHelperTest {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(201);
             Assert.assertNull(baseUsage.getUuid());
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(0, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(0, ahelper.getFailedRecords().size());
             verify(alertRepository, times(0)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(0)).save(Matchers.<LoadBalancerServiceEvent>any());
             Assert.assertNotNull(baseUsage.getUuid());
@@ -213,8 +212,8 @@ public class AHRecordHelperTest {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(400);
             Assert.assertNull(baseUsage.getUuid());
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
             Assert.assertNotNull(baseUsage.getUuid());
@@ -226,8 +225,8 @@ public class AHRecordHelperTest {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(409);
             Assert.assertNull(baseUsage.getUuid());
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
             Assert.assertNotNull(baseUsage.getUuid());
@@ -239,8 +238,8 @@ public class AHRecordHelperTest {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(999);
             Assert.assertNull(baseUsage.getUuid());
-            UsageWrapper w = ahelper.handleUsageRecord(baseUsage, token, emap);
-            Assert.assertEquals(1, w.getFailedRecords().size());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(0)).save(Matchers.<LoadBalancerServiceEvent>any());
             Assert.assertNotNull(baseUsage.getUuid());

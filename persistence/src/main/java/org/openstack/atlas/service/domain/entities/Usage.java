@@ -50,13 +50,11 @@ public class Usage extends Entity implements Serializable {
     private boolean corrected;
     @Column(name = "num_attempts", nullable = false)
     private int numAttempts;
-    @Column(name = "reference_id", nullable = true)
-    private String referenceId;
 
     public Usage() {
     }
 
-    public Usage(LoadBalancer loadbalancer, Double averageConcurrentConnections, Long incomingTransfer, Long outgoingTransfer, Double averageConcurrentConnectionsSsl, Long incomingTransferSsl, Long outgoingTransferSsl, Calendar startTime, Calendar endTime, Integer numberOfPolls, Integer numVips, Integer tags, String eventType, Integer accountId, Integer entryVersion, boolean needsPushed, String uuid, boolean isCorrected, int numAttempts, String referenceId) {
+    public Usage(LoadBalancer loadbalancer, Double averageConcurrentConnections, Long incomingTransfer, Long outgoingTransfer, Double averageConcurrentConnectionsSsl, Long incomingTransferSsl, Long outgoingTransferSsl, Calendar startTime, Calendar endTime, Integer numberOfPolls, Integer numVips, Integer tags, String eventType, Integer accountId, Integer entryVersion, boolean needsPushed, String uuid) {
         this.loadbalancer = loadbalancer;
         this.averageConcurrentConnections = averageConcurrentConnections;
         this.incomingTransfer = incomingTransfer;
@@ -74,9 +72,6 @@ public class Usage extends Entity implements Serializable {
         this.entryVersion = entryVersion;
         this.needsPushed = needsPushed;
         this.uuid = uuid;
-        this.corrected = isCorrected;
-        this.numAttempts = numAttempts;
-        this.referenceId = referenceId;
     }
 
     public LoadBalancer getLoadbalancer() {
@@ -231,14 +226,6 @@ public class Usage extends Entity implements Serializable {
         this.numAttempts = numAttempts;
     }
 
-    public String getReferenceId() {
-        return referenceId;
-    }
-
-    public void setReferenceId(String referenceId) {
-        this.referenceId = referenceId;
-    }
-
     public static Usage createNullUsageRecord() {
         Usage currUsageRecord = new Usage();
         currUsageRecord.setAccountId(null);
@@ -254,7 +241,6 @@ public class Usage extends Entity implements Serializable {
         currUsageRecord.setTags(0);
         currUsageRecord.setEventType(null);
         currUsageRecord.setUuid(null);
-        currUsageRecord.setReferenceId(null);
         return currUsageRecord;
     }
 }

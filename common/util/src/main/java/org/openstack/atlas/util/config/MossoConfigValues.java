@@ -3,6 +3,7 @@ package org.openstack.atlas.util.config;
 import org.openstack.atlas.cfg.ConfigurationKey;
 
 public enum MossoConfigValues implements ConfigurationKey {
+
     hm_crypto_key,
     hm_crypto_key_alt,
     base_uri,
@@ -31,6 +32,5 @@ public enum MossoConfigValues implements ConfigurationKey {
     ahusl_auth_password,
     ahusl_log_requests,
     ahusl_num_attempts,
-    ahusl_run_failed_entries,
-    rdns_use_service_admin
+    ahusl_run_failed_entries
 }

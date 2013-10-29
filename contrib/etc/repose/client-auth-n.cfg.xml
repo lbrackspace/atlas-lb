@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <client-auth xmlns="http://docs.rackspacecloud.com/repose/client-auth/v1.0">
-    <openstack-auth delegable="false" token-cache-timeout="600000" group-cache-timeout="60000" xmlns="http://docs.openrepose.org/repose/client-auth/os-ids-auth/v1.0">
-        <identity-service username="admin" password="password" uri="https://staging.identity.api.rackspacecloud.com/v2.0" />
+    <openstack-auth delegable="true" token-cache-timeout="600000" group-cache-timeout="600000" xmlns="http://docs.openrepose.org/repose/client-auth/os-ids-auth/v1.0">
+        <identity-service username="lbaasUsageUS" password="PASSWORD" uri="https://identity.api.rackspacecloud.com/v2.0" />
         
         <!-- Example Regex to capture user identity in uri
             e.g: /servers/usertest1/action => x-pp-user=usertest1
@@ -9,11 +9,10 @@
             e.g: /servers/-741057/action => x-pp-user=-741057
             e.g: /servers/reposeuser/action => x-pp-user=reposeuser
             -->
-        <client-mapping id-regex=".*/v1.0/([-|\w]+)/?.*"/>
+        <client-mapping id-regex=".*/pub/([-|\w]+)/?.*"/>
     </openstack-auth>
 
     <white-list>
-        <uri-pattern uri-regex=".*?/application\.wadl$" />
-        <uri-pattern uri-regex=".*?\?_wadl$" />
+        <uri-pattern uri-regex="/application\.wadl$" />
     </white-list>
 </client-auth>

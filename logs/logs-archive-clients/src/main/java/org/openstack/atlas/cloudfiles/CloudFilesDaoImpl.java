@@ -6,10 +6,8 @@ import com.rackspacecloud.client.cloudfiles.FilesNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.auth.AuthUser;
-import org.openstack.atlas.config.LbLogsConfigurationKeys;
-import org.openstack.atlas.restclients.auth.IdentityClientImpl;
-import org.openstack.atlas.util.config.LbConfiguration;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import org.springframework.beans.factory.annotation.Required;
 
 import javax.activation.FileTypeMap;
 import java.io.File;
@@ -18,17 +16,11 @@ import java.util.HashMap;
 public class CloudFilesDaoImpl implements CloudFilesDao {
 
     private static final Log LOG = LogFactory.getLog(CloudFilesDaoImpl.class);
-    private static final LbConfiguration conf;
-    private static final boolean useAdminAuth;
 
     private FilesClient client;
 
     private FileTypeMap fileMap = FileTypeMap.getDefaultFileTypeMap();
 
-    static {
-        conf = new LbConfiguration();
-        useAdminAuth = Boolean.parseBoolean(conf.getString(LbLogsConfigurationKeys.logs_use_service_admin));
-    }
 
     public synchronized void uploadLocalFile(AuthUser user, String containerName, String localFileName, String remoteFileName) throws FilesException {
         File localFile = new File(localFileName);
@@ -52,9 +44,6 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
                     // try again to log in, sometimes this fails randomly
                     client.login();
                 }
-                if (useAdminAuth) { //use the Admin auth token instead of the user's token
-                    client.useAlternativeAuth((new IdentityClientImpl()).getAuthToken());
-                }
                 client.setCurrentRegion(user.getRegion());
                 if (!client.containerExists(containerName)) {
                     client.createContainer(containerName);
@@ -64,7 +53,7 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
                         throw new FilesException("Could not add file [" + localFileName + "]", null);
                     }
                 } catch (FilesNotFoundException e) {
-                    //file does not exist, good.
+                    //file does nto exist, good.
                 }
                 File file = new File(fullFilename);
                 String contentType = fileMap.getContentType(file);

@@ -3,8 +3,6 @@ package org.openstack.atlas.usage.thread;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.atomhopper.exception.AtomHopperMappingException;
-import org.openstack.atlas.atomhopper.factory.UsageEntryWrapper;
-import org.openstack.atlas.atomhopper.factory.UsageWrapper;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.restclients.atomhopper.AtomHopperClient;
 import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfiguration;
@@ -16,10 +14,10 @@ import org.openstack.atlas.service.domain.events.repository.AlertRepository;
 import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
 import org.openstack.atlas.usage.thread.helper.AHRecordHelper;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Map;
 
 import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getExtendedStackTrace;
 
@@ -35,11 +33,10 @@ public abstract class AbstractAtomHopperThread implements Runnable {
     protected LoadBalancerEventRepository loadBalancerEventRepository;
 
     protected List<Usage> failedRecords;
-    protected List<Usage> correctedRecords;
 
     public abstract String getThreadName();
 
-    public abstract UsageEntryWrapper generateAtomHopperEntry(Usage usage) throws AtomHopperMappingException;
+    public abstract Map<Object, Object> generateAtomHopperEntry(Usage usage) throws AtomHopperMappingException;
 
     public abstract void updatePushedRecords(List<Usage> successfullyPushedRecordIds);
 
@@ -59,17 +56,16 @@ public abstract class AbstractAtomHopperThread implements Runnable {
         LOG.info(String.format("Load Balancer Atom Hopper USL Task Started at %s (Timezone: %s)",
                 startTime.getTime().toString(), startTime.getTimeZone().getDisplayName()));
 
-        failedRecords = new ArrayList<Usage>();
-        boolean vLog = configuration.getString(AtomHopperConfigurationKeys.ahusl_log_requests).equals("ENABLED");
-        AHRecordHelper ahelper = new AHRecordHelper(vLog, client, loadBalancerEventRepository, alertRepository);
-
+        AHRecordHelper ahelper = null;
         try {
             String authToken = identityAuthClient.getAuthToken();
+            ahelper = new AHRecordHelper(configuration.getString(AtomHopperConfigurationKeys
+                    .ahusl_log_requests).equals("ENABLED"), client,
+                    loadBalancerEventRepository, alertRepository);
 
             for (Usage usageRecord : usages) {
-                UsageEntryWrapper entryWrapper = generateAtomHopperEntry(usageRecord);
-                UsageWrapper w = ahelper.handleUsageRecord(usageRecord, authToken, entryWrapper);
-                failedRecords.addAll(w.getFailedRecords());
+                Map<Object, Object> entryMap = generateAtomHopperEntry(usageRecord);
+                failedRecords = ahelper.handleUsageRecord(usageRecord, authToken, entryMap);
             }
 
             LOG.info(String.format("Batch updating: %d " +

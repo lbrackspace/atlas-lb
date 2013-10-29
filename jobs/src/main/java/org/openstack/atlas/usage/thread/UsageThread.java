@@ -3,7 +3,6 @@ package org.openstack.atlas.usage.thread;
 import org.openstack.atlas.atomhopper.exception.AtomHopperMappingException;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactory;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactoryImpl;
-import org.openstack.atlas.atomhopper.factory.UsageEntryWrapper;
 import org.openstack.atlas.restclients.atomhopper.AtomHopperClient;
 import org.openstack.atlas.restclients.auth.IdentityAuthClient;
 import org.openstack.atlas.service.domain.entities.Usage;
@@ -14,6 +13,7 @@ import org.openstack.atlas.service.domain.repository.UsageRepository;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class UsageThread extends AbstractAtomHopperThread {
     private UsageEntryFactory usageEntryFactory;
@@ -41,7 +41,7 @@ public class UsageThread extends AbstractAtomHopperThread {
     }
 
     @Override
-    public UsageEntryWrapper generateAtomHopperEntry(Usage usage) throws AtomHopperMappingException {
+    public Map<Object, Object> generateAtomHopperEntry(Usage usage) throws AtomHopperMappingException {
         return usageEntryFactory.createEntry(usage);
     }
 }

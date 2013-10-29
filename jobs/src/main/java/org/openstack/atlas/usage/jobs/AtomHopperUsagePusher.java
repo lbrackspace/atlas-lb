@@ -137,9 +137,6 @@ public class AtomHopperUsagePusher extends AbstractJob {
             };
 
             ExecutionUtilities.ExecuteInBatches(allUsages, BATCH_SIZE, batchAction);
-            //Wait for Tasks to complete...
-            //Could be done in abstractJob, but currently it will not correctly track total job time.
-            cleanup();
         } else {
             LOG.debug("No usages to push to ATOM Hopper at this time.");
         }

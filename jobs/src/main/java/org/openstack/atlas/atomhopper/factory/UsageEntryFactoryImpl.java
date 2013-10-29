@@ -58,7 +58,7 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
     }
 
     @Override
-    public UsageEntryWrapper createEntry(Usage usageRecord) throws AtomHopperMappingException {
+    public Map<Object, Object> createEntry(Usage usageRecord) throws AtomHopperMappingException {
         try {
             UsageEntry entry = buildEntry();
             entry.getCategory().add(buildUsageCategory());
@@ -74,8 +74,9 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
         V1Element usageV1 = generateBaseUsageEvent(usageRecord);
         usageV1.setId(genUUIDObject(usageRecord).toString());
 
-        if (usageRecord.getReferenceId() != null) {
-            usageV1.setReferenceId(usageRecord.getReferenceId());
+        if (usageRecord.getUuid() != null && usageRecord.isCorrected()) {
+            //This is an updated usage record, need the reference id from previous record
+            usageV1.setReferenceId(usageRecord.getUuid());
         }
 
         usageV1.setTenantId(usageRecord.getAccountId().toString());
@@ -168,7 +169,7 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
         return entry;
     }
 
-    public UUID genUUIDObject(Usage usageRecord) throws NoSuchAlgorithmException {
+    private UUID genUUIDObject(Usage usageRecord) throws NoSuchAlgorithmException {
         return UUIDUtil.genUUIDMD5Hash(genUUIDString(usageRecord));
     }
 
@@ -179,22 +180,18 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
         return usageCategory;
     }
 
-    private UsageEntryWrapper generateUsageEntryMap(UsageEntry usageEntry) throws JAXBException {
+    private Map<Object, Object> generateUsageEntryMap(UsageEntry usageEntry) throws JAXBException {
         Map<Object, Object> map = new HashMap<Object, Object>();
         JAXBContext context;
         if (usageEntry.getContent().getEvent().getType().equals(EventType.DELETE)) {
-            context = JAXBContext.newInstance("org.w3._2005.atom:com.rackspace.docs.event.lbaas.delete");
+               context = JAXBContext.newInstance("org.w3._2005.atom:com.rackspace.docs.event.lbaas.delete");
         } else {
             context = JAXBContext.newInstance("org.w3._2005.atom:com.rackspace.docs.usage.lbaas");
         }
-//        map.put("entrystring", UsageMarshaller
-//                .marshallResource(usageEntryFactory.createEntry(usageEntry), context).toString());
-//        map.put("entryobject", usageEntry);
-        UsageEntryWrapper wrapper = new UsageEntryWrapper();
-        wrapper.setEntryObject(usageEntry);
-        wrapper.setEntryString(UsageMarshaller
+        map.put("entrystring", UsageMarshaller
                 .marshallResource(usageEntryFactory.createEntry(usageEntry), context).toString());
-        return wrapper;
+        map.put("entryobject", usageEntry);
+        return map;
     }
 
 
@@ -204,7 +201,6 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
      * @param usageRecord
      * @return
      * @throws javax.xml.datatype.DatatypeConfigurationException
-     *
      */
     public static EventType mapEventType(Usage usageRecord) throws DatatypeConfigurationException {
         if (usageRecord.getEventType() != null) {

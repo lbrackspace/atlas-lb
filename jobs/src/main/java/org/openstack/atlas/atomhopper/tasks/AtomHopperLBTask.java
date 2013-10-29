@@ -8,11 +8,11 @@ import org.apache.http.HttpStatus;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactory;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactoryImpl;
-import org.openstack.atlas.atomhopper.factory.UsageEntryWrapper;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.restclients.atomhopper.AtomHopperClient;
 import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfiguration;
 import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfigurationKeys;
+import org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.repository.UsageRepository;
@@ -21,6 +21,7 @@ import org.w3._2005.atom.UsageEntry;
 import java.util.Calendar;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Map;
 
 import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getExtendedStackTrace;
 import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getStackTrace;
@@ -55,11 +56,12 @@ public class AtomHopperLBTask implements Runnable {
             for (Usage usageRecord : lbusages) {
                 if (usageRecord.isNeedsPushed()) {
 
-                    UsageEntryWrapper entryMap = usageEntryFactory.createEntry(usageRecord);
+                    Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord);
 
-                    UsageEntry entryobject = entryMap.getEntryObject();
-                    String entrystring = entryMap.getEntryString();
+                    UsageEntry entryobject = (UsageEntry) entryMap.get("entryobject");
+                    String entrystring = (String) entryMap.get("entrystring");
                     logEntry(usageRecord, entrystring);
+
 
                     ClientResponse response = null;
                     try {

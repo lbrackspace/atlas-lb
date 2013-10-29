@@ -5,8 +5,6 @@ import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
-import org.openstack.atlas.atomhopper.factory.UsageEntryWrapper;
-import org.openstack.atlas.atomhopper.factory.UsageWrapper;
 import org.openstack.atlas.restclients.atomhopper.AtomHopperClient;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.entities.*;
@@ -15,7 +13,10 @@ import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRep
 import org.openstack.atlas.service.domain.util.Constants;
 import org.w3._2005.atom.UsageEntry;
 
+import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.List;
+import java.util.Map;
 
 import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getExtendedStackTrace;
 import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getStackTrace;
@@ -28,6 +29,7 @@ public class AHRecordHelper {
     protected AlertRepository alertRepository;
     protected LoadBalancerEventRepository loadBalancerEventRepository;
 
+    protected List<Usage> failedRecords;
     protected boolean isVerboseLog;
 
     public AHRecordHelper(boolean isVerboseLog, AtomHopperClient client,
@@ -37,34 +39,29 @@ public class AHRecordHelper {
         this.client = client;
         this.loadBalancerEventRepository = loadBalancerEventRepository;
         this.alertRepository = alertRepository;
+
+        failedRecords = new ArrayList<Usage>();
     }
 
-    public UsageWrapper handleUsageRecord(Usage usageRecord, String authToken, UsageEntryWrapper entryWrapper) {
+    public List<Usage> handleUsageRecord(Usage usageRecord, String authToken, Map<Object, Object> entryMap) {
         String responseBody = null;
         String entryString = null;
         ClientResponse response = null;
 
-        UsageWrapper uWrapper = new UsageWrapper();
-
         try {
             if (usageRecord.isNeedsPushed()) {
-                entryString = entryWrapper.getEntryString();
-                UsageEntry entryObject = entryWrapper.getEntryObject();
+                entryString = (String) entryMap.get("entrystring");
+                UsageEntry entryObject = (UsageEntry) entryMap.get("entryobject");
 
-                //Preprocess for UUID/Corrected...
-                preProcessRecord(usageRecord, entryObject);
-
-                //Creating the usage entry in Atom Hopper
                 response = client.postEntryWithToken(entryString, authToken);
-
                 if (response != null) {
-                    processResponse(response, authToken, usageRecord, uWrapper, entryString);
+                    processResponse(response, authToken, usageRecord, entryObject, entryString);
                 } else {
                     LOG.error(String.format("Alert! :: Client Response is Null for LBID: %d, UUID: %s",
                             usageRecord.getLoadbalancer().getId(), usageRecord.getUuid()));
                     logAndAlert(null, usageRecord, entryString);
-                    uWrapper.getFailedRecords().add(usageRecord);
-                    return uWrapper;
+                    failedRecords.add(usageRecord);
+                    return failedRecords;
                 }
                 response.close();
             }
@@ -74,13 +71,13 @@ public class AHRecordHelper {
                     "client handler exception for load balancer: %d :\n: Exception: %s ",
                     usageRecord.getLoadbalancer().getId(), getStackTrace(che)));
             logAndAlert(getStackTrace(che), usageRecord, entryString);
-            uWrapper.getFailedRecords().add(usageRecord);
+            failedRecords.add(usageRecord);
         } catch (ConnectionPoolTimeoutException cpe) {
             LOG.error(String.format("Could not post entry because " +
                     "of limited connections for load balancer: %d :\n: Exception: %s ",
                     usageRecord.getLoadbalancer().getId(), getStackTrace(cpe)));
             logAndAlert(getStackTrace(cpe), usageRecord, entryString);
-            uWrapper.getFailedRecords().add(usageRecord);
+            failedRecords.add(usageRecord);
         } catch (ConcurrentModificationException cme) {
             LOG.warn(String.format("Warning: %s\n", getExtendedStackTrace(cme)));
             LOG.warn(String.format("Job attempted to access usage already being processed, " +
@@ -89,21 +86,26 @@ public class AHRecordHelper {
             LOG.error(String.format("Exception during Atom-Hopper processing: %s\n", getExtendedStackTrace(t)));
             generateSevereAlert("Severe Failure processing Atom Hopper requests: ", getExtendedStackTrace(t));
             generateServiceEventRecord(usageRecord, entryString, buildMessage(responseBody));
-            uWrapper.getFailedRecords().add(usageRecord);
+            failedRecords.add(usageRecord);
         }
-        return uWrapper;
+        return failedRecords;
     }
 
     protected void processResponse(ClientResponse response, String authToken, Usage usageRecord,
-                                   UsageWrapper uWrapper, String entrystring) throws Exception {
+                                   UsageEntry entryobject, String entrystring) throws Exception {
+
+        //Set numAttempts and the UUID before processing so its saved if failure occurs.
+        usageRecord.setNumAttempts(usageRecord.getNumAttempts() + 1);
+        usageRecord.setUuid(entryobject.getContent().getEvent().getId());
 
         int status = response.getStatus();
-        String rEntity = response.getEntity(String.class);
+        String body = response.getEntity(String.class);
 
         if (status == 201) {
             usageRecord.setNeedsPushed(false);
             usageRecord.setNumAttempts(0);
-            logSuccess(rEntity, usageRecord, entrystring);
+            usageRecord.setCorrected(false);
+            logSuccess(body, usageRecord, entrystring);
 
         } else if (status == 409) {
             boolean isDupe = isDuplicateEntry(authToken, usageRecord);
@@ -117,54 +119,33 @@ public class AHRecordHelper {
                         "Alert created to notify of potential issues... ", usageRecord.getUuid()));
                 usageRecord.setNeedsPushed(true);
             }
-            uWrapper.getFailedRecords().add(usageRecord);
-            generateServiceEventRecord(usageRecord, entrystring, buildMessage(rEntity));
-            logAndAlert(rEntity, usageRecord, entrystring);
+            failedRecords.add(usageRecord);
+            generateServiceEventRecord(usageRecord, entrystring, buildMessage(body));
+            logAndAlert(body, usageRecord, entrystring);
 
         } else if (status == 400) {
             usageRecord.setNeedsPushed(true);
-            uWrapper.getFailedRecords().add(usageRecord);
-            generateServiceEventRecord(usageRecord, entrystring, buildMessage(rEntity));
-            logAndAlert(rEntity, usageRecord, entrystring);
+            failedRecords.add(usageRecord);
+            generateServiceEventRecord(usageRecord, entrystring, buildMessage(body));
+            logAndAlert(body, usageRecord, entrystring);
 
         } else {
             LOG.error(String.format("Error processing entry in Atom Hopper service occurred, " +
-                    "updating record for re-push for: Account: %d LBID: %d UUID: %s. Error status code: %d",
-                    usageRecord.getAccountId(), usageRecord.getLoadbalancer().getId(), usageRecord.getUuid(), status));
+                    "updating record for re-push for: Account: %d LBID: %d UUID: %s",
+                    usageRecord.getAccountId(), usageRecord.getLoadbalancer().getId(), usageRecord.getUuid()));
             usageRecord.setNeedsPushed(true);
-            uWrapper.getFailedRecords().add(usageRecord);
-            logAndAlert(rEntity, usageRecord, entrystring);
+            failedRecords.add(usageRecord);
+            logAndAlert(body, usageRecord, entrystring);
         }
     }
 
-    /**
-     * Set numAttempts, UUID and create a Corrected record before response
-     * processing so data is saved if failure occurs.
-     *
-     * @param usageRecord The current record to process
-     * @param entryObject The generated entry object from the current record.
-     * @return Usage A new corrected usage record that will be inserted into the database replacing the current record.
-     */
-    protected void preProcessRecord(Usage usageRecord, UsageEntry entryObject) {
-        //Set numAttempts and UUID before response processing so data is saved if failure occurs.
-        usageRecord.setNumAttempts(usageRecord.getNumAttempts() + 1);
-        usageRecord.setUuid(entryObject.getContent().getEvent().getId());
-    }
-
-    /**
-     * Contact AH service and verify duplicate records.
-     *
-     * @param token The admin token to communicate with the AH service
-     * @param usageRecord The usage record to verify
-     * @return boolean Weather or not the record is a duplicate
-     */
     protected boolean isDuplicateEntry(String token, Usage usageRecord) {
         try {
             ClientResponse response = client.getEntry(token, usageRecord.getUuid());
             UsageEntry entry = response.getEntity(UsageEntry.class);
             if (response.getStatus() == 200) {
-                if ((entry.getContent().getEvent().getId().equals(usageRecord.getUuid()))) {
-                    return true;
+                if (!(entry.getContent().getEvent().getId().equals(usageRecord.getUuid()))) {
+                    return false;
                 }
             }
         } catch (Exception e) {
@@ -172,16 +153,9 @@ public class AHRecordHelper {
                     usageRecord.getUuid()));
             return false;
         }
-        return false;
+        return true;
     }
 
-    /**
-     * Will generate logs and create alert records
-     *
-     * @param body The response body
-     * @param usageRecord The entry record
-     * @param entrystring The entry body in string format
-     */
     protected void logAndAlert(String body, Usage usageRecord, String entrystring) {
         LOG.info(String.format("Creating alert for Atom hopper entry: Account: %d: LBID: %d Entry UUID: %s",
                 usageRecord.getAccountId(), usageRecord.getLoadbalancer().getId(), usageRecord.getUuid()));
@@ -257,35 +231,15 @@ public class AHRecordHelper {
         alertRepository.save(alert);
     }
 
-    public Usage copyUsageRecord(Usage oldRecord) {
-        return new Usage(
-                oldRecord.getLoadbalancer(),
-                oldRecord.getAverageConcurrentConnections(),
-                oldRecord.getIncomingTransfer(),
-                oldRecord.getOutgoingTransfer(),
-                oldRecord.getAverageConcurrentConnectionsSsl(),
-                oldRecord.getIncomingTransferSsl(),
-                oldRecord.getOutgoingTransferSsl(),
-                oldRecord.getStartTime(),
-                oldRecord.getEndTime(),
-                oldRecord.getNumberOfPolls(),
-                oldRecord.getNumVips(),
-                oldRecord.getTags(),
-                oldRecord.getEventType(),
-                oldRecord.getAccountId(),
-                oldRecord.getEntryVersion(),
-                oldRecord.isNeedsPushed(),
-                oldRecord.getUuid(),
-                oldRecord.isCorrected(),
-                oldRecord.getNumAttempts(),
-                oldRecord.getReferenceId());
-    }
-
     public boolean isVerboseLog() {
         return isVerboseLog;
     }
 
     public void setVerboseLog(boolean verboseLog) {
         isVerboseLog = verboseLog;
+    }
+
+    public List<Usage> getFailedRecords() {
+        return failedRecords;
     }
 }

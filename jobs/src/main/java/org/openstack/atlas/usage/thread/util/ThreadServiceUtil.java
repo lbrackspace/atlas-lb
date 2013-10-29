@@ -48,10 +48,10 @@ public class ThreadServiceUtil {
         try {
             LOG.debug("Shutting down the thread pool and monitors..");
             taskExecutor.shutdown();
-            taskExecutor.awaitTermination(480, TimeUnit.SECONDS);
+            taskExecutor.awaitTermination(300, TimeUnit.SECONDS);
             threadPoolMonitorService.shutDown();
         } catch (InterruptedException e) {
-            LOG.error("ThreadPoolExecutor was interrupted: " + AtomHopperUtil.getStackTrace(e));
+            LOG.error("There was an error shutting down threadPool: " + AtomHopperUtil.getStackTrace(e));
             throw new AtomHopperUSLJobExecutionException("There was an error destroying thread monitors and task executors: " + e);
         }
 
