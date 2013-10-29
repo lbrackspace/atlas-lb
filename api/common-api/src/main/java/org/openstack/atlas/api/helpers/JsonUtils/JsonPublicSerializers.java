@@ -417,7 +417,7 @@ public class JsonPublicSerializers {
 
     public static void attachSessionPersistence(ObjectNode objectNode, SessionPersistence persistence) {
         objectNode.putObject("sessionPersistence");
-        ObjectNode node = (ObjectNode) objectNode.get("sessionsPersistence");
+        ObjectNode node = (ObjectNode) objectNode.get("sessionPersistence");
         if (persistence.getPersistenceType() != null) {
             node.put("persistenceType", persistence.getPersistenceType().value());
         }
@@ -488,7 +488,7 @@ public class JsonPublicSerializers {
             ArrayNode an = objectNode.putArray("virtualIps");
             for (VirtualIp virtualIp : virtualIpList) {
                 ObjectNode vipNode = an.addObject();
-                attachVirtualIp(vipNode, virtualIp);
+                attachVirtualIp(vipNode, virtualIp, false);
             }
         }
         if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
@@ -500,19 +500,25 @@ public class JsonPublicSerializers {
         }
     }
 
-    public static void attachVirtualIp(ObjectNode objectNode, VirtualIp virtualIp) {
-
+    public static void attachVirtualIp(ObjectNode objectNode, VirtualIp virtualIp, boolean includeName) {
+        ObjectNode node;
+        if (includeName) {
+            objectNode.putObject("virtualIp");
+            node = (ObjectNode) objectNode.get("virtualIp");
+        } else {
+            node = objectNode;
+        }
         if (virtualIp.getId() != null) {
-            objectNode.put("id", virtualIp.getId().intValue());
+            node.put("id", virtualIp.getId().intValue());
         }
         if (virtualIp.getAddress() != null) {
-            objectNode.put("address", virtualIp.getAddress());
+            node.put("address", virtualIp.getAddress());
         }
         if (virtualIp.getIpVersion() != null) {
-            objectNode.put("ipVersion", virtualIp.getIpVersion().value());
+            node.put("ipVersion", virtualIp.getIpVersion().value());
         }
         if (virtualIp.getType() != null) {
-            objectNode.put("type", virtualIp.getType().value());
+            node.put("type", virtualIp.getType().value());
         }
     }
 

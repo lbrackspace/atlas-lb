@@ -80,7 +80,8 @@ public class JsonObjectMapper extends ObjectMapper {
             cdf.addSpecificMapping(wrapperClass, new ObjectWrapperDeserializer(wrapperClass));
         }
 
-        cdf.addSpecificMapping(VirtualIps.class, new ObjectWrapperDeserializer(VirtualIps.class));
+        cdf.addSpecificMapping(VirtualIp.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeVirtualIp", ObjectNode.class)));
+        cdf.addSpecificMapping(VirtualIps.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeVirtualIps", JsonNode.class)));
         cdf.addSpecificMapping(LoadBalancers.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeLoadBalancers", JsonNode.class)));
         cdf.addSpecificMapping(LoadBalancer.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeLoadBalancer", ObjectNode.class)));
         // Define any collections utilizing the custom serializers above to
@@ -91,6 +92,8 @@ public class JsonObjectMapper extends ObjectMapper {
         // wrapped, but none of the collections within loadbalancer.
 
         //csf.addSpecificMapping(LoadBalancer.class, new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class));
+        csf.addSpecificMapping(VirtualIp.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachVirtualIp", ObjectNode.class, VirtualIp.class, boolean.class), Boolean.TRUE));
+        csf.addSpecificMapping(VirtualIps.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachVirtualIps", ObjectNode.class, VirtualIps.class, boolean.class), Boolean.TRUE));
         csf.addSpecificMapping(LoadBalancer.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachLoadBalancer", ObjectNode.class, LoadBalancer.class, boolean.class), Boolean.TRUE));
         csf.addSpecificMapping(LoadBalancers.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachLoadBalancers", ObjectNode.class, LoadBalancers.class, boolean.class), Boolean.TRUE));
 
@@ -101,7 +104,7 @@ public class JsonObjectMapper extends ObjectMapper {
 
         cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
         cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
-        cdf.addSpecificMapping(VirtualIps.class, new PropertyListDeserializer(VirtualIps.class, VirtualIp.class, "getVirtualIps"));
+//        cdf.addSpecificMapping(VirtualIps.class, new PropertyListDeserializer(VirtualIps.class, VirtualIp.class, "getVirtualIps"));
 
 
         this.setSerializerFactory(csf);
