@@ -16,7 +16,7 @@ public class DeserializationHelper {
     public static final String NOT_OBJ_OR_ARR = "Error was expecting an ObjectNode({}) or an ArrayNode([]) but found %s";
 
     public static Integer getInt(JsonNode jn, String prop) {
-        if (jn.get(prop) != null && jn.get(prop).isInt()) {
+        if (jn.get(prop) != null) {
             return new Integer(jn.get(prop).getValueAsInt());
         }
         return null;

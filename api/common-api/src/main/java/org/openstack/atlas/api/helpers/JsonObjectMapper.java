@@ -25,6 +25,7 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Cluster;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
@@ -36,8 +37,11 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvent;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
@@ -80,30 +84,52 @@ public class JsonObjectMapper extends ObjectMapper {
             cdf.addSpecificMapping(wrapperClass, new ObjectWrapperDeserializer(wrapperClass));
         }
 
+        cdf.addSpecificMapping(Meta.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeMeta", ObjectNode.class)));
+        cdf.addSpecificMapping(Metadata.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeMetadata", JsonNode.class)));
+        cdf.addSpecificMapping(NetworkItem.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeNetworkItem", ObjectNode.class)));
+        cdf.addSpecificMapping(AccessList.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeAccessList", JsonNode.class)));
+        cdf.addSpecificMapping(Cluster.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeCluster", ObjectNode.class)));
+        cdf.addSpecificMapping(SourceAddresses.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeSourceAddresses", ObjectNode.class)));
+        cdf.addSpecificMapping(ContentCaching.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeContentCaching", ObjectNode.class)));
+        cdf.addSpecificMapping(ConnectionLogging.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeConnectionLogging", ObjectNode.class)));
+        cdf.addSpecificMapping(HealthMonitor.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeHealthMonitor", ObjectNode.class)));
+        cdf.addSpecificMapping(SessionPersistence.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeSessionPersistence", ObjectNode.class)));
+        cdf.addSpecificMapping(SslTermination.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeSslTermination", ObjectNode.class)));
+        cdf.addSpecificMapping(NodeServiceEvent.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeNodeServiceEvent", ObjectNode.class)));
+        cdf.addSpecificMapping(NodeServiceEvents.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeNodeServiceEvents", JsonNode.class)));
+        cdf.addSpecificMapping(Node.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeNode", ObjectNode.class)));
+        cdf.addSpecificMapping(Nodes.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeNodes", JsonNode.class)));
         cdf.addSpecificMapping(VirtualIp.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeVirtualIp", ObjectNode.class)));
         cdf.addSpecificMapping(VirtualIps.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeVirtualIps", JsonNode.class)));
-        cdf.addSpecificMapping(LoadBalancers.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeLoadBalancers", JsonNode.class)));
         cdf.addSpecificMapping(LoadBalancer.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeLoadBalancer", ObjectNode.class)));
-        // Define any collections utilizing the custom serializers above to
-        // use the clean collections serializer, which will ensure proper JSON
-        // formatting.
+        cdf.addSpecificMapping(LoadBalancers.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeLoadBalancers", JsonNode.class)));
 
-        // Load balancer is a bit of a special case since we want loadbalancer
-        // wrapped, but none of the collections within loadbalancer.
-
-        //csf.addSpecificMapping(LoadBalancer.class, new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class));
+        csf.addSpecificMapping(Meta.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachMeta", ObjectNode.class, Meta.class), null));
+        csf.addSpecificMapping(Metadata.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachMetadata", ObjectNode.class, Metadata.class, boolean.class), Boolean.TRUE));
+        csf.addSpecificMapping(NetworkItem.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachNetworkItem", ObjectNode.class, NetworkItem.class), null));
+        csf.addSpecificMapping(AccessList.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachAccessList", ObjectNode.class, AccessList.class, boolean.class), Boolean.TRUE));
+        csf.addSpecificMapping(Cluster.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachCluster", ObjectNode.class, Cluster.class), null));
+        csf.addSpecificMapping(SourceAddresses.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachSourceAddresses", ObjectNode.class, SourceAddresses.class), null));
+        csf.addSpecificMapping(ContentCaching.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachContentCaching", ObjectNode.class, ContentCaching.class), null));
+        csf.addSpecificMapping(ConnectionLogging.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachConnectionLogging", ObjectNode.class, ConnectionLogging.class), null));
+        csf.addSpecificMapping(HealthMonitor.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachHealthMonitor", ObjectNode.class, HealthMonitor.class), null));
+        csf.addSpecificMapping(SessionPersistence.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachSessionPersistence", ObjectNode.class, SessionPersistence.class), null));
+        csf.addSpecificMapping(SslTermination.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachSslTermination", ObjectNode.class, SslTermination.class), null));
+        csf.addSpecificMapping(NodeServiceEvent.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachNodeServiceEvent", ObjectNode.class, NodeServiceEvent.class), null));
+        csf.addSpecificMapping(NodeServiceEvents.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachNodeServiceEvents", ObjectNode.class, NodeServiceEvents.class, boolean.class), Boolean.TRUE));
+        csf.addSpecificMapping(Node.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachNode", ObjectNode.class, Node.class, boolean.class), Boolean.TRUE));
+        csf.addSpecificMapping(Nodes.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachNodes", ObjectNode.class, Nodes.class, boolean.class), Boolean.TRUE));
         csf.addSpecificMapping(VirtualIp.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachVirtualIp", ObjectNode.class, VirtualIp.class, boolean.class), Boolean.TRUE));
         csf.addSpecificMapping(VirtualIps.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachVirtualIps", ObjectNode.class, VirtualIps.class, boolean.class), Boolean.TRUE));
         csf.addSpecificMapping(LoadBalancer.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachLoadBalancer", ObjectNode.class, LoadBalancer.class, boolean.class), Boolean.TRUE));
         csf.addSpecificMapping(LoadBalancers.class, new GenericJsonObjectMapperSerializer(JsonPublicSerializers.class.getMethod("attachLoadBalancers", ObjectNode.class, LoadBalancers.class, boolean.class), Boolean.TRUE));
 
 
-        csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
-        csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));
-        csf.addSpecificMapping(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas"));
-
-        cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
-        cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
+//        csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
+//        csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));
+//        csf.addSpecificMapping(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas"));
+//        cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
+//        cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
 //        cdf.addSpecificMapping(VirtualIps.class, new PropertyListDeserializer(VirtualIps.class, VirtualIp.class, "getVirtualIps"));
 
 

@@ -168,7 +168,7 @@ public class JsonPublicDeserializers extends DeserializationHelper {
         termination.setEnabled(getBoolean(jn, "enabled"));
         termination.setSecurePort(getInt(jn, "securePort"));
         termination.setCertificate(getString(jn, "certificate"));
-        termination.setPrivatekey(getString(jn, "privateKey"));
+        termination.setPrivatekey(getString(jn, "privatekey"));
         termination.setIntermediateCertificate(getString(jn, "intermediateCertificate"));
         return termination;
     }
@@ -208,7 +208,7 @@ public class JsonPublicDeserializers extends DeserializationHelper {
         monitor.setHostHeader(getString(jn, "hostHeader"));
         monitor.setBodyRegex(getString(jn, "bodyRegex"));
         monitor.setPath(getString(jn, "path"));
-        monitor.setType(getHealthMonitorType(jn, "healthMonitorType"));
+        monitor.setType(getHealthMonitorType(jn, "type"));
         return monitor;
     }
 

@@ -19,15 +19,15 @@ public class JsonPublicSerializers {
     public static void attachLoadBalancers(ObjectNode objectNode, LoadBalancers loadBalancers, boolean includeLinks) throws JsonSerializeException {
         List<LoadBalancer> loadBalancerList = loadBalancers.getLoadBalancers();
         List<Link> atomLinks = loadBalancers.getLinks();
+        ArrayNode an = objectNode.putArray("loadBalancers");
         if (loadBalancerList != null && loadBalancerList.size() > 0) {
-            ArrayNode an = objectNode.putArray("loadBalancers");
             for (LoadBalancer lb : loadBalancerList) {
                 ObjectNode lbNode = an.addObject();
                 attachLoadBalancer(lbNode, lb, false);
             }
         }
         if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
-            ArrayNode an = objectNode.putArray("links");
+            an = objectNode.putArray("links");
             for (Link atomLink : atomLinks) {
                 ObjectNode atomNode = an.addObject();
                 attachAtomLink(atomNode, atomLink);
@@ -197,8 +197,8 @@ public class JsonPublicSerializers {
 
     public static void attachAccountUsageRecords(ObjectNode objectNode, List<AccountUsageRecord> records) throws JsonSerializeException {
         List<AccountUsageRecord> recordList = records;
+        ArrayNode an = objectNode.putArray("accountUsageRecords");
         if (recordList != null && recordList.size() > 0) {
-            ArrayNode an = objectNode.putArray("accountUsageRecords");
             for (AccountUsageRecord record : recordList) {
                 ObjectNode recordNode = an.addObject();
                 attachAccountUsageRecord(recordNode, record);
@@ -223,8 +223,8 @@ public class JsonPublicSerializers {
 
     public static void attachLoadBalancerUsages(ObjectNode objectNode, List<LoadBalancerUsage> usages) throws JsonSerializeException {
         List<LoadBalancerUsage> usageList = usages;
+        ArrayNode an = objectNode.putArray("LoadBalancerUsages");
         if (usageList != null && usageList.size() > 0) {
-            ArrayNode an = objectNode.putArray("LoadBalancerUsages");
             for (LoadBalancerUsage usage : usageList) {
                 ObjectNode usageNode = an.addObject();
                 attachLoadBalancerUsage(usageNode, usage, false);
@@ -258,8 +258,8 @@ public class JsonPublicSerializers {
         if (events.getLoadbalancerId() != null) {
             objectNode.put("loadbalancerId", events.getLoadbalancerId());
         }
+        ArrayNode an = objectNode.putArray("nodeServiceEvents");
         if (events.getNodeServiceEvents() != null && events.getNodeServiceEvents().size() > 0) {
-            ArrayNode an = objectNode.putArray("nodeServiceEvents");
             List<NodeServiceEvent> eventList = events.getNodeServiceEvents();
             for (NodeServiceEvent event : eventList) {
                 ObjectNode eventNode = an.addObject();
@@ -267,7 +267,7 @@ public class JsonPublicSerializers {
             }
         }
         if (includeLinks && events.getLinks() != null && events.getLinks().size() > 0) {
-            ArrayNode an = objectNode.putArray("links");
+            an = objectNode.putArray("links");
             List<Link> atomLinks = events.getLinks();
             for (Link atomLink : atomLinks) {
                 ObjectNode atomNode = an.addObject();
@@ -320,8 +320,8 @@ public class JsonPublicSerializers {
 
     public static void attachLoadBalancerUsageRecords(ObjectNode objectNode, List<LoadBalancerUsageRecord> recordList) throws JsonSerializeException {
         List<LoadBalancerUsageRecord> records = recordList;
+        ArrayNode an = objectNode.putArray("loadBalancerUsageRecords");
         if (records != null && records.size() > 0) {
-            ArrayNode an = objectNode.putArray("loadBalancerUsageRecords");
             for (LoadBalancerUsageRecord record : records) {
                 ObjectNode recordNode = an.addObject();
                 attachLoadBalancerUsageRecord(recordNode, record);
@@ -484,15 +484,15 @@ public class JsonPublicSerializers {
         List<VirtualIp> virtualIpList = virtualIps.getVirtualIps();
         List<Link> atomLinks = virtualIps.getLinks();
 
+        ArrayNode an = objectNode.putArray("virtualIps");
         if (virtualIpList != null && virtualIpList.size() > 0) {
-            ArrayNode an = objectNode.putArray("virtualIps");
             for (VirtualIp virtualIp : virtualIpList) {
                 ObjectNode vipNode = an.addObject();
                 attachVirtualIp(vipNode, virtualIp, false);
             }
         }
         if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
-            ArrayNode an = objectNode.putArray("links");
+            an = objectNode.putArray("links");
             for (Link atomLink : atomLinks) {
                 ObjectNode atomNode = an.addObject();
                 attachAtomLink(atomNode, atomLink);
@@ -522,44 +522,59 @@ public class JsonPublicSerializers {
         }
     }
 
-    public static void attachNodes(ObjectNode objectNode, Nodes nodes, boolean includeLinks) {
-        List<Node> nodeList = nodes.getNodes();
-        List<Link> atomLinks = nodes.getLinks();
-
-        if (nodeList != null && nodeList.size() > 0) {
-            ArrayNode an = objectNode.putArray("nodes");
-            for (Node node : nodeList) {
-                ObjectNode nodeNode = an.addObject();
-                attachNode(nodeNode, node, false);
-            }
-        }
-        if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
-            ArrayNode an = objectNode.putArray("links");
-            for (Link atomLink : atomLinks) {
-                ObjectNode atomNode = an.addObject();
-                attachAtomLink(atomNode, atomLink);
-            }
-        }
-    }
-
     public static void attachAccessList(ObjectNode objectNode, AccessList accessList, boolean includeLinks) {
         List<NetworkItem> networkItemsList = accessList.getNetworkItems();
         List<Link> atomLinks = accessList.getLinks();
+        ArrayNode an = objectNode.putArray("accessList");
         if (networkItemsList != null && networkItemsList.size() > 0) {
-            ArrayNode an = objectNode.putArray("accessList");
             for (NetworkItem networkItem : networkItemsList) {
                 ObjectNode networkItemNode = an.addObject();
                 attachNetworkItem(networkItemNode, networkItem);
             }
         }
         if (includeLinks && accessList.getLinks() != null && accessList.getLinks().size() > 0) {
-            ArrayNode an = objectNode.putArray("links");
+            an = objectNode.putArray("links");
             for (Link atomLink : atomLinks) {
                 ObjectNode atomNode = an.addObject();
                 attachAtomLink(atomNode, atomLink);
             }
         }
 
+    }
+
+    public static void attachNetworkItem(ObjectNode objectNode, NetworkItem networkItem) {
+        if (networkItem.getId() != null) {
+            objectNode.put("id", networkItem.getId().intValue());
+        }
+        if (networkItem.getAddress() != null) {
+            objectNode.put("address", networkItem.getAddress());
+        }
+        if (networkItem.getIpVersion() != null) {
+            objectNode.put("ipVersion", networkItem.getIpVersion().value());
+        }
+        if (networkItem.getType() != null) {
+            objectNode.put("type", networkItem.getType().value());
+        }
+    }
+
+    public static void attachNodes(ObjectNode objectNode, Nodes nodes, boolean includeLinks) {
+        List<Node> nodeList = nodes.getNodes();
+        List<Link> atomLinks = nodes.getLinks();
+
+        ArrayNode an = objectNode.putArray("nodes");
+        if (nodeList != null && nodeList.size() > 0) {
+            for (Node node : nodeList) {
+                ObjectNode nodeNode = an.addObject();
+                attachNode(nodeNode, node, false);
+            }
+        }
+        if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
+            an = objectNode.putArray("links");
+            for (Link atomLink : atomLinks) {
+                ObjectNode atomNode = an.addObject();
+                attachAtomLink(atomNode, atomLink);
+            }
+        }
     }
 
     public static void attachNode(ObjectNode objectNode, Node node, boolean includeName) {
@@ -598,34 +613,19 @@ public class JsonPublicSerializers {
         List<Meta> metaList = metadata.getMetas();
         List<Link> atomLinks = metadata.getLinks();
 
+        ArrayNode an = objectNode.putArray("metadata");
         if (metaList != null && metaList.size() > 0) {
-            ArrayNode an = objectNode.putArray("metadata");
             for (Meta meta : metaList) {
                 ObjectNode metaNode = an.addObject();
                 attachMeta(metaNode, meta);
             }
         }
         if (includeLinks && atomLinks != null && atomLinks.size() > 0) {
-            ArrayNode an = objectNode.putArray("links");
+            an = objectNode.putArray("links");
             for (Link atomLink : atomLinks) {
                 ObjectNode atomNode = an.addObject();
                 attachAtomLink(atomNode, atomLink);
             }
-        }
-    }
-
-    public static void attachNetworkItem(ObjectNode objectNode, NetworkItem networkItem) {
-        if (networkItem.getId() != null) {
-            objectNode.put("id", networkItem.getId().intValue());
-        }
-        if (networkItem.getAddress() != null) {
-            objectNode.put("address", networkItem.getAddress());
-        }
-        if (networkItem.getIpVersion() != null) {
-            objectNode.put("ipVersion", networkItem.getIpVersion().value());
-        }
-        if (networkItem.getType() != null) {
-            objectNode.put("type", networkItem.getType().value());
         }
     }
 
@@ -644,8 +644,8 @@ public class JsonPublicSerializers {
     public static void attachAlgorithms(ObjectNode objectNode, Algorithms algorithms) {
         List<Algorithm> algorithmList = algorithms.getAlgorithms();
 
+        ArrayNode an = objectNode.putArray("algorithms");
         if (algorithmList != null && algorithmList.size() > 0) {
-            ArrayNode an = objectNode.putArray("algorithms");
             for (Algorithm algorithm : algorithmList) {
                 ObjectNode node = an.addObject();
                 node.put("name", algorithm.getName());
@@ -656,8 +656,8 @@ public class JsonPublicSerializers {
     public static void attachProtocols(ObjectNode objectNode, Protocols protocols) {
         List<Protocol> protocolList = protocols.getProtocols();
 
+        ArrayNode an = objectNode.putArray("algorithms");
         if (protocolList != null && protocolList.size() > 0) {
-            ArrayNode an = objectNode.putArray("algorithms");
             for (Protocol protocol : protocolList) {
                 ObjectNode node = an.addObject();
                 node.put("name", protocol.getName());
@@ -677,8 +677,8 @@ public class JsonPublicSerializers {
 
     public static void attachAllowedDomains(ObjectNode objectNode, AllowedDomains domains) {
         List<AllowedDomain> domainList = domains.getAllowedDomains();
+        ArrayNode an = objectNode.putArray("allowedDomain");
         if (domainList != null && domainList.size() > 0) {
-            ArrayNode an = objectNode.putArray("allowedDomain");
             for (AllowedDomain domain : domainList) {
                 ObjectNode node = an.addObject();
                 attachAllowedDomain(node, domain);
@@ -701,8 +701,8 @@ public class JsonPublicSerializers {
 
     public static void attachAbsoluteLimits(ObjectNode objectNode, Absolute limits) {
         List<Limit> limitList = limits.getLimits();
+        ArrayNode an = objectNode.putArray("absolute");
         if (limitList != null && limitList.size() > 0) {
-            ArrayNode an = objectNode.putArray("absolute");
             for (Limit limit : limitList) {
                 ObjectNode node = an.addObject();
                 attachAbsoluteLimit(node, limit);
