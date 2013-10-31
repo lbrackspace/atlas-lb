@@ -4,8 +4,12 @@
  */
 package org.openstack.atlas.api.helpers;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.codehaus.jackson.JsonGenerationException;
 import org.junit.*;
 import org.openstack.atlas.api.resources.StubResource;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
@@ -226,6 +230,14 @@ public class JsonObjectMapperTest {
 
         Assert.assertEquals("10.1.1.1", lb.getNodes().getNodes().get(0).getAddress());
         Assert.assertEquals("10.1.1.3", lb.getNodes().getNodes().get(1).getAddress());
+    }
+
+    @Test
+    public void shouldSerializeAccountBillings() throws IOException {
+        List<AccountBilling> billings = new ArrayList<AccountBilling>();
+        billings.add(new AccountBilling());
+        String check = mapper.writeValueAsString(billings);
+        nop();
     }
 
     @Test

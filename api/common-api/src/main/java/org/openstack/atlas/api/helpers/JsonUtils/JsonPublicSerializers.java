@@ -139,7 +139,7 @@ public class JsonPublicSerializers {
         objectNode.putObject("sourceAddresses");
         ObjectNode node = (ObjectNode) objectNode.get("sourceAddresses");
         if (addresses.getIpv4Public() != null) {
-            node.put("ipv4PUblic", addresses.getIpv4Public());
+            node.put("ipv4Public", addresses.getIpv4Public());
         }
         if (addresses.getIpv6Public() != null) {
             node.put("ipv6Public", addresses.getIpv6Public());
@@ -692,7 +692,7 @@ public class JsonPublicSerializers {
         }
     }
 
-    public static void attachErrorPage(ObjectNode objectNode, Errorpage page) {
+    public static void attachErrorpage(ObjectNode objectNode, Errorpage page) {
         ObjectNode node = objectNode.putObject("errorpage");
         if (page.getContent() != null) {
             node.put("content", page.getContent());

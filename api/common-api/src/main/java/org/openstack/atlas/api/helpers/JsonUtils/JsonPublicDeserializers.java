@@ -86,7 +86,7 @@ public class JsonPublicDeserializers extends DeserializationHelper {
         ObjectNode jn = jsonNodeIn;
         if (jn.get("loadBalancer") != null) {
             if (!(jn.get("loadBalancer") instanceof ObjectNode)) {
-                String msg = String.format(NOT_OBJ_NODE, jn.get("virtualIp").toString());
+                String msg = String.format(NOT_OBJ_NODE, jn.get("loadBalancer").toString());
                 throw new JsonParseException(msg, jn.traverse().getTokenLocation());
             } else {
                 jn = (ObjectNode) jn.get("loadBalancer");
@@ -855,7 +855,7 @@ public class JsonPublicDeserializers extends DeserializationHelper {
         return domain;
     }
 
-    public static Errorpage decodeErrorPage(ObjectNode jsonNodeIn) throws JsonParseException {
+    public static Errorpage decodeErrorpage(ObjectNode jsonNodeIn) throws JsonParseException {
         ObjectNode jn = jsonNodeIn;
         if (jn.get("errorpage") != null) {
             if (!(jn.get("errorpage") instanceof ObjectNode)) {
