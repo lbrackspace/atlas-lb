@@ -185,8 +185,10 @@ public class JsonObjectMapperTest {
 
     }
 
+    @Ignore
     @Test
     public void shouldCreateHost() throws IOException {
+        //Todo: Implement in the Management Deserialization/Serialization tests.
         String input = "{\"host\": {\"name\": \"someName\",\"zone\": \"B\",\"type\": \"FAILOVER\",\"managementIp\": \"12.34.56.78\",\"trafficManagerName\": \"zues01.blah.blah\",\"clusterId\": 1,\"maxConcurrentConnections\": 5,\"coreDeviceId\": \"SomeCoreDevice\",\"managementSoapInterface\": \"https://SomeSoapNode.com:9090\",\"soapEndpointActive\": \"true\",\"managementRestInterface\": \"https://SomeRestNode.com:9070\",\"restEndpointActive\": \"true\",\"ipv4Servicenet\": \"10.2.2.80\",\"ipv4Public\": \"172.11.11.110\"}}";
 
         Host host;

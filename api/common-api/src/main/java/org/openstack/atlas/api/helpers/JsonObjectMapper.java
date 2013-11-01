@@ -73,30 +73,31 @@ public class JsonObjectMapper extends ObjectMapper {
         cls.addToMap(LoadBalancerUsageRecord.class, "attachLoadBalancerUsageRecords");
 
 
-        Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class,
-            Node.class, RateLimit.class, Errorpage.class, SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
-
-        Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, Meta.class,
-            ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
-            Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
-
-
-        for (Class wrapperClass : serializerWrapperClasses) {
-            csf.addSpecificMapping(wrapperClass, new ObjectWrapperSerializer(serConf, wrapperClass));
-        }
-
-
-        for (Class wrapperClass : deserializerWrapperClasses) {
-            cdf.addSpecificMapping(wrapperClass, new ObjectWrapperDeserializer(wrapperClass));
-        }
+//        Class[] serializerWrapperClasses = new Class[]{HealthMonitor.class,
+//            SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class,
+//            Node.class, RateLimit.class, Errorpage.class, SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
+//
+//        Class[] deserializerWrapperClasses = new Class[]{Node.class, HealthMonitor.class,
+//            SessionPersistence.class, ConnectionLogging.class, Meta.class,
+//            ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
+//            Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
+//
+//
+//        for (Class wrapperClass : serializerWrapperClasses) {
+//            csf.addSpecificMapping(wrapperClass, new ObjectWrapperSerializer(serConf, wrapperClass));
+//        }
+//
+//
+//        for (Class wrapperClass : deserializerWrapperClasses) {
+//            cdf.addSpecificMapping(wrapperClass, new ObjectWrapperDeserializer(wrapperClass));
+//        }
 
         cdf.addSpecificMapping(Errorpage.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeErrorpage", ObjectNode.class)));
         cdf.addSpecificMapping(Meta.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeMeta", ObjectNode.class)));
         cdf.addSpecificMapping(Metadata.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeMetadata", JsonNode.class)));
         cdf.addSpecificMapping(AccessList.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeAccessList", JsonNode.class)));
         cdf.addSpecificMapping(ContentCaching.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeContentCaching", ObjectNode.class)));
+        cdf.addSpecificMapping(ConnectionThrottle.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeConnectionThrottle", ObjectNode.class)));
         cdf.addSpecificMapping(ConnectionLogging.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeConnectionLogging", ObjectNode.class)));
         cdf.addSpecificMapping(HealthMonitor.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeHealthMonitor", ObjectNode.class)));
         cdf.addSpecificMapping(SessionPersistence.class, new GenericJsonObjectMapperDeserializer(JsonPublicDeserializers.class.getMethod("decodeSessionPersistence", ObjectNode.class)));
