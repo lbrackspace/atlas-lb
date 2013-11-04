@@ -16,8 +16,8 @@ public class RegexValidatorVerifier implements Verifier<Object> {
         List<ValidationResult> validationResults = new ArrayList<ValidationResult>();
 
         try {
-            Pattern.compile(obj.toString());
-        } catch (PatternSyntaxException exception) {
+            new jregex.Pattern(obj.toString());
+        } catch (jregex.PatternSyntaxException exception) {
             validationResults.add(new ValidationResult(false, "Must provide a valid regex"));
                     return new VerifierResult(false, validationResults);
         }

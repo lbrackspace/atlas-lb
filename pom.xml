@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <name>Openstack :: Atlas :: Parent</name>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-parent</artifactId>
-        <version>1.19.23-SNAPSHOT</version>
+    <version>1.19.23-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <scm>
@@ -87,6 +88,11 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>net.sourceforge.jregex</groupId>
+                <artifactId>jregex</artifactId>
+                <version>1.2_01</version>
+            </dependency>
             <dependency>
                 <groupId>com.rackspace.cloud.jee.filters</groupId>
                 <artifactId>rate-limiting</artifactId>
@@ -585,7 +591,7 @@
                 <artifactId>hibernate-annotations</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
