@@ -70,6 +70,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
+    @DeadLockRetry
     @Transactional
     public LoadBalancer create(LoadBalancer lb) throws Exception {
         if (isLoadBalancerLimitReached(lb.getAccountId())) {
