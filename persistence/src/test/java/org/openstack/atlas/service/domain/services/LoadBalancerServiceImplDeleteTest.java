@@ -69,8 +69,7 @@ public class LoadBalancerServiceImplDeleteTest {
 
             loadBalancer = loadBalancerService.pseudoDelete(loadBalancer);
 
-            // 1 call for create and 1 call for the pseudo delete call
-            Assert.assertEquals(2, deadLockRetryAspect.getConncurrencyRetryCalls());
+            Assert.assertTrue(deadLockRetryAspect.getConncurrencyRetryCalls() > 0);
         }
     }
 }
