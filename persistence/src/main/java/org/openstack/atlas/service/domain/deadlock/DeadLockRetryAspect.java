@@ -1,4 +1,4 @@
-    package org.openstack.atlas.service.domain.deadlock;
+package org.openstack.atlas.service.domain.deadlock;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -8,6 +8,7 @@ import org.hibernate.SessionFactory;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.SessionFactoryImplementor;
+import org.openstack.atlas.service.domain.util.DeepCopy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
@@ -52,16 +53,21 @@ public class DeadLockRetryAspect implements Ordered {
     @Around(value = "@annotation(deadLockRetry)", argNames = "pjp,deadLockRetry")
     public Object concurrencyRetry(final ProceedingJoinPoint pjp, final DeadLockRetry deadLockRetry) throws Throwable {
         conncurrencyRetryCalls++;
+
         final Integer retryCount = deadLockRetry.retryCount();
         Integer deadlockCounter = 0;
         Object result = null;
+
         while (deadlockCounter < retryCount) {
             try {
-                result = pjp.proceed();
+                Object[] argsCopy = copyArgs(pjp.getArgs()); // copy original args so side effects aren't introduced
+                result = pjp.proceed(argsCopy);
                 break;
             } catch (final JpaSystemException exception) {
                 if (exception.getCause() instanceof PersistenceException) {
                     deadlockCounter = handleException((PersistenceException) exception.getCause(), deadlockCounter, retryCount);
+                } else {
+                    throw exception;
                 }
             } catch (final PersistenceException pe) {
                 deadlockCounter = handleException(pe, deadlockCounter, retryCount);
@@ -70,7 +76,18 @@ public class DeadLockRetryAspect implements Ordered {
                 throw e;
             }
         }
+
         return result;
+    }
+
+    private Object[] copyArgs(Object[] args) {
+        Object[] copy = new Object[args.length];
+
+        for (int i = 0; i < args.length; i++) {
+            copy[i] = DeepCopy.copy(args[i]);
+        }
+
+        return copy;
     }
 
     /**
