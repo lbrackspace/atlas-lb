@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.19.26</version>    </parent>
+        <version>1.19.27-SNAPSHOT</version>    </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-test-reuploader</artifactId>
