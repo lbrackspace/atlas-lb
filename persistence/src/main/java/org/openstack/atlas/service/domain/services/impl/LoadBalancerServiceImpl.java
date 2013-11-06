@@ -70,6 +70,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
+    @DeadLockRetry
     @Transactional
     public LoadBalancer create(LoadBalancer lb) throws Exception {
         if (isLoadBalancerLimitReached(lb.getAccountId())) {
@@ -847,6 +848,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         boolean isHost = false;
         LoadBalancer gLb = new LoadBalancer();
 
+        LOG.info("AUTOWIRE CHECK: " + ((loadBalancer != null) ? loadBalancer.getName() : "FAIL"));
         Integer vipId = null;
         try {
             for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
@@ -857,6 +859,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 }
             }
 
+            LOG.info("VERIFY Vip6Set: " + ((loadBalancer.getLoadBalancerJoinVip6Set() != null) ? loadBalancer.getLoadBalancerJoinVip6Set().toString() : "FAIL"));
             for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancer.getLoadBalancerJoinVip6Set()) {
                 if (loadBalancerJoinVip6.getVirtualIp().getId() != null) {
                     isHost = true;

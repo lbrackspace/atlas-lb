@@ -433,6 +433,9 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public Set<LoadBalancerJoinVip6> getLoadBalancerJoinVip6Set() {
+        if (loadBalancerJoinVip6Set == null) {
+            loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
+        }
         return loadBalancerJoinVip6Set;
     }
 

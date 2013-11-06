@@ -67,6 +67,7 @@ public class DeadLockRetryAspect implements Ordered {
                 deadlockCounter = handleException(pe, deadlockCounter, retryCount);
             } catch (Exception e) {
                 LOGGER.error(e.getMessage(), e);
+                throw e;
             }
         }
         return result;
