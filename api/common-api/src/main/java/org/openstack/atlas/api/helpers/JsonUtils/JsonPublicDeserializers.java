@@ -16,6 +16,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Event;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Limit;
@@ -726,13 +727,27 @@ public class JsonPublicDeserializers extends DeserializationHelper {
                 jn = (ObjectNode) jn.get("nodeServiceEvent");
             }
         }
-        NodeServiceEvent event = new NodeServiceEvent();
+        NodeServiceEvent event = (NodeServiceEvent) decodeEvent(jn);
+        event.setNodeId(getInt(jn, "nodeId"));
+        event.setDetailedMessage(getString(jn, "detailedMessage"));
+        return event;
+    }
+
+    public static Event decodeEvent(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("event") != null) {
+            if (!(jn.get("event") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("event").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("event");
+            }
+        }
+        Event event = new Event();
         event.setId(getInt(jn, "id"));
         event.setLoadbalancerId(getInt(jn, "loadbalancerId"));
-        event.setNodeId(getInt(jn, "nodeId"));
         event.setType(getString(jn, "type"));
         event.setDescription(getString(jn, "description"));
-        event.setDetailedMessage(getString(jn, "detailedMessage"));
         event.setCategory(getString(jn, "category"));
         event.setSeverity(getString(jn, "severity"));
         event.setRelativeUri(getString(jn, "relativeUri"));

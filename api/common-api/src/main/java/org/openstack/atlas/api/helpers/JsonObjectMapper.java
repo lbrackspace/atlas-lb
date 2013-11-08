@@ -62,10 +62,10 @@ public class JsonObjectMapper extends ObjectMapper {
         CustomSerializerFactory csf = new CustomSerializerFactory();
         CustomDeserializerFactory cdf = new CustomDeserializerFactory();
         GenericJsonListMapperSerializer cls = new GenericJsonListMapperSerializer();
-        SerializationConfig serConf = this.getSerializationConfig();
-        DeserializationConfig deserConf = this.getDeserializationConfig();
+//        SerializationConfig serConf = this.getSerializationConfig();
+//        DeserializationConfig deserConf = this.getDeserializationConfig();
 
-        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(serConf, null));
+//        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(serConf, null));
         cdf.addSpecificMapping(Calendar.class, new DateTimeDeserializer(Calendar.class));
         cls.addToMap(AccountBilling.class, "attachAccountBillings");
         cls.addToMap(AccountUsageRecord.class, "attachAccountUsageRecords");
@@ -147,6 +147,6 @@ public class JsonObjectMapper extends ObjectMapper {
         this.setDeserializerProvider(new DeserializerProviderBuilder(cdf));
         // Suppress null properties from being serialized.
         this.configure(SerializationConfig.Feature.WRITE_NULL_PROPERTIES, false);
-        serConf.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+//        serConf.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
     }
 }
