@@ -422,6 +422,7 @@
     <xsd:complexType name="customers">
         <xsd:sequence>
             <xsd:element name="customer" minOccurs="1" maxOccurs="unbounded" type="tns:customer"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
