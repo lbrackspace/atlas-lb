@@ -547,15 +547,6 @@ public class JsonPublicDeserializers extends DeserializationHelper {
         return virtualIp;
     }
 
-    public static NetworkItem decodeNetworkItem(ObjectNode jn) throws JsonParseException {
-        NetworkItem networkItem = new NetworkItem();
-        networkItem.setId(getInt(jn, "id"));
-        networkItem.setAddress(getString(jn, "address"));
-        networkItem.setIpVersion(getIpVersion(jn, "ipVersion"));
-        networkItem.setType(getNetworkItemType(jn, "type"));
-        return networkItem;
-    }
-
     public static AccessList decodeAccessList(JsonNode jn) throws JsonParseException {
         AccessList al = new AccessList();
         ArrayNode an;
@@ -579,19 +570,13 @@ public class JsonPublicDeserializers extends DeserializationHelper {
         return al;
     }
 
-    public static NetworkItemType getNetworkItemType(ObjectNode on, String prop) throws JsonParseException {
-        String itemTypeString = getString(on, prop);
-        NetworkItemType networkItemType;
-        if (itemTypeString == null) {
-            return null;
-        }
-        try {
-            networkItemType = NetworkItemType.fromValue(itemTypeString);
-        } catch (IllegalStateException ex) {
-            String msg = String.format("Illegal NetworkItem type found %s in %s", itemTypeString, on.toString());
-            throw new JsonParseException(msg, on.traverse().getCurrentLocation());
-        }
-        return networkItemType;
+    public static NetworkItem decodeNetworkItem(ObjectNode jn) throws JsonParseException {
+        NetworkItem networkItem = new NetworkItem();
+        networkItem.setId(getInt(jn, "id"));
+        networkItem.setAddress(getString(jn, "address"));
+        networkItem.setIpVersion(getIpVersion(jn, "ipVersion"));
+        networkItem.setType(getNetworkItemType(jn, "type"));
+        return networkItem;
     }
 
     public static Nodes decodeNodes(JsonNode jn) throws JsonParseException {
@@ -926,6 +911,21 @@ public class JsonPublicDeserializers extends DeserializationHelper {
         limit.setValue(getInt(jn, "value"));
         limit.setId(getInt(jn, "id"));
         return limit;
+    }
+
+    public static NetworkItemType getNetworkItemType(ObjectNode on, String prop) throws JsonParseException {
+        String itemTypeString = getString(on, prop);
+        NetworkItemType networkItemType;
+        if (itemTypeString == null) {
+            return null;
+        }
+        try {
+            networkItemType = NetworkItemType.fromValue(itemTypeString);
+        } catch (IllegalStateException ex) {
+            String msg = String.format("Illegal NetworkItem type found %s in %s", itemTypeString, on.toString());
+            throw new JsonParseException(msg, on.traverse().getCurrentLocation());
+        }
+        return networkItemType;
     }
 
     public static IpVersion getIpVersion(JsonNode jn, String prop) throws JsonParseException {

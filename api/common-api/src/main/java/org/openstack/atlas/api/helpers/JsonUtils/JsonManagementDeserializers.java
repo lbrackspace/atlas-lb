@@ -6,6 +6,8 @@ import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Account;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountBillings;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountGroup;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountGroups;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountInCluster;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountInHost;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancer;
@@ -18,6 +20,7 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountsInHost;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Alert;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AlertStatus;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AllAbsoluteLimits;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Backup;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Backups;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Blacklist;
@@ -30,6 +33,9 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.CidrTest;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterDetails;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.CustomLimitAccount;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.CustomLimitAccounts;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.CustomLimits;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Customer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.CustomerList;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Customers;
@@ -37,21 +43,32 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.DataCenter;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Event;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ExtendedAccountLoadbalancer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ExtendedAccountLoadbalancers;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.GroupRateLimit;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.GroupRateLimits;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HealthCheck;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HealthChecks;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostCapacityReport;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostCapacityReports;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostMachineDetails;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostStatus;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostUsage;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostUsageList;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostUsageRecord;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostUsages;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hosts;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.IpVersion;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Job;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Jobs;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LdapGroup;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LdapInfo;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudit;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudits;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerEvent;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerLimitGroup;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerLimitGroups;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerServiceEvent;
@@ -66,6 +83,7 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Suspension;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Tickets;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.UserRole;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpAvailabilityReport;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpAvailabilityReports;
@@ -73,10 +91,12 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlock;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ZeusEvent;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ZeusRateLimitedLoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ZeusRateLimitedLoadBalancers;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountUsageRecord;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Limit;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
-import org.openstack.atlas.service.domain.pojos.AlertAudit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -180,7 +200,6 @@ public class JsonManagementDeserializers extends DeserializationHelper {
             LoadBalancerServiceEvent event = decodeLoadBalancerServiceEvent((ObjectNode) eventsNode);
             events.getLoadBalancerServiceEvents().add(event);
         }
-
         events.setLoadbalancerId(getInt(jn, "loadbalancerId"));
         return events;
     }
@@ -1512,7 +1531,566 @@ public class JsonManagementDeserializers extends DeserializationHelper {
     }
 
     public static HostUsageRecord decodeHostUsageRecord(ObjectNode jsonNodeIn) throws JsonParseException {
-        return new HostUsageRecord();
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("hostUsageRecord") != null) {
+            if (!(jn.get("hostUsageRecord") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("hostUsageRecord").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("hostUsageRecord");
+            }
+        }
+        HostUsageRecord record = new HostUsageRecord();
+        record.setHostId(getInt(jn, "hostId"));
+        record.setHostUsages(decodeHostUsages(jn.get("hostUsages")));
+        return record;
+    }
+
+    public static HostUsages decodeHostUsages(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("hostUsages") != null
+                && (jn.get("hostUsages") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("hostUsages");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        HostUsages usages = new HostUsages();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode usageNode = an.get(i);
+            if (!(usageNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, usageNode.toString());
+                throw new JsonParseException(msg, usageNode.traverse().getTokenLocation());
+            }
+            HostUsage usage = decodeHostUsage((ObjectNode) usageNode);
+            usages.getHostUsages().add(usage);
+        }
+        return usages;
+    }
+
+    public static HostUsage decodeHostUsage(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("hostUsage") != null) {
+            if (!(jn.get("hostUsage") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("hostUsage").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("hostUsage");
+            }
+        }
+        HostUsage usage = new HostUsage();
+        usage.setBandwidthIn(getLong(jn, "bandwidthIn"));
+        usage.setBandwidthOut(getLong(jn, "bandwidthOut"));
+        usage.setDay(getDate(jn, "day"));
+        return usage;
+    }
+
+    public static AccountGroups decodeAccountGroups(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("accountGroups") != null
+                && (jn.get("accountGroups") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("accountGroups");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        AccountGroups groups = new AccountGroups();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode groupNode = an.get(i);
+            if (!(groupNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, groupNode.toString());
+                throw new JsonParseException(msg, groupNode.traverse().getTokenLocation());
+            }
+            AccountGroup usage = decodeAccountGroup((ObjectNode) groupNode);
+            groups.getAccountGroups().add(usage);
+        }
+        return groups;
+    }
+
+    public static AccountGroup decodeAccountGroup(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("accountGroup") != null) {
+            if (!(jn.get("accountGroup") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("accountGroup").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("accountGroup");
+            }
+        }
+        AccountGroup group = new AccountGroup();
+        group.setId(getInt(jn, "id"));
+        group.setAccountId(getInt(jn, "accountId"));
+        group.setGroup(decodeGroup((ObjectNode) jn.get("group")));
+        return group;
+    }
+
+    public static GroupRateLimits decodeGroupRateLimits(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("groupRateLimits") != null
+                && (jn.get("groupRateLimits") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("groupRateLimits");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        GroupRateLimits limits = new GroupRateLimits();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode limitNode = an.get(i);
+            if (!(limitNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, limitNode.toString());
+                throw new JsonParseException(msg, limitNode.traverse().getTokenLocation());
+            }
+            GroupRateLimit limit = decodeGroup((ObjectNode) limitNode);
+            limits.getGroupRateLimits().add(limit);
+        }
+        return limits;
+    }
+
+    public static GroupRateLimit decodeGroup(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("groupRateLimit") != null) {
+            if (!(jn.get("groupRateLimit") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("groupRateLimit").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("groupRateLimit");
+            }
+        }
+        GroupRateLimit limit = new GroupRateLimit();
+        limit.setDescription(getString(jn, "description"));
+        limit.setIsDefault(getBoolean(jn, "isDefault"));
+        limit.setName(getString(jn, "name"));
+        limit.setId(getInt(jn, "id"));
+        return limit;
+    }
+
+    public static LdapInfo decodeLdapInfo(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("ldapInfo") != null) {
+            if (!(jn.get("ldapInfo") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("ldapInfo").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("ldapInfo");
+            }
+        }
+        LdapInfo info = new LdapInfo();
+        info.getLdapGroups().addAll(decodeLdapGroups(jn.get("ldapGroup")));
+        info.getUserRoles().addAll(decodeUserRoles(jn.get("userRole")));
+        info.setUserName(getString(jn, "userName"));
+        return info;
+    }
+
+    private static List<LdapGroup> decodeLdapGroups(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("ldapGroup") != null
+                && (jn.get("ldapGroup") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("ldapGroup");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        List<LdapGroup> groups = new ArrayList<LdapGroup>();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode groupNode = an.get(i);
+            if (!(groupNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, groupNode.toString());
+                throw new JsonParseException(msg, groupNode.traverse().getTokenLocation());
+            }
+            LdapGroup limit = decodeLdapGroup((ObjectNode) groupNode);
+            groups.add(limit);
+        }
+        return groups;
+    }
+
+    public static LdapGroup decodeLdapGroup(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("ldapGroup") != null) {
+            if (!(jn.get("ldapGroup") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("ldapGroup").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("ldapGroup");
+            }
+        }
+        LdapGroup group = new LdapGroup();
+        group.setGroup(getString(jn, "group"));
+        return group;
+    }
+
+    private static List<UserRole> decodeUserRoles(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("userRole") != null
+                && (jn.get("userRole") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("userRole");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        List<UserRole> roles = new ArrayList<UserRole>();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode roleNode = an.get(i);
+            if (!(roleNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, roleNode.toString());
+                throw new JsonParseException(msg, roleNode.traverse().getTokenLocation());
+            }
+            UserRole role = decodeUserRole((ObjectNode) roleNode);
+            roles.add(role);
+        }
+        return roles;
+    }
+
+    public static UserRole decodeUserRole(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("userRole") != null) {
+            if (!(jn.get("userRole") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("userRole").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("userRole");
+            }
+        }
+        UserRole role = new UserRole();
+        role.setRoleName(getString(jn, "roleName"));
+        return role;
+    }
+
+    public static LoadBalancerEvent decodeLoadBalancerEvent(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("loadBalancerEvent") != null) {
+            if (!(jn.get("loadBalancerEvent") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("loadBalancerEvent").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("loadBalancerEvent");
+            }
+        }
+        LoadBalancerEvent role = (LoadBalancerEvent) decodeEvent(jn);
+        return role;
+    }
+
+    public static AccountLoadBalancerServiceEvents decodeAccountLoadBalancerServiceEvents(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("accountLoadBalancerServiceEvents") != null) {
+            if (!(jn.get("accountLoadBalancerServiceEvents") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("accountLoadBalancerServiceEvents").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("accountLoadBalancerServiceEvents");
+            }
+        }
+        AccountLoadBalancerServiceEvents events = new AccountLoadBalancerServiceEvents();
+        events.getLoadBalancerServiceEvents().addAll(decodeLoadBalanacerServiceEventsList(jn.get("loadBalancerServiceEvents")));
+        events.setAccountId(getInt(jn, "accountId"));
+        return events;
+    }
+
+    private static List<LoadBalancerServiceEvents> decodeLoadBalanacerServiceEventsList(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("userRole") != null
+                && (jn.get("userRole") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("userRole");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        List<LoadBalancerServiceEvents> list = new ArrayList<LoadBalancerServiceEvents>();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode listNode = an.get(i);
+            if (!(listNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, listNode.toString());
+                throw new JsonParseException(msg, listNode.traverse().getTokenLocation());
+            }
+            LoadBalancerServiceEvents events = decodeLoadBalancerServiceEvents(listNode);
+            list.add(events);
+        }
+        return list;
+    }
+
+    public static ZeusRateLimitedLoadBalancers decodeZeusRateLimitedLoadBalancers(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("zeusRateLimitedLoadBalancers") != null
+                && (jn.get("zeusRateLimitedLoadBalancers") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("zeusRateLimitedLoadBalancers");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        ZeusRateLimitedLoadBalancers loadBalancers = new ZeusRateLimitedLoadBalancers();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode listNode = an.get(i);
+            if (!(listNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, listNode.toString());
+                throw new JsonParseException(msg, listNode.traverse().getTokenLocation());
+            }
+            ZeusRateLimitedLoadBalancer events = decodeZeusRateLimitedLoadBalancer((ObjectNode) listNode);
+            loadBalancers.getZeusRateLimitedLoadBalancers().add(events);
+        }
+        return loadBalancers;
+    }
+
+    public static ZeusRateLimitedLoadBalancer decodeZeusRateLimitedLoadBalancer(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("zeusRateLimitedLoadBalancer") != null) {
+            if (!(jn.get("zeusRateLimitedLoadBalancer") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("zeusRateLimitedLoadBalancer").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("zeusRateLimitedLoadBalancer");
+            }
+        }
+        ZeusRateLimitedLoadBalancer loadBalancer = new ZeusRateLimitedLoadBalancer();
+        loadBalancer.setMaxRequestsPerSecond(getInt(jn, "maxRequestsPerSecond"));
+        loadBalancer.setExpirationTime(getString(jn, "expirationTime"));
+        loadBalancer.setLoadbalancerId(getInt(jn, "loadbalancerId"));
+        loadBalancer.setTickets(decodeTickets(jn.get("tickets")));
+        loadBalancer.setAccountId(getInt(jn, "accountId"));
+        return loadBalancer;
+    }
+
+    public static CustomLimitAccounts decodeCustomLimitAccounts(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("customLimitAccounts") != null
+                && (jn.get("customLimitAccounts") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("customLimitAccounts");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        CustomLimitAccounts accounts = new CustomLimitAccounts();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode accountNode = an.get(i);
+            if (!(accountNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, accountNode.toString());
+                throw new JsonParseException(msg, accountNode.traverse().getTokenLocation());
+            }
+            CustomLimitAccount account = decodeCustomLimitAccount((ObjectNode) accountNode);
+            accounts.getCustomLimitAccounts().add(account);
+        }
+        return accounts;
+    }
+
+    public static CustomLimitAccount decodeCustomLimitAccount(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("customLimitAccount") != null) {
+            if (!(jn.get("customLimitAccount") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("customLimitAccount").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("customLimitAccount");
+            }
+        }
+        CustomLimitAccount account = new CustomLimitAccount();
+        account.setAccountId(getInt(jn, "accountId"));
+        account.setCustomLimits(decodeCustomLimits(jn.get("customLimits")));
+        return account;
+    }
+
+    public static AllAbsoluteLimits decodeAllAbsoluteLimits(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("allAbsoluteLimits") != null) {
+            if (!(jn.get("allAbsoluteLimits") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("allAbsoluteLimits").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("allAbsoluteLimits");
+            }
+        }
+        AllAbsoluteLimits limits = new AllAbsoluteLimits();
+        limits.setCustomLimits(decodeDefaultLimits(jn.get("defaultLimits")));
+        limits.setCustomLimits(decodeCustomLimits(jn.get("customLimits")));
+        return limits;
+    }
+
+    private static List<Limit> decodeCustomLimits(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("customLimits") != null
+                && (jn.get("customLimits") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("customLimits");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        List<Limit> limits = new ArrayList<Limit>();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode limitNode = an.get(i);
+            if (!(limitNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, limitNode.toString());
+                throw new JsonParseException(msg, limitNode.traverse().getTokenLocation());
+            }
+            Limit account = decodeLimit((ObjectNode) limitNode);
+            limits.add(account);
+        }
+        return limits;
+    }
+
+    private static List<Limit> decodeDefaultLimits(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("defaultLimits") != null
+                && (jn.get("defaultLimits") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("defaultLimits");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        List<Limit> limits = new ArrayList<Limit>();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode limitNode = an.get(i);
+            if (!(limitNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, limitNode.toString());
+                throw new JsonParseException(msg, limitNode.traverse().getTokenLocation());
+            }
+            Limit account = decodeLimit((ObjectNode) limitNode);
+            limits.add(account);
+        }
+        return limits;
+    }
+
+    public static Limit decodeLimit(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("limit") != null) {
+            if (!(jn.get("limit") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("limit").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("limit");
+            }
+        }
+        Limit limit = new Limit();
+        limit.setName(getString(jn, "name"));
+        limit.setValue(getInt(jn, "value"));
+        limit.setId(getInt(jn, "id"));
+        return limit;
+    }
+
+    public static Jobs decodeJobs(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("jobs") != null
+                && (jn.get("jobs") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("jobs");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        Jobs jobs = new Jobs();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode jobNode = an.get(i);
+            if (!(jobNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jobNode.toString());
+                throw new JsonParseException(msg, jobNode.traverse().getTokenLocation());
+            }
+            Job job = decodeJob((ObjectNode) jobNode);
+            jobs.getJobs().add(job);
+        }
+        return jobs;
+    }
+
+    public static Job decodeJob(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("job") != null) {
+            if (!(jn.get("job") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("job").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("job");
+            }
+        }
+        Job job = new Job();
+        job.setInputPath(getString(jn, "inputPath"));
+        job.setStartTime(getDate(jn, "startTime"));
+        job.setJobName(getString(jn, "jobName"));
+        job.setEndTime(getDate(jn, "endTime"));
+        job.setState(getString(jn, "state"));
+        job.setId(getInt(jn, "id"));
+        return job;
+    }
+
+    public static HealthChecks decodeHealthChecks(JsonNode jn) throws JsonParseException {
+        ArrayNode an;
+        int i;
+        if ((jn instanceof ObjectNode)
+                && jn.get("healthChecks") != null
+                && (jn.get("healthChecks") instanceof ArrayNode)) {
+            an = (ArrayNode) jn.get("healthChecks");
+        } else if (jn instanceof ArrayNode) {
+            an = (ArrayNode) jn;
+        } else {
+            String msg = String.format(NOT_OBJ_OR_ARR, jn.toString());
+            throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+        }
+        HealthChecks checks = new HealthChecks();
+        for (i = 0; i < an.size(); i++) {
+            JsonNode checkNode = an.get(i);
+            if (!(checkNode instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, checkNode.toString());
+                throw new JsonParseException(msg, checkNode.traverse().getTokenLocation());
+            }
+            HealthCheck check = decodeHealthCheck((ObjectNode) checkNode);
+            checks.getHealthChecks().add(check);
+        }
+        return checks;
+    }
+
+    public static HealthCheck decodeHealthCheck(ObjectNode jsonNodeIn) throws JsonParseException {
+        ObjectNode jn = jsonNodeIn;
+        if (jn.get("healthCheck") != null) {
+            if (!(jn.get("healthCheck") instanceof ObjectNode)) {
+                String msg = String.format(NOT_OBJ_NODE, jn.get("healthCheck").toString());
+                throw new JsonParseException(msg, jn.traverse().getTokenLocation());
+            } else {
+                jn = (ObjectNode) jn.get("healthCheck");
+            }
+        }
+        HealthCheck check = new HealthCheck();
+        check.setMessage(getString(jn, "message"));
+        check.setStatus(getString(jn, "status"));
+        check.setType(getString(jn, "type"));
+        check.setTime(getLong(jn, "time"));
+        return check;
     }
 
     public static HostType getHostType(ObjectNode jsonNodeIn, String prop) throws JsonParseException {
