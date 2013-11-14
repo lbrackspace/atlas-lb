@@ -317,9 +317,9 @@ public class JsonManagementDeserializers extends DeserializationHelper {
         }
         Suspension suspension = new Suspension();
         suspension.setTicket(decodeTicket((ObjectNode) jn.get("ticket")));
-        suspension.setId(getInt(jn, "id"));
         suspension.setReason(getString(jn, "reason"));
         suspension.setUser(getString(jn, "user"));
+        suspension.setId(getInt(jn, "id"));
         return suspension;
     }
 
@@ -334,9 +334,9 @@ public class JsonManagementDeserializers extends DeserializationHelper {
             }
         }
         RateLimit limit = new RateLimit();
+        limit.setMaxRequestsPerSecond(getInt(jn, "maxRequestsPerSecond"));
         limit.setTicket(decodeTicket((ObjectNode) jn.get("ticket")));
         limit.setExpirationTime(getDate(jn, "expirationTime"));
-        limit.setMaxRequestsPerSecond(getInt(jn, "maxRequestsPerSecond"));
         return limit;
     }
 
@@ -1323,7 +1323,6 @@ public class JsonManagementDeserializers extends DeserializationHelper {
         return record;
     }
 
-    //Todo: Double check the logic all the way down the line of this set of nested objects to make sure all the lists are populated
     public static Hostssubnet decodeHostsSubnet(JsonNode jn) throws JsonParseException {
         ArrayNode an;
         int i;
@@ -1473,7 +1472,6 @@ public class JsonManagementDeserializers extends DeserializationHelper {
         return audits;
     }
 
-    //Todo: figure out the proper way to handle the list of alerts
     public static LoadBalancerAudit decodeLoadBalancerAudit(JsonNode jn) throws JsonParseException {
         ArrayNode an;
         int i;

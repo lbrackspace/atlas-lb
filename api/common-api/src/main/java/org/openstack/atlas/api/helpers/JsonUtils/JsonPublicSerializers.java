@@ -9,12 +9,48 @@ import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.BigIntegerNode;
 import org.codehaus.jackson.node.ObjectNode;
 import org.openstack.atlas.api.helpers.JsonSerializeException;
-import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Absolute;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccountBilling;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsage;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccountUsageRecord;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Algorithm;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Algorithms;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomains;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Cluster;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
+import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Limit;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Meta;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Metadata;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvent;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Operationsuccess;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Protocol;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Protocols;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Updated;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.openstack.atlas.util.converters.DateTimeConverters;
 import org.w3.atom.Link;
 
-public class JsonPublicSerializers {
+public class JsonPublicSerializers extends SerializationHelper {
 
     public static void attachLoadBalancers(ObjectNode objectNode, LoadBalancers loadBalancers, boolean includeLinks) throws JsonSerializeException {
         List<LoadBalancer> loadBalancerList = loadBalancers.getLoadBalancers();
@@ -717,55 +753,5 @@ public class JsonPublicSerializers {
         if (limit.getValue() != null) {
             objectNode.put("value", limit.getValue());
         }
-    }
-
-    public static void attachAtomLink(ObjectNode objectNode, Link atomLink) {
-        if (atomLink.getBase() != null) {
-            objectNode.put("base", atomLink.getBase());
-        }
-        if (atomLink.getContent() != null) {
-            objectNode.put("content", atomLink.getContent());
-        }
-        if (atomLink.getHref() != null) {
-            objectNode.put("href", atomLink.getHref());
-        }
-        if (atomLink.getHreflang() != null) {
-            objectNode.put("hreflang", atomLink.getHreflang());
-        }
-        if (atomLink.getLang() != null) {
-            objectNode.put("lang", atomLink.getLang());
-        }
-        if (atomLink.getLength() != null) {
-            objectNode.put("length", new BigIntegerNode(atomLink.getLength()));
-        }
-        if (atomLink.getOtherAttributes() != null && !atomLink.getOtherAttributes().isEmpty()) {
-            ObjectNode oa = objectNode.putObject("otherAttributes");
-            for (Entry<QName, String> ent : atomLink.getOtherAttributes().entrySet()) {
-                String nsUri = ent.getKey().getNamespaceURI();
-                String localPart = ent.getKey().getLocalPart();
-                String prefix = ent.getKey().getPrefix();
-                oa.put("{" + nsUri + "}" + localPart, ent.getValue());
-            }
-        }
-        if (atomLink.getRel() != null) {
-            objectNode.put("rel", atomLink.getRel());
-        }
-        if (atomLink.getTitle() != null) {
-            objectNode.put("title", atomLink.getTitle());
-        }
-        if (atomLink.getType() != null) {
-            objectNode.put("type", atomLink.getType());
-        }
-    }
-
-    public static void attachDateTime(ObjectNode on, String prop, Calendar cal) throws JsonSerializeException {
-        String isoString;
-        try {
-            isoString = DateTimeConverters.calToiso(cal);
-        } catch (ConverterException ex) {
-            String msg = String.format("Error converting Calendar %s to iso8601 format", cal.toString());
-            throw new JsonSerializeException(msg, ex);
-        }
-        on.put(prop, isoString);
     }
 }
