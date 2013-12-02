@@ -8,7 +8,7 @@ import java.util.Calendar;
 
 @javax.persistence.Entity
 @Table(name = "lb_merged_host_usage")
-public class LoadBalancerMergedHostUsage extends Entity implements Serializable {
+public class LoadBalancerMergedHostUsage extends BigIntEntity implements Serializable {
     private final static long serialVersionUID = 532512317L;
 
     @Column(name = "account_id", nullable = false)

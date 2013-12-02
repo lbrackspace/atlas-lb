@@ -104,7 +104,7 @@ public class HostUsageRefactorRepository {
     }
 
 
-    public void deleteOldHostUsage(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude, Integer maxId) {
+    public void deleteOldHostUsage(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude, Long maxId) {
         Query query;
         if (lbsToExclude == null || lbsToExclude.isEmpty()) {
             query = entityManager.createQuery("DELETE LoadBalancerHostUsage u WHERE u.pollTime < :deleteTimeMarker AND u.id <= :maxId");

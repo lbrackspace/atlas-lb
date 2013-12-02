@@ -26,7 +26,7 @@ public interface UsageRefactorService {
 
     public void batchCreateLoadBalancerHostUsages(Collection<LoadBalancerHostUsage> usages);
 
-    public void deleteOldLoadBalancerHostUsages(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude, Integer maxId);
+    public void deleteOldLoadBalancerHostUsages(Calendar deleteTimeMarker, Collection<Integer> lbsToExclude, Long maxId);
 
     public void batchCreateLoadBalancerMergedHostUsages(Collection<LoadBalancerMergedHostUsage> usages);
 

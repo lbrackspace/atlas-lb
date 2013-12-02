@@ -97,7 +97,7 @@ public class LoadBalancerMergedHostUsageRepository {
         pollTimeCal.setTimeInMillis(pollTimeMillis);
 
         LoadBalancerMergedHostUsage usageItem = new LoadBalancerMergedHostUsage();
-        usageItem.setId((Integer) row[0]);
+        usageItem.setId((Long) row[0]);
         usageItem.setLoadbalancerId((Integer) row[1]);
         usageItem.setConcurrentConnections(((BigInteger) row[2]).longValue());
         usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
@@ -126,7 +126,7 @@ public class LoadBalancerMergedHostUsageRepository {
     }
 
     public void batchDelete(Collection<LoadBalancerMergedHostUsage> usages) {
-        List<Integer> usageIds = new ArrayList<Integer>();
+        List<Long> usageIds = new ArrayList<Long>();
 
         for (LoadBalancerMergedHostUsage usage : usages) {
             usageIds.add(usage.getId());

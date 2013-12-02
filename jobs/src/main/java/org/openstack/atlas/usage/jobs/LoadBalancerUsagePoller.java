@@ -55,7 +55,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         Calendar pollTime = Calendar.getInstance();
         LOG.info("Set poll time to " + pollTime.getTime().toString() + "...");
         Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getRecordsBeforeTimeInclusive(pollTime);
-        Integer maxId = findMaxId(existingUsages);
+        Long maxId = findMaxId(existingUsages);
         LOG.info("Retrieved records for " + existingUsages.size() + " load balancers from lb_host_usage table.");
         Map<Integer, Map<Integer, SnmpUsage>> currentUsages;
         try {
@@ -189,9 +189,9 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         }
     }
 
-    private Integer findMaxId(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages) {
+    private Long findMaxId(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages) {
         LOG.info("Getting max record id...");
-        Integer maxId = -1;
+        Long maxId = -1L;
         for (Integer loadbalancerId : existingUsages.keySet()) {
             for (Integer hostId : existingUsages.get(loadbalancerId).keySet()) {
                 for (LoadBalancerHostUsage usage : existingUsages.get(loadbalancerId).get(hostId)) {
