@@ -44,6 +44,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
 
         try {
 
+            org.openstack.atlas.service.domain.entities.SslTermination previousSslTerm = sslTerminationService.getSslTermination(loadBalancerId, accountId);
             ZeusSslTermination zeusSslTermination = sslTerminationService.updateSslTermination(loadBalancerId, accountId, ssl);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
@@ -51,6 +52,8 @@ public class SslTerminationResource extends CommonDependencyProvider {
             dataContainer.setLoadBalancerId(loadBalancerId);
             dataContainer.setUserName(getUserName(requestHeaders));
             dataContainer.setZeusSslTermination(zeusSslTermination);
+            dataContainer.setPreviousSslTermination
+                    (previousSslTerm);
 
             SslTermination returnTermination = dozerMapper.map(zeusSslTermination.getSslTermination(), SslTermination.class);
 
