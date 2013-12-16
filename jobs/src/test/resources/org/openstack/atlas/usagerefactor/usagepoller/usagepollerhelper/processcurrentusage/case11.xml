@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: Polled event and previous event have same time.
+-->
+<dataset>
+    <lb_host_usage id="7" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_in="-1" bandwidth_in_ssl="50"  bandwidth_out="-1"  bandwidth_out_ssl="100"   concurrent_connections="5" concurrent_connections_ssl="10" num_vips="1" tags_bitmask="1" poll_time="2013-08-27 21:56:00"/>
+    <lb_host_usage id="8" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_in="0" bandwidth_in_ssl="0"  bandwidth_out="0"  bandwidth_out_ssl="0"   concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="1" poll_time="2013-08-27 21:56:00"/>
+
+</dataset>

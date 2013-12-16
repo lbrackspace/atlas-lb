@@ -169,6 +169,7 @@ public class Debug {
         return sb.toString();
     }
     // Tests to see if the throwable exc was caused by any of the exceptions in causeClasses
+
     public static Class getThrowableCausedByOrAssignableFrom(Throwable exc, Class... causeClasses) {
         Throwable t;
         Class causeClass;
@@ -252,6 +253,7 @@ public class Debug {
         sb.append(String.format("TotalMemory: %s\n", StaticStringUtils.lpadLong(totalMem(), " ", 20)));
         sb.append(String.format(" UsedMemory: %s\n", StaticStringUtils.lpadLong(usedMem(), " ", 20)));
         sb.append(String.format(" FreeMemory: %s\n", StaticStringUtils.lpadLong(freeMem(), " ", 20)));
+        sb.append(String.format("      nCpus: %s\n", StaticStringUtils.lpadLong(nCpus(), " ", 20)));
         return sb.toString();
     }
 

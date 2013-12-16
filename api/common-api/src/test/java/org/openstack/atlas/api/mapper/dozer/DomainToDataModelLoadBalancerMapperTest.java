@@ -578,6 +578,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
         LoadBalancer loadBalancer = new LoadBalancer();
         loadBalancer.setCreated(new GregorianCalendar(2010, 10, 10));
         loadBalancer.setUpdated(new GregorianCalendar(2010, 10, 10));
+        loadBalancer.setProvisioned(new GregorianCalendar(2010, 10, 10));
         loadBalancer.setId(100);
         loadBalancer.setName("LB 1");
         loadBalancer.setPort(9999);

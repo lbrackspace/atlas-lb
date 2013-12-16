@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
@@ -59,7 +60,12 @@ public abstract class AbstractUsageEventCollection {
 
     public List<SnmpUsage> getUsage(LoadBalancer lb) throws UsageEventCollectionException {
         LOG.debug("Processing Usage Records for load balancer: " + lb.getId());
-        List<Host> hosts = gatherHostsData();
+        List<Host> hosts = null;
+        try {
+            hosts = gatherHostsData(lb);
+        } catch (EntityNotFoundException e) {
+            LOG.error(String.format("On an event, load balancer %d was assigned to host %d and it does not exist.", lb.getId(), lb.getHost().getId()));
+        }
 
         List<SnmpUsage> usages;
         if (hosts != null && !hosts.isEmpty()) {
@@ -84,13 +90,23 @@ public abstract class AbstractUsageEventCollection {
      * @throws UsageEventCollectionException
      */
     public void processZeroUsageEvent(LoadBalancer lb, UsageEvent event, Calendar eventTime) throws UsageEventCollectionException {
-        List<Host> hosts = gatherHostsData();
+        List<Host> hosts = null;
+        try {
+            hosts = gatherHostsData(lb);
+        } catch (EntityNotFoundException e) {
+            LOG.error(String.format("On %s event, load balancer %d was assigned to host %d and it does not exist.", event.name(), lb.getId(), lb.getHost().getId()));
+        }
 
         if (hosts != null && !hosts.isEmpty()) {
             List<SnmpUsage> snmpUsages = new ArrayList<SnmpUsage>();
             for (Host h : hosts) {
                 SnmpUsage snmpUsage = new SnmpUsage();
                 snmpUsage.setHostId(h.getId());
+                snmpUsage.setLoadbalancerId(lb.getId());
+                snmpUsage.setBytesIn(0L);
+                snmpUsage.setBytesInSsl(0L);
+                snmpUsage.setBytesOutSsl(0L);
+                snmpUsage.setBytesOut(0L);
                 snmpUsages.add(snmpUsage);
             }
             usageEventProcessor.processUsageEvent(snmpUsages, lb, event, eventTime);
@@ -104,8 +120,8 @@ public abstract class AbstractUsageEventCollection {
         usageEventProcessor.processUsageEvent(usages, lb, event, eventTime);
     }
 
-    private List<Host> gatherHostsData() {
-        return hostRepository.getAll();
+    private List<Host> gatherHostsData(LoadBalancer lb) throws EntityNotFoundException {
+        return hostRepository.getOnlineHostsByLoadBalancerHostCluster(lb);
     }
 
 }

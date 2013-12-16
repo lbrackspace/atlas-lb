@@ -79,11 +79,6 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
         String atomSummary = "Load balancer un-suspended";
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
 
-        // Notify usage processor
-        // DEPRECATED
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.UNSUSPEND_LOADBALANCER, eventTime);
-        // END DEPRECATED
-
         LOG.info(String.format("Remove suspension operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }
 

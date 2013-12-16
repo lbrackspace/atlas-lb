@@ -1678,9 +1678,7 @@ public class LoadBalancerRepository {
     public Set<LbIdAccountId> getLoadBalancersActiveDuringPeriod(Calendar startTime, Calendar endTime) {
         Set<LbIdAccountId> lbIds = new HashSet<LbIdAccountId>();
 
-//        Query query = entityManager.createQuery("SELECT l.id, l.accountId FROM LoadBalancer l");
-
-        Query query = entityManager.createQuery("SELECT l.id, l.accountId FROM LoadBalancer l where (l.status != 'DELETED' or l.updated >= :startTime) and l.created < :endTime and l.status not in ('BUILD', 'PENDING_DELETE')")
+        Query query = entityManager.createQuery("SELECT l.id, l.accountId FROM LoadBalancer l where (l.status != 'DELETED' or l.updated >= :startTime) and l.provisioned < :endTime and l.status not in ('BUILD', 'PENDING_DELETE')")
                 .setParameter("startTime", startTime)
                 .setParameter("endTime", endTime);
 

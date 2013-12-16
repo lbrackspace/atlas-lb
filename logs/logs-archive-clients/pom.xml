@@ -25,8 +25,14 @@
             <version>1.2</version>
         </dependency>
         <dependency>
-            <groupId>com.rackspacecloud</groupId>
-            <artifactId>java-cloudfiles</artifactId>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-cloudfiles-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>atlas-identity-auth</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

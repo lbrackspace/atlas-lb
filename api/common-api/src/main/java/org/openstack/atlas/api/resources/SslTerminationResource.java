@@ -10,6 +10,7 @@ import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.MethodNotAllowedException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
@@ -42,8 +43,18 @@ public class SslTerminationResource extends CommonDependencyProvider {
             return getValidationFaultResponse(result);
         }
 
+        //need to get previous ssl termination state
+        org.openstack.atlas.service.domain.entities.SslTermination previousSslTerm;
         try {
+            previousSslTerm = sslTerminationService.getSslTermination(loadBalancerId, accountId);
+        } catch (EntityNotFoundException e) {
+            previousSslTerm = new org.openstack.atlas.service.domain.entities.SslTermination();
+            previousSslTerm.setEnabled(false);
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
 
+        try {
             ZeusSslTermination zeusSslTermination = sslTerminationService.updateSslTermination(loadBalancerId, accountId, ssl);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
@@ -51,6 +62,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
             dataContainer.setLoadBalancerId(loadBalancerId);
             dataContainer.setUserName(getUserName(requestHeaders));
             dataContainer.setZeusSslTermination(zeusSslTermination);
+            dataContainer.setPreviousSslTermination(previousSslTerm);
 
             SslTermination returnTermination = dozerMapper.map(zeusSslTermination.getSslTermination(), SslTermination.class);
 

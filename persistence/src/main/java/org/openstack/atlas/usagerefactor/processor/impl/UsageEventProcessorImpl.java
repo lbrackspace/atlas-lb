@@ -93,10 +93,23 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         int numVips = virtualIpRepository.getNumIpv4VipsForLoadBalancer(loadBalancer).intValue();
 
         List<LoadBalancerHostUsage> usageRecordsToCreate = new ArrayList<LoadBalancerHostUsage>();
+        //If for whatever reason there were no usage records returned by any hosts for this load balancer, insert 1 record with -1 values for bandwidth
+        //and the event type.
         if (usages.isEmpty()) {
             notificationService.saveAlert(loadBalancer.getAccountId(), loadBalancer.getId(), new EntityNotFoundException(),
                     AlertType.USAGE_FAILURE.name(), String.format("Usage processing for %s event failed because no hosts returned " +
-                    "usage for this load balancer.", usageEvent.name()));
+                    "usage for this load balancer.  Inserting -1 for bandwidth and event anyway.", usageEvent.name()));
+            SnmpUsage phantomUsage = new SnmpUsage();
+            phantomUsage.setConcurrentConnections(0);
+            phantomUsage.setConcurrentConnectionsSsl(0);
+            phantomUsage.setBytesIn(-1L);
+            phantomUsage.setBytesOut(-1L);
+            phantomUsage.setBytesInSsl(-1L);
+            phantomUsage.setBytesOutSsl(-1L);
+            phantomUsage.setHostId(loadBalancer.getHost().getId());
+            phantomUsage.setLoadbalancerId(loadBalancer.getId());
+            LoadBalancerHostUsage usageRecordToProcess = new UsageEventMapper(loadBalancer, phantomUsage, usageEvent, pollTime, tagsBitmask, 0).mapSnmpUsageToUsageEvent();
+            usageRefactorService.createUsageEvent(usageRecordToProcess);
         }
         for (SnmpUsage usage : usages) {
             LoadBalancerHostUsage usageRecordToProcess;
@@ -111,7 +124,7 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
                 continue;
             }
 
-            setNegativeUsageToZero(usage);
+            //setNegativeUsageToZero(usage);
 
             LOG.info(String.format("Creating usage event for load balancer '%d'...", loadBalancer.getId()));
             usageRecordToProcess = new UsageEventMapper(loadBalancer, usage, usageEvent, pollTime, tagsBitmask, numVips)

@@ -51,6 +51,6 @@ public class ExecutionUtilities {
     }
 
     private static <T> void logBatchNumber(List<T> objects, BatchAction<T> batchAction, int batchNumber) {
-        LOG.debug(String.format("Executing batch # '%d' (%s, total number of items = %d)", batchNumber, batchAction.getClass().getSimpleName(), objects.size()));
+        LOG.debug(String.format("Executing batch # '%d' %s, (total number of items = %d)", batchNumber, batchAction.getClass().getSimpleName(), objects.size()));
     }
 }

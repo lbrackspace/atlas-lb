@@ -20,6 +20,7 @@
         <module>objs</module>
         <module>dns</module>
         <module>stingray-rest-client</module>
+        <module>java-cloudfiles</module>
     </modules>
 
     <build>

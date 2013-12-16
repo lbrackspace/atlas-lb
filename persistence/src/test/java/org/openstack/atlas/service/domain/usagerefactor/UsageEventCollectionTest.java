@@ -127,11 +127,13 @@ public class UsageEventCollectionTest {
     @RunWith(PowerMockRunner.class)
     @PrepareForTest(Executors.class)
     public static class WhenProcessingSingleUsageEvent {
-        LoadBalancer lb;
         SnmpUsage snmpUsage;
         SnmpUsage snmpUsage1;
         List<SnmpUsage> snmpUsages;
         Calendar eventTime;
+
+        @Mock
+        LoadBalancer lb;
 
         @Mock
         VirtualIpRepository virtualIpRepository;
@@ -183,7 +185,7 @@ public class UsageEventCollectionTest {
 
         @Test(expected = UsageEventCollectionException.class)
         public void shouldFailWhenNoHost() throws EntityNotFoundException, DeletedStatusException, InterruptedException, UsageEventCollectionException {
-            when(hostRepository.getAllHosts()).thenReturn(null);
+            when(hostRepository.getOnlineHostsByLoadBalancerHostCluster(lb)).thenReturn(null);
             usageEventCollection.processZeroUsageEvent(lb, UsageEvent.CREATE_LOADBALANCER, eventTime);
         }
 
@@ -194,7 +196,7 @@ public class UsageEventCollectionTest {
             host.setId(7);
             hosts.add(host);
 
-            when(hostRepository.getAll()).thenReturn(hosts);
+            when(hostRepository.getOnlineHostsByLoadBalancerHostCluster(lb)).thenReturn(hosts);
             usageEventCollection.processZeroUsageEvent(lb, UsageEvent.CREATE_LOADBALANCER, eventTime);
         }
 
@@ -205,7 +207,7 @@ public class UsageEventCollectionTest {
             host.setId(7);
             hosts.add(host);
 
-            when(hostRepository.getAll()).thenReturn(hosts);
+            when(hostRepository.getOnlineHostsByLoadBalancerHostCluster(lb)).thenReturn(hosts);
             usageEventCollection.processZeroUsageEvent(lb, UsageEvent.CREATE_LOADBALANCER, eventTime);
             //Assert.assertEquals(host, usageEventCollection.getHosts().get(0));
         }

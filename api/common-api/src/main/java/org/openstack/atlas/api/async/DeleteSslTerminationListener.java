@@ -70,7 +70,6 @@ public class DeleteSslTerminationListener extends BaseListener {
                 LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                         ":: Exception: %s", dbLoadBalancer.getId(), uex));
             }
-
             return;
         }
 

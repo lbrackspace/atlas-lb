@@ -34,5 +34,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     identity_pass,
     adapter_soap_rest,
     rest_port,
-    usage_poller_log_all_counters
+    usage_poller_log_all_counters,
+    usage_deletion_limit
 }

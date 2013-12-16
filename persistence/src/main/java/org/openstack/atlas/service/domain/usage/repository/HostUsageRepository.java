@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.usage.repository;
 
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.config.RestApiConfiguration;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.usage.entities.HostUsage;
 import org.apache.commons.logging.Log;
@@ -21,6 +23,7 @@ public class HostUsageRepository {
     @PersistenceContext(unitName = "loadbalancingUsage")
     private EntityManager entityManager;
     private final Integer NUM_DAYS_RETENTION = 60;
+    private final Integer DEFAULT_DELETE_LIMIT = 10000;
 
     public HostUsage getById(Integer id) throws EntityNotFoundException {
         HostUsage hostUsageRecord = entityManager.find(HostUsage.class, id);
@@ -51,9 +54,27 @@ public class HostUsageRepository {
     }
 
     private void deleteAllRecordsBefore(Calendar time) {
-        Query query = entityManager.createQuery("DELETE HostUsage u WHERE u.snapshotTime < :timestamp")
-                .setParameter("timestamp", time, TemporalType.TIMESTAMP);
-        int numRowsDeleted = query.executeUpdate();
-        LOG.info(String.format("Deleted %d rows with endTime before %s from 'host_usage' table.", numRowsDeleted, time.getTime()));
+        RestApiConfiguration configuration = new RestApiConfiguration();
+        String limitStr = configuration.getString(PublicApiServiceConfigurationKeys.usage_deletion_limit);
+        int limitInt;
+        try {
+            limitInt = Integer.parseInt(limitStr);
+        } catch(NumberFormatException nfe) {
+            limitInt = DEFAULT_DELETE_LIMIT;
+        }
+        int numRowsDeleted;
+        int totalRowsDeleted = 0;
+        int batchCount = 0;
+
+        do {
+            Query nativeQ = entityManager.createNativeQuery("DELETE FROM host_usage WHERE snapshot_time <= :timestamp LIMIT :limit")
+                    .setParameter("timestamp", time, TemporalType.TIMESTAMP).setParameter("limit", limitInt);
+            numRowsDeleted = nativeQ.executeUpdate();
+            totalRowsDeleted += numRowsDeleted;
+            batchCount++;
+            LOG.info(String.format("Deleted %d rows with endTime before %s from 'host_usage' table in batch %d.", numRowsDeleted, time.getTime(), batchCount));
+        } while(numRowsDeleted > 0);
+
+        LOG.info(String.format("Finished deleting rows. Deleted %d total rows in %d batch(es) with endTime before %s from 'host_usage' table.", totalRowsDeleted, batchCount, time.getTime()));
     }
 }

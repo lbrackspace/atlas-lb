@@ -90,6 +90,7 @@ public class SyncListener extends BaseListener {
                     String atomSummary = "Load balancer successfully deleted";
                     notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
+                    // Notify usage processor
                     Calendar eventTime = Calendar.getInstance();
                     LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
                     usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
@@ -131,8 +132,10 @@ public class SyncListener extends BaseListener {
                         String atomSummary = createAtomSummary(dbLoadBalancer).toString();
                         notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
 
+                        // Notify old usage processor
+                        Calendar eventTime = Calendar.getInstance();
+
                         try {
-                            Calendar eventTime = Calendar.getInstance();
                             usageEventCollection.processZeroUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, eventTime);
                         } catch (UsageEventCollectionException uex) {
                             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +

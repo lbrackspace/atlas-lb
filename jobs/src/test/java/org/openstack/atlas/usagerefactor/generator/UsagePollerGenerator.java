@@ -25,6 +25,12 @@ public class UsagePollerGenerator {
                 SnmpUsage snmp = new SnmpUsage();
                 snmp.setLoadbalancerId(lbId);
                 snmp.setHostId(hostId);
+                snmp.setConcurrentConnections(0);
+                snmp.setConcurrentConnectionsSsl(0);
+                snmp.setBytesIn(0);
+                snmp.setBytesOut(0);
+                snmp.setBytesInSsl(0);
+                snmp.setBytesOutSsl(0);
                 lbMap.put(lbId, snmp);
             }
         }

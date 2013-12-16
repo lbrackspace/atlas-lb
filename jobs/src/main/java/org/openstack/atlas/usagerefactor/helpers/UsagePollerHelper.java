@@ -23,6 +23,7 @@ import java.util.*;
 @Component
 public class UsagePollerHelper {
     private final org.apache.commons.logging.Log LOG = LogFactory.getLog(UsagePollerHelper.class);
+    public static final long MAX_BANDWIDTH_BYTES_THRESHHOLD = 1099511627776L; //1 Terabyte
 
     @Autowired
     private LoadBalancerMergedHostUsageRepository mergedHostUsageRepository;
@@ -111,12 +112,20 @@ public class UsagePollerHelper {
     public ResetBandwidth getPossibleResetBandwidth(long currentIncoming, long previousIncoming, long currentOutgoing,
                                                     long previousOutgoing, Calendar currentPollTime, Calendar previousPollTime) {
         ResetBandwidth ret = new ResetBandwidth();
+        long outDiff = currentOutgoing - previousOutgoing;
+        long inDiff = currentIncoming - previousIncoming;
         if ( isReset(currentIncoming, previousIncoming) ||
-                isReset(currentOutgoing, previousOutgoing)) {
+                isReset(currentOutgoing, previousOutgoing) ||
+                previousIncoming < 0 || previousOutgoing < 0) {
             return ret;
         }
-        ret.incomingTransfer = currentIncoming - previousIncoming;
-        ret.outgoingTransfer = currentOutgoing - previousOutgoing;
+        //If the bandwidth to be charged to this load balancer exceeds a certain amount then we assume a bug happened and store 0 bandwidth.
+        if (inDiff < MAX_BANDWIDTH_BYTES_THRESHHOLD) {
+            ret.incomingTransfer = currentIncoming - previousIncoming;
+        }
+        if (outDiff < MAX_BANDWIDTH_BYTES_THRESHHOLD) {
+            ret.outgoingTransfer = currentOutgoing - previousOutgoing;
+        }
         return ret;
     }
 
@@ -129,6 +138,16 @@ public class UsagePollerHelper {
         List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
 
         for (Integer loadbalancerId : currentUsages.keySet()) {
+            for (Integer hostId : currentUsages.get(loadbalancerId).keySet()) {
+                SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(hostId);
+                //Zeus SNMP will sometimes return a negative number for these if it is under heavy load, like it can't give us this information at the moment.
+                if (currentUsage.getConcurrentConnections() < 0) {
+                    currentUsage.setConcurrentConnections(0);
+                }
+                if (currentUsage.getConcurrentConnectionsSsl() < 0) {
+                    currentUsage.setConcurrentConnectionsSsl(0);
+                }
+            }
             if(buildingLoadBalancers.containsKey(loadbalancerId)){
                 //This is to handle an issue when zeus is under heavy load on the create load balancer call and the
                 //api has not inserted the create load balancer record yet.
@@ -267,6 +286,15 @@ public class UsagePollerHelper {
                 for (Integer hostId : lbHostUsagesMapByTime.get(timeKey).keySet()) {
 
                     LoadBalancerHostUsage currentUsage = lbHostUsagesMapByTime.get(timeKey).get(hostId);
+
+                    if (currentUsage != null) {
+                        if (currentUsage.getConcurrentConnections() < 0) {
+                            currentUsage.setConcurrentConnections(0);
+                        }
+                        if (currentUsage.getConcurrentConnectionsSsl() < 0) {
+                            currentUsage.setConcurrentConnectionsSsl(0);
+                        }
+                    }
 
                     if (isFirstRecord) {
                         if (currentUsage == null) {

@@ -10,6 +10,7 @@ import java.util.Set;
 
 public final class ZxtmNameBuilder {
     private static final String ssl_suffix = "_S";
+    private static final String redirect_suffix = "_R";
 
     public static String genVSName(Integer lbId, Integer accountId) throws InsufficientRequestException {
         if (lbId == null) {
@@ -33,8 +34,23 @@ public final class ZxtmNameBuilder {
         return accountId + "_" + lbId + ssl_suffix;
     }
 
+    public static String genRedirectVSName(Integer lbId, Integer accountId) throws InsufficientRequestException {
+        if (lbId == null) {
+            throw new InsufficientRequestException("Missing id for load balancer.");
+        }
+        if (accountId == null) {
+            throw new InsufficientRequestException("Missing account id for load balancer.");
+        }
+
+        return accountId + "_" + lbId + redirect_suffix;
+    }
+
     public static String genSslVSName(String vsName) {
         return vsName + ssl_suffix;
+    }
+
+    public static String genRedirectVSName(String vsName) {
+        return vsName + redirect_suffix;
     }
 
     public static String genVSName(LoadBalancer lb) throws InsufficientRequestException {
@@ -57,6 +73,16 @@ public final class ZxtmNameBuilder {
         return genSslVSName(lb.getId(), lb.getAccountId());
     }
 
+    public static String genRedirectVSName(LoadBalancer lb) throws InsufficientRequestException {
+        if (lb.getAccountId() == null)
+            throw new InsufficientRequestException(
+                    "Missing account id for load balancer.");
+        if (lb.getId() == null)
+            throw new InsufficientRequestException(
+                    "Missing id for load balancer.");
+        return genRedirectVSName(lb.getId(), lb.getAccountId());
+    }
+
     public static Set<String> generateNamesWithAccountIdAndLoadBalancerId(Set<LoadBalancer> loadBalancers) throws InsufficientRequestException {
         Set<String> generatedNames = new HashSet<String>();
         for (LoadBalancer loadBalancer : loadBalancers) {
@@ -69,6 +95,14 @@ public final class ZxtmNameBuilder {
         Set<String> generatedNames = new HashSet<String>();
         for (LoadBalancer loadBalancer : loadBalancers) {
             generatedNames.add(genSslVSName(loadBalancer));
+        }
+        return generatedNames;
+    }
+
+    public static Set<String> generateRedirectNamesWithAccountIdAndLoadBalancerId(Set<LoadBalancer> loadBalancers) throws InsufficientRequestException {
+        Set<String> generatedNames = new HashSet<String>();
+        for (LoadBalancer loadBalancer : loadBalancers) {
+            generatedNames.add(genRedirectVSName(loadBalancer));
         }
         return generatedNames;
     }

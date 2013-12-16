@@ -4,6 +4,7 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ObjectExistsException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
+import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
@@ -32,6 +33,8 @@ public interface ReverseProxyLoadBalancerService {
     void updateProtocol(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, Exception;
 
     void updateHalfClosed(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, Exception;
+
+    public void updateHttpsRedirect(LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, Exception;
 
     public void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws ObjectExistsException, RemoteException, InsufficientRequestException, Exception;
 

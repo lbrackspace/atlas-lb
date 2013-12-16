@@ -63,7 +63,16 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                     " Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 
-
+        if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
+            //Must be secure-only
+            if (sslTermination.isSecureTrafficOnly() != null && !sslTermination.isSecureTrafficOnly()) {
+                throw new BadRequestException("Cannot use 'mixed-mode' SSL termination while HTTPS Redirect is enabled.");
+            }
+            //Must use secure port 443
+            if (sslTermination.getSecurePort() != null && sslTermination.getSecurePort() != 443) {
+                throw new BadRequestException("Must use secure port 443 with HTTPS Redirect enabled.");
+            }
+        }
 
         org.openstack.atlas.service.domain.entities.SslTermination dbTermination = null;
         try {

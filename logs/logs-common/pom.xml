@@ -7,7 +7,6 @@
         <artifactId>atlas-logs</artifactId>
         <version>1.20.2-SNAPSHOT</version>
     </parent>
-
     <artifactId>atlas-logs-common</artifactId>
     <name>Openstack :: Atlas :: Logs :: Common</name>
 

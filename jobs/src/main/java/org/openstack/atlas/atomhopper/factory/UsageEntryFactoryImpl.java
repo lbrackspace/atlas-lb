@@ -153,8 +153,9 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
 
     private String genUUIDString(Usage usageRecord) {
         return SERVICE_CODE
-                + "_" + usageRecord.getId()
                 + "_" + usageRecord.getLoadbalancer().getId()
+                + "_" + usageRecord.getStartTime()
+                + "_" + usageRecord.getEndTime()
                 + "_" + atomHopperConfig.getString(AtomHopperConfigurationKeys.ahusl_region)
                 + "_" + usageRecord.getEntryVersion();
     }
@@ -229,6 +230,8 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
             return Region.SYD;
         } else if (configRegion.equals("IAD")) {
             return Region.IAD;
+        } else if (configRegion.equals("HKG")) {
+            return Region.HKG;
         } else {
             LOG.error("Region could not be mapped from config, using default");
             return Region.GLOBAL;

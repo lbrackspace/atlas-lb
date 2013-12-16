@@ -23,19 +23,9 @@ public class LoadBalancerRepositoryITest {
     @RunWith(SpringJUnit4ClassRunner.class)
     public static class WhenGettingLoadBalancersActiveDuringPeriod extends Base {
 
-        private LoadBalancer loadBalancer;
-        private Integer accountId = 1234;
-
         @Before
         public void standUp() throws Exception {
-            Cluster testCluster = setupTestCluster();
-            Host testHost = setupTestHost(testCluster);
-
-            LimitType loadbalancerLimitType = setupLoadBalancerLimit();
-            LimitType nodeLimitType = setupNodeLimit();
-            setupAccountLimits(loadbalancerLimitType, nodeLimitType);
-
-            loadBalancerService.setDefaultErrorPage("defaultErrorPage");
+            super.standUp();
 
             loadBalancer = new LoadBalancer();
             loadBalancer.setName("Test Load Balancer");
@@ -45,6 +35,7 @@ public class LoadBalancerRepositoryITest {
             loadBalancer.setPort(80);
             loadBalancer.setConnectionLogging(false);
             loadBalancer.setContentCaching(false);
+            loadBalancer.setHttpsRedirect(false);
             loadBalancer.setHalfClosed(false);
             loadBalancer.setTimeout(100);
 
@@ -58,8 +49,9 @@ public class LoadBalancerRepositoryITest {
         }
 
         @After
-        public void tearDown() {
+        public void tearDown() throws Exception {
             loadBalancerRepository.delete(loadBalancer);
+            super.tearDown();
         }
 
         private void setupAccountLimits(LimitType loadbalancerLimitType, LimitType nodeLimitType) throws BadRequestException {
@@ -147,19 +139,18 @@ public class LoadBalancerRepositoryITest {
             return cluster;
         }
 
-
         @Test
         public void shouldReturnLoadBalancerWhenTimestampsMatchPeriod() throws Exception {
-            String created = "2013-04-10 05:00:00";
+            String provisioned = "2013-04-10 05:00:00";
             loadBalancer = loadBalancerRepository.getById(loadBalancer.getId());
-            loadBalancer.setCreated(CalendarUtils.stringToCalendar(created));
+            loadBalancer.setProvisioned(CalendarUtils.stringToCalendar(provisioned));
             loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
             loadBalancer = loadBalancerService.update(loadBalancer);
 
-            Assert.assertEquals(created, CalendarUtils.calendarToString(loadBalancer.getCreated()));
+            Assert.assertEquals(provisioned, CalendarUtils.calendarToString(loadBalancer.getProvisioned()));
 
             final Calendar now = Calendar.getInstance();
-            final Set<LbIdAccountId> loadBalancersActiveDuringPeriod = loadBalancerRepository.getLoadBalancersActiveDuringPeriod(loadBalancer.getCreated(), now);
+            final Set<LbIdAccountId> loadBalancersActiveDuringPeriod = loadBalancerRepository.getLoadBalancersActiveDuringPeriod(loadBalancer.getProvisioned(), now);
             Assert.assertFalse(loadBalancersActiveDuringPeriod.isEmpty());
         }
     }

@@ -54,7 +54,7 @@ public class VirtualIpConverter implements CustomConverter {
                 //Ignore, there is nothing to map
             }
 
-            if (dozerWrapper.getLoadBalancerJoinVipSet() != null || !dozerWrapper.getLoadBalancerJoinVip6Set().isEmpty()) {
+            if (dozerWrapper.getLoadBalancerJoinVip6Set() != null || !dozerWrapper.getLoadBalancerJoinVip6Set().isEmpty()) {
                 for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : dozerWrapper.getLoadBalancerJoinVip6Set()) {
                     VirtualIp vip = new VirtualIp();
                     vip.setId(loadBalancerJoinVip6.getVirtualIp().getId());

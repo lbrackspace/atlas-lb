@@ -43,9 +43,16 @@ public class HostRepository {
     }
 
     public List<Host> getAllOnline() {
-        String hqlStr = "from Host h where h.hostStatus not in ('OFFLINE') ";
+        String hqlStr = "from Host h where h.hostStatus not in ('OFFLINE', 'SOAP_API_ENDPOINT', 'REST_API_ENDPOINT') ";
         List<Host> hosts;
         hosts = entityManager.createQuery(hqlStr).getResultList();
+        return hosts;
+    }
+
+    public List<Host> getOnlineHostsByLoadBalancerHostCluster(LoadBalancer lb) throws EntityNotFoundException {
+        String hqlStr = "from Host h where h.hostStatus not in ('OFFLINE', 'SOAP_API_ENDPOINT', 'REST_API_ENDPOINT') and h.cluster.id = :clusterId";
+        List<Host> hosts;
+        hosts = entityManager.createQuery(hqlStr).setParameter("clusterId", lb.getHost().getCluster().getId()).getResultList();
         return hosts;
     }
 

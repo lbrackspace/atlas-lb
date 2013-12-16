@@ -2,6 +2,8 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.config.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.Usage_;
@@ -32,6 +34,7 @@ public class UsageRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
     private final Integer NUM_DAYS_RETENTION = 90;
+    private final Integer DEFAULT_DELETE_LIMIT = 10000;
 
     public List<Usage> getMostRecentUsageForLoadBalancers(Collection<Integer> loadBalancerIds) {
         if (loadBalancerIds == null || loadBalancerIds.isEmpty()) return new ArrayList<Usage>();
@@ -68,10 +71,28 @@ public class UsageRepository {
     }
 
     public void deleteAllRecordsBeforeOrEqualTo(Calendar time) {
-        Query query = entityManager.createQuery("DELETE Usage u WHERE u.endTime <= :timestamp")
-                .setParameter("timestamp", time, TemporalType.TIMESTAMP);
-        int numRowsDeleted = query.executeUpdate();
-        LOG.info(String.format("Deleted %d rows with endTime before %s", numRowsDeleted, time.getTime()));
+        RestApiConfiguration configuration = new RestApiConfiguration();
+        String limitStr = configuration.getString(PublicApiServiceConfigurationKeys.usage_deletion_limit);
+        int limitInt;
+        try {
+            limitInt = Integer.parseInt(limitStr);
+        } catch(NumberFormatException nfe) {
+            limitInt = DEFAULT_DELETE_LIMIT;
+        }
+        int numRowsDeleted;
+        int totalRowsDeleted = 0;
+        int batchCount = 0;
+
+        do {
+            Query nativeQ = entityManager.createNativeQuery("DELETE FROM lb_usage WHERE end_time <= :timestamp AND needs_pushed = 0 LIMIT :limit")
+                    .setParameter("timestamp", time, TemporalType.TIMESTAMP).setParameter("limit", limitInt);
+            numRowsDeleted = nativeQ.executeUpdate();
+            totalRowsDeleted += numRowsDeleted;
+            batchCount++;
+            LOG.info(String.format("Deleted %d rows with endTime before %s in batch %d.", numRowsDeleted, time.getTime(), batchCount));
+        } while(numRowsDeleted > 0);
+
+        LOG.info(String.format("Finished deleting rows. Deleted %d total rows in %d batch(es) with endTime before %s.", totalRowsDeleted, batchCount, time.getTime()));
     }
 
     public void deleteOldRecords() {

@@ -18,11 +18,10 @@ public class ZeusNodePriorityContainer {
     public ZeusNodePriorityContainer(Collection<Node> nodesIn) {
         Map<String, Integer> pMap = new HashMap<String, Integer>();
         priorityValuesSet = new HashSet<String>();
-        Node[] nodes = (Node[]) nodesIn.toArray(new Node[1]);
         priorityValues = new ArrayList<PoolPriorityValueDefinition>();
         constainsSecondary = false;
         constainsPrimary = true;
-        for (Node node : nodes) {
+        for (Node node : nodesIn) {
             if (node.getCondition() == NodeCondition.DISABLED) {
                 continue; // This node is not enabled so it doesn't count as either primary or secondary.
             }
@@ -48,8 +47,11 @@ public class ZeusNodePriorityContainer {
     }
 
     public PoolPriorityValueDefinition[][] getPriorityValues() {
-        PoolPriorityValueDefinition[][] out = new PoolPriorityValueDefinition[1][];
-        out[0] = priorityValues.toArray(new PoolPriorityValueDefinition[1]);
+        PoolPriorityValueDefinition[][] out = null;
+        if (priorityValues.size() > 0) {
+            out = new PoolPriorityValueDefinition[1][];
+            out[0] = priorityValues.toArray(new PoolPriorityValueDefinition[1]);
+        }
         return out;
     }
 

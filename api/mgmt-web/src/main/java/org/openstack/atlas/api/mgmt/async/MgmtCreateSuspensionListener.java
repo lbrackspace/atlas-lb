@@ -32,18 +32,6 @@ public class MgmtCreateSuspensionListener extends BaseListener {
         LOG.debug(message);
         LoadBalancer requestLb = getEsbRequestFromMessage(message).getLoadBalancer();
         LoadBalancer dbLoadBalancer;
-        @Deprecated
-        Long bytesOut;
-        @Deprecated
-        Long bytesIn;
-        @Deprecated
-        Integer concurrentConns;
-        @Deprecated
-        Long bytesOutSsl;
-        @Deprecated
-        Long bytesInSsl;
-        @Deprecated
-        Integer concurrentConnsSsl;
 
         try {
             dbLoadBalancer = loadBalancerService.get(requestLb.getId());
@@ -53,30 +41,6 @@ public class MgmtCreateSuspensionListener extends BaseListener {
             notificationService.saveAlert(requestLb.getAccountId(), requestLb.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(requestLb);
             return;
-        }
-
-        // Try to get non-ssl usage
-        try {
-            bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
-            bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
-            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
-            bytesOut = null;
-            bytesIn = null;
-            concurrentConns = null;
-        }
-
-        // Try to get ssl usage
-        try {
-            bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
-            bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
-            concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer usage stats for ssl virtual server. Setting them to null.");
-            bytesOutSsl = null;
-            bytesInSsl = null;
-            concurrentConnsSsl = null;
         }
 
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
@@ -119,12 +83,7 @@ public class MgmtCreateSuspensionListener extends BaseListener {
         String atomSummary = "Load balancer suspended. Please contact support if you have any questions.";
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
 
-        // DEPRECATED
         Calendar eventTime = Calendar.getInstance();
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl, eventTime);
-        // END DEPRECATED
-
-        //New usage process
         usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, eventTime);
 
 

@@ -11,7 +11,6 @@
     <artifactId>atlas-ca-root-ca-builder</artifactId>
     <name>Openstack :: Atlas :: CA :: RootCa Builder</name>
     <version>1.20.2-SNAPSHOT</version>
-
     <packaging>jar</packaging>
 
     <dependencies>

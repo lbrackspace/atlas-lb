@@ -72,6 +72,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
 
+            //Do not store usage here because the load balancer went into ERROR status and thus is not really deleted.
             return;
         }
 

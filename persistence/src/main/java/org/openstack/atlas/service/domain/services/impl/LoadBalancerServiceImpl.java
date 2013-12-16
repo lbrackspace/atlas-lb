@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
+import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
@@ -69,6 +70,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
+    @DeadLockRetry
     @Transactional
     public LoadBalancer create(LoadBalancer lb) throws Exception {
         if (isLoadBalancerLimitReached(lb.getAccountId())) {
@@ -78,16 +80,22 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     getLoadBalancerLimit(lb.getAccountId())));
         }
 
-        // Check if this user has at least one Primary node.
-        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
         // Drop Health Monitor code here for secNodes
-        if (!npc.hasPrimary()) {
-            throw new BadRequestException(Constants.NoPrimaryNodeError);
-        }
 
         // If user wants secondary nodes they must have some kind of healthmonitoring
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
         if (lb.getHealthMonitor() == null && npc.hasSecondary()) {
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
+        }
+
+        // HTTPS Redirect is only valid for HTTPS LBs or LBs with SSL Termination
+        if (lb.isHttpsRedirect() != null && lb.isHttpsRedirect()) {
+            if (!lb.getProtocol().equals(LoadBalancerProtocol.HTTPS)) {
+                throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
+                        "or for load balancers with a 'Secure Only' SSL Termination.");
+            } else if (lb.getPort() != null && lb.getPort() != 443) { //We just redirect to https://original.url.com which goes to 443
+                throw new BadRequestException("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
+            }
         }
 
         //check for blacklisted Nodes
@@ -209,8 +217,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 //            SslTerminationHelper.isProtocolSecure(loadBalancer);
         }
 
-        LOG.info("Verifying unique ports against SSL termination securePort ");
+        LOG.info("Performing SSL verifications.");
         if (dbLoadBalancer.hasSsl()) {
+            LOG.info("Verifying unique ports against SSL termination securePort.");
             SslTermination ssl = dbLoadBalancer.getSslTermination();
             if (loadBalancer.getPort() != null && loadBalancer.getPort() == ssl.getSecurePort()) {
                 LOG.error("Cannot update load balancer port as it is currently in use by ssl termination.");
@@ -220,8 +229,39 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             } else {
                 LOG.info(String.format("Load balancer port:%d  and SSL Termination port:%d are unique, continue...", dbLoadBalancer.getPort(), ssl.getSecurePort()));
             }
-        }
 
+            //Validation for HTTPS redirect
+            LOG.info("Verifying HTTPS redirect status.");
+            if ((loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) ||
+                (loadBalancer.isHttpsRedirect() == null && dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect())) {
+                if (!ssl.isSecureTrafficOnly()) {
+                    LOG.error("Cannot use HTTPS Redirect on a load balancer with a mixed-mode SSL termination.");
+                    throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
+                            "or for load balancers with a 'Secure Only' SSL Termination.");
+                } else if (ssl.getSecurePort() != 443) { //This would be a ridiculous configuration
+                    LOG.error("HTTPS Redirect can only be enabled for load balancers with SSL Termination using secure port 443.");
+                    throw new BadRequestException("HTTPS Redirect can only be enabled for load balancers with SSL Termination using secure port 443.");
+                } else if (loadBalancer.getPort() != null && loadBalancer.getPort() != 80) { //dbLoadbalancer doesn't matter, we just can't let them change the port manually after enabling HTTPS-R
+                    LOG.error("Cannot change port on load balancers with HTTPS Redirect enabled.");
+                    throw new BadRequestException("Cannot change port on load balancers with HTTPS Redirect enabled.");
+                }
+            }
+        } else {
+            if ((loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) ||
+                    (loadBalancer.isHttpsRedirect() == null && dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect())) {
+                if ((loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS))
+                  || loadBalancer.getProtocol() == null && !dbLoadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS)) {
+                    LOG.error("HTTPS Redirect can only be enabled for HTTPS or SSL load balancers.");
+                    throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
+                            "or for load balancers with a 'Secure Only' SSL Termination.");
+                } else if ((loadBalancer.getPort() != null && loadBalancer.getPort() != 443)
+                        || (loadBalancer.getPort() == null && dbLoadBalancer.getPort() != 443)) {
+                //We just redirect to https://original.url.com which goes to 443
+                    LOG.error("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
+                    throw new BadRequestException("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
+                }
+            }
+        }
 
         LOG.debug("Updating the lb status to pending_update");
         if (!testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)) {
@@ -362,6 +402,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             dbLoadBalancer.setHalfClosed(loadBalancer.isHalfClosed());
         }
 
+        LOG.debug("Updating loadbalancer httpsRedirect to " + loadBalancer.isHttpsRedirect());
+        if (loadBalancer.isHttpsRedirect() != null) {
+            dbLoadBalancer.setHttpsRedirect(loadBalancer.isHttpsRedirect());
+        }
 
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
@@ -615,6 +659,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
+    @DeadLockRetry
     @Transactional
     public LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
@@ -718,6 +763,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         if (loadBalancer.isHalfClosed() == null) {
             loadBalancer.setHalfClosed(false);
+        }
+
+        if (loadBalancer.isHttpsRedirect() == null) {
+            loadBalancer.setHttpsRedirect(false);
         }
     }
 

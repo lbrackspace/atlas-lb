@@ -80,10 +80,6 @@ public class DeleteVirtualIpsListener extends BaseListener {
         }
 
         Calendar eventTime = Calendar.getInstance();
-        // DEPRECATED
-        // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP, eventTime);
-        // END DEPRECATED
 
         // Notify usage processor
         try {

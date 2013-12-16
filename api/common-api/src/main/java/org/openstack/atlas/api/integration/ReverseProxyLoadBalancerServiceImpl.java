@@ -186,6 +186,16 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         }
     }
 
+    public void updateHttpsRedirect(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.updateHttpsRedirect(config, lb);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
     @Override
     public void updateConnectionLogging(LoadBalancer lb) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
