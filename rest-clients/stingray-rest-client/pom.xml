@@ -122,7 +122,7 @@
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/list</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/exception</sourcePath>
                     </sourcePaths>
-                    <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
+                    <outputDirectory>${project.build.directory}/generated-sources/json2pojo</outputDirectory>
                 </configuration>
                 <executions>
                     <execution>
