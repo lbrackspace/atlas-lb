@@ -10,36 +10,32 @@ import java.util.Set;
 @javax.persistence.Entity
 @Table(name = "cluster")
 public class Cluster extends Entity implements Serializable {
-    private final static long serialVersionUID = 532512316L;
 
+    private final static long serialVersionUID = 532512316L;
     @Column(name = "name", unique = true, nullable = false)
     private String name;
-
     @Column(name = "description", nullable = false)
     private String description;
-
     @Column(name = "username", nullable = false)
     private String username;
-
     @Column(name = "password", nullable = false)
     private String password;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "cluster_status", length=32, nullable = false)
+    @Column(name = "cluster_status", length = 32, nullable = false)
     private ClusterStatus clusterStatus;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "data_center", length=32, nullable = false)
+    @Column(name = "cluster_type", length = 32)
+    private ClusterType clusterType = ClusterType.STANDARD;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "data_center", length = 32, nullable = false)
     private DataCenter dataCenter;
-
-    @OneToMany(fetch=FetchType.LAZY,mappedBy="cluster")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "cluster")
     private Set<VirtualIp> virtualIps = new HashSet<VirtualIp>();
-
-    @Column(name = "cluster_ipv6_cidr",length=43,nullable=true)
+    @Column(name = "cluster_ipv6_cidr", length = 43, nullable = true)
     private String clusterIpv6Cidr;
 
     public Set<VirtualIp> getVirtualIps() {
-        if(virtualIps == null) {
+        if (virtualIps == null) {
             virtualIps = new HashSet<VirtualIp>();
         }
         return virtualIps;
@@ -97,6 +93,14 @@ public class Cluster extends Entity implements Serializable {
         this.clusterStatus = clusterStatus;
     }
 
+    public void setType(ClusterType clusterType) {
+        this.clusterType = clusterType;
+    }
+
+    public ClusterType getType() {
+        return clusterType;
+    }
+
     public String getClusterIpv6Cidr() {
         return clusterIpv6Cidr;
     }
@@ -105,5 +109,18 @@ public class Cluster extends Entity implements Serializable {
         this.clusterIpv6Cidr = clusterIpv6Cidr;
     }
 
-
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{name=").append((name == null) ? "NULL" : name).
+                append(", description=").append((description == null) ? "NULL" : description).
+                append(", username=").append((username == null) ? "NULL" : username).
+                append(", password=").append("CENSORED").
+                append(", status=").append((clusterStatus == null) ? "NULL" : clusterStatus.toString()).
+                append(", type=").append((clusterType == null) ? "NULL" : clusterType.toString()).
+                append(", dataCenter=").append((dataCenter == null) ? "NULL" : dataCenter.toString()).
+                append(", nVips=").append((virtualIps.size())).
+                append("}");
+        return sb.toString();
+    }
 }

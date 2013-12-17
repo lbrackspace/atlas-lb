@@ -39,10 +39,10 @@ public class HuApp {
 
     public void delete(Object obj) {
         Session session = hu.getInstance(db).getCurrentSession();
-        session.beginTransaction();
+        //session.beginTransaction();
         session.delete(obj);
-        session.flush();
-        session.getTransaction().commit();
+        //session.flush();
+        //session.getTransaction().commit();
     }
 
     public Object getHibernateObjectbyStringCol(String table, String col, String val) {
@@ -79,10 +79,10 @@ public class HuApp {
         cls = obj.getClass();
         session = hu.getInstance(db).getCurrentSession();
         try {
-            session.beginTransaction();
+            //session.beginTransaction();
             session.save(obj);
-            session.flush();
-            session.getTransaction().commit();
+            //session.flush();
+            //session.getTransaction().commit();
         } catch (Exception e) {
             session.getTransaction().rollback();
         }
@@ -91,10 +91,10 @@ public class HuApp {
 
     public void saveOrUpdate(Object obj) {
         Session session = hu.getInstance(db).getCurrentSession();
-        session.beginTransaction();
+        //session.beginTransaction();
         session.saveOrUpdate(obj);
         session.flush();
-        session.getTransaction().commit();
+        //session.getTransaction().commit();
     }
 
     public static void addviptype(String name, String description) {
@@ -121,7 +121,7 @@ public class HuApp {
         return getSession().beginTransaction();
     }
 
-    public Transaction begin(String dbKey){
+    public Transaction begin(String dbKey) {
         setDb(dbKey);
         return getSession().beginTransaction();
     }
