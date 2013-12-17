@@ -35,6 +35,18 @@ public class VirtualIpv6Repository {
         return entityManager.createQuery("select a.id from Account a").getResultList();
     }
 
+    public Account getAccountRecordById(Integer aid) throws EntityNotFoundException {
+        Account account;
+        if (aid == null) {
+            throw new EntityNotFoundException("Refusing to lookup account with null id");
+        }
+        account = entityManager.find(Account.class, aid);
+        if (account == null) {
+            throw new EntityNotFoundException("Account id " + aid.toString() + " not found");
+        }
+        return account;
+    }
+
     public List<Integer> getAccountIds() {
         return entityManager.createQuery("select distinct(lb.accountId) from LoadBalancer lb").getResultList();
     }
@@ -73,7 +85,9 @@ public class VirtualIpv6Repository {
                 return max;
             } catch (PersistenceException e) {
                 LOG.warn(String.format("Deadlock detected. %d retries left.", retry_count));
-                if (retry_count <= 0) throw e;
+                if (retry_count <= 0) {
+                    throw e;
+                }
 
                 try {
                     Thread.sleep(500);
@@ -125,8 +139,8 @@ public class VirtualIpv6Repository {
         Map<Integer, List<LoadBalancer>> map = new TreeMap<Integer, List<LoadBalancer>>();
         List<Object> hResults;
 
-        String query = "select j.virtualIp.id, j.loadBalancer.id, j.loadBalancer.accountId, j.loadBalancer.port " +
-                "from LoadBalancerJoinVip6 j where j.virtualIp.id = :vid order by j.loadBalancer.port, j.loadBalancer.id";
+        String query = "select j.virtualIp.id, j.loadBalancer.id, j.loadBalancer.accountId, j.loadBalancer.port "
+                + "from LoadBalancerJoinVip6 j where j.virtualIp.id = :vid order by j.loadBalancer.port, j.loadBalancer.id";
 
         hResults = entityManager.createQuery(query).setParameter("vid", vid).getResultList();
         for (Object r : hResults) {
