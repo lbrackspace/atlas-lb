@@ -19,7 +19,7 @@ import java.util.List;
 public class ClustersResource extends ManagementDependencyProvider {
 
     private ClusterResource clusterResource;
-     private final Log LOG = LogFactory.getLog(ClustersResource.class);
+    private final Log LOG = LogFactory.getLog(ClustersResource.class);
 
     @GET
     public Response retrieveAllClusters(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
@@ -101,7 +101,7 @@ public class ClustersResource extends ManagementDependencyProvider {
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("pollendpoints")
     public Response pollEndPoints() {
-                if(!isUserInRole("ops,cp")) {
+        if (!isUserInRole("ops,cp")) {
             return ResponseFactory.accessDenied();
         }
         EsbRequest req = new EsbRequest();
@@ -138,10 +138,10 @@ public class ClustersResource extends ManagementDependencyProvider {
                     LOG.error(e);
                     notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());
                 }
-                totalConnections = totalConnections + conn;
+                totalConnections += conn;
 
             }
-            utilization = (totalConnections / maxAllowed) * 100;
+            utilization = ((double) totalConnections / maxAllowed) * 100;
         }
         return (utilization + " %");
     }
