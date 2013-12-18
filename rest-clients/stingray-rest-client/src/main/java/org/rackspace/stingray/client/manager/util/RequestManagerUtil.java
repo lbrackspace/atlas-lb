@@ -47,7 +47,7 @@ public class RequestManagerUtil {
     public void buildFaultMessage(ClientResponse response)
             throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
 
-        String objectNotFoundMessage = "The resource does not exist. ";
+        String objectNotFoundMessage = "does not exist";
         String objectNotFound = "Invalid resource URI";
         String notFound = "not found";
 

@@ -52,6 +52,14 @@
                         "type":          "string"
                      }
                   },
+                   
+                  "max_connection_attempts": {
+                     "description":   "The maximum number of connection attempts. Zero signifies no limit.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       10
+                  },
                   
                   "failure_pool": {
                      "description":   "If all of the nodes in this pool have failed, then requests can be diverted to another pool.",
@@ -65,6 +73,14 @@
                      "type":          "integer",
                      "minimum":       0,
                      "maximum":       999999
+                  },
+
+                  "max_timed_out_connection_attempts": {
+                     "description":   "The maximum number of timed out connection attempts. Zero signifies no limit.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       10
                   },
                   
                   "monitors": {
