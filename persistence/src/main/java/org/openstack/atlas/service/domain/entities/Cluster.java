@@ -93,11 +93,11 @@ public class Cluster extends Entity implements Serializable {
         this.clusterStatus = clusterStatus;
     }
 
-    public void setType(ClusterType clusterType) {
+    public void setClusterType(ClusterType clusterType) {
         this.clusterType = clusterType;
     }
 
-    public ClusterType getType() {
+    public ClusterType getClusterType() {
         return clusterType;
     }
 

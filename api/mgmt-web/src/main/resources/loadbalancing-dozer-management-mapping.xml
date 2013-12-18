@@ -573,6 +573,10 @@
             <a>status</a>
             <b>status</b>
         </field>
+        <field>
+            <a>clusterType</a>
+            <b>clusterType</b>
+        </field>
 
     </mapping>
 
