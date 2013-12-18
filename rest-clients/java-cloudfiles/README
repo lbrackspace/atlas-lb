@@ -1,0 +1,13 @@
+In order to build:
+
+1)  Download the repository (which if you're doing this, you already have)
+2)  type "ant compile" (or "ant package" if you'd like the full package)
+
+In order to run unit tests
+
+1) Edit the file src/test/resource/cloudfiles.properties, changing the 
+   username and password as needed
+2) run "ant test" to run the unit tests
+3) run "ant test-report" if you'd like to create a handy-dandy html report 
+   on the tests.
+

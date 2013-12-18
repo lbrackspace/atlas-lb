@@ -5,7 +5,6 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 
 import java.util.Calendar;
@@ -13,12 +12,6 @@ import java.util.Calendar;
 @Service
 public class LoadBalancerStatusHistoryServiceImpl extends BaseService implements LoadBalancerStatusHistoryService {
     private final Log LOG = LogFactory.getLog(LoadBalancerStatusHistoryServiceImpl.class);
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
 
     @Override
     public LoadBalancerStatusHistory save(LoadBalancerStatusHistory loadBalancerStatusHistory) {

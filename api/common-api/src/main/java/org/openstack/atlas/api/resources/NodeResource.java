@@ -11,8 +11,6 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
-import org.openstack.atlas.service.domain.util.Constants;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -96,16 +94,7 @@ public class NodeResource extends CommonDependencyProvider {
             if (requestHeaders != null) {
                 msgLb.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
             }
-            Set<org.openstack.atlas.service.domain.entities.Node> foundNodes;
-            foundNodes = nodeService.getAllNodesByAccountIdLoadBalancerId(accountId, loadBalancerId);
-            Set<Integer> removeIds = new HashSet<Integer>();
-            removeIds.add(id);
-            NodesPrioritiesContainer npc = new NodesPrioritiesContainer(foundNodes).removeIds(removeIds);
-            if(!npc.hasPrimary()){
-                 List<String> validationErrors = new ArrayList<String>();
-                 validationErrors.add(Constants.NoPrimaryNodeError);
-                 return getValidationFaultResponse(validationErrors);
-            }
+
             LoadBalancer loadBalancer = nodeService.deleteNode(msgLb);
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_NODE, loadBalancer);
             return Response.status(Response.Status.ACCEPTED).build();

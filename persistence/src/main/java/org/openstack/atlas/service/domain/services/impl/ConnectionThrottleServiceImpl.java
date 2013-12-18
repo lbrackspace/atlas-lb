@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.ConnectionThrottleService;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ConnectionThrottleServiceImpl extends BaseService implements ConnectionThrottleService {
     private final Log LOG = LogFactory.getLog(ConnectionThrottleServiceImpl.class);
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
+    @Autowired
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Override
     public ConnectionLimit get(Integer accountId, Integer lbId) throws EntityNotFoundException, DeletedStatusException {

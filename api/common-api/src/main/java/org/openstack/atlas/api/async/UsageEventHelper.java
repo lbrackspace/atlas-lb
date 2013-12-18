@@ -52,13 +52,12 @@ public class UsageEventHelper {
         this.virtualIpRepository = virtualIpRepository;
     }
 
-    public void processUsageEvent(LoadBalancer loadBalancer, UsageEvent usageEvent) throws Exception {
-        processUsageEvent(loadBalancer, usageEvent, null, null, null, null, null, null);
+    public void processUsageEvent(LoadBalancer loadBalancer, UsageEvent usageEvent, Calendar eventTime) throws Exception {
+        processUsageEvent(loadBalancer, usageEvent, null, null, null, null, null, null, eventTime);
     }
 
-    public void processUsageEvent(LoadBalancer loadBalancer, UsageEvent usageEvent, Long bytesOut, Long bytesIn, Integer concurrentConns, Long bytesOutSsl, Long bytesInSsl, Integer concurrentConnsSsl) {
+    public void processUsageEvent(LoadBalancer loadBalancer, UsageEvent usageEvent, Long bytesOut, Long bytesIn, Integer concurrentConns, Long bytesOutSsl, Long bytesInSsl, Integer concurrentConnsSsl, Calendar eventTime) {
         LOG.info(String.format("Processing '%s' usage event for load balancer '%d'...", usageEvent.name(), loadBalancer.getId()));
-        Calendar eventTime = Calendar.getInstance();
 
         LoadBalancerUsageEvent newUsageEvent = new LoadBalancerUsageEvent();
         newUsageEvent.setAccountId(loadBalancer.getAccountId());

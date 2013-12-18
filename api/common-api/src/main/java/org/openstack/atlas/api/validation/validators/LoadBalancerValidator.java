@@ -7,6 +7,7 @@ import org.openstack.atlas.api.validation.verifiers.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AlgorithmType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 
 import static org.openstack.atlas.api.validation.ValidatorBuilder.build;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
@@ -38,7 +39,7 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getUpdated()).must().not().exist().withMessage("Load balancer updated field cannot be modified.");
                 result(validationTarget().getName()).if_().exist().then().must().adhereTo(new MustHaveLengthVerifier(LB_NAME_LENGTH)).withMessage("Load Balancer name must be less than or equal to " + LB_NAME_LENGTH);
                 result(validationTarget().isHalfClosed()).if_().exist().then().must().adhereTo(new MustBeBooleanVerifier()).withMessage("Must provide valid boolean value of either true or false. ");
-
+                result(validationTarget().isHttpsRedirect()).if_().exist().then().must().adhereTo(new MustBeBooleanVerifier()).withMessage("Must provide valid boolean value of either true or false. ");
 
                 // POST EXPECTATIONS
                 result(validationTarget().getName()).must().exist().forContext(POST).withMessage("Must provide a name for the load balancer.");
@@ -54,27 +55,24 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 // Need to determine how to get validation working for the collections.
                 result(validationTarget().getAccessList()).if_().exist().then().must().cannotExceedSize(100).withMessage("Must not provide more than one hundred access list items");
                 result(validationTarget().getAccessList()).if_().exist().then().must().delegateTo(new NetworkItemValidator().getValidator(), POST).forContext(POST);
-                result(validationTarget().getNodes()).must().exist().forContext(POST).withMessage("Must provide at least one node for the load balancer.");
                 result(validationTarget().getNodes()).must().adhereTo(new DuplicateNodeVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
-                result(validationTarget().getNodes()).must().adhereTo(new ActiveNodeVerifier()).forContext(POST).withMessage("Please ensure that at least one node has an ENABLED condition.");
                 result(validationTarget().getNodes()).if_().exist().then().must().delegateTo(new NodeValidator().getValidator(), POST).forContext(POST);
-                result(validationTarget().getNodes()).must().haveSizeOfAtLeast(1).forContext(POST).withMessage("Must have at least one node.");
+                result(validationTarget().getNodes()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five nodes per load balancer.");
                 result(validationTarget().getMetadata()).if_().exist().then().must().delegateTo(new MetaValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getMetadata()).if_().exist().then().must().adhereTo(new DuplicateMetaVerifier()).forContext(POST).withMessage("Duplicate nodes detected. Please ensure that the ip address and port are unique for each node.");
                 result(validationTarget().getMetadata()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five metadata items per load balancer.");
                 result(validationTarget().getSessionPersistence()).if_().exist().then().must().delegateTo(new SessionPersistenceValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getHealthMonitor()).if_().exist().then().must().delegateTo(new HealthMonitorValidator().getValidator(), POST).forContext(POST);
                 result(validationTarget().getConnectionThrottle()).if_().exist().then().must().delegateTo(new ConnectionThrottleValidator().getValidator(), POST).forContext(POST);
-                result(validationTarget().getNodes()).if_().exist().then().must().cannotExceedSize(25).withMessage("Must not provide more than twenty five nodes per load balancer.");
 
                 // PUT EXPECTATIONS
                 must().adhereTo(new Verifier<LoadBalancer>() {
                     @Override
                     public VerifierResult verify(LoadBalancer obj) {
-                        return new VerifierResult(obj.getName() != null || obj.getAlgorithm() != null || obj.getPort() != null
-                                || obj.getProtocol() != null || obj.getConnectionLogging() != null || obj.getTimeout() != null || obj.isHalfClosed() != null);
+                        return new VerifierResult(obj.getName() != null || obj.getAlgorithm() != null || obj.getPort() != null || obj.getProtocol() != null
+                                || obj.getConnectionLogging() != null || obj.getTimeout() != null || obj.isHalfClosed() != null || obj.isHttpsRedirect() != null);
                     }
-                }).forContext(PUT).withMessage("The load balancer must have at least one of the following to update: name, algorithm, protocol, port, timeout or halfClosed.");
+                }).forContext(PUT).withMessage("The load balancer must have at least one of the following to update: name, algorithm, protocol, port, timeout, halfClosed, or httpsRedirect.");
                 result(validationTarget().getNodes()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/nodes to configure nodes.");
                 result(validationTarget().getMetadata()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/metadata to configure metadata.");
                 result(validationTarget().getVirtualIps()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/virtualips/{virtual ip id} to configure a virtual ip.");

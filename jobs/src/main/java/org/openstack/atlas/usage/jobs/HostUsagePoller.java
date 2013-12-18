@@ -5,65 +5,52 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.jobs.Job;
+import org.openstack.atlas.jobs.AbstractJob;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.usage.entities.HostUsage;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRepository;
-import org.openstack.atlas.usage.helpers.*;
+import org.openstack.atlas.usage.helpers.HostConfigHelper;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.StatefulJob;
-import org.springframework.beans.factory.annotation.Required;
-import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.net.ConnectException;
 import java.util.Calendar;
 import java.util.List;
 
-public class HostUsagePoller extends Job implements StatefulJob {
+@Component
+public class HostUsagePoller extends AbstractJob {
     private final Log LOG = LogFactory.getLog(HostUsagePoller.class);
+
+    @Autowired
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
+    @Autowired
     private HostRepository hostRepository;
+    @Autowired
     private HostUsageRepository hostUsageRepository;
 
-    @Required
-    public void setReverseProxyLoadBalancerAdapter(ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter) {
-        this.reverseProxyLoadBalancerAdapter = reverseProxyLoadBalancerAdapter;
-    }
-
-    @Required
-    public void setHostRepository(HostRepository hostRepository) {
-        this.hostRepository = hostRepository;
-    }
-
-    @Required
-    public void setHostUsageRepository(HostUsageRepository hostUsageRepository) {
-        this.hostUsageRepository = hostUsageRepository;
+    @Override
+    public Log getLogger() {
+        return LOG;
     }
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        startPoller();
+    public JobName getJobName() {
+        return JobName.HOST_USAGE_POLLER;
     }
 
-    private void startPoller() {
-        Calendar startTime = Calendar.getInstance();
-        LOG.info(String.format("Host usage poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(JobName.HOST_USAGE_POLLER, JobStateVal.IN_PROGRESS);
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    }
 
-        List<Host> hosts;
-
-        try {
-            hosts = hostRepository.getAll();
-        } catch (Exception ex) {
-            jobStateService.updateJobState(JobName.HOST_USAGE_POLLER, JobStateVal.FAILED);
-            LOG.error(ex.getCause(), ex);
-            return;
-        }
+    @Override
+    public void run() throws Exception {
+        List<Host> hosts = hostRepository.getAll();
 
         for (final Host host : hosts) {
             try {
@@ -94,11 +81,10 @@ public class HostUsagePoller extends Job implements StatefulJob {
                 e.printStackTrace();
             }
         }
+    }
 
-        Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        jobStateService.updateJobState(JobName.HOST_USAGE_POLLER, JobStateVal.FINISHED);
-        LOG.info(String.format("Host usage poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+    @Override
+    public void cleanup() {
     }
 
     private void addRecordForHost(Host host, long hostBytesIn, long hostBytesOut, Calendar pollTime) {
@@ -109,4 +95,5 @@ public class HostUsagePoller extends Job implements StatefulJob {
         hostUsage.setSnapshotTime(pollTime);
         hostUsageRepository.save(hostUsage);
     }
+
 }

@@ -1,0 +1,10 @@
+[settings]
+
+[rackspace_cloud]
+
+[general]
+b_user=cloudLBAAS
+b_pass=password
+region = ORD
+mossoauth = https://identity.api.rackspacecloud.com/v1.1/mosso/
+cache_dir = /var/log/zxtm/hadoop/cache

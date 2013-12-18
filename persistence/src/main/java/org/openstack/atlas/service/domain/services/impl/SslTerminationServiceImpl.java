@@ -15,32 +15,33 @@ import org.openstack.atlas.service.domain.services.SslTerminationService;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.StringUtilities;
-import org.openstack.atlas.util.ca.zeus.ZeusCertFile;
-import org.openstack.atlas.util.ca.zeus.ZeusUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
+    protected static final ZeusUtils zeusUtils;
     protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
+
+    static{
+        zeusUtils = new ZeusUtils();
+    }
+
+    @Autowired
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
 
     @Override
     @Transactional
     public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
-        ZeusCertFile zeusCertFile = null;
+        ZeusCrtFile zeusCrtFile = null;
 
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbId, accountId);
 
@@ -63,7 +64,16 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                     " Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 
-
+        if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
+            //Must be secure-only
+            if (sslTermination.isSecureTrafficOnly() != null && !sslTermination.isSecureTrafficOnly()) {
+                throw new BadRequestException("Cannot use 'mixed-mode' SSL termination while HTTPS Redirect is enabled.");
+            }
+            //Must use secure port 443
+            if (sslTermination.getSecurePort() != null && sslTermination.getSecurePort() != 443) {
+                throw new BadRequestException("Must use secure port 443 with HTTPS Redirect enabled.");
+            }
+        }
 
         org.openstack.atlas.service.domain.entities.SslTermination dbTermination = null;
         try {
@@ -80,8 +90,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {
                 //Validate the certifications and key return the list of errors if there are any, otherwise, pass the transport object to async layer...
                 SslTerminationHelper.cleanSSLCertKeyEntries(dbTermination);
-                zeusCertFile = ZeusUtil.getCertFile(dbTermination.getPrivatekey(), dbTermination.getCertificate(), dbTermination.getIntermediateCertificate());
-                SslTerminationHelper.verifyCertificationCredentials(zeusCertFile);
+                zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(dbTermination.getPrivatekey(), dbTermination.getCertificate(), dbTermination.getIntermediateCertificate());
+                SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
             }
         } else {
           //*Should never happen...
@@ -104,8 +114,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%s'", lbId));
 
         zeusSslTermination.setSslTermination(dbTermination);
-        if (zeusCertFile != null) {
-            zeusSslTermination.setCertIntermediateCert(zeusCertFile.getPublic_cert());
+        if (zeusCrtFile != null) {
+            zeusSslTermination.setCertIntermediateCert(zeusCrtFile.getPublic_cert());
         }
 
         return zeusSslTermination;
@@ -159,6 +169,16 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         return StringUtilities.buildDelemtedListFromIntegerArray(uniques.toArray(new Integer[uniques.size()]), ",");
+    }
+
+    @Override
+    public Map<Integer, org.openstack.atlas.service.domain.entities.SslTermination> getAllMappedByLbId() {
+        Map<Integer, org.openstack.atlas.service.domain.entities.SslTermination> sslMap = new HashMap<Integer, org.openstack.atlas.service.domain.entities.SslTermination>();
+        List<org.openstack.atlas.service.domain.entities.SslTermination> sslTerms = sslTerminationRepository.getAll();
+        for (org.openstack.atlas.service.domain.entities.SslTermination sslTerm : sslTerms) {
+            sslMap.put(sslTerm.getLoadbalancer().getId(), sslTerm);
+        }
+        return sslMap;
     }
 }
 

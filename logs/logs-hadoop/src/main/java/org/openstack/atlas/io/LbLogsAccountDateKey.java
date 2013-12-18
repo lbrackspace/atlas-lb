@@ -1,6 +1,6 @@
 package org.openstack.atlas.io;
 
-import org.openstack.atlas.util.DateTime;
+import org.openstack.atlas.hadoop.deprecated.DateTime;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.WritableComparable;
@@ -40,6 +40,7 @@ public class LbLogsAccountDateKey implements WritableComparable<LbLogsAccountDat
         this.loadBalancerId = loadBalancerId;
     }
 
+    @Override
     public int compareTo(LbLogsAccountDateKey o) {
         int i = Long.valueOf(accountId).compareTo(Long.valueOf(o.getAccountId()));
         if(i != 0) return i;

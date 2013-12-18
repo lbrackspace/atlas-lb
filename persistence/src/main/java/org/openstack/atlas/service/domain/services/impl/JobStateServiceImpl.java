@@ -20,6 +20,18 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
     }
 
     @Override
+    public JobState getByName(JobName jobName) {
+        JobState jobState;
+        try {
+            jobState = jobStateRepository.getByName(jobName);
+        } catch (EntityNotFoundException e) {
+            jobState = updateJobState(jobName, JobStateVal.CREATED);
+        }
+
+        return jobState;
+    }
+
+    @Override
     public List<JobState> getAll(Integer offset, Integer limit, Integer marker) {
         return jobStateRepository.getAll(offset, limit, marker);
     }
@@ -47,6 +59,22 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
         return jobState;
     }
 
+    @Override
+    /* Creates an entry in the database if it doesn't exist */
+    public JobState updateInputPath(JobName jobName, String inputPath) {
+        JobState jobState;
+
+        try {
+            jobState = jobStateRepository.getByName(jobName);
+        } catch (EntityNotFoundException e) {
+            jobState = jobStateRepository.create(jobName, inputPath);
+        }
+
+        jobState.setInputPath(inputPath);
+        jobStateRepository.update(jobState);
+        return jobState;
+    }
+
     public void deleteOldLoggingStates() {
         List<JobName> jobNames = new ArrayList<JobName>();
         jobNames.add(JobName.WATCHDOG);
@@ -59,5 +87,10 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
         jobNames.add(JobName.ARCHIVE);
 
         jobStateRepository.deleteByNamesOlderThanNDays(jobNames, 30);
+    }
+
+    @Override
+    public boolean isJobReadyToGo() {
+        return jobStateRepository.isJobReadyToGo();
     }
 }

@@ -1,8 +1,12 @@
 package org.openstack.atlas.util.ca;
 
+import org.openstack.atlas.util.ca.PemUtils;
+import java.io.UnsupportedEncodingException;
+import java.security.KeyPair;
 import org.openstack.atlas.util.ca.RSAKeyUtils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.junit.Ignore;
 import org.junit.After;
@@ -12,16 +16,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.util.ca.StringUtils;
 import static org.junit.Assert.*;
-import org.openstack.atlas.util.ca.primitives.RsaPair;
 import org.openstack.atlas.util.ca.exceptions.NoSuchAlgorithmException;
-import org.openstack.atlas.util.ca.exceptions.NullKeyException;
+import org.openstack.atlas.util.ca.exceptions.NotAnRSAKeyException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
 
 public class RSAKeyUtilsTest {
-
-    public static void nop() {
-    }
 
     public RSAKeyUtilsTest() {
     }
@@ -44,19 +44,12 @@ public class RSAKeyUtilsTest {
 
     @Ignore
     @Test
-    public void testRsaGenKey() throws RsaException {
+    public void testRsaGenKey() throws RsaException, UnsupportedEncodingException {
         String msg;
-        RsaPair keys = RSAKeyUtils.genRSAPair(1024,12);
-        String keyStr = keys.toString();
+        KeyPair keys = RSAKeyUtils.genKeyPair(1024);
         byte[] pem;
         String pemStr;
-        try {
-            pem = keys.getPrivAsPem();
-            pemStr = new String(pem);
-        } catch (RsaException ex) {
-            msg = StringUtils.getEST(ex);
-            throw ex;
-        }
-        nop();
+        pem = PemUtils.toPem(keys);
+        pemStr = new String(pem, "us-ascii");
     }
 }

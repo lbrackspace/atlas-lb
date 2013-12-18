@@ -4,7 +4,7 @@ import org.openstack.atlas.api.helpers.JsonSerializeException;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 
 import static org.openstack.atlas.util.converters.DateTimeConverters.calToiso;
-import org.openstack.atlas.util.converters.exceptions.ConverterException;
+import org.openstack.atlas.util.common.exceptions.ConverterException;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.logging.Level;

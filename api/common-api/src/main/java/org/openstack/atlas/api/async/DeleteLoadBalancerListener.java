@@ -6,9 +6,14 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.pojos.Stats;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
+import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import javax.jms.Message;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -28,12 +33,6 @@ public class DeleteLoadBalancerListener extends BaseListener {
 
         LoadBalancer queueLb = getLoadbalancerFromMessage(message);
         LoadBalancer dbLoadBalancer;
-        Long bytesOut;
-        Long bytesIn;
-        Integer concurrentConns;
-        Long bytesOutSsl;
-        Long bytesInSsl;
-        Integer concurrentConnsSsl;
 
         try {
             dbLoadBalancer = loadBalancerService.get(queueLb.getId());
@@ -45,28 +44,14 @@ public class DeleteLoadBalancerListener extends BaseListener {
             return;
         }
 
-        // Try to get non-ssl usage
+        List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
         try {
-            bytesOut = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, false);
-            bytesIn = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, false);
-            concurrentConns = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, false);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer usage stats. Setting them to null.");
-            bytesOut = null;
-            bytesIn = null;
-            concurrentConns = null;
-        }
-
-        // Try to get ssl usage
-        try {
-            bytesOutSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesOut(dbLoadBalancer, true);
-            bytesInSsl = reverseProxyLoadBalancerService.getLoadBalancerBytesIn(dbLoadBalancer, true);
-            concurrentConnsSsl = reverseProxyLoadBalancerService.getLoadBalancerCurrentConnections(dbLoadBalancer, true);
-        } catch (Exception e) {
-            LOG.warn("Couldn't retrieve load balancer usage stats for ssl virtual server. Setting them to null.");
-            bytesOutSsl = null;
-            bytesInSsl = null;
-            concurrentConnsSsl = null;
+            LOG.info(String.format("Collecting DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+            usages = usageEventCollection.getUsage(dbLoadBalancer);
+            LOG.info(String.format("Successfully collected DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
+        } catch (UsageEventCollectionException e) {
+            LOG.error(String.format("Collection of the DELETE_LOADBALANCER usage event failed for " +
+                    "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
 
         try {
@@ -81,9 +66,7 @@ public class DeleteLoadBalancerListener extends BaseListener {
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);
 
-            // Notify usage processor
-            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
-
+            //Do not store usage here because the load balancer went into ERROR status and thus is not really deleted.
             return;
         }
 
@@ -96,14 +79,17 @@ public class DeleteLoadBalancerListener extends BaseListener {
         dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);
 
-
         // Add atom entry
         String atomTitle = "Load Balancer Successfully Deleted";
         String atomSummary = "Load balancer successfully deleted";
         notificationService.saveLoadBalancerEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
+        Calendar eventTime = Calendar.getInstance();
+
         // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, bytesOut, bytesIn, concurrentConns, bytesOutSsl, bytesInSsl, concurrentConnsSsl);
+        LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+        usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
+        LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
 
         LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));
     }
@@ -113,5 +99,4 @@ public class DeleteLoadBalancerListener extends BaseListener {
         String desc = "Could not delete the load balancer at this time.";
         notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, DELETE_LOADBALANCER, DELETE, CRITICAL);
     }
-
 }

@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.mgmt.resources;
 
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HealthCheck;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HealthChecks;

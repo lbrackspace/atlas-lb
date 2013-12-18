@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details:
+    Last stored poll information for 2 Load Balancers with the first host record missing simulating it being down the last poll.
+    With Events.
+    Usage from Snmp is 0.
+    Has Bandwidth.
+-->
+<dataset>
+    <lb_host_usage id="1" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="0" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="0" poll_time="2013-04-10 20:01:00" />
+
+    <lb_host_usage id="4" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_out="100" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-04-10 20:03:00" event_type="SSL_MIXED_ON" />
+    <lb_host_usage id="5" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="200" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="5" poll_time="2013-04-10 20:03:00" event_type="SSL_MIXED_ON" />
+
+    <lb_host_usage id="8" account_id="1234" loadbalancer_id="123" host_id="1" bandwidth_out="150" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="1" poll_time="2013-04-10 20:04:00" event_type="SSL_ONLY_ON" />
+    <lb_host_usage id="9" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_out="400" bandwidth_out_ssl="0" bandwidth_in="0" bandwidth_in_ssl="0" concurrent_connections="0" concurrent_connections_ssl="0" num_vips="1" tags_bitmask="1" poll_time="2013-04-10 20:04:00" event_type="SSL_ONLY_ON" />
+</dataset>

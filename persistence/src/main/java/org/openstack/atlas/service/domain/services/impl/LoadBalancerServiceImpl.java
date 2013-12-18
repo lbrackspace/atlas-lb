@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
+import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
@@ -14,12 +15,14 @@ import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
 import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.usage.BitTags;
 import org.openstack.atlas.service.domain.util.CacheKeyGen;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,50 +35,23 @@ import static org.openstack.atlas.service.domain.entities.SessionPersistence.*;
 
 @Service
 public class LoadBalancerServiceImpl extends BaseService implements LoadBalancerService {
+
     private final Log LOG = LogFactory.getLog(LoadBalancerServiceImpl.class);
+
+    @Autowired
     private NotificationService notificationService;
+    @Autowired
     private AccountLimitService accountLimitService;
+    @Autowired
     private VirtualIpService virtualIpService;
+    @Autowired
     private HostService hostService;
+    @Autowired
     private NodeService nodeService;
+    @Autowired
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    @Autowired
     private AtlasCache atlasCache;
-
-
-    @Required
-    public void setNotificationService(NotificationService notificationService) {
-        this.notificationService = notificationService;
-    }
-
-    @Required
-    public void setVirtualIpService(VirtualIpService virtualIpService) {
-        this.virtualIpService = virtualIpService;
-    }
-
-    @Required
-    public void setAccountLimitService(AccountLimitService accountLimitService) {
-        this.accountLimitService = accountLimitService;
-    }
-
-    @Required
-    public void setHostService(HostService hostService) {
-        this.hostService = hostService;
-    }
-
-    @Required
-    public void setNodeService(NodeService nodeService) {
-        this.nodeService = nodeService;
-    }
-
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
-
-    @Required
-    public void setAtlasCache(AtlasCache atlasCache) {
-        this.atlasCache = atlasCache;
-    }
 
     @Override
     @Transactional
@@ -87,11 +63,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     public String getDefaultErrorPage() throws EntityNotFoundException {
         Defaults defaultPage = loadBalancerRepository.getDefaultErrorPage();
-        if (defaultPage == null) throw new EntityNotFoundException("The default error page could not be located.");
+        if (defaultPage == null) {
+            throw new EntityNotFoundException("The default error page could not be located.");
+        }
         return defaultPage.getValue();
     }
 
     @Override
+    @DeadLockRetry
     @Transactional
     public LoadBalancer create(LoadBalancer lb) throws Exception {
         if (isLoadBalancerLimitReached(lb.getAccountId())) {
@@ -101,16 +80,22 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     getLoadBalancerLimit(lb.getAccountId())));
         }
 
-        // Check if this user has at least one Primary node.
-        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
         // Drop Health Monitor code here for secNodes
-        if (!npc.hasPrimary()) {
-            throw new BadRequestException(Constants.NoPrimaryNodeError);
-        }
 
         // If user wants secondary nodes they must have some kind of healthmonitoring
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
         if (lb.getHealthMonitor() == null && npc.hasSecondary()) {
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
+        }
+
+        // HTTPS Redirect is only valid for HTTPS LBs or LBs with SSL Termination
+        if (lb.isHttpsRedirect() != null && lb.isHttpsRedirect()) {
+            if (!lb.getProtocol().equals(LoadBalancerProtocol.HTTPS)) {
+                throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
+                        "or for load balancers with a 'Secure Only' SSL Termination.");
+            } else if (lb.getPort() != null && lb.getPort() != 443) { //We just redirect to https://original.url.com which goes to 443
+                throw new BadRequestException("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
+            }
         }
 
         //check for blacklisted Nodes
@@ -232,8 +217,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 //            SslTerminationHelper.isProtocolSecure(loadBalancer);
         }
 
-        LOG.info("Verifying unique ports against SSL termination securePort ");
+        LOG.info("Performing SSL verifications.");
         if (dbLoadBalancer.hasSsl()) {
+            LOG.info("Verifying unique ports against SSL termination securePort.");
             SslTermination ssl = dbLoadBalancer.getSslTermination();
             if (loadBalancer.getPort() != null && loadBalancer.getPort() == ssl.getSecurePort()) {
                 LOG.error("Cannot update load balancer port as it is currently in use by ssl termination.");
@@ -243,8 +229,39 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             } else {
                 LOG.info(String.format("Load balancer port:%d  and SSL Termination port:%d are unique, continue...", dbLoadBalancer.getPort(), ssl.getSecurePort()));
             }
-        }
 
+            //Validation for HTTPS redirect
+            LOG.info("Verifying HTTPS redirect status.");
+            if ((loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) ||
+                (loadBalancer.isHttpsRedirect() == null && dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect())) {
+                if (!ssl.isSecureTrafficOnly()) {
+                    LOG.error("Cannot use HTTPS Redirect on a load balancer with a mixed-mode SSL termination.");
+                    throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
+                            "or for load balancers with a 'Secure Only' SSL Termination.");
+                } else if (ssl.getSecurePort() != 443) { //This would be a ridiculous configuration
+                    LOG.error("HTTPS Redirect can only be enabled for load balancers with SSL Termination using secure port 443.");
+                    throw new BadRequestException("HTTPS Redirect can only be enabled for load balancers with SSL Termination using secure port 443.");
+                } else if (loadBalancer.getPort() != null && loadBalancer.getPort() != 80) { //dbLoadbalancer doesn't matter, we just can't let them change the port manually after enabling HTTPS-R
+                    LOG.error("Cannot change port on load balancers with HTTPS Redirect enabled.");
+                    throw new BadRequestException("Cannot change port on load balancers with HTTPS Redirect enabled.");
+                }
+            }
+        } else {
+            if ((loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) ||
+                    (loadBalancer.isHttpsRedirect() == null && dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect())) {
+                if ((loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS))
+                  || loadBalancer.getProtocol() == null && !dbLoadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS)) {
+                    LOG.error("HTTPS Redirect can only be enabled for HTTPS or SSL load balancers.");
+                    throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
+                            "or for load balancers with a 'Secure Only' SSL Termination.");
+                } else if ((loadBalancer.getPort() != null && loadBalancer.getPort() != 443)
+                        || (loadBalancer.getPort() == null && dbLoadBalancer.getPort() != 443)) {
+                //We just redirect to https://original.url.com which goes to 443
+                    LOG.error("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
+                    throw new BadRequestException("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
+                }
+            }
+        }
 
         LOG.debug("Updating the lb status to pending_update");
         if (!testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)) {
@@ -323,8 +340,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 }
             }
 
-            if (!isValidProto)
+            if (!isValidProto) {
                 throw new BadRequestException("Protocol is not valid. Please verify shared virtual ips and the ports being shared.");
+            }
 
 
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
@@ -384,6 +402,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             dbLoadBalancer.setHalfClosed(loadBalancer.isHalfClosed());
         }
 
+        LOG.debug("Updating loadbalancer httpsRedirect to " + loadBalancer.isHttpsRedirect());
+        if (loadBalancer.isHttpsRedirect() != null) {
+            dbLoadBalancer.setHttpsRedirect(loadBalancer.isHttpsRedirect());
+        }
 
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
@@ -500,8 +522,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
-                                                      String status, LbQueryStatus qs, Calendar changedCal,
-                                                      Integer offset, Integer limit, Integer marker) throws BadRequestException {
+            String status, LbQueryStatus qs, Calendar changedCal,
+            Integer offset, Integer limit, Integer marker) throws BadRequestException {
         return loadBalancerRepository.getLoadbalancersGeneric(accountId, status, qs, changedCal, offset, limit, marker);
     }
 
@@ -511,7 +533,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         LOG.debug("Updating load balancers in database...");
         for (LoadBalancer lb : lbs) {
             LoadBalancer dbLb = get(lb.getId());
-            if (lb.getHost() != null) dbLb.setHost(lb.getHost());
+            if (lb.getHost() != null) {
+                dbLb.setHost(lb.getHost());
+            }
             dbLb.setStatus(LoadBalancerStatus.ACTIVE);
             update(dbLb);
         }
@@ -567,10 +591,18 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         int statuesLength = statues.length;
         //map the values
         for (String stat : statues) {
-            if (stat.equals("error")) error = LoadBalancerStatus.ERROR;
-            if (stat.equals("build")) build = LoadBalancerStatus.BUILD;
-            if (stat.equals("pending_update")) pending_update = LoadBalancerStatus.PENDING_UPDATE;
-            if (stat.equals("pending_delete")) pending_delete = LoadBalancerStatus.PENDING_DELETE;
+            if (stat.equals("error")) {
+                error = LoadBalancerStatus.ERROR;
+            }
+            if (stat.equals("build")) {
+                build = LoadBalancerStatus.BUILD;
+            }
+            if (stat.equals("pending_update")) {
+                pending_update = LoadBalancerStatus.PENDING_UPDATE;
+            }
+            if (stat.equals("pending_delete")) {
+                pending_delete = LoadBalancerStatus.PENDING_DELETE;
+            }
         }
         return loadBalancerRepository.getLoadBalancersStatusAndDate(error, build, pending_update, pending_delete, changedSince);
     }
@@ -602,10 +634,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 badLbIds.add(lbIdToDelete);
             }
         }
-        if (!badLbIds.isEmpty())
+        if (!badLbIds.isEmpty()) {
             throw new BadRequestException(String.format("Must provide valid load balancers: %s  could not be found.", StringUtilities.DelimitString(badLbIds, ",")));
-        if (!badLbStatusIds.isEmpty())
+        }
+        if (!badLbStatusIds.isEmpty()) {
             throw new BadRequestException(String.format("Must provide valid load balancers: %s  are immutable and could not be processed.", StringUtilities.DelimitString(badLbStatusIds, ",")));
+        }
 
         return loadBalancers;
     }
@@ -618,8 +652,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         prepareForDelete(lb.getAccountId(), loadBalancerIds);
     }
 
-
     @Override
+    @DeadLockRetry
     @Transactional
     public LoadBalancer pseudoDelete(LoadBalancer lb) throws Exception {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lb.getId(), lb.getAccountId());
@@ -632,7 +666,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         return dbLoadBalancer;
     }
-
 
     @Override
     public Boolean isLoadBalancerLimitReached(Integer accountId) {
@@ -725,6 +758,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (loadBalancer.isHalfClosed() == null) {
             loadBalancer.setHalfClosed(false);
         }
+
+        if (loadBalancer.isHttpsRedirect() == null) {
+            loadBalancer.setHttpsRedirect(false);
+        }
     }
 
     private void verifySessionPersistence(LoadBalancer queueLb) throws BadRequestException {
@@ -735,13 +772,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP and HTTP pass-through(ssl-termination) protocols.";
         String sipErrMsg = "SOURCE_IP Session persistence is only valid with non HTTP protocols.";
         if (inpersist != NONE) {
-            if (inpersist == HTTP_COOKIE &&
-                    (dbProtocol != HTTP)) {
+            if (inpersist == HTTP_COOKIE
+                    && (dbProtocol != HTTP)) {
                 throw new BadRequestException(httpErrMsg);
             }
 
-            if (inpersist == SOURCE_IP &&
-                    (dbProtocol == HTTP)) {
+            if (inpersist == SOURCE_IP
+                    && (dbProtocol == HTTP)) {
                 throw new BadRequestException(sipErrMsg);
             }
         }
@@ -778,7 +815,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
     }
 
-
     private void verifyTCPUDPProtocolandPort(LoadBalancer queueLb, LoadBalancer dbLb) throws TCPProtocolUnknownPortException {
         if (queueLb.getProtocol() != null && (queueLb.getProtocol().equals(LoadBalancerProtocol.TCP) || queueLb.getProtocol().equals(LoadBalancerProtocol.TCP_CLIENT_FIRST)) || (queueLb.getProtocol().equals(LoadBalancerProtocol.UDP) || (queueLb.getProtocol().equals(LoadBalancerProtocol.UDP_STREAM)))) {
             LOG.info("TCP and UDP Protocol detected. Port must exists");
@@ -811,38 +847,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, BadRequestException {
         boolean isHost = false;
         LoadBalancer gLb = new LoadBalancer();
-
-//        //Check for and grab host if sharing ipv4
-//        for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
-//            if (loadBalancerJoinVip.getVirtualIp().getId() != null) {
-//                List<LoadBalancer> lbs = virtualIpRepository.getLoadBalancersByVipId(loadBalancerJoinVip.getVirtualIp().getId());
-//                for (LoadBalancer lb : lbs) {
-//                    String hostName = lb.getHost().getName();
-//                    if (lb.getHost().getName().equals(hostName)) {
-//                        gLb = lb;
-//                        isHost = true;
-//                    } else {
-//                        throw new UnprocessableEntityException("There was a conflict between the hosts while trying to share a virtual IP.");
-//                    }
-//                }
-//            }
-//        }
-
-//        //Check for and grab host if sharing ipv6
-//        for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancer.getLoadBalancerJoinVip6Set()) {
-//            if (loadBalancerJoinVip6.getVirtualIp().getId() != null) {
-//                List<LoadBalancer> lbs = virtualIpv6Repository.getLoadBalancersByVipId(loadBalancerJoinVip6.getVirtualIp().getId());
-//                for (LoadBalancer lb : lbs) {
-//                    String hostName = lb.getHost().getName();
-//                    if (lb.getHost().getName().equals(hostName)) {
-//                        gLb = lb;
-//                        isHost = true;
-//                    } else {
-//                        throw new UnprocessableEntityException("There was a conflict between the hosts while trying to share a virtual IP.");
-//                    }
-//                }
-//            }
-//        }
 
         Integer vipId = null;
         try {
@@ -910,9 +914,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancerJoinVip6SetConfig) {
                 if (loadBalancerJoinVip6.getVirtualIp().getId() == null) {
                     VirtualIpv6 ipv6 = virtualIpService.allocateIpv6VirtualIp(lbFromApi);
-                    LoadBalancerJoinVip6 jbjv6 = new LoadBalancerJoinVip6();
-                    jbjv6.setVirtualIp(ipv6);
-                    newVip6Config.add(jbjv6);
+                    LoadBalancerJoinVip6 lbjv6 = new LoadBalancerJoinVip6();
+                    lbjv6.setVirtualIp(ipv6);
+                    newVip6Config.add(lbjv6);
                 } else {
                     //share ipv6 vip here..
                     newVip6Config.addAll(getSharedIpv6Vips(loadBalancerJoinVip6.getVirtualIp(), vips6OnAccount, lbFromApi));
@@ -934,8 +938,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     if (!checkLBProtocol(loadBalancer)) {
                         throw new UniqueLbPortViolationException(uniqueMsg);
                     } else {
-                        if (!verifySharedVipProtocols(vipOnAccount, loadBalancer))
+                        if (!verifySharedVipProtocols(vipOnAccount, loadBalancer)) {
                             throw new BadRequestException("The requesting load balancer is in conflict with the shared virtual ip port/protocol combination. Please refer to documentation for more info.");
+                        }
 
                     }
                 }
@@ -965,8 +970,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     if (!checkLBProtocol(loadBalancer)) {
                         throw new UniqueLbPortViolationException(uniqueMsg);
                     } else {
-                        if (!verifySharedVip6Protocols(vipOnAccount, loadBalancer))
+                        if (!verifySharedVip6Protocols(vipOnAccount, loadBalancer)) {
                             throw new BadRequestException("The requesting load balancer is in conflict with the shared virtual ip port/protocol combination. Please refer to documentation for more info.");
+                        }
                     }
                 }
 
@@ -1090,7 +1096,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         Integer hostId = null;
         Host specifiedHost;
 
-        if (lb.getHost() != null) hostId = lb.getHost().getId();
+        if (lb.getHost() != null) {
+            hostId = lb.getHost().getId();
+        }
         if (!lb.isSticky()) {
             if (hostId != null) {
                 specifiedHost = hostService.getById(hostId);
@@ -1115,7 +1123,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
         return loadBalancerRepository.setErrorPage(lid, accountId, content);
     }
-
 
     @Transactional
     @Override
@@ -1154,6 +1161,50 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         List<LoadBalancer> domainLbs;
         domainLbs = loadBalancerRepository.getLoadBalancersActiveInRange(accountId, startTime, endTime, offset, limit);
         return domainLbs;
+    }
+
+    @Override
+    public boolean isServiceNetLoadBalancer(Integer lbId) {
+        try {
+            final Set<VirtualIp> vipsByAccountIdLoadBalancerId = loadBalancerRepository.getVipsByLbId(lbId);
+
+            for (VirtualIp virtualIp : vipsByAccountIdLoadBalancerId) {
+                if (virtualIp.getVipType().equals(VirtualIpType.SERVICENET)) return true;
+            }
+
+        } catch (EntityNotFoundException e) {
+            return false;
+        } catch (DeletedStatusException e) {
+            return false;
+        }
+
+        return false;
+    }
+
+    @Override
+    public BitTags getCurrentBitTags(Integer lbId) {
+        BitTags bitTags = new BitTags();
+
+        try {
+            SslTermination sslTerm = sslTerminationRepository.getSslTerminationByLbId(lbId);
+
+            if (sslTerm.isEnabled()) {
+                bitTags.flipTagOn(BitTag.SSL);
+                if (!sslTerm.isSecureTrafficOnly()) {
+                    bitTags.flipTagOn(BitTag.SSL_MIXED_MODE);
+                }
+            }
+
+        } catch (EntityNotFoundException e1) {
+            bitTags.flipTagOff(BitTag.SSL);
+            bitTags.flipTagOff(BitTag.SSL_MIXED_MODE);
+        }
+
+        if (isServiceNetLoadBalancer(lbId)) {
+            bitTags.flipTagOn(BitTag.SERVICENET_LB);
+        }
+
+        return bitTags;
     }
 
     private List<LoadBalancer> verifySharedVipsOnLoadBalancers(List<LoadBalancer> lbs) throws EntityNotFoundException, BadRequestException {
@@ -1202,4 +1253,3 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return incommingLbIds;
     }
 }
-

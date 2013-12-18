@@ -67,6 +67,10 @@ public class TrafficScriptHelper {
         return "http.addHeader( \"X-Forwarded-Proto\", \"https\" );";
     }
 
+    public static String getForceHttpsRedirectScript() {
+        return "http.changeSite( \"https://\" . http.getHostHeader() );";
+    }
+
     public static void addRateLimitScriptsIfNeeded(ZxtmServiceStubs serviceStubs) throws RemoteException {
         LOG.debug("Verifying that rate limit rules (traffic scripts) are properly configured...");
 
@@ -130,5 +134,24 @@ public class TrafficScriptHelper {
         }
 
         LOG.debug("X-Forwarded-Proto rule (traffic script) verification completed.");
+    }
+
+    public static void addForceHttpsRedirectScriptIfNeeded(ZxtmServiceStubs serviceStubs) throws RemoteException {
+        LOG.debug("Verifying that the HTTPS Redirect rule (traffic script) is properly configured...");
+
+        boolean ruleForceHttpsRedirectExists = false;
+        String[] ruleNames = serviceStubs.getZxtmRuleCatalogService().getRuleNames();
+
+        for (String ruleName : ruleNames) {
+            if (ruleName.equals(ZxtmAdapterImpl.ruleForceHttpsRedirect.getName())) ruleForceHttpsRedirectExists = true;
+        }
+
+        if (!ruleForceHttpsRedirectExists) {
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should exist...", ZxtmAdapterImpl.ruleForceHttpsRedirect.getName()));
+            serviceStubs.getZxtmRuleCatalogService().addRule(new String[]{ZxtmAdapterImpl.ruleForceHttpsRedirect.getName()}, new String[]{TrafficScriptHelper.getForceHttpsRedirectScript()});
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", ZxtmAdapterImpl.ruleForceHttpsRedirect.getName()));
+        }
+
+        LOG.debug("HTTPS Redirect rule (traffic script) verification completed.");
     }
 }

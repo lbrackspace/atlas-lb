@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+@org.springframework.stereotype.Repository
 @Transactional
 public class JobStateRepository {
 
@@ -89,6 +91,27 @@ public class JobStateRepository {
         return query.getResultList();
     }
 
+    // returns true if a row has THE_ONE_TO_RULE_THEM_ALL on GO
+    // also returns true if THE_ONE_TO_RULE_THEM_ALL doesn't exist (Legacy support)
+    // In case of multiple rows just return true if any are set to GO.
+    public boolean isJobReadyToGo() {
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<JobState> criteria = builder.createQuery(JobState.class);
+        Root<JobState> jobStateRoot = criteria.from(JobState.class);
+
+        Predicate hasName = builder.equal(jobStateRoot.get(JobState_.jobName), JobName.THE_ONE_TO_RULE_THEM_ALL);
+
+        criteria.select(jobStateRoot);
+        criteria.where(hasName);
+        List<JobState> masterJobs = entityManager.createQuery(criteria).getResultList();
+        for (JobState masterJobState : masterJobs) { // serieously though there should only be one.
+            if (masterJobState.getState().equals(JobStateVal.GO)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public JobState getByName(JobName jobName) throws EntityNotFoundException {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<JobState> criteria = builder.createQuery(JobState.class);
@@ -100,7 +123,7 @@ public class JobStateRepository {
         criteria.where(hasName);
 
         try {
-            return entityManager.createQuery(criteria).getSingleResult();
+            return entityManager.createQuery(criteria).getResultList().get(0);
         } catch (NoResultException e) {
             logAndThrowException();
         }
@@ -108,7 +131,7 @@ public class JobStateRepository {
         return null;
     }
 
-    public List getEntriesLike(JobName jobName, String inputPath) {
+    public List<JobState> getEntriesLike(JobName jobName, String inputPath) {
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<JobState> criteria = builder.createQuery(JobState.class);
         Root<JobState> jobStateRoot = criteria.from(JobState.class);

@@ -1,0 +1,16 @@
+{
+  "root_key": "~/root.key",
+  "root_crt": "~/root.crt",
+  "key_file": "~/test.key", 
+  "crt_file": "~/test.crt", 
+  "imd_file": "~/imds.crt", 
+  "key_size": 1024, 
+  "notbefore": 0.0, 
+  "notafter": 63072000.0,
+  "subjname": "C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Clout LoadBalancing,CN=example.rackexp.org", 
+  "issuers": [
+    "C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd1 crt", 
+    "C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd2 crt", 
+    "C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd3 crt" 
+  ]
+}

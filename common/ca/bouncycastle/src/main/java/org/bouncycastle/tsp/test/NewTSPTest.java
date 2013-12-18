@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import junit.framework.TestCase;
+
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cms.AttributeTable;

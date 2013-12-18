@@ -10,9 +10,11 @@
 .classpath
 */target
 classes/
+target/
 */target/*
 */*/target
 */*/*/target/*
+atlas-parent.ids
 
 ## generic files to ignore
 *~

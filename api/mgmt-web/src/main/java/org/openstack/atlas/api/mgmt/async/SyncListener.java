@@ -8,12 +8,18 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.pojos.Sync;
 import org.openstack.atlas.service.domain.pojos.SyncLocation;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
+import org.openstack.atlas.usagerefactor.SnmpUsage;
 
 import javax.jms.Message;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.*;
 import static org.openstack.atlas.service.domain.entities.NodeStatus.ONLINE;
@@ -37,7 +43,7 @@ public class SyncListener extends BaseListener {
         try {
             dbLoadBalancer = loadBalancerService.get(queueSyncObject.getLoadBalancerId());
         } catch (EntityNotFoundException enfe) {
-            LOG.error("EntityNotFoundException thrown.");
+            LOG.error(String.format("EntityNotFoundException thrown while attempting to sync Loadbalancer #%d: ",queueSyncObject.getLoadBalancerId()));
             return;
         }
 
@@ -46,10 +52,20 @@ public class SyncListener extends BaseListener {
 
             final LoadBalancerStatus loadBalancerStatus = dbLoadBalancer.getStatus();
 
+            List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
+            try {
+                LOG.info(String.format("Collecting DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+                usages = usageEventCollection.getUsage(dbLoadBalancer);
+                LOG.info(String.format("Successfully collected DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
+            } catch (UsageEventCollectionException e) {
+                LOG.error(String.format("Collection of the DELETE_LOADBALANCER usage event failed for " +
+                        "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
+            }
+
             try {
                 reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
             } catch (Exception e) {
-                String msg = "Error deleting loadbalancer in SyncListener(): ";
+                String msg = String.format("Error deleting loadbalancer #%d in SyncListener(): ",queueSyncObject.getLoadBalancerId());
                 loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                 LOG.error(msg, e);
@@ -67,7 +83,11 @@ public class SyncListener extends BaseListener {
                     notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, DELETE_LOADBALANCER, DELETE, INFO);
 
                     // Notify usage processor
-                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER);
+                    Calendar eventTime = Calendar.getInstance();
+
+                    LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+                    usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
+                    LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
 
                     //Set status record
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE);
@@ -98,11 +118,19 @@ public class SyncListener extends BaseListener {
                         String atomSummary = createAtomSummary(dbLoadBalancer).toString();
                         notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
 
-                        // Notify usage processor
-                        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
+                        // Notify old usage processor
+                        Calendar eventTime = Calendar.getInstance();
+
+                        try {
+                            // Notify usage processor
+                            usageEventCollection.processZeroUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, eventTime);
+                        } catch (UsageEventCollectionException uex) {
+                            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
+                        }
                     }
                 } catch (Exception e) {
-                    String msg = "Error re-creating loadbalancer in SyncListener():";
+                    String msg = String.format("Error re-creating loadbalancer #%d in SyncListener():", queueSyncObject.getLoadBalancerId());
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                     LOG.error(msg, e);
@@ -129,43 +157,31 @@ public class SyncListener extends BaseListener {
                         loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
                         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
+                        if (loadBalancerStatus.equals(PENDING_UPDATE) || loadBalancerStatus.equals(ERROR)) {
+                            Calendar eventTime = Calendar.getInstance();
 
-                        if (loadBalancerStatus.equals(BUILD)) {
-                            NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
-                            dbLoadBalancer.setStatus(ACTIVE);
-                            dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
-                            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
-
-
-                            // Add atom entry
-                            String atomTitle = "Load Balancer Successfully Created";
-                            String atomSummary = createAtomSummary(dbLoadBalancer).toString();
-                            notificationService.saveLoadBalancerEvent(dbLoadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, CREATE_LOADBALANCER, CREATE, INFO);
-
-                            // Notify usage processor
-                            usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.CREATE_LOADBALANCER, 0l, 0l, 0, 0l, 0l, 0);
                             if (dbLoadBalancer.isUsingSsl()) {
                                 if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
-                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_ONLY_ON);
+                                    usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
                                 } else {
-                                    usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_MIXED_ON);
+                                    usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
                                 }
                             } else {
-                                usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.SSL_OFF);
+                                usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
                             }
                         }
                     }
                 } catch (Exception e) {
-                    String msg = "Error re-creating ssl terminated loadbalancer in SyncListener():";
+                    String msg = String.format("Error re-creating ssl terminated loadbalancer #%d in SyncListener():",queueSyncObject.getLoadBalancerId());
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                     LOG.error(msg, e);
                 }
             }
         } else if (queueSyncObject.getLocationToSyncFrom().equals(SyncLocation.ZEUS)) {
-            LOG.warn(String.format("Load balancers can only be synchronized with the database at this time."));
+            LOG.warn(String.format("Load balancers can only be synchronized with the database at this time. Warning Loadbalancer #%d wasn't actually synced",queueSyncObject.getLoadBalancerId()));
         }
 
-        LOG.info("Sync operation complete.");
+        LOG.info(String.format("Sync operation complete for loadbalancer #%d ",queueSyncObject.getLoadBalancerId()));
     }
 
     private StringBuilder createAtomSummary(LoadBalancer lb) {

@@ -9,20 +9,17 @@ import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryServ
 import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class HealthMonitorServiceImpl extends BaseService implements HealthMonitorService {
-
     private final Log LOG = LogFactory.getLog(HealthMonitorServiceImpl.class);
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
-    @Required
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
+    @Autowired
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
     @Override
     public HealthMonitor get(Integer accountId, Integer lbId) throws EntityNotFoundException, DeletedStatusException {

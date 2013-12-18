@@ -4,11 +4,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
-import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
@@ -17,45 +15,41 @@ import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.StatefulJob;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
-import java.util.Calendar;
 import java.util.List;
 
-public class HostEndpointPollerJob extends Job implements StatefulJob {
+@Component
+public class HostEndpointPollerJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(HostEndpointPollerJob.class);
-    private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+
+    @Autowired
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
+    @Autowired
     private HostRepository hostRepository;
 
-
-    @Required
-    public void setReverseProxyLoadBalancerAdapter(ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter) {
-        this.reverseProxyLoadBalancerAdapter = reverseProxyLoadBalancerAdapter;
+    @Override
+    public Log getLogger() {
+        return LOG;
     }
 
-    @Required
-    public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
-        this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
+    @Override
+    public JobName getJobName() {
+        return JobName.HOST_ENDPOINT_POLLER;
     }
 
-    @Required
-    public void setHostRepository(HostRepository hostRepository) {
-        this.hostRepository = hostRepository;
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
     }
 
     //TODO: refactor to use the async service...
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        Calendar startTime = Calendar.getInstance();
-        LOG.info(String.format("Host endpoint poller job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(JobName.HOST_ENDPOINT_POLLER, JobStateVal.IN_PROGRESS);
-
+    public void run() throws Exception {
         try {
             boolean endpointWorks;
-            List<Host> hosts = hostRepository.getAllHosts();
+            List<Host> hosts = hostRepository.getAll();
             for (Host host : hosts) {
                 endpointWorks = reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host));
                 if (endpointWorks) {
@@ -70,17 +64,14 @@ public class HostEndpointPollerJob extends Job implements StatefulJob {
                 LOG.info("Finished updating host: " + host.getId() + " in the database.");
             }
         } catch (Exception e) {
-            jobStateService.updateJobState(JobName.HOST_ENDPOINT_POLLER, JobStateVal.FAILED);
-            LOG.error(String.format("Host endpoint poller job failed while polling host endpoints: %s", e.getMessage()));
             Alert alert = AlertHelper.createAlert(null, null, e, AlertType.API_FAILURE.name(), e.getMessage());
             alertRepository.save(alert);
-            return;
+            throw e;
         }
+    }
 
-        Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        jobStateService.updateJobState(JobName.HOST_ENDPOINT_POLLER, JobStateVal.FINISHED);
-        LOG.info(String.format("Host endpoint poller job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+    @Override
+    public void cleanup() {
     }
 
     //TODO: refactor to use service/null adapter
@@ -89,4 +80,5 @@ public class HostEndpointPollerJob extends Job implements StatefulJob {
         List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
         return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, null);
     }
+
 }

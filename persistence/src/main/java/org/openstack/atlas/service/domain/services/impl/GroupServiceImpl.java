@@ -7,10 +7,12 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.GroupService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Service
 public class GroupServiceImpl extends BaseService implements GroupService {
     private final Log LOG = LogFactory.getLog(GroupServiceImpl.class);
 

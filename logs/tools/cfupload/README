@@ -1,0 +1,31 @@
+Uploads customer zipped logs to CloudFiles.
+
+Place cfupload.json and cfupconfig in your home directory.
+
+Verify region in the cfupconfig file for the environment where the app is being ran.
+
+The tool will accept date ranges or a single date for processing or for a specific account id.
+
+Once the tool has uploaded all files for customers it will attempt to clear empty directories.
+
+Files that are not uploaded is a sign of failure with Auth or CloudFiles upload process. Please view logs.
+
+Uploads can be disabled to view info before magic happens :: 'upenabled' Values: [false,true], Default: true, [optional]
+
+Clearing of directories is an optional attribute that will attempt to clear all directories in the specified cache_dir in the cfupconfig file.
+        :: 'cleardirs' Values [false,true,standalone], Default: true, [optional]
+        Supply the standalone config option will only attempt to clear directories and will not process further.
+
+Optionally you can supply the accountId 'aid=406271' this will return and process data only for this accountid.
+Optionally you can supply the exclude-accountID 'eaid=406271' this will ignore this accountId and process otheres.
+Optionally you can supply the exclude-loadbalancerID 'elid=444' this will ignore this lbID and process otheres.
+
+Example usage:
+
+#./logsup.py aid=406271 date_gte=2013060600 upenabled=false cleardirs=standalone
+#./logsup.py aid=406271 upenabled=false cleardirs=standalone
+#./logsup.py aid=406271 date_gte=2013052500 date_lte=2013052523 upenabled=false cleardirs=standalone
+
+
+
+

@@ -1,0 +1,3 @@
+*.json
+!cfupload.json
+*.pyc

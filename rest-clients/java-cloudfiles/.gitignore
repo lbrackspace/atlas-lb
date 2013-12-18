@@ -1,0 +1,9 @@
+target
+.settings
+.project
+.checkstyle
+.classpath
+*/.checkstyle-rules.xml
+dist/
+classes/
+logs/

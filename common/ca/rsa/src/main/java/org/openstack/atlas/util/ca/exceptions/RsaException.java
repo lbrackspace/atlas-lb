@@ -1,6 +1,6 @@
 package org.openstack.atlas.util.ca.exceptions;
 
-public class RsaException extends Exception {
+public class RsaException extends CapManUtilException {
 
     public RsaException() {
         super();

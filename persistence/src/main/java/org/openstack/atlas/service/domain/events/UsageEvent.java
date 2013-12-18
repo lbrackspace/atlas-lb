@@ -1,8 +1,9 @@
 package org.openstack.atlas.service.domain.events;
 
-public enum UsageEvent {
+import java.io.Serializable;
+
+public enum UsageEvent implements Serializable{
     SSL_OFF,
-    @Deprecated SSL_ON, // Deprecated. Do not use! Production still references it. Will delete in few months once SSL_ON events get purged
     SSL_ONLY_ON,
     SSL_MIXED_ON,
     CREATE_LOADBALANCER,
@@ -12,4 +13,6 @@ public enum UsageEvent {
     SUSPEND_LOADBALANCER,
     SUSPENDED_LOADBALANCER,
     UNSUSPEND_LOADBALANCER;
+
+    private final static long serialVersionUID = 532512316L;
 }

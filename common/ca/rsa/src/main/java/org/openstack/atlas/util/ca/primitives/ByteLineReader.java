@@ -1,104 +1,120 @@
 package org.openstack.atlas.util.ca.primitives;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+import org.openstack.atlas.util.ca.StringUtils;
+import org.openstack.atlas.util.ca.util.StaticHelpers;
+
 public class ByteLineReader {
 
-    public static final byte CR = 13;
-    public static final byte LF = 10;
-    private byte[] bytes;
-    int bi;
+    private static final byte CR = 13;
+    private static final byte LF = 10;
+    private static final int PAGESIZE = 4096;
+    private ByteArrayInputStream inStream;
+    private int totalBytes;
 
     public ByteLineReader(byte[] bytes) {
-        this.bi = 0;
-        this.bytes = bytes;
+        inStream = new ByteArrayInputStream(bytes);
+        totalBytes = inStream.available();
+    }
+
+    public int getBytesRead() {
+        return totalBytes - inStream.available();
     }
 
     public int bytesAvailable() {
-        return bytes.length - bi;
+        return inStream.available();
     }
 
     public byte[] readLine(boolean chop) {
-        byte[] out = null;
-        int beg = bi;
-        int end;
-        int length;
-        int i;
-        if (bytesAvailable() <= 0) {
-            return out;
-        }
-        for (i = bi; i < bytes.length; i++) {
-            if (bytes[i] == LF) {
-                i++;
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream(PAGESIZE);
+        while (inStream.available() > 0) {
+            int ch = inStream.read();
+            if (ch < 0) {
                 break;
             }
-        }
-        end = i;
-        bi = i;
-        length = end - beg;
-        if (!chop) {
-            return copyBytes(bytes, beg, end);
-        }
-        if (length == 0) {
-            return copyBytes(bytes, beg, end);
-        }
-        if (length == 1) {
-            if (bytes[end - 1] == CR || bytes[end - 1] == LF) {
-                return copyBytes(bytes, beg, end - 1);
+            if (ch == CR) { // Skip Carriage Return Nonsense.
+                continue;
             }
-            return copyBytes(bytes, beg, end);
-        }
-        if (length >= 2) {
-            if (bytes[end - 1] == LF && bytes[end - 2] == CR) {
-                return copyBytes(bytes, beg, end - 2);
+            if (ch == LF) {
+                if (chop) {
+                    break;
+                } else {
+                    outStream.write(ch);
+                    break;
+                }
             }
-            if (bytes[end - 1] == LF) {
-                return copyBytes(bytes, beg, end - 1);
-            }
-            return copyBytes(bytes, beg, end);
+            outStream.write(ch);
         }
-
-        return out;
+        byte[] line = outStream.toByteArray();
+        return line;
     }
 
     public byte[] readLine() {
         return readLine(false);
     }
 
-    public static byte[] copyBytes(byte[] in, int beg, int end) {
-        byte[] out = null;
-        int i;
-        int length = end - beg;
-        out = new byte[length];
-        for (i = 0; i < length; i++) {
-            out[i] = in[beg + i];
-        }
-        return out;
-    }
-
-    public static byte[] copyBytes(byte[] in) {
-        return copyBytes(in, 0, in.length);
-    }
-
     public static boolean cmpBytes(byte[] a, byte[] b) {
-        int i;
-        if (a.length != b.length) {
-            return false;
-        }
+        return Arrays.equals(a, b);
+    }
 
-        for (i = 0; i < a.length; i++) {
-            if (a[i] != b[i]) {
-                return false;
+    public static byte[] appendLF(byte[] bytesIn) {
+        byte[] bytesOut = Arrays.copyOf(bytesIn, bytesIn.length + 1);
+        bytesOut[bytesOut.length - 1] = LF;
+        return bytesOut;
+    }
+
+    public static byte[] copyBytes(byte[] inBytes) {
+        byte[] outBytes = Arrays.copyOf(inBytes, inBytes.length);
+        return outBytes;
+    }
+
+    public static byte[] chopLine(byte[] lineIn) {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream(PAGESIZE);
+        for (int i = 0; i < lineIn.length; i++) {
+            int ch = StaticHelpers.ubyte2int(lineIn[i]);
+            if (ch < 0) {
+                break;
+            }
+            if (ch == CR) { // Skip Carriage Return Nonsense.
+                continue;
+            }
+            if (ch == LF) {
+                break; // We are chopping off the newline
+            }
+            outStream.write(ch);
+        }
+        byte[] line = outStream.toByteArray();
+        return line;
+    }
+
+    public static byte[] trim(byte[] lineIn) {
+        byte[] out;
+        int hi;
+        int ti;
+        int outSize;
+        String lineInStr = StringUtils.asciiString(lineIn);
+        for (hi = 0; hi < lineIn.length; hi++) {
+            if (!StaticHelpers.isByteWhiteSpace(lineIn[hi])) {
+                break;
             }
         }
-        return true;
-    }
-
-    public static byte[] appendLF(byte[] bytesIn){
-        int i;
-        byte[] bytesOut = new byte[bytesIn.length + 1];
-        for(i=0;i<bytesIn.length;i++){
-            bytesOut[i] = bytesIn[i];
+        for (ti = lineIn.length - 1; ti >= 0; ti--) {
+            if (!StaticHelpers.isByteWhiteSpace(lineIn[ti])) {
+                break;
+            }
         }
-        bytesOut[i]=LF;
-        return bytesOut;
+
+        outSize = ti - hi + 1;
+        if (outSize <= 0) {
+            return new byte[0];
+        }
+        out = new byte[outSize];
+        for (int i = 0; i < outSize; i++) {
+            out[i] = lineIn[hi + i];
+        }
+        String outStr = StringUtils.asciiString(out);
+        return out;
     }
 }

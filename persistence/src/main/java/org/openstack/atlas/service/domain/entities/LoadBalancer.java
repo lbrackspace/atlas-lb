@@ -69,6 +69,9 @@ public class LoadBalancer extends Entity implements Serializable {
     @Column(name = "content_caching", nullable = false)
     private Boolean contentCaching;
 
+    @Column(name = "https_redirect", nullable = false)
+    private Boolean httpsRedirect;
+
     @JoinColumn(name = "protocol", nullable = false)
     @Enumerated(EnumType.STRING)
     private LoadBalancerProtocol protocol;
@@ -96,7 +99,7 @@ public class LoadBalancer extends Entity implements Serializable {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private RateLimit rateLimit;
 
-    @OneToOne(mappedBy = "loadbalancer", fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "loadbalancer", fetch = FetchType.LAZY, optional = true)
     @LazyToOne(LazyToOneOption.NO_PROXY)
     private UserPages userPages;
 
@@ -108,6 +111,9 @@ public class LoadBalancer extends Entity implements Serializable {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar updated;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Calendar provisioned;
 
     @Column(name = "is_sticky", nullable = false)
     private boolean isSticky;
@@ -230,6 +236,14 @@ public class LoadBalancer extends Entity implements Serializable {
         this.contentCaching = contentCaching;
     }
 
+    public Boolean isHttpsRedirect() {
+        return httpsRedirect;
+    }
+
+    public void setHttpsRedirect(Boolean httpsRedirect) {
+        this.httpsRedirect = httpsRedirect;
+    }
+
     public ConnectionLimit getConnectionLimit() {
         return connectionLimit;
     }
@@ -268,6 +282,14 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public void setUpdated(Calendar updated) {
         this.updated = updated;
+    }
+
+    public Calendar getProvisioned() {
+        return provisioned;
+    }
+
+    public void setProvisioned(Calendar provisioned) {
+        this.provisioned = provisioned;
     }
 
     public LoadBalancerAlgorithm getAlgorithm() {

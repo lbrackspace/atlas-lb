@@ -2,16 +2,20 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.api.config.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.Usage_;
 import org.openstack.atlas.service.domain.events.UsageEvent;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -29,6 +33,8 @@ public class UsageRepository {
     final Log LOG = LogFactory.getLog(UsageRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
+    private final Integer NUM_DAYS_RETENTION = 90;
+    private final Integer DEFAULT_DELETE_LIMIT = 10000;
 
     public List<Usage> getMostRecentUsageForLoadBalancers(Collection<Integer> loadBalancerIds) {
         if (loadBalancerIds == null || loadBalancerIds.isEmpty()) return new ArrayList<Usage>();
@@ -40,26 +46,62 @@ public class UsageRepository {
                 .setParameter("loadbalancerIds", loadBalancerIds);
 
         List<Usage> usage = (List<Usage>) query.getResultList();
-        if (usage == null) return new ArrayList<Usage>();
+        if (usage == null || usage.isEmpty()) return new ArrayList<Usage>();
 
         return usage;
     }
 
-    public Usage getMostRecentUsageForLoadBalancer(Integer loadBalancerId) {
-        if (loadBalancerId == null) return null;
+    public Usage getMostRecentUsageForLoadBalancer(Integer loadBalancerId) throws EntityNotFoundException {
+        if (loadBalancerId == null) throw new EntityNotFoundException("Lb id passed in is null.");
 
-        Query query = entityManager.createNativeQuery("SELECT a.* " +
-                "FROM lb_usage a, " +
-                "(SELECT loadbalancer_id, max(start_time) as start_time FROM lb_usage WHERE loadbalancer_id = :loadbalancerId GROUP BY loadbalancer_id) b " +
-                "WHERE a.loadbalancer_id = :loadbalancerId and a.loadbalancer_id = b.loadbalancer_id and a.start_time = b.start_time;", Usage.class)
-                .setParameter("loadbalancerId", loadBalancerId);
+        Query query = entityManager.createNativeQuery("SELECT u.id, u.loadbalancer_id, u.avg_concurrent_conns, u.bandwidth_in, u.bandwidth_out, u.avg_concurrent_conns_ssl, u.bandwidth_in_ssl, u.bandwidth_out_ssl, u.start_time, u.end_time, u.num_polls, u.num_vips, u.tags_bitmask, u.event_type, u.account_id" +
+                " FROM lb_usage u WHERE u.loadbalancer_id = :loadBalancerId" +
+                " ORDER BY u.start_time DESC LIMIT 1")
+                .setParameter("loadBalancerId", loadBalancerId);
 
-        List<Usage> usage = (List<Usage>) query.getResultList();
-        if (usage == null || usage.isEmpty()) return null;
-        return usage.get(0);
+        final List<Object[]> resultList = query.getResultList();
+
+        if (resultList == null || resultList.isEmpty()) {
+            String message = "No recent usage record found.";
+            LOG.debug(message);
+            throw new EntityNotFoundException(message);
+        }
+
+        return rowToUsage(resultList.get(0));
     }
 
-    public void batchCreate(List<Usage> usages) {
+    public void deleteAllRecordsBeforeOrEqualTo(Calendar time) {
+        RestApiConfiguration configuration = new RestApiConfiguration();
+        String limitStr = configuration.getString(PublicApiServiceConfigurationKeys.usage_deletion_limit);
+        int limitInt;
+        try {
+            limitInt = Integer.parseInt(limitStr);
+        } catch(NumberFormatException nfe) {
+            limitInt = DEFAULT_DELETE_LIMIT;
+        }
+        int numRowsDeleted;
+        int totalRowsDeleted = 0;
+        int batchCount = 0;
+
+        do {
+            Query nativeQ = entityManager.createNativeQuery("DELETE FROM lb_usage WHERE end_time <= :timestamp AND needs_pushed = 0 LIMIT :limit")
+                    .setParameter("timestamp", time, TemporalType.TIMESTAMP).setParameter("limit", limitInt);
+            numRowsDeleted = nativeQ.executeUpdate();
+            totalRowsDeleted += numRowsDeleted;
+            batchCount++;
+            LOG.info(String.format("Deleted %d rows with endTime before %s in batch %d.", numRowsDeleted, time.getTime(), batchCount));
+        } while(numRowsDeleted > 0);
+
+        LOG.info(String.format("Finished deleting rows. Deleted %d total rows in %d batch(es) with endTime before %s.", totalRowsDeleted, batchCount, time.getTime()));
+    }
+
+    public void deleteOldRecords() {
+        Calendar deletePoint = Calendar.getInstance();
+        deletePoint.add(Calendar.DATE, -NUM_DAYS_RETENTION);
+        deleteAllRecordsBeforeOrEqualTo(deletePoint);
+    }
+
+    public void batchCreate(Collection<Usage> usages) {
         LOG.info(String.format("batchCreate() called with %d records", usages.size()));
 
         String query = generateBatchInsertQuery(usages);
@@ -96,7 +138,7 @@ public class UsageRepository {
         entityManager.merge(usageRecord);
     }
 
-    private String generateBatchInsertQuery(List<Usage> usages) {
+    private String generateBatchInsertQuery(Collection<Usage> usages) {
         final StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO lb_usage(loadbalancer_id, account_id, avg_concurrent_conns, bandwidth_in, bandwidth_out, avg_concurrent_conns_ssl, bandwidth_in_ssl, bandwidth_out_ssl, start_time, end_time, num_polls, num_vips, tags_bitmask, event_type, entry_version, needs_pushed, uuid, corrected, num_attempts) values");
         sb.append(generateFormattedValues(usages));
@@ -124,10 +166,10 @@ public class UsageRepository {
 //            }
 //            sb.append(usage.getLoadbalancer().getId()).append(",");
 //            sb.append(usage.getAccountId()).append(",");
-//            sb.append(usage.getAverageConcurrentConnections()).append(",");
+//            sb.append(usage.getConcurrentConnections()).append(",");
 //            sb.append(usage.getIncomingTransfer()).append(",");
 //            sb.append(usage.getOutgoingTransfer()).append(",");
-//            sb.append(usage.getAverageConcurrentConnectionsSsl()).append(",");
+//            sb.append(usage.getConcurrentConnectionsSsl()).append(",");
 //            sb.append(usage.getIncomingTransferSsl()).append(",");
 //            sb.append(usage.getOutgoingTransferSsl()).append(",");
 //
@@ -169,11 +211,11 @@ public class UsageRepository {
 //        return sb.toString();
 //    }
 
-    private String generateFormattedValues(List<Usage> usages) {
+    private String generateFormattedValues(Collection<Usage> usages) {
         return generateFormattedValues(usages, true);
     }
 
-    private String generateFormattedValues(List<Usage> usages, boolean isUpdate) {
+    private String generateFormattedValues(Collection<Usage> usages, boolean isUpdate) {
         StringBuilder sb = new StringBuilder();
 
         for (Usage usage : usages) {
@@ -309,34 +351,39 @@ public class UsageRepository {
         List<Usage> usages = new ArrayList<Usage>();
 
         for (Object[] row : resultList) {
-            Long startTimeMillis = ((Timestamp) row[8]).getTime();
-            Long endTimeMillis = ((Timestamp) row[9]).getTime();
-            Calendar startTimeCal = new GregorianCalendar();
-            Calendar endTimeCal = new GregorianCalendar();
-            startTimeCal.setTimeInMillis(startTimeMillis);
-            endTimeCal.setTimeInMillis(endTimeMillis);
-
-            Usage usageItem = new Usage();
-            usageItem.setId((Integer) row[0]);
-            LoadBalancer lb = new LoadBalancer();
-            lb.setId((Integer) row[1]);
-            usageItem.setLoadbalancer(lb);
-            usageItem.setAverageConcurrentConnections((Double) row[2]);
-            usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
-            usageItem.setOutgoingTransfer(((BigInteger) row[4]).longValue());
-            usageItem.setAverageConcurrentConnectionsSsl((Double) row[5]);
-            usageItem.setIncomingTransferSsl(((BigInteger) row[6]).longValue());
-            usageItem.setOutgoingTransferSsl(((BigInteger) row[7]).longValue());
-            usageItem.setStartTime(startTimeCal);
-            usageItem.setEndTime(endTimeCal);
-            usageItem.setNumberOfPolls((Integer) row[10]);
-            usageItem.setNumVips((Integer) row[11]);
-            usageItem.setTags((Integer) row[12]);
-            usageItem.setEventType((String) row[13]);
-            usageItem.setAccountId((Integer) row[14]);
+            Usage usageItem = rowToUsage(row);
             usages.add(usageItem);
         }
 
         return usages;
+    }
+
+    private Usage rowToUsage(Object[] row) {
+        Long startTimeMillis = ((Timestamp) row[8]).getTime();
+        Long endTimeMillis = ((Timestamp) row[9]).getTime();
+        Calendar startTimeCal = new GregorianCalendar();
+        Calendar endTimeCal = new GregorianCalendar();
+        startTimeCal.setTimeInMillis(startTimeMillis);
+        endTimeCal.setTimeInMillis(endTimeMillis);
+
+        Usage usageItem = new Usage();
+        usageItem.setId((Integer) row[0]);
+        LoadBalancer lb = new LoadBalancer();
+        lb.setId((Integer) row[1]);
+        usageItem.setLoadbalancer(lb);
+        usageItem.setAverageConcurrentConnections((Double) row[2]);
+        usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
+        usageItem.setOutgoingTransfer(((BigInteger) row[4]).longValue());
+        usageItem.setAverageConcurrentConnectionsSsl((Double) row[5]);
+        usageItem.setIncomingTransferSsl(((BigInteger) row[6]).longValue());
+        usageItem.setOutgoingTransferSsl(((BigInteger) row[7]).longValue());
+        usageItem.setStartTime(startTimeCal);
+        usageItem.setEndTime(endTimeCal);
+        usageItem.setNumberOfPolls((Integer) row[10]);
+        usageItem.setNumVips((Integer) row[11]);
+        usageItem.setTags((Integer) row[12]);
+        usageItem.setEventType((String) row[13]);
+        usageItem.setAccountId((Integer) row[14]);
+        return usageItem;
     }
 }

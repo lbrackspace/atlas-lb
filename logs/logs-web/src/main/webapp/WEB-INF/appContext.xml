@@ -15,9 +15,7 @@
     <bean id="controllerHandlerAdapter" class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
 
     <bean id="cloudFilesDao" class="org.openstack.atlas.cloudfiles.CloudFilesDaoImpl"/>
-    <bean id="logDateFormat" class="org.openstack.atlas.util.LogDateFormat"/>
-
-    <bean id="fileSystemUtils" class="org.openstack.atlas.util.FileSystemUtils"/>
+    <bean id="logDateFormat" class="org.openstack.atlas.logs.hadoop.util.LogDateFormat"/>
 
     <bean id="authService" class="org.openstack.atlas.auth.AuthServiceImpl" scope="prototype" >
         <constructor-arg index="0"  ref="conf"/>
@@ -26,8 +24,6 @@
     <bean id="conf"
           class="org.openstack.atlas.config.LbLogsConfiguration"
           scope="prototype"/>
-
-	<bean id="lbStatsTool" class="org.openstack.atlas.mapreduce.LbStatsTool" />
 
     <bean id="schedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="applicationContextSchedulerContextKey">
@@ -42,10 +38,6 @@
 
                <entry key="logDateFormat">
                    <ref bean="logDateFormat"/>
-               </entry>
-
-               <entry key="fileSystemUtils">
-                   <ref bean="fileSystemUtils"/>
                </entry>
 
                <entry key="conf">
@@ -74,8 +66,8 @@
         <property name="triggers">
             <list>
                 <ref bean="runFileWatchdogTrigger"/>
-                <ref bean="runArchiveLogsTrigger"/>
                 <ref bean="runSystemCleanupTrigger"/>
+                <ref bean="reuploaderJobTrigger"/>
             </list>
         </property>
     </bean>
@@ -88,10 +80,6 @@
         <property name="jobClass" value="org.openstack.atlas.scheduler.FileWatchdogJob"/>
     </bean>
 
-    <bean name="archiveLogsJob" class="org.springframework.scheduling.quartz.JobDetailBean">
-        <property name="jobClass" value="org.openstack.atlas.scheduler.ArchiveLoadBalancerLogsJob"/>
-    </bean>
-
     <bean id="runFileWatchdogTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="fileWatchdogJob"/>
         <!--<property name="startDelay" value="300"/>-->
@@ -99,18 +87,25 @@
         <property name="cronExpression" value="${job.repeat.interval}" />
     </bean>
 
-    <bean id="runArchiveLogsTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
-        <property name="jobDetail" ref="archiveLogsJob"/>
-        <!--<property name="startDelay" value="300"/>-->
-        <!--<property name="repeatInterval" value="${job.repeat.interval}"/>-->
-        <property name="cronExpression" value="${job.repeat.archive.interval}" />
+    <bean name="reuploaderJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.openstack.atlas.scheduler.ReuploaderJob"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="jobStateService" value-ref="jobStateService"/>
+                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="reuploaderJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="reuploaderJob"/>
+        <property name="cronExpression" value="${job.logreup.interval}"/>
     </bean>
 
     <bean name="systemCleanupJob" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass" value="org.openstack.atlas.scheduler.SystemCleanupJob"/>
         <property name="jobDataAsMap">
             <map>
-                <entry key="fileSystemUtils" value-ref="fileSystemUtils"/>
                 <entry key="jobStateService" value-ref="jobStateService"/>
             </map>
         </property>
@@ -124,6 +119,7 @@
         <!--<property name="cronExpression" value="0 0/5 * * * ?" />-->
     </bean>
 
+
     <bean id="jobScheduler" class="org.openstack.atlas.scheduler.JobScheduler">
         <property name="schedulerFactoryBean" ref="schedulerFactoryBean"/>
     </bean>
@@ -131,7 +127,6 @@
     <bean id="loggableJobExecution" class="org.openstack.atlas.scheduler.execution.LoggableJobExecution">
         <property name="jobStateRepository" ref="jobStateRepository"/>
         <property name="conf" ref="conf"/>
-        <property name="fileSystemUtils" ref="fileSystemUtils"/>
     </bean>
     <bean id="fileWatchdogJobExecution"
           class="org.openstack.atlas.scheduler.execution.FileWatchdogJobExecution"/>

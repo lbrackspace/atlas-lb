@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.services.helpers.RdnsHelper;
 import org.openstack.atlas.util.config.MossoConfigValues;
 import org.openstack.atlas.cfg.ConfigurationKey;
@@ -17,8 +18,7 @@ import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import org.openstack.atlas.api.config.RestApiConfiguration;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.b64aes.Aes;

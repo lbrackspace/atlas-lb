@@ -1,5 +1,9 @@
 package org.openstack.atlas.api.integration;
 
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.adapter.helpers.IpHelper;
+import org.openstack.atlas.util.debug.Debug;
+import java.net.SocketException;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.api.helpers.CacheKeyGen;
 import org.openstack.atlas.api.helpers.DateHelpers;
@@ -17,7 +21,6 @@ import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NotificationService;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import com.zxtm.service.client.ObjectDoesNotExist;
@@ -26,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -174,6 +178,16 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
             reverseProxyLoadBalancerAdapter.updateHalfClosed(config, lb);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    public void updateHttpsRedirect(LoadBalancer lb) throws Exception {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        try {
+            reverseProxyLoadBalancerAdapter.updateHttpsRedirect(config, lb);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
@@ -659,24 +673,14 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         this.configuration = configuration;
     }
 
-    private boolean isConnectionExcept(AxisFault af) {
-        String faultString = af.getFaultString();
-        if (faultString == null) {
-            return false;
-        }
-        if (faultString.split(":")[0].equals("java.net.ConnectException")) {
-            return true;
-        }
-        return false;
-    }
-
     private void checkAndSetIfSoapEndPointBad(LoadBalancerEndpointConfiguration config, AxisFault af) throws AxisFault {
-        Host badHost = config.getTrafficManagerHost();
-        if (isConnectionExcept(af)) {
-            LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad.", badHost.getEndpoint(), badHost.getId()));
-            badHost.setSoapEndpointActive(Boolean.FALSE);
-            hostService.update(badHost);
+        Host configuredHost = config.getEndpointUrlHost();
+        if (IpHelper.isNetworkConnectionException(af)) {
+            LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
+            configuredHost.setSoapEndpointActive(Boolean.FALSE);
+            hostService.update(configuredHost);
         }
+        LOG.warn(String.format("SOAP endpoint %s on host[%d] throw an AxisFault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
     }
 
     @Override

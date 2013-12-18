@@ -2,7 +2,7 @@ package org.openstack.atlas.api.auth;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.exceptions.MissingFieldException;
 import org.openstack.atlas.api.filters.helpers.StringUtilities;
 import org.openstack.atlas.cfg.Configuration;

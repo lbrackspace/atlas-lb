@@ -1,16 +1,17 @@
 package org.openstack.atlas.api.async;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import javax.jms.Message;
-
+import java.util.Calendar;
 import java.util.List;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
@@ -72,14 +73,21 @@ public class DeleteVirtualIpsListener extends BaseListener {
             return;
         }
 
+        Calendar eventTime = Calendar.getInstance();
+
+        // Notify usage processor
+        try {
+            usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP, eventTime);
+        } catch (UsageEventCollectionException uex) {
+            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
+                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
+        }
+
         // Update load balancer status in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
         // Add atom entry
         sendSuccessToEventResource(dataContainer);
-
-        // Notify usage processor
-        usageEventHelper.processUsageEvent(dbLoadBalancer, UsageEvent.DELETE_VIRTUAL_IP);
 
         LOG.info(String.format("Delete virtual ip operation complete for load balancer '%d'.", dbLoadBalancer.getId()));
     }
@@ -88,7 +96,7 @@ public class DeleteVirtualIpsListener extends BaseListener {
         String title = "Error Deleting Virtual Ip";
         String desc = "Could not delete the virtual ip at this time.";
         for (Integer vipIdToDelete : dataContainer.getIds()) {
-        notificationService.saveVirtualIpEvent(dataContainer.getUserName(), dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), vipIdToDelete, title, desc, DELETE_VIRTUAL_IP, DELETE, CRITICAL);
+            notificationService.saveVirtualIpEvent(dataContainer.getUserName(), dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), vipIdToDelete, title, desc, DELETE_VIRTUAL_IP, DELETE, CRITICAL);
         }
     }
 

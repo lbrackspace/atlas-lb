@@ -3,65 +3,65 @@ package org.openstack.atlas.jobs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.JobName;
-import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.service.domain.events.entities.Alert;
+import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.services.helpers.AlertHelper;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRepository;
-import org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.beans.factory.annotation.Required;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.Calendar;
-
-public class DailyDeletionJob extends Job {
+@Component
+public class DailyDeletionJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(DailyDeletionJob.class);
-    private LoadBalancerUsageRepository hourlyUsageRepository;
+
+    @Autowired
+    private UsageRepository usageRepository;
+    @Autowired
     private HostUsageRepository hostUsageRepository;
 
-    @Required
-    public void setHourlyUsageRepository(LoadBalancerUsageRepository hourlyUsageRepository) {
-        this.hourlyUsageRepository = hourlyUsageRepository;
-    }
-
-    @Required
-    public void setHostUsageRepository(HostUsageRepository hostUsageRepository) {
-        this.hostUsageRepository = hostUsageRepository;
+    @Override
+    public Log getLogger() {
+        return LOG;
     }
 
     @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
-        Calendar startTime = Calendar.getInstance();
-        LOG.info(String.format("Daily deletion job started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
-        jobStateService.updateJobState(JobName.DAILY_DELETION_JOB, JobStateVal.IN_PROGRESS);
+    public JobName getJobName() {
+        return JobName.DAILY_DELETION_JOB;
+    }
 
+    @Override
+    public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    }
+
+    @Override
+    public void run() throws Exception {
         try {
             deleteLoadBalancerUsageRecords();
             deleteHostUsageRecords();
         } catch (Exception e) {
-            jobStateService.updateJobState(JobName.DAILY_DELETION_JOB, JobStateVal.FAILED);
-            LOG.error(String.format("Daily deletion job failed: %s", e.getMessage()));
             Alert alert = AlertHelper.createAlert(null, null, e, AlertType.API_FAILURE.name(), e.getMessage());
             alertRepository.save(alert);
-            return;
+            throw e;
         }
+    }
 
-        Calendar endTime = Calendar.getInstance();
-        Double elapsedMins = ((endTime.getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
-        jobStateService.updateJobState(JobName.DAILY_DELETION_JOB, JobStateVal.FINISHED);
-        LOG.info(String.format("Daily deletion job completed at '%s' (Total Time: %f mins)", endTime.getTime(), elapsedMins));
+    @Override
+    public void cleanup() {
     }
 
     private void deleteLoadBalancerUsageRecords() {
-        LOG.info("Deleting old loadbalancer usage records...");
-        hourlyUsageRepository.deleteOldRecords();
-        LOG.info("Completed deleting old loadbalancer usage records.");
+        LOG.info("Deleting old loadbalancer usage records from the 'loadbalancing' database...");
+        usageRepository.deleteOldRecords();
+        LOG.info("Completed deleting old loadbalancer usage records from the 'loadbalancing' database.");
     }
 
     private void deleteHostUsageRecords() {
-        LOG.info("Deleting old host usage records...");
+        LOG.info("Deleting old host usage records from the 'loadbalancing_usage' database...");
         hostUsageRepository.deleteOldRecords();
-        LOG.info("Completed deleting old host usage records.");
+        LOG.info("Completed deleting old host usage records from the 'loadbalancing_usage' database.");
     }
+
 }

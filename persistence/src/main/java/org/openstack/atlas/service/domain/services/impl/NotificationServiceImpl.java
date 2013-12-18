@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class NotificationServiceImpl extends BaseService implements NotificationService{
+public class NotificationServiceImpl extends BaseService implements NotificationService {
 
     @Transactional
     public void saveNodeEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity) {
@@ -16,7 +16,8 @@ public class NotificationServiceImpl extends BaseService implements Notification
         loadBalancerEventRepository.save(nE);
 
         LoadBalancerServiceEvent lsE = AtomHelper.createloadBalancerServiceEvent(userName, accountId, loadbalancerId, title, desc, eventType, category, severity, nodeId);
-        loadBalancerEventRepository.save(lsE);    }
+        loadBalancerEventRepository.save(lsE);
+    }
 
     @Transactional
     public void saveNodeServiceEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity, String detailedMessage) {

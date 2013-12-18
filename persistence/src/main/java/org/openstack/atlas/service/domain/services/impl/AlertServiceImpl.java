@@ -12,9 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class AlertServiceImpl extends org.openstack.atlas.service.domain.services.impl.BaseService implements AlertService {
+public class AlertServiceImpl extends BaseService implements AlertService {
     private final Log LOG = LogFactory.getLog(AlertServiceImpl.class);
-
 
     @Override
     public Alert getById(Integer id) throws EntityNotFoundException {

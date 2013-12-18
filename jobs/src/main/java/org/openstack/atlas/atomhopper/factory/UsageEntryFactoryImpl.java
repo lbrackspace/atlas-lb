@@ -45,6 +45,7 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
 
     private org.w3._2005.atom.ObjectFactory usageEntryFactory;
     private com.rackspace.docs.usage.lbaas.ObjectFactory lbUsageFactory;
+    private com.rackspace.docs.event.lbaas.delete.ObjectFactory lbDeleteFactory;
     private com.rackspace.docs.core.event.ObjectFactory v1EventFactory;
 
 
@@ -52,6 +53,7 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
         this.atomHopperConfig = new AtomHopperConfiguration();
         this.usageEntryFactory = new org.w3._2005.atom.ObjectFactory();
         this.lbUsageFactory = new com.rackspace.docs.usage.lbaas.ObjectFactory();
+        this.lbDeleteFactory = new com.rackspace.docs.event.lbaas.delete.ObjectFactory();
         this.v1EventFactory = new com.rackspace.docs.core.event.ObjectFactory();
     }
 
@@ -82,14 +84,15 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
         usageV1.setResourceName(usageRecord.getLoadbalancer().getName());
         EventType usageRecordEventType = mapEventType(usageRecord);
         if (usageRecordEventType != null && (usageRecordEventType.equals(EventType.DELETE))) {
-            usageV1.setType(usageRecordEventType);
             usageV1.setEventTime(AHUSLServiceUtil.processCalendar(usageRecord.getStartTime()));
+            usageV1.setType(EventType.DELETE);
+            usageV1.getAny().add(lbDeleteFactory.createProduct(buildLbaasUsageRecordDelete()));
         } else {
             usageV1.setType(EventType.USAGE);
             usageV1.setStartTime(AHUSLServiceUtil.processCalendar(usageRecord.getStartTime()));
             usageV1.setEndTime(AHUSLServiceUtil.processCalendar(usageRecord.getEndTime()));
+            usageV1.getAny().add(lbUsageFactory.createProduct(buildLbaasUsageRecord(usageRecord)));
         }
-        usageV1.getAny().add(lbUsageFactory.createProduct(buildLbaasUsageRecord(usageRecord)));
         return usageV1;
     }
 
@@ -131,6 +134,15 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
         return lbaasUsage;
     }
 
+    private com.rackspace.docs.event.lbaas.delete.CloudLoadBalancersType buildLbaasUsageRecordDelete() throws DatatypeConfigurationException {
+        com.rackspace.docs.event.lbaas.delete.CloudLoadBalancersType lbaasUsage = lbDeleteFactory.createCloudLoadBalancersType();
+        lbaasUsage.setResourceType(com.rackspace.docs.event.lbaas.delete.ResourceTypes.LOADBALANCER);
+        lbaasUsage.setServiceCode(SERVICE_CODE);
+        lbaasUsage.setVersion(USAGE_VERSION);
+
+        return lbaasUsage;
+    }
+
 
     private UsageContent generateUsageContent(V1Element v1Element, String contentType) {
         UsageContent content = usageEntryFactory.createUsageContent();
@@ -141,8 +153,9 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
 
     private String genUUIDString(Usage usageRecord) {
         return SERVICE_CODE
-                + "_" + usageRecord.getId()
                 + "_" + usageRecord.getLoadbalancer().getId()
+                + "_" + usageRecord.getStartTime()
+                + "_" + usageRecord.getEndTime()
                 + "_" + atomHopperConfig.getString(AtomHopperConfigurationKeys.ahusl_region)
                 + "_" + usageRecord.getEntryVersion();
     }
@@ -169,8 +182,14 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
 
     private Map<Object, Object> generateUsageEntryMap(UsageEntry usageEntry) throws JAXBException {
         Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("entrystring", UsageMarshaller.marshallResource(usageEntryFactory.createEntry(usageEntry),
-                JAXBContext.newInstance("org.w3._2005.atom:com.rackspace.docs.usage.lbaas")).toString());
+        JAXBContext context;
+        if (usageEntry.getContent().getEvent().getType().equals(EventType.DELETE)) {
+               context = JAXBContext.newInstance("org.w3._2005.atom:com.rackspace.docs.event.lbaas.delete");
+        } else {
+            context = JAXBContext.newInstance("org.w3._2005.atom:com.rackspace.docs.usage.lbaas");
+        }
+        map.put("entrystring", UsageMarshaller
+                .marshallResource(usageEntryFactory.createEntry(usageEntry), context).toString());
         map.put("entryobject", usageEntry);
         return map;
     }
@@ -209,6 +228,10 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
             return Region.LON;
         } else if (configRegion.equals("SYD")) {
             return Region.SYD;
+        } else if (configRegion.equals("IAD")) {
+            return Region.IAD;
+        } else if (configRegion.equals("HKG")) {
+            return Region.HKG;
         } else {
             LOG.error("Region could not be mapped from config, using default");
             return Region.GLOBAL;
