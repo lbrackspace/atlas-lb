@@ -10,6 +10,7 @@ public class StmConstants {
     public static final String CONTENT_CACHING = "content_caching";
     public static final String XFF = "add_x_forwarded_for_header";
     public static final String XFP = "add_x_forwarded_proto";
+    public static final String HTTPS_REDIRECT = "force_https_redirect";
     public static final String SOURCE_IP = "ip";
     public static final String HTTP_COOKIE = "cookie";
     public static final String X_FORWARDED_FOR_SCRIPT = "http.addHeader( \"X-Forwarded-For\", request.getRemoteIP() );\n" +
