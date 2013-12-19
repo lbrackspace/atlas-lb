@@ -3,6 +3,8 @@ package org.rackspace.stingray.client.integration;
 
 import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.rackspace.stingray.client.StingrayRestClient;
@@ -17,7 +19,7 @@ import java.util.List;
 
 public class MonitorScriptITest extends StingrayTestBase {
     StingrayRestClient client;
-    String fileName;
+    static String fileName;
     String fileText;
 
     /**
@@ -29,6 +31,11 @@ public class MonitorScriptITest extends StingrayTestBase {
         fileName = TESTNAME;
         fileText = "test file";
 
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        removeTestFile(fileName);
     }
 
     /**

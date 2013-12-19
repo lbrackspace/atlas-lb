@@ -16,4 +16,18 @@ public class StingrayTestBase {
         return fixx;
     }
 
+    public static void removeTestFile(String fileName) {
+        try {
+            File file = new File(fileName);
+            if (file.delete()) {
+                System.out.println(file.getName() + " is deleted!");
+            } else {
+                System.out.println("File " + fileName + " delete operation is failed.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+    }
+
 }

@@ -1,9 +1,7 @@
 package org.rackspace.stingray.client.integration;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -16,7 +14,7 @@ import java.util.List;
 
 public class TrafficscriptITest extends StingrayTestBase {
     StingrayRestClient client;
-    String fileName;
+    static String fileName;
     String fileText;
 
     /**
@@ -27,6 +25,11 @@ public class TrafficscriptITest extends StingrayTestBase {
         client = new StingrayRestClient();
         fileName = "test_script";
         fileText = "This is a test script...";
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        removeTestFile(fileName);
     }
 
     /**
