@@ -58,6 +58,10 @@
                      "description":   "Place the service protection class into testing mode. (Log when this class would have dropped a connection, but allow all connections through.)",
 
                      "type":          "boolean"
+                  },
+                  "per_process_connection_count":{
+                      "description":  "",
+                      "type":         "boolean"
                   }
                }
             },
