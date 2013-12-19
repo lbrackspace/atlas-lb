@@ -196,6 +196,7 @@
         </xsd:sequence>
     </xsd:complexType>
     
+
     <xsd:element name="cluster" type="tns:cluster"/>
     <xsd:complexType name="cluster">
         <xsd:attribute name="id" type="xsd:int"/>
@@ -211,6 +212,13 @@
         <xsd:attribute name="clusterIpv6Cidr" type="xsd:string"/>
         <xsd:attribute name="status" type="tns:clusterStatus"/>
         <xsd:attribute name="clusterType" type="tns:clusterType"/>
+    </xsd:complexType>
+
+    <xsd:element name="accountRecord" type="tns:accountRecord" />
+    <xsd:complexType name="accountRecord">
+        <xsd:attribute name="id" type="xsd:int" />
+        <xsd:attribute name="sha1SumForIpv6" type="xsd:string" />
+        <xsd:attribute name="clusterType" type="tns:clusterType" />
     </xsd:complexType>
 
     <xsd:element name="hosts" type="tns:hosts"/>
