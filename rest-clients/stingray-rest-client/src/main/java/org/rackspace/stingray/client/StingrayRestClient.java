@@ -61,6 +61,10 @@ public class StingrayRestClient extends StingrayRestClientManager {
         super(configuration, null, null, false, null, null);
     }
 
+    public StingrayRestClient(String adminKey){
+        super(null, null, null, false, null, adminKey);
+    }
+
     public StingrayRestClient() {
         super(null, null, null, false, null, null);
     }
