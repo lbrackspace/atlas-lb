@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.NodeMap;
@@ -11,6 +12,7 @@ import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryServ
 import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
 import org.openstack.atlas.service.domain.services.helpers.NodesPrioritiesContainer;
+import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.ip.IPUtils;
@@ -64,10 +66,14 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     }
 
     @Transactional
+    @DeadLockRetry
     @Override
-    public LoadBalancer delNodes(LoadBalancer lb, Collection<Node> nodes) {
-        LoadBalancer lbReturn = nodeRepository.delNodes(lb, nodes);
-        return lbReturn;
+    public LoadBalancer delNodes(LoadBalancer lb, Collection<Node> nodes) throws EntityNotFoundException {
+           return nodeRepository.delNodes(loadBalancerRepository.getById(lb.getId()), nodes);
+    }
+
+    private void hmm(LoadBalancer lb, Collection<Node> nodes) throws EntityNotFoundException {
+        lb = loadBalancerRepository.getById(lb.getId());
     }
 
     @Transactional
@@ -92,12 +98,12 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldNodesLb.getNodes(), newNodesLb.getNodes());
 
         // You are not allowed to add secondary nodes with out Some form of monitoring. B-16407
-        if(npc.hasSecondary() && !loadBalancerRepository.loadBalancerHasHealthMonitor(oldNodesLb.getId())) {
+        if (npc.hasSecondary() && !loadBalancerRepository.loadBalancerHasHealthMonitor(oldNodesLb.getId())) {
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
 
         // No secondary nodes unless there are primary nodes
-        if(npc.hasSecondary() && !npc.hasPrimary()) {
+        if (npc.hasSecondary() && !npc.hasPrimary()) {
             throw new BadRequestException(Constants.NoPrimaryNodeError);
         }
 
@@ -192,12 +198,12 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
         // Won't delete secondary nodes untill you also delete Health Monitor
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
-        if(npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null){
+        if (npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null) {
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
 
         // No secondary nodes unless there are primary nodes
-        if(npc.hasSecondary() && !npc.hasPrimary()) {
+        if (npc.hasSecondary() && !npc.hasPrimary()) {
             throw new BadRequestException(Constants.NoPrimaryNodeError);
         }
 
@@ -218,6 +224,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     }
 
     @Override
+    @DeadLockRetry
     @Transactional
     public LoadBalancer deleteNode(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
@@ -229,14 +236,22 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                     loadBalancer.getId()));
         }
 
-        isLbActive(dbLoadBalancer);
 
-        LOG.debug("Updating the lb status to pending_update");
-        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
-        loadBalancerRepository.update(dbLoadBalancer);
-
-        //Set status record
-        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
+            LOG.warn(message);
+            throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        }
+//
+//        LOG.debug("Updating the lb status to pending_update");
+//        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
+//        loadBalancerRepository.update(dbLoadBalancer);
+//
+//        //Set status record
+//        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         return loadBalancer;
     }
 
