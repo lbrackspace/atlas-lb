@@ -6,6 +6,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -16,15 +17,12 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-public class SslCacrlITest extends StingrayTestBase {
-    StingrayRestClient client;
-    static String fileName;
-    String fileText;
-
+public class SslCacrlITest extends StingrayScriptTestBase {
 
     @Before
-    public void standUp() {
-        client = new StingrayRestClient();
+    @Override
+    public void standUp() throws DecryptException {
+        super.standUp();
         fileName = TESTNAME;
         fileText = "test file";
 

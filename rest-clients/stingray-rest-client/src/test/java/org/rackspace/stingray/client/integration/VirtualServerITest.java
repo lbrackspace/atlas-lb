@@ -3,6 +3,7 @@ package org.rackspace.stingray.client.integration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -16,7 +17,6 @@ import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 import java.util.List;
 
 public class VirtualServerITest extends StingrayTestBase {
-    StingrayRestClient client;
     String poolName;
     String vsName;
     Integer port;
@@ -29,8 +29,9 @@ public class VirtualServerITest extends StingrayTestBase {
      * This method is the beginning for every test following.  Initial steps to the testing are completed here.
      */
     @Before
-    public void standUp() {
-        client = new StingrayRestClient();
+    @Override
+    public void standUp() throws DecryptException {
+        super.standUp();
         virtualServer = new VirtualServer();
         properties = new VirtualServerProperties();
         basic = new VirtualServerBasic();

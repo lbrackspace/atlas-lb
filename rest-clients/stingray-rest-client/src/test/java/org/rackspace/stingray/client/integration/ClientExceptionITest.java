@@ -3,6 +3,7 @@ package org.rackspace.stingray.client.integration;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -12,15 +13,15 @@ import org.rackspace.stingray.client.pool.PoolProperties;
 
 public class ClientExceptionITest extends StingrayTestBase {
     //Verify marshaling of all exception messages...
-    StingrayRestClient client;
     String vsName;
     Pool pool;
     PoolProperties poolProperties;
     PoolBasic poolBasic;
 
     @Before
-    public void standUp() {
-        client = new StingrayRestClient();
+    @Override
+    public void standUp() throws DecryptException {
+        super.standUp();
         vsName = TESTNAME;
         pool = new Pool();
         poolProperties = new PoolProperties();

@@ -4,6 +4,7 @@ package org.rackspace.stingray.client.integration;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -15,7 +16,6 @@ import org.rackspace.stingray.client.monitor.MonitorProperties;
 import java.util.List;
 
 public class MonitorITest extends StingrayTestBase {
-    StingrayRestClient client;
     Monitor monitor;
     MonitorProperties monitorProperties;
     MonitorBasic monitorBasic;
@@ -25,8 +25,9 @@ public class MonitorITest extends StingrayTestBase {
      * Initializes variables prior to test execution
      */
     @Before
-    public void standUp() {
-        client = new StingrayRestClient();
+    @Override
+    public void standUp() throws DecryptException {
+        super.standUp();
         monitor = new Monitor();
         monitorProperties = new MonitorProperties();
         monitorBasic = new MonitorBasic();
