@@ -21,6 +21,7 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -225,7 +226,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
     @Override
     @DeadLockRetry
-    @Transactional
+    @Transactional()
     public LoadBalancer deleteNode(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
@@ -236,15 +237,22 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                     loadBalancer.getId()));
         }
 
-
-        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
-            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
-            LOG.warn(message);
+        String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
+        //Should lock while checking status, fail if not active
+        if (!verifyForOp(dbLoadBalancer)) {
             throw new ImmutableEntityException(message);
-        } else {
-            //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
+        //Should lock and update status, wont update until the read has completed and should not allow others to read/write until done..
+        if (!loadBalancerRepository.setStatusForOp(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)) {
+            throw new ImmutableEntityException(message);
+        }
+//        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+//            LOG.warn(message);
+//            throw new ImmutableEntityException(message);
+//        } else {
+//            //Set status record
+//            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+//        }
 //
 //        LOG.debug("Updating the lb status to pending_update");
 //        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);

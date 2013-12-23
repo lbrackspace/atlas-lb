@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.repository;
 
+import org.hibernate.Session;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.service.domain.entities.*;
 
@@ -28,6 +29,8 @@ import javax.persistence.criteria.*;
 import javax.persistence.metamodel.MapAttribute;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,6 +57,18 @@ public class LoadBalancerRepository {
             throw new EntityNotFoundException(message);
         }
         return lb;
+    }
+
+    public boolean getByIdForOp(Integer id) throws EntityNotFoundException {
+        String qStr = "from LoadBalancer lb where lb.id=:lid";
+                List<LoadBalancer> lbList;
+                Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_READ).
+                        setParameter("lid", id);
+                lbList = q.getResultList();
+                if (lbList.size() < 1) {
+                    throw new EntityNotFoundException();
+                }
+        return true ? lbList.get(0).getStatus().equals(LoadBalancerStatus.ACTIVE) : false;
     }
 
     public List<LoadBalancerIdAndName> getAllLoadbalancerIdsAndNames() {
@@ -283,6 +298,10 @@ public class LoadBalancerRepository {
 
 
     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
+        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+        Date now = new Date();
+        String strDate = sdfDate.format(now);
+        LOG.debug("SET STATUS: " + strDate);
 
         String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         List<LoadBalancer> lbList;
@@ -336,9 +355,28 @@ public class LoadBalancerRepository {
             throw new EntityNotFoundException();
         }
 
+        lbList.get(0).setStatus(status);
+        entityManager.merge(lbList.get(0));
+    }
+
+    public boolean setStatusForOp(Integer accountId, Integer loadbalancerId, LoadBalancerStatus status) throws EntityNotFoundException {
+        String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
+        List<LoadBalancer> lbList;
+        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
+                setParameter("aid", accountId).
+                setParameter("lid", loadbalancerId);
+        lbList = q.getResultList();
+        if (lbList.size() < 1) {
+            throw new EntityNotFoundException();
+        }
+
+        if (!lbList.get(0).getStatus().equals(LoadBalancerStatus.ACTIVE)) {
+            return false;
+        }
 
         lbList.get(0).setStatus(status);
         entityManager.merge(lbList.get(0));
+        return true;
     }
 
     public boolean testAndSetStatusPending(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException {

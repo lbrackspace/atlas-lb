@@ -21,6 +21,8 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -189,6 +191,10 @@ public class BaseService {
             LOG.warn(message);
             throw new ImmutableEntityException(message);
         }
+    }
+
+    public boolean verifyForOp(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException, EntityNotFoundException {
+        return loadBalancerRepository.getByIdForOp(dbLoadBalancer.getId());
     }
 
     protected boolean isActiveLoadBalancer(LoadBalancer rLb, boolean refetch) throws EntityNotFoundException {
