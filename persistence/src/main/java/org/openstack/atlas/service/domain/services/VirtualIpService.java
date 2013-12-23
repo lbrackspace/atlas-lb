@@ -24,7 +24,7 @@ public interface VirtualIpService {
     public List<LoadBalancer> getLoadBalancerByVip6Id(Integer vip6Id);
 
     public List<LoadBalancer> getLoadBalancerByVipAddress(String address);
-    
+
     public List<LoadBalancer> getLoadBalancerByVip6Address(String address) throws IPStringConversionException, EntityNotFoundException;
 
     public VirtualIp allocateIpv4VirtualIp(VirtualIp vipConfig, Cluster cluster) throws OutOfVipsException;
@@ -85,4 +85,9 @@ public interface VirtualIpService {
 
     public Map<Integer, List<VirtualIp>> getAllocatedVipsMappedByLbId();
 
+    public Account getAccountRecord(Integer aid) throws EntityNotFoundException;
+
+    public Account updateOrCreateAccountRecord(Account account) throws NoSuchAlgorithmException;
+
+    public boolean deleteAccountRecord(Integer aid);
 }

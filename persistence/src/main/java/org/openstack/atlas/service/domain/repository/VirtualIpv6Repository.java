@@ -122,7 +122,7 @@ public class VirtualIpv6Repository {
         entityManager.merge(v);
     }
 
-    private void remove(Object v) {
+    public void remove(Object v) {
         entityManager.remove(v);
     }
 

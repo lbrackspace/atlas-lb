@@ -777,4 +777,30 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         }
         return vipMap;
     }
+
+    @Override
+    public Account getAccountRecord(Integer aid) throws EntityNotFoundException {
+        return virtualIpv6Repository.getAccountRecordById(aid);
+    }
+
+    @Override
+    public Account updateOrCreateAccountRecord(Account account) throws NoSuchAlgorithmException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    @Transactional
+    public boolean deleteAccountRecord(Integer aid) {
+        Account account;
+        if (aid == null) {
+            return false;
+        }
+        try {
+            account = virtualIpv6Repository.getAccountRecordById(aid);
+        } catch (EntityNotFoundException ex) {
+            return false; //Nothing to be deleted
+        }
+        virtualIpRepository.remove(account);
+        return true;
+    }
 }
