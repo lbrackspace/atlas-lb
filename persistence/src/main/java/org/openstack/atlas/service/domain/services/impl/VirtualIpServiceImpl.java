@@ -784,8 +784,30 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     }
 
     @Override
-    public Account updateOrCreateAccountRecord(Account account) throws NoSuchAlgorithmException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @Transactional
+    public Account updateOrCreateAccountRecord(Account apiAccount) throws NoSuchAlgorithmException, EntityNotFoundException {
+        Account dbAccount;
+        if (apiAccount.getId() == null) {
+            throw new EntityNotFoundException("please specify an account id as the account table does not have an auto incrementing primary key");
+        }
+        try {
+            dbAccount = virtualIpv6Repository.getAccountRecordById(apiAccount.getId());
+        } catch (EntityNotFoundException ex) {
+            dbAccount = new Account();
+            dbAccount.setId(apiAccount.getId());
+            dbAccount.setSha1SumForIpv6(HashUtil.sha1sumHex(apiAccount.getId().toString().getBytes(), 0, 4));
+            virtualIpv6Repository.persist(dbAccount);
+        }
+        if (apiAccount.getSha1SumForIpv6() != null) {
+            dbAccount.setSha1SumForIpv6(apiAccount.getSha1SumForIpv6());
+        }
+        if (apiAccount.getClusterType() != null) {
+            dbAccount.setClusterType(apiAccount.getClusterType());
+        }
+        virtualIpv6Repository.merge(dbAccount);
+        virtualIpv6Repository.flush();
+
+        return virtualIpv6Repository.getAccountRecordById(dbAccount.getId()); // Incase the merge entity isn't in the same persistence context
     }
 
     @Override

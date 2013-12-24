@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openstack.atlas.api.helpers.ResponseFactory;
@@ -11,7 +12,7 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.ExtendedAccountL
 import org.openstack.atlas.service.domain.entities.GroupRateLimit;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.ExtendedAccountLoadBalancer;
-
+import org.openstack.atlas.util.debug.Debug;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,7 +20,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.List;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Produces;
+
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountRecord;
 import org.openstack.atlas.service.domain.entities.Account;
 
@@ -148,6 +151,27 @@ public class AccountResource extends ManagementDependencyProvider {
             return ResponseFactory.getValidationFaultResponse(msg);
         }
         return ResponseFactory.getSuccessResponse("deleted account " + id + " from Account table", 200);
+    }
+
+    @PUT
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response updateOrCreateAccountRecord(AccountRecord apiAccount) {
+        if (!isUserInRole("ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        apiAccount.setId(id); // Just incase the account on the URL doesn't match the account in the body
+        Account dbAccount;
+        dbAccount = (Account) dozerMapper.map(apiAccount, Account.class);
+        try {
+            dbAccount = virtualIpService.updateOrCreateAccountRecord(dbAccount);
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(AccountResource.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (EntityNotFoundException ex) {
+            return ResponseFactory.getErrorResponse(ex, "Exception:", Debug.getExtendedStackTrace(ex));
+        }
+        AccountRecord accountRecord = (AccountRecord) dozerMapper.map(dbAccount, AccountRecord.class);
+        return Response.status(200).entity(accountRecord).build();
     }
 
     public void setLoadBalancersResource(LoadBalancersResource loadBalancersResource) {

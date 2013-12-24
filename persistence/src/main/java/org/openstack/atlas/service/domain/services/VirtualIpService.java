@@ -87,7 +87,7 @@ public interface VirtualIpService {
 
     public Account getAccountRecord(Integer aid) throws EntityNotFoundException;
 
-    public Account updateOrCreateAccountRecord(Account account) throws NoSuchAlgorithmException;
+    public Account updateOrCreateAccountRecord(Account account) throws NoSuchAlgorithmException, EntityNotFoundException;
 
     public boolean deleteAccountRecord(Integer aid);
 }

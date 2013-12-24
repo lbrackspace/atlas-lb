@@ -114,16 +114,20 @@ public class VirtualIpv6Repository {
         return vips;
     }
 
-    private void persist(Object v) {
+    public void persist(Object v) {
         entityManager.persist(v);
     }
 
-    private void merge(Object v) {
+    public void merge(Object v) {
         entityManager.merge(v);
     }
 
     public void remove(Object v) {
         entityManager.remove(v);
+    }
+
+    public void flush() {
+        entityManager.flush();
     }
 
     public List<LoadBalancer> getLoadBalancersByVipId(Integer virtualIpv6Id) {
