@@ -246,6 +246,7 @@ public class StmAdapterImplTestHelper {
         loadBalancerJoinVip.setVirtualIp(vip);
         vipList.add(loadBalancerJoinVip);
         loadBalancer.setLoadBalancerJoinVipSet(vipList);
+        loadBalancer.setLocationHeaderRewrite(true);
         return loadBalancer;
     }
 }

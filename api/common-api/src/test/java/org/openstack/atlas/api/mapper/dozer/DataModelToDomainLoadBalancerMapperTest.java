@@ -42,6 +42,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
             loadBalancer.setHalfClosed(true);
             loadBalancer.setAlgorithm("ROUND_ROBIN");
             loadBalancer.setStatus("SUSPENDED");
+            loadBalancer.setLocationHeaderRewrite(false);
 
             ConnectionLogging conLog = new ConnectionLogging();
             conLog.setEnabled(true);
@@ -152,6 +153,18 @@ public class DataModelToDomainLoadBalancerMapperTest {
             loadBalancer.setHalfClosed(false);
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             Assert.assertEquals(false, domainLoadBalancer.isHalfClosed());
+        }
+
+        @Test
+        public void should_map_location_header_rewrite() {
+            Assert.assertEquals(false, domainLoadBalancer.isLocationHeaderRewrite());
+        }
+
+        @Test
+        public void should_map_location_header_rewrite_true() {
+            loadBalancer.setLocationHeaderRewrite(true);
+            domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
+            Assert.assertEquals(true, domainLoadBalancer.isLocationHeaderRewrite());
         }
 
         @Test

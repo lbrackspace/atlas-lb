@@ -12,6 +12,7 @@ import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerHttp;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import java.util.List;
@@ -24,6 +25,7 @@ public class VirtualServerITest extends StingrayTestBase {
     VirtualServer virtualServer;
     VirtualServerProperties properties;
     VirtualServerBasic basic;
+    VirtualServerHttp http;
 
     /**
      * This method is the beginning for every test following.  Initial steps to the testing are completed here.
@@ -35,6 +37,7 @@ public class VirtualServerITest extends StingrayTestBase {
         virtualServer = new VirtualServer();
         properties = new VirtualServerProperties();
         basic = new VirtualServerBasic();
+        http = new VirtualServerHttp();
         poolName = TESTNAME;
         vsName = TESTNAME;
         port = 8998;
@@ -43,6 +46,7 @@ public class VirtualServerITest extends StingrayTestBase {
         basic.setPool(poolName);
         basic.setPort(port);
         properties.setBasic(basic);
+        properties.setHttp(http);
         virtualServer.setProperties(properties);
     }
 

@@ -72,11 +72,13 @@ public class ResourceTranslator {
         VirtualServerProperties properties = new VirtualServerProperties();
         VirtualServerConnectionError ce = new VirtualServerConnectionError();
         VirtualServerTcp tcp = new VirtualServerTcp();
+        VirtualServerHttp http = new VirtualServerHttp();
         VirtualServerLog log;
         List<String> rules = new ArrayList<String>();
 
         properties.setBasic(basic);
         properties.setSsl(ssl);
+        properties.setHttp(http);
         cVServer = new VirtualServer();
         cVServer.setProperties(properties);
 
@@ -160,6 +162,12 @@ public class ResourceTranslator {
 
         //ssl settings
         ssl.setServer_cert_default(vsName);
+
+        if(loadBalancer.isLocationHeaderRewrite() == null || loadBalancer.isLocationHeaderRewrite()) {
+            http.setLocation_rewrite(StmConstants.LOCATION_HEADER_REWRITE_HOST_ONLY);
+        } else {
+            http.setLocation_rewrite(StmConstants.LOCATION_HEADER_REWRITE_DISABLED);
+        }
 
         return cVServer;
     }

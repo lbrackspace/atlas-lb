@@ -40,6 +40,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final String XFF = "add_x_forwarded_for_header";
     public static final String XFP = "add_x_forwarded_proto";
     public static final String HTTPS_REDIRECT = "force_https_redirect";
+    public static final String LOCATION_HEADER_REWRITE_DISABLED = "never";
+    public static final String LOCATION_HEADER_REWRITE_HOST_ONLY = "if_host_matches";
     public static final VirtualServerRule ruleRateLimitHttp = new VirtualServerRule(RATE_LIMIT_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleRateLimitNonHttp = new VirtualServerRule(RATE_LIMIT_NON_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
@@ -338,6 +340,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (lb.isHttpsRedirect() != null) {
             updateHttpsRedirect(config, lb);
         }
+
+        updateLocationHeaderRewrite(config, lb);
     }
 
     private void isVSListeningOnAllAddresses(ZxtmServiceStubs serviceStubs, String virtualServerName, String poolName) throws RemoteException, VirtualServerListeningOnAllAddressesException {
@@ -2154,6 +2158,30 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         serviceStubs.getVirtualServerBinding().setProtection(new String[]{protectionClassName}, new String[]{protectionClassName});
 
         LOG.info(String.format("Successfully updated access list for protection class '%s'...", protectionClassName));
+    }
+
+    private void updateLocationHeaderRewrite(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException{
+        updateLocationheaderRewrite(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        if (loadBalancer.hasSsl()) {
+            updateLocationheaderRewrite(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
+        if (loadBalancer.isHttpsRedirect()) {
+            updateLocationheaderRewrite(config, loadBalancer, ZxtmNameBuilder.genRedirectVSName(loadBalancer));
+        }
+    }
+
+    private void updateLocationheaderRewrite(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String vsName)
+            throws RemoteException, InsufficientRequestException{
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        if (loadBalancer.isLocationHeaderRewrite() == null || loadBalancer.isLocationHeaderRewrite())
+        {
+            serviceStubs.getVirtualServerBinding().setLocationDefaultRewriteMode(new String[]{vsName},
+                    new VirtualServerLocationDefaultRewriteMode[]{VirtualServerLocationDefaultRewriteMode.if_host_matches});
+        } else {
+            serviceStubs.getVirtualServerBinding().setLocationDefaultRewriteMode(new String[]{vsName},
+                    new VirtualServerLocationDefaultRewriteMode[]{VirtualServerLocationDefaultRewriteMode.never});
+        }
     }
 
     @Override

@@ -770,6 +770,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (loadBalancer.isHttpsRedirect() == null) {
             loadBalancer.setHttpsRedirect(false);
         }
+
+        if (loadBalancer.isLocationHeaderRewrite() == null || (!loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP) && !loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS))) {
+            loadBalancer.setLocationHeaderRewrite(true);
+        }
+
     }
 
     private void verifySessionPersistence(LoadBalancer queueLb) throws BadRequestException {

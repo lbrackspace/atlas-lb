@@ -189,6 +189,10 @@
             <a get-method="isHttpsRedirect">httpsRedirect</a>
             <b get-method="isHttpsRedirect">httpsRedirect</b>
         </field>
+        <field>
+            <a get-method="isLocationHeaderRewrite">locationHeaderRewrite</a>
+            <b get-method="isLocationHeaderRewrite">locationHeaderRewrite</b>
+        </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SourceAddressesConverter">
             <a>sourceAddresses</a>
             <b>host</b>

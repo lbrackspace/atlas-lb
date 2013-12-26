@@ -6,6 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
+import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -131,6 +132,7 @@ public class FullConfigITest extends STMTestBase {
 
             lb.setConnectionLogging(true);
             lb.setContentCaching(true);
+            lb.setLocationHeaderRewrite(false);
 
             SslTermination sslTermination = new SslTermination();
             sslTermination.setSecureTrafficOnly(false);
@@ -311,6 +313,7 @@ public class FullConfigITest extends STMTestBase {
         lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
         lb.setHalfClosed(true);
         lb.setProtocol(LoadBalancerProtocol.HTTP);
+        lb.setLocationHeaderRewrite(true);
 
         HealthMonitor monitor = new HealthMonitor();
         monitor.setType(HealthMonitorType.CONNECT);
@@ -403,6 +406,12 @@ public class FullConfigITest extends STMTestBase {
         Assert.assertEquals(vs.getProperties().getBasic().getListen_on_traffic_ips(), translator.genGroupNameSet(lb));
 
         Assert.assertEquals(protectionClassName(), vs.getProperties().getBasic().getProtection_class());
+
+        if(lb.isLocationHeaderRewrite()){
+            Assert.assertEquals(vs.getProperties().getHttp().getLocation_rewrite().toLowerCase(), StmConstants.LOCATION_HEADER_REWRITE_HOST_ONLY);
+        } else {
+            Assert.assertEquals(vs.getProperties().getHttp().getLocation_rewrite().toLowerCase(), StmConstants.LOCATION_HEADER_REWRITE_DISABLED);
+        }
 
 
         return vs;

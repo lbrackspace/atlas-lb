@@ -72,6 +72,9 @@ public class LoadBalancer extends Entity implements Serializable {
     @Column(name = "https_redirect", nullable = false)
     private Boolean httpsRedirect;
 
+    @Column(name = "location_header_rewrite", nullable = false)
+    private Boolean locationHeaderRewrite;
+
     @JoinColumn(name = "protocol", nullable = false)
     @Enumerated(EnumType.STRING)
     private LoadBalancerProtocol protocol;
@@ -238,6 +241,14 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public Boolean isHttpsRedirect() {
         return httpsRedirect;
+    }
+
+    public Boolean isLocationHeaderRewrite() {
+        return locationHeaderRewrite;
+    }
+
+    public void setLocationHeaderRewrite(Boolean locationHeaderRewrite) {
+        this.locationHeaderRewrite = locationHeaderRewrite;
     }
 
     public void setHttpsRedirect(Boolean httpsRedirect) {

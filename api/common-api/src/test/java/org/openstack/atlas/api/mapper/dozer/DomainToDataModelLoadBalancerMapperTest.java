@@ -548,6 +548,12 @@ public class DomainToDataModelLoadBalancerMapperTest {
             Assert.assertNull(dataModelLb.getSessionPersistence());
         }
 
+        @Test
+        public void shouldMapCorrectlyWhenLocationHeaderRewriteIncluded(){
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer domainLb2 = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class);
+            Assert.assertEquals(false, domainLb2.isLocationHeaderRewrite());
+        }
+
         @Test(expected = org.dozer.MappingException.class)
         public void shouldThrowExceptionWhenMappingFromDataModelToDomainModel() {
             mapper.map(dataModelLb, LoadBalancer.class, "SIMPLE_LB");
@@ -583,6 +589,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
         loadBalancer.setName("LB 1");
         loadBalancer.setPort(9999);
         loadBalancer.setHalfClosed(true);
+        loadBalancer.setLocationHeaderRewrite(false);
 
         loadBalancer.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
         loadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);

@@ -12,6 +12,8 @@ public class StmConstants {
     public static final String XFP = "add_x_forwarded_proto";
     public static final String SOURCE_IP = "ip";
     public static final String HTTP_COOKIE = "cookie";
+    public static final String LOCATION_HEADER_REWRITE_DISABLED = "never";
+    public static final String LOCATION_HEADER_REWRITE_HOST_ONLY = "if_host_matches";
     public static final String X_FORWARDED_FOR_SCRIPT = "http.addHeader( \"X-Forwarded-For\", request.getRemoteIP() );\n" +
             "http.addHeader( \"X-Forwarded-Port\", request.getLocalPort() );";
     public static final String X_FORWARDED_PROTO_SCRIPT = "$vserver = connection.getVirtualServer();\n" +
