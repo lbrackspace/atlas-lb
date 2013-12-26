@@ -63,11 +63,11 @@ public class RsaConst {
 
     // Static initializers aren't executed intill a method of the class is
     // accessed for the first time.
-    public static void init() {
+    public synchronized static void init() {
         initCount++;
     }
 
-    public static int initCount() {
+    public synchronized static int initCount() {
         return initCount;
     }
 }

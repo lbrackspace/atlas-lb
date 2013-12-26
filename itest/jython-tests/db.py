@@ -1,6 +1,6 @@
 
-import org.openstack.atlas.logs.hibernatetoy.HibernateDbConf as HibernateDbConf
-import org.openstack.atlas.logs.hibernatetoy.HuApp as HuApp
+import org.openstack.atlas.util.itest.hibernate.HibernateDbConf as HibernateDbConf
+import org.openstack.atlas.util.itest.hibernate.HuApp as HuApp
 import org.openstack.atlas.util.crypto.CryptoUtil as CryptoUtil
 
 import utils
@@ -27,7 +27,6 @@ def begin(*args):
     tx = app.getSession().beginTransaction()
     return tx;
 
-
 def commit():
     app.getSession().getTransaction().commit()
 
@@ -37,12 +36,10 @@ def rollback():
 def getSession():
     return app.getSession()
 
-
 def qq(query):
     s = app.getSession()
     q = s.createQuery(query)
     return q.list()
-
 
 def getZxtmCreds(cid):
     eps = []
@@ -54,4 +51,10 @@ def getZxtmCreds(cid):
     ptext = CryptoUtil.decrypt(ctext)
     return (username,ptext)
 
+def buildClassImportFile(outfile,infile):
+    fp = open(utils.fullPath(outfile),"w")
+    fp.write("#!/usr/bin/env jython\n")
+    for className in HibernateDbConf.getHibernateClasses(infile):
+        fp.write("import %s as %s\n"%(className,className.split(".")[-1]))
+    fp.close()
 
