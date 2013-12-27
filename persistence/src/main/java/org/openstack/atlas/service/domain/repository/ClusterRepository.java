@@ -20,12 +20,13 @@ import java.util.*;
 
 @Repository
 @Transactional
-public class ClusterRepository  {
+public class ClusterRepository {
 
     final Log LOG = LogFactory.getLog(ClusterRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
-     public Cluster getById(Integer id) throws EntityNotFoundException {
+
+    public Cluster getById(Integer id) throws EntityNotFoundException {
         Cluster cl = entityManager.find(Cluster.class, id);
         if (cl == null) {
             String errMsg = String.format("Cannot access cluster {id=%d}", id);
@@ -61,6 +62,7 @@ public class ClusterRepository  {
         clusters = query.getResultList();
         return clusters;
     }
+
     public Cluster getClusterById(Integer id) throws EntityNotFoundException {
         List<Cluster> cl = entityManager.createQuery("from Cluster c where c.id = :id").setParameter("id",
                 id).getResultList();
@@ -115,12 +117,12 @@ public class ClusterRepository  {
     }
 
     public Integer getAssignedVirtualIpCountByType(Integer clusterId, String type) {
-         String sql = "select count(distinct(l.virtualip_id)) from loadbalancer_virtualip  l , loadbalancer lb, host h, virtual_ip_ipv4 vip "+
-                       " where l.loadbalancer_id = lb.id "+
-                       " and lb.host_id = h.id "+
-                        " and l.virtualip_id = vip.id "+
-                        " and vip.type = :type "+
-                        " and h.cluster_id = :clusterId ";
+        String sql = "select count(distinct(l.virtualip_id)) from loadbalancer_virtualip  l , loadbalancer lb, host h, virtual_ip_ipv4 vip "
+                + " where l.loadbalancer_id = lb.id "
+                + " and lb.host_id = h.id "
+                + " and l.virtualip_id = vip.id "
+                + " and vip.type = :type "
+                + " and h.cluster_id = :clusterId ";
         Query qry = entityManager.createNativeQuery(sql);
         qry.setParameter("clusterId", clusterId);
         qry.setParameter("type", type);
@@ -338,7 +340,7 @@ public class ClusterRepository  {
         return new Integer(results.get(0).toString());
     }
 
-        public Integer getNumberOfActiveLoadBalancersForCluster(Integer id) {
+    public Integer getNumberOfActiveLoadBalancersForCluster(Integer id) {
         List<Long> results;
         String query = "select count(*) from LoadBalancer l "
                 + "where l.host.cluster.id = :id and l.status='ACTIVE'";
@@ -402,7 +404,7 @@ public class ClusterRepository  {
             String lname = (String) row[2];
             Integer nid = (Integer) row[3];
             String nip = (String) row[4];
-            LoadBalancerStatus status =(LoadBalancerStatus) row[5];
+            LoadBalancerStatus status = (LoadBalancerStatus) row[5];
 
             if (currAid != aid) {
                 customer = new Customer();
@@ -424,16 +426,16 @@ public class ClusterRepository  {
                 currLid = lid;
             }
 
-             //SITESLB-918 removed nodes
+            //SITESLB-918 removed nodes
            /* if (nid != null) {
-                Node node = new Node();
-                node.setId(nid);
-                node.setIpAddress(nip);
-                node.setWeight(null);
-                if (loadBalancer.getNodes() == null) {
-                    loadBalancer.setNodes(new HashSet<Node>());
-                }
-                loadBalancer.addNode(node);
+            Node node = new Node();
+            node.setId(nid);
+            node.setIpAddress(nip);
+            node.setWeight(null);
+            if (loadBalancer.getNodes() == null) {
+            loadBalancer.setNodes(new HashSet<Node>());
+            }
+            loadBalancer.addNode(node);
             }  */
 
         }
@@ -458,13 +460,13 @@ public class ClusterRepository  {
         keys = new ArrayList<Integer>();
         vipReportMap = new HashMap<Integer, VirtualIpAvailabilityReport>();
         qStr.append("from Cluster c ");
-        if(cid != null) {
+        if (cid != null) {
             qStr.append("where c.id = :cid ");
         }
         qStr.append(" order by c.id");
         Query q = entityManager.createQuery(qStr.toString());
-        if(cid != null) {
-            q = q.setParameter("cid",cid);
+        if (cid != null) {
+            q = q.setParameter("cid", cid);
         }
         clusters = q.getResultList();
         for (Cluster c : clusters) {
@@ -496,13 +498,13 @@ public class ClusterRepository  {
 
             Double public7days = new Double(vrm.getAllocatedPublicIpAddressesInLastSevenDays());
             Double publicClear = new Double(vrm.getFreeAndClearPublicIpAddresses());
-            
+
             Double service7days = new Double(vrm.getAllocatedServiceNetIpAddressesInLastSevenDays());
             Double serviceClear = new Double(vrm.getFreeAndClearServiceNetIpAddresses());
-            
-            Double daysLeftPublic = (7.0*publicClear)/public7days;
-            Double daysLeftService = (7.0*serviceClear)/service7days;
-            
+
+            Double daysLeftPublic = (7.0 * publicClear) / public7days;
+            Double daysLeftService = (7.0 * serviceClear) / service7days;
+
             vrm.setRemainingDaysOfPublicIpAddresses(daysLeftPublic);
             vrm.setRemainingDaysOfServiceNetIpAddresses(daysLeftService);
             vipReportList.add(vrm);
@@ -583,7 +585,7 @@ public class ClusterRepository  {
         return vm;
     }
 
-    public Cluster getActiveCluster() throws ClusterStatusException {
+    public Cluster getDefaultActiveCluster() throws ClusterStatusException {
         List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl where cl.clusterStatus = :status").setParameter("status", ClusterStatus.ACTIVE).getResultList();
         if (cls != null && cls.size() > 0) {
             return cls.get(0);
@@ -594,13 +596,28 @@ public class ClusterRepository  {
         }
     }
 
-    public Cluster getCluster() {
-        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl").getResultList();
-        if (cls != null && cls.size() > 0) {
-            return cls.get(0);
-        } else {
-            return null;
+    public Cluster getActiveCluster(Integer accountId) throws ClusterStatusException {
+        // See if this user is an Internal account;
+        if (accountId == null) {
+            // No account associated with this query just return the default;
+            return getDefaultActiveCluster();
         }
+        List<Account> accountList = entityManager.createQuery("SELECT al FROM Account where id= :aid").setParameter("aid", accountId).getResultList();
+        if (accountList.size() <= 0) {
+            // This user doesn't look special
+            return getDefaultActiveCluster();
+        }
+        if (accountList.get(0).getClusterType() != ClusterType.INTERNAL) {
+            // This is not an internal account
+            return getDefaultActiveCluster();
+        }
+        List<Cluster> cl = entityManager.createQuery("SELECT cl from Cluster where clusterType=:cluster_type").setParameter("cluster_type", ClusterType.INTERNAL).getResultList();
+        if (cl.size() <= 0) {
+            // This datacenter doesn't have an INTERNAL cluster. :(
+            LOG.warn("Warning account " + accountId + " was marked as internal but this datacenter has no Internal Cluster");
+            return getDefaultActiveCluster();
+        }
+        return cl.get(0);
     }
 
     public class VipMap {

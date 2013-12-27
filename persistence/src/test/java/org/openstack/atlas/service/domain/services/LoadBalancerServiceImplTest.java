@@ -310,7 +310,7 @@ public class LoadBalancerServiceImplTest {
 
             when(hostRepository.getById(Matchers.<Integer>any())).thenReturn(host);
             when(hostRepository.getDefaultActiveHost(Matchers.<Integer>any())).thenReturn(host);
-            when(clusterRepository.getActiveCluster()).thenReturn(cluster);
+            when(clusterRepository.getActiveCluster(null)).thenReturn(cluster);
             when(hostService.getById(Matchers.<Integer>any())).thenReturn(host);
             when(loadBalancerStatusHistoryRepository.save(Matchers.<LoadBalancerStatusHistory>anyObject())).thenReturn(new LoadBalancerStatusHistory());
 

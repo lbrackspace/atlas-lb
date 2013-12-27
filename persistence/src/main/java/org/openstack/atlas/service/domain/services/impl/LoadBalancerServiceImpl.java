@@ -887,7 +887,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         if (!isHost) {
-            loadBalancer.setHost(hostService.getDefaultActiveHostAndActiveCluster());
+            loadBalancer.setHost(hostService.getDefaultActiveHostAndActiveCluster(loadBalancer.getAccountId()));
         } else {
             if (gLb != null) {
                 loadBalancer.setHost(gLb.getHost());
@@ -1123,7 +1123,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 }
                 lb.setHost(specifiedHost);
             } else {
-                lb.setHost(hostService.getDefaultActiveHostAndActiveCluster());
+                lb.setHost(hostService.getDefaultActiveHostAndActiveCluster(lb.getAccountId()));
             }
         }
     }
