@@ -602,7 +602,7 @@ public class ClusterRepository {
             // No account associated with this query just return the default;
             return getDefaultActiveCluster();
         }
-        List<Account> accountList = entityManager.createQuery("SELECT al FROM Account where id= :aid").setParameter("aid", accountId).getResultList();
+        List<Account> accountList = entityManager.createQuery("SELECT al FROM Account al where id= :aid").setParameter("aid", accountId).getResultList();
         if (accountList.size() <= 0) {
             // This user doesn't look special
             return getDefaultActiveCluster();

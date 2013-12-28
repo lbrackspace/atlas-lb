@@ -25,6 +25,7 @@ public class LoadBalancerRepositoryITest {
     public static class WhenGettingLoadBalancersActiveDuringPeriod extends Base {
 
         @Before
+        @Override
         public void standUp() throws Exception {
             super.standUp();
 
@@ -51,6 +52,7 @@ public class LoadBalancerRepositoryITest {
         }
 
         @After
+        @Override
         public void tearDown() throws Exception {
             loadBalancerRepository.delete(loadBalancer);
             super.tearDown();
