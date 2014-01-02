@@ -38,10 +38,7 @@ import static org.openstack.atlas.service.domain.entities.SessionPersistence.*;
 @Service
 public class LoadBalancerServiceImpl extends BaseService implements LoadBalancerService {
 
-    public static final HealthMonitorType DEFAULT_HM_TYPE = HealthMonitorType.CONNECT;
-    public static final Integer DEFAULT_HM_DELAY = 3;
-    public static final Integer DEFAULT_HM_TIMEOUT = 3;
-    public static final Integer DEFAULT_HM_FAILURE_LIMIT = 3;    private final Log LOG = LogFactory.getLog(LoadBalancerServiceImpl.class);
+    private final Log LOG = LogFactory.getLog(LoadBalancerServiceImpl.class);
 
     @Autowired
     private NotificationService notificationService;
@@ -772,16 +769,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         if (loadBalancer.isHttpsRedirect() == null) {
             loadBalancer.setHttpsRedirect(false);
-        }
-
-        if(loadBalancer.getHealthMonitor() == null && !loadBalancer.getProtocol().equals(LoadBalancerProtocol.DNS_UDP) && !loadBalancer.getProtocol().equals(LoadBalancerProtocol.UDP) && !loadBalancer.getProtocol().equals(LoadBalancerProtocol.UDP_STREAM)) {
-            LOG.info("Setting default CONNECT health monitor...");
-            HealthMonitor hm = new HealthMonitor();
-            hm.setType(DEFAULT_HM_TYPE);
-            hm.setDelay(DEFAULT_HM_DELAY);
-            hm.setTimeout(DEFAULT_HM_TIMEOUT);
-            hm.setAttemptsBeforeDeactivation(DEFAULT_HM_FAILURE_LIMIT);
-            loadBalancer.setHealthMonitor(hm);
         }
     }
 
