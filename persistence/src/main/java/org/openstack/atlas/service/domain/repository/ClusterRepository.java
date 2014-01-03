@@ -611,7 +611,7 @@ public class ClusterRepository {
             // This is not an internal account
             return getDefaultActiveCluster();
         }
-        List<Cluster> cl = entityManager.createQuery("SELECT cl from Cluster where clusterType=:cluster_type").setParameter("cluster_type", ClusterType.INTERNAL).getResultList();
+        List<Cluster> cl = entityManager.createQuery("SELECT cl from Cluster cl where clusterType=:cluster_type").setParameter("cluster_type", ClusterType.INTERNAL).getResultList();
         if (cl.size() <= 0) {
             // This datacenter doesn't have an INTERNAL cluster. :(
             LOG.warn("Warning account " + accountId + " was marked as internal but this datacenter has no Internal Cluster");
