@@ -123,7 +123,11 @@ public class JobStateRepository {
         criteria.where(hasName);
 
         try {
-            return entityManager.createQuery(criteria).getResultList().get(0);
+            List<JobState> results = entityManager.createQuery(criteria).getResultList();
+            if (results.isEmpty()){
+                throw new NoResultException();
+            }
+            return results.get(0);
         } catch (NoResultException e) {
             logAndThrowException();
         }
