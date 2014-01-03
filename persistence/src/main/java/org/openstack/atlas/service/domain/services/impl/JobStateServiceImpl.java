@@ -67,6 +67,7 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
         try {
             jobState = jobStateRepository.getByName(jobName);
         } catch (EntityNotFoundException e) {
+            LOG.info(String.format("Inserting record for %s job because it did not exist.", jobName));
             jobState = jobStateRepository.create(jobName, inputPath);
         }
 
