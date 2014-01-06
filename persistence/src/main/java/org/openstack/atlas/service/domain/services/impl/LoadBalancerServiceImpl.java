@@ -191,6 +191,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
+    @DeadLockRetry
     @Transactional
     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException {
         boolean isStatusSet;
@@ -725,6 +726,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         } catch (EntityNotFoundException e) {
             LOG.warn(String.format("Cannot set status for loadbalancer '%d' as it does not exist.", lb.getId()));
         }
+    }
+
+    @Override
+    @Transactional
+    public void setStatusForOp(LoadBalancer lb, LoadBalancerStatus status) throws EntityNotFoundException {
+        loadBalancerRepository.setStatusForOp(lb.getAccountId(), lb.getId(), status);
     }
 
     @Override

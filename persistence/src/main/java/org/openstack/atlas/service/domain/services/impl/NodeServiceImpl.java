@@ -73,8 +73,11 @@ public class NodeServiceImpl extends BaseService implements NodeService {
            return nodeRepository.delNodes(loadBalancerRepository.getById(lb.getId()), nodes);
     }
 
-    private void hmm(LoadBalancer lb, Collection<Node> nodes) throws EntityNotFoundException {
-        lb = loadBalancerRepository.getById(lb.getId());
+    @Transactional
+    @DeadLockRetry
+    @Override
+    public void delNode(LoadBalancer lb, int nid) throws EntityNotFoundException {
+           nodeRepository.delNode(loadBalancerRepository.getById(lb.getId()), nid);
     }
 
     @Transactional
@@ -238,28 +241,13 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         }
 
         String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
-        //Should lock while checking status, fail if not active
-        if (!verifyForOp(dbLoadBalancer)) {
+        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+            LOG.warn(message);
             throw new ImmutableEntityException(message);
+        } else {
+            //Set status record
+            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
-        //Should lock and update status, wont update until the read has completed and should not allow others to read/write until done..
-        if (!loadBalancerRepository.setStatusForOp(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)) {
-            throw new ImmutableEntityException(message);
-        }
-//        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
-//            LOG.warn(message);
-//            throw new ImmutableEntityException(message);
-//        } else {
-//            //Set status record
-//            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
-//        }
-//
-//        LOG.debug("Updating the lb status to pending_update");
-//        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
-//        loadBalancerRepository.update(dbLoadBalancer);
-//
-//        //Set status record
-//        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         return loadBalancer;
     }
 

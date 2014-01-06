@@ -40,6 +40,16 @@ public class NodeRepository {
     }
 
     public LoadBalancer delNodes(LoadBalancer lb, Collection<Node> nodes) {
+        String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
+        List<LoadBalancer> lbList;
+        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
+                setParameter("aid", lb.getAccountId()).
+                setParameter("lid", lb.getId());
+        lbList = q.getResultList();
+        if (lbList.size() < 1) {
+            LOG.error("The list is incomplete...");
+        }
+        lb = lbList.get(0);
         NodeMap nodeMap = new NodeMap(nodes);
         Set<Node> lbNodes = new HashSet<Node>(lb.getNodes());
         for (Node node : lbNodes) {
@@ -59,6 +69,16 @@ public class NodeRepository {
         String idsStr = StringConverter.integersAsString(nodeIds);
         String qStr = String.format("from Node n where n.id in (%s)", StringConverter.integersAsString(nodeIds));
         nodes = entityManager.createQuery(qStr).getResultList();
+        for (Node node : nodes) {
+            entityManager.remove(node);
+        }
+        entityManager.flush();
+    }
+
+    public void delNode(LoadBalancer lb, int nid) {
+        List<Node> nodes;
+        String qStr = String.format("from Node n where n.id == %s", String.valueOf(nid));
+        nodes = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).getResultList();
         for (Node node : nodes) {
             entityManager.remove(node);
         }
@@ -160,7 +180,8 @@ public class NodeRepository {
             throw new EntityNotFoundException(String.format("Loadbalancer %d not found for account %d",lid,aid));
         }
         String qStr = "SELECT n FROM Node n where n.loadbalancer.id = :lid";
-        List<Node> nodesList = entityManager.createQuery(qStr).setParameter("lid", lid).getResultList();
+        List<Node> nodesList = entityManager.createQuery(qStr).setParameter("lid", lid)
+                .setLockMode(LockModeType.PESSIMISTIC_READ).getResultList();
         Set<Node> nodes = new HashSet<Node>(nodesList);
         return nodes;
     }

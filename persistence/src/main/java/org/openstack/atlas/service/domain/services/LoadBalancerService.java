@@ -49,6 +49,8 @@ public interface LoadBalancerService {
 
     void setStatus(LoadBalancer lb, LoadBalancerStatus status);
 
+    void setStatusForOp(LoadBalancer lb, LoadBalancerStatus status) throws EntityNotFoundException;
+
     Suspension createSuspension(LoadBalancer loadBalancer, Suspension suspension);
 
     void removeSuspension(int loadbalancerId);
