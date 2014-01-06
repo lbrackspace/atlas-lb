@@ -29,6 +29,10 @@
                 <class-a>java.lang.String</class-a>
                 <class-b>org.openstack.atlas.service.domain.entities.LoadBalancerStatus</class-b>
             </converter>
+            <converter type="org.openstack.atlas.api.mapper.dozer.converter.EnumCustomConverter">
+                <class-a>java.lang.String</class-a>
+                <class-b>org.openstack.atlas.service.domain.entities.ClusterType</class-b>
+            </converter>
             <converter type="org.openstack.atlas.api.mapper.dozer.converter.IntegerToAccountConverter">
                 <class-a>java.lang.Integer</class-a>
                 <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.Account</class-b>
@@ -573,6 +577,10 @@
             <a>status</a>
             <b>status</b>
         </field>
+        <field>
+            <a>clusterType</a>
+            <b>clusterType</b>
+        </field>
 
     </mapping>
 
@@ -803,6 +811,11 @@
             <a-hint>org.openstack.atlas.service.domain.entities.BlacklistType</a-hint>
             <b-hint>org.openstack.atlas.docs.loadbalancers.api.management.v1.BlacklistType</b-hint>
         </field>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.openstack.atlas.service.domain.entities.Account</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountRecord</class-b>
     </mapping>
 
     <mapping map-null="false">

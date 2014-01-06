@@ -3,6 +3,7 @@ package org.rackspace.stingray.client.integration;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -14,7 +15,6 @@ import org.rackspace.stingray.client.location.LocationProperties;
 import java.util.List;
 
 public class LocationITest extends StingrayTestBase {
-    StingrayRestClient client;
     Location location;
     LocationProperties locationProperties;
     LocationBasic locationBasic;
@@ -26,8 +26,9 @@ public class LocationITest extends StingrayTestBase {
      * Initializes variables prior to test execution
      */
     @Before
-    public void standUp() {
-        client = new StingrayRestClient();
+    @Override
+    public void standUp() throws DecryptException {
+        super.standUp();
         location = new Location();
         locationProperties = new LocationProperties();
         locationBasic = new LocationBasic();

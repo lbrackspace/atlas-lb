@@ -10,6 +10,9 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 import javax.jms.Message;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
@@ -67,11 +70,15 @@ public class DeleteNodeListener extends BaseListener {
         }
 
         // Remove node from load balancer in DB
-        dbLoadBalancer.getNodes().remove(nodeToDelete);
+//        dbLoadBalancer.getNodes().remove(nodeToDelete);
+
+        List ntd = new ArrayList<Node>();
+        ntd.add(nodeToDelete);
+        dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, ntd);
 
         // Update load balancer status in DB
-        dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
-        loadBalancerService.update(dbLoadBalancer);
+//        dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
         //Set status record
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);

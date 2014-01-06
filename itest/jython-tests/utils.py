@@ -1,5 +1,6 @@
 #!/usr/bin/env jython
 
+import org.openstack.atlas.util.crypto.HashUtil as HashUtil
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils as StaticDateTimeUtils
 import org.openstack.atlas.util.staticutils.StaticFileUtils as StaticFileUtils
 import org.openstack.atlas.util.staticutils.StaticStringUtils as StaticStringUtils
@@ -17,7 +18,7 @@ import pickle
 import sys
 import os
 
-conf_file = "./stag.json"
+conf_file = "./local.json"
 
 def setConfFile(filePath):
     global conf_file

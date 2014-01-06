@@ -782,6 +782,11 @@
                      "minimum":       0
                   },
 
+                  "ocsp_stapling": {
+                      "description": "",
+                      "type":        "boolean"
+                  },
+                   
                   "ocsp_time_tolerance": {
                      "description":   "The number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid.",
 
@@ -879,6 +884,12 @@
                      "description":   "The remote host and port (default is 514) to send request log lines to.",
 
                      "type":          "string"
+                  },
+
+                  "msg_len_limit": {
+                      "description":  "",
+                      "type":         "integer",
+                      "minimum":      0
                   }
                }
             },

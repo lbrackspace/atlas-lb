@@ -5,6 +5,8 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.util.crypto.CryptoUtil;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
@@ -12,6 +14,8 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.manager.util.RequestManagerUtil;
 import org.rackspace.stingray.client.util.ClientConstants;
 import org.rackspace.stingray.client.util.StingrayRestClientUtil;
+
+
 
 import java.net.URI;
 
@@ -136,7 +140,11 @@ public class StingrayRestClientManager {
         }
 
         if (adminKey == null) {
-            adminKey = config.getString(ClientConfigKeys.stingray_admin_key);
+            try {
+                adminKey = CryptoUtil.decrypt(config.getString(ClientConfigKeys.stingray_admin_key));
+            } catch (DecryptException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
         }
 
         this.config = config;

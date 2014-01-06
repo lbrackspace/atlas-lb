@@ -11,6 +11,7 @@ import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -19,6 +20,7 @@ import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
+import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 
@@ -40,6 +42,8 @@ public class DeleteNodeListenerTest extends STMTestBase {
     private ObjectMessage objectMessage;
     @Mock
     private LoadBalancerService loadBalancerService;
+    @Mock
+    private NodeService nodeService;
     @Mock
     private NotificationService notificationService;
     @Mock
@@ -65,6 +69,7 @@ public class DeleteNodeListenerTest extends STMTestBase {
         lb.setUserName(USERNAME);
         deleteNodeListener = new DeleteNodeListener();
         deleteNodeListener.setLoadBalancerService(loadBalancerService);
+        deleteNodeListener.setNodeService(nodeService);
         deleteNodeListener.setNotificationService(notificationService);
         deleteNodeListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteNodeListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
@@ -79,15 +84,15 @@ public class DeleteNodeListenerTest extends STMTestBase {
     public void testDeleteNode() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(nodeService.delNodes(Matchers.any(LoadBalancer.class), Matchers.anyCollection())).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         Assert.assertTrue(lb.getNodes().contains(nodeToDelete));
         deleteNodeListener.doOnMessage(objectMessage);
 
         verify(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
-        Assert.assertFalse(lb.getNodes().contains(nodeToDelete));
-        Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
-        verify(loadBalancerService).update(lb);
+        verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
+//        Assert.assertEquals(LoadBalancerStatus.PENDING_UPDATE, lb.getStatus());
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(nodeToDelete.getId()), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
     }

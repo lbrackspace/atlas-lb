@@ -2,8 +2,11 @@ package org.rackspace.stingray.client.integration;
 
 import junit.framework.Assert;
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -14,21 +17,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-public class ActionScriptITest extends StingrayTestBase {
-    StingrayRestClient client;
-    String fileName;
-    String fileText;
-
-    /**
-     * Initializes variables prior to test execution
-     */
-    @Before
-    public void standUp() {
-        client = new StingrayRestClient();
-        fileText = "test_file";
-        fileName = TESTNAME;
-    }
-
+public class ActionScriptITest extends StingrayScriptTestBase {
 
     /**
      * Tests the creation of an Action Script

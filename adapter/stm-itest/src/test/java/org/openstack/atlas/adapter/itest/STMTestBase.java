@@ -64,7 +64,7 @@ public class STMTestBase extends StmTestConstants {
     private static void retrieveConfigValues() {
         STM_USERNAME = configuration.getString(ConfigurationKeys.stingray_admin_user);
         STM_PASSWORD = configuration.getString(ConfigurationKeys.stingray_admin_key);
-        STM_ENDPOINT_URI = configuration.getString(ConfigurationKeys.stingray_rest_endpoint);
+        STM_ENDPOINT_URI = configuration.getString(ConfigurationKeys.stingray_rest_endpoint) + configuration.getString(ConfigurationKeys.stingray_base_uri);
         TARGET_HOST = configuration.getString(ConfigurationKeys.target_host);
         FAILOVER_HOST_1 = configuration.getString(ConfigurationKeys.failover_host_1);
         DEFAULT_LOG_FILE_LOCATION = configuration.getString(ConfigurationKeys.default_log_file_location);

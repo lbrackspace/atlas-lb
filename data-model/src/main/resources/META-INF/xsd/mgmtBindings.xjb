@@ -16,10 +16,17 @@
             <typesafeEnumClass ref="org.openstack.docs.loadbalancers.api.management.v1.HostType"/>
         </bindings>
 
+        <bindings scd="~tns:clusterType">
+            <typesafeEnumClass ref="org.openstack.docs.loadbalancers.api.management.v1.ClusterType"/>
+        </bindings>
+
 
         <!--Bindings for classes-->
         <bindings scd="~tns:accounts">
             <class ref="org.openstack.docs.loadbalancers.api.management.v1.Accounts"/>
+        </bindings>
+        <bindings scd="~tns:accountRecord">
+            <class ref="org.openstack.docs.loadbalancers.api.management.v1.AccountRecord"/>
         </bindings>
         <bindings scd="~tns:account">
             <class ref="org.openstack.docs.loadbalancers.api.management.v1.Account"/>

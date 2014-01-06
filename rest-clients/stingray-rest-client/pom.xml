@@ -17,6 +17,11 @@
     </description>
 
     <dependencies>
+         <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!--Jersey-->
         <dependency>
             <groupId>com.sun.jersey</groupId>

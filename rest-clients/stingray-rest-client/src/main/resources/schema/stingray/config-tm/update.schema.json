@@ -23,6 +23,13 @@
                "additionalProperties":  false,
                
                "properties": {
+                   "appliance_sysctl": {
+                     "description":   "",
+
+                     "type":          "array",
+                     "required":      false
+
+                  },
                   "location": {
                      "description":   "This is the location of the local traffic manager is in.",
                      
@@ -240,7 +247,7 @@
                   "name_servers": {
                      "description":   "The IP addresses of the nameservers the appliance should use and place in \"/etc/resolv.conf\".",
                      
-                     "type":          "string"
+                     "type":          "array"
                   },
                   
                   "ncss_nethsm": {
@@ -268,11 +275,31 @@
                      
                      "type":          "string"
                   },
-                  
+
+                  "manageec2conf":{
+                       "description": "",
+                       "type":        "boolean"
+                  },
+
+                  "manageiptrans":{
+                       "description": "",
+                       "type":        "boolean"
+                  },
+
+                  "managereturnpath":{
+                       "description": "",
+                       "type":        "boolean"
+                  },
+
+                  "managevpcconf":{
+                       "description": "",
+                       "type":        "boolean"
+                  },
+
                   "ntpservers": {
                      "description":   "The NTP servers the appliance should use to synchronize its clock.",
                      
-                     "type":          "string"
+                     "type":          "array"
                   },
                   
                   "routes": {
@@ -318,7 +345,7 @@
                   "search_domains": {
                      "description":   "The search domains the appliance should use and place in \"/etc/resolv.conf\".",
                      
-                     "type":          "string"
+                     "type":          "array"
                   },
                   
                   "shim_client_id": {
@@ -450,6 +477,12 @@
                   }
                }
             },
+
+            "ec2": {
+               "type":                  "object",
+               "required":              false,
+               "additionalProperties":  false
+            },
             
             "java": {
                 "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerJava",
@@ -481,6 +514,12 @@
                      "type":          "integer",
                      "minimum":       1,
                      "maximum":       65535
+                  },
+                  "bind_ips":{
+                      "type":         "array",
+                      "items": {
+                        "type":          "string"
+                     }
                   }
                }
             },

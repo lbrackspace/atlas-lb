@@ -281,7 +281,9 @@ public class LoadBalancerRepository {
         return lb;
     }
 
+
     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
+
         String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         List<LoadBalancer> lbList;
         Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
@@ -303,6 +305,7 @@ public class LoadBalancerRepository {
             lb.setStatus(statusToChangeTo);
             lb.setUpdated(Calendar.getInstance());
             entityManager.merge(lb);
+            entityManager.flush();
 
             return true;
         }

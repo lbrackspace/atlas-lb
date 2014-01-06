@@ -3,6 +3,7 @@ package org.rackspace.stingray.client.integration;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -13,8 +14,7 @@ import org.rackspace.stingray.client.protection.ProtectionProperties;
 
 import java.util.List;
 
-public class ProtectionITest extends StingrayTestBase {
-    StingrayRestClient client;
+public class ProtectionITest extends StingrayTestBase {;
     String vsName = TESTNAME;
     Protection protection;
     ProtectionProperties protectionProperties;
@@ -24,8 +24,9 @@ public class ProtectionITest extends StingrayTestBase {
      * Initializes variables prior to test execution
      */
     @Before
-    public void standUp() {
-        client = new StingrayRestClient();
+    @Override
+    public void standUp() throws DecryptException {
+        super.standUp();
         protection = new Protection();
         protectionProperties = new ProtectionProperties();
         protectionBasic = new ProtectionBasic();

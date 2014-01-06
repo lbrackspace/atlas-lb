@@ -126,6 +126,22 @@ public class HibernateDbConf {
         return conf;
     }
 
+    public static List<String> getHibernateClasses(String fileName) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException {
+        List<String> classList = new ArrayList<String>();
+        String jsonStr = new String(StaticFileUtils.readFile(fileName), "utf-8");
+        JSONParser jp = new JSONParser();
+        JSONObject rootConf = (JSONObject) jp.parse(jsonStr);
+        JSONObject dbConf = (JSONObject) rootConf.get("db");
+        JSONArray classes = (JSONArray) dbConf.get("classes");
+        if (classes != null) {
+            int cl = classes.size();
+            for (int i = 0; i < cl; i++) {
+                classList.add((String) classes.get(i));
+            }
+        }
+        return classList;
+    }
+
     public static HibernateDbConf newHibernateConf(String fileName) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException {
         HibernateDbConf conf = new HibernateDbConf();
         String jsonStr = new String(StaticFileUtils.readFile(fileName), "utf-8");

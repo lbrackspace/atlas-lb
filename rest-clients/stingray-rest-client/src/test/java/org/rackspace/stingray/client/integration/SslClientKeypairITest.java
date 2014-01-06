@@ -3,6 +3,7 @@ package org.rackspace.stingray.client.integration;
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -15,7 +16,6 @@ import java.util.List;
 
 
 public class SslClientKeypairITest extends StingrayTestBase {
-    StingrayRestClient client;
     String vsName;
     ClientKeypair clientKeypair;
     ClientKeypairProperties clientKeypairProperties;
@@ -25,8 +25,9 @@ public class SslClientKeypairITest extends StingrayTestBase {
      * Initializes variables prior to test execution
      */
     @Before
-    public void standUp() {
-        client = new StingrayRestClient();
+    @Override
+    public void standUp() throws DecryptException {
+        super.standUp();
         vsName = TESTNAME;
         clientKeypair = new ClientKeypair();
         clientKeypairProperties = new ClientKeypairProperties();

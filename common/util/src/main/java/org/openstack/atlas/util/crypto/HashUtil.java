@@ -19,19 +19,19 @@ public class HashUtil {
         return out;
     }
 
-    public static byte[] sha1sum(byte[] data) throws NoSuchAlgorithmException{
-        return sha1sum(data,null,null);
+    public static byte[] sha1sum(byte[] data) throws NoSuchAlgorithmException {
+        return sha1sum(data, null, null);
     }
 
-    public static String sha1sumHex(byte[] data,Integer startIdxInc,Integer stopIdxExc) throws NoSuchAlgorithmException {
+    public static String sha1sumHex(byte[] data, Integer startIdxInc, Integer stopIdxExc) throws NoSuchAlgorithmException {
         String out;
         byte[] sum;
-        sum = sha1sum(data,startIdxInc,stopIdxExc);
+        sum = sha1sum(data, startIdxInc, stopIdxExc);
         out = BitConverters.bytes2hex(sum);
         return out;
     }
 
     public static String sha1sumHex(byte[] data) throws NoSuchAlgorithmException {
-        return sha1sumHex(data,null,null);
+        return sha1sumHex(data, null, null);
     }
 }

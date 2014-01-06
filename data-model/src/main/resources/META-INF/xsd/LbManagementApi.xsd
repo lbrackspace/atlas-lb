@@ -196,6 +196,7 @@
         </xsd:sequence>
     </xsd:complexType>
     
+
     <xsd:element name="cluster" type="tns:cluster"/>
     <xsd:complexType name="cluster">
         <xsd:attribute name="id" type="xsd:int"/>
@@ -210,6 +211,14 @@
         <xsd:attribute name="utilization" type="xsd:string"/>
         <xsd:attribute name="clusterIpv6Cidr" type="xsd:string"/>
         <xsd:attribute name="status" type="tns:clusterStatus"/>
+        <xsd:attribute name="clusterType" type="tns:clusterType"/>
+    </xsd:complexType>
+
+    <xsd:element name="accountRecord" type="tns:accountRecord" />
+    <xsd:complexType name="accountRecord">
+        <xsd:attribute name="id" type="xsd:int" />
+        <xsd:attribute name="sha1SumForIpv6" type="xsd:string" />
+        <xsd:attribute name="clusterType" type="tns:clusterType" />
     </xsd:complexType>
 
     <xsd:element name="hosts" type="tns:hosts"/>
@@ -256,6 +265,13 @@
         <xsd:attribute name="totalConcurrentConnections" type="xsd:int"/>
         <xsd:attribute name="availableConcurrentConnections" type="xsd:int"/>
     </xsd:complexType>
+
+    <xsd:simpleType name="clusterType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="STANDARD"/>
+            <xsd:enumeration value="INTERNAL"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 
     <xsd:simpleType name="dataCenter">
         <xsd:restriction base="xsd:string">

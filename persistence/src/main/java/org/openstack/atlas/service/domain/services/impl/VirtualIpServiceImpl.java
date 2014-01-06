@@ -1,6 +1,8 @@
 package org.openstack.atlas.service.domain.services.impl;
 
 import com.sun.jersey.api.client.ClientResponse;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
@@ -34,14 +36,13 @@ import org.openstack.atlas.util.debug.Debug;
 
 @Service
 public class VirtualIpServiceImpl extends BaseService implements VirtualIpService {
+
     private final Log LOG = LogFactory.getLog(VirtualIpServiceImpl.class);
     private static final int SB_INIT_SIZE = 1024 * 8;
     public static final String DEL_PTR_FAILED = "Delete PTR on Virtual IP Fail";
     public static final String DEL_PTR_PASSED = "Delete PTR on Virtual IP Passed";
-
     @Autowired
     private AccountLimitService accountLimitService;
-
     @Autowired
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
 
@@ -699,20 +700,22 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     @Override
     @Transactional
     public void addAccountRecord(Integer accountId) throws NoSuchAlgorithmException {
-        Set<Integer> accountsInAccountTable = new HashSet<Integer>(virtualIpv6Repository.getAccountIdsAlreadyShaHashed());
-
-        if (accountsInAccountTable.contains(accountId)) {
-            return;
-        }
-
-        Account account = new Account();
-        String accountIdStr = String.format("%d", accountId);
-        account.setId(accountId);
-        account.setSha1SumForIpv6(HashUtil.sha1sumHex(accountIdStr.getBytes(), 0, 4));
+        Account account;
         try {
-            persist(account);
-        } catch (Exception e) {
-            LOG.warn("High concurrency detected. Ignoring...");
+            account = virtualIpv6Repository.getAccountRecordById(accountId);
+        } catch (EntityNotFoundException ex) {
+            account = null;
+        }
+        if (account == null) {
+            account = new Account();
+            String accountIdStr = accountId.toString();
+            account.setId(accountId);
+            account.setSha1SumForIpv6(HashUtil.sha1sumHex(accountIdStr.getBytes(), 0, 4));
+            try {
+                persist(account);
+            } catch (Exception e) {
+                LOG.warn("High concurrency detected. Ignoring...");
+            }
         }
     }
 
@@ -760,12 +763,12 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         Map<Integer, List<VirtualIp>> vipMap = new HashMap<Integer, List<VirtualIp>>();
         List<VirtualIp> vips = virtualIpRepository.getAll();
         for (VirtualIp vip : vips) {
-            if(vip.getLoadBalancerJoinVipSet().size() == 0) {
+            if (vip.getLoadBalancerJoinVipSet().size() == 0) {
                 continue;
             }
             Integer lbId = vip.getLoadBalancerJoinVipSet().iterator().next().getLoadBalancer().getId();
-            if (vip.isAllocated() && vip.getLoadBalancerJoinVipSet() != null &&
-                    !vip.getLoadBalancerJoinVipSet().isEmpty()) {
+            if (vip.isAllocated() && vip.getLoadBalancerJoinVipSet() != null
+                    && !vip.getLoadBalancerJoinVipSet().isEmpty()) {
                 if (!vipMap.containsKey(lbId)) {
                     vipMap.put(lbId, new ArrayList<VirtualIp>());
                 }
@@ -775,4 +778,51 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         return vipMap;
     }
 
+    @Override
+    public Account getAccountRecord(Integer aid) throws EntityNotFoundException {
+        return virtualIpv6Repository.getAccountRecordById(aid);
+    }
+
+    @Override
+    @Transactional
+    public Account updateOrCreateAccountRecord(Account apiAccount) throws NoSuchAlgorithmException, EntityNotFoundException {
+        Account dbAccount;
+        if (apiAccount.getId() == null) {
+            throw new EntityNotFoundException("please specify an account id as the account table does not have an auto incrementing primary key");
+        }
+        try {
+            dbAccount = virtualIpv6Repository.getAccountRecordById(apiAccount.getId());
+        } catch (EntityNotFoundException ex) {
+            dbAccount = new Account();
+            dbAccount.setId(apiAccount.getId());
+            dbAccount.setSha1SumForIpv6(HashUtil.sha1sumHex(apiAccount.getId().toString().getBytes(), 0, 4));
+            virtualIpv6Repository.persist(dbAccount);
+        }
+        if (apiAccount.getSha1SumForIpv6() != null) {
+            dbAccount.setSha1SumForIpv6(apiAccount.getSha1SumForIpv6());
+        }
+        if (apiAccount.getClusterType() != null) {
+            dbAccount.setClusterType(apiAccount.getClusterType());
+        }
+        virtualIpv6Repository.merge(dbAccount);
+        virtualIpv6Repository.flush();
+
+        return virtualIpv6Repository.getAccountRecordById(dbAccount.getId()); // Incase the merge entity isn't in the same persistence context
+    }
+
+    @Override
+    @Transactional
+    public boolean deleteAccountRecord(Integer aid) {
+        Account account;
+        if (aid == null) {
+            return false;
+        }
+        try {
+            account = virtualIpv6Repository.getAccountRecordById(aid);
+        } catch (EntityNotFoundException ex) {
+            return false; //Nothing to be deleted
+        }
+        virtualIpRepository.remove(account);
+        return true;
+    }
 }
