@@ -223,6 +223,7 @@ public class StmAdapterResources {
         }
         return curPool;
     }
+
     public void deletePool(StingrayRestClient client, String poolName)
             throws StmRollBackException {
 

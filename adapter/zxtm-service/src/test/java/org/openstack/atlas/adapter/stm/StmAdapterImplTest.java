@@ -25,6 +25,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.pool.Pool;
+import org.rackspace.stingray.client.pool.PoolBasic;
+import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
@@ -508,6 +510,12 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadSTMRestClient(config)).thenReturn(client);
             doNothing().when(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
+            Pool p = new Pool();
+            PoolProperties pp = new PoolProperties();
+            PoolBasic pb = new PoolBasic();
+            pp.setBasic(pb);
+            p.setProperties(pp);
+            when(resources.getPool(Matchers.any(StingrayRestClient.class), Matchers.anyString())).thenReturn(p);
         }
 
         @After
@@ -524,6 +532,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
             verify(client).destroy();
         }
+
 
         @Test
         public void testRemoveNodes() throws Exception {

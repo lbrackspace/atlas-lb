@@ -142,8 +142,8 @@ public class StingrayRestClientManager {
         if (adminKey == null) {
             try {
                 adminKey = CryptoUtil.decrypt(config.getString(ClientConfigKeys.stingray_admin_key));
-            } catch (DecryptException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            } catch (Exception ex) {
+                ex.printStackTrace();
             }
         }
 

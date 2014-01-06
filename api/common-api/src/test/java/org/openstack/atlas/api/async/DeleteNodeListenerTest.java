@@ -91,7 +91,7 @@ public class DeleteNodeListenerTest extends STMTestBase {
         deleteNodeListener.doOnMessage(objectMessage);
 
         verify(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
-        verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
+        verify(loadBalancerService).setStatusForOp(lb, LoadBalancerStatus.ACTIVE);
 //        Assert.assertEquals(LoadBalancerStatus.PENDING_UPDATE, lb.getStatus());
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(nodeToDelete.getId()), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
@@ -120,7 +120,7 @@ public class DeleteNodeListenerTest extends STMTestBase {
         deleteNodeListener.doOnMessage(objectMessage);
 
         verify(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
-        verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
+        verify(loadBalancerService).setStatusForOp(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(nodeToDelete.getId()), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }

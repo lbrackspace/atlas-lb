@@ -168,7 +168,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Node> doomedNodes) throws InsufficientRequestException, StmRollBackException {
+    public void  removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Node> doomedNodes) throws InsufficientRequestException, StmRollBackException {
         String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
