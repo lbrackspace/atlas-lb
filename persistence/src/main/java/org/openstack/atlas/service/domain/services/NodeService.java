@@ -39,5 +39,7 @@ public interface NodeService {
 
     public LoadBalancer delNodes(LoadBalancer lb, Collection<Node> nodes) throws EntityNotFoundException;
 
+    public void delNode(LoadBalancer lb, int nid) throws EntityNotFoundException;
+
     public List<String> prepareForNodesDeletion(Integer accountId,Integer loadBalancerId,List<Integer> ids) throws EntityNotFoundException;
 }

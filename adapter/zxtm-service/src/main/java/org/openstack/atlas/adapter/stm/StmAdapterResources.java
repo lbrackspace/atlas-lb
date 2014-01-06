@@ -210,6 +210,20 @@ public class StmAdapterResources {
         }
     }
 
+    public Pool getPool(StingrayRestClient client, String poolName)
+            throws StmRollBackException {
+
+        LOG.debug(String.format("Updating pool '%s' and setting nodes...", poolName));
+
+        Pool curPool = null;
+        try {
+            curPool = client.getPool(poolName);
+        } catch (Exception e) {
+            LOG.warn(String.format("Could not load pool: %s...", poolName));
+        }
+        return curPool;
+    }
+
     public void deletePool(StingrayRestClient client, String poolName)
             throws StmRollBackException {
 

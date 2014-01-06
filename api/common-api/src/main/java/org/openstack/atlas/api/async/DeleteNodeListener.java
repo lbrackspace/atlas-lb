@@ -11,6 +11,7 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import javax.jms.Message;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
@@ -51,8 +52,9 @@ public class DeleteNodeListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Removing node '%d' from load balancer '%d' in STM...", nodeToDelete.getId(), queueLb.getId()));
+//                dbLoadBalancer.setNodes(nodeService.getAllNodesByAccountIdLoadBalancerId(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerStmService.removeNode(dbLoadBalancer, nodeToDelete);
-                LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in Zeus.", nodeToDelete.getId(), queueLb.getId()));
+                LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in STM.", nodeToDelete.getId(), queueLb.getId()));
             } else {
                 LOG.debug(String.format("Removing node '%d' from load balancer '%d' in ZXTM...", nodeToDelete.getId(), queueLb.getId()));
                 reverseProxyLoadBalancerService.setNodesPriorities(ZxtmNameBuilder.genVSName(dbLoadBalancer), dbLoadBalancer);
@@ -60,7 +62,7 @@ public class DeleteNodeListener extends BaseListener {
                 LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in Zeus.", nodeToDelete.getId(), queueLb.getId()));
             }
         } catch (Exception e) {
-            loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+            loadBalancerService.setStatusForOp(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error removing node '%d' in Zeus for loadbalancer '%d'.", nodeToDelete.getId(), queueLb.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), e, ZEUS_FAILURE.name(), alertDescription);
@@ -70,15 +72,10 @@ public class DeleteNodeListener extends BaseListener {
         }
 
         // Remove node from load balancer in DB
-//        dbLoadBalancer.getNodes().remove(nodeToDelete);
-
-        List ntd = new ArrayList<Node>();
-        ntd.add(nodeToDelete);
-        dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, ntd);
+        dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, Arrays.asList(nodeToDelete));
 
         // Update load balancer status in DB
-//        dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
-        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
+        loadBalancerService.setStatusForOp(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
         //Set status record
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);

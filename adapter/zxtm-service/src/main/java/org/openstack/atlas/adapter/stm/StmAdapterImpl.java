@@ -17,6 +17,7 @@ import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.util.EnumFactory;
@@ -180,7 +181,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Node> doomedNodes) throws InsufficientRequestException, StmRollBackException {
+    public void  removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Node> doomedNodes) throws InsufficientRequestException, StmRollBackException {
         String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
@@ -197,6 +198,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 currentNodes.remove(nodesMap.get(id));
             }
         }
+
+        Pool cpool = getResources().getPool(client, poolName);
+        cpool.getProperties().getBasic().getNodes().remove(doomedNodes.get(0).getIpAddress() + ":" + doomedNodes.get(0).getPort());
+//        cpool.getProperties().getLoad_balancing().getNode_weighting().get(0)
         loadBalancer.setNodes(currentNodes);
         translator.translatePoolResource(poolName, loadBalancer, loadBalancer);
 

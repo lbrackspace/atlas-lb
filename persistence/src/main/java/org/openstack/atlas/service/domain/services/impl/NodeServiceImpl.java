@@ -21,6 +21,7 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -72,8 +73,11 @@ public class NodeServiceImpl extends BaseService implements NodeService {
            return nodeRepository.delNodes(loadBalancerRepository.getById(lb.getId()), nodes);
     }
 
-    private void hmm(LoadBalancer lb, Collection<Node> nodes) throws EntityNotFoundException {
-        lb = loadBalancerRepository.getById(lb.getId());
+    @Transactional
+    @DeadLockRetry
+    @Override
+    public void delNode(LoadBalancer lb, int nid) throws EntityNotFoundException {
+           nodeRepository.delNode(loadBalancerRepository.getById(lb.getId()), nid);
     }
 
     @Transactional
@@ -225,7 +229,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
     @Override
     @DeadLockRetry
-    @Transactional
+    @Transactional()
     public LoadBalancer deleteNode(LoadBalancer loadBalancer) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
@@ -236,22 +240,14 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                     loadBalancer.getId()));
         }
 
-
+        String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
         if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
-            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
             throw new ImmutableEntityException(message);
         } else {
             //Set status record
             loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
-//
-//        LOG.debug("Updating the lb status to pending_update");
-//        dbLoadBalancer.setStatus(LoadBalancerStatus.PENDING_UPDATE);
-//        loadBalancerRepository.update(dbLoadBalancer);
-//
-//        //Set status record
-//        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         return loadBalancer;
     }
 
