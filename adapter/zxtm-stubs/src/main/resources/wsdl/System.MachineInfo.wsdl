@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -111,10 +111,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -143,6 +159,12 @@
    
    <message name="getProductVersionResponse">
       <part name="version" type="xsd:string" />
+   </message>
+   
+   <message name="getStingrayOSVersionRequest"></message>
+   
+   <message name="getStingrayOSVersionResponse">
+      <part name="stingrayosversion" type="xsd:string" />
    </message>
    
    <message name="getTrafficManagerUptimeRequest"></message>
@@ -198,6 +220,15 @@
          
          <input message="zeusns:getProductVersionRequest"/>
          <output message="zeusns:getProductVersionResponse"/>
+      </operation>
+      
+      <operation name="getStingrayOSVersion">
+         <documentation>
+            Get the Stingray Operating System version for this appliance.
+         </documentation>
+         
+         <input message="zeusns:getStingrayOSVersionRequest"/>
+         <output message="zeusns:getStingrayOSVersionResponse"/>
       </operation>
       
       <operation name="getTrafficManagerUptime">
@@ -276,6 +307,20 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/MachineInfo/getProductVersion"/>
          <documentation>
             Get the traffic manager software version for this machine.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/MachineInfo/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/MachineInfo/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getStingrayOSVersion">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/MachineInfo/getStingrayOSVersion"/>
+         <documentation>
+            Get the Stingray Operating System version for this appliance.
          </documentation>
          
          <input>

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -129,22 +129,22 @@
             <xsd:restriction base="xsd:string">
                <xsd:enumeration value="dest_only">
                   <xsd:annotation>
-                     <xsd:documentation>Only the IP address and port to which the request was sent</xsd:documentation>
+                     <xsd:documentation>Only the IP address and port to which the request was sent.</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
                <xsd:enumeration value="dest_ip_only">
                   <xsd:annotation>
-                     <xsd:documentation>Only the IP address to which the request was sent, but from any port</xsd:documentation>
+                     <xsd:documentation>Only the IP address to which the request was sent, but from any port.</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
                <xsd:enumeration value="ip_mask">
                   <xsd:annotation>
-                     <xsd:documentation>Only a specific set of IP addresses, but from any port</xsd:documentation>
+                     <xsd:documentation>Only a specific set of IP addresses, but from any port.</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
                <xsd:enumeration value="all">
                   <xsd:annotation>
-                     <xsd:documentation>Any IP address and any port</xsd:documentation>
+                     <xsd:documentation>Any IP address and any port.</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
             </xsd:restriction>
@@ -241,10 +241,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -607,6 +623,57 @@
       <part name="values" type="zeusns:StringArray" />
    </message>
    
+   <message name="getAutoscaleClusterRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleClusterResponse">
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleClusterByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleClusterByLocationResponse">
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleDatacenterRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleDatacenterResponse">
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleDatacenterByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleDatacenterByLocationResponse">
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleDatastoreRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleDatastoreResponse">
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleDatastoreByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleDatastoreByLocationResponse">
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
    <message name="getAutoscaleEnabledRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -690,6 +757,23 @@
    
    <message name="getAutoscaleIpstouseByLocationResponse">
       <part name="values" type="zeusns:Pool.AutoscaleIpstouseArray" />
+   </message>
+   
+   <message name="getAutoscaleLastnodeIdletimeRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleLastnodeIdletimeResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getAutoscaleLastnodeIdletimeByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoscaleLastnodeIdletimeByLocationResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
    </message>
    
    <message name="getAutoscaleMaxNodesRequest">
@@ -1006,6 +1090,23 @@
       <part name="values" type="zeusns:unsignedIntArray" />
    </message>
    
+   <message name="getMaxConnectionAttemptsRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getMaxConnectionAttemptsResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getMaxConnectionAttemptsByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getMaxConnectionAttemptsByLocationResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
    <message name="getMaxConnectionsPernodeRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -1088,6 +1189,23 @@
    </message>
    
    <message name="getMaxReplyTimeByLocationResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getMaxTimedOutConnectionAttemptsRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getMaxTimedOutConnectionAttemptsResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getMaxTimedOutConnectionAttemptsByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getMaxTimedOutConnectionAttemptsByLocationResponse">
       <part name="values" type="zeusns:unsignedIntArray" />
    </message>
    
@@ -1617,6 +1735,51 @@
    
    <message name="setAutoscaleCloudcredentialsByLocationResponse"></message>
    
+   <message name="setAutoscaleClusterRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setAutoscaleClusterResponse"></message>
+   
+   <message name="setAutoscaleClusterByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setAutoscaleClusterByLocationResponse"></message>
+   
+   <message name="setAutoscaleDatacenterRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setAutoscaleDatacenterResponse"></message>
+   
+   <message name="setAutoscaleDatacenterByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setAutoscaleDatacenterByLocationResponse"></message>
+   
+   <message name="setAutoscaleDatastoreRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setAutoscaleDatastoreResponse"></message>
+   
+   <message name="setAutoscaleDatastoreByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setAutoscaleDatastoreByLocationResponse"></message>
+   
    <message name="setAutoscaleEnabledRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:booleanArray" />
@@ -1691,6 +1854,21 @@
    </message>
    
    <message name="setAutoscaleIpstouseByLocationResponse"></message>
+   
+   <message name="setAutoscaleLastnodeIdletimeRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setAutoscaleLastnodeIdletimeResponse"></message>
+   
+   <message name="setAutoscaleLastnodeIdletimeByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setAutoscaleLastnodeIdletimeByLocationResponse"></message>
    
    <message name="setAutoscaleMaxNodesRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -1969,6 +2147,21 @@
    
    <message name="setMaxConnectTimeByLocationResponse"></message>
    
+   <message name="setMaxConnectionAttemptsRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setMaxConnectionAttemptsResponse"></message>
+   
+   <message name="setMaxConnectionAttemptsByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setMaxConnectionAttemptsByLocationResponse"></message>
+   
    <message name="setMaxConnectionsPernodeRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:unsignedIntArray" />
@@ -2043,6 +2236,21 @@
    </message>
    
    <message name="setMaxReplyTimeByLocationResponse"></message>
+   
+   <message name="setMaxTimedOutConnectionAttemptsRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setMaxTimedOutConnectionAttemptsResponse"></message>
+   
+   <message name="setMaxTimedOutConnectionAttemptsByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setMaxTimedOutConnectionAttemptsByLocationResponse"></message>
    
    <message name="setMonitorsRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -2622,6 +2830,66 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getAutoscaleCluster">
+         <documentation>
+            Get The ESX host or ESX cluster name to put the new virtual machine instances on.
+         </documentation>
+         
+         <input message="zeusns:getAutoscaleClusterRequest"/>
+         <output message="zeusns:getAutoscaleClusterResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAutoscaleClusterByLocation">
+         <documentation>
+            Get The ESX host or ESX cluster name to put the new virtual machine instances on. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getAutoscaleClusterByLocationRequest"/>
+         <output message="zeusns:getAutoscaleClusterByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAutoscaleDatacenter">
+         <documentation>
+            Get The name of the logical datacenter on the vCenter server
+         </documentation>
+         
+         <input message="zeusns:getAutoscaleDatacenterRequest"/>
+         <output message="zeusns:getAutoscaleDatacenterResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAutoscaleDatacenterByLocation">
+         <documentation>
+            Get The name of the logical datacenter on the vCenter server This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getAutoscaleDatacenterByLocationRequest"/>
+         <output message="zeusns:getAutoscaleDatacenterByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAutoscaleDatastore">
+         <documentation>
+            Get The name of the datastore to be used by the newly created virtual machine.
+         </documentation>
+         
+         <input message="zeusns:getAutoscaleDatastoreRequest"/>
+         <output message="zeusns:getAutoscaleDatastoreResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAutoscaleDatastoreByLocation">
+         <documentation>
+            Get The name of the datastore to be used by the newly created virtual machine. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getAutoscaleDatastoreByLocationRequest"/>
+         <output message="zeusns:getAutoscaleDatastoreByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="getAutoscaleEnabled">
          <documentation>
             Get whether this pool uses auto-scaling.
@@ -2719,6 +2987,26 @@
          
          <input message="zeusns:getAutoscaleIpstouseByLocationRequest"/>
          <output message="zeusns:getAutoscaleIpstouseByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAutoscaleLastnodeIdletime">
+         <documentation>
+            Get the idle time of the last node in an autoscaled pool before it can be destroyed
+         </documentation>
+         
+         <input message="zeusns:getAutoscaleLastnodeIdletimeRequest"/>
+         <output message="zeusns:getAutoscaleLastnodeIdletimeResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAutoscaleLastnodeIdletimeByLocation">
+         <documentation>
+            Get the idle time of the last node in an autoscaled pool before it can be destroyed This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getAutoscaleLastnodeIdletimeByLocationRequest"/>
+         <output message="zeusns:getAutoscaleLastnodeIdletimeByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -3074,7 +3362,7 @@
       
       <operation name="getMaxConnectTime">
          <documentation>
-            Get the times that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds.
+            Get the time that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds.
          </documentation>
          
          <input message="zeusns:getMaxConnectTimeRequest"/>
@@ -3084,11 +3372,31 @@
       
       <operation name="getMaxConnectTimeByLocation">
          <documentation>
-            Get the times that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds. This is a location specific function, any action will operate on the specified location.
+            Get the time that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:getMaxConnectTimeByLocationRequest"/>
          <output message="zeusns:getMaxConnectTimeByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getMaxConnectionAttempts">
+         <documentation>
+            Get the number of times that each of the named pools can try to connect to any of its nodes before sending an error response.
+         </documentation>
+         
+         <input message="zeusns:getMaxConnectionAttemptsRequest"/>
+         <output message="zeusns:getMaxConnectionAttemptsResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getMaxConnectionAttemptsByLocation">
+         <documentation>
+            Get the number of times that each of the named pools can try to connect to any of its nodes before sending an error response. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getMaxConnectionAttemptsByLocationRequest"/>
+         <output message="zeusns:getMaxConnectionAttemptsByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -3189,6 +3497,26 @@
          
          <input message="zeusns:getMaxReplyTimeByLocationRequest"/>
          <output message="zeusns:getMaxReplyTimeByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getMaxTimedOutConnectionAttempts">
+         <documentation>
+            Get the number of times that each of the named pools can try to connect and time out waiting for a response, by exceeding max_reply_time, to any of its nodes before sending an error response.
+         </documentation>
+         
+         <input message="zeusns:getMaxTimedOutConnectionAttemptsRequest"/>
+         <output message="zeusns:getMaxTimedOutConnectionAttemptsResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getMaxTimedOutConnectionAttemptsByLocation">
+         <documentation>
+            Get the number of times that each of the named pools can try to connect and time out waiting for a response, by exceeding max_reply_time, to any of its nodes before sending an error response. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getMaxTimedOutConnectionAttemptsByLocationRequest"/>
+         <output message="zeusns:getMaxTimedOutConnectionAttemptsByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -3571,7 +3899,7 @@
       
       <operation name="getSSLEnhance">
          <documentation>
-            Get whether each of the named pools should use SSL protocol enhancements. These enhancements allow Zeus Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Zeus Web Servers or Zeus Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled.
+            Get whether each of the named pools should use SSL protocol enhancements. These enhancements allow Riverbed Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Riverbed Web Servers or Stingray Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled.
          </documentation>
          
          <input message="zeusns:getSSLEnhanceRequest"/>
@@ -3581,7 +3909,7 @@
       
       <operation name="getSSLEnhanceByLocation">
          <documentation>
-            Get whether each of the named pools should use SSL protocol enhancements. These enhancements allow Zeus Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Zeus Web Servers or Zeus Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled. This is a location specific function, any action will operate on the specified location.
+            Get whether each of the named pools should use SSL protocol enhancements. These enhancements allow Riverbed Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Riverbed Web Servers or Stingray Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:getSSLEnhanceByLocationRequest"/>
@@ -3839,6 +4167,78 @@
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
+      <operation name="setAutoscaleCluster">
+         <documentation>
+            Set The ESX host or ESX cluster name to put the new virtual machine instances on.
+         </documentation>
+         
+         <input message="zeusns:setAutoscaleClusterRequest"/>
+         <output message="zeusns:setAutoscaleClusterResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAutoscaleClusterByLocation">
+         <documentation>
+            Set The ESX host or ESX cluster name to put the new virtual machine instances on. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setAutoscaleClusterByLocationRequest"/>
+         <output message="zeusns:setAutoscaleClusterByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAutoscaleDatacenter">
+         <documentation>
+            Set The name of the logical datacenter on the vCenter server
+         </documentation>
+         
+         <input message="zeusns:setAutoscaleDatacenterRequest"/>
+         <output message="zeusns:setAutoscaleDatacenterResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAutoscaleDatacenterByLocation">
+         <documentation>
+            Set The name of the logical datacenter on the vCenter server This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setAutoscaleDatacenterByLocationRequest"/>
+         <output message="zeusns:setAutoscaleDatacenterByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAutoscaleDatastore">
+         <documentation>
+            Set The name of the datastore to be used by the newly created virtual machine.
+         </documentation>
+         
+         <input message="zeusns:setAutoscaleDatastoreRequest"/>
+         <output message="zeusns:setAutoscaleDatastoreResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAutoscaleDatastoreByLocation">
+         <documentation>
+            Set The name of the datastore to be used by the newly created virtual machine. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setAutoscaleDatastoreByLocationRequest"/>
+         <output message="zeusns:setAutoscaleDatastoreByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setAutoscaleEnabled">
          <documentation>
             Set whether this pool uses auto-scaling.
@@ -3954,6 +4354,30 @@
          
          <input message="zeusns:setAutoscaleIpstouseByLocationRequest"/>
          <output message="zeusns:setAutoscaleIpstouseByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAutoscaleLastnodeIdletime">
+         <documentation>
+            Set the idle time of the last node in an autoscaled pool before it can be destroyed
+         </documentation>
+         
+         <input message="zeusns:setAutoscaleLastnodeIdletimeRequest"/>
+         <output message="zeusns:setAutoscaleLastnodeIdletimeResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAutoscaleLastnodeIdletimeByLocation">
+         <documentation>
+            Set the idle time of the last node in an autoscaled pool before it can be destroyed This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setAutoscaleLastnodeIdletimeByLocationRequest"/>
+         <output message="zeusns:setAutoscaleLastnodeIdletimeByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -4383,7 +4807,7 @@
       
       <operation name="setMaxConnectTime">
          <documentation>
-            Set the times that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds.
+            Set the time that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds.
          </documentation>
          
          <input message="zeusns:setMaxConnectTimeRequest"/>
@@ -4395,11 +4819,35 @@
       
       <operation name="setMaxConnectTimeByLocation">
          <documentation>
-            Set the times that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds. This is a location specific function, any action will operate on the specified location.
+            Set the time that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:setMaxConnectTimeByLocationRequest"/>
          <output message="zeusns:setMaxConnectTimeByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMaxConnectionAttempts">
+         <documentation>
+            Set the number of times that each of the named pools can try to connect to any of its nodes before sending an error response.
+         </documentation>
+         
+         <input message="zeusns:setMaxConnectionAttemptsRequest"/>
+         <output message="zeusns:setMaxConnectionAttemptsResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMaxConnectionAttemptsByLocation">
+         <documentation>
+            Set the number of times that each of the named pools can try to connect to any of its nodes before sending an error response. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setMaxConnectionAttemptsByLocationRequest"/>
+         <output message="zeusns:setMaxConnectionAttemptsByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -4520,6 +4968,30 @@
          
          <input message="zeusns:setMaxReplyTimeByLocationRequest"/>
          <output message="zeusns:setMaxReplyTimeByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMaxTimedOutConnectionAttempts">
+         <documentation>
+            Set the number of times that each of the named pools can try to connect and time out waiting for a response, by exceeding max_reply_time, to any of its nodes before sending an error response.
+         </documentation>
+         
+         <input message="zeusns:setMaxTimedOutConnectionAttemptsRequest"/>
+         <output message="zeusns:setMaxTimedOutConnectionAttemptsResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setMaxTimedOutConnectionAttemptsByLocation">
+         <documentation>
+            Set the number of times that each of the named pools can try to connect and time out waiting for a response, by exceeding max_reply_time, to any of its nodes before sending an error response. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setMaxTimedOutConnectionAttemptsByLocationRequest"/>
+         <output message="zeusns:setMaxTimedOutConnectionAttemptsByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -4925,7 +5397,7 @@
       
       <operation name="setSSLEnhance">
          <documentation>
-            Set whether each of the named pools should use SSL protocol enhancements. These enhancements allow Zeus Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Zeus Web Servers or Zeus Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled.
+            Set whether each of the named pools should use SSL protocol enhancements. These enhancements allow Riverbed Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Riverbed Web Servers or Stingray Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled.
          </documentation>
          
          <input message="zeusns:setSSLEnhanceRequest"/>
@@ -4937,7 +5409,7 @@
       
       <operation name="setSSLEnhanceByLocation">
          <documentation>
-            Set whether each of the named pools should use SSL protocol enhancements. These enhancements allow Zeus Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Zeus Web Servers or Zeus Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled. This is a location specific function, any action will operate on the specified location.
+            Set whether each of the named pools should use SSL protocol enhancements. These enhancements allow Riverbed Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Riverbed Web Servers or Stingray Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:setSSLEnhanceByLocationRequest"/>
@@ -5477,6 +5949,108 @@
          </fault>
       </operation>
       
+      <operation name="getAutoscaleCluster">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleCluster"/>
+         <documentation>
+            Get The ESX host or ESX cluster name to put the new virtual machine instances on.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAutoscaleClusterByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleClusterByLocation"/>
+         <documentation>
+            Get The ESX host or ESX cluster name to put the new virtual machine instances on. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAutoscaleDatacenter">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleDatacenter"/>
+         <documentation>
+            Get The name of the logical datacenter on the vCenter server
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAutoscaleDatacenterByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleDatacenterByLocation"/>
+         <documentation>
+            Get The name of the logical datacenter on the vCenter server This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAutoscaleDatastore">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleDatastore"/>
+         <documentation>
+            Get The name of the datastore to be used by the newly created virtual machine.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAutoscaleDatastoreByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleDatastoreByLocation"/>
+         <documentation>
+            Get The name of the datastore to be used by the newly created virtual machine. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getAutoscaleEnabled">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleEnabled"/>
          <documentation>
@@ -5634,6 +6208,40 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleIpstouseByLocation"/>
          <documentation>
             Get whether to use the public or private IPs This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAutoscaleLastnodeIdletime">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleLastnodeIdletime"/>
+         <documentation>
+            Get the idle time of the last node in an autoscaled pool before it can be destroyed
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAutoscaleLastnodeIdletimeByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getAutoscaleLastnodeIdletimeByLocation"/>
+         <documentation>
+            Get the idle time of the last node in an autoscaled pool before it can be destroyed This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -6245,7 +6853,7 @@
       <operation name="getMaxConnectTime">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getMaxConnectTime"/>
          <documentation>
-            Get the times that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds.
+            Get the time that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds.
          </documentation>
          
          <input>
@@ -6262,7 +6870,41 @@
       <operation name="getMaxConnectTimeByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getMaxConnectTimeByLocation"/>
          <documentation>
-            Get the times that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds. This is a location specific function, any action will operate on the specified location.
+            Get the time that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getMaxConnectionAttempts">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getMaxConnectionAttempts"/>
+         <documentation>
+            Get the number of times that each of the named pools can try to connect to any of its nodes before sending an error response.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getMaxConnectionAttemptsByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getMaxConnectionAttemptsByLocation"/>
+         <documentation>
+            Get the number of times that each of the named pools can try to connect to any of its nodes before sending an error response. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -6433,6 +7075,40 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getMaxReplyTimeByLocation"/>
          <documentation>
             Get the time that each of the named pools should wait for a response from a node before either discarding the request or trying another node, in seconds (retryable requests only). This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getMaxTimedOutConnectionAttempts">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getMaxTimedOutConnectionAttempts"/>
+         <documentation>
+            Get the number of times that each of the named pools can try to connect and time out waiting for a response, by exceeding max_reply_time, to any of its nodes before sending an error response.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getMaxTimedOutConnectionAttemptsByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getMaxTimedOutConnectionAttemptsByLocation"/>
+         <documentation>
+            Get the number of times that each of the named pools can try to connect and time out waiting for a response, by exceeding max_reply_time, to any of its nodes before sending an error response. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -7086,7 +7762,7 @@
       <operation name="getSSLEnhance">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getSSLEnhance"/>
          <documentation>
-            Get whether each of the named pools should use SSL protocol enhancements. These enhancements allow Zeus Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Zeus Web Servers or Zeus Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled.
+            Get whether each of the named pools should use SSL protocol enhancements. These enhancements allow Riverbed Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Riverbed Web Servers or Stingray Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled.
          </documentation>
          
          <input>
@@ -7103,7 +7779,7 @@
       <operation name="getSSLEnhanceByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/getSSLEnhanceByLocation"/>
          <documentation>
-            Get whether each of the named pools should use SSL protocol enhancements. These enhancements allow Zeus Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Zeus Web Servers or Zeus Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled. This is a location specific function, any action will operate on the specified location.
+            Get whether each of the named pools should use SSL protocol enhancements. These enhancements allow Riverbed Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Riverbed Web Servers or Stingray Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -7568,6 +8244,144 @@
          </fault>
       </operation>
       
+      <operation name="setAutoscaleCluster">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleCluster"/>
+         <documentation>
+            Set The ESX host or ESX cluster name to put the new virtual machine instances on.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAutoscaleClusterByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleClusterByLocation"/>
+         <documentation>
+            Set The ESX host or ESX cluster name to put the new virtual machine instances on. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAutoscaleDatacenter">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleDatacenter"/>
+         <documentation>
+            Set The name of the logical datacenter on the vCenter server
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAutoscaleDatacenterByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleDatacenterByLocation"/>
+         <documentation>
+            Set The name of the logical datacenter on the vCenter server This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAutoscaleDatastore">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleDatastore"/>
+         <documentation>
+            Set The name of the datastore to be used by the newly created virtual machine.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAutoscaleDatastoreByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleDatastoreByLocation"/>
+         <documentation>
+            Set The name of the datastore to be used by the newly created virtual machine. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setAutoscaleEnabled">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleEnabled"/>
          <documentation>
@@ -7779,6 +8593,52 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleIpstouseByLocation"/>
          <documentation>
             Set whether to use the public or private IPs This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAutoscaleLastnodeIdletime">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleLastnodeIdletime"/>
+         <documentation>
+            Set the idle time of the last node in an autoscaled pool before it can be destroyed
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAutoscaleLastnodeIdletimeByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setAutoscaleLastnodeIdletimeByLocation"/>
+         <documentation>
+            Set the idle time of the last node in an autoscaled pool before it can be destroyed This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -8612,7 +9472,7 @@
       <operation name="setMaxConnectTime">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setMaxConnectTime"/>
          <documentation>
-            Set the times that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds.
+            Set the time that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds.
          </documentation>
          
          <input>
@@ -8635,7 +9495,53 @@
       <operation name="setMaxConnectTimeByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setMaxConnectTimeByLocation"/>
          <documentation>
-            Set the times that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds. This is a location specific function, any action will operate on the specified location.
+            Set the time that each of the named pools should wait for a connection to establish to a node before trying another node, in seconds. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMaxConnectionAttempts">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setMaxConnectionAttempts"/>
+         <documentation>
+            Set the number of times that each of the named pools can try to connect to any of its nodes before sending an error response.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMaxConnectionAttemptsByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setMaxConnectionAttemptsByLocation"/>
+         <documentation>
+            Set the number of times that each of the named pools can try to connect to any of its nodes before sending an error response. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -8866,6 +9772,52 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setMaxReplyTimeByLocation"/>
          <documentation>
             Set the time that each of the named pools should wait for a response from a node before either discarding the request or trying another node, in seconds (retryable requests only). This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMaxTimedOutConnectionAttempts">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setMaxTimedOutConnectionAttempts"/>
+         <documentation>
+            Set the number of times that each of the named pools can try to connect and time out waiting for a response, by exceeding max_reply_time, to any of its nodes before sending an error response.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Pool/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setMaxTimedOutConnectionAttemptsByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setMaxTimedOutConnectionAttemptsByLocation"/>
+         <documentation>
+            Set the number of times that each of the named pools can try to connect and time out waiting for a response, by exceeding max_reply_time, to any of its nodes before sending an error response. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -9653,7 +10605,7 @@
       <operation name="setSSLEnhance">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setSSLEnhance"/>
          <documentation>
-            Set whether each of the named pools should use SSL protocol enhancements. These enhancements allow Zeus Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Zeus Web Servers or Zeus Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled.
+            Set whether each of the named pools should use SSL protocol enhancements. These enhancements allow Riverbed Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Riverbed Web Servers or Stingray Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled.
          </documentation>
          
          <input>
@@ -9676,7 +10628,7 @@
       <operation name="setSSLEnhanceByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Pool/setSSLEnhanceByLocation"/>
          <documentation>
-            Set whether each of the named pools should use SSL protocol enhancements. These enhancements allow Zeus Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Zeus Web Servers or Zeus Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled. This is a location specific function, any action will operate on the specified location.
+            Set whether each of the named pools should use SSL protocol enhancements. These enhancements allow Riverbed Web Servers to run multiple SSL sites, and to discover the client's IP address. Only use enable this if, for this pool, you are using Riverbed Web Servers or Stingray Traffic Managers whose virtual servers have the 'ssl_trust_magic' setting enabled. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>

@@ -39,10 +39,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final String CONTENT_CACHING = "content_caching";
     public static final String XFF = "add_x_forwarded_for_header";
     public static final String XFP = "add_x_forwarded_proto";
+    public static final String XFPORT = "add_x_forwarded_port";
     public static final String HTTPS_REDIRECT = "force_https_redirect";
     public static final VirtualServerRule ruleRateLimitHttp = new VirtualServerRule(RATE_LIMIT_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleRateLimitNonHttp = new VirtualServerRule(RATE_LIMIT_NON_HTTP, true, VirtualServerRuleRunFlag.run_every);
-    public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
+    public static final VirtualServerRule ruleXForwardedPort = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
+    public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFPORT, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedProto = new VirtualServerRule(XFP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleContentCaching = new VirtualServerRule(CONTENT_CACHING, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleForceHttpsRedirect = new VirtualServerRule(HTTPS_REDIRECT, true, VirtualServerRuleRunFlag.run_every);
@@ -84,6 +86,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Adding virtual server '%s'...", virtualServerName));
             vsInfo = new VirtualServerBasicInfo(lb.getPort(), ZxtmConversionUtils.mapProtocol(lb.getProtocol()), poolName);
             serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{virtualServerName}, new VirtualServerBasicInfo[]{vsInfo});
+            serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
+            serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
             LOG.info(String.format("Virtual server '%s' successfully added.", virtualServerName));
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
@@ -128,11 +132,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
             //Added rules for HTTP LB
             if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
-                TrafficScriptHelper.addXForwardedForScriptIfNeeded(serviceStubs);
-                attachXFFRuleToVirtualServer(serviceStubs, virtualServerName);
-
-                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
-                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
+                TrafficScriptHelper.addXForwardedPortScriptIfNeeded(serviceStubs);
+                attachXFPORTRuleToVirtualServer(serviceStubs, virtualServerName);
+//
+//                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
+//                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
 
                 setDefaultErrorFile(config, lb);
             }
@@ -252,7 +256,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 if (errorFile[0].equals("Default") || errorFile[0].equals(Constants.DEFAULT_ERRORFILE)) {
                     setDefaultErrorFile(config, virtualServerName);
                 } else {
-                    setErrorFile(config, virtualServerName, serviceStubs.getZxtmConfExtraBinding().getFile(new String[]{errorFile[0]})[0]);
+                    setErrorFile(config, virtualServerName, new String(serviceStubs.getZxtmConfExtraBinding().downloadFile(errorFile[0])));
                 }
             }
 
@@ -983,6 +987,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
+    private void attachXFPORTRuleToVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
+        if (serviceStubs.getVirtualServerBinding().getProtocol(new String[]{virtualServerName})[0].equals(VirtualServerProtocol.http)) {
+            LOG.debug(String.format("Attaching the XFPORT rule and enabling it on load balancer '%s'...", virtualServerName));
+            serviceStubs.getVirtualServerBinding().addRules(new String[]{virtualServerName}, new VirtualServerRule[][]{{ZxtmAdapterImpl.ruleXForwardedPort}});
+            LOG.debug(String.format("XFPORT rule successfully enabled on load balancer '%s'.", virtualServerName));
+        }
+    }
+
     private void attachXFPRuleToVirtualServer(ZxtmServiceStubs serviceStubs, String virtualServerName) throws RemoteException {
         if (serviceStubs.getVirtualServerBinding().getProtocol(new String[]{virtualServerName})[0].equals(VirtualServerProtocol.http)) {
             LOG.debug(String.format("Attaching the XFP rule and enabling it on load balancer '%s'...", virtualServerName));
@@ -1282,7 +1294,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String errorFileName = getErrorFileName(vsName);
         try {
             LOG.debug(String.format("Attempting to upload the error file: %s for: %s", errorFileName, vsName));
-            extraService.writeFile(new String[]{errorFileName}, new String[]{content});
+            extraService.uploadFile(errorFileName, content.getBytes());
             LOG.info(String.format("Successfully uploaded the error file: %s for: %s...", errorFileName, vsName));
 
             vsNames[0] = String.format("%s", vsName);
@@ -1314,7 +1326,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug("Attempting to upload the default error file...");
         extraService = serviceStubs.getZxtmConfExtraBinding();
         if (extraService != null) {
-            extraService.writeFile(new String[]{Constants.DEFAULT_ERRORFILE}, new String[]{content.toString()});
+            extraService.uploadFile(Constants.DEFAULT_ERRORFILE, content.getBytes());
             LOG.info("Successfully uploaded the default error file...");
         }
     }

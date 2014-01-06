@@ -194,6 +194,7 @@ public class ResourceTranslator {
         if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
             basic.setAdd_x_forwarded_for(true);
             basic.setAdd_x_forwarded_proto(true);
+            rules.add(StmConstants.XFPORT);
         }
 
         //trafficscript or rule settings

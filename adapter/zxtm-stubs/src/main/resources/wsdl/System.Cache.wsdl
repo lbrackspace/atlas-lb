@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
 <definitions name="System.Cache"
- targetNamespace="http://soap.zeus.com/zxtm/1.2/"
- xmlns:zeusns_1_2="http://soap.zeus.com/zxtm/1.2/"
+ targetNamespace="http://soap.zeus.com/zxtm/1.3/"
+ xmlns:zeusns_1_3="http://soap.zeus.com/zxtm/1.3/"
  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
@@ -15,7 +15,7 @@
  xmlns="http://schemas.xmlsoap.org/wsdl/">
    
    <types>
-      <xsd:schema targetNamespace='http://soap.zeus.com/zxtm/1.2/'
+      <xsd:schema targetNamespace='http://soap.zeus.com/zxtm/1.3/'
        xmlns='http://www.w3.org/2001/XMLSchema'
        xmlns:SOAP-ENC='http://schemas.xmlsoap.org/soap/encoding/'
        xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'>
@@ -31,7 +31,7 @@
          <xsd:complexType name="StringArrayArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
-             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns_1_2:StringArray[]"/>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns_1_3:StringArray[]"/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -47,7 +47,7 @@
                  <xsd:documentation>The virtual server hosting the entry.</xsd:documentation>
                </xsd:annotation>
             </xsd:element>
-            <xsd:element name="protocol" type="zeusns_1_2:System.Cache.Protocol">
+            <xsd:element name="protocol" type="zeusns_1_3:System.Cache.Protocol">
                <xsd:annotation>
                  <xsd:documentation>The protocol of the entry: http or https.</xsd:documentation>
                </xsd:annotation>
@@ -77,6 +77,11 @@
                  <xsd:documentation>The number of hits for the entry.</xsd:documentation>
                </xsd:annotation>
              </xsd:element>
+             <xsd:element name="optimized" type="xsd:boolean">
+               <xsd:annotation>
+                 <xsd:documentation>Whether or not Aptimizer has optimized the content of this cache entry.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
              <xsd:element name="num_variants" type="xsd:int">
                <xsd:annotation>
                  <xsd:documentation>The number of variants of this entry in the cache.</xsd:documentation>
@@ -87,15 +92,20 @@
                  <xsd:documentation>The HTTP response code for this entry in the cache.</xsd:documentation>
                </xsd:annotation>
              </xsd:element>
-             <xsd:element name="versions" type="zeusns_1_2:StringArray">
+             <xsd:element name="versions" type="zeusns_1_3:StringArray">
                <xsd:annotation>
                  <xsd:documentation>The HTTP versions the entry is cached for.</xsd:documentation>
                </xsd:annotation>
              </xsd:element>
-             <xsd:element name="varys" type="zeusns_1_2:StringArray">
+             <xsd:element name="varys" type="zeusns_1_3:StringArray">
                <xsd:annotation>
                  <xsd:documentation>The set of request-header fields that determine if the cache entry may be
                  used for a particular request.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="browsers" type="zeusns_1_3:StringArray">
+               <xsd:annotation>
+                 <xsd:documentation>The specific web browsers for which this entry is cached.</xsd:documentation>
                </xsd:annotation>
              </xsd:element>
            </xsd:all>
@@ -104,7 +114,7 @@
          <xsd:complexType name="System.Cache.CacheContentArray">
             <xsd:complexContent>
                <xsd:restriction base='SOAP-ENC:Array'>
-                  <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns_1_2:System.Cache.CacheContent[]'/>
+                  <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns_1_3:System.Cache.CacheContent[]'/>
                </xsd:restriction>
             </xsd:complexContent>
          </xsd:complexType>
@@ -125,7 +135,7 @@
                  <xsd:documentation>The total size of the items matching the wildcards in a query.</xsd:documentation>
                </xsd:annotation>
             </xsd:element>
-             <xsd:element name="matching_items" type="zeusns_1_2:System.Cache.CacheContentArray">
+             <xsd:element name="matching_items" type="zeusns_1_3:System.Cache.CacheContentArray">
                <xsd:annotation>
                  <xsd:documentation>The set of individual entries in the cache that matched the query.</xsd:documentation>
                </xsd:annotation>
@@ -193,7 +203,7 @@
          <xsd:complexType name="System.Cache.ProtocolArray">
             <xsd:complexContent>
                <xsd:restriction base='SOAP-ENC:Array'>
-                  <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns_1_2:System.Cache.Protocol[]'/>
+                  <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns_1_3:System.Cache.Protocol[]'/>
                </xsd:restriction>
             </xsd:complexContent>
          </xsd:complexType>
@@ -209,7 +219,7 @@
          <xsd:complexType name="booleanArrayArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
-             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns_1_2:booleanArray[]"/>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns_1_3:booleanArray[]"/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -231,6 +241,14 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
@@ -238,20 +256,28 @@
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
       </xsd:schema>
    </types>
    
    <message name="clearCacheContentItemsRequest">
-      <part name="virtual_servers" type="zeusns_1_2:StringArray" />
-      <part name="protocols" type="zeusns_1_2:System.Cache.ProtocolArray" />
-      <part name="hosts" type="zeusns_1_2:StringArray" />
-      <part name="items" type="zeusns_1_2:StringArray" />
+      <part name="virtual_servers" type="zeusns_1_3:StringArray" />
+      <part name="protocols" type="zeusns_1_3:System.Cache.ProtocolArray" />
+      <part name="hosts" type="zeusns_1_3:StringArray" />
+      <part name="items" type="zeusns_1_3:StringArray" />
    </message>
    
    <message name="clearCacheContentItemsResponse"></message>
    
    <message name="clearMatchingCacheContentRequest">
-      <part name="protocol" type="zeusns_1_2:System.Cache.Protocol" />
+      <part name="protocol" type="zeusns_1_3:System.Cache.Protocol" />
       <part name="host_wildcard" type="xsd:string" />
       <part name="path_wildcard" type="xsd:string" />
    </message>
@@ -263,20 +289,20 @@
    <message name="clearWebCacheResponse"></message>
    
    <message name="getCacheContentRequest">
-      <part name="protocol" type="zeusns_1_2:System.Cache.Protocol" />
+      <part name="protocol" type="zeusns_1_3:System.Cache.Protocol" />
       <part name="host_wildcard" type="xsd:string" />
       <part name="path_wildcard" type="xsd:string" />
       <part name="max_entries" type="xsd:int" />
    </message>
    
    <message name="getCacheContentResponse">
-      <part name="cache_content" type="zeusns_1_2:System.Cache.CacheContentInfo" />
+      <part name="cache_content" type="zeusns_1_3:System.Cache.CacheContentInfo" />
    </message>
    
    <message name="getGlobalCacheInfoRequest"></message>
    
    <message name="getGlobalCacheInfoResponse">
-      <part name="globalinfo" type="zeusns_1_2:System.Cache.GlobalInfo" />
+      <part name="globalinfo" type="zeusns_1_3:System.Cache.GlobalInfo" />
    </message>
    
    <portType name="System.CachePort">
@@ -288,8 +314,8 @@
                         a given index into the arguments.
          </documentation>
          
-         <input message="zeusns_1_2:clearCacheContentItemsRequest"/>
-         <output message="zeusns_1_2:clearCacheContentItemsResponse"/>
+         <input message="zeusns_1_3:clearCacheContentItemsRequest"/>
+         <output message="zeusns_1_3:clearCacheContentItemsResponse"/>
       </operation>
       
       <operation name="clearMatchingCacheContent">
@@ -297,8 +323,8 @@
             Delete the Web Cache entries matching the input arguments.
          </documentation>
          
-         <input message="zeusns_1_2:clearMatchingCacheContentRequest"/>
-         <output message="zeusns_1_2:clearMatchingCacheContentResponse"/>
+         <input message="zeusns_1_3:clearMatchingCacheContentRequest"/>
+         <output message="zeusns_1_3:clearMatchingCacheContentResponse"/>
       </operation>
       
       <operation name="clearWebCache">
@@ -306,8 +332,8 @@
             Clear all entries from the Web Cache for this machine.
          </documentation>
          
-         <input message="zeusns_1_2:clearWebCacheRequest"/>
-         <output message="zeusns_1_2:clearWebCacheResponse"/>
+         <input message="zeusns_1_3:clearWebCacheRequest"/>
+         <output message="zeusns_1_3:clearWebCacheResponse"/>
       </operation>
       
       <operation name="getCacheContent">
@@ -315,8 +341,8 @@
             Get information about the Web Cache entries matching the input arguments.
          </documentation>
          
-         <input message="zeusns_1_2:getCacheContentRequest"/>
-         <output message="zeusns_1_2:getCacheContentResponse"/>
+         <input message="zeusns_1_3:getCacheContentRequest"/>
+         <output message="zeusns_1_3:getCacheContentResponse"/>
       </operation>
       
       <operation name="getGlobalCacheInfo">
@@ -325,15 +351,15 @@
                         memory used by the Web Cache for this machine.
          </documentation>
          
-         <input message="zeusns_1_2:getGlobalCacheInfoRequest"/>
-         <output message="zeusns_1_2:getGlobalCacheInfoResponse"/>
+         <input message="zeusns_1_3:getGlobalCacheInfoRequest"/>
+         <output message="zeusns_1_3:getGlobalCacheInfoResponse"/>
       </operation>
    </portType>
    
-   <binding name="System.CacheBinding" type="zeusns_1_2:System.CachePort">
+   <binding name="System.CacheBinding" type="zeusns_1_3:System.CachePort">
       <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
       <operation name="clearCacheContentItems">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.2/System/Cache/clearCacheContentItems"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.3/System/Cache/clearCacheContentItems"/>
          <documentation>
             Delete individual items from the Web Cache.  All input arguments are
                         arrays of strings and only those items are deleted whose virtual server,
@@ -342,67 +368,67 @@
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
       </operation>
       
       <operation name="clearMatchingCacheContent">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.2/System/Cache/clearMatchingCacheContent"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.3/System/Cache/clearMatchingCacheContent"/>
          <documentation>
             Delete the Web Cache entries matching the input arguments.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
       </operation>
       
       <operation name="clearWebCache">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.2/System/Cache/clearWebCache"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.3/System/Cache/clearWebCache"/>
          <documentation>
             Clear all entries from the Web Cache for this machine.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
       </operation>
       
       <operation name="getCacheContent">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.2/System/Cache/getCacheContent"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.3/System/Cache/getCacheContent"/>
          <documentation>
             Get information about the Web Cache entries matching the input arguments.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
       </operation>
       
       <operation name="getGlobalCacheInfo">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.2/System/Cache/getGlobalCacheInfo"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.3/System/Cache/getGlobalCacheInfo"/>
          <documentation>
             Get the size of the Web Cache, the number of Web Cache entries and the percentage
                         memory used by the Web Cache for this machine.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.2/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.3/System/Cache/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
       </operation>
    </binding>
@@ -415,7 +441,7 @@
                                         individual entries.
       </documentation>
       
-      <port name="System.CachePort" binding="zeusns_1_2:System.CacheBinding">
+      <port name="System.CachePort" binding="zeusns_1_3:System.CacheBinding">
          <soap:address location="https://admin_server:9090/soap"/>
       </port>
    </service>
