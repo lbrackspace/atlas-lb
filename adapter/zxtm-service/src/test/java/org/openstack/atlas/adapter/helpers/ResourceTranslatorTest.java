@@ -75,11 +75,11 @@ public class ResourceTranslatorTest extends STMTestBase {
             expectedError.setError_file(errorFile);
             rules = new ArrayList<String>();
 
-//            if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
-//                rules.add(StmConstants.XFF);
+            if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
+                rules.add(StmConstants.XFPORT);
 //                rules.add(StmConstants.XFP);
-//                if (lb.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_HTTP);
-//            } else {
+            }
+//            else {
 //                rules = new ArrayList<String>();
 //                if (lb.getRateLimit() != null) rules.add(StmConstants.RATE_LIMIT_NON_HTTP);
 //            }

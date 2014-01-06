@@ -10,6 +10,7 @@ public class StmConstants {
     public static final String CONTENT_CACHING = "content_caching";
     public static final String XFF = "add_x_forwarded_for_header";
     public static final String XFP = "add_x_forwarded_proto";
+    public static final String XFPORT = "add_x_forwarded_port";
     public static final String SOURCE_IP = "ip";
     public static final String HTTP_COOKIE = "cookie";
     public static final String X_FORWARDED_FOR_SCRIPT = "http.addHeader( \"X-Forwarded-For\", request.getRemoteIP() );\n" +
@@ -20,6 +21,7 @@ public class StmConstants {
             "} else {\n" +
             "        http.addHeader( \"X-Forwarded-Proto\", \"http\" );\n" +
             "}";
+    public static final String X_FORWARDED_PORT_SCRIPT = "http.addHeader( \"X-Forwarded-Port\", request.getLocalPort() );";
     public static final String HTTP_RATE_LIMIT_SCRIPT =
             "$load_balancer = connection.getVirtualServer();\n" +
                     "$rate_html = \"<html><head></head><body><b>Error: 503 - Service Unavailable!</body></html>\";\n" +

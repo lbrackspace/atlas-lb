@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -76,7 +76,12 @@
                </xsd:enumeration>
                <xsd:enumeration value="ec2elastic">
                   <xsd:annotation>
-                     <xsd:documentation>Use an EC2 Elastic IP address.</xsd:documentation>
+                     <xsd:documentation>Use an EC2-Classic Elastic IP address.</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="ec2vpcelastic">
+                  <xsd:annotation>
+                     <xsd:documentation>Use an EC2-VPC Elastic IP address.</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
             </xsd:restriction>
@@ -204,10 +209,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>

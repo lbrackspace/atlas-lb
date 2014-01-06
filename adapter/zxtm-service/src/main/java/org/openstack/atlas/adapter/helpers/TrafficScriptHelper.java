@@ -36,6 +36,10 @@ public class TrafficScriptHelper extends StmConstants {
         return X_FORWARDED_PROTO_SCRIPT;
     }
 
+    public static String getXForwardedPortHeaderScript() {
+        return X_FORWARDED_PORT_SCRIPT;
+    }
+
     public static String getForceHttpsRedirectScript() {
         return "http.changeSite( \"https://\" . http.getHostHeader() );";
     }
@@ -133,6 +137,25 @@ public class TrafficScriptHelper extends StmConstants {
         }
 
         LOG.debug("X-Forwarded-For rule (traffic script) verification completed.");
+    }
+
+    public static void addXForwardedPortScriptIfNeeded(ZxtmServiceStubs serviceStubs) throws RemoteException {
+        LOG.debug("Verifying that the X-Forwarded-For rule (traffic script) is properly configured...");
+
+        boolean ruleXForwardedPortExists = false;
+        String[] ruleNames = serviceStubs.getZxtmRuleCatalogService().getRuleNames();
+
+        for (String ruleName : ruleNames) {
+            if (ruleName.equals(ZxtmAdapterImpl.ruleXForwardedPort.getName())) ruleXForwardedPortExists = true;
+        }
+
+        if (!ruleXForwardedPortExists) {
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", ZxtmAdapterImpl.ruleXForwardedPort.getName()));
+            serviceStubs.getZxtmRuleCatalogService().addRule(new String[]{ZxtmAdapterImpl.ruleXForwardedPort.getName()}, new String[]{TrafficScriptHelper.getXForwardedPortHeaderScript()});
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", ZxtmAdapterImpl.ruleXForwardedPort.getName()));
+        }
+
+        LOG.debug("X-Forwarded-Port rule (traffic script) verification completed.");
     }
 
     public static void addXForwardedForScriptIfNeeded(StingrayRestClient client) throws IOException, StingrayRestClientException {
