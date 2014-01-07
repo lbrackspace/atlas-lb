@@ -115,18 +115,33 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 }
             }
 
-            getResources().updatePool(client, vsName, translator.getcPool());
-            getResources().updateVirtualServer(client, vsName, translator.getcVServer());
-
-            if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
-                getResources().updatePool(client, vsRedirectName, translator.getcRedirectPool());
-                getResources().updateVirtualServer(client, vsRedirectName, translator.getcRedirectVServer());
-            }
-
             if (loadBalancer.isUsingSsl()) {
+                //Handle SSLTerm https-redirect
+                if (queLb.isHttpsRedirect() != null && queLb.isHttpsRedirect()) {
+                    getResources().updatePool(client, vsName, translator.getcPool());
+                    getResources().updateVirtualServer(client, vsName, translator.getcRedirectVServer());
+                } else {
+                    getResources().updatePool(client, vsName, translator.getcPool());
+                    getResources().updateVirtualServer(client, vsName, translator.getcVServer());
+                }
+
+                //Handle SSLTerm LB
                 String secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
                 translator.translateLoadBalancerResource(config, secureVsName, loadBalancer, queLb);
                 getResources().updateVirtualServer(client, secureVsName, translator.getcVServer());
+            } else {
+                //Handle non-SSLTerm (normal) LB
+                getResources().updatePool(client, vsName, translator.getcPool());
+                getResources().updateVirtualServer(client, vsName, translator.getcVServer());
+
+                //Handle non-SSLTerm https-redirect
+                if (queLb.isHttpsRedirect() != null && queLb.isHttpsRedirect()) {
+                    getResources().updatePool(client, vsRedirectName, translator.getcRedirectPool());
+                    getResources().updateVirtualServer(client, vsRedirectName, translator.getcRedirectVServer());
+                } else {
+                    getResources().deleteVirtualServer(client, vsRedirectName);
+                    getResources().deletePool(client, vsRedirectName);
+                }
             }
 
         } catch (Exception ex) {

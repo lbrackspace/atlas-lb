@@ -90,7 +90,10 @@ public class ResourceTranslator {
 
         // Redirection specific
         basic.setPort(80);
-        basic.setPool(ZxtmNameBuilder.genRedirectVSName(loadBalancer));
+        if (loadBalancer.isUsingSsl())
+            basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));
+        else
+            basic.setPool(ZxtmNameBuilder.genRedirectVSName(loadBalancer));
         basic.setProtocol(VirtualServerProtocol.http.getValue());
 
         log = new VirtualServerLog();
