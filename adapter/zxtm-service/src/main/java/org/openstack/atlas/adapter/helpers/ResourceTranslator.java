@@ -1,5 +1,6 @@
 package org.openstack.atlas.adapter.helpers;
 
+import com.zxtm.service.client.VirtualServerProtocol;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
@@ -32,9 +33,11 @@ import java.util.*;
 
 public class ResourceTranslator {
     public Pool cPool;
+    public Pool cRedirectPool;
     public Monitor cMonitor;
     public Map<String, TrafficIp> cTrafficIpGroups;
     public VirtualServer cVServer;
+    public VirtualServer cRedirectVServer;
     public Protection cProtection;
     public Bandwidth cBandwidth;
     public Keypair cKeypair;
@@ -63,6 +66,55 @@ public class ResourceTranslator {
 
         translatePoolResource(vsName, loadBalancer, queLb);
         translateVirtualServerResource(config, vsName, loadBalancer);
+        if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
+            translateRedirectPoolResource(loadBalancer);
+            translateRedirectVirtualServerResource(config, vsName, loadBalancer);
+        }
+    }
+
+    //This could probably be trimmed down a bit
+    private VirtualServer translateRedirectVirtualServerResource(LoadBalancerEndpointConfiguration config, String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
+        VirtualServerBasic basic = new VirtualServerBasic();
+        VirtualServerSsl ssl = new VirtualServerSsl();
+        VirtualServerProperties properties = new VirtualServerProperties();
+        VirtualServerConnectionError ce = new VirtualServerConnectionError();
+        VirtualServerLog log;
+        List<String> rules = new ArrayList<String>();
+
+        properties.setBasic(basic);
+        properties.setSsl(ssl);
+        cRedirectVServer = new VirtualServer();
+        cRedirectVServer.setProperties(properties);
+
+        basic.setEnabled(true);
+
+        // Redirection specific
+        basic.setPort(80);
+        if (loadBalancer.isUsingSsl())
+            basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));
+        else
+            basic.setPool(ZxtmNameBuilder.genRedirectVSName(loadBalancer));
+        basic.setProtocol(VirtualServerProtocol.http.getValue());
+
+        log = new VirtualServerLog();
+        log.setEnabled(false);
+        properties.setLog(log);
+
+        ce.setError_file("Default");
+        properties.setConnection_errors(ce);
+
+        //trafficscript or rule settings
+        rules.add(StmConstants.HTTPS_REDIRECT);
+        basic.setRequest_rules(rules);
+
+        //trafficIpGroup settings
+        basic.setListen_on_any(false);
+        basic.setListen_on_traffic_ips(genGroupNameSet(loadBalancer));
+
+        //ssl settings
+        ssl.setServer_cert_default(vsName);
+
+        return cRedirectVServer;
     }
 
     public VirtualServer translateVirtualServerResource(LoadBalancerEndpointConfiguration config,
@@ -295,6 +347,30 @@ public class ResourceTranslator {
         return cPool;
     }
 
+    public Pool translateRedirectPoolResource(LoadBalancer loadBalancer) throws InsufficientRequestException {
+        cRedirectPool = new Pool();
+        PoolProperties properties = new PoolProperties();
+        PoolBasic basic = new PoolBasic();
+        PoolLoadbalancing poollb = new PoolLoadbalancing();
+
+        basic.setPassive_monitoring(false);
+
+
+        String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
+
+        poollb.setAlgorithm(lbAlgo);
+
+        PoolConnection connection = null;
+        basic.setPersistence_class(null);
+        basic.setBandwidth_class(null);
+        properties.setBasic(basic);
+        properties.setLoad_balancing(poollb);
+        properties.setConnection(connection);
+        cRedirectPool.setProperties(properties);
+
+        return cRedirectPool;
+    }
+
     public Monitor translateMonitorResource(LoadBalancer loadBalancer) {
         Monitor monitor = new Monitor();
         MonitorProperties properties = new MonitorProperties();
@@ -443,6 +519,14 @@ public class ResourceTranslator {
         this.cPool = cPool;
     }
 
+    public Pool getcRedirectPool() {
+        return cRedirectPool;
+    }
+
+    public void setcRedirectPool(Pool cPool) {
+        this.cRedirectPool = cPool;
+    }
+
     public Monitor getcMonitor() {
         return cMonitor;
     }
@@ -465,6 +549,14 @@ public class ResourceTranslator {
 
     public void setcVServer(VirtualServer cVServer) {
         this.cVServer = cVServer;
+    }
+
+    public VirtualServer getcRedirectVServer() {
+        return cRedirectVServer;
+    }
+
+    public void setcRedirectVServer(VirtualServer cVServer) {
+        this.cRedirectVServer = cVServer;
     }
 
     public Protection getcProtection() {
