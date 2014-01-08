@@ -48,6 +48,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
 
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
         translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
@@ -67,7 +68,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             getResources().updateVirtualIps(client, vsName, translator.getcTrafficIpGroups());
             getResources().updatePool(client, vsName, translator.getcPool());
             getResources().updateVirtualServer(client, vsName, translator.getcVServer());
-
+            if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
+                getResources().updatePool(client, vsRedirectName, translator.getcRedirectPool());
+                getResources().updateVirtualServer(client, vsRedirectName, translator.getcRedirectVServer());
+            }
             client.destroy();
         } catch (Exception e) {
             LOG.error(String.format("Failed to create load balancer %s, rolling back...", loadBalancer.getId()));
@@ -81,10 +85,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             throws InsufficientRequestException, StmRollBackException {
 
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
-
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
 
         try {
 
@@ -112,13 +115,33 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 }
             }
 
-            getResources().updatePool(client, vsName, translator.getcPool());
-            getResources().updateVirtualServer(client, vsName, translator.getcVServer());
-
             if (loadBalancer.isUsingSsl()) {
+                //Handle SSLTerm https-redirect
+                if (queLb.isHttpsRedirect() != null && queLb.isHttpsRedirect()) {
+                    getResources().updatePool(client, vsName, translator.getcPool());
+                    getResources().updateVirtualServer(client, vsName, translator.getcRedirectVServer());
+                } else {
+                    getResources().updatePool(client, vsName, translator.getcPool());
+                    getResources().updateVirtualServer(client, vsName, translator.getcVServer());
+                }
+
+                //Handle SSLTerm LB
                 String secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
                 translator.translateLoadBalancerResource(config, secureVsName, loadBalancer, queLb);
                 getResources().updateVirtualServer(client, secureVsName, translator.getcVServer());
+            } else {
+                //Handle non-SSLTerm (normal) LB
+                getResources().updatePool(client, vsName, translator.getcPool());
+                getResources().updateVirtualServer(client, vsName, translator.getcVServer());
+
+                //Handle non-SSLTerm https-redirect
+                if (queLb.isHttpsRedirect() != null && queLb.isHttpsRedirect()) {
+                    getResources().updatePool(client, vsRedirectName, translator.getcRedirectPool());
+                    getResources().updateVirtualServer(client, vsRedirectName, translator.getcRedirectVServer());
+                } else {
+                    getResources().deleteVirtualServer(client, vsRedirectName);
+                    getResources().deletePool(client, vsRedirectName);
+                }
             }
 
         } catch (Exception ex) {
@@ -133,6 +156,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
 
         LOG.debug(String.format("Removing loadbalancer: %s ...", vsName));
         getResources().deleteRateLimit(config, loadBalancer, vsName);
@@ -143,6 +167,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         getResources().deleteVirtualServer(client, vsName);
         if (loadBalancer.hasSsl()) {
             getResources().deleteVirtualServer(client, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        }
+        if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
+            getResources().deletePool(client, vsRedirectName);
+            getResources().deleteVirtualServer(client, vsRedirectName);
         }
         client.destroy();
         LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM service...", vsName));
