@@ -6,5 +6,5 @@ UPDATE `host` SET `rest_endpoint_active`='1';
 ALTER TABLE `host` modify COLUMN `rest_endpoint_active` tinyint(1) NOT NULL;
 INSERT INTO host_status(NAME,description)VALUES("REST_API_ENDPOINT","Indicates that this Host shall handle all REST requests for this cluster.");
 
-UPDATE `meta` SET `meta_value` = '???' WHERE `meta_key`='version';
+UPDATE `meta` SET `meta_value` = '62' WHERE `meta_key`='version';
 
