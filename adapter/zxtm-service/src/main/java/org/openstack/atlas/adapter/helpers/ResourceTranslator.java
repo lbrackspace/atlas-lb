@@ -24,6 +24,7 @@ import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
 import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
+import org.rackspace.stingray.client.traffic.ip.TrafficIpIpMapping;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.*;
@@ -247,6 +248,13 @@ public class ResourceTranslator {
         TrafficIp tig = new TrafficIp();
         TrafficIpProperties properties = new TrafficIpProperties();
         TrafficIpBasic basic = new TrafficIpBasic();
+
+//        TrafficIpIpMapping mapping = new TrafficIpIpMapping();
+//        List<TrafficIpIpMapping> mappings = new ArrayList<TrafficIpIpMapping>(Arrays.asList(mapping));
+//        basic.setIp_mapping(mappings);
+
+        basic.setHash_source_port(false);
+        basic.setKeeptogether(false);
 
         basic.setEnabled(isEnabled);
         basic.setIpaddresses(new HashSet<String>(Arrays.asList(ipaddress)));

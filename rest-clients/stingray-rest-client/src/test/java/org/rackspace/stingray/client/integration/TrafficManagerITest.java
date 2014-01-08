@@ -42,6 +42,7 @@ public class TrafficManagerITest extends StingrayTestBase {
     @Test
     public void testCreateTrafficManager() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         TrafficManager createdManager = client.createTrafficManager(TESTNAME, manager);
+        String t = manager.toString();
         Assert.assertNotNull(createdManager);
     }
 

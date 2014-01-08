@@ -34,7 +34,6 @@
                         "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerSysctl",
 
                         "type":                  "object",
-                        "required":              ["sysctl","description","value"],
                         "additionalProperties":  false,
 
                         "properties": {
@@ -92,7 +91,6 @@
                         "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerTrafficIp",
 
                         "type":                  "object",
-                        "required":              ["name","networks"],
                         "additionalProperties":  false,
 
                         "properties": {
@@ -150,7 +148,6 @@
                         "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerHosts",
 
                         "type":                  "object",
-                        "required":              ["name","ip_address"],
                         "additionalProperties":  false,
 
                         "properties": {
@@ -177,7 +174,6 @@
                         "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerIf",
 
                         "type":                  "object",
-                        "required":              ["name"],
                         "additionalProperties":  false,
 
                         "properties": {
@@ -232,7 +228,6 @@
                         "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerIp",
 
                         "type":                  "object",
-                        "required":              ["name","addr","isexternal","mask"],
                         "additionalProperties":  false,
 
                         "properties": {
@@ -327,7 +322,6 @@
                         "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerRoutes",
 
                         "type":                  "object",
-                        "required":              ["name","gw","if","mask"],
                         "additionalProperties":  false,
 
                         "properties": {
@@ -494,6 +488,32 @@
                }
             },
 
+             "ec2": {
+                 "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerEc2",
+                 "type": "object",
+                 "additionalProperties": false,
+
+                 "properties": {
+                     "availability_zone": {
+                         "description": "The availability zone of this EC2 instance, should be set when the appliance is first booted. Not required for non-EC2 systems.",
+
+                         "type": "string"
+                     },
+
+                     "instanceid": {
+                         "description": "The EC2 instance ID of this EC2 virtual appliance, should be set when the appliance is first booted. Not required for non-EC2 systems.",
+
+                         "type": "string"
+                     },
+
+                     "vpcid": {
+                         "description": "The ID of the VPC the instance is in, should be set when the appliance is first booted. Not required for non-VPC EC2 or non-EC2 systems.",
+
+                         "type": "string"
+                     }
+                 }
+             },
+
             "java": {
                "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerJava",
 
@@ -541,7 +561,6 @@
 
             "snmp": {
                "javaType" :     "org.rackspace.stingray.client.tm.TrafficManagerSnmp",
-
                "type":                  "object",
                "additionalProperties":  false,
 
