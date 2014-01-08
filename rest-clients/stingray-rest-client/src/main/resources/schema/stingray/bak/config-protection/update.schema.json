@@ -1,27 +1,25 @@
 {
-   "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/2.0/config/active/protection#update",
-   "title":                 "Protection Class",
-   "description":           "A protection class specifies the level of protection against network attacks for a virtual server.",
-   "javaType" :     "org.rackspace.stingray.client.protection.Protection",
-
-   "type":                  "object",
-   "additionalProperties":  false,
+   "$schema":       "http://json-schema.org/draft-03/schema#",
+   "id":            "/rvbd/schema/tm/1.0/config/active/protection#",
+   "title":         "Protection Class",
+   "description":   "A protection class specifies the level of protection against network attacks for a virtual server.",
+    "javaType" :     "org.rackspace.stingray.client.protection.Protection",
+   "type":          "object",
+   "required":      false,
 
    "properties": {
-
       "properties": {
-         "javaType" :     "org.rackspace.stingray.client.protection.ProtectionProperties",
-
+          "javaType" :     "org.rackspace.stingray.client.protection.ProtectionProperties",
          "type":                  "object",
+         "required":              true,
          "additionalProperties":  false,
 
          "properties": {
 
             "basic": {
-               "javaType" :     "org.rackspace.stingray.client.protection.ProtectionBasic",
-
+                "javaType" :     "org.rackspace.stingray.client.protection.ProtectionBasic",
                "type":                  "object",
+               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -50,12 +48,6 @@
                      "type":          "string"
                   },
 
-                  "per_process_connection_count": {
-                     "description":   "Whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address. If set to \"Yes\", each process individually accepts no more than \"max_1_connections\" connections from each IP address.  Each Traffic Manager usually has several processes (typically one per available CPU core).  Therefore, across a Traffic Manager as a whole, total accepted connections from one IP address may also reach several times the \"max_1_connections\" limit. If set to \"No\", counts within a Traffic manager are combined, such that each Traffic Manager as a whole will accept no more than \"max_1_connections\" connections from each IP address.  When counts are combined, \"max_10_connections\" and \" min_connections\" limits are not available.",
-
-                     "type":          "boolean"
-                  },
-
                   "rule": {
                      "description":   "A TrafficScript rule that will be run on the connection after the service protection criteria have been evaluated.  This rule will be executed prior to normal rules configured for the virtual server.",
 
@@ -63,17 +55,21 @@
                   },
 
                   "testing": {
-                     "description":   "Place the service protection class into testing mode. (Log when this class would have dropped a connection, but allow all connections through).",
+                     "description":   "Place the service protection class into testing mode. (Log when this class would have dropped a connection, but allow all connections through.)",
 
                      "type":          "boolean"
+                  },
+                  "per_process_connection_count":{
+                      "description":  "",
+                      "type":         "boolean"
                   }
                }
             },
 
             "access_restriction": {
-               "javaType" :     "org.rackspace.stingray.client.protection.ProtectionAccessRestriction",
-
+                "javaType" :     "org.rackspace.stingray.client.protection.ProtectionAccessRestriction",
                "type":                  "object",
+               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -102,54 +98,53 @@
             },
 
             "connection_limiting": {
-               "javaType" :     "org.rackspace.stingray.client.protection.ProtectionConnectionLimiting",
-
+                "javaType" :     "org.rackspace.stingray.client.protection.ProtectionConnectionLimiting",
                "type":                  "object",
+               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
                   "max_10_connections": {
-                     "description":   "Maximum simultaneous connections allowed from the top ten busiest IP addresses.  The setting is ignored if \"per_process_connection_count\" is \"No\".",
+                     "description":   "Maximum simultaneous connections allowed from the top ten busiest IP addresses.",
 
                      "type":          "integer",
                      "minimum":       0
                   },
 
                   "max_1_connections": {
-                     "description":   "Maximum simultaneous connections allowed from one IP address.  Set to \"0\" to allow unlimited simultaneous connections.",
+                     "description":   "Maximum simultaneous connections allowed from one IP address.",
 
                      "type":          "integer",
                      "minimum":       0
                   },
 
                   "max_connection_rate": {
-                     "description":   "Maximum number of connections from one IP address in the \"rate_timer\" interval.  Set to \"0\" to make this unlimited. If applied to an HTTP Virtual Server each request sent on a connection that is kept alive will also be considered.  Each process within a Traffic Manager applies the rate limit independently.",
+                     "description":   "Maximum number of connections from one IP address in the \"rate_timer\" interval.  Set to \"0\" to make this unlimited. If applied to an HTTP Virtual Server each request sent on a connection that is kept alive will also be considered.",
 
                      "type":          "integer",
                      "minimum":       0
                   },
 
                   "min_connections": {
-                     "description":   "Always allow at least this number of simultaneous connections from each IP address before applying restrictions.  Set to \"0\" to allow unlimited simultaneous connections.  The setting is ignored if \"per_process_connection_count\" is \"No\".",
+                     "description":   "Always allow at least this number of simultaneous connections from each IP address before applying restrictions.  Set to \"0\" to allow unlimited simultaneous connections.",
 
                      "type":          "integer",
                      "minimum":       0
                   },
 
                   "rate_timer": {
-                     "description":   "How frequently the \"max_connection_rate\" is assessed. For example, a value of \"1\" (second) will impose a limit of \"max_connection_rate\" connections per second; a value of \"60\" will impose a limit of \"max_connection_rate\" connections per minute. The valid range is 1-99999 seconds.",
+                     "description":   "How frequently the \"max_connection_rate\" is assessed. For example, a value of \"1\" (second) will impose a limit of \"max_connection_rate\" connections per second; a value of \"60\" will impose a limit of \"max_connection_rate\" connections per minute.",
 
                      "type":          "integer",
-                     "minimum":       1,
-                     "maximum":       99999
+                     "minimum":       0
                   }
                }
             },
 
             "http": {
-               "javaType" :     "org.rackspace.stingray.client.protection.ProtectionHttp",
-
+                "javaType" :     "org.rackspace.stingray.client.protection.ProtectionHttp",
                "type":                  "object",
+               "required":              false,
                "additionalProperties":  false,
 
                "properties": {

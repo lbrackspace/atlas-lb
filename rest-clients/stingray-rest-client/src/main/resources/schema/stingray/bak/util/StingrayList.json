@@ -1,16 +1,16 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
+    "$schema": "http://json-schema.org/draft-03/schema#",
     "id": "/rvbd/schema/tm/1.0/config/active/list#",
-    "title": "Children",
+    "title": "StingrayList",
     "description": "List of items by name and the href used to get specific item information.",
-    "javaType": "org.rackspace.stingray.client.list.Children",
+    "javaType": "org.rackspace.stingray.client.util.StingrayList",
     "type": "object",
     "properties": {
-        "children": {
+        "stingrayList": {
             "type": "array",
             "required": true,
             "items": {
-                "javaType": "org.rackspace.stingray.client.list.Child",
+                "javaType": "org.rackspace.stingray.client.util.StingrayListItem",
                 "type": "object",
                 "properties": {
                     "name": {

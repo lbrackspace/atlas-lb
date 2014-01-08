@@ -1,0 +1,22 @@
+{
+   "$schema":       "http://json-schema.org/draft-03/schema#",
+   "id":            "/rvbd/schema/tm/1.0/config/active/rules#",
+   "title":         "Rule",
+   "description":   "TrafficScript rules allow traffic inspection and modification.",
+    "javaType" :     "org.rackspace.stingray.client.trafficscript.Trafficscript",
+   "type":          "object",
+   "required":      false,
+   
+   "properties": {
+      "properties": {
+          "javaType" :     "org.rackspace.stingray.client.trafficscript.TrafficscriptProperties",
+         "type":                  "object",
+         "required":              true,
+         "additionalProperties":  false,
+         
+         "properties": {
+            
+         }
+      }
+   }
+}

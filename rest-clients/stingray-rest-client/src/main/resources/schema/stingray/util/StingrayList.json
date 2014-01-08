@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-03/schema#",
+    "$schema": "http://json-schema.org/draft-04/schema#",
     "id": "/rvbd/schema/tm/1.0/config/active/list#",
     "title": "StingrayList",
     "description": "List of items by name and the href used to get specific item information.",

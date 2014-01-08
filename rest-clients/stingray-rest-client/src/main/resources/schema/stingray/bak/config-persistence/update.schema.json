@@ -1,64 +1,64 @@
 {
-   "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/2.0/config/active/persistence#update",
-   "title":                 "Session Persistence Class",
-   "description":           "A session persistence class is used to identify the session a new connection belongs too and deliver it to the same backend node.",
-   "javaType" :     "org.rackspace.stingray.client.persistence.Persistence",
-
-   "type":                  "object",
-   "additionalProperties":  false,
-
+   "$schema":       "http://json-schema.org/draft-03/schema#",
+   "id":            "/rvbd/schema/tm/1.0/config/active/persistence#",
+   "title":         "Session Persistence Class",
+   "description":   "A session persistence class is used to identify the session a new connection belongs too and deliver it to the same backend node.",
+    "javaType" :     "org.rackspace.stingray.client.persistence.Persistence",
+   "type":          "object",
+   "required":      false,
+   
    "properties": {
-
       "properties": {
-         "javaType" :     "org.rackspace.stingray.client.persistence.PersistenceProperties",
-
+          "javaType" :     "org.rackspace.stingray.client.persistence.PersistenceProperties",
          "type":                  "object",
+         "required":              true,
          "additionalProperties":  false,
-
+         
          "properties": {
-
+            
             "basic": {
-               "javaType" :     "org.rackspace.stingray.client.persistence.PersistenceBasic",
-
+                "javaType" :     "org.rackspace.stingray.client.persistence.PersistenceBasic",
                "type":                  "object",
+               "required":              false,
                "additionalProperties":  false,
-
+               
                "properties": {
                   "cookie": {
                      "description":   "The cookie name to use for tracking session persistence.",
-
-                     "type":          "string"
+                     
+                     "type":          "string",
+                     "pattern":       "^[A-Za-z0-9_.-]+$"
                   },
-
+                  
                   "delete": {
                      "description":   "Whether or not the session should be deleted when a session failure occurs. (Note, setting a failure mode of 'choose a new node' implicitly deletes the session.)",
-
+                     
                      "type":          "boolean"
                   },
-
+                  
                   "failure_mode": {
                      "description":   "The action the pool should take if the session data is invalid or it cannot contact the node specified by the session.",
-
+                     
                      "type":          "string"
                   },
-
+                  
                   "note": {
                      "description":   "A description of the session persistence class.",
-
+                     
                      "type":          "string"
                   },
-
+                  
                   "type": {
                      "description":   "The type of session persistence to use.",
-
+                     
                      "type":          "string"
                   },
-
+                  
                   "url": {
                      "description":   "The redirect URL to send clients to if the session persistence is configured to redirect users when a node dies.",
-
-                     "type":          "string"
+                     
+                     "type":          "string",
+                     "pattern":       "^((((https?)|(rtsp))://)|(sip:))\\S+(:\\d+)?(/\\S*)?$"
                   }
                }
             }

@@ -1,5 +1,5 @@
 {
-    "$schema":       "http://json-schema.org/draft-04/schema#",
+    "$schema":       "http://json-schema.org/draft-03/schema#",
     "id":            "/rvbd/schema/tm/1.0/config/active/exception#ClientException",
     "title":         "Stingray Rest Client Exception",
     "description":   "The Stingray Rest Client exception wrapper for client errors",

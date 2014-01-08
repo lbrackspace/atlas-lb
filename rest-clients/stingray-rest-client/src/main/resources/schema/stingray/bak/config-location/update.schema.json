@@ -1,56 +1,57 @@
 {
-   "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/2.0/config/active/locations#update",
-   "title":                 "Location",
-   "description":           "These are geographic locations as used by *Global Load Balancing* services. Such a location may not necessarily contain a traffic manager; instead it could refer to the location of a remote datacenter.",
-   "javaType" :     "org.rackspace.stingray.client.location.Location",
-
-   "type":                  "object",
-   "additionalProperties":  false,
-
+   "$schema":       "http://json-schema.org/draft-03/schema#",
+   "id":            "/rvbd/schema/tm/1.0/config/active/locations#",
+   "title":         "Location",
+   "description":   "These are geographic locations as used by *Global Load Balancing* services. Such a location may not necessarily contain a traffic manager; instead it could refer to the location of a remote datacenter.",
+    "javaType" :     "org.rackspace.stingray.client.location.Location",
+   "type":          "object",
+   "required":      false,
+   
    "properties": {
-
       "properties": {
-         "javaType" :     "org.rackspace.stingray.client.location.LocationProperties",
+          "javaType" :     "org.rackspace.stingray.client.location.LocationProperties",
          "type":                  "object",
+         "required":              true,
          "additionalProperties":  false,
-
+         
          "properties": {
-
+            
             "basic": {
-               "javaType" :     "org.rackspace.stingray.client.location.LocationBasic",
+                "javaType" :     "org.rackspace.stingray.client.location.LocationBasic",
                "type":                  "object",
+               "required":              false,
                "additionalProperties":  false,
-
+               
                "properties": {
                   "id": {
                      "description":   "The identifier of this location.",
-
+                     
                      "type":          "integer",
+                     "required":      true,
                      "minimum":       0
                   },
-
+                  
                   "latitude": {
                      "description":   "The latitude of this location.",
-
+                     
                      "type":          "number"
                   },
-
+                  
                   "longitude": {
                      "description":   "The longitude of this location.",
-
+                     
                      "type":          "number"
                   },
-
+                  
                   "note": {
                      "description":   "A note, used to describe this location.",
-
+                     
                      "type":          "string"
                   },
-
+                  
                   "type": {
                      "description":   "Does this location contain traffic managers and configuration or is it a recipient of GLB requests?",
-
+                     
                      "type":          "string"
                   }
                }
