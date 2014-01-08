@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-itest</artifactId>
-        <version>1.20.2-SNAPSHOT</version>
+        <version>1.20.2</version>
     </parent>
     
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-jython-itest</artifactId>
     <name>Openstack :: Atlas :: Integration tests :: Jython Experiments</name>
-    <version>1.20.2-SNAPSHOT</version>
+    <version>1.20.2</version>
     <packaging>jar</packaging>
 
     <dependencies>
