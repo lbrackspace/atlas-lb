@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -62,6 +62,18 @@
                   <xsd:enumeration value="actions">
                      <xsd:annotation>
                         <xsd:documentation>Actions</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="aptimizer/profiles">
+                     <xsd:annotation>
+                        <xsd:documentation>Aptimizer Profiles</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="aptimizer/scopes">
+                     <xsd:annotation>
+                        <xsd:documentation>Application Scopes</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -242,6 +254,33 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="ssl/cas">
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="ssl/client_keys">
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="ssl/client_keys/private">
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="ssl/client_keys/public">
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="ssl/client_keys/request">
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="ssl/server_keys">
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="ssl/server_keys/private">
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="ssl/server_keys/public">
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="ssl/server_keys/request">
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="sslhw">
                      <xsd:annotation>
                         <xsd:documentation>SSL Hardware</xsd:documentation>
@@ -416,6 +455,18 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="faulttolerance_clockjump">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - The system clock jumped forwards or backwards by more than one second</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="faulttolerance_clocknotmonotonic">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - The monotonic system clock went backwards</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="faulttolerance_dropec2ipwarn">
                      <xsd:annotation>
                         <xsd:documentation>Fault Tolerance - Removing EC2 Elastic IP Address from all machines; it is no longer a part of any Traffic IP Groups</xsd:documentation>
@@ -458,6 +509,12 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="faulttolerance_ec2nosecondaryprivateip">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - Cannot raise Elastic IP on this machine until it has a secondary private IP address with no EIP association assigned to primary network interface</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="faulttolerance_flipperbackendsworking">
                      <xsd:annotation>
                         <xsd:documentation>Fault Tolerance - Back-end nodes are now working</xsd:documentation>
@@ -497,6 +554,12 @@
                   <xsd:enumeration value="faulttolerance_flipperraiseothersdead">
                      <xsd:annotation>
                         <xsd:documentation>Fault Tolerance - Raising Traffic IP Address; other machines have failed</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="faulttolerance_flipperraiseremotedropped">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - This Traffic Manager has re-raised traffic IP addresses as the remote machine which was hosting them has dropped them</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -614,6 +677,12 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="general_childcommsfail">
+                     <xsd:annotation>
+                        <xsd:documentation>General - There was an error communicating with a child process</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="general_confrepfailed">
                      <xsd:annotation>
                         <xsd:documentation>General - Replication of configuration has failed</xsd:documentation>
@@ -629,6 +698,18 @@
                   <xsd:enumeration value="general_fewfreefds">
                      <xsd:annotation>
                         <xsd:documentation>General - Running out of free file descriptors</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_fipsfailinit">
+                     <xsd:annotation>
+                        <xsd:documentation>General - FIPS 140-2 cryptographic module initialization failed</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_fipsfailops">
+                     <xsd:annotation>
+                        <xsd:documentation>General - FIPS 140-2 cryptographic module operations failed</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -662,6 +743,42 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="general_numlocations-exceeded">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Total number of locations exceeded the maximum limit</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_numnodes-exceeded">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Total number of nodes exceeded the maximum number of nodes that can be monitored</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_numpools-exceeded">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Total number of pools exceeded the maximum limit</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_numtipg-exceeded">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Total number of traffic IP group exceeded the maximum limit</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_ocspstaplingfail">
+                     <xsd:annotation>
+                        <xsd:documentation>General - OCSP request (for OCSP stapling) failed</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_ocspstaplingnomem">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Insufficient memory for OCSP stapling</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="general_restartrequired">
                      <xsd:annotation>
                         <xsd:documentation>General - Software must be restarted to apply configuration changes</xsd:documentation>
@@ -674,15 +791,27 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="general_sslcrltoobig">
+                     <xsd:annotation>
+                        <xsd:documentation>General - CRL does not fit in the configured amount of shared memory, increase ssl!crl_mem!size and restart software</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="general_timemovedback">
                      <xsd:annotation>
                         <xsd:documentation>General - Time has been moved back</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="general_zxtmhighload">
+                     <xsd:annotation>
+                        <xsd:documentation>General - The number of simultaneously active connections has reached a level that the software cannot process in due time; there is a high risk of connections timing out</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="general_zxtmswerror">
                      <xsd:annotation>
-                        <xsd:documentation>General - Zeus Traffic Manager software problem</xsd:documentation>
+                        <xsd:documentation>General - Stingray Traffic Manager software problem</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -788,7 +917,25 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="licensekeys_license-authorized-ts">
+                     <xsd:annotation>
+                        <xsd:documentation>License Keys - License key authorized by authorization code</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="licensekeys_license-explicitlydisabled-ts">
+                     <xsd:annotation>
+                        <xsd:documentation>License Keys - License key explicitly disabled from authorization code</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="licensekeys_license-graceperiodexpired">
+                     <xsd:annotation>
+                        <xsd:documentation>License Keys - Unable to authorize license key</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="licensekeys_license-graceperiodexpired-ts">
                      <xsd:annotation>
                         <xsd:documentation>License Keys - Unable to authorize license key</xsd:documentation>
                      </xsd:annotation>
@@ -800,9 +947,21 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="licensekeys_license-rejected-authorized-ts">
+                     <xsd:annotation>
+                        <xsd:documentation>License Keys - License key rejected from authorization code; key remains authorized</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="licensekeys_license-rejected-unauthorized">
                      <xsd:annotation>
                         <xsd:documentation>License Keys - License server rejected license key; key is not authorized</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="licensekeys_license-rejected-unauthorized-ts">
+                     <xsd:annotation>
+                        <xsd:documentation>License Keys - License key rejected from authorization code</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -812,9 +971,21 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="licensekeys_license-timedout-authorized-ts">
+                     <xsd:annotation>
+                        <xsd:documentation>License Keys - Unable to run authorization code to completion; key remains valid</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="licensekeys_license-timedout-unauthorized">
                      <xsd:annotation>
                         <xsd:documentation>License Keys - Unable to contact license server; license key is not authorized</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="licensekeys_license-timedout-unauthorized-ts">
+                     <xsd:annotation>
+                        <xsd:documentation>License Keys - Unable to run authorization code to completion</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -932,6 +1103,18 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="pids_childhung">
+                     <xsd:annotation>
+                        <xsd:documentation>Processes - The child process did not respond within the configured time</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="pids_childkilled">
+                     <xsd:annotation>
+                        <xsd:documentation>Processes - The child process has been killed because it did not respond to control requests within the configured time</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="pools_apichangeprocesshanging">
                      <xsd:annotation>
                         <xsd:documentation>Pools - API change process still running after refractory period is over</xsd:documentation>
@@ -1006,7 +1189,7 @@
                
                   <xsd:enumeration value="pools_autoscaleinvalidargforcreatenode">
                      <xsd:annotation>
-                        <xsd:documentation>Pools - The 'imageid' or the 'sizeid' was empty when attempting to create a node in an autoscaled pool</xsd:documentation>
+                        <xsd:documentation>Pools - The 'imageid' was empty when attempting to create a node in an autoscaled pool</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1079,6 +1262,12 @@
                   <xsd:enumeration value="pools_autoscalingpoolstatechange">
                      <xsd:annotation>
                         <xsd:documentation>Pools - An autoscaled pool's state has changed</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="pools_autoscalingresuscitatepool">
+                     <xsd:annotation>
+                        <xsd:documentation>Pools - An autoscaled pool has failed completely</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1157,6 +1346,30 @@
                   <xsd:enumeration value="protection_triggersummary">
                      <xsd:annotation>
                         <xsd:documentation>Service Protection Classes - Summary of recent service protection events</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="rules_aptimizedisabled">
+                     <xsd:annotation>
+                        <xsd:documentation>Rules - Rule attempted to use Aptimizer but it is not enabled</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="rules_aptimizeuseunknownprofile">
+                     <xsd:annotation>
+                        <xsd:documentation>Rules - Rule selected an unknown Aptimizer profile</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="rules_aptimizeuseunknownscope">
+                     <xsd:annotation>
+                        <xsd:documentation>Rules - Rule selected an unknown Aptimizer scope</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="rules_datalocalstorefull">
+                     <xsd:annotation>
+                        <xsd:documentation>Rules - data.local.set() has run out of space</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1420,7 +1633,7 @@
                
                   <xsd:enumeration value="testaction">
                      <xsd:annotation>
-                        <xsd:documentation>Test event generated from the Zeus Administration Server.</xsd:documentation>
+                        <xsd:documentation>Test event generated from the Stingray Administration Server.</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1438,7 +1651,7 @@
                
                   <xsd:enumeration value="vservers_logfiledeleted">
                      <xsd:annotation>
-                        <xsd:documentation>Virtual Servers - A virtual server request log file was deleted (Zeus Appliances only)</xsd:documentation>
+                        <xsd:documentation>Virtual Servers - A virtual server request log file was deleted (Stingray Appliances only)</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1493,6 +1706,18 @@
                   <xsd:enumeration value="vservers_sslfail">
                      <xsd:annotation>
                         <xsd:documentation>Virtual Servers - One or more SSL connections from clients failed recently</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="vservers_sslhandshakemsgsizelimit">
+                     <xsd:annotation>
+                        <xsd:documentation>Virtual Servers - SSL handshake messages have exceeded the size permitted by configuration</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="vservers_sslrehandshakemininterval">
+                     <xsd:annotation>
+                        <xsd:documentation>Virtual Servers - SSL re-handshake requests have exceeded the frequency permitted by configuration</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1612,10 +1837,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>

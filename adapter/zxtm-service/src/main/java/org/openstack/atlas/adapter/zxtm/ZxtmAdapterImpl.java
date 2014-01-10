@@ -247,7 +247,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 if (errorFile[0].equals("Default") || errorFile[0].equals(Constants.DEFAULT_ERRORFILE)) {
                     setDefaultErrorFile(config, virtualServerName);
                 } else {
-                    setErrorFile(config, virtualServerName, serviceStubs.getZxtmConfExtraBinding().getFile(new String[]{errorFile[0]})[0]);
+                    setErrorFile(config, virtualServerName, new String(serviceStubs.getZxtmConfExtraBinding().downloadFile(errorFile[0])));
                 }
             }
 
@@ -1273,7 +1273,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String errorFileName = getErrorFileName(vsName);
         try {
             LOG.debug(String.format("Attempting to upload the error file: %s for: %s", errorFileName, vsName));
-            extraService.writeFile(new String[]{errorFileName}, new String[]{content});
+            extraService.uploadFile(errorFileName, content.getBytes());
             LOG.info(String.format("Successfully uploaded the error file: %s for: %s...", errorFileName, vsName));
 
             vsNames[0] = String.format("%s", vsName);
@@ -1304,7 +1304,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.debug("Attempting to upload the default error file...");
         extraService = serviceStubs.getZxtmConfExtraBinding();
         if (extraService != null) {
-            extraService.writeFile(new String[]{Constants.DEFAULT_ERRORFILE}, new String[]{content.toString()});
+            extraService.uploadFile(Constants.DEFAULT_ERRORFILE, content.getBytes());
             LOG.info("Successfully uploaded the default error file...");
         }
     }
