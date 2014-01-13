@@ -30,24 +30,37 @@ public class SnmpVSCollector implements Callable<SnmpUsage> {
     }
 
     @Override
-    public SnmpUsage call() throws UsageEventCollectionException {
+    public SnmpUsage call(){
         SnmpUsage snmpusage = null;
         try {
             snmpusage = stingrayUsageClient.getVirtualServerUsage(host, loadbalancer);
+            snmpusage = handleNullUsageResponse(snmpusage);
         } catch (StingraySnmpObjectNotFoundException ex) {
             String retString = String.format("Request for host %s usage from SNMP server failed. SnmpUsage Object" +
                     " is Not found for host", host.getName());
             LOG.info(retString);
+            snmpusage = handleNullUsageResponse(snmpusage);
         } catch (StingraySnmpGeneralException eg) {
-            String retString = String.format("Request for host %s usage from SNMP server failed. SnmpUsage is Null", host.getName());
+            String retString = String.format("Request for host %s usage from SNMP server failed. A default SnmpUsage will be created.", host.getName());
             LOG.info(retString);
+            snmpusage = handleNullUsageResponse(snmpusage);
         } catch (Exception e) {
             String retString = String.format("Request for host %s usage from SNMP server failed.", host.getName());
             LOG.error(retString, e);
-            throw new UsageEventCollectionException(retString, e);
+            snmpusage = handleNullUsageResponse(snmpusage);
         }
         if(snmpusage != null) {
-            LOG.info(String.format("Received snmp usage: %s", snmpusage.toString()));
+            LOG.info(String.format("Stored snmp usage: %s", snmpusage.toString()));
+        }
+        return snmpusage;
+    }
+
+    private SnmpUsage handleNullUsageResponse(SnmpUsage snmpusage){
+        if (snmpusage == null){
+            SnmpUsage blankSnmpUsage = new SnmpUsage();
+            blankSnmpUsage.setHostId(host.getId());
+            blankSnmpUsage.setLoadbalancerId(loadbalancer.getId());
+            return blankSnmpUsage;
         }
         return snmpusage;
     }

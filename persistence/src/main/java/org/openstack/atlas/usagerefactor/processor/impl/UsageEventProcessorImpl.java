@@ -114,18 +114,6 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         for (SnmpUsage usage : usages) {
             LoadBalancerHostUsage usageRecordToProcess;
 
-            //This usage record failed to collect from SNMP, handle accordingly...
-            //If this is unsuspend event then we can assume counters start at 0
-            if (isInvalidUsage(usage, usageEvent)){
-                LOG.info(String.format("Snmp usage failed to collect for load balancer %d on host %d. Normal bw_out %d, Normal bw_in %d, " +
-                        "Normal ccs %d, SSL bw_out %d, SSL bw_in %d, SSL ccs %d. This record will not be inserted.", usage.getLoadbalancerId(), usage.getHostId(),
-                        usage.getBytesOut(), usage.getBytesIn(), usage.getConcurrentConnections(), usage.getBytesOutSsl(),
-                        usage.getBytesInSsl(), usage.getConcurrentConnectionsSsl()));
-                continue;
-            }
-
-            //setNegativeUsageToZero(usage);
-
             LOG.info(String.format("Creating usage event for load balancer '%d'...", loadBalancer.getId()));
             usageRecordToProcess = new UsageEventMapper(loadBalancer, usage, usageEvent, pollTime, tagsBitmask, numVips)
                         .mapSnmpUsageToUsageEvent();
@@ -140,6 +128,9 @@ public class UsageEventProcessorImpl implements UsageEventProcessor {
         }
 
         if(!usageRecordsToCreate.isEmpty()){
+            for (LoadBalancerHostUsage hostUsage : usageRecordsToCreate) {
+                LOG.info(String.format("Inserting record into lb_host_usage table: \n%s", hostUsage.toString()));
+            }
             usageRefactorService.batchCreateLoadBalancerHostUsages(usageRecordsToCreate);
         } else {
             LOG.warn(String.format("There were no usage records created for load balancer %d for event %s. " +

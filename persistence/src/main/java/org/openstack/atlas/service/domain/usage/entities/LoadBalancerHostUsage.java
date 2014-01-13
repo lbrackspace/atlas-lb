@@ -4,6 +4,8 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 @javax.persistence.Entity
@@ -176,5 +178,20 @@ public class LoadBalancerHostUsage extends BigIntEntity implements Serializable 
 
     public void setHostId(int hostId) {
         this.hostId = hostId;
+    }
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append("{ ");
+        sb.append("account_id: ").append(accountId).append(", loadbalancer_id: ").append(loadbalancerId).append(", host_id: ").append(hostId);
+        sb.append(", bandwidth_out: ").append(outgoingTransfer).append(", bandwidth_in: ").append(incomingTransfer).append(", bandwidth_in_ssl: ");
+        sb.append(incomingTransferSsl).append(", bandwdith_out_ssl: ").append(outgoingTransferSsl).append(", concurrent_connections: ");
+        sb.append(concurrentConnections).append(", concurrent_connections_ssl: ").append(concurrentConnectionsSsl).append(", poll_time: ");
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String pollTimeStr = formatter.format(pollTime.getTime());
+        sb.append(pollTimeStr).append(", tags_bitmask: ").append(tagsBitmask).append(", num_vips: ").append(numVips);
+        sb.append(", event_type: ").append(eventType);
+        sb.append(" }\n");
+        return sb.toString();
     }
 }
