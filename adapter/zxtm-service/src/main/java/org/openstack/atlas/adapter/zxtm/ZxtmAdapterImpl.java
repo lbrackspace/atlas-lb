@@ -1099,7 +1099,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     private void removeXFPORTRuleFromVirtualServers(ZxtmServiceStubs serviceStubs, String[] virtualServerNames) throws RemoteException {
         for (String vsName : virtualServerNames) {
-            removeXFPRuleFromVirtualServer(serviceStubs, vsName);
+            removeXFPORTRuleFromVirtualServer(serviceStubs, vsName);
         }
     }
 
