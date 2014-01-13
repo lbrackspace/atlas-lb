@@ -77,11 +77,13 @@ public class SslTerminationResource extends CommonDependencyProvider {
     public Response removeSsl() {
         try {
             sslTerminationService.pseudoDeleteSslTermination(loadBalancerId, accountId);
+            org.openstack.atlas.service.domain.entities.SslTermination previousSslTerm = sslTerminationService.getSslTermination(loadBalancerId, accountId);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
             dataContainer.setLoadBalancerId(loadBalancerId);
             dataContainer.setUserName(getUserName(requestHeaders));
+            dataContainer.setPreviousSslTermination(previousSslTerm);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_SSL_TERMINATION, dataContainer);
             return Response.status(Response.Status.ACCEPTED).build();

@@ -2,16 +2,26 @@ package org.openstack.atlas.api.async;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.helpers.SslTerminationUsage;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+<<<<<<< HEAD
 import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
 import java.util.Calendar;
+=======
+import org.openstack.atlas.usagerefactor.SnmpUsage;
+
+import javax.jms.Message;
+
+import java.util.*;
+>>>>>>> clb-384-bug updateSslTermination logs now accurately report when the non secure virtual server is enabled/disabled.
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -45,6 +55,21 @@ public class DeleteSslTerminationListener extends BaseListener {
             notificationService.saveAlert(errorMsgLB.getAccountId(), errorMsgLB.getId(), enfe, DATABASE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(errorMsgLB);
             return;
+        }
+
+        //First pass
+        List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
+        Map<Integer, SnmpUsage> usagesMap = new HashMap<Integer, SnmpUsage>();
+        try {
+            LOG.info(String.format("Collecting usage BEFORE ssl event for load balancer %s...", dbLoadBalancer.getId()));
+            usages = usageEventCollection.getUsage(dbLoadBalancer);
+            for (SnmpUsage usage : usages) {
+                usagesMap.put(usage.getHostId(), usage);
+            }
+            LOG.info(String.format("Successfully collected usage BEFORE ssl event for load balancer %s", dbLoadBalancer.getId()));
+        } catch (UsageEventCollectionException e) {
+            LOG.error(String.format("Collection of the ssl usage event failed for " +
+                    "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
 
         try {
@@ -81,9 +106,30 @@ public class DeleteSslTerminationListener extends BaseListener {
             return;
         }
 
+        //Second pass
+        List<SnmpUsage> usages2 = new ArrayList<SnmpUsage>();
+        Map<Integer, SnmpUsage> usagesMap2 = new HashMap<Integer, SnmpUsage>();
+        try {
+            LOG.info(String.format("Collecting usage AFTER ssl event for load balancer %s...", dbLoadBalancer.getId()));
+            usages2 = usageEventCollection.getUsage(dbLoadBalancer);
+            for (SnmpUsage usage : usages2) {
+                usagesMap2.put(usage.getHostId(), usage);
+            }
+            LOG.info(String.format("Successfully collected usage AFTER ssl event for load balancer %s", dbLoadBalancer.getId()));
+        } catch (UsageEventCollectionException e) {
+            LOG.error(String.format("Collection of the ssl usage event failed for " +
+                    "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
+        }
+
         sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
 
         Calendar eventTime = Calendar.getInstance();
+
+        SslTerminationUsage sslTermUsageHelper = new SslTerminationUsage();
+        SslTermination currentSslTerm = new SslTermination();
+        currentSslTerm.setEnabled(false);
+        List<SnmpUsage> usagesToInsert = sslTermUsageHelper.getUsagesToInsert(dbLoadBalancer.getId(), dataContainer.getPreviousSslTermination(),
+                                                                              currentSslTerm, usagesMap, usagesMap2);
         // Notify usage processor with a usage event
         try {
             usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
@@ -114,5 +160,4 @@ public class DeleteSslTerminationListener extends BaseListener {
         String desc = "Could not delete the load balancer ssl termination at this time.";
         notificationService.saveLoadBalancerEvent(lb.getUserName(), lb.getAccountId(), lb.getId(), title, desc, DELETE_SSL_TERMINATION, DELETE, CRITICAL);
     }
-
 }
