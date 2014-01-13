@@ -1938,7 +1938,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         throttle.setMaxConnectionRate(0);
         throttle.setMaxConnections(0);
         throttle.setMinConnections(0);
-        throttle.setRateInterval(0);
+        throttle.setRateInterval(1);
         loadBalancer.setConnectionLimit(throttle);
     }
 
