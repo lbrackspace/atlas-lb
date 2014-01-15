@@ -1,9 +1,11 @@
 package org.openstack.atlas.util.ca;
 
+import java.io.IOException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.math.BigInteger;
+import java.security.KeyFactory;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -15,11 +17,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.security.spec.PKCS8EncodedKeySpec;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 
 import org.bouncycastle.asn1.x509.RSAPublicKeyStructure;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.jce.provider.JCERSAPrivateCrtKey;
 import org.bouncycastle.jce.provider.JCERSAPublicKey;
+import org.bouncycastle.openssl.PKCS8Generator;
+import org.bouncycastle.util.io.pem.PemObject;
 import org.openstack.atlas.util.ca.exceptions.ConversionException;
 import org.openstack.atlas.util.ca.exceptions.NotAnRSAKeyException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
@@ -196,7 +204,7 @@ public class RSAKeyUtils {
             try {
                 return newJCERSAPublicKey(HackedProviderAccessor.newJCERSAPublicKey((JCERSAPrivateCrtKey) obj));
             } catch (InvalidKeySpecException ex) {
-                throw new NotAnRSAKeyException("Could not retrieve Public Key from incomming object",ex);
+                throw new NotAnRSAKeyException("Could not retrieve Public Key from incomming object", ex);
             }
         } else if (obj instanceof KeyPair) {
             return newJCERSAPublicKey(((KeyPair) obj).getPublic());
@@ -219,16 +227,23 @@ public class RSAKeyUtils {
         return pubKey.getModulus().bitLength();
     }
 
-    public static String objToString(Object obj){
-        if(obj instanceof JCERSAPublicKey){
-            JCERSAPublicKey jPubKey = (JCERSAPublicKey)obj;
+    public static String objToString(Object obj) {
+        if (obj instanceof JCERSAPublicKey) {
+            JCERSAPublicKey jPubKey = (JCERSAPublicKey) obj;
             String exp = jPubKey.getPublicExponent().toString(16);
             String mod = jPubKey.getModulus().toString(16);
         }
         return "";
     }
 
-    public static String KeyPairToString(KeyPair kp){
+    public static String KeyPairToString(KeyPair kp) {
         return "Implement Me";
+    }
+
+    public static PemObject toPKCS8(KeyPair kp) throws java.security.NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException, IOException {
+        PKCS8Generator gen = new PKCS8Generator(kp.getPrivate());
+        PemObject out = gen.generate();
+        Debug.nop();
+        return out;
     }
 }
