@@ -198,6 +198,9 @@ public class UsagePollerHelper {
                             continue;
                         }
                     }
+                } catch(Exception e){
+                    LOG.error(String.format("Something unexpected happened: %s", e));
+                    continue;
                 }
                 //Create new mergedHostUsage with zero usage and copied values.
                 LoadBalancerMergedHostUsage zeroedMergedRecord = new LoadBalancerMergedHostUsage();

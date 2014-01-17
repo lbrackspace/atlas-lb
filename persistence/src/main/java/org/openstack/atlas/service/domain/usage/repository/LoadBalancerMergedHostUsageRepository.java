@@ -97,7 +97,7 @@ public class LoadBalancerMergedHostUsageRepository {
         pollTimeCal.setTimeInMillis(pollTimeMillis);
 
         LoadBalancerMergedHostUsage usageItem = new LoadBalancerMergedHostUsage();
-        usageItem.setId((Long) row[0]);
+        usageItem.setId(((BigInteger) row[0]).longValue());
         usageItem.setLoadbalancerId((Integer) row[1]);
         usageItem.setConcurrentConnections(((BigInteger) row[2]).longValue());
         usageItem.setIncomingTransfer(((BigInteger) row[3]).longValue());
