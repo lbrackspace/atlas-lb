@@ -52,16 +52,20 @@ public class ResourceTranslator {
         return new ResourceTranslator();
     }
 
-
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
+        translateLoadBalancerResource(config, vsName, loadBalancer, queLb, true);
+    }
+
+    public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
+                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert) throws InsufficientRequestException {
         //Order matters when translating the entire entity.
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
 
         translateTrafficIpGroupsResource(config, loadBalancer, true);
 
-        if (loadBalancer.getSslTermination() != null) translateKeypairResource(loadBalancer);
+        if (loadBalancer.getSslTermination() != null) translateKeypairResource(loadBalancer, careAboutCert);
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
             translateProtectionResource(loadBalancer);
 
@@ -463,7 +467,7 @@ public class ResourceTranslator {
         return cProtection;
     }
 
-    public Keypair translateKeypairResource(LoadBalancer loadBalancer)
+    public Keypair translateKeypairResource(LoadBalancer loadBalancer, boolean careAboutCert)
             throws InsufficientRequestException {
         ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(loadBalancer.getSslTermination().getPrivatekey(),
                 loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
@@ -471,7 +475,11 @@ public class ResourceTranslator {
             String fmt = "StingrayCertFile generation Failure: %s";
             String errors = StringUtils.joinString(zeusCertFile.getErrors(), ",");
             String msg = String.format(fmt, errors);
-            throw new InsufficientRequestException(msg);
+
+            if (careAboutCert)
+                throw new InsufficientRequestException(msg);
+            else
+                return null;
         }
 
         cKeypair = new Keypair();

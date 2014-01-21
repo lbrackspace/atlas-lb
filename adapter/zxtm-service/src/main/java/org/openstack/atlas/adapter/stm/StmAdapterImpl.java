@@ -266,7 +266,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String vsName;
         vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
         Map<String, TrafficIp> curTigMap = translator.getcTrafficIpGroups();
 
         Set<LoadBalancerJoinVip> jvipsToRemove = new HashSet<LoadBalancerJoinVip>();
@@ -289,7 +289,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
         if (!jvipsToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVipSet().removeAll(jvipsToRemove);
         if (!jvips6ToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVip6Set().removeAll(jvips6ToRemove);
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
         // After translating, we need to add the vips back into the LB object so that the Listener can properly remove them from the DB
         if (!jvipsToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVipSet().addAll(jvipsToRemove);
         if (!jvips6ToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVip6Set().addAll(jvips6ToRemove);
@@ -473,7 +473,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
         translator.translateVirtualServerResource(config, sslVsName, loadBalancer);
-        translator.translateKeypairResource(loadBalancer);
+        translator.translateKeypairResource(loadBalancer, true);
         VirtualServer createdServer = translator.getcVServer();
         VirtualServerHttp http = new VirtualServerHttp();
         http.setLocation_rewrite(EnumFactory.Accept_from.NEVER.toString());
