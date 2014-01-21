@@ -6,6 +6,7 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-rest-clients</artifactId>
         <version>1.20.6-SNAPSHOT</version>
+
     </parent>
 
     <artifactId>atlas-restclients-objects</artifactId>
