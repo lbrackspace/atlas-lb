@@ -4,6 +4,7 @@
  */
 package org.openstack.atlas.util.ca.zeus;
 
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -14,20 +15,26 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openstack.atlas.util.ca.CertUtils;
 import static org.junit.Assert.*;
+import org.openstack.atlas.util.ca.CsrUtils;
 import org.openstack.atlas.util.ca.PemUtils;
+import org.openstack.atlas.util.ca.RSAKeyUtils;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
 import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
+import org.openstack.atlas.util.ca.primitives.Debug;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
+import org.openstack.atlas.util.ca.util.ChainSubjNotBeforeNotAfter;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.ca.zeus.ErrorEntry;
@@ -44,13 +51,14 @@ public class ZeusUtilsTest {
     private static X509CertificateObject userCrt;
     private static Set<X509CertificateObject> imdCrts;
     private static X509CertificateObject rootCA;
-    private static int keySize = 512; // Keeping the key small for testing
+    private static final int KEYSIZE = 512; // Keeping the key small for testing
     private static List<X509ChainEntry> chainEntries;
     // These are for testing pre defined keys and certs
     private static final String workingRootCa;
     private static final String workingUserKey;
     private static final String workingUserCrt;
     private static final String workingUserChain;
+    private static final String csrSubj = "C=US,ST=Texas,L=San Antonio,O=Rackspace Hosting,OU=Clout LoadBalancing,CN=IMD %d";
 
     static {
         workingRootCa = "-----BEGIN CERTIFICATE-----\n"
@@ -211,7 +219,7 @@ public class ZeusUtilsTest {
         // Lastly add the end user subj
         String subjName = "CN=www.junit-mosso-apache2zeus-test.com";
         subjNames.add(subjName);
-        chainEntries = X509PathBuilder.newChain(subjNames, keySize, notBefore, notAfter);
+        chainEntries = X509PathBuilder.newChain(subjNames, KEYSIZE, notBefore, notAfter);
         int lastIdx = chainEntries.size() - 1;
         rootCA = chainEntries.get(0).getX509obj();
         userCrt = chainEntries.get(lastIdx).getX509obj();
@@ -320,6 +328,49 @@ public class ZeusUtilsTest {
         if (testFailed) {
             fail(assertFailSb.toString());
         }
+    }
+
+    @Test
+    public void testShouldRejectExpiredCrt() throws RsaException, NotAnX509CertificateException {
+        Set<X509CertificateObject> roots = new HashSet<X509CertificateObject>();
+        roots.add(rootCA);
+        ZeusUtils zu = new ZeusUtils(roots);
+
+        // Generate Key
+        KeyPair kp = RSAKeyUtils.genKeyPair(KEYSIZE);
+        String keyStr = PemUtils.toPemString(kp);
+
+        // Generate CSR
+        PKCS10CertificationRequest csr = CsrUtils.newCsr(csrSubj, kp, true);
+        long nowMillis = System.currentTimeMillis();
+        long yesterdayMillis = nowMillis - 24L * 60L * 60L;
+        long yearFromNowMillis = nowMillis + 1000L * 60L * 60L * 24L * 365L;
+        long expiredHourAgoMillis = nowMillis - 1000L * 60L * 60L;
+        X509Certificate localCaCrt = CertUtils.selfSignCsrCA(csr, kp, new Date(yesterdayMillis), new Date(yearFromNowMillis));
+        List<ChainSubjNotBeforeNotAfter> chainReq = new ArrayList<ChainSubjNotBeforeNotAfter>();
+        Date yesterDay = new Date(yesterdayMillis);
+        Date expiredHourAgo = new Date(expiredHourAgoMillis);
+        for (int i = 2; i >= 1; i--) {
+            String subj = String.format(csrSubj, i);
+            ChainSubjNotBeforeNotAfter csnbna = new ChainSubjNotBeforeNotAfter(subj, yesterDay, expiredHourAgo);
+            chainReq.add(csnbna);
+        }
+        List<X509ChainEntry> chain = X509PathBuilder.newChain(userKey, rootCA, chainReq, KEYSIZE);
+        StringBuilder sb = new StringBuilder();
+        int lastIdx = chain.size() - 1;
+        for (int i = lastIdx; i >= 0; i--) {
+            X509CertificateObject x509Obj = chain.get(i).getX509obj();
+            String x509objStr = PemUtils.toPemString(x509Obj);
+            sb.append(x509objStr);
+        }
+        X509CertificateObject nextCa = chain.get(lastIdx).getX509obj();
+        KeyPair nextKey = chain.get(lastIdx).getKey();
+        X509Certificate localSignedCrt = CertUtils.signCSR(csr, nextKey, nextCa, yesterDay, new Date(yearFromNowMillis), BigInteger.ZERO);
+        String imds = sb.toString();
+        String signedCrtStr = PemUtils.toPemString(localSignedCrt);
+        ZeusCrtFile zcf = zu.buildZeusCrtFileLbassValidation(keyStr, signedCrtStr, imds);
+        assertTrue(zcf.getErrorsMatchingTypes(ErrorType.EXPIRED_CERT).size()>0);
+        Debug.nop();
     }
 
     private Set<X509CertificateObject> loadX509Set(X509CertificateObject... x509objs) {

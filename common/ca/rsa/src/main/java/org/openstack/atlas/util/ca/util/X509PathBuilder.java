@@ -187,6 +187,33 @@ public class X509PathBuilder<E extends X509Certificate> {
         return chain;
     }
 
+        // Usefull for pretending to be a CA when you want to test a Chain
+    public static List<X509ChainEntry> newChain(KeyPair rootKey, X509CertificateObject rootCert, List<ChainSubjNotBeforeNotAfter> subjs, int keySize) throws NotAnX509CertificateException, RsaException {
+        List<X509ChainEntry> chain = new ArrayList<X509ChainEntry>();
+        X509CertificateObject caCrt = rootCert;
+        X509CertificateObject crt;
+        Object obj;
+        PKCS10CertificationRequest csr;
+        KeyPair caKey = rootKey;
+        KeyPair key;
+
+        for (ChainSubjNotBeforeNotAfter subj : subjs) {
+            key = RSAKeyUtils.genKeyPair(keySize);
+            csr = CsrUtils.newCsr(subj.getSubject(), key, true);
+            obj = CertUtils.signCSR(csr, caKey, caCrt, subj.getNotBeforeMillis(), subj.getNotAfterMillis(), null);
+            if (!(obj instanceof X509CertificateObject)) {
+                String fmt = "Could not generate X509CertificateObject for subj \"%s\"";
+                String msg = String.format(fmt, subj.getSubject());
+                throw new NotAnX509CertificateException(msg);
+            }
+            crt = (X509CertificateObject) obj;
+            chain.add(new X509ChainEntry(key, csr, crt));
+            caCrt = crt;
+            caKey = key;
+        }
+        return chain;
+    }
+
     public Set<E> getRootCAs() {
         return rootCAs;
     }
