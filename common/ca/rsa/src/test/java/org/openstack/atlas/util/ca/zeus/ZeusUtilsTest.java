@@ -370,6 +370,7 @@ public class ZeusUtilsTest {
         String signedCrtStr = PemUtils.toPemString(localSignedCrt);
         ZeusCrtFile zcf = zu.buildZeusCrtFileLbassValidation(keyStr, signedCrtStr, imds);
         assertTrue(zcf.getErrorsMatchingTypes(ErrorType.EXPIRED_CERT).size()>0);
+        assertTrue(zcf.hasFatalErrors());
         Debug.nop();
     }
 
