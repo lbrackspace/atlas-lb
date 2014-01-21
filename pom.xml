@@ -6,6 +6,7 @@
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-parent</artifactId>
     <version>1.20.6-SNAPSHOT</version>
+
     <packaging>pom</packaging>
 
     <scm>
@@ -585,7 +586,7 @@
                 <artifactId>hibernate-annotations</artifactId>
                 <version>${hibernate.version}</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>

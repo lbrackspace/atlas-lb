@@ -6,6 +6,7 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
         <version>1.20.6-SNAPSHOT</version>
+
     </parent>
 
     <artifactId>atlas-logs-web</artifactId>
