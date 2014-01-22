@@ -122,7 +122,6 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
         accessList = mock(AccessList.class);
 
         when(accessList.getId()).thenReturn(ACCESS_LIST_ID);
-        when(accessList.getIpVersion()).thenReturn(IpVersion.IPV4);
         // Could set up more of this class, but not sure if it matters.
 
         accessLists.add(accessList);

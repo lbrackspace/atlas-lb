@@ -91,7 +91,6 @@
         <property name="rateLimitRepository" ref="rateLimitRepository" />
         <property name="jobStateRepository" ref="jobStateRepository" />
         <property name="usageRepository" ref="usageRepository" />
-        <property name="loadBalancerUsageRepository" ref="loadBalancerUsageRepository" />
         <property name="sslTerminationRepository" ref="sslTerminationRepository" />
         <property name="allowedDomainsRepository" ref="allowedDomainsRepository" />
         <property name="loadBalancerStatusHistoryRepository" ref="loadBalancerStatusHistoryRepository" />

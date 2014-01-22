@@ -427,10 +427,6 @@ public class DataModelToDomainLoadBalancerMapperTest {
                 if (!(list.getIpAddress().equals("ip1") || list.getIpAddress()
                         .equals("ip2")))
                     Assert.fail("Did not map the ip address of the network item correctly");
-                if (!list
-                        .getIpVersion()
-                        .equals(org.openstack.atlas.service.domain.entities.IpVersion.IPV4))
-                    Assert.fail("Did not map the ip version of the network item correctly");
                 if (!(list.getType().equals(AccessListType.ALLOW) || list
                         .getType().equals(AccessListType.DENY)))
                     Assert.fail("Did not map the access type of the network item correctly");

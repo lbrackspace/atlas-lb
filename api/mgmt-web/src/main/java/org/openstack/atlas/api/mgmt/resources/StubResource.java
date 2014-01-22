@@ -94,7 +94,6 @@ public class StubResource extends ManagementDependencyProvider {
         lt.setType(VipType.PUBLIC);
         lt.setId(5);
         lt.setLoadBalancerId(44);
-        //     lt.setIpVersion(IpVersion.);
         return Response.status(200).entity(lt).build();
     }
 

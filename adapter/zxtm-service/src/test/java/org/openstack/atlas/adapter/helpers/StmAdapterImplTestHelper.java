@@ -106,7 +106,6 @@ public class StmAdapterImplTestHelper {
         item.setUserName(username);
         item.setId(id);
         item.setIpAddress(ipv42);
-        item.setIpVersion(IpVersion.IPV4);
         item.setType(AccessListType.DENY);
         item.setLoadbalancer(loadBalancer);
         accessLists.add(item);

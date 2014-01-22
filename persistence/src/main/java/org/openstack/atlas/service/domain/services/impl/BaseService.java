@@ -69,8 +69,6 @@ public class BaseService {
     @Autowired
     protected HostUsageRepository hostUsageRepository;
     @Autowired
-    protected LoadBalancerUsageRepository loadBalancerUsageRepository;
-    @Autowired
     protected AllowedDomainsRepository allowedDomainsRepository;
     @Autowired
     protected LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
@@ -170,11 +168,6 @@ public class BaseService {
     public void setHostUsageRefactorRepository(HostUsageRefactorRepository hostUsageRefactorRepository) {
         this.hostUsageRefactorRepository = hostUsageRefactorRepository;
     }
-
-    public void setLoadBalancerUsageRepository(LoadBalancerUsageRepository loadBalancerUsageRepository) {
-        this.loadBalancerUsageRepository = loadBalancerUsageRepository;
-    }
-
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {
         if (dbLoadBalancer.getStatus().equals(DELETED)) {
             throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);

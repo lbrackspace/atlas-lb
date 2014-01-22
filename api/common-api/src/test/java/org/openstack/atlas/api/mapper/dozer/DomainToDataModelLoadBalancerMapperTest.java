@@ -356,8 +356,6 @@ public class DomainToDataModelLoadBalancerMapperTest {
             org.openstack.atlas.service.domain.entities.AccessList accessList2 = new org.openstack.atlas.service.domain.entities.AccessList();
             accessList1.setIpAddress("ip1");
             accessList2.setIpAddress("ip2");
-            accessList1.setIpVersion(IpVersion.IPV4);
-            accessList2.setIpVersion(IpVersion.IPV6);
             accessList1.setType(AccessListType.ALLOW);
             accessList2.setType(AccessListType.DENY);
             loadBalancer.setAccessLists(accessLists);

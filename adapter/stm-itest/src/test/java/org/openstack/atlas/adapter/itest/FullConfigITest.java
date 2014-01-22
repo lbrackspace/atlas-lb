@@ -111,7 +111,6 @@ public class FullConfigITest extends STMTestBase {
 
             AccessList al = new AccessList();
             al.setIpAddress("10.1.1.76");
-            al.setIpVersion(IpVersion.IPV4);
             al.setType(AccessListType.ALLOW);
             Set<AccessList> all = new HashSet<AccessList>();
             all.add(al);

@@ -48,7 +48,6 @@ public class AccessListValidatorTest_ {
             NetworkItem out = new NetworkItem();
             out.setAddress(Address);
             out.setType(NetworkItemType.valueOf(nType));
-            out.setIpVersion(IpVersion.valueOf(ipversion));
             return out;
         }
 
@@ -84,7 +83,6 @@ public class AccessListValidatorTest_ {
 
             noIp = new NetworkItem();
             noIp.setType(NetworkItemType.ALLOW);
-            noIp.setIpVersion(IpVersion.IPV_4);
 
             noIpVersion = new NetworkItem();
             noIpVersion.setAddress("127.0.0.2");
@@ -92,7 +90,6 @@ public class AccessListValidatorTest_ {
 
             noType = new NetworkItem();
             noType.setAddress("127.0.0.1");
-            noType.setIpVersion(IpVersion.IPV_4);
 
             noIpInaccesslist = new AccessList();
             noIpInaccesslist.getNetworkItems().add(noIp);

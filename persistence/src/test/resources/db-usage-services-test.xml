@@ -19,7 +19,6 @@
     <tx:annotation-driven/>
     <bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>
 
-    <bean id="loadBalancerUsageRepository" class="org.openstack.atlas.service.domain.usage.repository.LoadBalancerUsageRepository" depends-on="entityManagerFactory2" />
     <bean id="hostUsageRepository" class="org.openstack.atlas.service.domain.usage.repository.HostUsageRepository" depends-on="entityManagerFactory2"/>
 
 </beans>

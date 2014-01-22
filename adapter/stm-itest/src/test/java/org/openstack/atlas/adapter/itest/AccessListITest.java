@@ -28,7 +28,6 @@ public class AccessListITest extends STMTestBase {
         item1 = new AccessList();
         item1.setId(101);
         item1.setIpAddress("10.0.0.1");
-        item1.setIpVersion(IpVersion.IPV4);
         item1.setUserName("anonymous");
         item1.setLoadbalancer(lb);
         item1.setType(AccessListType.ALLOW);
@@ -37,7 +36,6 @@ public class AccessListITest extends STMTestBase {
         item2 = new AccessList();
         item2.setId(102);
         item2.setIpAddress("10.0.0.2");
-        item2.setIpVersion(IpVersion.IPV4);
         item2.setUserName("stillAnonymous");
         item2.setLoadbalancer(lb);
         item2.setType(AccessListType.DENY);

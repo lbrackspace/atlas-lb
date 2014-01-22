@@ -65,7 +65,6 @@ public class AccessListServiceImplIntegrationTest {
 
             accessList = new AccessList();
             accessList.setIpAddress("new ip");
-            accessList.setIpVersion(IpVersion.IPV4);
             accessList.setType(AccessListType.ALLOW);
         }
 
@@ -133,7 +132,6 @@ public class AccessListServiceImplIntegrationTest {
             for (int i = 0; i < 101; i++) {
                 accessList = new AccessList();
                 accessList.setIpAddress("new ip " + i);
-                accessList.setIpVersion(IpVersion.IPV4);
                 accessList.setType(AccessListType.ALLOW);
                 newLoadBalancer.addAccessList(accessList);
             }

@@ -213,7 +213,6 @@ public class VirtualIpRepository {
                 VirtualIp vip = new VirtualIp();
                 vip.setIpAddress(ip);
                 vip.setId(vid);
-//                vip.setIpVersion(ipVersion);
                 vip.setVipType(vType);
 
                 LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip(lb.getPort(), lb, vip);

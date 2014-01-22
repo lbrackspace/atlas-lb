@@ -15,10 +15,6 @@ public class AccessList extends Entity implements Serializable {
     @Column(name = "ip_address", length = 39)
     private String ipAddress;
 
-    @Column(name = "ip_version")
-    @Enumerated(EnumType.STRING)
-    private IpVersion ipVersion;
-
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
     private AccessListType type;
@@ -37,14 +33,6 @@ public class AccessList extends Entity implements Serializable {
 
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
-    }
-
-    public IpVersion getIpVersion() {
-        return ipVersion;
-    }
-
-    public void setIpVersion(IpVersion ipVersion) {
-        this.ipVersion = ipVersion;
     }
 
     public AccessListType getType() {
@@ -70,7 +58,6 @@ public class AccessList extends Entity implements Serializable {
         sb.append(String.format("id=%s, ", vorn(this.getId())));
         sb.append(String.format("loadbalancer = %s, ", vorn(this.getLoadbalancer())));
         sb.append(String.format("ip_address = %s, ", vorn(this.getIpAddress())));
-        sb.append(String.format("ip_version = %s, ", vorn(this.getIpVersion())));
         sb.append(String.format("type= %s", vorn(this.getType())));
         sb.append("}");
 
