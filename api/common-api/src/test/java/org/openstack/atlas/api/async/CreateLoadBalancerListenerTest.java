@@ -61,8 +61,6 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
-    private UsageEventHelper usageEventHelper;
-    @Mock
     private UsageEventCollection usageEventCollection;
     @Mock
     private RestApiConfiguration config;
@@ -96,7 +94,6 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
         createLoadBalancerListener.setNotificationService(notificationService);
         createLoadBalancerListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         createLoadBalancerListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
-        createLoadBalancerListener.setUsageEventHelper(usageEventHelper);
         createLoadBalancerListener.setUsageEventCollection(usageEventCollection);
         createLoadBalancerListener.setConfiguration(config);
     }

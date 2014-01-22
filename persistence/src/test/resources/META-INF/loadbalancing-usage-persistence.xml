@@ -11,7 +11,6 @@
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage</class>
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage</class>
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage</class>
-        <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent</class>
         <!-- Hibernate Properties -->
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>

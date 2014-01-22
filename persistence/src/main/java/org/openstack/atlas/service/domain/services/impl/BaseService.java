@@ -71,8 +71,6 @@ public class BaseService {
     @Autowired
     protected LoadBalancerUsageRepository loadBalancerUsageRepository;
     @Autowired
-    protected LoadBalancerUsageEventRepository loadBalancerUsageEventRepository;
-    @Autowired
     protected AllowedDomainsRepository allowedDomainsRepository;
     @Autowired
     protected LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
@@ -157,14 +155,6 @@ public class BaseService {
         this.hostUsageRepository = hostUsageRepository;
     }
 
-    public void setLoadBalancerUsageRepository(LoadBalancerUsageRepository loadBalancerUsageRepository) {
-        this.loadBalancerUsageRepository = loadBalancerUsageRepository;
-    }
-
-    public void setLoadBalancerUsageEventRepository(LoadBalancerUsageEventRepository loadBalancerUsageEventRepository) {
-        this.loadBalancerUsageEventRepository = loadBalancerUsageEventRepository;
-    }
-
     public void setAllowedDomainsRepository(AllowedDomainsRepository allowedDomainsRepository) {
         this.allowedDomainsRepository = allowedDomainsRepository;
     }
@@ -179,6 +169,10 @@ public class BaseService {
 
     public void setHostUsageRefactorRepository(HostUsageRefactorRepository hostUsageRefactorRepository) {
         this.hostUsageRefactorRepository = hostUsageRefactorRepository;
+    }
+
+    public void setLoadBalancerUsageRepository(LoadBalancerUsageRepository loadBalancerUsageRepository) {
+        this.loadBalancerUsageRepository = loadBalancerUsageRepository;
     }
 
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {

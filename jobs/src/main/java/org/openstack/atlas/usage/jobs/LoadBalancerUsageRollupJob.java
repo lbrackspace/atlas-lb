@@ -128,7 +128,6 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
             // TODO: Remove after usage refactor code has been in production for a while.
             LOG.info(String.format("Deleting usage records from old usage tables before '%s'...", rollupMarker.getTime().toString()));
             lbUsageRepository.deleteAllRecordsBefore(rollupMarker);
-            lbUsageRepository.deleteAllEventsBefore(rollupMarker);
             LOG.info(String.format("Successfully deleted usage records from old usage tables before '%s'.", rollupMarker.getTime().toString()));
 
             LOG.info(String.format("Deleting polling usage entries before hour '%s'...", hourToRollup.getTime().toString()));

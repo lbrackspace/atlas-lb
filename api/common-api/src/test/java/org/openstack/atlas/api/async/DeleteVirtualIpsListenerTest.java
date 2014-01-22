@@ -56,8 +56,6 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
     @Mock
     private VirtualIpService virtualIpService;
     @Mock
-    private UsageEventHelper usageEventHelper;
-    @Mock
     private UsageEventCollection usageEventCollection;
     @Mock
     private RestApiConfiguration config;
@@ -78,7 +76,6 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         deleteVirtualIpsListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteVirtualIpsListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteVirtualIpsListener.setVirtualIpService(virtualIpService);
-        deleteVirtualIpsListener.setUsageEventHelper(usageEventHelper);
         deleteVirtualIpsListener.setUsageEventCollection(usageEventCollection);
         deleteVirtualIpsListener.setConfiguration(config);
     }

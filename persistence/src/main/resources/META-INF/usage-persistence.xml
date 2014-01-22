@@ -7,7 +7,6 @@
         <jta-data-source>jdbc/loadBalancerUsageDB</jta-data-source>
         <class>org.openstack.atlas.service.domain.usage.entities.Entity</class>
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsage</class>
-        <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerUsageEvent</class>
         <class>org.openstack.atlas.service.domain.usage.entities.HostUsage</class>
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage</class>
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage</class>

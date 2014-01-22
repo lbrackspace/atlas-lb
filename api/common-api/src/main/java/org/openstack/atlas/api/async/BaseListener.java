@@ -42,7 +42,6 @@ public abstract class BaseListener implements MessageListener {
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
-    protected UsageEventHelper usageEventHelper;
     //    protected UsageEventProcessor usageEventProcessor;
     protected UsageEventCollection usageEventCollection;
     protected String REST = "REST";
@@ -110,10 +109,6 @@ public abstract class BaseListener implements MessageListener {
 
     public void setSslTerminationService(SslTerminationService sslTerminationService) {
         this.sslTerminationService = sslTerminationService;
-    }
-
-    public void setUsageEventHelper(UsageEventHelper usageEventHelper) {
-        this.usageEventHelper = usageEventHelper;
     }
 
     public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {

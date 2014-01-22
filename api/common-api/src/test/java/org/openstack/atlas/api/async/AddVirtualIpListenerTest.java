@@ -52,8 +52,6 @@ public class AddVirtualIpListenerTest extends STMTestBase {
     @Mock
     private UsageEventCollection usageEventCollection;
     @Mock
-    private UsageEventHelper usageEventHelper;
-    @Mock
     private RestApiConfiguration config;
 
     private AddVirtualIpListener addVirtualIpListener;
@@ -71,7 +69,6 @@ public class AddVirtualIpListenerTest extends STMTestBase {
         addVirtualIpListener.setNotificationService(notificationService);
         addVirtualIpListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         addVirtualIpListener.setUsageEventCollection(usageEventCollection);
-        addVirtualIpListener.setUsageEventHelper(usageEventHelper);
         addVirtualIpListener.setConfiguration(config);
     }
 

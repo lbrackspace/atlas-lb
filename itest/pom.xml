@@ -17,7 +17,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>snmp-test</module>
-        <module>usage-refactor</module>
         <module>jyson</module>
         <module>jython-tests</module>
     </modules>

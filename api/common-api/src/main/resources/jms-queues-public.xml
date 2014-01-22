@@ -92,19 +92,11 @@
         <property name="jobStateRepository" ref="jobStateRepository" />
         <property name="usageRepository" ref="usageRepository" />
         <property name="loadBalancerUsageRepository" ref="loadBalancerUsageRepository" />
-        <property name="loadBalancerUsageEventRepository" ref="loadBalancerUsageEventRepository" />
         <property name="sslTerminationRepository" ref="sslTerminationRepository" />
         <property name="allowedDomainsRepository" ref="allowedDomainsRepository" />
         <property name="loadBalancerStatusHistoryRepository" ref="loadBalancerStatusHistoryRepository" />
         <property name="loadBalancerMergedHostUsageRepository" ref="loadBalancerMergedHostUsageRepository" />
         <property name="hostUsageRefactorRepository" ref="hostUsageRefactorRepository" />
-    </bean>
-
-    <bean id="usageEventHelper" class="org.openstack.atlas.api.async.UsageEventHelper" scope="prototype">
-        <property name="usageService" ref="usageService"/>
-        <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
-        <property name="accountUsageRepository" ref="accountUsageRepository"/>
-        <property name="virtualIpRepository" ref="virtualIpRepository"/>
     </bean>
 
     <!--For Usage Event Processing-->
@@ -134,7 +126,6 @@
         <property name="rateLimitingService" ref="rateLimitingService"/>
         <property name="hostService" ref="hostService"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
-        <property name="usageEventHelper" ref="usageEventHelper"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
         <property name="usageEventCollection" ref="usageEventCollection"/>
     </bean>

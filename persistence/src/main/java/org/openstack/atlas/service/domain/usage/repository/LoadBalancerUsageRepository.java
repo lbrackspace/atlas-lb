@@ -84,13 +84,6 @@ public class LoadBalancerUsageRepository {
         LOG.info(String.format("Deleted %d rows from 'lb_usage' table with endTime before %s", numRowsDeleted, time.getTime()));
     }
 
-    public void deleteAllEventsBefore(Calendar time) {
-        Query query = entityManager.createQuery("DELETE LoadBalancerUsageEvent u WHERE u.startTime < :timestamp")
-                .setParameter("timestamp", time, TemporalType.TIMESTAMP);
-        int numRowsDeleted = query.executeUpdate();
-        LOG.info(String.format("Deleted %d rows from 'lb_usage_event' with startTime before %s", numRowsDeleted, time.getTime()));
-    }
-
     public void deleteAllRecordsForLoadBalancer(Integer loadBalancerId) {
         Query query = entityManager.createQuery("DELETE FROM LoadBalancerUsage u WHERE u.loadbalancerId = :loadBalancerId")
                 .setParameter("loadBalancerId", loadBalancerId);

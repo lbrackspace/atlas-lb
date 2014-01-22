@@ -49,8 +49,6 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
-    private UsageEventHelper usageEventHelper;
-    @Mock
     private UsageEventCollection usageEventCollection;
     @Mock
     private SslTerminationService sslTerminationService;
@@ -74,7 +72,6 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         deleteLoadBalancerListener.setNotificationService(notificationService);
         deleteLoadBalancerListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         deleteLoadBalancerListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
-        deleteLoadBalancerListener.setUsageEventHelper(usageEventHelper);
         deleteLoadBalancerListener.setUsageEventCollection(usageEventCollection);
         deleteLoadBalancerListener.setSslTerminationService(sslTerminationService);
         deleteLoadBalancerListener.setConfiguration(config);
