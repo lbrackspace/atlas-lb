@@ -19,7 +19,7 @@ public class StmTestConstants {
     public static final int RATE_INTERVAL = 60;
     // Concerns Error Page
     public static final String ERROR_PAGE_CONTENT = "Test Error Page";
-    public static final String SSL_CERT = ""
+    public static final String SSL_KEY = ""
             + "-----BEGIN RSA PRIVATE KEY-----\n"
             + "MIIEowIBAAKCAQEAgqD3/FFqkcbYkB1ucRtt0PcQQgrmviNW/8xmehxCVAZleyMZ\n"
             + "+T5j8ewz/wul7l3ozz8vBUn7+bOXbMVQI0qUgWtZDEcgHB9lKbhWBEnO/SKhIRA6\n"
@@ -48,7 +48,7 @@ public class StmTestConstants {
             + "N//bkwy/AXr5nQkfFFjAfkqhL/zay/9tH6eSsw54V1E/6F/7Bpvi\n"
             + "-----END RSA PRIVATE KEY-----\n"
             + "";
-    public static final String SSL_KEY = ""
+    public static final String SSL_CERT = ""
             + "-----BEGIN CERTIFICATE-----\n"
             + "MIIEAzCCAuugAwIBAgIBATANBgkqhkiG9w0BAQsFADCBqjE2MDQGA1UEAwwtd3d3\n"
             + "LnJhY2tleHAub3JnL2VtYWlsQWRkcmVzcz1yb290QHJhY2tleHAub3JnMR0wGwYD\n"
