@@ -97,7 +97,7 @@ public class AtomHopperClientImpl implements AtomHopperClient {
     @Override
     public ClientResponse getEntry(String token, String uuid) throws Exception {
         ClientResponse response = null;
-        String q = String.format("?marker=urn:uuid:%s&limit=1", uuid);
+        String q = String.format("entries/urn:uuid:%s", uuid);
         try {
             LOG.debug("Retrieving from AH endpoint: " + endPoint + q);
             response = client.resource(endPoint + q)
