@@ -8,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
 
@@ -16,6 +17,7 @@ import java.util.Calendar;
 import java.util.List;
 
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.USAGE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -84,7 +86,15 @@ public class MgmtCreateSuspensionListener extends BaseListener {
         notificationService.saveLoadBalancerEvent(requestLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, UPDATE_LOADBALANCER, UPDATE, INFO);
 
         Calendar eventTime = Calendar.getInstance();
+        try {
         usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.SUSPEND_LOADBALANCER, eventTime);
+        } catch (Exception exc) {
+            String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
+            String usageAlertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",
+                                                         dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
+            LOG.error(usageAlertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), exc, USAGE_FAILURE.name(), usageAlertDescription);
+        }
 
 
         LOG.info(String.format("Suspend load balancer operation complete for load balancer '%d'.", dbLoadBalancer.getId()));

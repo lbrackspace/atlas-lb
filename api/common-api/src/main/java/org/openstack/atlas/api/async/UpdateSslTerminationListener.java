@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionExcepti
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
 import java.util.*;
@@ -20,6 +21,7 @@ import static org.openstack.atlas.service.domain.events.entities.CategoryType.UP
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.UPDATE_SSL_TERMINATION;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.USAGE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
 
 public class UpdateSslTerminationListener extends BaseListener {
@@ -120,17 +122,24 @@ public class UpdateSslTerminationListener extends BaseListener {
                                                            queTermination.getSslTermination(), usagesMap, usagesMap2);
 
         // Notify usage processor
-        if (queTermination.getSslTermination().isEnabled()) {
-            if (queTermination.getSslTermination().isSecureTrafficOnly()) {
-                usageEventCollection.processUsageEvent(usagesToInsert, dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
+        try {
+            if (queTermination.getSslTermination().isEnabled()) {
+                if (queTermination.getSslTermination().isSecureTrafficOnly()) {
+                    usageEventCollection.processUsageEvent(usagesToInsert, dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
+                } else {
+                    usageEventCollection.processUsageEvent(usagesToInsert, dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
+                }
             } else {
-                usageEventCollection.processUsageEvent(usagesToInsert, dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
+                usageEventCollection.processUsageEvent(usagesToInsert, dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
             }
-        } else {
-            usageEventCollection.processUsageEvent(usagesToInsert, dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
+            LOG.info(String.format("Finished processing usage event for load balancer: %s", dbLoadBalancer.getId()));
+        } catch (Exception exc) {
+            String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
+            String usageAlertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",
+                                                         dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
+            LOG.error(usageAlertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), exc, USAGE_FAILURE.name(), usageAlertDescription);
         }
-        LOG.info(String.format("Finished processing usage event for load balancer: %s", dbLoadBalancer.getId()));
-
         // Update load balancer status in DB
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
