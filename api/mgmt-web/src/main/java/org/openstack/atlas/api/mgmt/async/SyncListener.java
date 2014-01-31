@@ -14,6 +14,7 @@ import org.openstack.atlas.service.domain.pojos.SyncLocation;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
 
@@ -28,6 +29,7 @@ import static org.openstack.atlas.service.domain.events.entities.CategoryType.DE
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.CREATE_LOADBALANCER;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_LOADBALANCER;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.USAGE_FAILURE;
 
 public class SyncListener extends BaseListener {
 
@@ -93,8 +95,16 @@ public class SyncListener extends BaseListener {
                     // Notify usage processor
                     Calendar eventTime = Calendar.getInstance();
                     LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
-                    usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
-                    LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
+                    try {
+                        usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
+                        LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
+                    } catch (Exception exc) {
+                        String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
+                        String usageAlertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",
+                                                                     dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
+                        LOG.error(usageAlertDescription);
+                        notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), exc, USAGE_FAILURE.name(), usageAlertDescription);
+                    }
 
                     //Set status record
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE);
@@ -140,6 +150,12 @@ public class SyncListener extends BaseListener {
                         } catch (UsageEventCollectionException uex) {
                             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                                     ":: Exception: %s", dbLoadBalancer.getId(), uex));
+                        } catch (Exception exc) {
+                            String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
+                            String usageAlertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",
+                                                                         dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
+                            LOG.error(usageAlertDescription);
+                            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), exc, USAGE_FAILURE.name(), usageAlertDescription);
                         }
                     }
                 } catch (Exception e) {
@@ -182,14 +198,22 @@ public class SyncListener extends BaseListener {
                         if (loadBalancerStatus.equals(PENDING_UPDATE) || loadBalancerStatus.equals(ERROR)) {
                             Calendar eventTime = Calendar.getInstance();
 
-                            if (dbLoadBalancer.isUsingSsl()) {
-                                if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
-                                    usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
+                            try {
+                                if (dbLoadBalancer.isUsingSsl()) {
+                                    if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
+                                        usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
+                                    } else {
+                                        usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
+                                    }
                                 } else {
-                                    usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);
+                                    usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
                                 }
-                            } else {
-                                usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
+                            } catch (Exception exc) {
+                                String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
+                                String usageAlertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",
+                                                                             dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
+                                LOG.error(usageAlertDescription);
+                                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), exc, USAGE_FAILURE.name(), usageAlertDescription);
                             }
                         }
                     }

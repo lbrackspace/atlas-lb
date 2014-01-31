@@ -8,6 +8,7 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
 
@@ -20,6 +21,7 @@ import static org.openstack.atlas.service.domain.events.entities.EventSeverity.C
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.events.entities.EventType.DELETE_LOADBALANCER;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.USAGE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
 
 public class DeleteLoadBalancerListener extends BaseListener {
@@ -94,7 +96,15 @@ public class DeleteLoadBalancerListener extends BaseListener {
 
         // Notify usage processor
         LOG.info(String.format("Processing DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+        try {
         usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
+        } catch (Exception exc) {
+            String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
+            String alertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",
+                    dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
+            LOG.error(alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), exc, USAGE_FAILURE.name(), alertDescription);
+        }
         LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
 
         LOG.info(String.format("Load balancer '%d' successfully deleted.", dbLoadBalancer.getId()));

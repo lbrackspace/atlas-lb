@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
 
@@ -20,6 +21,7 @@ import static org.openstack.atlas.service.domain.events.entities.CategoryType.CR
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.INFO;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.DATABASE_FAILURE;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.USAGE_FAILURE;
 import static org.openstack.atlas.service.domain.services.helpers.AlertType.ZEUS_FAILURE;
 
 public class AddVirtualIpListener extends BaseListener {
@@ -73,6 +75,12 @@ public class AddVirtualIpListener extends BaseListener {
         } catch (UsageEventCollectionException uex) {
             LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
                     ":: Exception: %s", dbLoadBalancer.getId(), uex));
+        } catch (Exception exc) {
+            String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
+            String alertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",
+                    dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
+            LOG.error(alertDescription);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), exc, USAGE_FAILURE.name(), alertDescription);
         }
 
         // Update load balancer in DB
