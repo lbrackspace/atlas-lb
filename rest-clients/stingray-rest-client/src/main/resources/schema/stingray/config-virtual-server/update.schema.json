@@ -1,25 +1,27 @@
 {
-   "$schema":       "http://json-schema.org/draft-03/schema#",
-   "id":            "/rvbd/schema/tm/1.0/config/active/vservers#",
-   "title":         "Virtual Server",
-   "description":   "A virtual server represents the front end of a load balanced network service. It processes traffic it receives on a specified port and distributes load over a pool of backend nodes.",
-    "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServer",
-   "type":          "object",
-   "required":      false,
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/2.0/config/active/virtual_servers#update",
+   "title":                 "Virtual Server",
+   "description":           "A virtual server represents the front end of a load balanced network service. It processes traffic it receives on a specified port and distributes load over a pool of backend nodes.",
+   "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServer",
+
+   "type":                  "object",
+   "additionalProperties":  false,
 
    "properties": {
+
       "properties": {
-          "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerProperties",
+         "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerProperties",
+
          "type":                  "object",
-         "required":              true,
          "additionalProperties":  false,
 
          "properties": {
 
             "basic": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerBasic",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerBasic",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -36,7 +38,7 @@
                   },
 
                   "add_x_forwarded_proto": {
-                     "description":   "Whether or not the virtual server should add an \"X- Forwarded-Proto\" header to the request that contains the original protocol used by the client to connect to the traffic manager.",
+                     "description":   "Whether or not the virtual server should add an \"X-Forwarded-Proto\" header to the request that contains the original protocol used by the client to connect to the traffic manager.",
 
                      "type":          "boolean"
                   },
@@ -56,7 +58,7 @@
                   },
 
                   "enabled": {
-                     "description":   "Whether the virtual server is enabled",
+                     "description":   "Whether the virtual server is enabled.",
 
                      "type":          "boolean"
                   },
@@ -68,7 +70,7 @@
                   },
 
                   "glb_services": {
-                     "description":   "Associated GLB services for this virtual server, only applies to when using a DNS",
+                     "description":   "The associated GLB services for this DNS virtual server.",
 
                      "type":          "array",
                      "uniqueItems":   true,
@@ -115,15 +117,13 @@
                   "pool": {
                      "description":   "The default pool to use for traffic.",
 
-                     "type":          "string",
-                     "required":      true
+                     "type":          "string"
                   },
 
                   "port": {
                      "description":   "The port on which to listen for incoming connections.",
 
                      "type":          "integer",
-                     "required":      true,
                      "minimum":       1,
                      "maximum":       65535
                   },
@@ -189,14 +189,14 @@
             },
 
             "aptimizer": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerAptimizer",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerAptimizer",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
                   "enabled": {
-                     "description":   "Whether the virtual server should aptimize web content",
+                     "description":   "Whether the virtual server should aptimize web content.",
 
                      "type":          "boolean"
                   },
@@ -205,25 +205,24 @@
                      "description":   "A table of Aptimizer profiles and the application scopes that apply to them.",
 
                      "type":          "array",
-                     "required":      true,
 
                      "items": {
-                         "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerProfile",
+                        "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerProfile",
+
                         "type":                  "object",
+                        "required":              ["name","urls"],
                         "additionalProperties":  false,
 
                         "properties": {
                            "name": {
                               "description":   "The name of an Aptimizer acceleration profile.",
 
-                              "type":          "string",
-                              "required":      true
+                              "type":          "string"
                            },
                            "urls": {
                               "description":   "The application scopes which apply to the acceleration profile.",
 
                               "type":          "array",
-                              "required":      true,
                               "uniqueItems":   true,
 
                               "items": {
@@ -237,9 +236,9 @@
             },
 
             "connection": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerConnection",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerConnection",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -290,9 +289,9 @@
             },
 
             "connection_errors": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -305,9 +304,9 @@
             },
 
             "cookie": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerCookie",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerCookie",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -332,8 +331,7 @@
                   "path_replace": {
                      "description":   "If cookie path regular expression matches, it will be replaced by this substitution.  Parameters $1-$9 can be used to represent bracketed parts of the regular expression.",
 
-                     "type":          "string",
-                     "pattern":       "^\\S*$"
+                     "type":          "string"
                   },
 
                   "secure": {
@@ -345,9 +343,9 @@
             },
 
             "ftp": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerFtp",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerFtp",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -390,14 +388,14 @@
             },
 
             "gzip": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerGzip",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerGzip",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
                   "compress_level": {
-                     "description":   "Compression level (1-9, 1=low, 9=high)",
+                     "description":   "Compression level (1-9, 1=low, 9=high).",
 
                      "type":          "integer",
                      "minimum":       1,
@@ -405,7 +403,7 @@
                   },
 
                   "enabled": {
-                     "description":   "Compress web pages sent back by the server",
+                     "description":   "Compress web pages sent back by the server.",
 
                      "type":          "boolean"
                   },
@@ -422,21 +420,21 @@
                   },
 
                   "max_size": {
-                     "description":   "Maximum document size to compress (0 means unlimited)",
+                     "description":   "Maximum document size to compress (0 means unlimited).",
 
                      "type":          "integer",
                      "minimum":       0
                   },
 
                   "min_size": {
-                     "description":   "Minimum document size to compress",
+                     "description":   "Minimum document size to compress.",
 
                      "type":          "integer",
                      "minimum":       0
                   },
 
                   "no_size": {
-                     "description":   "Compress documents with no given size",
+                     "description":   "Compress documents with no given size.",
 
                      "type":          "boolean"
                   }
@@ -444,9 +442,9 @@
             },
 
             "http": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerHttp",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerHttp",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -465,8 +463,7 @@
                   "location_replace": {
                      "description":   "If the 'Location' header matches the 'location_regex' regular expression, rewrite the header with this pattern (parameters such as $1-$9 can be used to match parts of the regular expression):",
 
-                     "type":          "string",
-                     "pattern":       "^\\S*$"
+                     "type":          "string"
                   },
 
                   "location_rewrite": {
@@ -490,9 +487,9 @@
             },
 
             "log": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerLog",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerLog",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -535,14 +532,14 @@
             },
 
             "request_tracing": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerRequestTracing",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerRequestTracing",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
                   "enabled": {
-                     "description":   "Record a trace of major connection processing events for each request and response",
+                     "description":   "Record a trace of major connection processing events for each request and response.",
 
                      "type":          "boolean"
                   },
@@ -556,9 +553,9 @@
             },
 
             "rtsp": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerRtsp",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerRtsp",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -590,8 +587,8 @@
 
             "sip": {
                 "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSip",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -668,9 +665,9 @@
             },
 
             "smtp": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSmtp",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerStmp",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -683,9 +680,9 @@
             },
 
             "ssl": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSsl",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSsl",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -727,19 +724,19 @@
                      "description":   "A table of certificate issuer specific OCSP settings.",
 
                      "type":          "array",
-                     "required":      true,
 
                      "items": {
-                         "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerOcspIssuer",
+                        "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerOcspIssuer",
+
                         "type":                  "object",
+                        "required":              ["issuer"],
                         "additionalProperties":  false,
 
                         "properties": {
                            "issuer": {
                               "description":   "The name of an issuer (or DEFAULT for default OCSP settings).",
 
-                              "type":          "string",
-                              "required":      true
+                              "type":          "string"
                            },
                            "aia": {
                               "description":   "Whether the traffic manager should use AIA information contained in a client certificate to determine which OCSP responder to contact.",
@@ -757,7 +754,7 @@
                               "type":          "string"
                            },
                            "responder_cert": {
-                              "description":   "The expected responder certificate",
+                              "description":   "The expected responder certificate.",
 
                               "type":          "string"
                            },
@@ -783,10 +780,11 @@
                   },
 
                   "ocsp_stapling": {
-                      "description": "",
-                      "type":        "boolean"
+                     "description":   "If OCSP URIs are present in certificates used by this virtual server, then enabling this option will allow the traffic manager to provide OCSP responses for these certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello.",
+
+                     "type":          "boolean"
                   },
-                   
+
                   "ocsp_time_tolerance": {
                      "description":   "The number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid.",
 
@@ -829,25 +827,24 @@
                      "description":   "Host specific SSL server certificate mappings.",
 
                      "type":          "array",
-                     "required":      true,
 
                      "items": {
-                         "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerServerCertHostMapping",
+                        "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerServerCertHostMapping",
+
                         "type":                  "object",
+                        "required":              ["host","certificate"],
                         "additionalProperties":  false,
 
                         "properties": {
                            "host": {
                               "description":   "Host which this entry refers to.",
 
-                              "type":          "string",
-                              "required":      true
+                              "type":          "string"
                            },
                            "certificate": {
                               "description":   "The SSL server certificate for a particular destination site IP.",
 
-                              "type":          "string",
-                              "required":      true
+                              "type":          "string"
                            }
                         }
                      }
@@ -862,9 +859,9 @@
             },
 
             "syslog": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSyslog",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSyslog",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -887,17 +884,19 @@
                   },
 
                   "msg_len_limit": {
-                      "description":  "",
-                      "type":         "integer",
-                      "minimum":      0
+                     "description":   "Maximum length in bytes of a message sent to the remote syslog. Messages longer than this will be truncated before they are sent.",
+
+                     "type":          "integer",
+                     "minimum":       480,
+                     "maximum":       65535
                   }
                }
             },
 
             "tcp": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerTcp",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerTcp",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -910,9 +909,9 @@
             },
 
             "udp": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerUdp",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerUdp",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -945,9 +944,9 @@
             },
 
             "web_cache": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerWebcache",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerWebcache",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
 
                "properties": {
@@ -992,3 +991,4 @@
       }
    }
 }
+

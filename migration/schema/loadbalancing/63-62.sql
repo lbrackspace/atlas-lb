@@ -8,4 +8,4 @@ ALTER TABLE cluster DROP COLUMN cluster_type;
 
 DROP TABLE cl_type;
 
-update meta set `meta_value` = '???' where `meta_key`='version';
+update meta set `meta_value` = '62' where `meta_key`='version';

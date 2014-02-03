@@ -189,7 +189,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.deleteVirtualIps(config, loadBalancer, vipsToDelete);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resourceTranslator, times(2)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+            verify(resourceTranslator, times(2)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
             verify(loadBalancer.getLoadBalancerJoinVipSet()).removeAll(anySetOf(LoadBalancerJoinVip.class));
             verify(loadBalancer.getLoadBalancerJoinVipSet()).addAll(anySetOf(LoadBalancerJoinVip.class));
             verify(client).deleteTrafficIp(anyString());
@@ -688,7 +688,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateVirtualServerResource(config, vsName, loadBalancer);
-            verify(resourceTranslator, times(3)).translateKeypairResource(loadBalancer);
+            verify(resourceTranslator, times(3)).translateKeypairResource(loadBalancer, true);
             verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             verify(resourceTranslator).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);

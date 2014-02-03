@@ -31,4 +31,34 @@ public class Debug {
             return st;
         }
     }
+
+    public static String getExtendedStackTrace(Throwable th) {
+        Throwable t;
+        StringBuilder sb = new StringBuilder();
+        Throwable currThrowable;
+        String msg;
+
+        t = th;
+        while (t != null) {
+            if (t instanceof Throwable) {
+                currThrowable = (Throwable) t;
+                sb.append(String.format("\"%s\":\"%s\"\n", currThrowable.getClass().getName(), currThrowable.getMessage()));
+                for (StackTraceElement se : currThrowable.getStackTrace()) {
+                    sb.append(String.format("%s\n", se.toString()));
+                }
+                sb.append("\nCausing Exception: ");
+                t = t.getCause();
+            } else {
+                break;
+            }
+        }
+        return sb.toString();
+    }
+
+    public static String getEST(Throwable th) {
+        return getExtendedStackTrace(th);
+    }
+
+    public static void nop() {
+    }
 }

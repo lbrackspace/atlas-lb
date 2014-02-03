@@ -1,54 +1,52 @@
 {
-   "$schema":       "http://json-schema.org/draft-03/schema#",
-   "id":            "/rvbd/schema/tm/1.0/config/active/ssl/client_keys#",
-   "title":         "SSL Client Key Pair",
-   "description":   "SSL Client Certificates are used when connecting to backend nodes that require client certificate authentication.",
-    "javaType" :     "org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair",
-   "type":          "object",
-   "required":      false,
-   
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/2.0/config/active/ssl/client_keys#update",
+   "title":                 "SSL Client Key Pair",
+   "description":           "SSL Client Certificates are used when connecting to backend nodes that require client certificate authentication.",
+   "javaType" :     "org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair",
+
+   "type":                  "object",
+   "additionalProperties":  false,
+
    "properties": {
+
       "properties": {
-          "javaType" :     "org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairProperties",
+         "javaType" :     "org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairProperties",
+
          "type":                  "object",
-         "required":              true,
          "additionalProperties":  false,
-         
+
          "properties": {
-            
+
             "basic": {
-                "javaType" :     "org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairBasic",
+               "javaType" :     "org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairBasic",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
-               
+
                "properties": {
                   "public": {
                      "description":   "Public certificate",
-                     
-                     "type":          "string",
-                     "required":      true
+
+                     "type":          "string"
                   },
-                  
+
                   "request": {
                      "description":   "Certificate Signing Request for certificate",
-                     
-                     "type":          "string",
-                     "required":      true
+
+                     "type":          "string"
                   },
-                  
+
                   "private": {
                      "description":   "Private key for certificate",
-                     
-                     "type":          "string",
-                     "required":      true
+
+                     "type":          "string"
                   },
-                  
+
                   "note": {
                      "description":   "Notes for this certificate",
-                     
-                     "type":          "string",
-                     "required":      true
+
+                     "type":          "string"
                   }
                }
             }
@@ -56,3 +54,4 @@
       }
    }
 }
+

@@ -1,78 +1,77 @@
 package org.openstack.atlas.adapter.itest;
 
 public class StmTestConstants {
+
     public static final int LB_PORT = 80;
     public static final int LB_SECURE_PORT = 443;
     public static final int NODE_1_PORT = 80;
     public static final int NODE_2_PORT = 81;
-
     public static final Integer TEST_ACCOUNT_ID = 999998;
     public static final Integer TEST_LOADBALANCER_ID = 999998;
-
     public static final Integer TEST_VIP_ID = 1000041;
     public static final Integer TEST_IPV6_VIP_ID = 1000061;
     public static final Integer ADDITIONAL_VIP_ID = 88887;
     public static final Integer ADDITIONAL_IPV6_VIP_ID = 88885;
-
     // Concerns Connection Throttle
     public static final int MAX_CONECT_RATE = 100;
     public static final int MAX_CONNECTIONS = 30;
     public static final int MIN_CONNECTIONS = 4;
     public static final int RATE_INTERVAL = 60;
-
     // Concerns Error Page
     public static final String ERROR_PAGE_CONTENT = "Test Error Page";
-
-    public static final String SSL_CERT = "-----BEGIN CERTIFICATE-----\n" +
-                "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
-                "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
-                "Y2UgSG9zdGluZzEUMBIGA1UECxMLUmFja0V4cCBDQTQxGDAWBgNVBAMTD2NhNC5y\n" +
-                "YWNrZXhwLm9yZzAeFw0xMjAxMTIxNzU3MDZaFw0xNDAxMTAxNzU3MDZaMHkxCzAJ\n" +
-                "BgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEOMAwGA1UEBxMFVGV4YXMxGjAYBgNV\n" +
-                "BAoTEVJhY2tTcGFjZSBIb3N0aW5nMRQwEgYDVQQLEwtSYWNrRXhwIENBNTEYMBYG\n" +
-                "A1UEAxMPY2E1LnJhY2tleHAub3JnMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB\n" +
-                "CgKCAQEAsVK6npit7Q3NLlVjkpiDj+QuIoYrhHTL5KKzj6CrtQsFYukEL1YEKNlM\n" +
-                "/dv8id/PkmdQ0wCNsk8d69CZKgO4hpN6O/b2aUl/vQcrW5lv3fI8x4wLu2Ri92vJ\n" +
-                "f04RiZ3Jyc0rgrfGyLyNJcnMIMjnFV7mQyy+7cMGKCDgaLzUGNyR5E/Mi4cERana\n" +
-                "xyp1nZI3DjA11Kwums9cx5VzS0Po1RyBsu7Xnpv3Fp2QqCBgdX8uaR5RuSak40/5\n" +
-                "Jv2ORv28mi9AFu2AIRj6lrDdaLQGAXnbDk8b0ImEvVOe/QASsgTSmzOtn3q9Yejl\n" +
-                "peQ9PFImVr2TymTF6UarGRHCWId1dQIDAQABo4HZMIHWMA8GA1UdEwEB/wQFMAMB\n" +
-                "Af8wgaMGA1UdIwSBmzCBmIAUoeopOMWIEeYGtksI+T+ZjXWKc4ahfaR7MHkxCzAJ\n" +
-                "BgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEOMAwGA1UEBxMFVGV4YXMxGjAYBgNV\n" +
-                "BAoTEVJhY2tTcGFjZSBIb3N0aW5nMRQwEgYDVQQLEwtSYWNrRXhwIENBMzEYMBYG\n" +
-                "A1UEAxMPY2EzLnJhY2tleHAub3JnggECMB0GA1UdDgQWBBSJF0Is0Wn7cVQ2iz/x\n" +
-                "W/xdobdNezANBgkqhkiG9w0BAQUFAAOCAQEAHUIe5D3+/j4yca1bxXg0egL0d6ed\n" +
-                "Cam/l+E/SHxFJmlLOfkMnDQQy/P31PBNrHPdNw3CwK5hqFGl8oWGLifRmMVlWhBo\n" +
-                "wD1wmzm++FQeEthhl7gBkgECxZ+U4+WRiqo9ZiHWDf49nr8gUONF/qnHHkXTOZKo\n" +
-                "vB34N2y+nONDvyzky2wzbvU46dW7Wc6Lp2nLTt4amC66V973V31Vlpbzg3C0K7sc\n" +
-                "PA2GGTsiW6NF1mLd4fECgXslaQggoAKax7QY2yKrXLN5tmrHHThV3fIvLbSNFJbl\n" +
-                "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
-                "-----END CERTIFICATE-----";
-    public static final String SSL_KEY = "-----BEGIN RSA PRIVATE KEY-----\n" +
-                "MIIEpAIBAAKCAQEAsVK6npit7Q3NLlVjkpiDj+QuIoYrhHTL5KKzj6CrtQsFYukE\n" +
-                "L1YEKNlM/dv8id/PkmdQ0wCNsk8d69CZKgO4hpN6O/b2aUl/vQcrW5lv3fI8x4wL\n" +
-                "u2Ri92vJf04RiZ3Jyc0rgrfGyLyNJcnMIMjnFV7mQyy+7cMGKCDgaLzUGNyR5E/M\n" +
-                "i4cERanaxyp1nZI3DjA11Kwums9cx5VzS0Po1RyBsu7Xnpv3Fp2QqCBgdX8uaR5R\n" +
-                "uSak40/5Jv2ORv28mi9AFu2AIRj6lrDdaLQGAXnbDk8b0ImEvVOe/QASsgTSmzOt\n" +
-                "n3q9YejlpeQ9PFImVr2TymTF6UarGRHCWId1dQIDAQABAoIBACm7jrBEvqpL1T5S\n" +
-                "WlzmCBCVY0Y8zYEe+92TbS8gYUj6jwn4TUPWuqPigHw+ifDo+7E5H4yJVM/iTuhw\n" +
-                "75szxPnnO51hQh0Fb0rNpSaptepGWIeeLiSsO55/f6y2cuoweI1F/DeHiQE1XwLF\n" +
-                "u4T7w2cELq0gms7aV1iaZDZCOqie3Dub7KAL76jwpG3ECQlWzF04TjQ5lZBdM7Fa\n" +
-                "z3fbaJ497k5DoPbZMqGi2eR7P8NJAPjIpmaL3vls2vlmWwd/7D10AJUNoILb74jm\n" +
-                "648YFo76yKS15jtHFvifSaxEg3gjmth7IuRF4SbL5AjFqhj1qo9yQKLep7pNv9Bx\n" +
-                "0eYoqwECgYEA4r3h/4WGuXrnh36zJW860O7+pO3l8rm83wP1oGc8xCK74aBQP5zL\n" +
-                "JHaJypeImisZg3OcKL5IBop76LZ/i5oCDozHvTRByFHYnkRU3oh6FDcIvPkDCB7o\n" +
-                "qq8y6Q+gbTJlKzpSxoRnj1rkHOweDzNG/7QD/D/g2z5ZejW3xC6H3R8CgYEAyDRe\n" +
-                "Qv/ATAn1F0r7LweShjAcqaf5DxmXNDpaw7Wj0OKZxyxYw6aPVm3LnZP1tmGe9UlE\n" +
-                "CFRTX5Y98x+9Z+PFtYgW0EdZCVQXKLkGJUhD8SRxyaS5Tlz1hzSHtbxGbDFuecRd\n" +
-                "Qv/XmrJapVQrT4TMa5ivw836tjQhVqCrNyCHRusCgYEAk9o793IrkuFI/rqouN1a\n" +
-                "HgnqNMQIcQma1lXvomQPZNo9Z3gxO/nTIXjGizva0KUQIv6NMqg5sUI2YF44t2B6\n" +
-                "vOAiEwdzadutBC8MpHucF3h3kzpRNsdo8nwCF6Wf9/SnsdN7TIXkPb+IBjAVvdWz\n" +
-                "E2RgQOmqh2yVzjIfHac14wMCgYEAkgiA6WYcIlrxB/iNmBRx8KePgMEhjr4f6NzX\n" +
-                "8AHCaE+h1AKpDK2lyGl2KI8Qn+Q9SrYShfDcj9DLh1gTlIA0auHFok8oxwErk2zC\n" +
-                "6tb3mCH5Thh1go+UGPdcNlgLFkhISVHOpVxxLEoEjKwEm5BGfAV3z9+jjNwhpUq1\n" +
-                "GRUFF9kCgYBu/b84bEmflvv0z412hiQuIjDrJWPLUENfJujs6RitU42KV78Momif\n" +
-                "/qrCK1exgdMiXET3nXg7Ff2zi5O8QArM3ITaWOczukAXaAeTPKm9o59ubb4PsU9K\n" +
-                "A8Lv1syLCAC54udcbBGG2gvv7KVwJZQhmwItdX0ev5oAY3DTbJwstg==\n" +
-                "-----END RSA PRIVATE KEY-----";
+    public static final String SSL_KEY = ""
+            + "-----BEGIN RSA PRIVATE KEY-----\n"
+            + "MIIEowIBAAKCAQEAgqD3/FFqkcbYkB1ucRtt0PcQQgrmviNW/8xmehxCVAZleyMZ\n"
+            + "+T5j8ewz/wul7l3ozz8vBUn7+bOXbMVQI0qUgWtZDEcgHB9lKbhWBEnO/SKhIRA6\n"
+            + "DgpxxQPhwr2JCWaFgmmOGCabhpQlv3NMNosErx8AtRdQRW4R/015ns5URWnMd67O\n"
+            + "5pMUOr1ZMdALDEO/NXllKFWT1VubWcI8lGY25KviFMd8oUxLp3FgArQsnI4meVVK\n"
+            + "tFjgxl3k7w3MdkQMdWGDIkszjbSquvOp7qBIHeTTI1x/OdIEXNtk+KshYgNKYipw\n"
+            + "6svN9GMfCUMgyYXGcFbKNsICaJxSgw7vHCyLCwIDAQABAoIBAFE9uV1EaWoGaDOh\n"
+            + "CknwDClVLthUHVONeRMX1XgGUT4eyEh/+SxpIBGanG/3l5ga8arLGfxJGhwfFIMC\n"
+            + "aCe6v4eJ8tTO+2piIDGFQoHiQYhvXBTLGcAXwNAN7P+Hj024ZDpKWaQthrZ5NszN\n"
+            + "8U1OwngDaRY3TKYRocHNNmGM4x5TmLsCoC02PQp372HmNQTi+cVIE/NqSY+kKOpt\n"
+            + "JtkDyjg6HHvn/2vWFSfNUAIKQV21gI/yUsjxDIwhvAqZuUMc803/++ripn7X/4U7\n"
+            + "u468ftyzX8czohKSTsCfPTwc6R+aPY57WP8Y/H4ND42qFCxvuXAB0PxUFRmybdAo\n"
+            + "w/FLnwkCgYEA4mKtZiaB53IMoEZEuxdnj+y8WTmiW/gEonqA8rPKipCobyQ6n2H2\n"
+            + "A0jSvLzKBfLpK0lyzEEWDnYjZIUEE1DEW3MwkWGAj5SPsnFkeaHs98cp1DJe/W4r\n"
+            + "yRed/h69hdIfT0qxjhXxfjG5Z24lrzRb9Um20cAC9ZTUYV+6yUenrwUCgYEAk7eJ\n"
+            + "0jgFmqTFPIeLJKy8yf3g2IiKf/M2GEdfLWLzMeb9KExanzTdHpJLm0TlP9rzIbrJ\n"
+            + "K95LJZb0gDLUvtAUCrSNWSrqP99nCrUhHlvPz/uRskr6sqCq07msfDqe2Dzku8hi\n"
+            + "fFNeEr3y6PzKVj0wQwyJ/neoFbDeb8fh8WXAzs8CgYAJQQ1jiplu05uuhZDTsQ47\n"
+            + "tOqyHwgDCG1wEt/oi+7woR8xg+Kdl0yOL9DlhDYh7h8X9OWrcdGr/6pMtp9HBtsv\n"
+            + "/dJzbu/pbqI9IiOAUV01d7+++9wkMfe6Pavosmr+6Gr9O8lsTHtVtESm9Lq3ocVM\n"
+            + "jpnZkybL0SypWldxWOuC3QKBgH8dqYdy2De85VJyXeYAlDHKvMv5rB3xYLLB8ICx\n"
+            + "LxDZcy9TjYSFzGb7g/6o6hLqSuHSyD1s/QPrBJqxo2xUyXpw51Y9XPn8OML5Hffv\n"
+            + "EEUterKQXW6MXpT2qhz5oSn6NOf3x/CvGTxNo5SlvUU7QKXiS3nk5ItN+gz9WE0Q\n"
+            + "wDv3AoGBAMjFdF7wCYNRR6uKfmqV0qrxjk5ChlHAw7BruGlC/eMoPhLrQQ5bfaX0\n"
+            + "B9DoFEVoUwngljDkZ8JPeyC2EPthKQ4p9qLcxHT7SwK3PvzEenCBjSstqE2ocjJY\n"
+            + "N//bkwy/AXr5nQkfFFjAfkqhL/zay/9tH6eSsw54V1E/6F/7Bpvi\n"
+            + "-----END RSA PRIVATE KEY-----\n"
+            + "";
+    public static final String SSL_CERT = ""
+            + "-----BEGIN CERTIFICATE-----\n"
+            + "MIIEAzCCAuugAwIBAgIBATANBgkqhkiG9w0BAQsFADCBqjE2MDQGA1UEAwwtd3d3\n"
+            + "LnJhY2tleHAub3JnL2VtYWlsQWRkcmVzcz1yb290QHJhY2tleHAub3JnMR0wGwYD\n"
+            + "VQQLExRDbG91ZCAgTG9hZEJhbGFuY2VyczEeMBwGA1UEChMVUmFja3NwYWNlIEhv\n"
+            + "c3RpbmcgSU5DMRQwEgYDVQQHEwtTYW4gQW50b25pbzEOMAwGA1UECBMFVGV4YXMx\n"
+            + "CzAJBgNVBAYTAlVTMB4XDTE0MDExNDIxMjY1M1oXDTIxMDQxNzIxMjY1M1owgaox\n"
+            + "NjA0BgNVBAMMLXd3dy5yYWNrZXhwLm9yZy9lbWFpbEFkZHJlc3M9cm9vdEByYWNr\n"
+            + "ZXhwLm9yZzEdMBsGA1UECxMUQ2xvdWQgIExvYWRCYWxhbmNlcnMxHjAcBgNVBAoT\n"
+            + "FVJhY2tzcGFjZSBIb3N0aW5nIElOQzEUMBIGA1UEBxMLU2FuIEFudG9uaW8xDjAM\n"
+            + "BgNVBAgTBVRleGFzMQswCQYDVQQGEwJVUzCCASIwDQYJKoZIhvcNAQEBBQADggEP\n"
+            + "ADCCAQoCggEBAIKg9/xRapHG2JAdbnEbbdD3EEIK5r4jVv/MZnocQlQGZXsjGfk+\n"
+            + "Y/HsM/8Lpe5d6M8/LwVJ+/mzl2zFUCNKlIFrWQxHIBwfZSm4VgRJzv0ioSEQOg4K\n"
+            + "ccUD4cK9iQlmhYJpjhgmm4aUJb9zTDaLBK8fALUXUEVuEf9NeZ7OVEVpzHeuzuaT\n"
+            + "FDq9WTHQCwxDvzV5ZShVk9Vbm1nCPJRmNuSr4hTHfKFMS6dxYAK0LJyOJnlVSrRY\n"
+            + "4MZd5O8NzHZEDHVhgyJLM420qrrzqe6gSB3k0yNcfznSBFzbZPirIWIDSmIqcOrL\n"
+            + "zfRjHwlDIMmFxnBWyjbCAmicUoMO7xwsiwsCAwEAAaMyMDAwDwYDVR0TAQH/BAUw\n"
+            + "AwEB/zAdBgNVHQ4EFgQUvQn5I55Jn634ons386JCTrcx2VgwDQYJKoZIhvcNAQEL\n"
+            + "BQADggEBAGhKUnFtBbHUecOnJQk8Qnli46Z8Ut4M7Q+AZQ4S6UyZGgXD9Rh30cXx\n"
+            + "ky2482WROw2gWL2cR/GlADBPXDIaB80HKHOcnrAMPpCdeGamkwgQdh+csK0Lhu4b\n"
+            + "FBWkHilZISZYwJ6WxCCjx8810NVDHILA8gmWCiYhTNvVhmoobOcaBg396QiRf8/q\n"
+            + "CNZ4Nlg8SgtCw/bNG0LfpeBTUQo+wduSx/GWwfMdatgYWxRj94Gp7ko4UnUTqYGe\n"
+            + "XGHekyCBlaj8Riz89qzCXPxKZwkuK/MUxXbA0XHDnvP0MuG6CQIEol+ddrzq9Pnl\n"
+            + "H6PjnH7oMFyiMRj7ZZ/b4FwaC6uCjl4=\n"
+            + "-----END CERTIFICATE-----\n"
+            + "";
 }

@@ -1,54 +1,52 @@
 {
-   "$schema":       "http://json-schema.org/draft-03/schema#",
-   "id":            "/rvbd/schema/tm/1.0/config/active/ssl/server_keys#",
-   "title":         "SSL Key Pair",
-   "description":   "SSL Server Certificates are presented to clients by virtual servers when SSL decryption is enabled.",
-    "javaType" :     "org.rackspace.stingray.client.ssl.keypair.Keypair",
-   "type":          "object",
-   "required":      false,
-   
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/2.0/config/active/ssl/server_keys#update",
+   "title":                 "SSL Key Pair",
+   "description":           "SSL Server Certificates are presented to clients by virtual servers when SSL decryption is enabled.",
+   "javaType" :     "org.rackspace.stingray.client.ssl.keypair.Keypair",
+
+   "type":                  "object",
+   "additionalProperties":  false,
+
    "properties": {
+
       "properties": {
-          "javaType" :     "org.rackspace.stingray.client.ssl.keypair.KeypairProperties",
+         "javaType" :     "org.rackspace.stingray.client.ssl.keypair.KeypairProperties",
+
          "type":                  "object",
-         "required":              true,
          "additionalProperties":  false,
-         
+
          "properties": {
-            
+
             "basic": {
-                "javaType" :     "org.rackspace.stingray.client.ssl.keypair.KeypairBasic",
+               "javaType" :     "org.rackspace.stingray.client.ssl.keypair.KeypairBasic",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
-               
+
                "properties": {
                   "public": {
                      "description":   "Public certificate",
-                     
-                     "type":          "string",
-                     "required":      true
+
+                     "type":          "string"
                   },
-                  
+
                   "request": {
                      "description":   "Certificate Signing Request for certificate",
-                     
-                     "type":          "string",
-                     "required":      true
+
+                     "type":          "string"
                   },
-                  
+
                   "private": {
                      "description":   "Private key for certificate",
-                     
-                     "type":          "string",
-                     "required":      true
+
+                     "type":          "string"
                   },
-                  
+
                   "note": {
                      "description":   "Notes for this certificate",
-                     
-                     "type":          "string",
-                     "required":      true
+
+                     "type":          "string"
                   }
                }
             }
@@ -56,3 +54,4 @@
       }
    }
 }
+

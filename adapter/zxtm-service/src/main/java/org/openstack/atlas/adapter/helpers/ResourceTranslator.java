@@ -1,5 +1,6 @@
 package org.openstack.atlas.adapter.helpers;
 
+import com.zxtm.service.client.VirtualServerProtocol;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
@@ -23,6 +24,7 @@ import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
 import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
+import org.rackspace.stingray.client.traffic.ip.TrafficIpIpMapping;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.*;
@@ -32,9 +34,11 @@ import java.util.*;
 
 public class ResourceTranslator {
     public Pool cPool;
+    public Pool cRedirectPool;
     public Monitor cMonitor;
     public Map<String, TrafficIp> cTrafficIpGroups;
     public VirtualServer cVServer;
+    public VirtualServer cRedirectVServer;
     public Protection cProtection;
     public Bandwidth cBandwidth;
     public Keypair cKeypair;
@@ -48,21 +52,74 @@ public class ResourceTranslator {
         return new ResourceTranslator();
     }
 
-
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
+        translateLoadBalancerResource(config, vsName, loadBalancer, queLb, true);
+    }
+
+    public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
+                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert) throws InsufficientRequestException {
         //Order matters when translating the entire entity.
         if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
 
         translateTrafficIpGroupsResource(config, loadBalancer, true);
 
-        if (loadBalancer.getSslTermination() != null) translateKeypairResource(loadBalancer);
+        if (loadBalancer.getSslTermination() != null) translateKeypairResource(loadBalancer, careAboutCert);
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
             translateProtectionResource(loadBalancer);
 
         translatePoolResource(vsName, loadBalancer, queLb);
         translateVirtualServerResource(config, vsName, loadBalancer);
+        if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
+            translateRedirectPoolResource(loadBalancer);
+            translateRedirectVirtualServerResource(config, vsName, loadBalancer);
+        }
+    }
+
+    //This could probably be trimmed down a bit
+    private VirtualServer translateRedirectVirtualServerResource(LoadBalancerEndpointConfiguration config, String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
+        VirtualServerBasic basic = new VirtualServerBasic();
+        VirtualServerSsl ssl = new VirtualServerSsl();
+        VirtualServerProperties properties = new VirtualServerProperties();
+        VirtualServerConnectionError ce = new VirtualServerConnectionError();
+        VirtualServerLog log;
+        List<String> rules = new ArrayList<String>();
+
+        properties.setBasic(basic);
+        properties.setSsl(ssl);
+        cRedirectVServer = new VirtualServer();
+        cRedirectVServer.setProperties(properties);
+
+        basic.setEnabled(true);
+
+        // Redirection specific
+        basic.setPort(80);
+        if (loadBalancer.isUsingSsl())
+            basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));
+        else
+            basic.setPool(ZxtmNameBuilder.genRedirectVSName(loadBalancer));
+        basic.setProtocol(VirtualServerProtocol.http.getValue());
+
+        log = new VirtualServerLog();
+        log.setEnabled(false);
+        properties.setLog(log);
+
+        ce.setError_file("Default");
+        properties.setConnection_errors(ce);
+
+        //trafficscript or rule settings
+        rules.add(StmConstants.HTTPS_REDIRECT);
+        basic.setRequest_rules(rules);
+
+        //trafficIpGroup settings
+        basic.setListen_on_any(false);
+        basic.setListen_on_traffic_ips(genGroupNameSet(loadBalancer));
+
+        //ssl settings
+        ssl.setServer_cert_default(vsName);
+
+        return cRedirectVServer;
     }
 
     public VirtualServer translateVirtualServerResource(LoadBalancerEndpointConfiguration config,
@@ -196,6 +253,13 @@ public class ResourceTranslator {
         TrafficIpProperties properties = new TrafficIpProperties();
         TrafficIpBasic basic = new TrafficIpBasic();
 
+//        TrafficIpIpMapping mapping = new TrafficIpIpMapping();
+//        List<TrafficIpIpMapping> mappings = new ArrayList<TrafficIpIpMapping>(Arrays.asList(mapping));
+//        basic.setIp_mapping(mappings);
+
+        basic.setHash_source_port(false);
+        basic.setKeeptogether(false);
+
         basic.setEnabled(isEnabled);
         basic.setIpaddresses(new HashSet<String>(Arrays.asList(ipaddress)));
 
@@ -295,6 +359,30 @@ public class ResourceTranslator {
         return cPool;
     }
 
+    public Pool translateRedirectPoolResource(LoadBalancer loadBalancer) throws InsufficientRequestException {
+        cRedirectPool = new Pool();
+        PoolProperties properties = new PoolProperties();
+        PoolBasic basic = new PoolBasic();
+        PoolLoadbalancing poollb = new PoolLoadbalancing();
+
+        basic.setPassive_monitoring(false);
+
+
+        String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
+
+        poollb.setAlgorithm(lbAlgo);
+
+        PoolConnection connection = null;
+        basic.setPersistence_class(null);
+        basic.setBandwidth_class(null);
+        properties.setBasic(basic);
+        properties.setLoad_balancing(poollb);
+        properties.setConnection(connection);
+        cRedirectPool.setProperties(properties);
+
+        return cRedirectPool;
+    }
+
     public Monitor translateMonitorResource(LoadBalancer loadBalancer) {
         Monitor monitor = new Monitor();
         MonitorProperties properties = new MonitorProperties();
@@ -379,7 +467,7 @@ public class ResourceTranslator {
         return cProtection;
     }
 
-    public Keypair translateKeypairResource(LoadBalancer loadBalancer)
+    public Keypair translateKeypairResource(LoadBalancer loadBalancer, boolean careAboutCert)
             throws InsufficientRequestException {
         ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(loadBalancer.getSslTermination().getPrivatekey(),
                 loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
@@ -387,7 +475,11 @@ public class ResourceTranslator {
             String fmt = "StingrayCertFile generation Failure: %s";
             String errors = StringUtils.joinString(zeusCertFile.getErrors(), ",");
             String msg = String.format(fmt, errors);
-            throw new InsufficientRequestException(msg);
+
+            if (careAboutCert)
+                throw new InsufficientRequestException(msg);
+            else
+                return null;
         }
 
         cKeypair = new Keypair();
@@ -443,6 +535,14 @@ public class ResourceTranslator {
         this.cPool = cPool;
     }
 
+    public Pool getcRedirectPool() {
+        return cRedirectPool;
+    }
+
+    public void setcRedirectPool(Pool cPool) {
+        this.cRedirectPool = cPool;
+    }
+
     public Monitor getcMonitor() {
         return cMonitor;
     }
@@ -465,6 +565,14 @@ public class ResourceTranslator {
 
     public void setcVServer(VirtualServer cVServer) {
         this.cVServer = cVServer;
+    }
+
+    public VirtualServer getcRedirectVServer() {
+        return cRedirectVServer;
+    }
+
+    public void setcRedirectVServer(VirtualServer cVServer) {
+        this.cRedirectVServer = cVServer;
     }
 
     public Protection getcProtection() {

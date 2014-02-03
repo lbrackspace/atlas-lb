@@ -1,127 +1,128 @@
 {
-   "$schema":       "http://json-schema.org/draft-03/schema#",
-   "id":            "/rvbd/schema/tm/1.0/config/active/flipper#",
-   "title":         "Traffic IP Group",
-   "description":   "Traffic IP groups are sets of IP addresses that are distributed across a cluster for fault tolerance.",
-    "javaType" :     "org.rackspace.stingray.client.traffic.ip.TrafficIp",
-   "type":          "object",
-   "required":      false,
-   
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/2.0/config/active/traffic_ip_groups#update",
+   "title":                 "Traffic IP Group",
+   "description":           "Traffic IP groups are sets of IP addresses that are distributed across a cluster for fault tolerance.",
+   "javaType" :     "org.rackspace.stingray.client.traffic.ip.TrafficIp",
+
+   "type":                  "object",
+   "additionalProperties":  false,
+
    "properties": {
+
       "properties": {
-          "javaType" :     "org.rackspace.stingray.client.traffic.ip.TrafficIpProperties",
+         "javaType" :     "org.rackspace.stingray.client.traffic.ip.TrafficIpProperties",
+
          "type":                  "object",
-         "required":              true,
          "additionalProperties":  false,
-         
+
          "properties": {
-            
+
             "basic": {
-                "javaType" :     "org.rackspace.stingray.client.traffic.ip.TrafficIpBasic",
+               "javaType" :     "org.rackspace.stingray.client.traffic.ip.TrafficIpBasic",
+
                "type":                  "object",
-               "required":              false,
                "additionalProperties":  false,
-               
+
                "properties": {
                   "enabled": {
                      "description":   "If set to \"No\", the traffic IP group will be disabled and none of the traffic IP addresses will be raised.",
-                     
+
                      "type":          "boolean"
                   },
-                  
+
                   "hash_source_port": {
                      "description":   "Whether or not the source port should be taken into account when deciding which traffic manager should handle a request.",
-                     
+
                      "type":          "boolean"
                   },
-                  
+
                   "ip_mapping": {
                      "description":   "A table assigning traffic IP addresses to machines that should host them. Traffic IP addresses not specified in this table will automatically be assigned to a machine.",
-                     
+
                      "type":          "array",
-                     "required":      true,
-                     
+
                      "items": {
-                         "javaType" :     "org.rackspace.stingray.client.traffic.ip.TrafficIpIpMapping",
+                        "javaType" :     "org.rackspace.stingray.client.traffic.ip.TrafficIpIpMapping",
+
                         "type":                  "object",
+                        "required":              ["ip","traffic_manager"],
                         "additionalProperties":  false,
-                        
+
                         "properties": {
                            "ip": {
                               "description":   "A traffic IP address (from the ipaddresses property).",
-                              
-                              "type":          "string",
-                              "required":      true
+
+                              "type":          "string"
                            },
                            "traffic_manager": {
                               "description":   "The name of the traffic manager that should host the IP address.",
-                              
+
                               "type":          "string",
-                              "required":      true,
                               "pattern":       "^[A-Za-z0-9._-]*$"
                            }
                         }
                      }
                   },
-                  
+
                   "ipaddresses": {
                      "description":   "The IP addresses that belong to the Traffic IP group.",
-                     
+
                      "type":          "array",
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
                   "keeptogether": {
                      "description":   "If set to \"Yes\" then all the traffic IPs will be raised on a single traffic manager.  By default they're distributed across all active traffic managers in the traffic IP group.",
-                     
+
                      "type":          "boolean"
                   },
-                  
+
                   "location": {
                      "description":   "The location in which the Traffic IP group is based.",
-                     
+
                      "type":          "integer"
                   },
-                  
+
                   "machines": {
                      "description":   "The traffic managers that can host the traffic IP group's IP addresses.",
-                     
+
                      "type":          "array",
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
                   "mode": {
                      "description":   "The method used to distribute traffic IPs across machines in the cluster. If \"multihosted\" is used then \"multicast\" must be set to an appropriate multicast IP address.",
-                     
+
                      "type":          "string"
                   },
-                  
+
                   "multicast": {
                      "description":   "The multicast IP address used to duplicate traffic to all traffic managers in the group.",
-                     
+
                      "type":          "string"
                   },
-                  
+
                   "note": {
                      "description":   "A description of this traffic IP group.",
-                     
+
                      "type":          "string"
                   },
-                  
+
                   "slaves": {
                      "description":   "A list of traffic managers that are in 'passive' mode. This means that in a fully working environment, they will not have any traffic IP addresses assigned to them.",
-                     
+
                      "type":          "array",
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }

@@ -166,10 +166,12 @@ public class StingrayRestClientManager {
      * @return          Returns an object of the passed type
      */
     public synchronized <T> T interpretResponse(ClientResponse response, Class<T> clazz)  throws StingrayRestClientException {
-        T t;
+        T t = null;
+        String s;
         RequestManagerUtil rmu = new RequestManagerUtil();
         try {
             t = response.getEntity(clazz);
+//              s = response.getEntity(String.class);
         } catch (Exception ex) {
             LOG.error("Could not retrieve object of type: " + clazz + " Exception: " + ex);
             if (!rmu.isResponseValid(response)) {

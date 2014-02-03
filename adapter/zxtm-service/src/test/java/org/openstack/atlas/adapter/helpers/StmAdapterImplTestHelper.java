@@ -25,59 +25,61 @@ public class StmAdapterImplTestHelper {
     static String regex = "regex";
     static String path = "path";
     static String header = "header";
-    static String cert = "-----BEGIN CERTIFICATE-----\n" +
-            "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
-            "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
-            "Y2UgSG9zdGluZzEUMBIGA1UECxMLUmFja0V4cCBDQTQxGDAWBgNVBAMTD2NhNC5y\n" +
-            "YWNrZXhwLm9yZzAeFw0xMjAxMTIxNzU3MDZaFw0xNDAxMTAxNzU3MDZaMHkxCzAJ\n" +
-            "BgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEOMAwGA1UEBxMFVGV4YXMxGjAYBgNV\n" +
-            "BAoTEVJhY2tTcGFjZSBIb3N0aW5nMRQwEgYDVQQLEwtSYWNrRXhwIENBNTEYMBYG\n" +
-            "A1UEAxMPY2E1LnJhY2tleHAub3JnMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB\n" +
-            "CgKCAQEAsVK6npit7Q3NLlVjkpiDj+QuIoYrhHTL5KKzj6CrtQsFYukEL1YEKNlM\n" +
-            "/dv8id/PkmdQ0wCNsk8d69CZKgO4hpN6O/b2aUl/vQcrW5lv3fI8x4wLu2Ri92vJ\n" +
-            "f04RiZ3Jyc0rgrfGyLyNJcnMIMjnFV7mQyy+7cMGKCDgaLzUGNyR5E/Mi4cERana\n" +
-            "xyp1nZI3DjA11Kwums9cx5VzS0Po1RyBsu7Xnpv3Fp2QqCBgdX8uaR5RuSak40/5\n" +
-            "Jv2ORv28mi9AFu2AIRj6lrDdaLQGAXnbDk8b0ImEvVOe/QASsgTSmzOtn3q9Yejl\n" +
-            "peQ9PFImVr2TymTF6UarGRHCWId1dQIDAQABo4HZMIHWMA8GA1UdEwEB/wQFMAMB\n" +
-            "Af8wgaMGA1UdIwSBmzCBmIAUoeopOMWIEeYGtksI+T+ZjXWKc4ahfaR7MHkxCzAJ\n" +
-            "BgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEOMAwGA1UEBxMFVGV4YXMxGjAYBgNV\n" +
-            "BAoTEVJhY2tTcGFjZSBIb3N0aW5nMRQwEgYDVQQLEwtSYWNrRXhwIENBMzEYMBYG\n" +
-            "A1UEAxMPY2EzLnJhY2tleHAub3JnggECMB0GA1UdDgQWBBSJF0Is0Wn7cVQ2iz/x\n" +
-            "W/xdobdNezANBgkqhkiG9w0BAQUFAAOCAQEAHUIe5D3+/j4yca1bxXg0egL0d6ed\n" +
-            "Cam/l+E/SHxFJmlLOfkMnDQQy/P31PBNrHPdNw3CwK5hqFGl8oWGLifRmMVlWhBo\n" +
-            "wD1wmzm++FQeEthhl7gBkgECxZ+U4+WRiqo9ZiHWDf49nr8gUONF/qnHHkXTOZKo\n" +
-            "vB34N2y+nONDvyzky2wzbvU46dW7Wc6Lp2nLTt4amC66V973V31Vlpbzg3C0K7sc\n" +
-            "PA2GGTsiW6NF1mLd4fECgXslaQggoAKax7QY2yKrXLN5tmrHHThV3fIvLbSNFJbl\n" +
-            "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
-            "-----END CERTIFICATE-----";
-    static String key = "-----BEGIN RSA PRIVATE KEY-----\n" +
-            "MIIEpAIBAAKCAQEAsVK6npit7Q3NLlVjkpiDj+QuIoYrhHTL5KKzj6CrtQsFYukE\n" +
-            "L1YEKNlM/dv8id/PkmdQ0wCNsk8d69CZKgO4hpN6O/b2aUl/vQcrW5lv3fI8x4wL\n" +
-            "u2Ri92vJf04RiZ3Jyc0rgrfGyLyNJcnMIMjnFV7mQyy+7cMGKCDgaLzUGNyR5E/M\n" +
-            "i4cERanaxyp1nZI3DjA11Kwums9cx5VzS0Po1RyBsu7Xnpv3Fp2QqCBgdX8uaR5R\n" +
-            "uSak40/5Jv2ORv28mi9AFu2AIRj6lrDdaLQGAXnbDk8b0ImEvVOe/QASsgTSmzOt\n" +
-            "n3q9YejlpeQ9PFImVr2TymTF6UarGRHCWId1dQIDAQABAoIBACm7jrBEvqpL1T5S\n" +
-            "WlzmCBCVY0Y8zYEe+92TbS8gYUj6jwn4TUPWuqPigHw+ifDo+7E5H4yJVM/iTuhw\n" +
-            "75szxPnnO51hQh0Fb0rNpSaptepGWIeeLiSsO55/f6y2cuoweI1F/DeHiQE1XwLF\n" +
-            "u4T7w2cELq0gms7aV1iaZDZCOqie3Dub7KAL76jwpG3ECQlWzF04TjQ5lZBdM7Fa\n" +
-            "z3fbaJ497k5DoPbZMqGi2eR7P8NJAPjIpmaL3vls2vlmWwd/7D10AJUNoILb74jm\n" +
-            "648YFo76yKS15jtHFvifSaxEg3gjmth7IuRF4SbL5AjFqhj1qo9yQKLep7pNv9Bx\n" +
-            "0eYoqwECgYEA4r3h/4WGuXrnh36zJW860O7+pO3l8rm83wP1oGc8xCK74aBQP5zL\n" +
-            "JHaJypeImisZg3OcKL5IBop76LZ/i5oCDozHvTRByFHYnkRU3oh6FDcIvPkDCB7o\n" +
-            "qq8y6Q+gbTJlKzpSxoRnj1rkHOweDzNG/7QD/D/g2z5ZejW3xC6H3R8CgYEAyDRe\n" +
-            "Qv/ATAn1F0r7LweShjAcqaf5DxmXNDpaw7Wj0OKZxyxYw6aPVm3LnZP1tmGe9UlE\n" +
-            "CFRTX5Y98x+9Z+PFtYgW0EdZCVQXKLkGJUhD8SRxyaS5Tlz1hzSHtbxGbDFuecRd\n" +
-            "Qv/XmrJapVQrT4TMa5ivw836tjQhVqCrNyCHRusCgYEAk9o793IrkuFI/rqouN1a\n" +
-            "HgnqNMQIcQma1lXvomQPZNo9Z3gxO/nTIXjGizva0KUQIv6NMqg5sUI2YF44t2B6\n" +
-            "vOAiEwdzadutBC8MpHucF3h3kzpRNsdo8nwCF6Wf9/SnsdN7TIXkPb+IBjAVvdWz\n" +
-            "E2RgQOmqh2yVzjIfHac14wMCgYEAkgiA6WYcIlrxB/iNmBRx8KePgMEhjr4f6NzX\n" +
-            "8AHCaE+h1AKpDK2lyGl2KI8Qn+Q9SrYShfDcj9DLh1gTlIA0auHFok8oxwErk2zC\n" +
-            "6tb3mCH5Thh1go+UGPdcNlgLFkhISVHOpVxxLEoEjKwEm5BGfAV3z9+jjNwhpUq1\n" +
-            "GRUFF9kCgYBu/b84bEmflvv0z412hiQuIjDrJWPLUENfJujs6RitU42KV78Momif\n" +
-            "/qrCK1exgdMiXET3nXg7Ff2zi5O8QArM3ITaWOczukAXaAeTPKm9o59ubb4PsU9K\n" +
-            "A8Lv1syLCAC54udcbBGG2gvv7KVwJZQhmwItdX0ev5oAY3DTbJwstg==\n" +
-            "-----END RSA PRIVATE KEY-----";
-
+    public static final String cert = ""
+            + "-----BEGIN CERTIFICATE-----\n"
+            + "MIID+TCCAuGgAwIBAgIBATANBgkqhkiG9w0BAQsFADCBpTE2MDQGA1UEAwwtd3d3\n"
+            + "LnJhY2tleHAub3JnL2VtYWlsQWRkcmVzcz1yb290QHJhY2tleHAub3JnMRwwGgYD\n"
+            + "VQQLExNDbG91ZCBMb2FkQmFsYW5jaW5nMRowGAYDVQQKExFSYWNrc3BhY2UgSG9z\n"
+            + "dGluZzEUMBIGA1UEBxMLU2FuIEFudG9uaW8xDjAMBgNVBAgTBVRleGFzMQswCQYD\n"
+            + "VQQGEwJVUzAeFw0xNDAxMTMxODU4NDZaFw0xODAxMTMxODU4NDZaMIGlMTYwNAYD\n"
+            + "VQQDDC13d3cucmFja2V4cC5vcmcvZW1haWxBZGRyZXNzPXJvb3RAcmFja2V4cC5v\n"
+            + "cmcxHDAaBgNVBAsTE0Nsb3VkIExvYWRCYWxhbmNpbmcxGjAYBgNVBAoTEVJhY2tz\n"
+            + "cGFjZSBIb3N0aW5nMRQwEgYDVQQHEwtTYW4gQW50b25pbzEOMAwGA1UECBMFVGV4\n"
+            + "YXMxCzAJBgNVBAYTAlVTMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA\n"
+            + "hrKPELJaJw2xvQI2qeYhq66qPAHJGV7WQgaN9k3HgFTYePz6SpUC1DORbg1hkxbi\n"
+            + "GxIbzuwaRu4AqIyjb48yrkgQb9+1iWLHx1q01LEk/8lMRSXBdzMizs5t58zKOZ6W\n"
+            + "dR3ENsGEGAw+sHPzCKVFzi2Y3moLmpVDs6DFzeWA6lZ4XPnGuFYIDhkmeLVVLlBk\n"
+            + "MI0vyaQMrwCo6IlBlEvbn9L1Sq7dQYj7Fz/I6vzxdr7qlBbasVT5QfQzOgNIdZCM\n"
+            + "OQ+mHUVCs2Q93tdllgCK/AtEbrNMnhlsa/1MvhBmRkvwav01y8dETTpg1zom7ZIV\n"
+            + "EcyyitXxg7N+al2DSagbtQIDAQABozIwMDAPBgNVHRMBAf8EBTADAQH/MB0GA1Ud\n"
+            + "DgQWBBQ0fOl4Hc6VAMmaJHHi7LogvLHJ4TANBgkqhkiG9w0BAQsFAAOCAQEAgOgc\n"
+            + "BYiLRA/q26i0FbbvehXgaKHBnDbjx7aW9bDY6RFY3hcmzHC94+pHatwLR9leamou\n"
+            + "3zuqcSujFsClOigubaxxhs6BSA55rDJExDvwWvhDxHl2kV8LOuFu2WqgFjd+WjKE\n"
+            + "n0Dp8d3DpGfAl5ruB6V8vJ0GYzP8v33lYP4uI2ZMOBQGfJjfZ1dURTBnxGKQ+/EZ\n"
+            + "yTfpEuL+H+p4SDLLYTMzlEc/wR1Y+lUgIRDxDZyLsFKnAcnrLaZ+3Ds7pZMuISU/\n"
+            + "caGHLzz7AVetPUYnQdCMa2ReveZdDl04NbENv0SL5z3R924SrjXxkE3FdABBNoVf\n"
+            + "fD0ygn3i5Jfn5iHy6Q==\n"
+            + "-----END CERTIFICATE-----\n"
+            + "";
+    private static final String key = ""
+            + "-----BEGIN RSA PRIVATE KEY-----\n"
+            + "MIIEogIBAAKCAQEAhrKPELJaJw2xvQI2qeYhq66qPAHJGV7WQgaN9k3HgFTYePz6\n"
+            + "SpUC1DORbg1hkxbiGxIbzuwaRu4AqIyjb48yrkgQb9+1iWLHx1q01LEk/8lMRSXB\n"
+            + "dzMizs5t58zKOZ6WdR3ENsGEGAw+sHPzCKVFzi2Y3moLmpVDs6DFzeWA6lZ4XPnG\n"
+            + "uFYIDhkmeLVVLlBkMI0vyaQMrwCo6IlBlEvbn9L1Sq7dQYj7Fz/I6vzxdr7qlBba\n"
+            + "sVT5QfQzOgNIdZCMOQ+mHUVCs2Q93tdllgCK/AtEbrNMnhlsa/1MvhBmRkvwav01\n"
+            + "y8dETTpg1zom7ZIVEcyyitXxg7N+al2DSagbtQIDAQABAoIBACaA+GB/e0Haqkor\n"
+            + "TdD3Vfyrq0IICKJV981b7kzQIw1OM6syNaIIQozCSPo6nP/c9LlkTcqytzg7ZLjJ\n"
+            + "qxaCyqwDMZ+pRU2GjTExfqumD7uGoWTKzCj01yhi3gv7AHvEF6JW5fX5D3eIWIs8\n"
+            + "Oebox7GOWzqI+dQwgu/gL2sSBe32a7s//G8+Jem4wYAQyQOWfN4xYl8ax6a8oVhZ\n"
+            + "xnSX+rwidvtKHuTWQAVvMfmkS2wrCS1t6w1r91ZDEzsaik/4KZSDeclmQz2t2/wg\n"
+            + "fulDZUJvLXqcm9EM0/D1aVSI1ZcbeT9lafYWyRL/n3fvJlUgeHg/HINMOr6ZL7qu\n"
+            + "WVk6EUECgYEAuo/BP2wmzpYhAapFBhnU8QsF7ITxEICiQCaRnGx9QV+GfnbNOLkz\n"
+            + "vPCTha3ivQlsY7fzpmYSppdTyoxzXhOi4H0MKQzN6YUMMeDRN1ZEEq++51dEWiLV\n"
+            + "ZtS6hojaR5L30wp7YWXiQeHhJZpdfPzD1bPNlHIaDyeQ46Zqn+qqfc0CgYEAuNUD\n"
+            + "gzxoOBOavZHfHgSAQO6edU2J0NelmksmClp4jLGlp2x6HTxsBjX9B+TSo+1Ua+f7\n"
+            + "166B9s6rUgvaj83SGd1ze5OYRbIPN4504Vh+NH6iWE/JYFNM6vlwYlFG7RjtS2OI\n"
+            + "H9Xo9Nba7uJBLgzO07Rdc0dSR9MogNvAi8HE7YkCgYAEN0Vtsnr6Bih+yiM/LQxD\n"
+            + "2jTrEGIGNnH0MyrtNwJpnMgESZj/pCfIKEOdLL3H+dOKOVj3NK1NOHQ7Sos84AK5\n"
+            + "QfopX1Gz6j7JTcRMlNV6+p+8yJsR0mGyLjJ84dDU9zxEd6MsI0pGpN0apW9haLDg\n"
+            + "Pmzx4tY163X5vwP/0yTBLQKBgH+jEgbpiyrWVvB8MHChORQd9C0bO4WNtZ1kMcPK\n"
+            + "kB7Qeo2wem+ADzUGyVJPMSrktHzDuYVKzBLsyyAgcXEG+ATGiX4YAXp3qMx7wrjv\n"
+            + "DFAh9ug3SOANBjvpvzMV333RzeRWumUJqhKR4KRAeDRdweIuVq5J3UceSYUau8+H\n"
+            + "Iv/JAoGAf9dyE5wW0fehbq9LYzxG+s8VO+EGjdoZgjO1xGsTo6IeLgq17nuIkvhu\n"
+            + "NAoyMnaHbJQp1dYGwKBYzrHs6h+RHTBkJ+TOgtMjvOzFCkm5SlDnVe4MJ4FMLwJp\n"
+            + "o4lKPbuTPdYY2DFYRl+Yc1guima/WdXznA80lOuxWqqJT4Vy3zg=\n"
+            + "-----END RSA PRIVATE KEY-----\n"
+            + "";
     static Integer accountId = 13531;
     static Integer securePort = 443;
     static Integer port = 80;
@@ -91,7 +93,6 @@ public class StmAdapterImplTestHelper {
     static Integer numAttempts = 10;
     static Integer delay = 1;
     static Integer maxRequests = 3;
-
     static Boolean active = true;
     static Boolean inactive = false;
 
@@ -162,7 +163,7 @@ public class StmAdapterImplTestHelper {
         node.setWeight(weight);
         nodes.add(node);
         node = new Node();
-        node.setId(id+1);
+        node.setId(id + 1);
         node.setPort(port);
         node.setLoadbalancer(loadBalancer);
         node.setCondition(NodeCondition.ENABLED);
@@ -172,7 +173,7 @@ public class StmAdapterImplTestHelper {
         nodeMeta.setKey(metaKey);
         nodeMeta.setNode(node);
         nodeMeta.setValue(metaValue);
-        nodeMeta.setId(id+1);
+        nodeMeta.setId(id + 1);
         nodeMeta.setUserName(username);
         nodeMetadata.add(nodeMeta);
         node.setNodeMetadata(nodeMetadata);

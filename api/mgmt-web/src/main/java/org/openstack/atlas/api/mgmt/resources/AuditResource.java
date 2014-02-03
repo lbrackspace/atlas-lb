@@ -43,41 +43,28 @@ public class AuditResource extends ManagementDependencyProvider {
 
     @GET
     @Path("lbconfig")
-    @Produces({APPLICATION_JSON, APPLICATION_XML})
+    @Produces({APPLICATION_JSON})
     public Response retrieveLbConfig() {
-        RdnsHelper rdns = new RdnsHelper(911); // Not a real account
         LbConfiguration conf = new LbConfiguration();
         MossoConfigValues[] keys = MossoConfigValues.values();
         if (!isUserInRole("ops")) {
             return ResponseFactory.accessDenied();
         }
-        ListOfStrings lstr = retriveConfig(conf, keys);
-        return Response.status(200).entity(lstr).build();
+        String jsonResponse = retrieveConfig(conf, keys);
+        return Response.status(200).entity(jsonResponse).build();
     }
 
     @GET
     @Path("restconfig")
-    @Produces({APPLICATION_JSON, APPLICATION_XML})
+    @Produces({APPLICATION_JSON})
     public Response retrieveRestConfig() {
-        RdnsHelper rdns = new RdnsHelper(911); // Not a real account
         RestApiConfiguration conf = new RestApiConfiguration();
+        PublicApiServiceConfigurationKeys[] keys = PublicApiServiceConfigurationKeys.values();
         if (!isUserInRole("ops")) {
             return ResponseFactory.accessDenied();
         }
-        PublicApiServiceConfigurationKeys[] keys = PublicApiServiceConfigurationKeys.values();
-        ListOfStrings lstr = retriveConfig(conf, keys);
-        String ctext = conf.getString(PublicApiServiceConfigurationKeys.rdns_admin_passwd);
-        String rDnsKey = conf.getString(PublicApiServiceConfigurationKeys.rdns_crypto_key);
-        String ptext;
-        try {
-            ptext = Aes.b64decrypt_str(ctext, rDnsKey);
-        } catch (Exception ex) {
-            String exMsg = Debug.getEST(ex);
-            ptext = "????";
-            Logger.getLogger(AuditResource.class.getName()).log(Level.SEVERE, exMsg, ex);
-        }
-        //lstr.getStrings().add(String.format("%s=%s", "Decrypted_rdns_passwd", ptext));
-        return Response.status(200).entity(lstr).build();
+        String jsonResponse = retrieveConfig(conf, keys);
+        return Response.status(200).entity(jsonResponse).build();
     }
 
     @GET
@@ -123,9 +110,9 @@ public class AuditResource extends ManagementDependencyProvider {
         }
     }
 
-    private ListOfStrings retriveConfig(ApacheCommonsConfiguration conf, ConfigurationKey[] keys) {
+    private String retrieveConfig(ApacheCommonsConfiguration conf, ConfigurationKey[] keys) {
         int i;
-        ListOfStrings lstr = new ListOfStrings();
+        String resp = "{";
         for (i = 0; i < keys.length; i++) {
             ConfigurationKey key = keys[i];
             String keyStr = key.toString();
@@ -135,8 +122,12 @@ public class AuditResource extends ManagementDependencyProvider {
             } catch (Exception ex) {
                 valueStr = "????";
             }
-            lstr.getStrings().add(String.format("%s=%s", keyStr, valueStr));
+            if (!keyStr.contains("auth") && !keyStr.contains("pass"))
+                resp += String.format("\n\t\"%s\": \"%s\",", keyStr, valueStr);
         }
-        return lstr;
+        if (resp.endsWith(","))
+            resp = resp.substring(0, resp.length()-1);
+        resp += "\n}";
+        return resp;
     }
 }

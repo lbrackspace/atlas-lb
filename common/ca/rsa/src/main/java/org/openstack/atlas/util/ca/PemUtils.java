@@ -1,5 +1,6 @@
 package org.openstack.atlas.util.ca;
 
+import org.openstack.atlas.util.ca.primitives.Debug;
 import java.util.Set;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMReader;
@@ -107,6 +108,7 @@ public class PemUtils {
         try {
             out = new String(pemBytes, RsaConst.USASCII);
         } catch (UnsupportedEncodingException ex) {
+            System.out.printf("Exception: %s\n",Debug.getEST(ex));
             throw new PemException("Could not encode Object to PEM", ex);
         }
         return out;
@@ -126,6 +128,7 @@ public class PemUtils {
             pw.flush();
             pw.close();
         } catch (IOException ex) {
+            System.out.printf("Exception: %s\n",Debug.getEST(ex));
             throw new PemException("Error encoding object to PEM", ex);
         }
         out = bas.toByteArray();

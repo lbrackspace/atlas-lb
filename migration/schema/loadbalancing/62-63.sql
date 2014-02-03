@@ -14,4 +14,4 @@ ALTER TABLE cluster ADD COLUMN cluster_type varchar(32) NOT NULL DEFAULT 'STANDA
 ALTER TABLE account ADD CONSTRAINT fk_account_cl_type foreign key(cluster_type) references cl_type(name);
 ALTER TABLE cluster ADD CONSTRAINT fk_cluster_cl_type foreign key(cluster_type) references cl_type(name);
 
-update meta set `meta_value` = '???; where `meta_key`='version';
+update meta set `meta_value` = '63' where `meta_key`='version';

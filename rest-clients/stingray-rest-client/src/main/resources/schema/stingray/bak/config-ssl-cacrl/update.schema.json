@@ -1,0 +1,22 @@
+{
+   "$schema":       "http://json-schema.org/draft-03/schema#",
+   "id":            "/rvbd/schema/tm/1.0/config/active/ssl/cas#",
+   "title":         "SSL Trusted Certificate",
+   "description":   "SSL certificate authority certificates (CAs) and certificate revocation lists (CRLs) can be used when validating server and client certificates.",
+    "javaType" :     "org.rackspace.stingray.client.ssl.cacrl.Cacrl",
+   "type":          "object",
+   "required":      false,
+   
+   "properties": {
+      "properties": {
+          "javaType" :     "org.rackspace.stingray.client.ssl.cacrl.CacrlProperties",
+         "type":                  "object",
+         "required":              true,
+         "additionalProperties":  false,
+         
+         "properties": {
+            
+         }
+      }
+   }
+}
