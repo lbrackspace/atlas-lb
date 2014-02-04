@@ -4,6 +4,7 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.Configuration;
+import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
@@ -28,6 +29,7 @@ import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class StingrayRestClient extends StingrayRestClientManager {
@@ -135,6 +137,37 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException , StingrayRestClientObjectNotFoundException
      */
     private <T> T getItem(String name, Class<T> clazz, String path, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        return getItem(name, clazz, path, endpoint, cType);
+    }
+
+    /**
+     * Overloaded method to retrieve an item at the specified path
+     *
+     * @param name  Name of the object to retrieve
+     * @param clazz Class type of the object being retrieved
+     * @param path  Path to the object
+     * @param endpoint Endpoint for object
+     * @param <T>   Object generic declaration
+     * @return Return object of a specified type
+     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException , StingrayRestClientObjectNotFoundException
+     */
+    private <T> T getItem(String name, Class<T> clazz, String path, URI endpoint) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        return getItem(name, clazz, path, endpoint, MediaType.APPLICATION_JSON_TYPE);
+    }
+
+    /**
+     * Overloaded method to retrieve an item at the specified path and endpoint
+     *
+     * @param name  Name of the object to retrieve
+     * @param clazz Class type of the object being retrieved
+     * @param path  Path to the object
+     * @param endpoint Endpoint for object
+     * @param <T>   Object generic declaration
+     * @param cType Type of request being sent (IE application/json)
+     * @return Return object of a specified type
+     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException , StingrayRestClientObjectNotFoundException
+     */
+    private <T> T getItem(String name, Class<T> clazz, String path, URI endpoint, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
             ClientResponse response = requestManager.getItem(endpoint, client, path + name, cType);
             T obj = interpretResponse(response, clazz);
@@ -1068,6 +1101,14 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     public Boolean deleteTrafficIp(String name) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         return deleteItem(name, ClientConstants.IP_PATH);
+    }
+
+    /**
+     * @param name the virtual server name for stats retrieval
+     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     */
+    public VirtualServerStats getVirtualServerStats(String name, URI endpoint) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        return getItem(name, VirtualServerStats.class, ClientConstants.V_SERVER_PATH, endpoint);
     }
 
     /**

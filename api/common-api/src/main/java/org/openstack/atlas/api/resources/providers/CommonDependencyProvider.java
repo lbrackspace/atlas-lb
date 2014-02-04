@@ -2,6 +2,7 @@ package org.openstack.atlas.api.resources.providers;
 
 import org.dozer.DozerBeanMapper;
 import org.openstack.atlas.api.atom.AtomFeedAdapter;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.integration.AsyncService;
@@ -59,13 +60,22 @@ public class CommonDependencyProvider {
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected LoadBalancerEventRepository loadBalancerEventRepository;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+    protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
 
     public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
         return reverseProxyLoadBalancerService;
     }
 
+    public ReverseProxyLoadBalancerStmService getReverseProxyLoadBalancerStmService() {
+        return reverseProxyLoadBalancerStmService;
+    }
+
     public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
         this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
+    }
+
+    public void setReverseProxyLoadBalancerStmService(ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService) {
+        this.reverseProxyLoadBalancerStmService = reverseProxyLoadBalancerStmService;
     }
 
     public void setProtocolsService(ProtocolsService protocolsService) {

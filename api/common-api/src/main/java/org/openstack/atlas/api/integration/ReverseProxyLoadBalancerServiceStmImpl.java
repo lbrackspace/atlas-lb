@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.integration;
 
 
+import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
@@ -9,11 +10,14 @@ import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
+import org.openstack.atlas.api.helpers.CacheKeyGen;
+import org.openstack.atlas.api.helpers.DateHelpers;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
@@ -22,11 +26,18 @@ import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.openstack.atlas.util.debug.Debug;
+import org.rackspace.stingray.client.counters.VirtualServerStats;
+import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.rmi.RemoteException;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
+
+import static java.util.Calendar.getInstance;
 
 public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadBalancerStmService {
 
@@ -452,6 +463,27 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
+    }
+
+    @Override
+    public VirtualServerStats getVirtualServerStats(LoadBalancer loadBalancer, URI endpoint) throws EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+        Integer accountId = loadBalancer.getAccountId();
+        Integer loadbalancerId = loadBalancer.getId();
+        LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
+        String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
+        VirtualServerStats vsStats;
+
+        long cal = getInstance().getTimeInMillis();
+        vsStats = (VirtualServerStats) atlasCache.get(key);
+        if (vsStats == null) {
+            vsStats = reverseProxyLoadBalancerStmAdapter.getVirtualServerStats(config, loadBalancer, endpoint);
+            LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
+            atlasCache.set(key, vsStats);
+        } else {
+            LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, retrieved from cache... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
+            return vsStats;
+        }
+        return vsStats;
     }
 
     public void setAtlasCache(AtlasCache atlasCache) {

@@ -15,6 +15,7 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.*;
 
 @Component
@@ -685,6 +687,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         } else {
             throw new StmRollBackException("No content provided for error page.  Roll back...");
         }
+    }
+
+    @Override
+    public VirtualServerStats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, URI endpoint) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        return client.getVirtualServerStats(ZxtmNameBuilder.genVSName(loadBalancer), endpoint);
     }
 
     /**

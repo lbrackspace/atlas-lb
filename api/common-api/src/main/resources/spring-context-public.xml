@@ -124,6 +124,7 @@
         <property name="accountLimitService" ref="accountLimitService"/>
         <property name="requestStateContainer" ref="requestStateContainer"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
+        <property name="reverseProxyLoadBalancerStmService" ref="reverseProxyLoadBalancerStmService"/>
         <property name="restApiConfiguration" ref="configuration"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>

@@ -3,7 +3,9 @@ package org.openstack.atlas.api.integration;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.rackspace.stingray.client.counters.VirtualServerStats;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
@@ -61,6 +63,8 @@ public interface ReverseProxyLoadBalancerStmService {
     void deleteRateLimit(LoadBalancer loadBalancer) throws Exception;
 
     void updateRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
+
+    VirtualServerStats getVirtualServerStats(LoadBalancer loadBalancer, URI endpoint) throws Exception;
 
     boolean isEndPointWorking(Host host) throws Exception;
     //Deprecated

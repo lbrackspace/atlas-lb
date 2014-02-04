@@ -68,6 +68,7 @@
         <xsd:attribute name="dataTimedOut" type="xsd:int"/>
         <xsd:attribute name="keepAliveTimedOut" type="xsd:int"/>
         <xsd:attribute name="maxConn" type="xsd:int"/>
+        <xsd:attribute name="currentConn" type="xsd:int"/>
     </xsd:complexType>
 
     <xsd:element name="connectionLogging" type="tns:connectionLogging"/>

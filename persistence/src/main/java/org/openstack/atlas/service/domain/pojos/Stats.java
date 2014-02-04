@@ -12,6 +12,7 @@ public class Stats implements Serializable {
     protected int[] connectTimeOut;
     protected int[] connectError;
     protected int[] connectFailure;
+    protected int[] currentConn;
     protected int[] dataTimedOut;
     protected int[] keepAliveTimedOut;
     protected int[] maxConn;
@@ -63,4 +64,8 @@ public class Stats implements Serializable {
     public void setMaxConn(int[] maxConn) {
         this.maxConn = maxConn;
     }
+
+    public int[] getCurrentConn() { return currentConn; }
+
+    public void setCurrentConn(int[] currentConn) { this.currentConn = currentConn; }
 }

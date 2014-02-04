@@ -489,6 +489,47 @@
             <a>maxConn</a>
             <b>maxConn</b>
         </field>
+        <field>
+            <a>currentConn</a>
+            <b>currentConn</b>
+        </field>
+        <field-exclude>
+            <a>id</a>
+            <b>id</b>
+        </field-exclude>
+    </mapping>
+
+    <mapping map-null="false">
+        <class-a>org.rackspace.stingray.client.counters.VirtualServerStatsProperties</class-a>
+        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.Stats</class-b>
+        <field>
+            <a>connect_timed_out</a>
+            <b>connectTimeOut</b>
+        </field>
+        <field>
+            <a>connection_errors</a>
+            <b>connectError</b>
+        </field>
+        <field>
+            <a>connection_failures</a>
+            <b>connectFailure</b>
+        </field>
+        <field>
+            <a>data_timed_out</a>
+            <b>dataTimedOut</b>
+        </field>
+        <field>
+            <a>keepalive_timed_out</a>
+            <b>keepAliveTimedOut</b>
+        </field>
+        <field>
+            <a>max_conn</a>
+            <b>maxConn</b>
+        </field>
+        <field>
+            <a>current_conn</a>
+            <b>currentConn</b>
+        </field>
         <field-exclude>
             <a>id</a>
             <b>id</b>

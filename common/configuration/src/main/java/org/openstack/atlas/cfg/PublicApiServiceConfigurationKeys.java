@@ -35,5 +35,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     adapter_soap_rest,
     rest_port,
     usage_poller_log_all_counters,
-    usage_deletion_limit
+    usage_deletion_limit,
+    stingray_stats_base_uri
 }
