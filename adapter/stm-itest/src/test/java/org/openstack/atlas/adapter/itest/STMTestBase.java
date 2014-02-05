@@ -15,6 +15,7 @@ import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;

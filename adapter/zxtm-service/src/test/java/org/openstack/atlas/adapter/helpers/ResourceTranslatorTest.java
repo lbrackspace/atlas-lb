@@ -461,7 +461,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             createdPool = translator.translatePoolResource(vsName, lb, lb);
             createdProperties = createdPool.getProperties();
             PoolBasic createdBasic = createdProperties.getBasic();
-            Assert.assertNull(createdBasic.getPersistence_class());
+            Assert.assertEquals("", createdBasic.getPersistence_class());
             Assert.assertTrue(createdBasic.getMonitors().size() == 0);
 
         }
