@@ -14,8 +14,8 @@ import java.net.URI;
 public class StingrayTestBase {
 
     public final String TESTNAME = "i_test";
-    StingrayRestClient client;
-    StingrayRestClientConfiguration config;
+    public StingrayRestClient client;
+    public StingrayRestClientConfiguration config;
 
 
     public void standUp() throws DecryptException {
