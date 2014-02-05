@@ -342,7 +342,7 @@ public class ResourceTranslator {
         if ((queLb.getSessionPersistence() != null) && !(queLb.getSessionPersistence().name().equals(SessionPersistence.NONE.name()))) {
             basic.setPersistence_class(loadBalancer.getSessionPersistence().name());
         } else {
-            basic.setPersistence_class(null);
+            basic.setPersistence_class("");
         }
 
         if (queLb.getRateLimit() != null) {
