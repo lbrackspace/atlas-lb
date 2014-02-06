@@ -5,6 +5,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
+import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
@@ -25,6 +26,7 @@ import org.rackspace.stingray.client.tm.TrafficManager;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.util.ClientConstants;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -1105,10 +1107,24 @@ public class StingrayRestClient extends StingrayRestClientManager {
 
     /**
      * @param name the virtual server name for stats retrieval
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws StingrayRestClientObjectNotFoundException
      */
-    public VirtualServerStats getVirtualServerStats(String name, URI endpoint) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        return getItem(name, VirtualServerStats.class, ClientConstants.V_SERVER_PATH, endpoint);
+    public VirtualServerStats getVirtualServerStats(String name, URI endpoint) throws StingrayRestClientObjectNotFoundException {
+        VirtualServerStats stats = new VirtualServerStats();
+        try {
+            stats = getItem(name, VirtualServerStats.class, ClientConstants.V_SERVER_PATH, endpoint);
+        } catch (StingrayRestClientException e) {
+            VirtualServerStatsProperties props = new VirtualServerStatsProperties();
+            props.setConnect_timed_out(0);
+            props.setConnection_errors(0);
+            props.setConnection_failures(0);
+            props.setData_timed_out(0);
+            props.setKeepalive_timed_out(0);
+            props.setMax_conn(0);
+            props.setCurrent_conn(0);
+            stats.setStatistics(props);
+        }
+        return stats;
     }
 
     /**

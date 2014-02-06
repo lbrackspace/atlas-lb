@@ -45,11 +45,13 @@ public class VirtualServerStatsITest extends StingrayTestBase {
         stats = new VirtualServerStats();
         statsProperties = new VirtualServerStatsProperties();
         vsName = TESTNAME;
-        endpoint = URI.create(config.getString(ClientConfigKeys.stingray_rest_endpoint) + config.getString(ClientConfigKeys.stingray_base_uri));
+        endpoint = URI.create(config.getString(ClientConfigKeys.stingray_rest_endpoint)
+                + config.getString(ClientConfigKeys.stingray_stats_base_uri));
         stats.setStatistics(statsProperties);
         virtualServer = new VirtualServer();
         properties = new VirtualServerProperties();
         basic = new VirtualServerBasic();
+        basic.setEnabled(true);
         poolName = TESTNAME;
         vsName = TESTNAME;
         port = 8998;
@@ -68,16 +70,14 @@ public class VirtualServerStatsITest extends StingrayTestBase {
      */
     @Test
     public void testRetrieveVirtualServerStats() {
-        Pool createdPool = new Pool();
-        VirtualServer vs = new VirtualServer();
         List<Child> children = new ArrayList<Child>();
         try {
-            createdPool = client.createPool(poolName, pool);
+            client.createPool(poolName, pool);
         } catch (Exception e) {
             Assert.fail("Failed to create pool " + poolName + " for virtual server.");
         }
         try {
-            vs = client.createVirtualServer(vsName, virtualServer);
+            client.createVirtualServer(vsName, virtualServer);
         } catch (Exception e) {
             Assert.fail("Failed to create a virtual server");
         }
@@ -100,7 +100,6 @@ public class VirtualServerStatsITest extends StingrayTestBase {
         }
         statsProperties = stats.getStatistics();
         Assert.assertNotNull(statsProperties);
-        Assert.assertNotNull(statsProperties.getProtocol());
         Assert.assertNotNull(statsProperties.getConnect_timed_out());
         Assert.assertNotNull(statsProperties.getConnection_errors());
         Assert.assertNotNull(statsProperties.getConnection_failures());
