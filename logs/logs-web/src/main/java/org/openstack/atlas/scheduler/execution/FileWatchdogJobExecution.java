@@ -37,6 +37,16 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
+        // This may be the first time the app is run so attempt to copy JobsJar over
+        // By configureing the app to attempt to copy the Jar before THE_ONE_TO_RULE_THEM_ALL
+        // is checked this will allow all DCs to copy their jars before the LZO is uploaded and a job
+        // is run.
+        try {
+            HadoopLogsConfigs.copyJobsJar();
+        } catch (IOException ex) {
+            String excMsg = Debug.getExtendedStackTrace(ex);
+            LOG.error(String.format("Unable to copy JobsJar: %s", excMsg), ex);
+        }
         if (!jobStateRepository.isJobReadyToGo()) {
             LOG.warn(String.format("THE_ONE_TO_RULE_THEM_ALL jobstate is not set to GO. Not running log processing yet"));
             return;
@@ -90,14 +100,6 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
             state.setState(JobStateVal.FAILED);
             jobStateRepository.update(state);
             throw new ExecutionException(e);
-        }
-
-        // This may be the first time the app is run so attempt to copy JobsJar over
-        try {
-            HadoopLogsConfigs.copyJobsJar();
-        } catch (IOException ex) {
-            String excMsg = Debug.getExtendedStackTrace(ex);
-            LOG.error(String.format("Unable to copy JobsJar: %s", excMsg), ex);
         }
         finishJob(state);
     }

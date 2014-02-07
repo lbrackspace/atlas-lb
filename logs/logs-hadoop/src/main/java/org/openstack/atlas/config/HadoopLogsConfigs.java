@@ -189,8 +189,6 @@ public class HadoopLogsConfigs {
             StaticFileUtils.close(is);
             StaticFileUtils.close(os);
             jarCopyed = true;
-        } else {
-            LOG.info("JobsJar already copyed not copying again.");
         }
     }
 

@@ -83,14 +83,17 @@ public class ReuploaderUtils {
     public static String showLocks() {
         StringBuilder sb = new StringBuilder();
         sb.append("lockedFiles{");
+        int nLocks = 0;
         synchronized (lockedFiles) {
             for (Entry<String, DateTime> lockEntry : lockedFiles.entrySet()) {
+                nLocks++;
                 sb.append("{").append(lockEntry.getKey()).
                         append(",").append(lockEntry.getValue()).
                         append("},");
             }
             sb.append("}");
         }
+        sb.append(" nLocks=").append(nLocks);
         return sb.toString();
     }
 
