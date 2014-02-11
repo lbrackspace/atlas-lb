@@ -30,6 +30,10 @@ public class AtomHopperClientImpl implements AtomHopperClient {
         this.client = client;
     }
 
+    public AtomHopperClientImpl(String endpoint) throws Exception {
+        this(endpoint, AtomHopperClientHandler.createHttpClient());
+    }
+
     /**
      * This method will create the clients web resource based on the atom_hopper_endpoint
      * provided.

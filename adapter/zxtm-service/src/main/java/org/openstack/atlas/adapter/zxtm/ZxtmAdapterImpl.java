@@ -2426,6 +2426,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         stats.setDataTimedOut(serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{virtualServerName}));
         stats.setKeepAliveTimedOut(serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut((new String[]{virtualServerName})));
         stats.setMaxConn(serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{virtualServerName}));
+
         return stats;
     }
 
