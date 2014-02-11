@@ -195,7 +195,7 @@ public class LoadBalancerResourceTest {
 
 
             when(loadBalancerService.get(anyInt(), anyInt())).thenReturn(null);
-            doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.anyInt(), Matchers.anyInt());
+            doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.any(LoadBalancer.class));
             response = loadBalancerResource.retrieveLoadBalancerStats();
             Assert.assertEquals(200, response.getStatus());
         }
@@ -206,7 +206,7 @@ public class LoadBalancerResourceTest {
             doReturn("false").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
 
             when(loadBalancerService.get(anyInt())).thenReturn(null);
-            doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.anyInt(), Matchers.anyInt());
+            doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.any(LoadBalancer.class));
             response = loadBalancerResource.retrieveLoadBalancerStats();
             Assert.assertEquals(400, response.getStatus());
         }

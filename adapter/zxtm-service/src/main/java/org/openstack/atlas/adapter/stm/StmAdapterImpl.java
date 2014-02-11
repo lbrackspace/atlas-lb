@@ -6,11 +6,13 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
+import org.openstack.atlas.adapter.helpers.CustomMappings;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
@@ -690,9 +692,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public VirtualServerStats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, URI endpoint) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+    public Stats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, URI endpoint) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-        return client.getVirtualServerStats(ZxtmNameBuilder.genVSName(loadBalancer), endpoint);
+        VirtualServerStats sslVirtualServer = client.getVirtualServerStats(ZxtmNameBuilder.genSslVSName(loadBalancer), endpoint);
+        VirtualServerStats virtualServer = client.getVirtualServerStats(ZxtmNameBuilder.genVSName(loadBalancer), endpoint);
+        Stats stats = CustomMappings.mapVirtualServerStats(sslVirtualServer, virtualServer);
+        return stats;
     }
 
     /**

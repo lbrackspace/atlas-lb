@@ -477,7 +477,9 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception {
+    public Stats getLoadBalancerStats(LoadBalancer loadBalancer) throws Exception {
+        Integer loadbalancerId = loadBalancer.getId();
+        Integer accountId = loadBalancer.getAccountId();
         LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
         String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
         Stats lbStats;
@@ -486,7 +488,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         lbStats = (Stats) atlasCache.get(key);
         if (lbStats == null) {
             try {
-                lbStats = reverseProxyLoadBalancerAdapter.getLoadBalancerStats(config, loadbalancerId, accountId);
+                lbStats = reverseProxyLoadBalancerAdapter.getLoadBalancerStats(config, loadBalancer);
                 LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
                 atlasCache.set(key, lbStats);
             } catch (AxisFault af) {

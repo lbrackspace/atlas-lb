@@ -16,6 +16,13 @@ public class Stats implements Serializable {
     protected int[] dataTimedOut;
     protected int[] keepAliveTimedOut;
     protected int[] maxConn;
+    protected int[] connectTimeOutSsl;
+    protected int[] connectErrorSsl;
+    protected int[] connectFailureSsl;
+    protected int[] currentConnSsl;
+    protected int[] dataTimedOutSsl;
+    protected int[] keepAliveTimedOutSsl;
+    protected int[] maxConnSsl;
 
     public int[] getConnectTimeOut() {
         return connectTimeOut;
@@ -68,4 +75,56 @@ public class Stats implements Serializable {
     public int[] getCurrentConn() { return currentConn; }
 
     public void setCurrentConn(int[] currentConn) { this.currentConn = currentConn; }
+
+    public int[] getConnectTimeOutSsl() {
+        return connectTimeOutSsl;
+    }
+
+    public void setConnectTimeOutSsl(int[] connectTimeOutSsl) {
+        this.connectTimeOutSsl = connectTimeOutSsl;
+    }
+
+    public int[] getConnectErrorSsl() {
+        return connectErrorSsl;
+    }
+
+    public void setConnectErrorSsl(int[] connectErrorSsl) {
+        this.connectErrorSsl = connectErrorSsl;
+    }
+
+    public int[] getConnectFailureSsl() {
+        return connectFailureSsl;
+    }
+
+    public void setConnectFailureSsl(int[] connectFailureSsl) {
+        this.connectFailureSsl = connectFailureSsl;
+    }
+
+    public int[] getDataTimedOutSsl() {
+        return dataTimedOutSsl;
+    }
+
+    public void setDataTimedOutSsl(int[] dataTimedOutSsl) {
+        this.dataTimedOutSsl = dataTimedOutSsl;
+    }
+
+    public int[] getKeepAliveTimedOutSsl() {
+        return keepAliveTimedOutSsl;
+    }
+
+    public void setKeepAliveTimedOutSsl(int[] keepAliveTimedOutSsl) {
+        this.keepAliveTimedOutSsl = keepAliveTimedOutSsl;
+    }
+
+    public int[] getMaxConnSsl() {
+        return maxConnSsl;
+    }
+
+    public void setMaxConnSsl(int[] maxConnSsl) {
+        this.maxConnSsl = maxConn;
+    }
+
+    public int[] getCurrentConnSsl() { return currentConnSsl; }
+
+    public void setCurrentConnSsl(int[] currentConnSsl) { this.currentConnSsl = currentConnSsl; }
 }

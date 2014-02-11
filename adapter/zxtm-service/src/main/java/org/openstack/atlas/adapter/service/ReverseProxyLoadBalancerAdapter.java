@@ -153,7 +153,7 @@ public interface ReverseProxyLoadBalancerAdapter {
     public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config)
             throws RemoteException;
 
-    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
+    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
 
     public Map<String, Long> getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, List<String> names)

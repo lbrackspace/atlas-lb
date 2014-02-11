@@ -2416,10 +2416,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId) throws RemoteException, InsufficientRequestException {
-        final String virtualServerName = ZxtmNameBuilder.genVSName(loadbalancerId, accountId);
+    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         Stats stats = new Stats();
+        final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        final String sslVirtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         stats.setConnectTimeOut(serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName}));
         stats.setConnectError(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName}));
         stats.setConnectFailure(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{virtualServerName}));
@@ -2427,6 +2428,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         stats.setKeepAliveTimedOut(serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut((new String[]{virtualServerName})));
         stats.setMaxConn(serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{virtualServerName}));
         stats.setCurrentConn(serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{virtualServerName}));
+        stats.setConnectTimeOutSsl(serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{sslVirtualServerName}));
+        stats.setConnectErrorSsl(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{sslVirtualServerName}));
+        stats.setConnectFailureSsl(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{sslVirtualServerName}));
+        stats.setDataTimedOutSsl(serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{sslVirtualServerName}));
+        stats.setKeepAliveTimedOutSsl(serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut((new String[]{sslVirtualServerName})));
+        stats.setMaxConnSsl(serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{sslVirtualServerName}));
+        stats.setCurrentConnSsl(serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{sslVirtualServerName}));
         return stats;
     }
 

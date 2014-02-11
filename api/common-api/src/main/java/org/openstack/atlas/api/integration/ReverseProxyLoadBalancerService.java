@@ -94,7 +94,7 @@ public interface ReverseProxyLoadBalancerService {
 
     public Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception;
 
-    public Stats getLoadBalancerStats(Integer loadbalancerId, Integer accountId) throws Exception;
+    public Stats getLoadBalancerStats(LoadBalancer loadBalancer) throws Exception;
 
     public Hostssubnet getSubnetMappings(Host host) throws Exception;
 

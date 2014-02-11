@@ -466,24 +466,24 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public VirtualServerStats getVirtualServerStats(LoadBalancer loadBalancer, URI endpoint) throws EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+    public Stats getVirtualServerStats(LoadBalancer loadBalancer, URI endpoint) throws EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         Integer accountId = loadBalancer.getAccountId();
         Integer loadbalancerId = loadBalancer.getId();
         LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
         String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
-        VirtualServerStats vsStats;
+        Stats stats;
 
         long cal = getInstance().getTimeInMillis();
-        vsStats = (VirtualServerStats) atlasCache.get(key);
-        if (vsStats == null) {
-            vsStats = reverseProxyLoadBalancerStmAdapter.getVirtualServerStats(config, loadBalancer, endpoint);
+        stats = (Stats) atlasCache.get(key);
+        if (stats == null) {
+            stats = reverseProxyLoadBalancerStmAdapter.getVirtualServerStats(config, loadBalancer, endpoint);
             LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
-            atlasCache.set(key, vsStats);
+            atlasCache.set(key, stats);
         } else {
             LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, retrieved from cache... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
-            return vsStats;
+            return stats;
         }
-        return vsStats;
+        return stats;
     }
 
     public void setAtlasCache(AtlasCache atlasCache) {
