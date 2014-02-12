@@ -860,24 +860,39 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, BadRequestException {
-        boolean isHost = false;
-        LoadBalancer gLb = new LoadBalancer();
+        loadBalancer.setHost(getHostForNewLoadBalancer(loadBalancer));
+    }
 
-        Integer vipId = null;
+    private Host getHostForNewLoadBalancer(LoadBalancer loadBalancer) throws BadRequestException, ClusterStatusException, EntityNotFoundException{
+        LoadBalancer sharedVIPLB = getSharedVIPLoadBalancer(loadBalancer);
+        Host provisionHost;
+        if (sharedVIPLB != null){
+            provisionHost = sharedVIPLB.getHost();
+        } else {
+            provisionHost = getNextHostForAccount(sharedVIPLB.getAccountId());
+        }
+        return provisionHost;
+    }
+
+    private Host getNextHostForAccount(Integer accountId) throws ClusterStatusException, EntityNotFoundException {
+        //TODO: Implement repository calls to grab correct host
+        return hostService.getDefaultActiveHostAndActiveCluster();
+    }
+
+    private LoadBalancer getSharedVIPLoadBalancer(LoadBalancer loadBalancer) throws BadRequestException{
+        LoadBalancer sharedVIPLB = null;
         try {
             for (LoadBalancerJoinVip loadBalancerJoinVip : loadBalancer.getLoadBalancerJoinVipSet()) {
                 if (loadBalancerJoinVip.getVirtualIp().getId() != null) {
-                    isHost = true;
-                    vipId = loadBalancerJoinVip.getVirtualIp().getId();
-                    gLb = virtualIpRepository.getLoadBalancersByVipId(vipId).iterator().next();
+                    Integer vipId = loadBalancerJoinVip.getVirtualIp().getId();
+                    sharedVIPLB = virtualIpRepository.getLoadBalancersByVipId(vipId).iterator().next();
                 }
             }
 
             for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : loadBalancer.getLoadBalancerJoinVip6Set()) {
                 if (loadBalancerJoinVip6.getVirtualIp().getId() != null) {
-                    isHost = true;
-                    vipId = loadBalancerJoinVip6.getVirtualIp().getId();
-                    gLb = virtualIpv6Repository.getLoadBalancersByVipId(vipId).iterator().next();
+                    Integer vipId = loadBalancerJoinVip6.getVirtualIp().getId();
+                    sharedVIPLB = virtualIpv6Repository.getLoadBalancersByVipId(vipId).iterator().next();
 
                 }
             }
@@ -885,14 +900,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             LOG.info(String.format("Virtual ip id provided was not valid. for Account: %s LoadBalancer %s VIPID: %s", loadBalancer.getAccountId(), loadBalancer.getId(), vipId));
             throw new BadRequestException("Shared virtual ip could not be found. Please provide a valid virtual ip id to process this request.");
         }
-
-        if (!isHost) {
-            loadBalancer.setHost(hostService.getDefaultActiveHostAndActiveCluster());
-        } else {
-            if (gLb != null) {
-                loadBalancer.setHost(gLb.getHost());
-            }
-        }
+        return sharedVIPLB;
     }
 
     private void setVipConfigForLoadBalancer(LoadBalancer lbFromApi) throws OutOfVipsException, AccountMismatchException, UniqueLbPortViolationException, EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
