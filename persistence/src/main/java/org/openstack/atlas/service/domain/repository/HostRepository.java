@@ -218,6 +218,13 @@ public class HostRepository {
         return results;
     }
 
+    public List<Host> getFailoverHosts(Integer clusterId) {
+        String hql = "select h from Host h where h.hostStatus = 'FAILOVER' and h.cluster.id = :clusterId";
+        Query q = entityManager.createQuery(hql).setParameter("clusterId", clusterId);
+        List<Host> results = q.getResultList();
+        return results;
+    }
+
     public String getEndPoint(Integer clusterId) {
         Host host = getEndPointHost(clusterId);
         if (host == null) {

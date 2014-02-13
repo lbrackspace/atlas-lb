@@ -22,6 +22,9 @@ import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.springframework.stereotype.Component;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -59,6 +62,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
         return ZxtmServiceStubs.getServiceStubs(config.getEndpointUrl(), config.getUsername(), config.getPassword());
+    }
+
+    private ZxtmServiceStubs getStatsStubs(URL endpoint, LoadBalancerEndpointConfiguration config) throws AxisFault {
+        return ZxtmServiceStubs.getServiceStubs(endpoint, config.getUsername(), config.getPassword());
     }
 
     @Override
@@ -2417,24 +2424,82 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
-        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        List<ZxtmServiceStubs> allStubs = new ArrayList<ZxtmServiceStubs>();
+        for (URI endpoint : config.getRestStatsEndpoints()) {
+            try {
+                allStubs.add(getStatsStubs(endpoint.toURL(), config));
+            } catch (MalformedURLException e) {
+                LOG.error(String.format("Creating stats bindings for endpoint %s failed.", endpoint), e);
+            }
+        }
+//        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         Stats stats = new Stats();
         final String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         final String sslVirtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
-        stats.setConnectTimeOut(serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName}));
-        stats.setConnectError(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName}));
-        stats.setConnectFailure(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{virtualServerName}));
-        stats.setDataTimedOut(serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{virtualServerName}));
-        stats.setKeepAliveTimedOut(serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut((new String[]{virtualServerName})));
-        stats.setMaxConn(serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{virtualServerName}));
-        stats.setCurrentConn(serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{virtualServerName}));
-        stats.setConnectTimeOutSsl(serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{sslVirtualServerName}));
-        stats.setConnectErrorSsl(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{sslVirtualServerName}));
-        stats.setConnectFailureSsl(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{sslVirtualServerName}));
-        stats.setDataTimedOutSsl(serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{sslVirtualServerName}));
-        stats.setKeepAliveTimedOutSsl(serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut((new String[]{sslVirtualServerName})));
-        stats.setMaxConnSsl(serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{sslVirtualServerName}));
-        stats.setCurrentConnSsl(serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{sslVirtualServerName}));
+        int[] connectionTimedOut = new int[1];
+        int[] connectionError = new int[1];
+        int[] connectionFailure = new int[1];
+        int[] dataTimedOut = new int[1];
+        int[] keepaliveTimedOut = new int[1];
+        int[] maxConnections = new int[]{0};
+        int[] currentConnections = new int[1];
+        int[] connectionTimedOutSsl = new int[1];
+        int[] connectionErrorSsl = new int[1];
+        int[] connectionFailureSsl = new int[1];
+        int[] dataTimedOutSsl = new int[1];
+        int[] keepaliveTimedOutSsl = new int[1];
+        int[] maxConnectionsSsl = new int[1];
+        int[] currentConnectionsSsl = new int[1];
+        for (ZxtmServiceStubs serviceStubs : allStubs) {
+            connectionTimedOut[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName})[0];
+            connectionError[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName})[0];
+            connectionFailure[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{virtualServerName})[0];
+            dataTimedOut[0] += serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{virtualServerName})[0];
+            keepaliveTimedOut[0] += serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut(new String[]{virtualServerName})[0];
+            currentConnections[0] += serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{virtualServerName})[0];
+            int max = serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{virtualServerName})[0];
+            if (max > maxConnections[0]) {
+                maxConnections[0] = max;
+            }
+            connectionTimedOutSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{sslVirtualServerName})[0];
+            connectionErrorSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{sslVirtualServerName})[0];
+            connectionFailureSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{sslVirtualServerName})[0];
+            dataTimedOutSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{sslVirtualServerName})[0];
+            keepaliveTimedOutSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut(new String[]{sslVirtualServerName})[0];
+            currentConnectionsSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{sslVirtualServerName})[0];
+            int maxSsl = serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{sslVirtualServerName})[0];
+            if (maxSsl > maxConnectionsSsl[0]) {
+                maxConnectionsSsl[0] = maxSsl;
+            }
+//            stats.setConnectTimeOut(serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName}));
+//            stats.setConnectError(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName}));
+//            stats.setConnectFailure(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{virtualServerName}));
+//            stats.setDataTimedOut(serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{virtualServerName}));
+//            stats.setKeepAliveTimedOut(serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut(new String[]{virtualServerName}));
+//            stats.setMaxConn(serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{virtualServerName}));
+//            stats.setCurrentConn(serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{virtualServerName}));
+//            stats.setConnectTimeOutSsl(serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{sslVirtualServerName}));
+//            stats.setConnectErrorSsl(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{sslVirtualServerName}));
+//            stats.setConnectFailureSsl(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{sslVirtualServerName}));
+//            stats.setDataTimedOutSsl(serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{sslVirtualServerName}));
+//            stats.setKeepAliveTimedOutSsl(serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut(new String[]{sslVirtualServerName}));
+//            stats.setMaxConnSsl(serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{sslVirtualServerName}));
+//            stats.setCurrentConnSsl(serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{sslVirtualServerName}));
+        }
+        stats.setConnectTimeOut(connectionTimedOut);
+        stats.setConnectError(connectionError);
+        stats.setConnectFailure(connectionFailure);
+        stats.setDataTimedOut(dataTimedOut);
+        stats.setKeepAliveTimedOut(keepaliveTimedOut);
+        stats.setMaxConn(maxConnections);
+        stats.setCurrentConn(currentConnections);
+        stats.setConnectTimeOutSsl(connectionTimedOutSsl);
+        stats.setConnectErrorSsl(connectionErrorSsl);
+        stats.setConnectFailureSsl(connectionFailureSsl);
+        stats.setDataTimedOutSsl(dataTimedOutSsl);
+        stats.setKeepAliveTimedOutSsl(keepaliveTimedOutSsl);
+        stats.setMaxConnSsl(maxConnectionsSsl);
+        stats.setCurrentConnSsl(currentConnectionsSsl);
         return stats;
     }
 

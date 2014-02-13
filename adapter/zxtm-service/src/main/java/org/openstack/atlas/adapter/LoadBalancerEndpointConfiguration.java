@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,6 +29,8 @@ public class LoadBalancerEndpointConfiguration {
     private Host trafficManagerHost;
     private Host endpointUrlHost;
     private String logFileLocation;
+    private List<URI> restStatsEndpoints;
+    private List<URI> soapStatsEndpoints;
 
     public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames) {
         try {
@@ -48,6 +51,8 @@ public class LoadBalancerEndpointConfiguration {
         this.trafficManagerHost = trafficManagerHost;
         this.trafficManagerName = trafficManagerHost.getTrafficManagerName();
         this.failoverTrafficManagerNames = failoverTrafficManagerNames;
+        buildRestStatsEndpoints(soapEndpoint.getRestEndpoint(), this.trafficManagerName, this.failoverTrafficManagerNames);
+        buildSoapStatsEndpoints(soapEndpoint.getEndpoint(), this.failoverTrafficManagerNames);
         LOG.info(String.format("Selecting %s as SoapEndpoint", this.endpointUrl));
     }
 
@@ -71,6 +76,8 @@ public class LoadBalancerEndpointConfiguration {
         this.trafficManagerName = trafficManagerHost.getTrafficManagerName();
         this.failoverTrafficManagerNames = failoverTrafficManagerNames;
         this.logFileLocation = logFileLocation;
+        buildRestStatsEndpoints(soapEndpoint.getRestEndpoint(), this.trafficManagerName, this.failoverTrafficManagerNames);
+        buildSoapStatsEndpoints(soapEndpoint.getEndpoint(), this.failoverTrafficManagerNames);
         LOG.info(String.format("Selecting %s as SoapEndPoint", this.endpointUrl));
         LOG.info(String.format("Selecting %s as RestEndPoint", this.restEndpoint));
     }
@@ -86,6 +93,34 @@ public class LoadBalancerEndpointConfiguration {
                 + ", failoverTrafficManagerNames: " + StaticStringUtils.collectionToString(failoverTrafficManagerNames, ",")
                 + "}";
 
+    }
+
+    private void buildRestStatsEndpoints(String restEndpoint, String trafficManagerHostName, List<String> failoverTrafficManagerNames) {
+        restStatsEndpoints = new ArrayList<URI>();
+        try {
+            restStatsEndpoints.add(new URI(restEndpoint.substring(0, restEndpoint.indexOf("/config")) + "/status/" + trafficManagerHostName + "/statistics"));
+            for (String string : failoverTrafficManagerNames) {
+                if (!restEndpoint.contains("/config")) {
+                    LOG.error(String.format("Endpoint %s did not contain necessary string to build stats endpoint.", restEndpoint));
+                } else {
+                    restStatsEndpoints.add(new URI(restEndpoint.substring(0, restEndpoint.indexOf("/config")) + "/status/" + string + "/statistics"));
+                }
+            }
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void buildSoapStatsEndpoints(String soapEndpoint, List<String> failoverTrafficManagerNames) {
+        soapStatsEndpoints = new ArrayList<URI>();
+        try {
+            soapStatsEndpoints.add(new URI(soapEndpoint));
+            for (String string : failoverTrafficManagerNames) {
+                soapStatsEndpoints.add(new URI("https://" + string + ":9090/soap"));
+            }
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 
     public Host getTrafficManagerHost() {
@@ -135,4 +170,8 @@ public class LoadBalancerEndpointConfiguration {
     public void setEndpointUrlHost(Host endpointUrlHost) {
         this.endpointUrlHost = endpointUrlHost;
     }
+
+    public List<URI> getRestStatsEndpoints() { return restStatsEndpoints; }
+
+    public void setRestStatsEndpoints(List<URI> endpoints) { this.restStatsEndpoints = endpoints; }
 }

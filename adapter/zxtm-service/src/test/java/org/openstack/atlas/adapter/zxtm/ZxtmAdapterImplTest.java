@@ -400,7 +400,7 @@ public class ZxtmAdapterImplTest {
         private LoadBalancer lb;
         private static final String ZXTM_USERNAME = "mocked_username";
         private static final String ZXTM_PASSWORD = "mocked_password";
-        private static final String ZXTM_ENDPOINT_URI = "https://mock.endpoint.uri:9090/soap";
+        private static final String ZXTM_ENDPOINT_URI = "https://mock.endpoint.uri:9090/soap/config";
         private static final String TARGET_HOST = "ztm-n01.mock.endpoint.uri";
         private static final String FAILOVER_HOST_1 = "ztm-n03.mock.endpoint.uri";
         private static final String FAILOVER_HOST_2 = "ztm-n04.mock.endpoint.uri";
