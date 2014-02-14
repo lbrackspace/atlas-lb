@@ -200,7 +200,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void  removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Node> doomedNodes) throws InsufficientRequestException, StmRollBackException {
+    public void removeNodes(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Node> doomedNodes) throws InsufficientRequestException, StmRollBackException {
         String poolName = ZxtmNameBuilder.genVSName(loadBalancer);
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
@@ -692,11 +692,17 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public Stats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, URI endpoint) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+    public Stats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-        VirtualServerStats sslVirtualServer = client.getVirtualServerStats(ZxtmNameBuilder.genSslVSName(loadBalancer), endpoint);
-        VirtualServerStats virtualServer = client.getVirtualServerStats(ZxtmNameBuilder.genVSName(loadBalancer), endpoint);
-        Stats stats = CustomMappings.mapVirtualServerStats(sslVirtualServer, virtualServer);
+        List<VirtualServerStats> sslVirtualServerList = new ArrayList<VirtualServerStats>();
+        List<VirtualServerStats> virtualServerList = new ArrayList<VirtualServerStats>();
+        for (URI endpoint : config.getRestStatsEndpoints()) {
+            if (loadBalancer.isUsingSsl()) {
+                sslVirtualServerList.add(client.getVirtualServerStats(ZxtmNameBuilder.genSslVSName(loadBalancer), endpoint));
+            }
+            virtualServerList.add(client.getVirtualServerStats(ZxtmNameBuilder.genVSName(loadBalancer), endpoint));
+        }
+        Stats stats = CustomMappings.mapVirtualServerStatsLists(virtualServerList, sslVirtualServerList);
         return stats;
     }
 

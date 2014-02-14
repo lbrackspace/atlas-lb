@@ -105,7 +105,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit)
             throws InsufficientRequestException, RollBackException;
 
-    public Stats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, URI endpoint)
+    public Stats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
 
 //    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)

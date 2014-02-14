@@ -45,7 +45,9 @@ public interface HostService {
 
     public Host getRestEndPointHost(Integer clusterId);
 
-    public List<String> getFailoverHostNames (Integer clusterId);
+    public List<String> getFailoverHostNames(Integer clusterId);
+
+    public List<Host> getFailoverHosts(Integer clusterId);
 
     public String getEndPoint(Integer clusterId);
 

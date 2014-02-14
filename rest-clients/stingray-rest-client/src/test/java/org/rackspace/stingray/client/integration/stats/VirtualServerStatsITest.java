@@ -63,6 +63,7 @@ public class VirtualServerStatsITest extends StingrayTestBase {
         virtualServer.setProperties(properties);
     }
 
+
     /**
      * This method tests the create virtual server request, and will verify its creation with a get request.
      *

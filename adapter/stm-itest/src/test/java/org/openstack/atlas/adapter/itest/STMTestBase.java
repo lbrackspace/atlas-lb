@@ -65,7 +65,8 @@ public class STMTestBase extends StmTestConstants {
     private static void retrieveConfigValues() {
         STM_USERNAME = configuration.getString(ConfigurationKeys.stingray_admin_user);
         STM_PASSWORD = configuration.getString(ConfigurationKeys.stingray_admin_key);
-        STM_ENDPOINT_URI = configuration.getString(ConfigurationKeys.stingray_rest_endpoint) + configuration.getString(ConfigurationKeys.stingray_base_uri);
+        STM_ENDPOINT_URI = configuration.getString(ConfigurationKeys.stingray_rest_endpoint)
+                + configuration.getString(ConfigurationKeys.stingray_base_uri);
         TARGET_HOST = configuration.getString(ConfigurationKeys.target_host);
         FAILOVER_HOST_1 = configuration.getString(ConfigurationKeys.failover_host_1);
         DEFAULT_LOG_FILE_LOCATION = configuration.getString(ConfigurationKeys.default_log_file_location);
@@ -79,8 +80,11 @@ public class STMTestBase extends StmTestConstants {
         soapEndpointHost.setRestEndpoint(STM_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
         trafficManagerHost.setEndpoint(STM_ENDPOINT_URI);
+        trafficManagerHost.setRestEndpoint(STM_ENDPOINT_URI);
         trafficManagerHost.setTrafficManagerName(TARGET_HOST);
-        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, STM_USERNAME, CryptoUtil.decrypt(STM_PASSWORD), trafficManagerHost, targetFailoverHosts);
+        List<Host> failoverHosts = new ArrayList<Host>();
+        failoverHosts.add(soapEndpointHost);
+        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, STM_USERNAME, CryptoUtil.decrypt(STM_PASSWORD), trafficManagerHost, targetFailoverHosts, failoverHosts);
         config.setLogFileLocation(DEFAULT_LOG_FILE_LOCATION);
     }
 

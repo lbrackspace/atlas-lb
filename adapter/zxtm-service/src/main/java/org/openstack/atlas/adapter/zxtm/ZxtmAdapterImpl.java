@@ -64,7 +64,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         return ZxtmServiceStubs.getServiceStubs(config.getEndpointUrl(), config.getUsername(), config.getPassword());
     }
 
-    private ZxtmServiceStubs getStatsStubs(URL endpoint, LoadBalancerEndpointConfiguration config) throws AxisFault {
+    @Override
+    public ZxtmServiceStubs getStatsStubs(URL endpoint, LoadBalancerEndpointConfiguration config) throws AxisFault {
         return ZxtmServiceStubs.getServiceStubs(endpoint, config.getUsername(), config.getPassword());
     }
 
@@ -2425,7 +2426,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
         List<ZxtmServiceStubs> allStubs = new ArrayList<ZxtmServiceStubs>();
-        for (URI endpoint : config.getRestStatsEndpoints()) {
+        for (URI endpoint : config.getSoapStatsEndpoints()) {
             try {
                 allStubs.add(getStatsStubs(endpoint.toURL(), config));
             } catch (MalformedURLException e) {
