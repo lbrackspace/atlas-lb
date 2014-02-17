@@ -34,7 +34,6 @@ import java.util.*;
 
 public class ResourceTranslator {
     public Pool cPool;
-    public Pool cRedirectPool;
     public Monitor cMonitor;
     public Map<String, TrafficIp> cTrafficIpGroups;
     public VirtualServer cVServer;
@@ -72,7 +71,6 @@ public class ResourceTranslator {
         translatePoolResource(vsName, loadBalancer, queLb);
         translateVirtualServerResource(config, vsName, loadBalancer);
         if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
-            translateRedirectPoolResource(loadBalancer);
             translateRedirectVirtualServerResource(config, vsName, loadBalancer);
         }
     }
@@ -95,10 +93,7 @@ public class ResourceTranslator {
 
         // Redirection specific
         basic.setPort(80);
-        if (loadBalancer.isUsingSsl())
-            basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));
-        else
-            basic.setPool(ZxtmNameBuilder.genRedirectVSName(loadBalancer));
+        basic.setPool("discard");
         basic.setProtocol(VirtualServerProtocol.http.getValue());
 
         log = new VirtualServerLog();
@@ -359,30 +354,6 @@ public class ResourceTranslator {
         return cPool;
     }
 
-    public Pool translateRedirectPoolResource(LoadBalancer loadBalancer) throws InsufficientRequestException {
-        cRedirectPool = new Pool();
-        PoolProperties properties = new PoolProperties();
-        PoolBasic basic = new PoolBasic();
-        PoolLoadbalancing poollb = new PoolLoadbalancing();
-
-        basic.setPassive_monitoring(false);
-
-
-        String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
-
-        poollb.setAlgorithm(lbAlgo);
-
-        PoolConnection connection = null;
-        basic.setPersistence_class(null);
-        basic.setBandwidth_class(null);
-        properties.setBasic(basic);
-        properties.setLoad_balancing(poollb);
-        properties.setConnection(connection);
-        cRedirectPool.setProperties(properties);
-
-        return cRedirectPool;
-    }
-
     public Monitor translateMonitorResource(LoadBalancer loadBalancer) {
         Monitor monitor = new Monitor();
         MonitorProperties properties = new MonitorProperties();
@@ -533,14 +504,6 @@ public class ResourceTranslator {
 
     public void setcPool(Pool cPool) {
         this.cPool = cPool;
-    }
-
-    public Pool getcRedirectPool() {
-        return cRedirectPool;
-    }
-
-    public void setcRedirectPool(Pool cPool) {
-        this.cRedirectPool = cPool;
     }
 
     public Monitor getcMonitor() {

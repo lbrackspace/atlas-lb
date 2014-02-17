@@ -69,7 +69,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             getResources().updatePool(client, vsName, translator.getcPool());
             getResources().updateVirtualServer(client, vsName, translator.getcVServer());
             if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
-                getResources().updatePool(client, vsRedirectName, translator.getcRedirectPool());
                 getResources().updateVirtualServer(client, vsRedirectName, translator.getcRedirectVServer());
             }
             client.destroy();
@@ -118,7 +117,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             if (loadBalancer.isUsingSsl()) {
                 //Handle SSLTerm https-redirect
                 if (queLb.isHttpsRedirect() != null && queLb.isHttpsRedirect()) {
-                    getResources().updatePool(client, vsName, translator.getcPool());
                     getResources().updateVirtualServer(client, vsName, translator.getcRedirectVServer());
                 } else {
                     getResources().updatePool(client, vsName, translator.getcPool());
@@ -136,7 +134,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
                 //Handle non-SSLTerm https-redirect
                 if (queLb.isHttpsRedirect() != null && queLb.isHttpsRedirect()) {
-                    getResources().updatePool(client, vsRedirectName, translator.getcRedirectPool());
                     getResources().updateVirtualServer(client, vsRedirectName, translator.getcRedirectVServer());
                 } else {
                     getResources().deleteVirtualServer(client, vsRedirectName);
@@ -169,7 +166,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             getResources().deleteVirtualServer(client, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
         if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
-            getResources().deletePool(client, vsRedirectName);
             getResources().deleteVirtualServer(client, vsRedirectName);
         }
         client.destroy();
