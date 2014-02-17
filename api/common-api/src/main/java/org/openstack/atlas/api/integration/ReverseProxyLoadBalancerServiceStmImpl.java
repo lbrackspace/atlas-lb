@@ -344,8 +344,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         } catch (StmRollBackException ex) {
             checkAndSetIfRestEndPointBad(config, ex);
             throw ex;
-        } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -358,8 +356,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         } catch (StmRollBackException ex) {
             checkAndSetIfRestEndPointBad(config, ex);
             throw ex;
-        } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -480,7 +476,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         long cal = getInstance().getTimeInMillis();
         stats = (Stats) atlasCache.get(key);
         if (stats == null) {
-            stats = reverseProxyLoadBalancerStmAdapter.getVirtualServerStats(config, loadBalancer, endpoint);
+            stats = reverseProxyLoadBalancerStmAdapter.getVirtualServerStats(config, loadBalancer);
             LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
             atlasCache.set(key, stats);
         } else {

@@ -1109,20 +1109,14 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @param name the virtual server name for stats retrieval
      * @throws StingrayRestClientObjectNotFoundException
      */
-    public VirtualServerStats getVirtualServerStats(String name, URI endpoint) throws StingrayRestClientObjectNotFoundException {
+    public VirtualServerStats getVirtualServerStats(String name, URI endpoint) {
         VirtualServerStats stats = new VirtualServerStats();
         try {
             stats = getItem(name, VirtualServerStats.class, ClientConstants.V_SERVER_PATH, endpoint);
+        } catch (StingrayRestClientObjectNotFoundException e) {
+            stats.setStatistics(getZeroStats());
         } catch (StingrayRestClientException e) {
-            VirtualServerStatsProperties props = new VirtualServerStatsProperties();
-            props.setConnect_timed_out(0);
-            props.setConnection_errors(0);
-            props.setConnection_failures(0);
-            props.setData_timed_out(0);
-            props.setKeepalive_timed_out(0);
-            props.setMax_conn(0);
-            props.setCurrent_conn(0);
-            stats.setStatistics(props);
+            stats.setStatistics(getZeroStats());
         }
         return stats;
     }
@@ -1132,5 +1126,17 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     public void destroy() {
         client.destroy();
+    }
+
+    private VirtualServerStatsProperties getZeroStats() {
+        VirtualServerStatsProperties props = new VirtualServerStatsProperties();
+        props.setConnect_timed_out(0);
+        props.setConnection_errors(0);
+        props.setConnection_failures(0);
+        props.setData_timed_out(0);
+        props.setKeepalive_timed_out(0);
+        props.setMax_conn(0);
+        props.setCurrent_conn(0);
+        return props;
     }
 }
