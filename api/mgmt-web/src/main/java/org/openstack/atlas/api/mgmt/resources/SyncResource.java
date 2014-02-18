@@ -43,6 +43,7 @@ public class SyncResource extends ManagementDependencyProvider {
             req.setSyncObject(domainSyncObject);
 
             LoadBalancer lb = loadBalancerService.get(loadBalancerId);
+            domainSyncObject.setAccountId(lb.getAccountId());
             SslTermination sslTerm = lb.getSslTermination();
             if (sslTerm != null) {
                 // Verify sslTerm won't break the LB during sync attempt

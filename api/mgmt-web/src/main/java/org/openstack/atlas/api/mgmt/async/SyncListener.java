@@ -41,7 +41,7 @@ public class SyncListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(queueSyncObject.getLoadBalancerId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(queueSyncObject.getLoadBalancerId(), queueSyncObject.getAccountId());
         } catch (EntityNotFoundException enfe) {
             LOG.error(String.format("EntityNotFoundException thrown while attempting to sync Loadbalancer #%d: ", queueSyncObject.getLoadBalancerId()));
             return;
@@ -63,11 +63,11 @@ public class SyncListener extends BaseListener {
             }
 
             try {
-                if (isRestAdapter()) {
-                    LOG.debug(String.format("Removing loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerStmService.deleteLoadBalancer(dbLoadBalancer);
-                    LOG.debug(String.format("Successfully removed loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
-                } else {
+                if (!isRestAdapter()) {
+//                    LOG.debug(String.format("Removing loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
+//                    reverseProxyLoadBalancerStmService.deleteLoadBalancer(dbLoadBalancer);
+//                    LOG.debug(String.format("Successfully removed loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
+//                } else {
                     LOG.debug(String.format("Removing loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
                     reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
                     LOG.debug(String.format("Successfully removed loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
@@ -103,14 +103,14 @@ public class SyncListener extends BaseListener {
 
                 //First recreate the original virtual server...
                 try {
-                    LoadBalancer tempLb = loadBalancerService.get(queueSyncObject.getLoadBalancerId());
+                    LoadBalancer tempLb = loadBalancerService.getWithUserPages(queueSyncObject.getLoadBalancerId(), queueSyncObject.getAccountId());
                     tempLb.setSslTermination(null);
 
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.BUILD);
                     if (isRestAdapter()) {
-                        LOG.debug(String.format("Re-creating loadbalancer: %s in STM...", tempLb.getId()));
-                        reverseProxyLoadBalancerStmService.createLoadBalancer(tempLb);
-                        LOG.debug(String.format("Successfully Re-created loadbalancer: %s in STM...", tempLb.getId()));
+                        LOG.debug(String.format("Updating loadbalancer: %s in STM...", tempLb.getId()));
+                        reverseProxyLoadBalancerStmService.updateLoadBalancer(tempLb, tempLb);
+                        LOG.debug(String.format("Successfully Updated loadbalancer: %s in STM...", tempLb.getId()));
                     } else {
                         LOG.debug(String.format("Re-creating loadbalancer: %s in ZXTM...", tempLb.getId()));
                         reverseProxyLoadBalancerService.createLoadBalancer(tempLb);
