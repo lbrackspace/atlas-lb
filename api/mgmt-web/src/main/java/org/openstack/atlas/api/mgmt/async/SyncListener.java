@@ -39,6 +39,7 @@ public class SyncListener extends BaseListener {
         LOG.debug(message);
         Sync queueSyncObject = getEsbRequestFromMessage(message).getSyncObject();
         LoadBalancer dbLoadBalancer;
+        LoadBalancerStatus curStatus;
 
         try {
             dbLoadBalancer = loadBalancerService.getWithUserPages(queueSyncObject.getLoadBalancerId(), queueSyncObject.getAccountId());
@@ -106,7 +107,10 @@ public class SyncListener extends BaseListener {
                     LoadBalancer tempLb = loadBalancerService.getWithUserPages(queueSyncObject.getLoadBalancerId(), queueSyncObject.getAccountId());
                     tempLb.setSslTermination(null);
 
-                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.BUILD);
+                    LOG.debug(String.format("Syncing load balancer %s setting status to PENDING_UPDATE", tempLb.getId()));
+                    loadBalancerService.setStatus(dbLoadBalancer, PENDING_UPDATE);
+
+                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
                     if (isRestAdapter()) {
                         LOG.debug(String.format("Updating loadbalancer: %s in STM...", tempLb.getId()));
                         reverseProxyLoadBalancerStmService.updateLoadBalancer(tempLb, tempLb);
@@ -117,6 +121,7 @@ public class SyncListener extends BaseListener {
                         LOG.debug(String.format("Successfully Re-created loadbalancer: %s in ZXTM...", tempLb.getId()));
                     }
 
+                    LOG.debug(String.format("Sync of load balancer %s complete, updating status and saving events and usage...", tempLb.getId()));
                     loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
 
                     if (loadBalancerStatus.equals(BUILD)) {
@@ -143,7 +148,9 @@ public class SyncListener extends BaseListener {
                         }
                     }
                 } catch (Exception e) {
-                    String msg = String.format("Error re-creating loadbalancer #%d in SyncListener():", queueSyncObject.getLoadBalancerId());
+                    String msg = String.format("Error re-creating loadbalancer #%d in SyncListener(), " +
+                            "setting status to ERROR, original status: %s:", queueSyncObject.getLoadBalancerId(), loadBalancerStatus);
+
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                     LOG.error(msg, e);
@@ -163,6 +170,9 @@ public class SyncListener extends BaseListener {
                         domainSslTermination.setSecurePort(dbTermination.getSecurePort());
                         domainSslTermination.setSecureTrafficOnly(dbTermination.isSecureTrafficOnly());
 
+                        LOG.debug(String.format("Syncing SSL-Termination for load balancer %s setting status to PENDING_UPDATE", dbLoadBalancer.getId()));
+                        loadBalancerService.setStatus(dbLoadBalancer, PENDING_UPDATE);
+
                         //We must re-validate cert/keys before sending to zeus  V1-D-04287
                         ZeusSslTermination zeusTermination = sslTerminationService.updateSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), domainSslTermination);
 
@@ -176,6 +186,7 @@ public class SyncListener extends BaseListener {
                             LOG.debug(String.format("Successfully updated ssl termination for load balancer: %s in ZXTM", dbLoadBalancer.getId()));
                         }
 
+                        LOG.debug(String.format("Sync for SSL-Termination load balancer %s complete.", dbLoadBalancer.getId()));
                         loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
                         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
@@ -194,7 +205,8 @@ public class SyncListener extends BaseListener {
                         }
                     }
                 } catch (Exception e) {
-                    String msg = String.format("Error re-creating ssl terminated loadbalancer #%d in SyncListener():", queueSyncObject.getLoadBalancerId());
+                    String msg = String.format("Error re-creating ssl terminated loadbalancer #%d in SyncListener(), " +
+                            "setting status to ERROR, original status: :", queueSyncObject.getLoadBalancerId(), loadBalancerStatus);
                     loadBalancerService.setStatus(dbLoadBalancer, ERROR);
                     LOG.error(msg, e);
                 }
