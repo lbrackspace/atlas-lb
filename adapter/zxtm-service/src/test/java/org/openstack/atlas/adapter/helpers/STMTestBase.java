@@ -76,7 +76,11 @@ public class STMTestBase {
     }
 
     protected static String secureLoadBalancerName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
+        return ZxtmNameBuilder.genSslVSName(lb);
+    }
+
+    protected static String redirectLoadBalancerName() throws InsufficientRequestException {
+        return ZxtmNameBuilder.genRedirectVSName(lb);
     }
 
     protected static String poolName() throws InsufficientRequestException {

@@ -31,7 +31,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class StmAdapterResources {
@@ -599,14 +601,11 @@ public class StmAdapterResources {
         client.destroy();
     }
 
-    public void setErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer, String vsName, String content) throws InsufficientRequestException, StmRollBackException {
+    public void setErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer, String content) throws InsufficientRequestException, StmRollBackException {
         File errorFile = null;
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
-
-        loadBalancer.getUserPages().setErrorpage(content);
-        ResourceTranslator rt = new ResourceTranslator();
-        rt.translateVirtualServerResource(config, vsName, loadBalancer);
-        VirtualServer vs = rt.getcVServer();
 
         try {
             LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
@@ -621,10 +620,24 @@ public class StmAdapterResources {
             throw new StmRollBackException(String.format("Failed creating error page %s for: %s.", errorFileName, vsName), e);
         }
 
+        loadBalancer.getUserPages().setErrorpage(content);
+        ResourceTranslator rt;
+
         try {
-            LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
             // Update client with new properties
-            updateVirtualServer(client, vsName, vs);
+            if (loadBalancer.isUsingSsl()) {
+                LOG.debug(String.format("Attempting to set the error file for %s (%s)", sslVsName, errorFileName));
+                rt = new ResourceTranslator();
+                rt.translateVirtualServerResource(config, sslVsName, loadBalancer);
+                updateVirtualServer(client, sslVsName, rt.getcVServer());
+            }
+
+            if (!(loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect())) {
+                rt = new ResourceTranslator();
+                rt.translateVirtualServerResource(config, vsName, loadBalancer);
+                LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
+                updateVirtualServer(client, vsName, rt.getcVServer());
+            }
 
             LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
         } catch (StmRollBackException re) {
@@ -634,22 +647,31 @@ public class StmAdapterResources {
         }
     }
 
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer, String vsName)
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException {
-
-        ResourceTranslator rt = new ResourceTranslator();
-        rt.translateVirtualServerResource(config, vsName, loadBalancer);
-        VirtualServer vs = rt.getcVServer();
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         String fileToDelete = ZxtmNameBuilder.generateErrorPageName(vsName);
-        try {
-            LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
 
+        if (loadBalancer.getUserPages() != null)
+            loadBalancer.getUserPages().setErrorpage(null);
+
+        ResourceTranslator rt;
+        try {
             // Update client with new properties
-            VirtualServerProperties properties = vs.getProperties();
-            VirtualServerConnectionError ce = new VirtualServerConnectionError();
-            ce.setError_file("Default");
-            properties.setConnection_errors(ce); // this will set the default error page
-            updateVirtualServer(client, vsName, vs);
+            if (loadBalancer.isUsingSsl()) {
+                LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", sslVsName, fileToDelete));
+                rt = new ResourceTranslator();
+                rt.translateVirtualServerResource(config, sslVsName, loadBalancer);
+                updateVirtualServer(client, sslVsName, rt.getcVServer());
+            }
+
+            if (!(loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect())) {
+                rt = new ResourceTranslator();
+                rt.translateVirtualServerResource(config, vsName, loadBalancer);
+                LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, fileToDelete));
+                updateVirtualServer(client, vsName, rt.getcVServer());
+            }
 
             // Delete the old error file
             client.deleteExtraFile(fileToDelete);

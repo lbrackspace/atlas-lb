@@ -668,7 +668,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-        getResources().deleteErrorFile(config, client, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
+        getResources().deleteErrorFile(config, client, loadBalancer);
         client.destroy();
     }
 
@@ -676,7 +676,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content) throws InsufficientRequestException, StmRollBackException {
         if (content != null && !(content.equals(""))) {
             StingrayRestClient client = getResources().loadSTMRestClient(config);
-            getResources().setErrorFile(config, client, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer), content);
+            getResources().setErrorFile(config, client, loadBalancer, content);
             client.destroy();
         } else {
             throw new StmRollBackException("No content provided for error page.  Roll back...");
