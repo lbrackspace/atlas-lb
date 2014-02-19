@@ -697,6 +697,7 @@ public class STMAdapterResourcesTest extends STMTestBase {
 
     public static class ErrorFileOperations {
         private String vsName;
+        private String sslVsName;
         private String errorFileName;
         private StmAdapterResources adapterResources;
         private ResourceTranslator resourceTranslator;
@@ -713,6 +714,8 @@ public class STMAdapterResourcesTest extends STMTestBase {
             MockitoAnnotations.initMocks(this);
             setupIvars();
             vsName = loadBalancerName();
+            sslVsName = secureLoadBalancerName();
+
             errorFileName = errorFileName();
 
             resourceTranslator = new ResourceTranslator();
@@ -728,7 +731,7 @@ public class STMAdapterResourcesTest extends STMTestBase {
 
         @Test
         public void testSetErrorFile() throws Exception {
-            adapterResources.setErrorFile(config, client, lb, vsName, errorContent);
+            adapterResources.setErrorFile(config, client, lb, errorContent);
 
             Assert.assertEquals(lb.getUserPages().getErrorpage(), errorContent);
             verify(client).createExtraFile(errorFileName, errorFile);
@@ -738,7 +741,7 @@ public class STMAdapterResourcesTest extends STMTestBase {
 
         @Test
         public void testDeleteErrorFile() throws Exception {
-            adapterResources.deleteErrorFile(config, client, lb, vsName);
+            adapterResources.deleteErrorFile(config, client, lb);
 
             verify(adapterResources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
             verify(client).deleteExtraFile(errorFileName);
