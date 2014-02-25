@@ -146,7 +146,8 @@ public class VirtualIpv6Repository {
         String query = "select j.virtualIp.id, j.loadBalancer.id, j.loadBalancer.accountId, j.loadBalancer.port "
                 + "from LoadBalancerJoinVip6 j where j.virtualIp.id = :vid order by j.loadBalancer.port, j.loadBalancer.id";
 
-        hResults = entityManager.createQuery(query).setParameter("vid", vid).getResultList();
+        hResults = entityManager.createQuery(query).setLockMode(LockModeType.PESSIMISTIC_READ)
+                .setParameter("vid", vid).getResultList();
         for (Object r : hResults) {
             Object[] row = (Object[]) r;
             Integer port = (Integer) row[3];
