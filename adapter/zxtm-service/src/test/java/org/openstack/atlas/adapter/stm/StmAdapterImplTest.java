@@ -453,7 +453,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.setErrorFile(config, loadBalancer, errorContent);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resources).setErrorFile(config, client, loadBalancer, vsName, errorContent);
+            verify(resources).setErrorFile(config, client, loadBalancer, errorContent);
             verify(client).destroy();
         }
 
@@ -462,7 +462,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.deleteErrorFile(config, loadBalancer);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resources).deleteErrorFile(config, client, loadBalancer, vsName);
+            verify(resources).deleteErrorFile(config, client, loadBalancer);
             verify(client).destroy();
         }
 

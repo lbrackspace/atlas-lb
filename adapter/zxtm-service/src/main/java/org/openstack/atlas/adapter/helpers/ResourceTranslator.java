@@ -184,7 +184,6 @@ public class ResourceTranslator {
         }
 
         //error file settings
-
         if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) { // if userPages is null, just leave the ce object alone and it should use the default page
             ce.setError_file(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genVSName(loadBalancer)));
         } else {
