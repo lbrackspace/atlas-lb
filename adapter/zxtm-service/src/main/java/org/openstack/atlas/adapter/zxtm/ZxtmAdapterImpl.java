@@ -1949,15 +1949,18 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     serviceStubs.getProtectionBinding().setMinConnections(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getMinConnections())});
                 }
 
+                if (throttle.getRateInterval() != null) {
+                    // Set the rate interval for the rates
+                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getRateInterval())});
+                }
+
+                //Odd issue in 9.5 where rateInterval must be set before max rate...
+
                 if (throttle.getMaxConnectionRate() != null) {
                     // Set the maximum connection rate + rate interval
                     serviceStubs.getProtectionBinding().setMaxConnectionRate(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnectionRate())});
                 }
 
-                if (throttle.getRateInterval() != null) {
-                    // Set the rate interval for the rates
-                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getRateInterval())});
-                }
 
                 if (throttle.getMaxConnections() != null) {
                     // Set the maximum connections permitted from a single IP address
