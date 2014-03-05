@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-common</artifactId>
-        <version>1.20.16-SNAPSHOT</version>
+        <version>1.20.16</version>
 
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-parent</artifactId>
-    <version>1.20.16-SNAPSHOT</version>
+    <version>1.20.16</version>
     <name>Openstack :: Atlas :: CA :: Parent</name>
     <packaging>pom</packaging>
 
