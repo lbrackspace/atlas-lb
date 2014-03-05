@@ -154,6 +154,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+        String errorPageName = ZxtmNameBuilder.generateErrorPageName(vsName);
 
         LOG.debug(String.format("Removing loadbalancer: %s ...", vsName));
         getResources().deleteRateLimit(config, loadBalancer, vsName);
@@ -168,6 +169,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
             getResources().deleteVirtualServer(client, vsRedirectName);
         }
+        try {
+            client.deleteExtraFile(errorPageName);
+        } catch (Exception ignoredException) {}
         client.destroy();
         LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM service...", vsName));
     }

@@ -1256,7 +1256,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Remove accessList from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
             //Removing error file from shadow server
-            LOG.info(String.format("Removing error file from load balancer...'%s' for sll termination...", loadBalancer.getId()));
+            LOG.info(String.format("Removing error file from load balancer...'%s' for ssl termination...", loadBalancer.getId()));
             deleteErrorFile(conf, virtualServerName);
             LOG.debug(String.format("Remove error file from the ssl terminated virtual server, for loadbalancer: '%s' ", loadBalancer.getId()));
 
@@ -1411,7 +1411,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String fileToDelete = getErrorFileName(vsName);
         try {
             LOG.debug(String.format("Attempting to delete a custom error file for: %s", vsName));
-            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{null});
+            serviceStubs.getVirtualServerBinding().setErrorFile(new String[]{vsName}, new String[]{"Default"});
             serviceStubs.getZxtmConfExtraBinding().deleteFile(new String[]{fileToDelete});
             LOG.info(String.format("Successfully deleted a custom error file for: %s", vsName));
         } catch (RemoteException e) {
@@ -1949,15 +1949,18 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     serviceStubs.getProtectionBinding().setMinConnections(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getMinConnections())});
                 }
 
+                if (throttle.getRateInterval() != null) {
+                    // Set the rate interval for the rates
+                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getRateInterval())});
+                }
+
+                //Odd issue in 9.5 where rateInterval must be set before max rate...
+
                 if (throttle.getMaxConnectionRate() != null) {
                     // Set the maximum connection rate + rate interval
                     serviceStubs.getProtectionBinding().setMaxConnectionRate(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnectionRate())});
                 }
 
-                if (throttle.getRateInterval() != null) {
-                    // Set the rate interval for the rates
-                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getRateInterval())});
-                }
 
                 if (throttle.getMaxConnections() != null) {
                     // Set the maximum connections permitted from a single IP address
