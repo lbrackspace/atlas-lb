@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.filters;
 
+import org.openstack.atlas.util.debug.Debug;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.AnnotationIntrospector;
@@ -62,7 +63,24 @@ public class AuthenticationFilter implements Filter {
         this.accountIdExtractor = urlAccountIdExtractor;
     }
 
+    public String requestInfo(ServletRequest servletRequest) {
+        String msg;
+        try {
+            HttpServletRequest hreq = (HttpServletRequest) servletRequest;
+            String method = hreq.getMethod();
+            String uri = hreq.getRequestURI().toString();
+            msg = String.format("Requesting URL: %s Method=%s\n", uri, method);
+        } catch (Exception ex) {
+            String exMsg = Debug.getExtendedStackTrace(ex);
+            msg = String.format(String.format("String exception fetching URI from request: %s\n", exMsg, exMsg));
+            LOG.error(msg, ex);
+        }
+        return msg;
+    }
+
+    @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
+        LOG.info(requestInfo(servletRequest));
         if (servletRequest instanceof HttpServletRequest) {
             HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
