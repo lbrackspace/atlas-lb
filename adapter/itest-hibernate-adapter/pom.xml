@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.20.16</version>
+        <version>1.20.17-SNAPSHOT</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-itest-hibernate-adapter</artifactId>
     <name>Openstack :: Atlas :: Adapter :: Hibernate :: Itest</name>
-    <version>1.20.16</version>
+    <version>1.20.17-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
