@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -485,10 +485,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -626,6 +642,50 @@
    
    <message name="getAspSessionCacheOldestResponse">
       <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getAuthenticatorErrorsRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAuthenticatorErrorsResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getAuthenticatorFailsRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAuthenticatorFailsResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getAuthenticatorNumberRequest"></message>
+   
+   <message name="getAuthenticatorNumberResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getAuthenticatorPassesRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAuthenticatorPassesResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getAuthenticatorRequestsRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAuthenticatorRequestsResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getAuthenticatorsRequest"></message>
+   
+   <message name="getAuthenticatorsResponse">
+      <part name="value" type="zeusns:StringArray" />
    </message>
    
    <message name="getBandwidthClassBytesOutRequest">
@@ -772,6 +832,30 @@
    
    <message name="getGlbServicesResponse">
       <part name="value" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getHourlyPeakBytesInPerSecondRequest"></message>
+   
+   <message name="getHourlyPeakBytesInPerSecondResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getHourlyPeakBytesOutPerSecondRequest"></message>
+   
+   <message name="getHourlyPeakBytesOutPerSecondResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getHourlyPeakRequestsPerSecondRequest"></message>
+   
+   <message name="getHourlyPeakRequestsPerSecondResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getHourlyPeakSSLConnectionsPerSecondRequest"></message>
+   
+   <message name="getHourlyPeakSSLConnectionsPerSecondResponse">
+      <part name="value" type="xsd:int" />
    </message>
    
    <message name="getInterfaceCollisionsRequest">
@@ -1169,6 +1253,12 @@
    <message name="getNumberSNMPBadRequestsRequest"></message>
    
    <message name="getNumberSNMPBadRequestsResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getNumberSNMPGetBulkRequestsRequest"></message>
+   
+   <message name="getNumberSNMPGetBulkRequestsResponse">
       <part name="value" type="xsd:int" />
    </message>
    
@@ -2014,6 +2104,48 @@
       <part name="value" type="xsd:int" />
    </message>
    
+   <message name="getSslOcspStaplingCacheCountRequest"></message>
+   
+   <message name="getSslOcspStaplingCacheCountResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslOcspStaplingCountRequest"></message>
+   
+   <message name="getSslOcspStaplingCountResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslOcspStaplingFailureCountRequest"></message>
+   
+   <message name="getSslOcspStaplingFailureCountResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslOcspStaplingGoodCountRequest"></message>
+   
+   <message name="getSslOcspStaplingGoodCountResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslOcspStaplingRevokedCountRequest"></message>
+   
+   <message name="getSslOcspStaplingRevokedCountResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslOcspStaplingSuccessCountRequest"></message>
+   
+   <message name="getSslOcspStaplingSuccessCountResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslOcspStaplingUnknownCountRequest"></message>
+   
+   <message name="getSslOcspStaplingUnknownCountResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
    <message name="getSslSessionCacheEntriesRequest"></message>
    
    <message name="getSslSessionCacheEntriesResponse">
@@ -2078,6 +2210,26 @@
    
    <message name="getSslSessionIDMemCacheMissResponse">
       <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSteelheadNumberRequest"></message>
+   
+   <message name="getSteelheadNumberResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSteelheadOptimizedRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSteelheadOptimizedResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getSteelheadsRequest"></message>
+   
+   <message name="getSteelheadsResponse">
+      <part name="value" type="zeusns:StringArray" />
    </message>
    
    <message name="getSysCPUBusyPercentRequest"></message>
@@ -2324,6 +2476,20 @@
       <part name="value" type="xsd:int" />
    </message>
    
+   <message name="getUserCounter64ValueRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getUserCounter64ValueResponse">
+      <part name="value" type="zeusns:System.Stats.longArray" />
+   </message>
+   
+   <message name="getUserCounter64sRequest"></message>
+   
+   <message name="getUserCounter64sResponse">
+      <part name="value" type="zeusns:StringArray" />
+   </message>
+   
    <message name="getUserCounterNumberRequest"></message>
    
    <message name="getUserCounterNumberResponse">
@@ -2358,6 +2524,22 @@
    
    <message name="getVirtualserverBytesOutResponse">
       <part name="value" type="zeusns:System.Stats.longArray" />
+   </message>
+   
+   <message name="getVirtualserverCertStatusRequestsRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getVirtualserverCertStatusRequestsResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getVirtualserverCertStatusResponsesRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getVirtualserverCertStatusResponsesResponse">
+      <part name="value" type="zeusns:intArray" />
    </message>
    
    <message name="getVirtualserverConnectTimedOutRequest">
@@ -2717,6 +2899,68 @@
          <output message="zeusns:getAspSessionCacheOldestResponse"/>
       </operation>
       
+      <operation name="getAuthenticatorErrors">
+         <documentation>
+            Number of connection errors that have occured when trying to connect to an authentication server, for each of the named Authenticators.
+         </documentation>
+         
+         <input message="zeusns:getAuthenticatorErrorsRequest"/>
+         <output message="zeusns:getAuthenticatorErrorsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getAuthenticatorFails">
+         <documentation>
+            Number of times this Authenticator has failed to authenticate, for each of the named Authenticators.
+         </documentation>
+         
+         <input message="zeusns:getAuthenticatorFailsRequest"/>
+         <output message="zeusns:getAuthenticatorFailsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getAuthenticatorNumber">
+         <documentation>
+            The number of Authenticators.
+         </documentation>
+         
+         <input message="zeusns:getAuthenticatorNumberRequest"/>
+         <output message="zeusns:getAuthenticatorNumberResponse"/>
+      </operation>
+      
+      <operation name="getAuthenticatorPasses">
+         <documentation>
+            Number of times this Authenticator has successfully authenticated, for each of the named Authenticators.
+         </documentation>
+         
+         <input message="zeusns:getAuthenticatorPassesRequest"/>
+         <output message="zeusns:getAuthenticatorPassesResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getAuthenticatorRequests">
+         <documentation>
+            Number of times this Authenticator has been asked to authenticate, for each of the named Authenticators.
+         </documentation>
+         
+         <input message="zeusns:getAuthenticatorRequestsRequest"/>
+         <output message="zeusns:getAuthenticatorRequestsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getAuthenticators">
+         <documentation>
+            Gets the list of Authenticators configured.
+         </documentation>
+         
+         <input message="zeusns:getAuthenticatorsRequest"/>
+         <output message="zeusns:getAuthenticatorsResponse"/>
+      </operation>
+      
       <operation name="getBandwidthClassBytesOut">
          <documentation>
             Bytes output by connections assigned to this bandwidth class, for each of the named BandwidthClasses.
@@ -2924,6 +3168,42 @@
          
          <input message="zeusns:getGlbServicesRequest"/>
          <output message="zeusns:getGlbServicesResponse"/>
+      </operation>
+      
+      <operation name="getHourlyPeakBytesInPerSecond">
+         <documentation>
+            The peak bytes received from clients per second in the last hour.
+         </documentation>
+         
+         <input message="zeusns:getHourlyPeakBytesInPerSecondRequest"/>
+         <output message="zeusns:getHourlyPeakBytesInPerSecondResponse"/>
+      </operation>
+      
+      <operation name="getHourlyPeakBytesOutPerSecond">
+         <documentation>
+            The peak bytes sent to clients per second in the last hour.
+         </documentation>
+         
+         <input message="zeusns:getHourlyPeakBytesOutPerSecondRequest"/>
+         <output message="zeusns:getHourlyPeakBytesOutPerSecondResponse"/>
+      </operation>
+      
+      <operation name="getHourlyPeakRequestsPerSecond">
+         <documentation>
+            The peak requests per second in the last hour.
+         </documentation>
+         
+         <input message="zeusns:getHourlyPeakRequestsPerSecondRequest"/>
+         <output message="zeusns:getHourlyPeakRequestsPerSecondResponse"/>
+      </operation>
+      
+      <operation name="getHourlyPeakSSLConnectionsPerSecond">
+         <documentation>
+            The peak ssl connections per second in the last hour.
+         </documentation>
+         
+         <input message="zeusns:getHourlyPeakSSLConnectionsPerSecondRequest"/>
+         <output message="zeusns:getHourlyPeakSSLConnectionsPerSecondResponse"/>
       </operation>
       
       <operation name="getInterfaceCollisions">
@@ -3493,6 +3773,15 @@
          
          <input message="zeusns:getNumberSNMPBadRequestsRequest"/>
          <output message="zeusns:getNumberSNMPBadRequestsResponse"/>
+      </operation>
+      
+      <operation name="getNumberSNMPGetBulkRequests">
+         <documentation>
+            SNMP GetBulkRequests received.
+         </documentation>
+         
+         <input message="zeusns:getNumberSNMPGetBulkRequestsRequest"/>
+         <output message="zeusns:getNumberSNMPGetBulkRequestsResponse"/>
       </operation>
       
       <operation name="getNumberSNMPGetNextRequests">
@@ -4678,6 +4967,69 @@
          <output message="zeusns:getSslHandshakeTLSv11Response"/>
       </operation>
       
+      <operation name="getSslOcspStaplingCacheCount">
+         <documentation>
+            The number of entries in the OCSP stapling cache.
+         </documentation>
+         
+         <input message="zeusns:getSslOcspStaplingCacheCountRequest"/>
+         <output message="zeusns:getSslOcspStaplingCacheCountResponse"/>
+      </operation>
+      
+      <operation name="getSslOcspStaplingCount">
+         <documentation>
+            The number of outgoing OCSP requests for OCSP stapling.
+         </documentation>
+         
+         <input message="zeusns:getSslOcspStaplingCountRequest"/>
+         <output message="zeusns:getSslOcspStaplingCountResponse"/>
+      </operation>
+      
+      <operation name="getSslOcspStaplingFailureCount">
+         <documentation>
+            The number of failed outgoing OCSP requests for OCSP stapling.
+         </documentation>
+         
+         <input message="zeusns:getSslOcspStaplingFailureCountRequest"/>
+         <output message="zeusns:getSslOcspStaplingFailureCountResponse"/>
+      </operation>
+      
+      <operation name="getSslOcspStaplingGoodCount">
+         <documentation>
+            The number of 'good' OCSP responses for OCSP stapling.
+         </documentation>
+         
+         <input message="zeusns:getSslOcspStaplingGoodCountRequest"/>
+         <output message="zeusns:getSslOcspStaplingGoodCountResponse"/>
+      </operation>
+      
+      <operation name="getSslOcspStaplingRevokedCount">
+         <documentation>
+            The number of 'revoked' OCSP responses for OCSP stapling.
+         </documentation>
+         
+         <input message="zeusns:getSslOcspStaplingRevokedCountRequest"/>
+         <output message="zeusns:getSslOcspStaplingRevokedCountResponse"/>
+      </operation>
+      
+      <operation name="getSslOcspStaplingSuccessCount">
+         <documentation>
+            The number of successful outgoing OCSP requests for OCSP stapling.
+         </documentation>
+         
+         <input message="zeusns:getSslOcspStaplingSuccessCountRequest"/>
+         <output message="zeusns:getSslOcspStaplingSuccessCountResponse"/>
+      </operation>
+      
+      <operation name="getSslOcspStaplingUnknownCount">
+         <documentation>
+            The number of 'unknown' OCSP requests for OCSP stapling.
+         </documentation>
+         
+         <input message="zeusns:getSslOcspStaplingUnknownCountRequest"/>
+         <output message="zeusns:getSslOcspStaplingUnknownCountResponse"/>
+      </operation>
+      
       <operation name="getSslSessionCacheEntries">
          <documentation>
             The total number of SSL session persistence entries stored in the cache.
@@ -4775,6 +5127,35 @@
          
          <input message="zeusns:getSslSessionIDMemCacheMissRequest"/>
          <output message="zeusns:getSslSessionIDMemCacheMissResponse"/>
+      </operation>
+      
+      <operation name="getSteelheadNumber">
+         <documentation>
+            The number of Steelheads.
+         </documentation>
+         
+         <input message="zeusns:getSteelheadNumberRequest"/>
+         <output message="zeusns:getSteelheadNumberResponse"/>
+      </operation>
+      
+      <operation name="getSteelheadOptimized">
+         <documentation>
+            The current number of connections being forwarded to the Cloud Steelhead for optimization, for each of the named Steelheads.
+         </documentation>
+         
+         <input message="zeusns:getSteelheadOptimizedRequest"/>
+         <output message="zeusns:getSteelheadOptimizedResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getSteelheads">
+         <documentation>
+            Gets the list of Cloud Steelheads configured.
+         </documentation>
+         
+         <input message="zeusns:getSteelheadsRequest"/>
+         <output message="zeusns:getSteelheadsResponse"/>
       </operation>
       
       <operation name="getSysCPUBusyPercent">
@@ -5134,11 +5515,31 @@
       
       <operation name="getUpTime">
          <documentation>
-            The time (in hundredths of a second) that Zeus software has been operational for (this value will wrap if it has been running for more than 497 days).
+            The time (in hundredths of a second) that Stingray software has been operational for (this value will wrap if it has been running for more than 497 days).
          </documentation>
          
          <input message="zeusns:getUpTimeRequest"/>
          <output message="zeusns:getUpTimeResponse"/>
+      </operation>
+      
+      <operation name="getUserCounter64Value">
+         <documentation>
+            The value of the 64-bit user counter, for each of the named UserCounter64s.
+         </documentation>
+         
+         <input message="zeusns:getUserCounter64ValueRequest"/>
+         <output message="zeusns:getUserCounter64ValueResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getUserCounter64s">
+         <documentation>
+            Gets the list of 64-bit User counters configured.
+         </documentation>
+         
+         <input message="zeusns:getUserCounter64sRequest"/>
+         <output message="zeusns:getUserCounter64sResponse"/>
       </operation>
       
       <operation name="getUserCounterNumber">
@@ -5190,6 +5591,24 @@
          <output message="zeusns:getVirtualserverBytesOutResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getVirtualserverCertStatusRequests">
+         <documentation>
+            Number of incoming TLS handshakes for this virtual server with certificate status requests, for each of the named Virtualservers.
+         </documentation>
+         
+         <input message="zeusns:getVirtualserverCertStatusRequestsRequest"/>
+         <output message="zeusns:getVirtualserverCertStatusRequestsResponse"/>
+      </operation>
+      
+      <operation name="getVirtualserverCertStatusResponses">
+         <documentation>
+            Number of incoming TLS handshakes for this virtual server to which certificate status responses were attached, for each of the named Virtualservers.
+         </documentation>
+         
+         <input message="zeusns:getVirtualserverCertStatusResponsesRequest"/>
+         <output message="zeusns:getVirtualserverCertStatusResponsesResponse"/>
       </operation>
       
       <operation name="getVirtualserverConnectTimedOut">
@@ -5698,6 +6117,114 @@
          </output>
       </operation>
       
+      <operation name="getAuthenticatorErrors">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getAuthenticatorErrors"/>
+         <documentation>
+            Number of connection errors that have occured when trying to connect to an authentication server, for each of the named Authenticators.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAuthenticatorFails">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getAuthenticatorFails"/>
+         <documentation>
+            Number of times this Authenticator has failed to authenticate, for each of the named Authenticators.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAuthenticatorNumber">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getAuthenticatorNumber"/>
+         <documentation>
+            The number of Authenticators.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getAuthenticatorPasses">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getAuthenticatorPasses"/>
+         <documentation>
+            Number of times this Authenticator has successfully authenticated, for each of the named Authenticators.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAuthenticatorRequests">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getAuthenticatorRequests"/>
+         <documentation>
+            Number of times this Authenticator has been asked to authenticate, for each of the named Authenticators.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAuthenticators">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getAuthenticators"/>
+         <documentation>
+            Gets the list of Authenticators configured.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
       <operation name="getBandwidthClassBytesOut">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getBandwidthClassBytesOut"/>
          <documentation>
@@ -6042,6 +6569,62 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getGlbServices"/>
          <documentation>
             Gets the list of GLB services configured.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getHourlyPeakBytesInPerSecond">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getHourlyPeakBytesInPerSecond"/>
+         <documentation>
+            The peak bytes received from clients per second in the last hour.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getHourlyPeakBytesOutPerSecond">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getHourlyPeakBytesOutPerSecond"/>
+         <documentation>
+            The peak bytes sent to clients per second in the last hour.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getHourlyPeakRequestsPerSecond">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getHourlyPeakRequestsPerSecond"/>
+         <documentation>
+            The peak requests per second in the last hour.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getHourlyPeakSSLConnectionsPerSecond">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getHourlyPeakSSLConnectionsPerSecond"/>
+         <documentation>
+            The peak ssl connections per second in the last hour.
          </documentation>
          
          <input>
@@ -7008,6 +7591,20 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getNumberSNMPBadRequests"/>
          <documentation>
             Malformed SNMP requests received.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getNumberSNMPGetBulkRequests">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getNumberSNMPGetBulkRequests"/>
+         <documentation>
+            SNMP GetBulkRequests received.
          </documentation>
          
          <input>
@@ -9046,6 +9643,104 @@
          </output>
       </operation>
       
+      <operation name="getSslOcspStaplingCacheCount">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslOcspStaplingCacheCount"/>
+         <documentation>
+            The number of entries in the OCSP stapling cache.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslOcspStaplingCount">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslOcspStaplingCount"/>
+         <documentation>
+            The number of outgoing OCSP requests for OCSP stapling.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslOcspStaplingFailureCount">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslOcspStaplingFailureCount"/>
+         <documentation>
+            The number of failed outgoing OCSP requests for OCSP stapling.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslOcspStaplingGoodCount">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslOcspStaplingGoodCount"/>
+         <documentation>
+            The number of 'good' OCSP responses for OCSP stapling.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslOcspStaplingRevokedCount">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslOcspStaplingRevokedCount"/>
+         <documentation>
+            The number of 'revoked' OCSP responses for OCSP stapling.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslOcspStaplingSuccessCount">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslOcspStaplingSuccessCount"/>
+         <documentation>
+            The number of successful outgoing OCSP requests for OCSP stapling.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslOcspStaplingUnknownCount">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslOcspStaplingUnknownCount"/>
+         <documentation>
+            The number of 'unknown' OCSP requests for OCSP stapling.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
       <operation name="getSslSessionCacheEntries">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslSessionCacheEntries"/>
          <documentation>
@@ -9190,6 +9885,54 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslSessionIDMemCacheMiss"/>
          <documentation>
             Number of times the SSL session id was not found in the cache.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSteelheadNumber">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSteelheadNumber"/>
+         <documentation>
+            The number of Steelheads.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSteelheadOptimized">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSteelheadOptimized"/>
+         <documentation>
+            The current number of connections being forwarded to the Cloud Steelhead for optimization, for each of the named Steelheads.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSteelheads">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSteelheads"/>
+         <documentation>
+            Gets the list of Cloud Steelheads configured.
          </documentation>
          
          <input>
@@ -9761,7 +10504,41 @@
       <operation name="getUpTime">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getUpTime"/>
          <documentation>
-            The time (in hundredths of a second) that Zeus software has been operational for (this value will wrap if it has been running for more than 497 days).
+            The time (in hundredths of a second) that Stingray software has been operational for (this value will wrap if it has been running for more than 497 days).
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getUserCounter64Value">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getUserCounter64Value"/>
+         <documentation>
+            The value of the 64-bit user counter, for each of the named UserCounter64s.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getUserCounter64s">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getUserCounter64s"/>
+         <documentation>
+            Gets the list of 64-bit User counters configured.
          </documentation>
          
          <input>
@@ -9858,6 +10635,34 @@
          <fault name="InvalidObjectName">
             <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
+      </operation>
+      
+      <operation name="getVirtualserverCertStatusRequests">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getVirtualserverCertStatusRequests"/>
+         <documentation>
+            Number of incoming TLS handshakes for this virtual server with certificate status requests, for each of the named Virtualservers.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getVirtualserverCertStatusResponses">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getVirtualserverCertStatusResponses"/>
+         <documentation>
+            Number of incoming TLS handshakes for this virtual server to which certificate status responses were attached, for each of the named Virtualservers.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
       </operation>
       
       <operation name="getVirtualserverConnectTimedOut">
@@ -10479,7 +11284,7 @@
    
    <service name="System.Stats">
       <documentation>
-         The System.Stats interface retrieves statistical information about the system. This interface is essentially an implementation of part of the SNMP interface in SOAP.
+         The System.Stats interface retrieves statistical information about the system. Note: This interface is essentially a SOAP implementation of part of the SNMP interface.  If you experience any performance issues using this interface, it is recommended trying SNMP directly.
       </documentation>
       
       <port name="System.StatsPort" binding="zeusns:System.StatsBinding">

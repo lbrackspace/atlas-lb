@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -23,33 +23,33 @@
          <xsd:complexType name="AFM.BasicStatus">
           <xsd:annotation>
            <xsd:documentation>
-            Contains basic Zeus AFM runtime status information.
+            Contains basic Stingray Application Firewall runtime status information.
            </xsd:documentation>
           </xsd:annotation>
           <xsd:all>
          
            <xsd:element name="installed" type="xsd:string">
             <xsd:annotation>
-             <xsd:documentation>Whether or not Zeus AFM is installed.</xsd:documentation>
+             <xsd:documentation>Whether or not Stingray Application Firewall is installed.</xsd:documentation>
             </xsd:annotation>
            </xsd:element>
          
            <xsd:element name="running" type="xsd:string">
             <xsd:annotation>
-             <xsd:documentation>Whether or not Zeus AFM is running.</xsd:documentation>
+             <xsd:documentation>Whether or not Stingray Application Firewall is running.</xsd:documentation>
             </xsd:annotation>
            </xsd:element>
          
            <xsd:element name="version" type="xsd:string">
             <xsd:annotation>
-             <xsd:documentation>The version of Zeus AFM installed.</xsd:documentation>
+             <xsd:documentation>The version of Stingray Application Firewall installed.</xsd:documentation>
             </xsd:annotation>
            </xsd:element>
          
            <xsd:element name="clustered" type="xsd:string">
             <xsd:annotation>
              <xsd:documentation>
-              Whether or not the maching is clustered with the local Zeus AFM.
+              Whether or not the machine is clustered with the local Stingray Application Firewall.
              </xsd:documentation>
             </xsd:annotation>
            </xsd:element>
@@ -69,7 +69,7 @@
          <xsd:complexType name="AFM.ClusterStatus">
           <xsd:annotation>
            <xsd:documentation>
-            Contains a Zeus AFM state message.
+            Contains a Stingray Application Firewall state message.
            </xsd:documentation>
           </xsd:annotation>
           <xsd:all>
@@ -105,7 +105,7 @@
          <xsd:complexType name="AFM.State">
           <xsd:annotation>
            <xsd:documentation>
-            Contains status information about a Zeus AFM installation.
+            Contains status information about a Stingray Application Firewall installation.
            </xsd:documentation>
           </xsd:annotation>
           <xsd:all>
@@ -121,7 +121,7 @@
            <xsd:element name="basicstatus" type="zeusns:AFM.BasicStatus">
             <xsd:annotation>
              <xsd:documentation>
-              Describes the basic runtime status of Zeus AFM on a machine.
+              Describes the basic runtime status of Stingray Application Firewall on a machine.
              </xsd:documentation>
             </xsd:annotation>
            </xsd:element>
@@ -129,7 +129,7 @@
            <xsd:element name="messages" type="zeusns:AFM.StateMessageArray">
             <xsd:annotation>
              <xsd:documentation>
-              State messages from the Zeus AFM on the machine.
+              State messages from the Stingray Application Firewall on the machine.
              </xsd:documentation>
             </xsd:annotation>
            </xsd:element>
@@ -137,7 +137,7 @@
            <xsd:element name="cluster" type="zeusns:AFM.ClusterStatusArray">
             <xsd:annotation>
              <xsd:documentation>
-               Statuses for all AFMs in the AFM's cluster.
+               Statuses for all Stingray Application Firewall instances in the cluster.
              </xsd:documentation>
             </xsd:annotation>
            </xsd:element>
@@ -145,7 +145,7 @@
            <xsd:element name="errors" type="zeusns:StringArray">
             <xsd:annotation>
              <xsd:documentation>
-              Strings describing any general errors relating to Zeus AFM.
+              Strings describing any general errors relating to Stingray Application Firewall.
              </xsd:documentation>
             </xsd:annotation>
            </xsd:element>
@@ -156,7 +156,7 @@
          <xsd:complexType name="AFM.StateMessage">
           <xsd:annotation>
            <xsd:documentation>
-            Contains a Zeus AFM state message.
+            Contains a Stingray Application Firewall state message.
            </xsd:documentation>
           </xsd:annotation>
           <xsd:all>
@@ -238,10 +238,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -331,8 +347,50 @@
              </xsd:element>
            </xsd:all>
          </xsd:complexType>
+         
+         <xsd:complexType name="LicenseError">
+           <xsd:annotation>
+            <xsd:documentation>
+              The LicenseError fault is emitted when attempting to use functionality
+              that is disabled by the license key.
+         
+              You will need to contact your support provider to get a new license
+              key with the required functionality. There may be a charge for this.
+            </xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             <xsd:element name="errmsg" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A human readable string describing the error
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="feature" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The license key feature that was missing
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+           </xsd:all>
+         </xsd:complexType>
       </xsd:schema>
    </types>
+   
+   <message name="disableRequest"></message>
+   
+   <message name="disableResponse"></message>
+   
+   <message name="enableRequest"></message>
+   
+   <message name="enableResponse"></message>
+   
+   <message name="getAdminInternalRESTPortRequest"></message>
+   
+   <message name="getAdminInternalRESTPortResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
    
    <message name="getAdminMasterPortRequest"></message>
    
@@ -343,12 +401,6 @@
    <message name="getAdminServerPortRequest"></message>
    
    <message name="getAdminServerPortResponse">
-      <part name="value" type="xsd:unsignedInt" />
-   </message>
-   
-   <message name="getAdminServerSessionTimeoutRequest"></message>
-   
-   <message name="getAdminServerSessionTimeoutResponse">
       <part name="value" type="xsd:unsignedInt" />
    </message>
    
@@ -382,11 +434,41 @@
       <part name="value" type="xsd:unsignedInt" />
    </message>
    
+   <message name="getUpdateExternControlCenterPortRequest"></message>
+   
+   <message name="getUpdateExternControlCenterPortResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getUpdateGUIBackendPortRequest"></message>
+   
+   <message name="getUpdateGUIBackendPortResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getUpdateGUIServerPortRequest"></message>
+   
+   <message name="getUpdateGUIServerPortResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="getUpdaterPortRequest"></message>
+   
+   <message name="getUpdaterPortResponse">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
    <message name="getVersionRequest"></message>
    
    <message name="getVersionResponse">
       <part name="version" type="xsd:string" />
    </message>
+   
+   <message name="setAdminInternalRESTPortRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setAdminInternalRESTPortResponse"></message>
    
    <message name="setAdminMasterPortRequest">
       <part name="value" type="xsd:unsignedInt" />
@@ -399,12 +481,6 @@
    </message>
    
    <message name="setAdminServerPortResponse"></message>
-   
-   <message name="setAdminServerSessionTimeoutRequest">
-      <part name="value" type="xsd:unsignedInt" />
-   </message>
-   
-   <message name="setAdminServerSessionTimeoutResponse"></message>
    
    <message name="setAdminSlavePortRequest">
       <part name="value" type="xsd:unsignedInt" />
@@ -430,6 +506,30 @@
    
    <message name="setNumberOfDecidersResponse"></message>
    
+   <message name="setUpdateExternControlCenterPortRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setUpdateExternControlCenterPortResponse"></message>
+   
+   <message name="setUpdateGUIBackendPortRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setUpdateGUIBackendPortResponse"></message>
+   
+   <message name="setUpdateGUIServerPortRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setUpdateGUIServerPortResponse"></message>
+   
+   <message name="setUpdaterPortRequest">
+      <part name="value" type="xsd:unsignedInt" />
+   </message>
+   
+   <message name="setUpdaterPortResponse"></message>
+   
    <message name="uninstallRequest"></message>
    
    <message name="uninstallResponse"></message>
@@ -442,10 +542,46 @@
       <part name="parameters" type="zeusns:InvalidOperation" />
    </message>
    
+   <message name="LicenseError">
+      <part name="parameters" type="zeusns:LicenseError" />
+   </message>
+   
    <portType name="AFMPort">
+      <operation name="disable">
+         <documentation>
+            Disables the Stingray Application Firewall on the traffic manager.
+         </documentation>
+         
+         <input message="zeusns:disableRequest"/>
+         <output message="zeusns:disableResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
+      <operation name="enable">
+         <documentation>
+            Enables the Stingray Application Firewall on the traffic manager.
+         </documentation>
+         
+         <input message="zeusns:enableRequest"/>
+         <output message="zeusns:enableResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
+      <operation name="getAdminInternalRESTPort">
+         <documentation>
+            Get the Application Firewall Internal REST API port, this port should not be accessed directly.
+         </documentation>
+         
+         <input message="zeusns:getAdminInternalRESTPortRequest"/>
+         <output message="zeusns:getAdminInternalRESTPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
       <operation name="getAdminMasterPort">
          <documentation>
-            Get the Zeus AFM XML Master port, this port is used on all IP addresses.
+            Get the Application Firewall XML Master port, this port is used on all IP addresses.
          </documentation>
          
          <input message="zeusns:getAdminMasterPortRequest"/>
@@ -455,7 +591,7 @@
       
       <operation name="getAdminServerPort">
          <documentation>
-            Get the Zeus AFM Administration server port, this port is used on all IP addresses.
+            Get the Application Firewall Administration server port, this port is only open on localhost.  For a change to this setting to take effect the Stingray administration server must be restarted on all cluster members.
          </documentation>
          
          <input message="zeusns:getAdminServerPortRequest"/>
@@ -463,19 +599,9 @@
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
-      <operation name="getAdminServerSessionTimeout">
-         <documentation>
-            Get the period of inactivity after which Zeus AFM Administration Server sessions will automatically timeout.
-         </documentation>
-         
-         <input message="zeusns:getAdminServerSessionTimeoutRequest"/>
-         <output message="zeusns:getAdminServerSessionTimeoutResponse"/>
-         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
-      </operation>
-      
       <operation name="getAdminSlavePort">
          <documentation>
-            Get the Zeus AFM XML Slave port, this port is used on all IP addresses.
+            Get the Application Firewall XML Slave port, this port is used on all IP addresses.
          </documentation>
          
          <input message="zeusns:getAdminSlavePortRequest"/>
@@ -485,7 +611,7 @@
       
       <operation name="getClusterState">
          <documentation>
-            Get state data for the Zeus Application Firewall Module across all machines in the cluster.
+            Get state data for the Stingray Application Firewall across all machines in the cluster.
          </documentation>
          
          <input message="zeusns:getClusterStateRequest"/>
@@ -494,7 +620,7 @@
       
       <operation name="getDeciderBasePort">
          <documentation>
-            Get the Zeus AFM base decider port.  This port, plus one port per decider process above this port, will be used for the Zeus AFM deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
+            Get the Application Firewall base decider port.  This port, plus one port per decider process above this port, will be used for the Application Firewall deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
          </documentation>
          
          <input message="zeusns:getDeciderBasePortRequest"/>
@@ -504,7 +630,7 @@
       
       <operation name="getInternalDeciderBasePort">
          <documentation>
-            Get the Zeus AFM internal decider communication base port. Zeus AFM requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when Zeus AFM is started it will start at this port and work its way up taking available ports until it has enough ports.
+            Get the Application Firewall internal decider communication base port. The Application Firewall requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when the Application Firewall is started it will start at this port and work its way up taking available ports until it has enough ports.
          </documentation>
          
          <input message="zeusns:getInternalDeciderBasePortRequest"/>
@@ -514,7 +640,7 @@
       
       <operation name="getNumberOfDeciders">
          <documentation>
-            Get the number of Zeus AFM decider processes to run.
+            Get the number of Application Firewall decider processes to run.
          </documentation>
          
          <input message="zeusns:getNumberOfDecidersRequest"/>
@@ -522,18 +648,69 @@
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
+      <operation name="getUpdateExternControlCenterPort">
+         <documentation>
+            Get the Application Firewall Updater External Control Center port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input message="zeusns:getUpdateExternControlCenterPortRequest"/>
+         <output message="zeusns:getUpdateExternControlCenterPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
+      <operation name="getUpdateGUIBackendPort">
+         <documentation>
+            Get the Application Firewall Updater GUI Backend port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input message="zeusns:getUpdateGUIBackendPortRequest"/>
+         <output message="zeusns:getUpdateGUIBackendPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
+      <operation name="getUpdateGUIServerPort">
+         <documentation>
+            Get the Application Firewall Updater GUI Server port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input message="zeusns:getUpdateGUIServerPortRequest"/>
+         <output message="zeusns:getUpdateGUIServerPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
+      <operation name="getUpdaterPort">
+         <documentation>
+            Get the Application Firewall Updater Slave port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input message="zeusns:getUpdaterPortRequest"/>
+         <output message="zeusns:getUpdaterPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
       <operation name="getVersion">
          <documentation>
-            Get the version of the Zeus Application Firewall Module installed on the traffic manager.  Returns an empty string if Zeus AFM is not installed.
+            Get the version of the Stingray Application Firewall installed on the traffic manager.  Returns an empty string if Stingray Application Firewall is not installed.
          </documentation>
          
          <input message="zeusns:getVersionRequest"/>
          <output message="zeusns:getVersionResponse"/>
       </operation>
       
+      <operation name="setAdminInternalRESTPort">
+         <documentation>
+            Set the Application Firewall Internal REST API port, this port should not be accessed directly.
+         </documentation>
+         
+         <input message="zeusns:setAdminInternalRESTPortRequest"/>
+         <output message="zeusns:setAdminInternalRESTPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
       <operation name="setAdminMasterPort">
          <documentation>
-            Set the Zeus AFM XML Master port, this port is used on all IP addresses.
+            Set the Application Firewall XML Master port, this port is used on all IP addresses.
          </documentation>
          
          <input message="zeusns:setAdminMasterPortRequest"/>
@@ -544,7 +721,7 @@
       
       <operation name="setAdminServerPort">
          <documentation>
-            Set the Zeus AFM Administration server port, this port is used on all IP addresses.
+            Set the Application Firewall Administration server port, this port is only open on localhost.  For a change to this setting to take effect the Stingray administration server must be restarted on all cluster members.
          </documentation>
          
          <input message="zeusns:setAdminServerPortRequest"/>
@@ -553,20 +730,9 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
       </operation>
       
-      <operation name="setAdminServerSessionTimeout">
-         <documentation>
-            Set the period of inactivity after which Zeus AFM Administration Server sessions will automatically timeout.
-         </documentation>
-         
-         <input message="zeusns:setAdminServerSessionTimeoutRequest"/>
-         <output message="zeusns:setAdminServerSessionTimeoutResponse"/>
-         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
-         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
-      </operation>
-      
       <operation name="setAdminSlavePort">
          <documentation>
-            Set the Zeus AFM XML Slave port, this port is used on all IP addresses.
+            Set the Application Firewall XML Slave port, this port is used on all IP addresses.
          </documentation>
          
          <input message="zeusns:setAdminSlavePortRequest"/>
@@ -577,7 +743,7 @@
       
       <operation name="setDeciderBasePort">
          <documentation>
-            Set the Zeus AFM base decider port.  This port, plus one port per decider process above this port, will be used for the Zeus AFM deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
+            Set the Application Firewall base decider port.  This port, plus one port per decider process above this port, will be used for the Application Firewall deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
          </documentation>
          
          <input message="zeusns:setDeciderBasePortRequest"/>
@@ -588,7 +754,7 @@
       
       <operation name="setInternalDeciderBasePort">
          <documentation>
-            Set the Zeus AFM internal decider communication base port. Zeus AFM requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when Zeus AFM is started it will start at this port and work its way up taking available ports until it has enough ports.
+            Set the Application Firewall internal decider communication base port. The Application Firewall requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when the Application Firewall is started it will start at this port and work its way up taking available ports until it has enough ports.
          </documentation>
          
          <input message="zeusns:setInternalDeciderBasePortRequest"/>
@@ -599,7 +765,7 @@
       
       <operation name="setNumberOfDeciders">
          <documentation>
-            Set the number of Zeus AFM decider processes to run.
+            Set the number of Application Firewall decider processes to run.
          </documentation>
          
          <input message="zeusns:setNumberOfDecidersRequest"/>
@@ -608,9 +774,53 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
       </operation>
       
+      <operation name="setUpdateExternControlCenterPort">
+         <documentation>
+            Set the Application Firewall Updater External Control Center port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input message="zeusns:setUpdateExternControlCenterPortRequest"/>
+         <output message="zeusns:setUpdateExternControlCenterPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
+      <operation name="setUpdateGUIBackendPort">
+         <documentation>
+            Set the Application Firewall Updater GUI Backend port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input message="zeusns:setUpdateGUIBackendPortRequest"/>
+         <output message="zeusns:setUpdateGUIBackendPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
+      <operation name="setUpdateGUIServerPort">
+         <documentation>
+            Set the Application Firewall Updater GUI Server port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input message="zeusns:setUpdateGUIServerPortRequest"/>
+         <output message="zeusns:setUpdateGUIServerPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
+      <operation name="setUpdaterPort">
+         <documentation>
+            Set the Application Firewall Updater Slave port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input message="zeusns:setUpdaterPortRequest"/>
+         <output message="zeusns:setUpdaterPortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
       <operation name="uninstall">
          <documentation>
-            Uninstalls the Zeus Application Firewall Module on the traffic manager.
+            Uninstalls the Stingray Application Firewall on the traffic manager.
          </documentation>
          
          <input message="zeusns:uninstallRequest"/>
@@ -621,10 +831,67 @@
    
    <binding name="AFMBinding" type="zeusns:AFMPort">
       <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+      <operation name="disable">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/disable"/>
+         <documentation>
+            Disables the Stingray Application Firewall on the traffic manager.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="enable">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/enable"/>
+         <documentation>
+            Enables the Stingray Application Firewall on the traffic manager.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAdminInternalRESTPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getAdminInternalRESTPort"/>
+         <documentation>
+            Get the Application Firewall Internal REST API port, this port should not be accessed directly.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getAdminMasterPort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getAdminMasterPort"/>
          <documentation>
-            Get the Zeus AFM XML Master port, this port is used on all IP addresses.
+            Get the Application Firewall XML Master port, this port is used on all IP addresses.
          </documentation>
          
          <input>
@@ -641,24 +908,7 @@
       <operation name="getAdminServerPort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getAdminServerPort"/>
          <documentation>
-            Get the Zeus AFM Administration server port, this port is used on all IP addresses.
-         </documentation>
-         
-         <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </input>
-         <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </output>
-         <fault name="InvalidOperation">
-            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
-      </operation>
-      
-      <operation name="getAdminServerSessionTimeout">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getAdminServerSessionTimeout"/>
-         <documentation>
-            Get the period of inactivity after which Zeus AFM Administration Server sessions will automatically timeout.
+            Get the Application Firewall Administration server port, this port is only open on localhost.  For a change to this setting to take effect the Stingray administration server must be restarted on all cluster members.
          </documentation>
          
          <input>
@@ -675,7 +925,7 @@
       <operation name="getAdminSlavePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getAdminSlavePort"/>
          <documentation>
-            Get the Zeus AFM XML Slave port, this port is used on all IP addresses.
+            Get the Application Firewall XML Slave port, this port is used on all IP addresses.
          </documentation>
          
          <input>
@@ -692,7 +942,7 @@
       <operation name="getClusterState">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getClusterState"/>
          <documentation>
-            Get state data for the Zeus Application Firewall Module across all machines in the cluster.
+            Get state data for the Stingray Application Firewall across all machines in the cluster.
          </documentation>
          
          <input>
@@ -706,7 +956,7 @@
       <operation name="getDeciderBasePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getDeciderBasePort"/>
          <documentation>
-            Get the Zeus AFM base decider port.  This port, plus one port per decider process above this port, will be used for the Zeus AFM deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
+            Get the Application Firewall base decider port.  This port, plus one port per decider process above this port, will be used for the Application Firewall deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
          </documentation>
          
          <input>
@@ -723,7 +973,7 @@
       <operation name="getInternalDeciderBasePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getInternalDeciderBasePort"/>
          <documentation>
-            Get the Zeus AFM internal decider communication base port. Zeus AFM requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when Zeus AFM is started it will start at this port and work its way up taking available ports until it has enough ports.
+            Get the Application Firewall internal decider communication base port. The Application Firewall requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when the Application Firewall is started it will start at this port and work its way up taking available ports until it has enough ports.
          </documentation>
          
          <input>
@@ -740,7 +990,75 @@
       <operation name="getNumberOfDeciders">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getNumberOfDeciders"/>
          <documentation>
-            Get the number of Zeus AFM decider processes to run.
+            Get the number of Application Firewall decider processes to run.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getUpdateExternControlCenterPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getUpdateExternControlCenterPort"/>
+         <documentation>
+            Get the Application Firewall Updater External Control Center port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getUpdateGUIBackendPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getUpdateGUIBackendPort"/>
+         <documentation>
+            Get the Application Firewall Updater GUI Backend port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getUpdateGUIServerPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getUpdateGUIServerPort"/>
+         <documentation>
+            Get the Application Firewall Updater GUI Server port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getUpdaterPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getUpdaterPort"/>
+         <documentation>
+            Get the Application Firewall Updater Slave port, this port is used on all IP addresses.
          </documentation>
          
          <input>
@@ -757,7 +1075,7 @@
       <operation name="getVersion">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getVersion"/>
          <documentation>
-            Get the version of the Zeus Application Firewall Module installed on the traffic manager.  Returns an empty string if Zeus AFM is not installed.
+            Get the version of the Stingray Application Firewall installed on the traffic manager.  Returns an empty string if Stingray Application Firewall is not installed.
          </documentation>
          
          <input>
@@ -768,10 +1086,30 @@
          </output>
       </operation>
       
+      <operation name="setAdminInternalRESTPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setAdminInternalRESTPort"/>
+         <documentation>
+            Set the Application Firewall Internal REST API port, this port should not be accessed directly.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setAdminMasterPort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setAdminMasterPort"/>
          <documentation>
-            Set the Zeus AFM XML Master port, this port is used on all IP addresses.
+            Set the Application Firewall XML Master port, this port is used on all IP addresses.
          </documentation>
          
          <input>
@@ -791,27 +1129,7 @@
       <operation name="setAdminServerPort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setAdminServerPort"/>
          <documentation>
-            Set the Zeus AFM Administration server port, this port is used on all IP addresses.
-         </documentation>
-         
-         <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </input>
-         <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </output>
-         <fault name="InvalidOperation">
-            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
-         <fault name="InvalidInput">
-            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
-      </operation>
-      
-      <operation name="setAdminServerSessionTimeout">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setAdminServerSessionTimeout"/>
-         <documentation>
-            Set the period of inactivity after which Zeus AFM Administration Server sessions will automatically timeout.
+            Set the Application Firewall Administration server port, this port is only open on localhost.  For a change to this setting to take effect the Stingray administration server must be restarted on all cluster members.
          </documentation>
          
          <input>
@@ -831,7 +1149,7 @@
       <operation name="setAdminSlavePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setAdminSlavePort"/>
          <documentation>
-            Set the Zeus AFM XML Slave port, this port is used on all IP addresses.
+            Set the Application Firewall XML Slave port, this port is used on all IP addresses.
          </documentation>
          
          <input>
@@ -851,7 +1169,7 @@
       <operation name="setDeciderBasePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setDeciderBasePort"/>
          <documentation>
-            Set the Zeus AFM base decider port.  This port, plus one port per decider process above this port, will be used for the Zeus AFM deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
+            Set the Application Firewall base decider port.  This port, plus one port per decider process above this port, will be used for the Application Firewall deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
          </documentation>
          
          <input>
@@ -871,7 +1189,7 @@
       <operation name="setInternalDeciderBasePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setInternalDeciderBasePort"/>
          <documentation>
-            Set the Zeus AFM internal decider communication base port. Zeus AFM requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when Zeus AFM is started it will start at this port and work its way up taking available ports until it has enough ports.
+            Set the Application Firewall internal decider communication base port. The Application Firewall requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when the Application Firewall is started it will start at this port and work its way up taking available ports until it has enough ports.
          </documentation>
          
          <input>
@@ -891,7 +1209,87 @@
       <operation name="setNumberOfDeciders">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setNumberOfDeciders"/>
          <documentation>
-            Set the number of Zeus AFM decider processes to run.
+            Set the number of Application Firewall decider processes to run.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setUpdateExternControlCenterPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setUpdateExternControlCenterPort"/>
+         <documentation>
+            Set the Application Firewall Updater External Control Center port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setUpdateGUIBackendPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setUpdateGUIBackendPort"/>
+         <documentation>
+            Set the Application Firewall Updater GUI Backend port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setUpdateGUIServerPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setUpdateGUIServerPort"/>
+         <documentation>
+            Set the Application Firewall Updater GUI Server port, this port is used on all IP addresses.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setUpdaterPort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setUpdaterPort"/>
+         <documentation>
+            Set the Application Firewall Updater Slave port, this port is used on all IP addresses.
          </documentation>
          
          <input>
@@ -911,7 +1309,7 @@
       <operation name="uninstall">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/uninstall"/>
          <documentation>
-            Uninstalls the Zeus Application Firewall Module on the traffic manager.
+            Uninstalls the Stingray Application Firewall on the traffic manager.
          </documentation>
          
          <input>
@@ -928,7 +1326,7 @@
    
    <service name="AFM">
       <documentation>
-         The AFM interface allows management of the Zeus Application Firewall Module.
+         The AFM interface allows management of the Stingray Application Firewall.
       </documentation>
       
       <port name="AFMPort" binding="zeusns:AFMBinding">

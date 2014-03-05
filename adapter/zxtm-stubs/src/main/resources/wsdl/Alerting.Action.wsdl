@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -87,6 +87,57 @@
            <xsd:complexContent>
              <xsd:restriction base='SOAP-ENC:Array'>
               <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:Alerting.Action.Login[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:simpleType name="Alerting.Action.SNMPHashAlg">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="md5">
+                  <xsd:annotation>
+                     <xsd:documentation>MD5</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="sha1">
+                  <xsd:annotation>
+                     <xsd:documentation>SHA-1</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+            </xsd:restriction>
+         </xsd:simpleType>
+         
+         <xsd:complexType name="Alerting.Action.SNMPHashAlgArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns:Alerting.Action.SNMPHashAlg[]"/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:simpleType name="Alerting.Action.SNMPVersion">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="snmpv1">
+                  <xsd:annotation>
+                     <xsd:documentation>SNMPv1</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="snmpv2c">
+                  <xsd:annotation>
+                     <xsd:documentation>SNMPv2c</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="snmpv3">
+                  <xsd:annotation>
+                     <xsd:documentation>SNMPv3</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+            </xsd:restriction>
+         </xsd:simpleType>
+         
+         <xsd:complexType name="Alerting.Action.SNMPVersionArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns:Alerting.Action.SNMPVersion[]"/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -193,10 +244,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -577,6 +644,57 @@
       <part name="values" type="zeusns:StringArray" />
    </message>
    
+   <message name="getSNMPHashAlgRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSNMPHashAlgResponse">
+      <part name="values" type="zeusns:Alerting.Action.SNMPHashAlgArray" />
+   </message>
+   
+   <message name="getSNMPHashAlgByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSNMPHashAlgByLocationResponse">
+      <part name="values" type="zeusns:Alerting.Action.SNMPHashAlgArray" />
+   </message>
+   
+   <message name="getSNMPUsernameRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSNMPUsernameResponse">
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSNMPUsernameByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSNMPUsernameByLocationResponse">
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSNMPVersionRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSNMPVersionResponse">
+      <part name="values" type="zeusns:Alerting.Action.SNMPVersionArray" />
+   </message>
+   
+   <message name="getSNMPVersionByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSNMPVersionByLocationResponse">
+      <part name="values" type="zeusns:Alerting.Action.SNMPVersionArray" />
+   </message>
+   
    <message name="getSOAPAdditionalRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -659,6 +777,23 @@
    
    <message name="getSyslogHostByLocationResponse">
       <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSyslogMessageLenLimitRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSyslogMessageLenLimitResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getSyslogMessageLenLimitByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSyslogMessageLenLimitByLocationResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
    </message>
    
    <message name="getTimeoutRequest">
@@ -816,6 +951,81 @@
    
    <message name="setLogFilePathByLocationResponse"></message>
    
+   <message name="setSNMPAuthPasswordRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setSNMPAuthPasswordResponse"></message>
+   
+   <message name="setSNMPAuthPasswordByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setSNMPAuthPasswordByLocationResponse"></message>
+   
+   <message name="setSNMPHashAlgRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:Alerting.Action.SNMPHashAlgArray" />
+   </message>
+   
+   <message name="setSNMPHashAlgResponse"></message>
+   
+   <message name="setSNMPHashAlgByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:Alerting.Action.SNMPHashAlgArray" />
+   </message>
+   
+   <message name="setSNMPHashAlgByLocationResponse"></message>
+   
+   <message name="setSNMPPrivPasswordRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setSNMPPrivPasswordResponse"></message>
+   
+   <message name="setSNMPPrivPasswordByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setSNMPPrivPasswordByLocationResponse"></message>
+   
+   <message name="setSNMPUsernameRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setSNMPUsernameResponse"></message>
+   
+   <message name="setSNMPUsernameByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="setSNMPUsernameByLocationResponse"></message>
+   
+   <message name="setSNMPVersionRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:Alerting.Action.SNMPVersionArray" />
+   </message>
+   
+   <message name="setSNMPVersionResponse"></message>
+   
+   <message name="setSNMPVersionByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:Alerting.Action.SNMPVersionArray" />
+   </message>
+   
+   <message name="setSNMPVersionByLocationResponse"></message>
+   
    <message name="setSOAPAdditionalRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:StringArray" />
@@ -882,6 +1092,21 @@
    </message>
    
    <message name="setSyslogHostByLocationResponse"></message>
+   
+   <message name="setSyslogMessageLenLimitRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setSyslogMessageLenLimitResponse"></message>
+   
+   <message name="setSyslogMessageLenLimitByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setSyslogMessageLenLimitByLocationResponse"></message>
    
    <message name="setTimeoutRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -1192,6 +1417,72 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getSNMPHashAlg">
+         <documentation>
+            Get the SNMP hash algorithm for sending the Notify over SNMPv3. Valid values are "md5" and "sha1". The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input message="zeusns:getSNMPHashAlgRequest"/>
+         <output message="zeusns:getSNMPHashAlgResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSNMPHashAlgByLocation">
+         <documentation>
+            Get the SNMP hash algorithm for sending the Notify over SNMPv3. Valid values are "md5" and "sha1". The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSNMPHashAlgByLocationRequest"/>
+         <output message="zeusns:getSNMPHashAlgByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSNMPUsername">
+         <documentation>
+            Get the SNMP username for sending the Notify over SNMPv3. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input message="zeusns:getSNMPUsernameRequest"/>
+         <output message="zeusns:getSNMPUsernameResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSNMPUsernameByLocation">
+         <documentation>
+            Get the SNMP username for sending the Notify over SNMPv3. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSNMPUsernameByLocationRequest"/>
+         <output message="zeusns:getSNMPUsernameByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSNMPVersion">
+         <documentation>
+            Get the SNMP version used to send the trap/notify. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input message="zeusns:getSNMPVersionRequest"/>
+         <output message="zeusns:getSNMPVersionResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSNMPVersionByLocation">
+         <documentation>
+            Get the SNMP version used to send the trap/notify. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSNMPVersionByLocationRequest"/>
+         <output message="zeusns:getSNMPVersionByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="getSOAPAdditional">
          <documentation>
             Get the additional information to send with the SOAP alert call.
@@ -1298,6 +1589,28 @@
          
          <input message="zeusns:getSyslogHostByLocationRequest"/>
          <output message="zeusns:getSyslogHostByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSyslogMessageLenLimit">
+         <documentation>
+            Get syslog message length limit.
+         </documentation>
+         
+         <input message="zeusns:getSyslogMessageLenLimitRequest"/>
+         <output message="zeusns:getSyslogMessageLenLimitResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSyslogMessageLenLimitByLocation">
+         <documentation>
+            Get syslog message length limit. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSyslogMessageLenLimitByLocationRequest"/>
+         <output message="zeusns:getSyslogMessageLenLimitByLocationResponse"/>
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
@@ -1547,6 +1860,136 @@
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
+      <operation name="setSNMPAuthPassword">
+         <documentation>
+            Set the SNMP password for sending the Notify over SNMPv3. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input message="zeusns:setSNMPAuthPasswordRequest"/>
+         <output message="zeusns:setSNMPAuthPasswordResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSNMPAuthPasswordByLocation">
+         <documentation>
+            Set the SNMP password for sending the Notify over SNMPv3. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSNMPAuthPasswordByLocationRequest"/>
+         <output message="zeusns:setSNMPAuthPasswordByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSNMPHashAlg">
+         <documentation>
+            Set the SNMP hash algorithm for sending the Notify over SNMPv3. Valid values are "md5" and "sha1". The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input message="zeusns:setSNMPHashAlgRequest"/>
+         <output message="zeusns:setSNMPHashAlgResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSNMPHashAlgByLocation">
+         <documentation>
+            Set the SNMP hash algorithm for sending the Notify over SNMPv3. Valid values are "md5" and "sha1". The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSNMPHashAlgByLocationRequest"/>
+         <output message="zeusns:setSNMPHashAlgByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSNMPPrivPassword">
+         <documentation>
+            Set the SNMP encryption key to encrpt SNMPv3 Notify messages. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input message="zeusns:setSNMPPrivPasswordRequest"/>
+         <output message="zeusns:setSNMPPrivPasswordResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSNMPPrivPasswordByLocation">
+         <documentation>
+            Set the SNMP encryption key to encrpt SNMPv3 Notify messages. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSNMPPrivPasswordByLocationRequest"/>
+         <output message="zeusns:setSNMPPrivPasswordByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSNMPUsername">
+         <documentation>
+            Set the SNMP username for sending the Notify over SNMPv3. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input message="zeusns:setSNMPUsernameRequest"/>
+         <output message="zeusns:setSNMPUsernameResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSNMPUsernameByLocation">
+         <documentation>
+            Set the SNMP username for sending the Notify over SNMPv3. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSNMPUsernameByLocationRequest"/>
+         <output message="zeusns:setSNMPUsernameByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSNMPVersion">
+         <documentation>
+            Set the SNMP version used to send the trap/notify. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input message="zeusns:setSNMPVersionRequest"/>
+         <output message="zeusns:setSNMPVersionResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSNMPVersionByLocation">
+         <documentation>
+            Set the SNMP version used to send the trap/notify. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSNMPVersionByLocationRequest"/>
+         <output message="zeusns:setSNMPVersionByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setSOAPAdditional">
          <documentation>
             Set the additional information to send with the SOAP alert call.
@@ -1658,6 +2101,32 @@
          
          <input message="zeusns:setSyslogHostByLocationRequest"/>
          <output message="zeusns:setSyslogHostByLocationResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSyslogMessageLenLimit">
+         <documentation>
+            Set syslog message length limit.
+         </documentation>
+         
+         <input message="zeusns:setSyslogMessageLenLimitRequest"/>
+         <output message="zeusns:setSyslogMessageLenLimitResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSyslogMessageLenLimitByLocation">
+         <documentation>
+            Set syslog message length limit. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSyslogMessageLenLimitByLocationRequest"/>
+         <output message="zeusns:setSyslogMessageLenLimitByLocationResponse"/>
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
@@ -2168,6 +2637,126 @@
          </fault>
       </operation>
       
+      <operation name="getSNMPHashAlg">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSNMPHashAlg"/>
+         <documentation>
+            Get the SNMP hash algorithm for sending the Notify over SNMPv3. Valid values are "md5" and "sha1". The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSNMPHashAlgByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSNMPHashAlgByLocation"/>
+         <documentation>
+            Get the SNMP hash algorithm for sending the Notify over SNMPv3. Valid values are "md5" and "sha1". The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSNMPUsername">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSNMPUsername"/>
+         <documentation>
+            Get the SNMP username for sending the Notify over SNMPv3. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSNMPUsernameByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSNMPUsernameByLocation"/>
+         <documentation>
+            Get the SNMP username for sending the Notify over SNMPv3. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSNMPVersion">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSNMPVersion"/>
+         <documentation>
+            Get the SNMP version used to send the trap/notify. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSNMPVersionByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSNMPVersionByLocation"/>
+         <documentation>
+            Get the SNMP version used to send the trap/notify. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getSOAPAdditional">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSOAPAdditional"/>
          <documentation>
@@ -2352,6 +2941,46 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSyslogHostByLocation"/>
          <documentation>
             Get the host to send syslog messages to (if empty, messages will be sent to localhost). The actions specified must be of type 'syslog'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSyslogMessageLenLimit">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSyslogMessageLenLimit"/>
+         <documentation>
+            Get syslog message length limit.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSyslogMessageLenLimitByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/getSyslogMessageLenLimitByLocation"/>
+         <documentation>
+            Get syslog message length limit. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -2843,6 +3472,266 @@
          </fault>
       </operation>
       
+      <operation name="setSNMPAuthPassword">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPAuthPassword"/>
+         <documentation>
+            Set the SNMP password for sending the Notify over SNMPv3. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSNMPAuthPasswordByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPAuthPasswordByLocation"/>
+         <documentation>
+            Set the SNMP password for sending the Notify over SNMPv3. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSNMPHashAlg">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPHashAlg"/>
+         <documentation>
+            Set the SNMP hash algorithm for sending the Notify over SNMPv3. Valid values are "md5" and "sha1". The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSNMPHashAlgByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPHashAlgByLocation"/>
+         <documentation>
+            Set the SNMP hash algorithm for sending the Notify over SNMPv3. Valid values are "md5" and "sha1". The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSNMPPrivPassword">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPPrivPassword"/>
+         <documentation>
+            Set the SNMP encryption key to encrpt SNMPv3 Notify messages. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSNMPPrivPasswordByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPPrivPasswordByLocation"/>
+         <documentation>
+            Set the SNMP encryption key to encrpt SNMPv3 Notify messages. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSNMPUsername">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPUsername"/>
+         <documentation>
+            Set the SNMP username for sending the Notify over SNMPv3. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSNMPUsernameByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPUsernameByLocation"/>
+         <documentation>
+            Set the SNMP username for sending the Notify over SNMPv3. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSNMPVersion">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPVersion"/>
+         <documentation>
+            Set the SNMP version used to send the trap/notify. The actions specified must be of type 'trap'.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSNMPVersionByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSNMPVersionByLocation"/>
+         <documentation>
+            Set the SNMP version used to send the trap/notify. The actions specified must be of type 'trap'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setSOAPAdditional">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSOAPAdditional"/>
          <documentation>
@@ -3055,6 +3944,58 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSyslogHostByLocation"/>
          <documentation>
             Set the host to send syslog messages to (if empty, messages will be sent to localhost). The actions specified must be of type 'syslog'. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSyslogMessageLenLimit">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSyslogMessageLenLimit"/>
+         <documentation>
+            Set syslog message length limit.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Alerting/Action/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSyslogMessageLenLimitByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Alerting/Action/setSyslogMessageLenLimitByLocation"/>
+         <documentation>
+            Set syslog message length limit. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
