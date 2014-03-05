@@ -170,8 +170,8 @@ public class SyncListener extends BaseListener {
                         domainSslTermination.setSecurePort(dbTermination.getSecurePort());
                         domainSslTermination.setSecureTrafficOnly(dbTermination.isSecureTrafficOnly());
 
-                        LOG.debug(String.format("Syncing SSL-Termination for load balancer %s setting status to PENDING_UPDATE", dbLoadBalancer.getId()));
-                        loadBalancerService.setStatus(dbLoadBalancer, PENDING_UPDATE);
+                        LOG.debug(String.format("Syncing SSL-Termination for load balancer %s", dbLoadBalancer.getId()));
+//                        loadBalancerService.setStatus(dbLoadBalancer, PENDING_UPDATE);
 
                         //We must re-validate cert/keys before sending to zeus  V1-D-04287
                         ZeusSslTermination zeusTermination = sslTerminationService.updateSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), domainSslTermination);
