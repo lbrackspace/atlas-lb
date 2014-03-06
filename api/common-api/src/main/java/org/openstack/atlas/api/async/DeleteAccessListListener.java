@@ -3,6 +3,7 @@ package org.openstack.atlas.api.async;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 import javax.jms.Message;
@@ -73,6 +74,8 @@ public class DeleteAccessListListener extends BaseListener {
                 saveList.add(item);
             }
         }
+
+        dbLoadBalancer.setUserPages(null);
         dbLoadBalancer.setAccessLists(saveList);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);

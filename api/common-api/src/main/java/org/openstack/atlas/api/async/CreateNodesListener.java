@@ -1,9 +1,6 @@
 package org.openstack.atlas.api.async;
 
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.Node;
-import org.openstack.atlas.service.domain.entities.NodeStatus;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.helpers.NodesHelper;
 import org.openstack.atlas.api.atom.EntryHelper;
@@ -62,6 +59,7 @@ public class CreateNodesListener extends BaseListener {
         }
 
         // Update load balancer in DB
+        dbLoadBalancer.setUserPages(null);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         NodesHelper.setNodesToStatus(queueLb, dbLoadBalancer, NodeStatus.ONLINE);
         loadBalancerService.update(dbLoadBalancer);

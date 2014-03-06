@@ -3,6 +3,7 @@ package org.openstack.atlas.api.async;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
+import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +27,7 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         LOG.debug(message);
         LoadBalancer queLb = getLoadbalancerFromMessage(message);
         LoadBalancer dbLoadBalancer;
+        LoadBalancer transportLb;
 
         try {
             dbLoadBalancer = loadBalancerService.getWithUserPages(queLb.getId(), queLb.getAccountId());
@@ -59,6 +61,7 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         }
 
         // Update load balancer in DB
+        dbLoadBalancer.setUserPages(null);
         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);
