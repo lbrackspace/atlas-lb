@@ -18,13 +18,12 @@ import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
-
+import org.openstack.atlas.util.debug.Debug;
 import javax.jms.*;
 
 public abstract class BaseListener implements MessageListener {
 
     protected Log LOG = LogFactory.getLog(this.getClass());
-
     protected JmsTemplate jmsTemplate;
     protected RestApiConfiguration configuration;
     protected LoadBalancerService loadBalancerService;
@@ -46,7 +45,6 @@ public abstract class BaseListener implements MessageListener {
     protected UsageEventHelper usageEventHelper;
     //    protected UsageEventProcessor usageEventProcessor;
     protected UsageEventCollection usageEventCollection;
-
     protected String REST = "REST";
     protected String SOAP = "SOAP";
 
@@ -125,7 +123,6 @@ public abstract class BaseListener implements MessageListener {
 //    public void setUsageEventProcessor(UsageEventProcessor usageEventProcessor) {
 //        this.usageEventProcessor = usageEventProcessor;
 //    }
-
     public void setUsageEventCollection(UsageEventCollection usageEventCollection) {
         this.usageEventCollection = usageEventCollection;
     }
@@ -152,12 +149,8 @@ public abstract class BaseListener implements MessageListener {
     }
 
     public String getStackTrace(Exception ex) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Exception: %s:%s\n", ex.getMessage(), ex.getClass().getName()));
-        for (StackTraceElement se : ex.getStackTrace()) {
-            sb.append(String.format("%s\n", se.toString()));
-        }
-        return sb.toString();
+        String exMsg = Debug.getExtendedStackTrace(ex);
+        return exMsg;
     }
 
     protected Cluster getClusterFromMessage(Message message) throws JMSException {
@@ -215,24 +208,23 @@ public abstract class BaseListener implements MessageListener {
     }
 
     public boolean isRestAdapter() {
-        return configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null &&
-                configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase(REST);
+        return configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null
+                && configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase(REST);
     }
 
-/*    protected void notifyUsageProcessor(final Message message, final LoadBalancer loadBalancer, final UsageEvent event) throws JMSException {
-        LOG.debug("Sending notification to usage processor...");
-        final String finalDestination = "USAGE_EVENT";
-        jmsTemplate.send(finalDestination, new MessageCreator() {
+    /*    protected void notifyUsageProcessor(final Message message, final LoadBalancer loadBalancer, final UsageEvent event) throws JMSException {
+    LOG.debug("Sending notification to usage processor...");
+    final String finalDestination = "USAGE_EVENT";
+    jmsTemplate.send(finalDestination, new MessageCreator() {
 
-            public Message createMessage(Session session) throws JMSException {
-                ObjectMessage response = session.createObjectMessage(loadBalancer);
-                response.setJMSCorrelationID(message.getJMSCorrelationID());
-                response.setObjectProperty("usageEvent", event.toString());
-                return response;
-            }
-        });
+    public Message createMessage(Session session) throws JMSException {
+    ObjectMessage response = session.createObjectMessage(loadBalancer);
+    response.setJMSCorrelationID(message.getJMSCorrelationID());
+    response.setObjectProperty("usageEvent", event.toString());
+    return response;
+    }
+    });
     }*/
-
     public static String getId(String name, Object obj) {
         int hashcode;
         String hexOut;
@@ -253,5 +245,4 @@ public abstract class BaseListener implements MessageListener {
     public void setAccessListService(AccessListService accessListService) {
         this.accessListService = accessListService;
     }
-
 }
