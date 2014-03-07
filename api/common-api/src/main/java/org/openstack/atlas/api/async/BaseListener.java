@@ -18,7 +18,7 @@ import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
-
+import org.openstack.atlas.util.debug.Debug;
 import javax.jms.*;
 
 public abstract class BaseListener implements MessageListener {
@@ -149,12 +149,8 @@ public abstract class BaseListener implements MessageListener {
     }
 
     public String getStackTrace(Exception ex) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Exception: %s:%s\n", ex.getMessage(), ex.getClass().getName()));
-        for (StackTraceElement se : ex.getStackTrace()) {
-            sb.append(String.format("%s\n", se.toString()));
-        }
-        return sb.toString();
+        String exMsg = Debug.getExtendedStackTrace(ex);
+        return exMsg;
     }
 
     protected Cluster getClusterFromMessage(Message message) throws JMSException {
