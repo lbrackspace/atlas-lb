@@ -80,7 +80,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb)
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb, UserPages up)
             throws InsufficientRequestException, StmRollBackException {
 
         StingrayRestClient client = getResources().loadSTMRestClient(config);
@@ -251,20 +251,16 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         client.destroy();
     }
 
-    @Override
-    public void deleteVirtualIp(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Integer vipId) throws InsufficientRequestException, StmRollBackException {
-        //Think is was only used in old tests, do we still need it?
-        List<Integer> vipIds = new ArrayList<Integer>();
-        vipIds.add(vipId);
-        deleteVirtualIps(config, loadBalancer, vipIds);
-    }
 
     @Override
-    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipIds) throws InsufficientRequestException, StmRollBackException {
+    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipIds, UserPages up) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
         String vsName;
         vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+
+        //Lazy loading...
+        loadBalancer.setUserPages(up);
 
         translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
         Map<String, TrafficIp> curTigMap = translator.getcTrafficIpGroups();
@@ -348,7 +344,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             vipIds.add(jv.getVirtualIp().getId());
         }
 
-        deleteVirtualIps(config, loadBalancer, vipIds);
+        deleteVirtualIps(config, loadBalancer, vipIds, null);
     }
 
     /*
@@ -467,11 +463,12 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     */
 
     @Override
-    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws InsufficientRequestException, StmRollBackException {
+    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination, UserPages up) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
+        loadBalancer.setUserPages(up);
         translator.translateVirtualServerResource(config, sslVsName, loadBalancer);
         translator.translateKeypairResource(loadBalancer, true);
         VirtualServer createdServer = translator.getcVServer();
@@ -669,10 +666,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, UserPages up)
             throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-        getResources().deleteErrorFile(config, client, loadBalancer);
+        getResources().deleteErrorFile(config, client, loadBalancer, up);
         client.destroy();
     }
 

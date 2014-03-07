@@ -42,7 +42,7 @@ public class SyncListener extends BaseListener {
         LoadBalancerStatus curStatus;
 
         try {
-            dbLoadBalancer = loadBalancerService.getWithUserPages(queueSyncObject.getLoadBalancerId(), queueSyncObject.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queueSyncObject.getLoadBalancerId(), queueSyncObject.getAccountId());
         } catch (EntityNotFoundException enfe) {
             LOG.error(String.format("EntityNotFoundException thrown while attempting to sync Loadbalancer #%d: ", queueSyncObject.getLoadBalancerId()));
             return;
@@ -113,7 +113,7 @@ public class SyncListener extends BaseListener {
                     loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
                     if (isRestAdapter()) {
                         LOG.debug(String.format("Updating loadbalancer: %s in STM...", tempLb.getId()));
-                        reverseProxyLoadBalancerStmService.updateLoadBalancer(tempLb, tempLb);
+                        reverseProxyLoadBalancerStmService.updateLoadBalancer(tempLb, tempLb, loadBalancerService.getUserPages(tempLb.getId(), tempLb.getAccountId()));
                         LOG.debug(String.format("Successfully Updated loadbalancer: %s in STM...", tempLb.getId()));
                     } else {
                         LOG.debug(String.format("Re-creating loadbalancer: %s in ZXTM...", tempLb.getId()));
@@ -178,7 +178,7 @@ public class SyncListener extends BaseListener {
 
                         if (isRestAdapter()) {
                             LOG.debug(String.format("Updating ssl termination for load balancer: %s in STM", dbLoadBalancer.getId()));
-                            reverseProxyLoadBalancerStmService.updateSslTermination(dbLoadBalancer, zeusTermination);
+                            reverseProxyLoadBalancerStmService.updateSslTermination(dbLoadBalancer, zeusTermination ,loadBalancerService.getUserPages(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId()));
                             LOG.debug(String.format("Successfully updated ssl termination for load balancer: %s in STM", dbLoadBalancer.getId()));
                         } else {
                             LOG.debug(String.format("Updating ssl termination for load balancer: %s in ZXTM", dbLoadBalancer.getId()));

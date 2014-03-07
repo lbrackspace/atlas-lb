@@ -29,7 +29,7 @@ public class CreateNodesListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.getWithUserPages(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             LOG.error(alertDescription, enfe);
@@ -59,7 +59,6 @@ public class CreateNodesListener extends BaseListener {
         }
 
         // Update load balancer in DB
-        dbLoadBalancer.setUserPages(null);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         NodesHelper.setNodesToStatus(queueLb, dbLoadBalancer, NodeStatus.ONLINE);
         loadBalancerService.update(dbLoadBalancer);

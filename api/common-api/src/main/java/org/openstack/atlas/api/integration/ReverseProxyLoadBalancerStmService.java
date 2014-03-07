@@ -14,7 +14,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void createLoadBalancer(LoadBalancer lb) throws Exception;
 
-    void updateLoadBalancer(LoadBalancer loadBalancer, LoadBalancer queLb) throws Exception;
+    void updateLoadBalancer(LoadBalancer loadBalancer, LoadBalancer queLb, UserPages up) throws Exception;
 
     void deleteLoadBalancer(LoadBalancer lb) throws Exception;
 
@@ -24,7 +24,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void removeSuspension(LoadBalancer lb) throws Exception;
 
-    void updateSslTermination(LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws Exception;
+    void updateSslTermination(LoadBalancer loadBalancer, ZeusSslTermination sslTermination, UserPages up) throws Exception;
 
     void removeSslTermination(LoadBalancer lb) throws Exception;
 
@@ -38,7 +38,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void deleteAccessList(LoadBalancer lb, List<Integer> accessListToDelete) throws Exception;
 
-    void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws Exception;
+    void deleteVirtualIps(LoadBalancer lb, List<Integer> ids, UserPages up) throws Exception;
 
     void updateAccessList(LoadBalancer loadBalancer) throws Exception;
 
@@ -52,7 +52,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void uploadDefaultErrorFile(Integer clusterId, String content) throws Exception;
 
-    void deleteErrorFile(LoadBalancer loadBalancer) throws Exception;
+    void deleteErrorFile(LoadBalancer loadBalancer, UserPages up) throws Exception;
 
     void setErrorFile(LoadBalancer loadBalancer, String content) throws Exception;
 

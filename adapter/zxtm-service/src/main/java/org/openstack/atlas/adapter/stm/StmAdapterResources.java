@@ -9,6 +9,7 @@ import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.UserPages;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -620,7 +621,9 @@ public class StmAdapterResources {
             throw new StmRollBackException(String.format("Failed creating error page %s for: %s.", errorFileName, vsName), e);
         }
 
-        loadBalancer.getUserPages().setErrorpage(content);
+        UserPages up = new UserPages();
+        up.setErrorpage(content);
+        loadBalancer.setUserPages(up);
         ResourceTranslator rt;
 
         try {
@@ -647,14 +650,16 @@ public class StmAdapterResources {
         }
     }
 
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer)
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer, UserPages up)
             throws InsufficientRequestException, StmRollBackException {
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         String fileToDelete = ZxtmNameBuilder.generateErrorPageName(vsName);
 
-        if (loadBalancer.getUserPages() != null)
-            loadBalancer.getUserPages().setErrorpage(null);
+        if (up != null) {
+            loadBalancer.setUserPages(null);
+        }
+
 
         ResourceTranslator rt;
         try {

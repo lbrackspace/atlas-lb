@@ -30,7 +30,7 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         LoadBalancer transportLb;
 
         try {
-            dbLoadBalancer = loadBalancerService.getWithUserPages(queLb.getId(), queLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queLb.getId(), queLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queLb.getId());
             LOG.error(alertDescription, enfe);
@@ -43,7 +43,7 @@ public class DeleteSessionPersistenceListener extends BaseListener {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Removing session persistence for load balancer '%d' in STM...", queLb.getId()));
                 queLb.setSessionPersistence(SessionPersistence.NONE);
-                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queLb);
+                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queLb, loadBalancerService.getUserPages(queLb.getId(), queLb.getAccountId()));
                 LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in Zeus.", queLb.getId()));
             } else {
                 LOG.debug(String.format("Removing session persistence for load balancer '%d' in ZXTM...", queLb.getId()));
@@ -61,7 +61,6 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         }
 
         // Update load balancer in DB
-        dbLoadBalancer.setUserPages(null);
         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);

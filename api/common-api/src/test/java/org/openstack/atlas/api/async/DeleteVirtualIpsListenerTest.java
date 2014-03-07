@@ -94,12 +94,12 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete);
+        verify(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete, null);
         verify(virtualIpService).removeVipsFromLoadBalancer(lb, vipIdsToDelete);
         //TODO: Verify usage now that its been updated...
 //        verify(usageEventHelper).processUsageEvent(eq(lb), eq(UsageEvent.DELETE_VIRTUAL_IP), Matchers.any(Calendar.class));
@@ -116,7 +116,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 
@@ -132,13 +132,13 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete, null);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete);
+        verify(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete, null);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
@@ -153,12 +153,12 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getIds()).thenReturn(vipIdsToDelete);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(virtualIpService).removeVipsFromLoadBalancer(lb, vipIdsToDelete);
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete);
+        verify(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete, null);
         verify(virtualIpService).removeVipsFromLoadBalancer(lb, vipIdsToDelete);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.DATABASE_FAILURE.name()), anyString());

@@ -36,7 +36,7 @@ public class UpdateErrorFileListener extends BaseListener {
 
             try {
                 LOG.debug("Grabbing loadbalancer...");
-                dbLoadBalancer = loadBalancerService.getWithUserPages(lid, aid);
+                dbLoadBalancer = loadBalancerService.get(lid, aid);
                 dbLoadBalancer.setUserName(userName);
             } catch (EntityNotFoundException enfe) {
                 String alertDescription = String.format("Load balancer '%d' not found in database.", lid);

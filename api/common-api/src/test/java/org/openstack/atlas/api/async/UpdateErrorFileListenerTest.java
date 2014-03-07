@@ -81,7 +81,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
 
         Assert.assertNull(lb.getUserName());
 
@@ -102,7 +102,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
 
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         Assert.assertNull(lb.getUserName());
 
@@ -123,7 +123,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).setErrorFile(lb, ERROR_FILE_CONTENT);
 
         Assert.assertNull(lb.getUserName());

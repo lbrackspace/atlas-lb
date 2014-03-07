@@ -101,7 +101,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
         @Test
         public void testUpdateLoadBalancer() throws Exception {
-            adapterSpy.updateLoadBalancer(config, loadBalancer, loadBalancer);
+            adapterSpy.updateLoadBalancer(config, loadBalancer, loadBalancer, null);
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
@@ -186,7 +186,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             for (LoadBalancerJoinVip vip : loadBalancer.getLoadBalancerJoinVipSet())
                 vipsToDelete.add(vip.getVirtualIp().getId());
 
-            adapterSpy.deleteVirtualIps(config, loadBalancer, vipsToDelete);
+            adapterSpy.deleteVirtualIps(config, loadBalancer, vipsToDelete, null);
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator, times(2)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
@@ -459,10 +459,10 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
         @Test
         public void testDeleteErrorFile() throws Exception {
-            adapterSpy.deleteErrorFile(config, loadBalancer);
+            adapterSpy.deleteErrorFile(config, loadBalancer, null);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resources).deleteErrorFile(config, client, loadBalancer);
+            verify(resources).deleteErrorFile(config, client, loadBalancer, null);
             verify(client).destroy();
         }
 
@@ -684,7 +684,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
         @Test
         public void testUpdateSslTermination() throws Exception {
-            adapterSpy.updateSslTermination(config, loadBalancer, sslTermination);
+            adapterSpy.updateSslTermination(config, loadBalancer, sslTermination, null);
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator).translateVirtualServerResource(config, vsName, loadBalancer);

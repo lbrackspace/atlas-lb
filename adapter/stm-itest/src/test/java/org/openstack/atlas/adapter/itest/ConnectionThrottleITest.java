@@ -77,7 +77,7 @@ public class ConnectionThrottleITest extends STMTestBase {
 
     private void setupConnectionThrottle() throws Exception {
         lb.setConnectionLimit(limits);
-        stmAdapter.updateLoadBalancer(config, lb, lb);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
     }
 
     private void setupFakeAccessList() {
@@ -91,7 +91,7 @@ public class ConnectionThrottleITest extends STMTestBase {
 
     private void nullConnectionThrottle() throws Exception {
         lb.setConnectionLimit(null);
-        stmAdapter.updateLoadBalancer(config, lb, lb);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
     }
 
     private void deleteConnectionThrottle() throws Exception {
