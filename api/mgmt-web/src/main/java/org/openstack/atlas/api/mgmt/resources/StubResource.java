@@ -1,9 +1,28 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AlertStatus;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Alert;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudit;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudits;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfInts;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.UserRole;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LdapGroup;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.LdapInfo;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ByIdOrName;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostStatus;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet;
+import java.util.ArrayList;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.helpers.StubFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
@@ -161,6 +180,20 @@ public class StubResource extends ManagementDependencyProvider {
         AllowedDomain ad = new AllowedDomain();
         ad.setName("somedomain.org");
         return Response.status(200).entity(ad).build();
+    }
+
+    @GET
+    @Path("alerts")
+    public Response getAlerts() {
+        Alerts alerts = StubFactory.newAlerts(5);
+        return Response.status(Response.Status.OK).entity(alerts).build();
+    }
+
+    @GET
+    @Path("loadBalancerAudit")
+    public Response getLoadBalancerAudits() {
+        LoadBalancerAudits audits = StubFactory.newLoadBalancerAudits(3, 5);
+        return Response.status(Response.Status.OK).entity(audits).build();
     }
 
     @GET

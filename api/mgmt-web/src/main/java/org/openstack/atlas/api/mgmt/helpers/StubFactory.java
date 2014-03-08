@@ -430,4 +430,35 @@ public class StubFactory {
         }
         return iface;
     }
+
+    public static Alerts newAlerts(int n){
+        Alerts alerts = new Alerts();
+        for(int i=0;i<n;i++){
+            Alert alert = new Alert();
+            alert.setAccountId(i);
+            alert.setAlertType("ERROR");
+            alert.setCreated(Calendar.getInstance());
+            alert.setId(i);
+            alert.setLoadbalancerId(i);
+            alert.setMessage(String.format("Alert Message %d",i));
+            alert.setMessageName(String.format("Name %d",i));
+            alert.setStatus(AlertStatus.UNACKNOWLEDGED);
+            alerts.getAlerts().add(alert);
+        }
+        return alerts;
+    }
+
+    public static LoadBalancerAudits newLoadBalancerAudits(int m,int n){
+        LoadBalancerAudits lbAudits = new LoadBalancerAudits();
+        for(int i=0;i<m;i++){
+            LoadBalancerAudit lbAudit = new LoadBalancerAudit();
+            lbAudit.setCreated(Calendar.getInstance());
+            lbAudit.setId(i);
+            lbAudit.setStatus("ERROR");
+            lbAudit.setUpdated(Calendar.getInstance());
+            lbAudit.getAlertAudits().add(newAlerts(n));
+            lbAudits.getLoadBalancerAudits().add(lbAudit);
+        }
+        return lbAudits;
+    }
 }
