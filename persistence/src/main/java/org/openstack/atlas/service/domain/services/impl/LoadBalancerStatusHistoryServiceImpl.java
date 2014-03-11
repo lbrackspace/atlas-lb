@@ -19,7 +19,7 @@ public class LoadBalancerStatusHistoryServiceImpl extends BaseService implements
     }
 
     @Override
-    public LoadBalancerStatusHistory save(int accountId, int loadbalancerId, LoadBalancerStatus loadBalancerStatus) {
+    public LoadBalancerStatusHistory save(Integer accountId, Integer loadbalancerId, LoadBalancerStatus loadBalancerStatus) {
         LoadBalancerStatusHistory loadBalancerStatusHistory = new LoadBalancerStatusHistory();
         loadBalancerStatusHistory.setAccountId(accountId);
         loadBalancerStatusHistory.setLoadbalancerId(loadbalancerId);

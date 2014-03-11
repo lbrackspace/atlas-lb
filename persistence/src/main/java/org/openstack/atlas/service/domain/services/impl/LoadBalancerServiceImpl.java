@@ -2,8 +2,6 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.StaleObjectStateException;
-import org.hibernate.exception.LockAcquisitionException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
@@ -54,6 +52,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Autowired
     private AtlasCache atlasCache;
+
+
+    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
+        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
 
     @Override
     @Transactional
@@ -190,8 +193,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return loadBalancerRepository.testAndSetStatus(accountId, loadbalancerId, LoadBalancerStatus.PENDING_UPDATE, false);
     }
 
+    /*
+        DO NOT USE IN ANOTHER METHOD MARKED WITH @Transaction!
+     */
     @Override
-    @DeadLockRetry
     @Transactional
     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException {
         boolean isStatusSet;
@@ -204,20 +209,15 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return isStatusSet;
     }
 
-    @Override
-    @Transactional(rollbackFor = {Exception.class})
-    public LoadBalancer prepareForUpdate(LoadBalancer loadBalancer) throws Exception {
-        LoadBalancer dbLoadBalancer;
-        boolean portHMTypecheck = true;
-
-        dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+    @Transactional
+    private void validateForUpdate(LoadBalancer loadBalancer) throws Exception {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
         if (dbLoadBalancer.hasSsl()) {
             LOG.debug("Verifying protocol, cannot update protocol while using ssl termination...");
             if (loadBalancer.getProtocol() != null && loadBalancer.getProtocol() != dbLoadBalancer.getProtocol()) {
                 throw new BadRequestException("Cannot update protocol on a load balancer with ssl termination.");
             }
-//            SslTerminationHelper.isProtocolSecure(loadBalancer);
         }
 
         LOG.info("Performing SSL verifications.");
@@ -236,7 +236,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             //Validation for HTTPS redirect
             LOG.info("Verifying HTTPS redirect status.");
             if ((loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) ||
-                (loadBalancer.isHttpsRedirect() == null && dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect())) {
+                    (loadBalancer.isHttpsRedirect() == null && dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect())) {
                 if (!ssl.isSecureTrafficOnly()) {
                     LOG.error("Cannot use HTTPS Redirect on a load balancer with a mixed-mode SSL termination.");
                     throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
@@ -253,25 +253,26 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if ((loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) ||
                     (loadBalancer.isHttpsRedirect() == null && dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect())) {
                 if ((loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS))
-                  || loadBalancer.getProtocol() == null && !dbLoadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS)) {
+                        || loadBalancer.getProtocol() == null && !dbLoadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS)) {
                     LOG.error("HTTPS Redirect can only be enabled for HTTPS or SSL load balancers.");
                     throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
                             "or for load balancers with a 'Secure Only' SSL Termination.");
                 } else if ((loadBalancer.getPort() != null && loadBalancer.getPort() != 443)
                         || (loadBalancer.getPort() == null && dbLoadBalancer.getPort() != 443)) {
-                //We just redirect to https://original.url.com which goes to 443
+                    //We just redirect to https://original.url.com which goes to 443
                     LOG.error("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
                     throw new BadRequestException("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
                 }
             }
         }
+    }
 
-        LOG.debug("Updating the lb status to pending_update");
-        if (!testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)) {
-            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
-            LOG.warn(message);
-            throw new ImmutableEntityException(message);
-        }
+    @Transactional(rollbackFor = {Exception.class})
+    private LoadBalancer updateDbForUpdate(LoadBalancer loadBalancer) throws Exception {
+        LoadBalancer dbLoadBalancer;
+        boolean portHMTypecheck = true;
+
+        dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
         if (loadBalancer.getPort() != null && !loadBalancer.getPort().equals(dbLoadBalancer.getPort())) {
             LOG.debug("Updating loadbalancer port to " + loadBalancer.getPort());
@@ -283,7 +284,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 throw new BadRequestException(String.format("Port currently assigned to one of the virtual ips. Please verify protocol/port combinations."));
             }
         }
-
 
         if (loadBalancer.getName() != null && !loadBalancer.getName().equals(dbLoadBalancer.getName())) {
             LOG.debug("Updating loadbalancer name to " + loadBalancer.getName());
@@ -414,14 +414,23 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
         LOG.debug("Updated the loadbalancer in DB. Now sending response back.");
 
-//        // Add atom entry
-//        String atomTitle = "Load Balancer in pending update status";
-//        String atomSummary = "Load balancer in pending update status";
-//        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_UPDATE_LOADBALANCER, UPDATE, INFO);
-
         // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
         LOG.debug("Leaving " + getClass());
         return dbLoadBalancer;
+    }
+
+    // Do not ADD @Transactional to this method! We want separate transactions.
+    @Override
+    public LoadBalancer prepareForUpdate(LoadBalancer loadBalancer) throws Exception {
+        LOG.debug("Updating the lb status to pending_update");
+        if (!testAndSetStatus(loadBalancer.getAccountId(), loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)) {
+            LoadBalancer dbLb = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+            String message = StringHelper.immutableLoadBalancer(dbLb);
+            LOG.debug(message);
+            throw new ImmutableEntityException(message);
+        }
+        validateForUpdate(loadBalancer);
+        return updateDbForUpdate(loadBalancer);
     }
 
     private void verifyProtocolLoggingAndCaching(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
@@ -531,8 +540,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
-            String status, LbQueryStatus qs, Calendar changedCal,
-            Integer offset, Integer limit, Integer marker) throws BadRequestException {
+                                                      String status, LbQueryStatus qs, Calendar changedCal,
+                                                      Integer offset, Integer limit, Integer marker) throws BadRequestException {
         return loadBalancerRepository.getLoadbalancersGeneric(accountId, status, qs, changedCal, offset, limit, marker);
     }
 

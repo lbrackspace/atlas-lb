@@ -8,6 +8,6 @@ public interface LoadBalancerStatusHistoryService {
 
     public LoadBalancerStatusHistory save(LoadBalancerStatusHistory loadBalancerStatusHistory);
 
-    public LoadBalancerStatusHistory save(int accountId, int loadBalancerId, LoadBalancerStatus loadBalancerStatus);
+    public LoadBalancerStatusHistory save(Integer accountId, Integer loadBalancerId, LoadBalancerStatus loadBalancerStatus);
 
 }

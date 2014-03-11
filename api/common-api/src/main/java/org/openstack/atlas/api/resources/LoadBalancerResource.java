@@ -16,6 +16,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;

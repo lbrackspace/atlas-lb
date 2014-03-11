@@ -199,6 +199,7 @@ public class LoadBalancerServiceImplTest {
     public static class WhenVerifyingSslTermination {
         private LoadBalancer lb;
         LoadBalancerRepository lbRepository;
+        LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
         LoadBalancerServiceImpl lbService;
         LoadBalancerProtocolObject defaultProtocol;
 
@@ -206,8 +207,10 @@ public class LoadBalancerServiceImplTest {
         public void standUp() throws EntityNotFoundException, UnprocessableEntityException {
             lb = new LoadBalancer();
             lbRepository = mock(LoadBalancerRepository.class);
+            loadBalancerStatusHistoryService = mock(LoadBalancerStatusHistoryService.class);
             lbService = new LoadBalancerServiceImpl();
             lbService.setLoadBalancerRepository(lbRepository);
+            lbService.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
 
 
             SslTermination sslTermination = new SslTermination();
@@ -224,7 +227,8 @@ public class LoadBalancerServiceImplTest {
 
             defaultProtocol = new LoadBalancerProtocolObject(LoadBalancerProtocol.HTTP, "HTTP Protocol", 80, true);
             when(lbRepository.getByIdAndAccountId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(lb);
-//            when(lbRepository.testAndSetStatus(Matchers.<Integer>any(), Matchers.<Integer>any(),Matchers.<LoadBalancerStatus>any(), Matchers.<Boolean>any())).thenReturn(true);
+            when(lbRepository.testAndSetStatus(Matchers.anyInt(), Matchers.anyInt(), Matchers.<LoadBalancerStatus>any(), Matchers.anyBoolean())).thenReturn(true);
+            when(loadBalancerStatusHistoryService.save(Matchers.anyInt(), Matchers.anyInt(), Matchers.<LoadBalancerStatus>any())).thenReturn(new LoadBalancerStatusHistory());
 
         }
 
@@ -235,7 +239,6 @@ public class LoadBalancerServiceImplTest {
             loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
 
             lbService.prepareForUpdate(loadBalancer);
-
         }
 
         @Test(expected = BadRequestException.class)
@@ -246,7 +249,6 @@ public class LoadBalancerServiceImplTest {
             loadBalancer.setPort(445);
 
             lbService.prepareForUpdate(loadBalancer);
-
         }
     }
 

@@ -300,7 +300,7 @@ public class LoadBalancerRepository {
     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
         String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         List<LoadBalancer> lbList;
-        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_READ).
+        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
                 setParameter("aid", accountId).
                 setParameter("lid", loadbalancerId);
         lbList = q.getResultList();
@@ -316,10 +316,6 @@ public class LoadBalancerRepository {
         final boolean isPendingOrActive = lb.getStatus().equals(LoadBalancerStatus.PENDING_UPDATE) || isActive;
 
         if (allowConcurrentModifications ? isPendingOrActive : isActive) {
-//            SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//            Date now = new Date();
-//            String strDate = sdfDate.format(now);
-//            LOG.debug("SET STATUS: " + strDate);
             lb.setStatus(statusToChangeTo);
             lb.setUpdated(Calendar.getInstance());
             entityManager.merge(lb);
