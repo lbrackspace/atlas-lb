@@ -52,6 +52,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final VirtualServerRule ruleForceHttpsRedirect = new VirtualServerRule(HTTPS_REDIRECT, true, VirtualServerRuleRunFlag.run_every);
     protected static final ZeusUtils zeusUtil;
 
+    public static final String NON_HTTP_LOG_FORMAT = "%v %t %h %A:%p %n %B %b %T";
+    public static final String HTTP_LOG_FORMAT = "%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n";
+
     static {
         zeusUtil = new ZeusUtils();
     }
@@ -1788,8 +1791,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         final String rollBackMessage = "Update connection logging request canceled.";
-        final String nonHttpLogFormat = "%v %t %h %A:%p %n %B %b %T";
-        final String httpLogFormat = "%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n";
 
         if (isConnectionLogging) {
             LOG.debug(String.format("ENABLING logging for virtual server '%s'...", virtualServerName));
@@ -1800,9 +1801,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             if (isConnectionLogging) {
                 if (protocol != LoadBalancerProtocol.HTTP) {
-                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{nonHttpLogFormat});
+                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{NON_HTTP_LOG_FORMAT});
                 } else if (protocol == LoadBalancerProtocol.HTTP) {
-                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{httpLogFormat});
+                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{HTTP_LOG_FORMAT});
                 }
 
                 serviceStubs.getVirtualServerBinding().setLogFilename(new String[]{virtualServerName}, new String[]{config.getLogFileLocation()});
@@ -1887,13 +1888,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     LOG.info("Rules attached to the VS, update content caching successfully completed.");
                 } else {
                     LOG.info("Content caching rule not set because loadbalancer protocol is not HTTP.");
-                    serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
                     serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
+                    serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
                 }
             } else {
                 LOG.info("Removing content caching rule from virtualserver: " + virtualServerName);
-                serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
                 serviceStubs.getVirtualServerBinding().setWebcacheEnabled(new String[]{virtualServerName}, new boolean[]{false});
+                serviceStubs.getVirtualServerBinding().removeRules(new String[]{virtualServerName}, new String[][]{{contentCachingRule.getName()}});
             }
 
         } catch (ObjectDoesNotExist obdne) {
@@ -1903,7 +1904,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throw new ZxtmRollBackException(rollBackMessage, e);
         } catch (InvalidInput e) {
             LOG.error("Content caching not found, ignoring..." + e);
-//            throw new ZxtmRollBackException(rollBackMessage, e);
         } catch (RemoteException e) {
             LOG.error("Error updating content caching..." + e);
             throw new ZxtmRollBackException(rollBackMessage, e);
@@ -1920,22 +1920,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (loadBalancer.hasSsl()) {
             updateConnectionThrottle(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
         }
-//        Integer lbId = loadBalancer.getId();
-//        Integer accountId = loadBalancer.getAccountId();
-//        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-//        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
-//        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
-//        String[] vsNames;
-//
-//        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
-//            vsNames = new String[]{virtualServerName, virtualSecureServerName};
-//        } else {
-//            vsNames = new String[]{virtualServerName};
-//        }
-//
-//        for (String vsName : vsNames) {
-//            updateConnectionThrottle(config, loadBalancer, vsName);
-//        }
     }
 
     private void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String virtualServerName) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {

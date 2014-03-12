@@ -11,5 +11,5 @@ public enum ConfigurationKeys implements ConfigurationKey {
     failover_host_1,
     failover_host_2,
     default_log_file_location,
-    zxtm_version
+    test_account_id, test_loadbalancer_id, test_vip_id, test_ipv6_vip_id, additional_vip_id, additional_ipv6_vip_id, zxtm_version
 }

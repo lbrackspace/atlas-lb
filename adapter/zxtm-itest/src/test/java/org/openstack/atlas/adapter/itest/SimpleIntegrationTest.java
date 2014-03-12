@@ -95,39 +95,6 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     @Test
-    public void changeProtocolWithConnectionLoggingEnabled() {
-        try {
-            lb.setConnectionLogging(Boolean.TRUE);
-            zxtmAdapter.updateConnectionLogging(config, lb);
-            lb.setProtocol(HTTPS);
-            zxtmAdapter.updateProtocol(config, lb);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test
-    public void changeProtocolWithContentCachingEnabled() {
-        try {
-            lb.setProtocol(HTTP);
-            zxtmAdapter.updateProtocol(config, lb);
-
-            lb.setContentCaching(Boolean.TRUE);
-            zxtmAdapter.updateContentCaching(config, lb);
-            boolean[] isCCenabled1 = getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(new String[]{loadBalancerName()});
-            Assert.assertEquals(Boolean.TRUE, isCCenabled1[0]);
-
-            lb.setProtocol(TCP);
-            zxtmAdapter.updateProtocol(config, lb);
-            boolean[] isCCenabled2 = getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(new String[]{loadBalancerName()});
-            Assert.assertEquals(Boolean.FALSE, isCCenabled2[0]);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test
     public void updatePort() throws Exception {
         try {
             zxtmAdapter.updatePort(config, lb.getId(), lb.getAccountId(), 8080);

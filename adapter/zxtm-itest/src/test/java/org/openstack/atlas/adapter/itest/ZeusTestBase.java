@@ -1,7 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
 import Util.ConfigurationKeys;
-import Util.EsbConfiguration;
+import Util.ZxtmItestConfiguration;
 import com.zxtm.service.client.*;
 import org.apache.axis.AxisFault;
 import org.junit.Assert;
@@ -31,8 +31,8 @@ import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED
 import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 
 public class ZeusTestBase {
+    private static Configuration configuration = new ZxtmItestConfiguration();
     public static final Integer SLEEP_TIME_BETWEEN_TESTS = 500;
-    private static Configuration configuration = new EsbConfiguration();
 
     public static String ZXTM_USERNAME;
     public static String ZXTM_PASSWORD;
@@ -43,12 +43,12 @@ public class ZeusTestBase {
     public static String DEFAULT_LOG_FILE_LOCATION;
     public static String ZXTM_VERSION;
 
-    public static final Integer TEST_ACCOUNT_ID = 999998;
-    public static final Integer TEST_LOADBALANCER_ID = 999998;
-    public static final Integer TEST_VIP_ID = 999998;
-    public static final Integer TEST_IPV6_VIP_ID = 999995;
-    public static final Integer ADDITIONAL_VIP_ID = 88887;
-    public static final Integer ADDITIONAL_IPV6_VIP_ID = 88885;
+    public static Integer TEST_ACCOUNT_ID;
+    public static Integer TEST_LOADBALANCER_ID;
+    public static Integer TEST_VIP_ID;
+    public static Integer TEST_IPV6_VIP_ID;
+    public static Integer ADDITIONAL_VIP_ID;
+    public static Integer ADDITIONAL_IPV6_VIP_ID;
 
     protected static ReverseProxyLoadBalancerAdapter zxtmAdapter;
     protected static LoadBalancerEndpointConfiguration config;
@@ -79,6 +79,13 @@ public class ZeusTestBase {
         FAILOVER_HOST_2 = configuration.getString(ConfigurationKeys.failover_host_2);
         DEFAULT_LOG_FILE_LOCATION = configuration.getString(ConfigurationKeys.default_log_file_location);
         ZXTM_VERSION = configuration.getString(ConfigurationKeys.zxtm_version);
+
+        TEST_ACCOUNT_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.test_account_id));
+        TEST_LOADBALANCER_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.test_loadbalancer_id));
+        TEST_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.test_vip_id));
+        TEST_IPV6_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.test_ipv6_vip_id));
+        ADDITIONAL_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.additional_vip_id));
+        ADDITIONAL_IPV6_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.additional_ipv6_vip_id));
     }
 
     private static void setupEndpointConfiguration() throws MalformedURLException {
