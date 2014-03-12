@@ -167,17 +167,23 @@ public class ZeusTestBase {
     }
 
     private static void setupUsableVips() {
+        final Integer octet_min = 100;
+        final Integer octet_max = 240;
+
         try {
             suitableVips = new HashMap<String, Boolean>();
             TrafficIPGroupsSubnetMappingPerHost[] subnetMappings = getServiceStubs().getTrafficIpGroupBinding().getSubnetMappings(new String[]{TARGET_HOST});
             for (String s : subnetMappings[0].getSubnetmappings()[0].getSubnets()) {
                 if (IPUtils.isValidIpv4Subnet(s)) {
                     String[] split = s.split("\\.");
-                    String sVip1 = split[0] + "." + split[1] + "." + split[2] + ".200";
-                    String sVip2 = split[0] + "." + split[1] + "." + split[2] + ".201";
-                    String sVip3 = split[0] + "." + split[1] + "." + split[2] + ".202";
-                    String sVip4 = split[0] + "." + split[1] + "." + split[2] + ".203";
-                    String sVip5 = split[0] + "." + split[1] + "." + split[2] + ".204";
+                    Random r = new Random();
+                    Integer lastOctetStart = octet_max - r.nextInt(octet_min);
+
+                    String sVip1 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(lastOctetStart);
+                    String sVip2 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(++lastOctetStart);
+                    String sVip3 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(++lastOctetStart);
+                    String sVip4 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(++lastOctetStart);
+                    String sVip5 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(++lastOctetStart);
 
                     suitableVips.put(sVip1, true);
                     suitableVips.put(sVip2, true);
