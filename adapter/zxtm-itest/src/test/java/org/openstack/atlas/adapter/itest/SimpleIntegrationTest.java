@@ -242,7 +242,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     private void addVirtualIp() throws Exception {
         VirtualIp vip2 = new VirtualIp();
         vip2.setId(ADDITIONAL_VIP_ID);
-        vip2.setIpAddress("10.69.0.58");
+        vip2.setIpAddress(findUsableIPv4Vip());
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip2);
         lb.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);

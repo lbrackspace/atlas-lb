@@ -20,10 +20,7 @@ import org.xml.sax.SAXException;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.ROUND_ROBIN;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
@@ -49,6 +46,8 @@ public class ZeusTestBase {
     public static Integer TEST_IPV6_VIP_ID;
     public static Integer ADDITIONAL_VIP_ID;
     public static Integer ADDITIONAL_IPV6_VIP_ID;
+
+    protected static Map<String, Boolean> suitableVips;
 
     protected static ReverseProxyLoadBalancerAdapter zxtmAdapter;
     protected static LoadBalancerEndpointConfiguration config;
@@ -102,15 +101,25 @@ public class ZeusTestBase {
     }
 
     private static void setUpClusterForIPv6Operations() {
-        cluster = new Cluster();
-        cluster.setClusterIpv6Cidr("fd24:f480:ce44:91bc::/64");
+        try {
+            TrafficIPGroupsSubnetMappingPerHost[] subnetMappings = getServiceStubs().getTrafficIpGroupBinding().getSubnetMappings(new String[]{TARGET_HOST});
+            for (String s : subnetMappings[0].getSubnetmappings()[0].getSubnets()) {
+                if (IPUtils.isValidIpv6Subnet(s)) {
+                    cluster = new Cluster();
+                    cluster.setClusterIpv6Cidr(s);
+                    return;
+                }
+            }
+        } catch (RemoteException e) {
+            Assert.fail("IPv6 isn't properly setup!");
+        }
     }
 
     protected static void setupIvars() {
         Set<LoadBalancerJoinVip> vipList = new HashSet<LoadBalancerJoinVip>();
         vip1 = new VirtualIp();
         vip1.setId(TEST_VIP_ID);
-        vip1.setIpAddress(findSuitableIPv4Vip());
+        vip1.setIpAddress(findUsableIPv4Vip());
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip1);
         vipList.add(loadBalancerJoinVip);
@@ -140,19 +149,46 @@ public class ZeusTestBase {
         ZeusTestBase.lb = lb;
     }
 
-    protected static String findSuitableIPv4Vip() {
+    protected static String findUsableIPv4Vip() {
+        if (suitableVips == null) {
+            setupUsableVips();
+        }
+
+        for (String s : suitableVips.keySet()) {
+            Boolean isAvailableForUse = suitableVips.get(s);
+            if (isAvailableForUse) {
+                isAvailableForUse = false;
+                suitableVips.put(s, isAvailableForUse);
+                return s;
+            }
+        }
+
+        return null;
+    }
+
+    private static void setupUsableVips() {
         try {
+            suitableVips = new HashMap<String, Boolean>();
             TrafficIPGroupsSubnetMappingPerHost[] subnetMappings = getServiceStubs().getTrafficIpGroupBinding().getSubnetMappings(new String[]{TARGET_HOST});
             for (String s : subnetMappings[0].getSubnetmappings()[0].getSubnets()) {
                 if (IPUtils.isValidIpv4Subnet(s)) {
                     String[] split = s.split("\\.");
-                    return split[0] + "." + split[1] + "." + split[2] + ".200";
+                    String sVip1 = split[0] + "." + split[1] + "." + split[2] + ".200";
+                    String sVip2 = split[0] + "." + split[1] + "." + split[2] + ".201";
+                    String sVip3 = split[0] + "." + split[1] + "." + split[2] + ".202";
+                    String sVip4 = split[0] + "." + split[1] + "." + split[2] + ".203";
+                    String sVip5 = split[0] + "." + split[1] + "." + split[2] + ".204";
+
+                    suitableVips.put(sVip1, true);
+                    suitableVips.put(sVip2, true);
+                    suitableVips.put(sVip3, true);
+                    suitableVips.put(sVip4, true);
+                    suitableVips.put(sVip5, true);
                 }
             }
         } catch (RemoteException e) {
             Assert.fail("Couldn't get an IPv4 address to use!");
         }
-        return null;
     }
 
     protected static ZxtmServiceStubs getServiceStubs() throws AxisFault {
