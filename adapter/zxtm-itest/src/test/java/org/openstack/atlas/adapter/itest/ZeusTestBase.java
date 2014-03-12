@@ -40,6 +40,7 @@ public class ZeusTestBase {
     public static String FAILOVER_HOST_1;
     public static String FAILOVER_HOST_2;
     public static String DEFAULT_LOG_FILE_LOCATION;
+    public static String ZXTM_VERSION;
 
     public static final Integer TEST_ACCOUNT_ID = 999998;
     public static final Integer TEST_LOADBALANCER_ID = 999998;
@@ -76,12 +77,13 @@ public class ZeusTestBase {
         FAILOVER_HOST_1 = configuration.getString(ConfigurationKeys.failover_host_1);
         FAILOVER_HOST_2 = configuration.getString(ConfigurationKeys.failover_host_2);
         DEFAULT_LOG_FILE_LOCATION = configuration.getString(ConfigurationKeys.default_log_file_location);
+        ZXTM_VERSION = configuration.getString(ConfigurationKeys.zxtm_version);
     }
 
     private static void setupEndpointConfiguration() throws MalformedURLException {
         List<String> targetFailoverHosts = new ArrayList<String>();
         targetFailoverHosts.add(FAILOVER_HOST_1);
-//        targetFailoverHosts.add(FAILOVER_HOST_2);
+        if(!FAILOVER_HOST_1.equals(FAILOVER_HOST_2)) targetFailoverHosts.add(FAILOVER_HOST_2);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
         soapEndpointHost.setRestEndpoint(ZXTM_ENDPOINT_URI);
@@ -100,7 +102,7 @@ public class ZeusTestBase {
         Set<LoadBalancerJoinVip> vipList = new HashSet<LoadBalancerJoinVip>();
         vip1 = new VirtualIp();
         vip1.setId(TEST_VIP_ID);
-        vip1.setIpAddress("10.69.0.59");
+        vip1.setIpAddress("10.3.5.200");
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip1);
         vipList.add(loadBalancerJoinVip);
@@ -184,9 +186,8 @@ public class ZeusTestBase {
     }
 
     protected static void shouldBeValidApiVersion() {
-        String ZEUS_API_VERSION = "9.2 Developer mode";
         try {
-            Assert.assertEquals(ZEUS_API_VERSION, getServiceStubs().getSystemMachineInfoBinding().getProductVersion());
+            Assert.assertEquals(ZXTM_VERSION, getServiceStubs().getSystemMachineInfoBinding().getProductVersion());
         } catch (RemoteException e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -248,8 +249,8 @@ public class ZeusTestBase {
 
             final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerRules.length);
-            Assert.assertEquals(2, virtualServerRules[0].length);
-            Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedFor, virtualServerRules[0][0]);
+            Assert.assertEquals(1, virtualServerRules[0].length);
+            Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedPort, virtualServerRules[0][0]);
 
             final String[] errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});
             Assert.assertEquals("Default", errorFile[0]);
