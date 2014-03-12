@@ -322,9 +322,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
-            //TODO: refactor to take lb only, right now its a pool item and only updates in one place...
-            //Healthmonitor is a pool item
-            updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
+            updateHealthMonitor(config, lb);
         }
 
         //VirtualServer items
@@ -2016,19 +2014,20 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         loadBalancer.setConnectionLimit(throttle);
     }
 
-    @Override
-    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) {
-
-    }
 
     @Override
-    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, int lbId, int accountId, HealthMonitor healthMonitor)
+    public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        int lbId = loadBalancer.getId();
+        int accountId = loadBalancer.getAccountId();
+        HealthMonitor healthMonitor = loadBalancer.getHealthMonitor();
+
         final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
         final String monitorName = poolName;
 
         LOG.debug(String.format("Updating health monitor for node pool '%s'.", poolName));
+
 
         addMonitorClass(config, monitorName);
 

@@ -565,8 +565,9 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         monitor.setPath("/");
         monitor.setDelay(60);
         monitor.setTimeout(90);
+        lb.setHealthMonitor(monitor);
 
-        zxtmAdapter.updateHealthMonitor(config, lb.getId(), lb.getAccountId(), monitor);
+        zxtmAdapter.updateHealthMonitor(config, lb);
 
         String monitorName = monitorName();
 
@@ -623,8 +624,9 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         monitor.setPath("/");
         monitor.setDelay(60);
         monitor.setTimeout(90);
+        lb.setHealthMonitor(monitor);
 
-        zxtmAdapter.updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
+        zxtmAdapter.updateHealthMonitor(config, lb);
 
         String monitorName = monitorName();
 
