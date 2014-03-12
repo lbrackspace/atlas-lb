@@ -2143,7 +2143,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
 
         try {
-            LOG.debug(String.format("Updating HTTPS Redirect for virtual server '%s': Value: '%s'...", vsName, loadBalancer.isHalfClosed()));
+            LOG.debug(String.format("Updating HTTPS Redirect for virtual server '%s': Value: '%s'...", vsName, loadBalancer.isHttpsRedirect()));
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
             boolean redirectExists = Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(vsRedirectName);

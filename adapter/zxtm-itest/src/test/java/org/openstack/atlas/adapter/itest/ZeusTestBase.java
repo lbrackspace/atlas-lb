@@ -206,7 +206,11 @@ public class ZeusTestBase {
     }
 
     protected static String secureLoadBalancerName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
+        return ZxtmNameBuilder.genSslVSName(lb);
+    }
+
+    protected static String redirectLoadBalancerName() throws InsufficientRequestException {
+        return ZxtmNameBuilder.genRedirectVSName(lb);
     }
 
     protected static String poolName() throws InsufficientRequestException {
@@ -265,7 +269,7 @@ public class ZeusTestBase {
 
             final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerBasicInfos.length);
-            Assert.assertEquals(VirtualServerProtocol.http, virtualServerBasicInfos[0].getProtocol());
+            Assert.assertEquals(lb.getProtocol().name().toLowerCase(), virtualServerBasicInfos[0].getProtocol().getValue().toLowerCase());
             Assert.assertEquals(lb.getPort().intValue(), virtualServerBasicInfos[0].getPort());
             Assert.assertEquals(poolName(), virtualServerBasicInfos[0].getDefault_pool());
 
@@ -313,9 +317,14 @@ public class ZeusTestBase {
             Assert.assertEquals(PoolLoadBalancingAlgorithm.roundrobin.toString(), algorithms[0].getValue());
 
             final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerRules.length);
-            Assert.assertEquals(1, virtualServerRules[0].length);
-            Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedPort, virtualServerRules[0][0]);
+            if (lb.getProtocol().name().toLowerCase().equals("http")) {
+                Assert.assertEquals(1, virtualServerRules.length);
+                Assert.assertEquals(1, virtualServerRules[0].length);
+                Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedPort, virtualServerRules[0][0]);
+            } else {
+                Assert.assertEquals(1, virtualServerRules.length);
+                Assert.assertEquals(0, virtualServerRules[0].length);
+            }
 
             final String[] errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});
             Assert.assertEquals("Default", errorFile[0]);
