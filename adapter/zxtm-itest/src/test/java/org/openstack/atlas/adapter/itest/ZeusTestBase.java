@@ -15,6 +15,7 @@ import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
+import org.openstack.atlas.util.ip.IPUtils;
 import org.xml.sax.SAXException;
 
 import java.net.MalformedURLException;
@@ -83,7 +84,7 @@ public class ZeusTestBase {
     private static void setupEndpointConfiguration() throws MalformedURLException {
         List<String> targetFailoverHosts = new ArrayList<String>();
         targetFailoverHosts.add(FAILOVER_HOST_1);
-        if(!FAILOVER_HOST_1.equals(FAILOVER_HOST_2)) targetFailoverHosts.add(FAILOVER_HOST_2);
+        if (!FAILOVER_HOST_1.equals(FAILOVER_HOST_2)) targetFailoverHosts.add(FAILOVER_HOST_2);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
         soapEndpointHost.setRestEndpoint(ZXTM_ENDPOINT_URI);
@@ -102,7 +103,7 @@ public class ZeusTestBase {
         Set<LoadBalancerJoinVip> vipList = new HashSet<LoadBalancerJoinVip>();
         vip1 = new VirtualIp();
         vip1.setId(TEST_VIP_ID);
-        vip1.setIpAddress("10.3.5.200");
+        vip1.setIpAddress(findSuitableIPv4Vip());
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip1);
         vipList.add(loadBalancerJoinVip);
@@ -130,6 +131,21 @@ public class ZeusTestBase {
         lb.setLoadBalancerJoinVipSet(vipList);
 
         ZeusTestBase.lb = lb;
+    }
+
+    protected static String findSuitableIPv4Vip() {
+        try {
+            TrafficIPGroupsSubnetMappingPerHost[] subnetMappings = getServiceStubs().getTrafficIpGroupBinding().getSubnetMappings(new String[]{TARGET_HOST});
+            for (String s : subnetMappings[0].getSubnetmappings()[0].getSubnets()) {
+                if (IPUtils.isValidIpv4Subnet(s)) {
+                    String[] split = s.split("\\.");
+                    return split[0] + "." + split[1] + "." + split[2] + ".200";
+                }
+            }
+        } catch (RemoteException e) {
+            Assert.fail("Couldn't get an IPv4 address to use!");
+        }
+        return null;
     }
 
     protected static ZxtmServiceStubs getServiceStubs() throws AxisFault {
