@@ -574,8 +574,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //                removeXFPRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
                 serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, disablesXF);
                 serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, disablesXF);
-                //removeXFPORTRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
-                serviceStubs.getVirtualServerBinding().setRules(vsNames,new VirtualServerRule[][]{{}});
+//                removeXFPORTRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
+                // :/ suppose well handle it like this because we dont know if theres multiple vs names or not...
+                for (String vname : vsNames) {
+                    serviceStubs.getVirtualServerBinding().setRules(new String[]{(vname)}, new VirtualServerRule[][]{{}});
+                }
                 updateContentCaching(config, lb);
                 if (!SessionPersistence.SOURCE_IP.equals(lb.getSessionPersistence())) {
                     removeSessionPersistence(config, lbId, accountId);
