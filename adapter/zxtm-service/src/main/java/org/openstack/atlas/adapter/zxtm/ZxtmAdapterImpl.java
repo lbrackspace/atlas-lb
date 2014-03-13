@@ -290,6 +290,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             TrafficScriptHelper.addForceHttpsRedirectScriptIfNeeded(serviceStubs);
             attachForceHttpsRedirectRuleToVirtualServer(serviceStubs, virtualServerName);
+            removeXFPORTRuleFromVirtualServer(serviceStubs, virtualServerName);
             serviceStubs.getVirtualServerBinding().renameVirtualServer(new String[]{virtualServerName}, new String[]{virtualServerRedirectName});
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerRedirectName}, new boolean[]{true});
         } catch (RemoteException e) {
@@ -307,6 +308,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerRedirectName}, new boolean[]{false});
             serviceStubs.getVirtualServerBinding().renameVirtualServer(new String[]{virtualServerRedirectName}, new String[]{virtualServerName});
             removeForceHttpsRedirectRuleFromVirtualServer(serviceStubs, virtualServerName);
+            attachXFPORTRuleToVirtualServer(serviceStubs, virtualServerName);
         } catch (RemoteException e) {
             e.printStackTrace();
             //throw rollback?

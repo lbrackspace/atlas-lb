@@ -1,30 +1,24 @@
 package org.openstack.atlas.adapter.itest;
 
-import com.zxtm.service.client.*;
+import com.zxtm.service.client.VirtualServerBasicInfo;
+import com.zxtm.service.client.VirtualServerRule;
 import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
-import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
-import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.ROUND_ROBIN;
-import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS;
-import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED;
-import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 
 @RunWith(Enclosed.class)
 public class HttpsRedirectIntegrationTest extends ZeusTestBase {
@@ -132,15 +126,8 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
         }
 
         private void setSslTermination() {
-            String sVs = null;
-
             try {
-                sVs = ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
-            } catch (InsufficientRequestException e) {
-                e.printStackTrace();
-            }
-
-            try {
+                String sVs = secureLoadBalancerName();
                 SslTermination sslTermination = new SslTermination();
                 sslTermination.setSecureTrafficOnly(true);
                 sslTermination.setEnabled(true);
@@ -160,16 +147,8 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
 
                 zxtmAdapter.updateSslTermination(config, lb, zeusSslTermination);
 
-                //Check to see if VS was created
-                String[] virtualServers = getServiceStubs().getVirtualServerBinding().getVirtualServerNames();
-                boolean doesExist = false;
-                for (String vsName : virtualServers) {
-                    if (vsName.equals(sVs)) {
-                        doesExist = true;
-                        break;
-                    }
-                }
-                Assert.assertTrue(doesExist);
+                ArrayList<String> vsNames = new ArrayList<String>(Arrays.asList(getServiceStubs().getVirtualServerBinding().getVirtualServerNames()));
+                Assert.assertTrue(vsNames.contains(secureLoadBalancerName()));
 
                 String[] certificate = getServiceStubs().getVirtualServerBinding().getSSLCertificate(new String[]{sVs});
                 Assert.assertEquals(sVs, certificate[0]);
