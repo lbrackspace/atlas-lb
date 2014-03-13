@@ -6,7 +6,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Errorpage;
 
+import java.util.Arrays;
+
 public class GlobalErrorFileIntegrationTest extends ZeusTestBase {
+    final String baseContent = "<html> This is a test error page</html>";
+
 
     @BeforeClass
     public static void setupClass() throws InterruptedException {
@@ -22,19 +26,25 @@ public class GlobalErrorFileIntegrationTest extends ZeusTestBase {
 
     @Test
     public void testSimpleErrorFileOperations() {
-        setCustomErrorFile();
+        setCustomErrorFile(baseContent);
         deleteErrorFile();
     }
 
-    private void setCustomErrorFile() {
+    @Test
+    public void testErrorFileContentAfterCreation() {
+        verifyCustomErrorFileContent();
+        deleteErrorFile();
+    }
+
+    private String[] setCustomErrorFile(String efContent) {
+        String[] errorFile = new String[0];
         try {
-            final String content = "<html> This is a test error page</html>";
             Errorpage errorpage = new Errorpage();
-            errorpage.setContent(content);
+            errorpage.setContent(efContent);
 
-            zxtmAdapter.setErrorFile(config, lb, content);
+            zxtmAdapter.setErrorFile(config, lb, efContent);
 
-            String[] errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});
+            errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});
             boolean doesExist = false;
             for (String fileName : errorFile) {
                 if (fileName.equals(errorFileName())) {
@@ -48,7 +58,20 @@ public class GlobalErrorFileIntegrationTest extends ZeusTestBase {
             e.printStackTrace();
             Assert.fail(e.getMessage());
         }
+        return errorFile;
     }
+
+    private void verifyCustomErrorFileContent() {
+        String customContent = "<html>I am a custom error file for ZXTM Integration Tests</html>";
+            try {
+               setCustomErrorFile(customContent);
+                String[] errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});
+                Assert.assertEquals(customContent, new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFile[0])));
+            } catch (Exception e) {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
+        }
 
     private void deleteErrorFile() {
         try {
@@ -65,7 +88,6 @@ public class GlobalErrorFileIntegrationTest extends ZeusTestBase {
                 }
             }
             Assert.assertFalse(doesExist);
-            //TODO: uncomment once we resolve zxtm issues. update: use zeus' 'Default' for the time being.........
             Assert.assertEquals("Default", fileNameAfterDeletion);
         } catch (Exception e) {
             e.printStackTrace();

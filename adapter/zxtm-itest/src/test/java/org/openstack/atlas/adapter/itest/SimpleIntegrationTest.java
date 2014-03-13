@@ -523,6 +523,22 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     @Test
+    public void deleteConnectionThrottle() throws Exception {
+        String[] lbName = new String[]{(loadBalancerName())};
+
+        zxtmAdapter.deleteConnectionThrottle(config, lb);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(lbName)[0]);
+
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(lbName)[0]);
+    }
+
+    @Test
     public void updateAccessList() throws Exception {
         Set<AccessList> networkItems = new HashSet<AccessList>();
         AccessList item1 = new AccessList();

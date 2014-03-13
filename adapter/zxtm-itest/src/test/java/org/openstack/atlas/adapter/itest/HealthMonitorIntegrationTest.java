@@ -12,6 +12,7 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.service.domain.entities.HealthMonitor;
 import org.openstack.atlas.service.domain.entities.HealthMonitorType;
+import org.openstack.atlas.service.domain.entities.UserPages;
 
 import java.rmi.RemoteException;
 
@@ -30,7 +31,7 @@ public class HealthMonitorIntegrationTest extends ZeusTestBase {
     }
 
     @Test
-    public void verifyHealthMonitorInAdapterAfterAddingToLb() throws InsufficientRequestException, RollBackException, RemoteException {
+    public void verifyHealthMonitorAfterUpdate() throws InsufficientRequestException, RollBackException, RemoteException {
         try {
             HealthMonitor monitor = new HealthMonitor();
             monitor.setType(HealthMonitorType.HTTP);
@@ -78,5 +79,64 @@ public class HealthMonitorIntegrationTest extends ZeusTestBase {
             Assert.fail(e.getMessage());
         }
     }
-    //TODO: more tests...
+
+    @Test
+    public void verifyUpdateHealthMonitorWithErrorPage() throws InsufficientRequestException, RollBackException, RemoteException {
+        try {
+            String efContent = "<html>test ep</html>";
+            UserPages up = new UserPages();
+            up.setErrorpage(efContent);
+            lb.setUserPages(up);
+            zxtmAdapter.setErrorFile(config, lb, efContent);
+            Assert.assertEquals(efContent,
+                    new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
+            HealthMonitor monitor = new HealthMonitor();
+            monitor.setType(HealthMonitorType.HTTP);
+            monitor.setAttemptsBeforeDeactivation(10);
+            monitor.setBodyRegex("");
+            monitor.setStatusRegex("");
+            monitor.setPath("/");
+            monitor.setDelay(60);
+            monitor.setTimeout(90);
+            lb.setHealthMonitor(monitor);
+            zxtmAdapter.updateHealthMonitor(config, lb);
+
+            String monitorName = monitorName();
+            final CatalogMonitorType[] monitorTypeArray = getServiceStubs().getMonitorBinding().getType(new String[]{monitorName});
+            Assert.assertEquals(1, monitorTypeArray.length);
+            Assert.assertEquals(CatalogMonitorType._http, monitorTypeArray[0].getValue());
+
+            final UnsignedInt[] attemptsBeforeDeactivationArray = getServiceStubs().getMonitorBinding().getFailures(new String[]{monitorName});
+            Assert.assertEquals(1, attemptsBeforeDeactivationArray.length);
+            Assert.assertEquals(new UnsignedInt(monitor.getAttemptsBeforeDeactivation()), attemptsBeforeDeactivationArray[0]);
+
+            final String[] bodyRegexArray = getServiceStubs().getMonitorBinding().getBodyRegex(new String[]{monitorName});
+            Assert.assertEquals(1, bodyRegexArray.length);
+            Assert.assertEquals(monitor.getBodyRegex(), bodyRegexArray[0]);
+
+            final String[] statusRegexArray = getServiceStubs().getMonitorBinding().getStatusRegex(new String[]{monitorName});
+            Assert.assertEquals(1, statusRegexArray.length);
+            Assert.assertEquals(monitor.getStatusRegex(), statusRegexArray[0]);
+
+            final String[] pathRegexArray = getServiceStubs().getMonitorBinding().getPath(new String[]{monitorName});
+            Assert.assertEquals(1, pathRegexArray.length);
+            Assert.assertEquals(monitor.getPath(), pathRegexArray[0]);
+
+            final UnsignedInt[] delayArray = getServiceStubs().getMonitorBinding().getDelay(new String[]{monitorName});
+            Assert.assertEquals(1, delayArray.length);
+            Assert.assertEquals(new UnsignedInt(monitor.getDelay()), delayArray[0]);
+
+            final UnsignedInt[] timeoutArray = getServiceStubs().getMonitorBinding().getTimeout(new String[]{monitorName});
+            Assert.assertEquals(1, timeoutArray.length);
+            Assert.assertEquals(new UnsignedInt(monitor.getTimeout()), timeoutArray[0]);
+
+            //Verify errorPage still exist
+            byte[] ef2 = getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName());
+            String def2 = new String(ef2);
+            Assert.assertEquals(efContent, def2);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+    }
 }

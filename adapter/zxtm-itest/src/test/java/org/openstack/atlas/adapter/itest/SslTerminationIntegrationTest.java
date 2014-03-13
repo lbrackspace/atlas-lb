@@ -5,10 +5,7 @@ import com.zxtm.service.client.VirtualServerBasicInfo;
 import com.zxtm.service.client.VirtualServerLocationDefaultRewriteMode;
 import com.zxtm.service.client.VirtualServerRule;
 import org.apache.axis.types.UnsignedInt;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
@@ -108,8 +105,10 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         updateLoadBalancerAttributes();
     }
 
+    @Ignore
     @Test
     public void testWhenAddingRateLimitWithSslTermination() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        //Rate limiting is not handled by zxtm any more
         setRateLimitBeforeSsl();
         deleteRateLimit();
         setSslTermination();
@@ -448,6 +447,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
 
             Assert.assertEquals(loadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
             Assert.assertEquals(secureLoadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(errorContent, new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
 
             //remove error page
             zxtmAdapter.removeAndSetDefaultErrorFile(config, lb);
@@ -458,6 +458,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             zxtmAdapter.setErrorFile(config, lb, errorContent);
             Assert.assertEquals(loadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
             Assert.assertEquals(secureLoadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(errorContent, new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -473,12 +474,10 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             String errorContent = "<html><body>ErrorFileContents</body></html>";
 
             zxtmAdapter.deleteErrorFile(config, lb);
-            String blah2 = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0];
-            Assert.assertEquals("", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
+            Assert.assertEquals("Default", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
 
             //no ssl yet
             try {
-                String blah = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0];
                 Assert.assertEquals("Default", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
             } catch (ObjectDoesNotExist odne) {
                 Assert.assertTrue("ssl not present", odne.getErrmsg().contains(secureLoadBalancerName()));
@@ -528,12 +527,12 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(vsSslName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(vsSslName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(vsSslName)[0]);
-            Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getRateTimer(vsSslName)[0]);
+            Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(vsSslName)[0]);
 
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(vsName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(vsName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(vsName)[0]);
-            Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getRateTimer(vsName)[0]);
+            Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(vsName)[0]);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -740,7 +739,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerRules.length);
             Assert.assertEquals(3, virtualServerRules[0].length);
-             for (VirtualServerRule rule : virtualServerRules[0]) {
+            for (VirtualServerRule rule : virtualServerRules[0]) {
                 if (!(rule.equals(ZxtmAdapterImpl.ruleRateLimitHttp)) && !(rule.equals(ZxtmAdapterImpl.ruleXForwardedProto)) && !(rule.equals(ZxtmAdapterImpl.ruleXForwardedFor))) {
                     Assert.fail("None of the rules matched, test failed!...");
                 }

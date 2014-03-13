@@ -1,15 +1,12 @@
 package org.openstack.atlas.adapter.itest;
 
+import org.junit.*;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.service.domain.entities.RateLimit;
 import com.zxtm.service.client.VirtualServerBasicInfo;
 import com.zxtm.service.client.VirtualServerProtocol;
 import com.zxtm.service.client.VirtualServerRule;
 import org.apache.axis.types.UnsignedInt;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
 
 import java.util.Calendar;
 
@@ -29,8 +26,10 @@ public class RateLimitIntegrationTest extends ZeusTestBase {
         removeSimpleLoadBalancer();
     }
 
+    @Ignore
     @Test
     public void testSimpleRateLimitOperations() {
+        //No longer a documented feature, the rate script needs to be installed to be useful
         setRateLimit();
         updateRateLimit();
         deleteRateLimit();
