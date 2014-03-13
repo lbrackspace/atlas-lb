@@ -49,6 +49,12 @@ public class SetNodesIntegrationTest extends ZeusTestBase {
     @Test
     public void testNodeOperationsWithErrorPage() throws Exception {
         //Verify that the custom error page is set and that node operations run
+
+        //Fresh LB for this test...
+        removeSimpleLoadBalancer();
+        setupIvars();
+        setupSimpleLoadBalancer();
+
         String efContent = "<html>Test Error page, Nodes Operations</html>";
         UserPages up = new UserPages();
         up.setErrorpage(efContent);
