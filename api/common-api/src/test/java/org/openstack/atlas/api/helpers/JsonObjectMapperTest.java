@@ -42,6 +42,20 @@ public class JsonObjectMapperTest {
     }
 
     @Test
+    public void shouldDeserializeVirtualIp() throws IOException {
+        List<String> vipJsonList = new ArrayList<String>();
+        vipJsonList.add("{\"virtualIp\":{\"type\":\"PUBLIC\", \"ipVersion\":\"IPV6\"}}");
+        vipJsonList.add("{\"type\":\"PUBLIC\", \"ipVersion\":\"IPV6\"}");
+        for (String vipJson : vipJsonList) {
+            VirtualIp vip = mapper.readValue(vipJson, VirtualIp.class);
+            Assert.assertEquals(VipType.PUBLIC, vip.getType());
+            Assert.assertEquals(IpVersion.IPV6, vip.getIpVersion());
+        }
+
+
+    }
+
+    @Test
     public void shouldMapConnectionThrottleDeserialize() throws IOException {
         List<String> ctJsonList = new ArrayList<String>();
         ctJsonList.add("{\"connectionThrottle\":{\"maxConnectionRate\":100,\"minConnections\":300,\"rateInterval\":60,\"maxConnections\": 200}}");
