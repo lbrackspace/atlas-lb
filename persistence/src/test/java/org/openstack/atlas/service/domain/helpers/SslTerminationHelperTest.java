@@ -19,13 +19,14 @@ import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @RunWith(Enclosed.class)
 public class SslTerminationHelperTest {
 
     public static class sslTerminationOperations {
-        Integer accountId = 1234;
         LoadBalancerRepository lbRepository;
         SslTerminationRepository sslTerminationRepository;
         LoadBalancer lb;
@@ -35,6 +36,8 @@ public class SslTerminationHelperTest {
         VirtualIp vip;
         SslTermination ssl1;
         SslTermination ssl2;
+        private SslTermination apiSslTerm;
+        private org.openstack.atlas.service.domain.entities.SslTermination dbSslTerm;
 
         @Before
         public void standUp() {
@@ -62,16 +65,58 @@ public class SslTerminationHelperTest {
             ssl2.setSecurePort(446);
             ssl2.setSecureTrafficOnly(false);
 
-
-//            lb.setSslTermination(ssl1);
-//            lb2.setSslTermination(ssl2);
-
             vip.setIpAddress("192.3.3.3");
             lbjv.setVirtualIp(vip);
             lbjvs.add(lbjv);
             lb.setLoadBalancerJoinVipSet(lbjvs);
         }
 
+        @Test
+        public void shouldAcceptAllCasesWhereRencryptionisTurnedOff() {
+            apiSslTerm = newApiSslTerm();
+            dbSslTerm = newDbSslTerm();
+
+            apiSslTerm.setReEncryptionEnabled(false);
+            assertTrue(isValidRencrypt(apiSslTerm, null));
+            assertTrue(isValidRencrypt(apiSslTerm, dbSslTerm));
+        }
+
+        @Test
+        public void shouldFailIfDisableingSecureTrafficOnRencryptedLb() {
+            apiSslTerm = newApiSslTerm();
+            dbSslTerm = newDbSslTerm();
+
+            dbSslTerm.setReEncryptionEnabled(true);
+            apiSslTerm.setReEncryptionEnabled(true);
+
+            dbSslTerm.setSecureTrafficOnly(true);
+            apiSslTerm.setSecureTrafficOnly(false);
+
+            assertFalse(isValidRencrypt(apiSslTerm, dbSslTerm));
+        }
+
+        @Test
+        public void shouldFailIfSettingRencryptionWithNoSecureTrafficOnly() {
+            apiSslTerm = newApiSslTerm();
+            dbSslTerm = newDbSslTerm();
+            apiSslTerm.setReEncryptionEnabled(true);
+            assertFalse(isValidRencrypt(apiSslTerm, null));
+            assertFalse(isValidRencrypt(apiSslTerm, dbSslTerm));
+            apiSslTerm.setSecureTrafficOnly(false);
+            assertFalse(isValidRencrypt(apiSslTerm, null));
+            assertFalse(isValidRencrypt(apiSslTerm, dbSslTerm));
+
+            // But its cool if they enable SecureTraffic only at build time
+            apiSslTerm.setSecureTrafficOnly(true);
+            assertTrue(isValidRencrypt(apiSslTerm, null));
+            assertTrue(isValidRencrypt(apiSslTerm, dbSslTerm));
+        }
+
+        @Test
+        public void shouldTestRencryptionSslTermTemplate() {
+            apiSslTerm = newApiSslTerm();
+            dbSslTerm = newDbSslTerm();
+        }
 
         @Test
         public void shouldReturnFailIfSecureProtocol() throws EntityNotFoundException, BadRequestException {
@@ -89,12 +134,12 @@ public class SslTerminationHelperTest {
             org.openstack.atlas.service.domain.entities.SslTermination sslTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
             sslTermination.setEnabled(true);
             lb2.setSslTermination(sslTermination);
-            Assert.assertTrue(SslTerminationHelper.modificationStatus(ssl2, lb2));
+            Assert.assertTrue(SslTerminationHelper.isModifingSslAttrsOnly(ssl2, lb2));
         }
 
         @Test
         public void shouldFailIfNoSslTermToUpdate() throws EntityNotFoundException, BadRequestException {
-            Assert.assertFalse(SslTerminationHelper.modificationStatus(ssl1, lb));
+            Assert.assertFalse(SslTerminationHelper.isModifingSslAttrsOnly(ssl1, lb));
         }
 
         @Test(expected = BadRequestException.class)
@@ -126,9 +171,9 @@ public class SslTerminationHelperTest {
             org.openstack.atlas.service.domain.entities.SslTermination sslTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
             sslTermination.setEnabled(true);
             sslTermination.setSecureTrafficOnly(true);
-            Assert.assertEquals(ssl1.isSecureTrafficOnly(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).isSecureTrafficOnly());
-            Assert.assertEquals(ssl1.isEnabled(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).isEnabled());
-            Assert.assertEquals((Object) ssl1.getSecurePort(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).getSecurePort());
+            Assert.assertEquals(ssl1.isSecureTrafficOnly(), SslTerminationHelper.verifyAndApplyAttributes(ssl1, sslTermination).isSecureTrafficOnly());
+            Assert.assertEquals(ssl1.isEnabled(), SslTerminationHelper.verifyAndApplyAttributes(ssl1, sslTermination).isEnabled());
+            Assert.assertEquals((Object) ssl1.getSecurePort(), SslTerminationHelper.verifyAndApplyAttributes(ssl1, sslTermination).getSecurePort());
         }
 
         @Test
@@ -169,5 +214,17 @@ public class SslTerminationHelperTest {
             Assert.assertEquals(cleanSTring, sslTermination.getPrivatekey());
 
         }
+    }
+
+    private static SslTermination newApiSslTerm() {
+        return new SslTermination();
+    }
+
+    private static org.openstack.atlas.service.domain.entities.SslTermination newDbSslTerm() {
+        return new org.openstack.atlas.service.domain.entities.SslTermination();
+    }
+
+    private static boolean isValidRencrypt(SslTermination apiSsl, org.openstack.atlas.service.domain.entities.SslTermination dbSsl) {
+        return SslTerminationHelper.isRencryptionUsingSecureTrafficOnly(apiSsl, dbSsl);
     }
 }

@@ -423,12 +423,16 @@
             <b>id</b>
         </field-exclude>
         <field>
-        <a get-method="isEnabled">enabled</a>
-        <b get-method="isEnabled">enabled</b>
+            <a get-method="isEnabled">enabled</a>
+            <b get-method="isEnabled">enabled</b>
         </field>
         <field>
-        <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
-        <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
+            <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
+            <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
+        </field>
+        <field>
+            <a get-method="isReEncryptionEnabled">reEncryptionEnabled</a>
+            <b get-method="isReEncryptionEnabled">reEncryptionEnabled</b>
         </field>
     </mapping>
 
@@ -453,12 +457,16 @@
             <b>intermediateCertificate</b>
         </field-exclude>
         <field>
-        <a get-method="isEnabled">enabled</a>
-        <b get-method="isEnabled">enabled</b>
+            <a get-method="isEnabled">enabled</a>
+            <b get-method="isEnabled">enabled</b>
         </field>
         <field>
-        <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
-        <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
+            <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
+            <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
+        </field>
+        <field>
+            <a get-method="isReEncryptionEnabled">reEncryptionEnabled</a>
+            <b get-method="isReEncryptionEnabled">reEncryptionEnabled</b>
         </field>
     </mapping>
 

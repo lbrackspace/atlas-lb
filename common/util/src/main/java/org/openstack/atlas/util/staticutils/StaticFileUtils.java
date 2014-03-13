@@ -95,6 +95,12 @@ public class StaticFileUtils {
         return readFile(new File(expandUser(fileName)));
     }
 
+    public static String readFileToString(String fileName) throws FileNotFoundException, IOException{
+        byte[] bytes = readFile(new File(expandUser(fileName)));
+        String out = new String(bytes,"utf-8");
+        return out;
+    }
+
     public static void copyStreams(InputStream is, OutputStream os, PrintStream ps, long isSize, int buffsize) throws IOException {
         byte[] data;
         long totalBytesRead = 0;
