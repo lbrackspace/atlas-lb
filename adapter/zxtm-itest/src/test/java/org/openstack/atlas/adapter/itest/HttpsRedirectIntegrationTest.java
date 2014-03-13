@@ -1,30 +1,25 @@
 package org.openstack.atlas.adapter.itest;
 
-import com.zxtm.service.client.*;
+import com.zxtm.service.client.VirtualServerBasicInfo;
+import com.zxtm.service.client.VirtualServerRule;
+import org.apache.axis.AxisFault;
 import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
-import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
-import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.ROUND_ROBIN;
-import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS;
-import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED;
-import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 
 @RunWith(Enclosed.class)
 public class HttpsRedirectIntegrationTest extends ZeusTestBase {
@@ -47,40 +42,61 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
         @Test
         public void testAddRemoveHttpsRedirect() {
             try {
-                ArrayList<String> vsNames;
-
-                vsNames = new ArrayList<String>(Arrays.asList(getServiceStubs().getVirtualServerBinding().getVirtualServerNames()));
-
-                Assert.assertTrue(vsNames.contains(loadBalancerName()));
-                Assert.assertFalse(vsNames.contains(redirectLoadBalancerName()));
-                Assert.assertFalse(vsNames.contains(secureLoadBalancerName()));
-
-                lb.setHttpsRedirect(true);
-                zxtmAdapter.updateHttpsRedirect(config, lb);
-
-                vsNames = new ArrayList<String>(Arrays.asList(getServiceStubs().getVirtualServerBinding().getVirtualServerNames()));
-
-                Assert.assertTrue(vsNames.contains(loadBalancerName()));
-                Assert.assertTrue(vsNames.contains(redirectLoadBalancerName()));
-                Assert.assertFalse(vsNames.contains(secureLoadBalancerName()));
-
-                VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{redirectLoadBalancerName()});
-                Assert.assertEquals(1, virtualServerRules.length);
-                Assert.assertEquals(1, virtualServerRules[0].length);
-                Assert.assertEquals(ZxtmAdapterImpl.ruleForceHttpsRedirect, virtualServerRules[0][0]);
-
-                lb.setHttpsRedirect(false);
-                zxtmAdapter.updateHttpsRedirect(config, lb);
-
-                vsNames = new ArrayList<String>(Arrays.asList(getServiceStubs().getVirtualServerBinding().getVirtualServerNames()));
-
-                Assert.assertTrue(vsNames.contains(loadBalancerName()));
-                Assert.assertFalse(vsNames.contains(redirectLoadBalancerName()));
-                Assert.assertFalse(vsNames.contains(secureLoadBalancerName()));
+                verifyAddRemoveHttpsRedirect();
             } catch (Exception e) {
                 e.printStackTrace();
                 Assert.fail(e.getMessage());
             }
+        }
+
+        @Test
+        public void testAddRemoveHttpsRedirectWithErrorPage() {
+            try {
+                String efContent = "<html>test ep</html>";
+                UserPages up = new UserPages();
+                up.setErrorpage(efContent);
+                lb.setUserPages(up);
+                zxtmAdapter.setErrorFile(config, lb, efContent);
+                Assert.assertEquals(efContent,
+                        new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
+                verifyAddRemoveHttpsRedirect();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
+        }
+
+        public void verifyAddRemoveHttpsRedirect() throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+            ArrayList<String> vsNames;
+
+            vsNames = new ArrayList<String>(Arrays.asList(getServiceStubs().getVirtualServerBinding().getVirtualServerNames()));
+
+            Assert.assertTrue(vsNames.contains(loadBalancerName()));
+            Assert.assertFalse(vsNames.contains(redirectLoadBalancerName()));
+            Assert.assertFalse(vsNames.contains(secureLoadBalancerName()));
+
+            lb.setHttpsRedirect(true);
+            zxtmAdapter.updateHttpsRedirect(config, lb);
+
+            vsNames = new ArrayList<String>(Arrays.asList(getServiceStubs().getVirtualServerBinding().getVirtualServerNames()));
+
+            Assert.assertTrue(vsNames.contains(loadBalancerName()));
+            Assert.assertTrue(vsNames.contains(redirectLoadBalancerName()));
+            Assert.assertFalse(vsNames.contains(secureLoadBalancerName()));
+
+            VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{redirectLoadBalancerName()});
+            Assert.assertEquals(1, virtualServerRules.length);
+            Assert.assertEquals(1, virtualServerRules[0].length);
+            Assert.assertEquals(ZxtmAdapterImpl.ruleForceHttpsRedirect, virtualServerRules[0][0]);
+
+            lb.setHttpsRedirect(false);
+            zxtmAdapter.updateHttpsRedirect(config, lb);
+
+            vsNames = new ArrayList<String>(Arrays.asList(getServiceStubs().getVirtualServerBinding().getVirtualServerNames()));
+
+            Assert.assertTrue(vsNames.contains(loadBalancerName()));
+            Assert.assertFalse(vsNames.contains(redirectLoadBalancerName()));
+            Assert.assertFalse(vsNames.contains(secureLoadBalancerName()));
         }
     }
 
@@ -106,14 +122,13 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
         @Test
         public void testAddRemoveHttpsRedirect() {
             try {
-                verifyAddRemoveHttpsSRedirect();
+                verifyAddRemoveHttpsRedirect();
             } catch (Exception e) {
                 e.printStackTrace();
                 Assert.fail(e.getMessage());
             }
         }
 
-        @Ignore
         @Test
         public void testAddRemoveHttpsRedirectWithErrorPage() {
             try {
@@ -124,7 +139,7 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
                 zxtmAdapter.setErrorFile(config, lb, efContent);
                 Assert.assertEquals(efContent,
                         new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
-                verifyAddRemoveHttpsSRedirect();
+                verifyAddRemoveHttpsRedirect();
             } catch (Exception e) {
                 e.printStackTrace();
                 Assert.fail(e.getMessage());
@@ -132,15 +147,8 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
         }
 
         private void setSslTermination() {
-            String sVs = null;
-
             try {
-                sVs = ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
-            } catch (InsufficientRequestException e) {
-                e.printStackTrace();
-            }
-
-            try {
+                String sVs = secureLoadBalancerName();
                 SslTermination sslTermination = new SslTermination();
                 sslTermination.setSecureTrafficOnly(true);
                 sslTermination.setEnabled(true);
@@ -160,16 +168,8 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
 
                 zxtmAdapter.updateSslTermination(config, lb, zeusSslTermination);
 
-                //Check to see if VS was created
-                String[] virtualServers = getServiceStubs().getVirtualServerBinding().getVirtualServerNames();
-                boolean doesExist = false;
-                for (String vsName : virtualServers) {
-                    if (vsName.equals(sVs)) {
-                        doesExist = true;
-                        break;
-                    }
-                }
-                Assert.assertTrue(doesExist);
+                ArrayList<String> vsNames = new ArrayList<String>(Arrays.asList(getServiceStubs().getVirtualServerBinding().getVirtualServerNames()));
+                Assert.assertTrue(vsNames.contains(secureLoadBalancerName()));
 
                 String[] certificate = getServiceStubs().getVirtualServerBinding().getSSLCertificate(new String[]{sVs});
                 Assert.assertEquals(sVs, certificate[0]);
@@ -191,11 +191,10 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
             } catch (Exception e) {
                 e.printStackTrace();
                 Assert.fail(e.getMessage());
-                //removeSimpleLoadBalancer();
             }
         }
 
-        private void verifyAddRemoveHttpsSRedirect() throws InsufficientRequestException, ZxtmRollBackException, RemoteException {
+        private void verifyAddRemoveHttpsRedirect() throws InsufficientRequestException, ZxtmRollBackException, RemoteException {
             ArrayList<String> vsNames;
 
             vsNames = new ArrayList<String>(Arrays.asList(getServiceStubs().getVirtualServerBinding().getVirtualServerNames()));
@@ -215,7 +214,7 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
 
             VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{redirectLoadBalancerName()});
             Assert.assertEquals(1, virtualServerRules.length);
-            Assert.assertEquals(1, virtualServerRules[0].length); // This is failing because the forwarded_port rule is never removed on repurpose
+            Assert.assertEquals(1, virtualServerRules[0].length);
             Assert.assertEquals(ZxtmAdapterImpl.ruleForceHttpsRedirect, virtualServerRules[0][0]);
 
             lb.setHttpsRedirect(false);
