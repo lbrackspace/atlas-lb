@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.helpers;
 
+import org.openstack.atlas.util.ca.zeus.ErrorEntry;
 import java.util.ArrayList;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
@@ -25,7 +26,6 @@ public class ResponseFactory {
         return getSuccessResponse(message, 200);
     }
 
-
     public static Response getResponseWithStatus(Response.Status status, String message) {
         LbaasFault lbaasFault = new GeneralFault();
         lbaasFault.setCode(status.getStatusCode());
@@ -33,7 +33,7 @@ public class ResponseFactory {
         return Response.status(status).entity(lbaasFault).build();
     }
 
-    public static Response getResponseWithStatus(int  status, String message) {
+    public static Response getResponseWithStatus(int status, String message) {
         LbaasFault lbaasFault = new GeneralFault();
         lbaasFault.setCode(status);
         lbaasFault.setMessage(message);
@@ -47,7 +47,6 @@ public class ResponseFactory {
         lbaasFault.setDetails(details);
         return Response.status(status).entity(lbaasFault).build();
     }
-
 
     public static Response getResponseWithStatus(Response.Status status, String message, String details) {
         LbaasFault lbaasFault = new GeneralFault();

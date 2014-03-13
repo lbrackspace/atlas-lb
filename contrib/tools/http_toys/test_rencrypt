@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+import socket
+import json
+import ssl
+import sys
+import os
+
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def usage(prog):
+    printf("usage is %s <host> <port> <header_name> [header_val]\n", prog)
+    printf("\n")
+    printf("do an https get on the host and port and verify you get back\n")
+    printf("back the expected header. If you specify a header_val also\n")
+    printf("verify that the value you get back from the servier matches\n")
+    printf("your expectations\n")
+
+def has_header(host, port, json_header_name,value=None):
+    try:
+        s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        s.connect((host,port))
+        sw = ssl.wrap_socket(s,cert_reqs=ssl.CERT_NONE)
+        sw.send("GET / HTTP/1.1\r\nHost: %s\r\n\r\n"%host)
+        sys.stdout.flush()
+        data = []
+        while True:
+            data.append(sw.recv(1024))
+            if len(data[-1])<=0:
+                break
+        data = "".join(data)
+        body = []
+        i = 0
+        data_split = data.split("\r\n")
+        for line in data_split:
+            if len(line) == 0:
+                i += 1
+                break
+            i += 1
+        sw.close()
+        body = "\r\n".join(data_split[i:])
+        obj = json.loads(body)
+        for (hn,hv) in obj["headers"].iteritems():
+            if hn.lower() == json_header_name.lower():
+                if not value:
+                    return True
+                return hv.lower()==value.lower()
+            return False
+    except:
+        raise 
+        return False
+    return False
+
+if __name__ == "__main__":
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<4:
+        usage(prog)
+        sys.exit()
+    host = sys.argv[1]
+    port = int(sys.argv[2])
+    header_name = sys.argv[3]
+    exp_val = None
+    if len(sys.argv)>=5:
+        exp_val = sys.argv[4]
+    if has_header(host,port,header_name,value=exp_val):
+        printf("Header %s MATCHED\n",header_name)
+    else:
+        printf("header %s NOT MATCHED\n",header_name)

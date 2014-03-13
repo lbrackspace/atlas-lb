@@ -167,6 +167,10 @@ public class PemUtils {
 
     public static List<PemBlock> parseMultiPem(String multiPemString) {
         byte[] multiPemBytes;
+        if(multiPemString == null){
+            // if its null just output it as an empty List
+            return new ArrayList<PemBlock>();
+        }
         multiPemBytes = StringUtils.asciiBytes(multiPemString);
         return parseMultiPem(multiPemBytes);
     }

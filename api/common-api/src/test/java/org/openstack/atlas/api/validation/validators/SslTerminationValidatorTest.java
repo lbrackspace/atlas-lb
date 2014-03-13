@@ -12,7 +12,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 
-
 @RunWith(Enclosed.class)
 public class SslTerminationValidatorTest {
 
