@@ -44,17 +44,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final String XFP = "add_x_forwarded_proto";
     public static final String XFPORT = "add_x_forwarded_port";
     public static final String HTTPS_REDIRECT = "force_https_redirect";
-
     public static final VirtualServerRule ruleRateLimitHttp = new VirtualServerRule(RATE_LIMIT_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleRateLimitNonHttp = new VirtualServerRule(RATE_LIMIT_NON_HTTP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedPort = new VirtualServerRule(XFPORT, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleXForwardedFor = new VirtualServerRule(XFF, true, VirtualServerRuleRunFlag.run_every);
-
     public static final VirtualServerRule ruleXForwardedProto = new VirtualServerRule(XFP, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleContentCaching = new VirtualServerRule(CONTENT_CACHING, true, VirtualServerRuleRunFlag.run_every);
     public static final VirtualServerRule ruleForceHttpsRedirect = new VirtualServerRule(HTTPS_REDIRECT, true, VirtualServerRuleRunFlag.run_every);
     protected static final ZeusUtils zeusUtil;
-
     public static final String NON_HTTP_LOG_FORMAT = "%v %t %h %A:%p %n %B %b %T";
     public static final String HTTP_LOG_FORMAT = "%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n";
 
@@ -494,7 +491,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void setNodesPriorities(LoadBalancerEndpointConfiguration config, String poolName, LoadBalancer lb) throws RemoteException {
         Set<Node> nodes = lb.getNodes();
-        if (nodes == null || nodes.isEmpty()) return;
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
         ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
         String[] poolNames = new String[]{poolName};
 
@@ -541,8 +540,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         deleteNodePool(serviceStubs, poolName);
 
         boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
-        if (isRedirectServer)
-        {
+        if (isRedirectServer) {
             deleteVirtualServer(serviceStubs, virtualRedirectServerName);
         }
         deleteProtectionCatalog(serviceStubs, poolName);
@@ -1281,6 +1279,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
         CatalogSSLCertificatesBindingStub certificateCatalogService = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
+        PoolBindingStub poolService = serviceStubs.getPoolBinding();
 
         try {
             LOG.info(String.format("Creating ssl termination load balancer %s in zeus... ", virtualServerName));
@@ -1338,6 +1337,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, zeusSslTermination.getSslTermination().isSecureTrafficOnly());
                 LOG.debug(String.format("Successfully enabled:'%s' non-secure server for load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
             }
+
+            boolean isRenecrypting = zeusSslTermination.getSslTermination().isReEncryptionEnabled();
+            String poolName = virtualServerNameNonSecure; // the non SSL VS name is coincidentally the poolName
+            LOG.info(String.format("setting pool %s sslRencryption to %s", poolName, isRenecrypting));
+
+            poolService.setSSLEncrypt(new String[]{poolName}, new boolean[]{isRenecrypting});
+            LOG.debug(String.format("Successfully set pool %s sslRencryption to %s\n", poolName, isRenecrypting));
         } catch (AxisFault af) {
             LOG.error("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId());
 
@@ -1353,6 +1359,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
 
         try {
+            String poolName = virtualServerNameNonSecure;
+            serviceStubs.getPoolBinding().setSSLEncrypt(new String[]{poolName}, new boolean[]{false}); // Disable rencryption
             //Detach and remove ssl termination (shadow server)
             LOG.info(String.format("Detaching and disabling certificate for load balancer: '%s' virtual server name: %s", loadBalancer.getId(), virtualServerNameNonSecure));
             enableDisableSslTermination(conf, loadBalancer, false);
@@ -1529,7 +1537,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         deleteErrorFile(config, loadBalancer);
         setDefaultErrorFile(config, loadBalancer);
     }
-
 
     @Override
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content) throws InsufficientRequestException, RemoteException {
@@ -1853,7 +1860,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void setNodeWeights(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Collection<Node> nodes)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        if (nodes == null || nodes.isEmpty()) return;
+        if (nodes == null || nodes.isEmpty()) {
+            return;
+        }
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
         final String rollBackMessage = "Update node weights request canceled.";
@@ -1876,17 +1885,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-
-     public void setSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException
-     {
-
-     }
+    public void setSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    }
 
     public void removeSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException, ZxtmRollBackException
-    {
-
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
     }
 
     @Override
@@ -2262,7 +2266,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         loadBalancer.setConnectionLimit(throttle);
     }
 
-
     @Override
     public void updateHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException {
@@ -2367,7 +2370,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.error("Could not update half close support for virtual server: " + virtualServerName);
         }
         if (loadBalancer.hasSsl()) {
-            try{
+            try {
                 LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualSecureServerName, loadBalancer.isHalfClosed()));
                 serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualSecureServerName}, new boolean[]{loadBalancer.isHalfClosed()});
             } catch (Exception e) {
@@ -2391,10 +2394,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 if (loadBalancer.hasSsl() == true) {
                     repurposeVirtualServerForHttpsRedirect(loadBalancer, serviceStubs);
                 } else {
-                    createRedirectVirtualServer(config,loadBalancer);
+                    createRedirectVirtualServer(config, loadBalancer);
                 }
-            }
-            else if (redirectExists && loadBalancer.isHttpsRedirect() == null || !loadBalancer.isHttpsRedirect()) {
+            } else if (redirectExists && loadBalancer.isHttpsRedirect() == null || !loadBalancer.isHttpsRedirect()) {
                 if (loadBalancer.hasSsl()) {
                     restoreVirtualServerFromHttpsRedirect(loadBalancer, serviceStubs);
                 } else {
@@ -3170,5 +3172,4 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
         return false;
     }
-
 }

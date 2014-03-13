@@ -6,13 +6,14 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils as StaticFileUtils
 import org.openstack.atlas.util.staticutils.StaticStringUtils as StaticStringUtils
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils as StaticDateTimeUtils
 import org.openstack.atlas.util.debug.Debug as Debug
+
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination as SslTermination
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper as SslTerminationHelper
 import com.xhaus.jyson.JysonCodec as json
 
 import java.util.List as List
 import java.util.ArrayList as ArrayList
 import java.lang.String as String
-
-import org.openstack.atlas.util.ca.PemUtils as PemUtils
 
 import pickle
 
@@ -35,13 +36,6 @@ def fullPath(*pathcomps):
     file_path = os.path.join(*pathcomps)
     return os.path.expanduser(file_path)
 
-def fromPemFile(fileName):
-    data = open(fullPath(fileName),"r").read()
-    return PemUtils.fromPem(data)
-
-def toPemString(obj):
-    return PemUtils.toPemString(obj)
-
 def save_json(file_path,obj):
     jStr = json.dumps(obj)
     fp = open(fullPath(file_path),"w")
@@ -54,4 +48,7 @@ def load_json(file_path):
     fp.close()
     jsonObj = json.loads(jsonStr)
     return pickle.loads(pickle.dumps(jsonObj)) #poor way to strip stringmap
+
+def readFile(file_name):
+    return StaticFileUtils.readFileToString(file_name)
 

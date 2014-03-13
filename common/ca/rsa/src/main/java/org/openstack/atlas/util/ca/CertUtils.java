@@ -189,8 +189,22 @@ public class CertUtils {
         }
         BigInteger serial = BigInteger.ONE;
         JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(issuer, serial, notBefore, notAfter, subject, pub);
-
-        certBuilder.addExtension(X509Extension.basicConstraints, true, new BasicConstraints(true));//This is a CA crt
+        // Add any x509 extensions from the request
+        ASN1Set attrs = req.getCertificationRequestInfo().getAttributes();
+        X509Extension ext;
+        if (attrs != null) {
+            for (i = 0; i < attrs.size(); i++) {
+                Attribute attr = Attribute.getInstance(attrs.getObjectAt(i));
+                if (attr.getAttrType().equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
+                    DEREncodable extsDer = attr.getAttrValues().getObjectAt(0);
+                    X509Extensions exts = X509Extensions.getInstance(extsDer);
+                    for (ASN1ObjectIdentifier oid : exts.getExtensionOIDs()) {
+                        ext = exts.getExtension(oid);
+                        certBuilder.addExtension(oid, ext.isCritical(), ext.getParsedValue());
+                    }
+                }
+            }
+        }
         try {
             subjKeyId = new SubjectKeyIdentifierStructure(pub);
         } catch (InvalidKeyException ex) {

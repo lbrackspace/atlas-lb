@@ -4,6 +4,7 @@ import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.openstack.atlas.util.ca.StringUtils;
 
 public class Debug {

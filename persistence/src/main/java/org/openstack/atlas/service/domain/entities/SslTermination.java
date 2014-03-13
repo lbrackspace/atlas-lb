@@ -6,33 +6,29 @@ import java.io.Serializable;
 @javax.persistence.Entity
 @Table(name = "lb_ssl")
 public class SslTermination extends Entity implements Serializable {
+
     private final static long serialVersionUID = 532512316L;
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }
-
+    @Column(name = "reencryption", nullable = true)
+    private boolean sslReEncryption=false;
     @OneToOne
     @JoinColumn(name = "loadbalancer_id")
     private LoadBalancer loadbalancer;
-
     @Column(name = "pem_key", nullable = true, columnDefinition = "mediumtext")
     private String privatekey;
-
     @Column(name = "pem_cert", nullable = true, columnDefinition = "mediumtext")
     private String certificate;
-
     @Column(name = "intermediate_certificate", nullable = true, columnDefinition = "mediumtext")
     private String intermediateCertificate;
-
     @Column(name = "enabled", nullable = true)
     private boolean enabled = true;
-
     @Column(name = "secure_port", nullable = true)
     private int securePort;
-
     @Column(name = "secure_traffic_only", nullable = true)
-    private boolean secureTrafficOnly;
+    private boolean secureTrafficOnly=false;
 
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
@@ -88,5 +84,13 @@ public class SslTermination extends Entity implements Serializable {
 
     public void setSecurePort(int securePort) {
         this.securePort = securePort;
+    }
+
+    public boolean isReEncryptionEnabled() {
+        return sslReEncryption;
+    }
+
+    public void setReEncryptionEnabled(boolean value) {
+        sslReEncryption = value;
     }
 }
