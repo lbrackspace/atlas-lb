@@ -23,6 +23,12 @@ public class ManagementResource extends ManagementDependencyProvider {
     private BlackListResource blackListResource;
     private HealthCheckResource healthCheckResource;
     private AllowedDomainsResource allowedDomainsResource;
+    private SSLUtilsResource sslUtilsResource;
+
+    @Path("sslutils")
+    public SSLUtilsResource retrieveSSLUtilsRecourse(){
+        return sslUtilsResource;
+    }
 
     @Path("accounts")
     public AccountsResource retrieveAccountsResource() {
@@ -174,5 +180,9 @@ public class ManagementResource extends ManagementDependencyProvider {
 
     public void setAllowedDomainsResource(AllowedDomainsResource allowedDomainsResource) {
         this.allowedDomainsResource = allowedDomainsResource;
+    }
+
+    public void setSslUtilsResource(SSLUtilsResource sslUtilsResource) {
+        this.sslUtilsResource = sslUtilsResource;
     }
 }
