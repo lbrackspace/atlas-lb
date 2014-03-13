@@ -74,6 +74,7 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
             Assert.assertTrue(vsNames.contains(loadBalancerName()));
             Assert.assertFalse(vsNames.contains(redirectLoadBalancerName()));
             Assert.assertFalse(vsNames.contains(secureLoadBalancerName()));
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{loadBalancerName()})[0]);
 
             lb.setHttpsRedirect(true);
             zxtmAdapter.updateHttpsRedirect(config, lb);
@@ -83,6 +84,8 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
             Assert.assertTrue(vsNames.contains(loadBalancerName()));
             Assert.assertTrue(vsNames.contains(redirectLoadBalancerName()));
             Assert.assertFalse(vsNames.contains(secureLoadBalancerName()));
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{loadBalancerName()})[0]);
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{redirectLoadBalancerName()})[0]);
 
             VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{redirectLoadBalancerName()});
             Assert.assertEquals(1, virtualServerRules.length);
@@ -97,6 +100,7 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
             Assert.assertTrue(vsNames.contains(loadBalancerName()));
             Assert.assertFalse(vsNames.contains(redirectLoadBalancerName()));
             Assert.assertFalse(vsNames.contains(secureLoadBalancerName()));
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{loadBalancerName()})[0]);
         }
     }
 
@@ -202,6 +206,8 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
             Assert.assertTrue(vsNames.contains(loadBalancerName()));
             Assert.assertTrue(vsNames.contains(secureLoadBalancerName()));
             Assert.assertFalse(vsNames.contains(redirectLoadBalancerName()));
+            Assert.assertFalse(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{loadBalancerName()})[0]);
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{secureLoadBalancerName()})[0]);
 
             lb.setHttpsRedirect(true);
             zxtmAdapter.updateHttpsRedirect(config, lb);
@@ -211,6 +217,8 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
             Assert.assertFalse(vsNames.contains(loadBalancerName()));
             Assert.assertTrue(vsNames.contains(secureLoadBalancerName()));
             Assert.assertTrue(vsNames.contains(redirectLoadBalancerName()));
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{redirectLoadBalancerName()})[0]);
 
             VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{redirectLoadBalancerName()});
             Assert.assertEquals(1, virtualServerRules.length);
@@ -225,6 +233,8 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
             Assert.assertTrue(vsNames.contains(loadBalancerName()));
             Assert.assertTrue(vsNames.contains(secureLoadBalancerName()));
             Assert.assertFalse(vsNames.contains(redirectLoadBalancerName()));
+            Assert.assertFalse(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{loadBalancerName()})[0]);
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{secureLoadBalancerName()})[0]);
         }
 
     }
