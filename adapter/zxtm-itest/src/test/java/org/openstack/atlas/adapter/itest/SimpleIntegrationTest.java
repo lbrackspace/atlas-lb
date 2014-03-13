@@ -257,24 +257,24 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     private void deleteVirtualIp() throws Exception {
-        VirtualIp vip = new VirtualIp();
-        vip.setId(ADDITIONAL_VIP_ID);
+        VirtualIp vip2 = new VirtualIp();
+        vip2.setId(ADDITIONAL_VIP_ID);
+
+        for (LoadBalancerJoinVip loadBalancerJoinVip : lb.getLoadBalancerJoinVipSet()) {
+            if (loadBalancerJoinVip.getVirtualIp().getId().equals(vip2.getId())) {
+                lb.getLoadBalancerJoinVipSet().remove(loadBalancerJoinVip);
+                break;
+            }
+        }
 
         try {
-            zxtmAdapter.deleteVirtualIp(config, lb, vip.getId());
+            zxtmAdapter.deleteVirtualIp(config, lb, vip2.getId());
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
             } else Assert.fail(e.getMessage());
         }
 
-        String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, vip.getId());
-
-        try {
-            getServiceStubs().getTrafficIpGroupBinding().getIPAddresses(new String[]{trafficIpGroupName});
-        } catch (Exception e) {
-            if (e instanceof ObjectDoesNotExist) {
-            } else Assert.fail(e.getMessage());
-        }
+        assertTrafficGroupIsDeleted(vip2);
     }
 
     private void addIPv6VirtualIp() throws Exception {

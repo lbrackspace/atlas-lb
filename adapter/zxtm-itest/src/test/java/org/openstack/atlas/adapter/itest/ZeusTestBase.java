@@ -375,8 +375,12 @@ public class ZeusTestBase {
             }
         }
 
+        assertTrafficGroupIsDeleted(lb.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp());
+    }
+
+    protected static void assertTrafficGroupIsDeleted(VirtualIp vip) {
         try {
-            String trafficIpGroupName = trafficIpGroupName(lb.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp());
+            String trafficIpGroupName = trafficIpGroupName(vip);
             getServiceStubs().getTrafficIpGroupBinding().getIPAddresses(new String[]{trafficIpGroupName});
             Assert.fail("Traffic Ip Group should have been deleted!");
         } catch (Exception e) {
