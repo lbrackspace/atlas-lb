@@ -2,8 +2,6 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
-import org.openstack.atlas.api.config.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.Usage_;
@@ -25,6 +23,8 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 
 @Repository
 @Transactional

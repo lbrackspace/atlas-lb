@@ -2,8 +2,6 @@ package org.openstack.atlas.usagerefactor.snmp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.api.config.RestApiConfiguration;
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
@@ -20,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 
 public class StingrayUsageClientImpl implements StingrayUsageClient {
 

@@ -1,7 +1,5 @@
 package org.openstack.atlas.service.domain.usage.repository;
 
-import org.openstack.atlas.api.config.PublicApiServiceConfigurationKeys;
-import org.openstack.atlas.api.config.RestApiConfiguration;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.usage.entities.HostUsage;
 import org.apache.commons.logging.Log;
@@ -15,6 +13,8 @@ import javax.persistence.Query;
 import javax.persistence.TemporalType;
 import java.util.Calendar;
 import java.util.List;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 
 @Repository
 @Transactional(value = "usage")
