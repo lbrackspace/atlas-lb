@@ -12,6 +12,7 @@ import java.util.Calendar;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTPS;
 
+@Ignore
 public class RateLimitIntegrationTest extends ZeusTestBase {
 
     @BeforeClass
@@ -26,7 +27,6 @@ public class RateLimitIntegrationTest extends ZeusTestBase {
         removeSimpleLoadBalancer();
     }
 
-    @Ignore
     @Test
     public void testSimpleRateLimitOperations() {
         //No longer a documented feature, the rate script needs to be installed to be useful
