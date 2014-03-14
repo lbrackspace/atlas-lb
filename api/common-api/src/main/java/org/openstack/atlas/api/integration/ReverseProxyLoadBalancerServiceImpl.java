@@ -341,11 +341,6 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         }
     }
 
-    //TODO: clean this one up...
-    @Override public void updateHealthMonitor(Integer lbId, Integer accountId, HealthMonitor monitor) throws Exception {
-        //To change body of implemented methods use File | Settings | File Templates.
-    }
-
     @Override
     public void updateHealthMonitor(LoadBalancer loadBalancer) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());

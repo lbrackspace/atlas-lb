@@ -58,15 +58,19 @@ public class SimpleIntegrationTest extends ZeusTestBase {
 
             final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerRules.length);
-
-            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
-                if (virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor) || virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedProto))
-                    Assert.fail("XFF and XFP rule should not be enabled!");
-            }
+            Assert.assertEquals(0, virtualServerRules[0].length);
 
             lb.setProtocol(HTTP);
             zxtmAdapter.updateProtocol(config, lb);
 
+            final VirtualServerBasicInfo[] virtualServerBasicInfos2 = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
+            Assert.assertEquals(1, virtualServerBasicInfos2.length);
+            Assert.assertEquals(VirtualServerProtocol.http, virtualServerBasicInfos2[0].getProtocol());
+
+            final VirtualServerRule[][] virtualServerRules2 = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
+            Assert.assertEquals(1, virtualServerRules2.length);
+            Assert.assertEquals(1, virtualServerRules2[0].length);
+            Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedPort, virtualServerRules2[0][0]);
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -87,75 +91,6 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
-        }
-    }
-
-    @Test
-    public void updateProtocolVerifyXFHeaders() {
-        try {
-            lb.setProtocol(HTTPS);
-            zxtmAdapter.updateProtocol(config, lb);
-
-            final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerBasicInfos.length);
-            Assert.assertEquals(VirtualServerProtocol.https, virtualServerBasicInfos[0].getProtocol());
-
-            final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerRules.length);
-
-            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
-                if (virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor) || virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedProto))
-                    Assert.fail("XFF and XFP rule should not be enabled!");
-            }
-
-            lb.setProtocol(HTTP);
-            zxtmAdapter.updateProtocol(config, lb);
-
-            for (VirtualServerRule virtualServerRule : virtualServerRules[0]) {
-                //Both XFF and XFP should be set when updating from any protocol to a HTTP protocol
-                Assert.assertTrue(virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedFor) || virtualServerRule.equals(ZxtmAdapterImpl.ruleXForwardedProto));
-            }
-
-            final VirtualServerRule[][] virtualServerRules2 = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
-            Assert.assertEquals(2, virtualServerRules2[0].length);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail(e.getMessage());
-        }
-    }
-
-
-    @Test
-    public void changeProtocolWithConnectionLoggingEnabled() {
-        try {
-            lb.setConnectionLogging(Boolean.TRUE);
-            zxtmAdapter.updateConnectionLogging(config, lb);
-            lb.setProtocol(HTTPS);
-            zxtmAdapter.updateProtocol(config, lb);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test
-    public void changeProtocolWithContentCachingEnabled() {
-        try {
-            lb.setProtocol(HTTP);
-            zxtmAdapter.updateProtocol(config, lb);
-
-            lb.setContentCaching(Boolean.TRUE);
-            zxtmAdapter.updateContentCaching(config, lb);
-            boolean[] isCCenabled1 = getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(new String[]{loadBalancerName()});
-            Assert.assertEquals(Boolean.TRUE, isCCenabled1[0]);
-
-            lb.setProtocol(TCP);
-            zxtmAdapter.updateProtocol(config, lb);
-            boolean[] isCCenabled2 = getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(new String[]{loadBalancerName()});
-            Assert.assertEquals(Boolean.FALSE, isCCenabled2[0]);
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -307,7 +242,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     private void addVirtualIp() throws Exception {
         VirtualIp vip2 = new VirtualIp();
         vip2.setId(ADDITIONAL_VIP_ID);
-        vip2.setIpAddress("10.69.0.58");
+        vip2.setIpAddress(findUsableIPv4Vip());
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip2);
         lb.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip);
@@ -322,24 +257,25 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     private void deleteVirtualIp() throws Exception {
-        VirtualIp vip = new VirtualIp();
-        vip.setId(ADDITIONAL_VIP_ID);
+        VirtualIp vip2 = new VirtualIp();
+        vip2.setId(ADDITIONAL_VIP_ID);
+
+        for (LoadBalancerJoinVip loadBalancerJoinVip : lb.getLoadBalancerJoinVipSet()) {
+            if (loadBalancerJoinVip.getVirtualIp().getId().equals(vip2.getId())) {
+                lb.getLoadBalancerJoinVipSet().remove(loadBalancerJoinVip);
+                break;
+            }
+        }
 
         try {
-            zxtmAdapter.deleteVirtualIp(config, lb, vip.getId());
+            zxtmAdapter.deleteVirtualIp(config, lb, vip2.getId());
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
             } else Assert.fail(e.getMessage());
         }
 
-        String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, vip.getId());
-
-        try {
-            getServiceStubs().getTrafficIpGroupBinding().getIPAddresses(new String[]{trafficIpGroupName});
-        } catch (Exception e) {
-            if (e instanceof ObjectDoesNotExist) {
-            } else Assert.fail(e.getMessage());
-        }
+        assertTrafficGroupIsDeleted(vip2);
+        makeUsableVipAvailable(vip2.getIpAddress());
     }
 
     private void addIPv6VirtualIp() throws Exception {
@@ -588,6 +524,22 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     }
 
     @Test
+    public void deleteConnectionThrottle() throws Exception {
+        String[] lbName = new String[]{(loadBalancerName())};
+
+        zxtmAdapter.deleteConnectionThrottle(config, lb);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(lbName)[0]);
+
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(lbName)[0]);
+        Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(lbName)[0]);
+    }
+
+    @Test
     public void updateAccessList() throws Exception {
         Set<AccessList> networkItems = new HashSet<AccessList>();
         AccessList item1 = new AccessList();
@@ -630,8 +582,9 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         monitor.setPath("/");
         monitor.setDelay(60);
         monitor.setTimeout(90);
+        lb.setHealthMonitor(monitor);
 
-        zxtmAdapter.updateHealthMonitor(config, lb.getId(), lb.getAccountId(), monitor);
+        zxtmAdapter.updateHealthMonitor(config, lb);
 
         String monitorName = monitorName();
 
@@ -688,8 +641,9 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         monitor.setPath("/");
         monitor.setDelay(60);
         monitor.setTimeout(90);
+        lb.setHealthMonitor(monitor);
 
-        zxtmAdapter.updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
+        zxtmAdapter.updateHealthMonitor(config, lb);
 
         String monitorName = monitorName();
 

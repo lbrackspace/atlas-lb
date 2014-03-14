@@ -1,7 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
 import Util.ConfigurationKeys;
-import Util.EsbConfiguration;
+import Util.ZxtmItestConfiguration;
 import com.zxtm.service.client.*;
 import org.apache.axis.AxisFault;
 import org.junit.Assert;
@@ -15,14 +15,12 @@ import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
+import org.openstack.atlas.util.ip.IPUtils;
 import org.xml.sax.SAXException;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.ROUND_ROBIN;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
@@ -30,8 +28,9 @@ import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED
 import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 
 public class ZeusTestBase {
+    private static Configuration configuration = new ZxtmItestConfiguration();
     public static final Integer SLEEP_TIME_BETWEEN_TESTS = 500;
-    private static Configuration configuration = new EsbConfiguration();
+    public static final Integer NUM_VIPS_TO_ADD = 20;
 
     public static String ZXTM_USERNAME;
     public static String ZXTM_PASSWORD;
@@ -40,13 +39,16 @@ public class ZeusTestBase {
     public static String FAILOVER_HOST_1;
     public static String FAILOVER_HOST_2;
     public static String DEFAULT_LOG_FILE_LOCATION;
+    public static String ZXTM_VERSION;
 
-    public static final Integer TEST_ACCOUNT_ID = 999998;
-    public static final Integer TEST_LOADBALANCER_ID = 999998;
-    public static final Integer TEST_VIP_ID = 999998;
-    public static final Integer TEST_IPV6_VIP_ID = 999995;
-    public static final Integer ADDITIONAL_VIP_ID = 88887;
-    public static final Integer ADDITIONAL_IPV6_VIP_ID = 88885;
+    public static Integer TEST_ACCOUNT_ID;
+    public static Integer TEST_LOADBALANCER_ID;
+    public static Integer TEST_VIP_ID;
+    public static Integer TEST_IPV6_VIP_ID;
+    public static Integer ADDITIONAL_VIP_ID;
+    public static Integer ADDITIONAL_IPV6_VIP_ID;
+
+    protected static Map<String, Boolean> suitableVips;
 
     protected static ReverseProxyLoadBalancerAdapter zxtmAdapter;
     protected static LoadBalancerEndpointConfiguration config;
@@ -76,12 +78,20 @@ public class ZeusTestBase {
         FAILOVER_HOST_1 = configuration.getString(ConfigurationKeys.failover_host_1);
         FAILOVER_HOST_2 = configuration.getString(ConfigurationKeys.failover_host_2);
         DEFAULT_LOG_FILE_LOCATION = configuration.getString(ConfigurationKeys.default_log_file_location);
+        ZXTM_VERSION = configuration.getString(ConfigurationKeys.zxtm_version);
+
+        TEST_ACCOUNT_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.test_account_id));
+        TEST_LOADBALANCER_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.test_loadbalancer_id));
+        TEST_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.test_vip_id));
+        TEST_IPV6_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.test_ipv6_vip_id));
+        ADDITIONAL_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.additional_vip_id));
+        ADDITIONAL_IPV6_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.additional_ipv6_vip_id));
     }
 
     private static void setupEndpointConfiguration() throws MalformedURLException {
         List<String> targetFailoverHosts = new ArrayList<String>();
         targetFailoverHosts.add(FAILOVER_HOST_1);
-//        targetFailoverHosts.add(FAILOVER_HOST_2);
+        if (!FAILOVER_HOST_1.equals(FAILOVER_HOST_2)) targetFailoverHosts.add(FAILOVER_HOST_2);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
         soapEndpointHost.setRestEndpoint(ZXTM_ENDPOINT_URI);
@@ -92,15 +102,25 @@ public class ZeusTestBase {
     }
 
     private static void setUpClusterForIPv6Operations() {
-        cluster = new Cluster();
-        cluster.setClusterIpv6Cidr("fd24:f480:ce44:91bc::/64");
+        try {
+            TrafficIPGroupsSubnetMappingPerHost[] subnetMappings = getServiceStubs().getTrafficIpGroupBinding().getSubnetMappings(new String[]{TARGET_HOST});
+            for (String s : subnetMappings[0].getSubnetmappings()[0].getSubnets()) {
+                if (IPUtils.isValidIpv6Subnet(s)) {
+                    cluster = new Cluster();
+                    cluster.setClusterIpv6Cidr(s);
+                    return;
+                }
+            }
+        } catch (RemoteException e) {
+            Assert.fail("IPv6 isn't properly setup!");
+        }
     }
 
     protected static void setupIvars() {
         Set<LoadBalancerJoinVip> vipList = new HashSet<LoadBalancerJoinVip>();
         vip1 = new VirtualIp();
         vip1.setId(TEST_VIP_ID);
-        vip1.setIpAddress("10.69.0.59");
+        vip1.setIpAddress(findUsableIPv4Vip());
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip1);
         vipList.add(loadBalancerJoinVip);
@@ -130,6 +150,60 @@ public class ZeusTestBase {
         ZeusTestBase.lb = lb;
     }
 
+    protected static String findUsableIPv4Vip() {
+        if (suitableVips == null) {
+            setupUsableVips();
+        }
+
+        for (String s : suitableVips.keySet()) {
+            Boolean isAvailableForUse = suitableVips.get(s);
+            if (isAvailableForUse) {
+                isAvailableForUse = false;
+                suitableVips.put(s, isAvailableForUse);
+                return s;
+            }
+        }
+
+        return null;
+    }
+
+    protected static String makeUsableVipAvailable(String ipAddress) {
+        if (suitableVips.get(ipAddress) != null) {
+            Boolean isAvailableForUse = suitableVips.get(ipAddress);
+            if (!isAvailableForUse) {
+                isAvailableForUse = true;
+                suitableVips.put(ipAddress, isAvailableForUse);
+                return ipAddress;
+            }
+        }
+
+        return null;
+    }
+
+    private static void setupUsableVips() {
+        final Integer octet_min = 100;
+        final Integer octet_max = 240;
+
+        try {
+            suitableVips = new HashMap<String, Boolean>();
+            TrafficIPGroupsSubnetMappingPerHost[] subnetMappings = getServiceStubs().getTrafficIpGroupBinding().getSubnetMappings(new String[]{TARGET_HOST});
+            for (String s : subnetMappings[0].getSubnetmappings()[0].getSubnets()) {
+                if (IPUtils.isValidIpv4Subnet(s)) {
+                    String[] split = s.split("\\.");
+                    Random r = new Random();
+                    int lastOctetStart = octet_max - r.nextInt(octet_min);
+
+                    for (int i  = lastOctetStart; i < NUM_VIPS_TO_ADD + lastOctetStart; i++) {
+                        String sVip = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(i);
+                        suitableVips.put(sVip, true);
+                    }
+                }
+            }
+        } catch (RemoteException e) {
+            Assert.fail("Couldn't get an IPv4 address to use!");
+        }
+    }
+
     protected static ZxtmServiceStubs getServiceStubs() throws AxisFault {
         return ZxtmServiceStubs.getServiceStubs(config.getEndpointUrl(), config.getUsername(), config.getPassword());
     }
@@ -139,7 +213,11 @@ public class ZeusTestBase {
     }
 
     protected static String secureLoadBalancerName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
+        return ZxtmNameBuilder.genSslVSName(lb);
+    }
+
+    protected static String redirectLoadBalancerName() throws InsufficientRequestException {
+        return ZxtmNameBuilder.genRedirectVSName(lb);
     }
 
     protected static String poolName() throws InsufficientRequestException {
@@ -184,9 +262,8 @@ public class ZeusTestBase {
     }
 
     protected static void shouldBeValidApiVersion() {
-        String ZEUS_API_VERSION = "9.2 Developer mode";
         try {
-            Assert.assertEquals(ZEUS_API_VERSION, getServiceStubs().getSystemMachineInfoBinding().getProductVersion());
+            Assert.assertEquals(ZXTM_VERSION, getServiceStubs().getSystemMachineInfoBinding().getProductVersion());
         } catch (RemoteException e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -199,7 +276,7 @@ public class ZeusTestBase {
 
             final VirtualServerBasicInfo[] virtualServerBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerBasicInfos.length);
-            Assert.assertEquals(VirtualServerProtocol.http, virtualServerBasicInfos[0].getProtocol());
+            Assert.assertEquals(lb.getProtocol().name().toLowerCase(), virtualServerBasicInfos[0].getProtocol().getValue().toLowerCase());
             Assert.assertEquals(lb.getPort().intValue(), virtualServerBasicInfos[0].getPort());
             Assert.assertEquals(poolName(), virtualServerBasicInfos[0].getDefault_pool());
 
@@ -214,42 +291,117 @@ public class ZeusTestBase {
             Assert.assertEquals(1, vips[0].length);
             Assert.assertEquals(vip1.getIpAddress(), vips[0][0]);
 
+            HashSet<String> expectedNodes = new HashSet<String>();
+
             final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
             Assert.assertEquals(1, enabledNodes.length);
-            Assert.assertEquals(1, enabledNodes[0].length);
-            Assert.assertEquals(IpHelper.createZeusIpString(node1.getIpAddress(), node1.getPort()), enabledNodes[0][0]);
-
-            final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
-            Assert.assertEquals(1, disabledNodes.length);
-            Assert.assertEquals(1, disabledNodes[0].length);
-            Assert.assertEquals(IpHelper.createZeusIpString(node2.getIpAddress(), node2.getPort()), disabledNodes[0][0]);
-
-            final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
-            Assert.assertEquals(1, drainingNodes.length);
-            Assert.assertEquals(0, drainingNodes[0].length);
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.ENABLED)) {
+                    expectedNodes.add(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
+                }
+            }
+            for (String n : enabledNodes[0]) {
+                if (!expectedNodes.remove(n)) {
+                    Assert.fail("Unexpected Node '" + n + "' found in pool '" + poolName() + "'!");
+                }
+            }
+            if (!expectedNodes.isEmpty()) {
+                Assert.fail("Nodes not found in pool '" + poolName() + "': " + expectedNodes.toString());
+            }
 
             final PoolWeightingsDefinition[][] enabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, enabledNodes);
             Assert.assertEquals(1, enabledNodeWeights.length);
-            Assert.assertEquals(1, enabledNodeWeights[0].length);
-            Assert.assertEquals(1, enabledNodeWeights[0][0].getWeighting());
+            Assert.assertEquals(enabledNodes[0].length, enabledNodeWeights[0].length);
+            final HashMap<String, Integer> enabledNodeWeightsMap = new HashMap<String, Integer>();
+            for (PoolWeightingsDefinition p : enabledNodeWeights[0]) {
+                enabledNodeWeightsMap.put(p.getNode(), p.getWeighting());
+            }
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.ENABLED)) {
+                    if (n.getWeight() == null)
+                        Assert.assertEquals(1,enabledNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())).intValue());
+                    else
+                        Assert.assertEquals(n.getWeight(),enabledNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())));
+                }
+            }
+
+            final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
+            Assert.assertEquals(1, disabledNodes.length);
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.DISABLED)) {
+                    expectedNodes.add(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
+                }
+            }
+            for (String n : disabledNodes[0]) {
+                if (!expectedNodes.remove(n)) {
+                    Assert.fail("Unexpected Node '" + n + "' found in pool '" + poolName() + "'!");
+                }
+            }
+            if (!expectedNodes.isEmpty()) {
+                Assert.fail("Nodes not found in pool '" + poolName() + "': " + expectedNodes.toString());
+            }
 
             final PoolWeightingsDefinition[][] disabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, disabledNodes);
             Assert.assertEquals(1, disabledNodeWeights.length);
-            Assert.assertEquals(1, disabledNodeWeights[0].length);
-            Assert.assertEquals(1, disabledNodeWeights[0][0].getWeighting());
+            Assert.assertEquals(disabledNodes[0].length, disabledNodeWeights[0].length);
+            final HashMap<String, Integer> disabledNodeWeightsMap = new HashMap<String, Integer>();
+            for (PoolWeightingsDefinition p : disabledNodeWeights[0]) {
+                disabledNodeWeightsMap.put(p.getNode(), p.getWeighting());
+            }
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.DISABLED)) {
+                    if (n.getWeight() == null)
+                        Assert.assertEquals(1,disabledNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())).intValue());
+                    else
+                        Assert.assertEquals(n.getWeight(),disabledNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())));
+                }
+            }
+
+            final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
+            Assert.assertEquals(1, drainingNodes.length);
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.DRAINING)) {
+                    expectedNodes.add(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
+                }
+            }
+            for (String n : drainingNodes[0]) {
+                if (!expectedNodes.remove(n)) {
+                    Assert.fail("Unexpected Node '" + n + "' found in pool '" + poolName() + "'!");
+                }
+            }
+            if (!expectedNodes.isEmpty()) {
+                Assert.fail("Nodes not found in pool '" + poolName() + "': " + expectedNodes.toString());
+            }
 
             final PoolWeightingsDefinition[][] drainingNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, drainingNodes);
             Assert.assertEquals(1, drainingNodeWeights.length);
-            Assert.assertEquals(0, drainingNodeWeights[0].length);
+            Assert.assertEquals(drainingNodes[0].length, drainingNodeWeights[0].length);
+            final HashMap<String, Integer> drainingNodeWeightsMap = new HashMap<String, Integer>();
+            for (PoolWeightingsDefinition p : drainingNodeWeights[0]) {
+                drainingNodeWeightsMap.put(p.getNode(), p.getWeighting());
+            }
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.DRAINING)) {
+                    if (n.getWeight() == null)
+                        Assert.assertEquals(1,drainingNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())).intValue());
+                    else
+                        Assert.assertEquals(n.getWeight(),drainingNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())));
+                }
+            }
 
             final PoolLoadBalancingAlgorithm[] algorithms = getServiceStubs().getPoolBinding().getLoadBalancingAlgorithm(new String[]{poolName()});
             Assert.assertEquals(1, algorithms.length);
             Assert.assertEquals(PoolLoadBalancingAlgorithm.roundrobin.toString(), algorithms[0].getValue());
 
             final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
-            Assert.assertEquals(1, virtualServerRules.length);
-            Assert.assertEquals(2, virtualServerRules[0].length);
-            Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedFor, virtualServerRules[0][0]);
+            if (lb.getProtocol().name().toLowerCase().equals("http")) {
+                Assert.assertEquals(1, virtualServerRules.length);
+                Assert.assertEquals(1, virtualServerRules[0].length);
+                Assert.assertEquals(ZxtmAdapterImpl.ruleXForwardedPort, virtualServerRules[0][0]);
+            } else {
+                Assert.assertEquals(1, virtualServerRules.length);
+                Assert.assertEquals(0, virtualServerRules[0].length);
+            }
 
             final String[] errorFile = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()});
             Assert.assertEquals("Default", errorFile[0]);
@@ -300,8 +452,14 @@ public class ZeusTestBase {
             }
         }
 
+        VirtualIp vip = lb.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp();
+        assertTrafficGroupIsDeleted(vip);
+        makeUsableVipAvailable(vip.getIpAddress());
+    }
+
+    protected static void assertTrafficGroupIsDeleted(VirtualIp vip) {
         try {
-            String trafficIpGroupName = trafficIpGroupName(lb.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp());
+            String trafficIpGroupName = trafficIpGroupName(vip);
             getServiceStubs().getTrafficIpGroupBinding().getIPAddresses(new String[]{trafficIpGroupName});
             Assert.fail("Traffic Ip Group should have been deleted!");
         } catch (Exception e) {

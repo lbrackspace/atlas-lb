@@ -9,6 +9,7 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.UserPages;
 
 import java.rmi.RemoteException;
 
@@ -22,8 +23,6 @@ public class SetNodesIntegrationTest extends ZeusTestBase {
     @BeforeClass
     public static void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
-        setupIvars();
-        setupSimpleLoadBalancer();
     }
 
     @AfterClass
@@ -33,6 +32,9 @@ public class SetNodesIntegrationTest extends ZeusTestBase {
 
     @Test
     public void testNodeOperations() throws Exception {
+        setupIvars();
+        setupSimpleLoadBalancer();
+
         // Update algorithm so we can test that node weights get set properly
         zxtmAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), WEIGHTED_LEAST_CONNECTIONS);
 
@@ -43,6 +45,35 @@ public class SetNodesIntegrationTest extends ZeusTestBase {
         shouldRollbackWhenSettingUnsupportedNodeWeights();
         updateNodeWeights();
         removeNode();
+    }
+
+    @Test
+    public void testNodeOperationsWithErrorPage() throws Exception {
+        //Verify that the custom error page is set and that node operations run
+
+        //Fresh LB for this test...
+        removeSimpleLoadBalancer();
+        setupIvars();
+        setupSimpleLoadBalancer();
+
+        String efContent = "<html>Test Error page, Nodes Operations</html>";
+        UserPages up = new UserPages();
+        up.setErrorpage(efContent);
+        lb.setUserPages(up);
+        zxtmAdapter.setErrorFile(config, lb, efContent);
+        Assert.assertEquals(efContent, new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
+
+        // Update algorithm so we can test that node weights get set properly
+        zxtmAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), WEIGHTED_LEAST_CONNECTIONS);
+
+        setNodes();
+        updateNodeConditionsToEnabled();
+        shouldRollbackWhenUpdatingAllNodeConditionsToDisabled();
+        updateAllNodeConditionsToDraining();
+        shouldRollbackWhenSettingUnsupportedNodeWeights();
+        updateNodeWeights();
+        removeNode();
+        removeSimpleLoadBalancer();
     }
 
     private void setNodes() throws Exception {
