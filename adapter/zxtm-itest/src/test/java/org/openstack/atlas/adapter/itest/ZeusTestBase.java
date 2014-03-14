@@ -166,6 +166,19 @@ public class ZeusTestBase {
         return null;
     }
 
+    protected static String makeUsableVipAvailable(String ipAddress) {
+        if (suitableVips.get(ipAddress) != null) {
+            Boolean isAvailableForUse = suitableVips.get(ipAddress);
+            if (!isAvailableForUse) {
+                isAvailableForUse = true;
+                suitableVips.put(ipAddress, isAvailableForUse);
+                return ipAddress;
+            }
+        }
+
+        return null;
+    }
+
     private static void setupUsableVips() {
         final Integer octet_min = 100;
         final Integer octet_max = 240;
@@ -375,7 +388,9 @@ public class ZeusTestBase {
             }
         }
 
-        assertTrafficGroupIsDeleted(lb.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp());
+        VirtualIp vip = lb.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp();
+        assertTrafficGroupIsDeleted(vip);
+        makeUsableVipAvailable(vip.getIpAddress());
     }
 
     protected static void assertTrafficGroupIsDeleted(VirtualIp vip) {

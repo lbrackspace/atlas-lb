@@ -23,8 +23,6 @@ public class SetNodesIntegrationTest extends ZeusTestBase {
     @BeforeClass
     public static void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
-        setupIvars();
-        setupSimpleLoadBalancer();
     }
 
     @AfterClass
@@ -34,6 +32,9 @@ public class SetNodesIntegrationTest extends ZeusTestBase {
 
     @Test
     public void testNodeOperations() throws Exception {
+        setupIvars();
+        setupSimpleLoadBalancer();
+
         // Update algorithm so we can test that node weights get set properly
         zxtmAdapter.setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), WEIGHTED_LEAST_CONNECTIONS);
 
@@ -72,6 +73,7 @@ public class SetNodesIntegrationTest extends ZeusTestBase {
         shouldRollbackWhenSettingUnsupportedNodeWeights();
         updateNodeWeights();
         removeNode();
+        removeSimpleLoadBalancer();
     }
 
     private void setNodes() throws Exception {

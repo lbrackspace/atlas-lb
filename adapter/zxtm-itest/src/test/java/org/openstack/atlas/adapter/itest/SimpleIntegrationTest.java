@@ -275,6 +275,7 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         }
 
         assertTrafficGroupIsDeleted(vip2);
+        makeUsableVipAvailable(vip2.getIpAddress());
     }
 
     private void addIPv6VirtualIp() throws Exception {
