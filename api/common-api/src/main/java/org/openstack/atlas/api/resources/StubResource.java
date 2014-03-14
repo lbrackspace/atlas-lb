@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.resources;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
@@ -40,8 +42,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
+import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.api.helpers.StubFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.docs.loadbalancers.api.v1.X509Description;
+import org.openstack.atlas.util.ca.exceptions.X509ReaderException;
+import org.openstack.atlas.util.debug.Debug;
 import org.w3.atom.Link;
 
 public class StubResource extends CommonDependencyProvider {
@@ -189,6 +196,18 @@ public class StubResource extends CommonDependencyProvider {
         Errorpage errorpage = new Errorpage();
         errorpage.setContent(msg);
         return Response.status(200).entity(errorpage).build();
+    }
+
+    @GET()
+    @Path("x509description")
+    public Response stubX509Description(){
+        try {
+            X509Description x509des = StubFactory.newX509Description();
+            return Response.status(Response.Status.OK).entity(x509des).build();
+        } catch (X509ReaderException ex) {
+            String exMsg = Debug.getExtendedStackTrace(ex);
+            return ResponseFactory.getErrorResponse(ex, "Exception parsing x509 from stub factory",exMsg);
+        }
     }
 
     @GET()

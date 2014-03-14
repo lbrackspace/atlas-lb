@@ -407,11 +407,48 @@
         </xsd:sequence>
     </xsd:complexType>
 
+    <xsd:element name="suggestedCaPath" type="tns:suggestedCaPath"/>
+    <xsd:complexType name="suggestedCaPath">
+        <xsd:sequence>
+            <xsd:element name="rootCa" type="tns:x509Description" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="path" type="tns:x509Description" minOccurs="0" maxOccurs="unbounded" />
+            <xsd:element name="errors" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="rootCaList" type="tns:rootCaList"/>
+        <xsd:complexType name="rootCaList">
+            <xsd:sequence>
+                <xsd:element name="rootCas" type="tns:x509Description" minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+            <xsd:attribute name="rootCAsOnFile" type="xsd:int" />
+            <xsd:attribute name="rootCAsEncoded" type="xsd:int" />
+        </xsd:complexType>
+
+    <xsd:element name="x509Description" type="tns:x509Description"/>
+    <xsd:complexType name="x509Description">
+        <xsd:sequence>
+            <xsd:element name="pem" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="subjName" type="xsd:string" />
+        <xsd:attribute name="issuerName" type="xsd:string" />
+        <xsd:attribute name="notBefore" type="xsd:string" />
+        <xsd:attribute name="notAfter" type="xsd:string" />
+        <xsd:attribute name="authKeyId" type="xsd:string" />
+        <xsd:attribute name="subjKeyId" type="xsd:string" />
+        <xsd:attribute name="serialNumber" type="xsd:string" />
+        <xsd:attribute name="authKeyDirName" type="xsd:string" />
+        <xsd:attribute name="ocspUri" type="xsd:string" />
+        <xsd:attribute name="ocspCaUri" type="xsd:string" />
+        <xsd:attribute name="message" type="xsd:string"/>
+    </xsd:complexType>
+
     <xsd:element name="sslTermination" type="tns:sslTermination"/>
     <xsd:complexType name="sslTermination">
         <xsd:sequence>
             <xsd:element name="privatekey" type="xsd:string" minOccurs="0"/>
             <xsd:element name="certificate" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="ca" type="xsd:string" minOccurs="0"/>
             <xsd:element name="intermediateCertificate" type="xsd:string" minOccurs="0"/>
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:int"/>

@@ -105,16 +105,14 @@ public class RootCAHelper {
         }
     }
 
-    public static X509BuiltPath<X509Certificate> suggestPath(X509Certificate crt, List<X509Certificate> imds, Date date) throws X509PathBuildException {
-        Set<X509Certificate> imdSet = new HashSet<X509Certificate>();
-        imdSet.addAll(imds);
-        return suggestPath(crt, imdSet, date);
-    }
-
-    public static X509BuiltPath<X509Certificate> suggestPath(X509Certificate crt, Set<X509Certificate> imdSet, Date date) throws X509PathBuildException {
-        Set<X509Certificate> rootCaCopy = getRootCASet();
-        X509PathBuilder<X509Certificate> pathBuilder = new X509PathBuilder<X509Certificate>(rootCaCopy, imdSet);
-        X509BuiltPath<X509Certificate> path = pathBuilder.buildPath(crt, date);
+    public X509BuiltPath<X509Certificate> suggestPath(String userCaStr, String userCrtStr, String imdsStr) {
+        X509BuiltPath<X509Certificate> path = null;
+        Set<X509Certificate> rootCas = new HashSet<X509Certificate>();
+        Set<X509Certificate> imdCrts = new HashSet<X509Certificate>();
+        X509Certificate userCrt;
+        if(userCaStr == null || userCaStr.isEmpty()){
+            rootCas = RootCAHelper.getRootCASet();
+        }
         return path;
     }
 
