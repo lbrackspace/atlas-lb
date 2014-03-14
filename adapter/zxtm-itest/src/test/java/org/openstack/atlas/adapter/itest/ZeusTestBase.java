@@ -30,6 +30,7 @@ import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 public class ZeusTestBase {
     private static Configuration configuration = new ZxtmItestConfiguration();
     public static final Integer SLEEP_TIME_BETWEEN_TESTS = 500;
+    public static final Integer NUM_VIPS_TO_ADD = 20;
 
     public static String ZXTM_USERNAME;
     public static String ZXTM_PASSWORD;
@@ -190,19 +191,12 @@ public class ZeusTestBase {
                 if (IPUtils.isValidIpv4Subnet(s)) {
                     String[] split = s.split("\\.");
                     Random r = new Random();
-                    Integer lastOctetStart = octet_max - r.nextInt(octet_min);
+                    int lastOctetStart = octet_max - r.nextInt(octet_min);
 
-                    String sVip1 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(lastOctetStart);
-                    String sVip2 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(++lastOctetStart);
-                    String sVip3 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(++lastOctetStart);
-                    String sVip4 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(++lastOctetStart);
-                    String sVip5 = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(++lastOctetStart);
-
-                    suitableVips.put(sVip1, true);
-                    suitableVips.put(sVip2, true);
-                    suitableVips.put(sVip3, true);
-                    suitableVips.put(sVip4, true);
-                    suitableVips.put(sVip5, true);
+                    for (int i  = lastOctetStart; i < NUM_VIPS_TO_ADD + lastOctetStart; i++) {
+                        String sVip = split[0] + "." + split[1] + "." + split[2] + "." + String.valueOf(i);
+                        suitableVips.put(sVip, true);
+                    }
                 }
             }
         } catch (RemoteException e) {
