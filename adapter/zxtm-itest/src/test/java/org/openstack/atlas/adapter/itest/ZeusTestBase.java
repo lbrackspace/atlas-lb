@@ -291,33 +291,103 @@ public class ZeusTestBase {
             Assert.assertEquals(1, vips[0].length);
             Assert.assertEquals(vip1.getIpAddress(), vips[0][0]);
 
+            HashSet<String> expectedNodes = new HashSet<String>();
+
             final String[][] enabledNodes = getServiceStubs().getPoolBinding().getNodes(new String[]{poolName()});
             Assert.assertEquals(1, enabledNodes.length);
-            Assert.assertEquals(1, enabledNodes[0].length);
-            Assert.assertEquals(IpHelper.createZeusIpString(node1.getIpAddress(), node1.getPort()), enabledNodes[0][0]);
-
-            final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
-            Assert.assertEquals(1, disabledNodes.length);
-            Assert.assertEquals(1, disabledNodes[0].length);
-            Assert.assertEquals(IpHelper.createZeusIpString(node2.getIpAddress(), node2.getPort()), disabledNodes[0][0]);
-
-            final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
-            Assert.assertEquals(1, drainingNodes.length);
-            Assert.assertEquals(0, drainingNodes[0].length);
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.ENABLED)) {
+                    expectedNodes.add(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
+                }
+            }
+            for (String n : enabledNodes[0]) {
+                if (!expectedNodes.remove(n)) {
+                    Assert.fail("Unexpected Node '" + n + "' found in pool '" + poolName() + "'!");
+                }
+            }
+            if (!expectedNodes.isEmpty()) {
+                Assert.fail("Nodes not found in pool '" + poolName() + "': " + expectedNodes.toString());
+            }
 
             final PoolWeightingsDefinition[][] enabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, enabledNodes);
             Assert.assertEquals(1, enabledNodeWeights.length);
-            Assert.assertEquals(1, enabledNodeWeights[0].length);
-            Assert.assertEquals(1, enabledNodeWeights[0][0].getWeighting());
+            Assert.assertEquals(enabledNodes[0].length, enabledNodeWeights[0].length);
+            final HashMap<String, Integer> enabledNodeWeightsMap = new HashMap<String, Integer>();
+            for (PoolWeightingsDefinition p : enabledNodeWeights[0]) {
+                enabledNodeWeightsMap.put(p.getNode(), p.getWeighting());
+            }
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.ENABLED)) {
+                    if (n.getWeight() == null)
+                        Assert.assertEquals(1,enabledNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())).intValue());
+                    else
+                        Assert.assertEquals(n.getWeight(),enabledNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())));
+                }
+            }
+
+            final String[][] disabledNodes = getServiceStubs().getPoolBinding().getDisabledNodes(new String[]{poolName()});
+            Assert.assertEquals(1, disabledNodes.length);
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.DISABLED)) {
+                    expectedNodes.add(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
+                }
+            }
+            for (String n : disabledNodes[0]) {
+                if (!expectedNodes.remove(n)) {
+                    Assert.fail("Unexpected Node '" + n + "' found in pool '" + poolName() + "'!");
+                }
+            }
+            if (!expectedNodes.isEmpty()) {
+                Assert.fail("Nodes not found in pool '" + poolName() + "': " + expectedNodes.toString());
+            }
 
             final PoolWeightingsDefinition[][] disabledNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, disabledNodes);
             Assert.assertEquals(1, disabledNodeWeights.length);
-            Assert.assertEquals(1, disabledNodeWeights[0].length);
-            Assert.assertEquals(1, disabledNodeWeights[0][0].getWeighting());
+            Assert.assertEquals(disabledNodes[0].length, disabledNodeWeights[0].length);
+            final HashMap<String, Integer> disabledNodeWeightsMap = new HashMap<String, Integer>();
+            for (PoolWeightingsDefinition p : disabledNodeWeights[0]) {
+                disabledNodeWeightsMap.put(p.getNode(), p.getWeighting());
+            }
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.DISABLED)) {
+                    if (n.getWeight() == null)
+                        Assert.assertEquals(1,disabledNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())).intValue());
+                    else
+                        Assert.assertEquals(n.getWeight(),disabledNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())));
+                }
+            }
+
+            final String[][] drainingNodes = getServiceStubs().getPoolBinding().getDrainingNodes(new String[]{poolName()});
+            Assert.assertEquals(1, drainingNodes.length);
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.DRAINING)) {
+                    expectedNodes.add(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
+                }
+            }
+            for (String n : drainingNodes[0]) {
+                if (!expectedNodes.remove(n)) {
+                    Assert.fail("Unexpected Node '" + n + "' found in pool '" + poolName() + "'!");
+                }
+            }
+            if (!expectedNodes.isEmpty()) {
+                Assert.fail("Nodes not found in pool '" + poolName() + "': " + expectedNodes.toString());
+            }
 
             final PoolWeightingsDefinition[][] drainingNodeWeights = getServiceStubs().getPoolBinding().getNodesWeightings(new String[]{poolName()}, drainingNodes);
             Assert.assertEquals(1, drainingNodeWeights.length);
-            Assert.assertEquals(0, drainingNodeWeights[0].length);
+            Assert.assertEquals(drainingNodes[0].length, drainingNodeWeights[0].length);
+            final HashMap<String, Integer> drainingNodeWeightsMap = new HashMap<String, Integer>();
+            for (PoolWeightingsDefinition p : drainingNodeWeights[0]) {
+                drainingNodeWeightsMap.put(p.getNode(), p.getWeighting());
+            }
+            for (Node n : lb.getNodes()) {
+                if (n.getCondition().equals(NodeCondition.DRAINING)) {
+                    if (n.getWeight() == null)
+                        Assert.assertEquals(1,drainingNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())).intValue());
+                    else
+                        Assert.assertEquals(n.getWeight(),drainingNodeWeightsMap.get(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort())));
+                }
+            }
 
             final PoolLoadBalancingAlgorithm[] algorithms = getServiceStubs().getPoolBinding().getLoadBalancingAlgorithm(new String[]{poolName()});
             Assert.assertEquals(1, algorithms.length);
