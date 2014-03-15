@@ -27,7 +27,7 @@ def printf(format,*args): sys.stdout.write(format%args)
 
 def fprintf(fp,format,*args): fp.write(format%args)
 
-class ThreadedHTTPServer(ThreadedMixIn,HTTPServer):
+class ThreadedHTTPServer(ThreadingMixIn,HTTPServer):
     pass
 
 class TestHandler(BaseHTTPRequestHandler):
