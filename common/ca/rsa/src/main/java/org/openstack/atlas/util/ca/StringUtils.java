@@ -1,7 +1,10 @@
 package org.openstack.atlas.util.ca;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
@@ -83,6 +86,32 @@ public class StringUtils {
         return sb.toString();
     }
 
+    public static <T> String joinStringReverse(Collection<T> objects, String delim) {
+        StringBuilder sb = new StringBuilder();
+        Object[] oarray = objects.toArray();
+        int nobjects = oarray.length;
+        if (nobjects == 0) {
+            return "";
+        }
+
+        int li = nobjects - 1;
+        for (int i = li; i > 0; i--) {
+            sb.append(oarray[i].toString()).append(delim);
+        }
+        sb.append(oarray[0].toString());
+        return sb.toString();
+    }
+
+    public static String splitReverseString(String strIn,String delim){
+        List<String> strList = new ArrayList<String>();
+        String[] strArray = strIn.split(delim);
+        int aSize = strArray.length;
+        for(int i=0;i<aSize;i++){
+            strList.add(strArray[i]);
+        }
+        return joinStringReverse(strList, delim);
+    }
+
     public static <T> String joinString(Collection<T> objects, String delim) {
         StringBuilder sb = new StringBuilder();
         Object[] oarray = objects.toArray();
@@ -91,14 +120,15 @@ public class StringUtils {
             return "";
         }
         for (int i = 0; i < nobjects - 1; i++) {
-            sb.append(String.format("%s%s", oarray[i].toString(), delim));
+            sb.append(oarray[i].toString()).append(delim);
         }
-        sb.append(String.format("%s", oarray[nobjects - 1]));
+        sb.append(oarray[nobjects - 1].toString());
+        ;
         return sb.toString();
     }
 
     public static String asciiString(byte[] asciiBytes) {
-        if(asciiBytes == null){
+        if (asciiBytes == null) {
             return "";
         }
         try {
@@ -110,7 +140,7 @@ public class StringUtils {
 
     public static byte[] asciiBytes(String asciiStr) {
         byte[] out = null;
-        if(asciiStr==null){
+        if (asciiStr == null) {
             return new byte[0];
         }
         try {
@@ -135,17 +165,17 @@ public class StringUtils {
     }
 
     // LineWrapper for jython encodeing of Strings
-    public static String lineWrap(String strIn,int cols){
+    public static String lineWrap(String strIn, int cols) {
         StringBuilder sb = new StringBuilder(PAGESIZE);
         char[] strArray = strIn.toCharArray();
         int chrsLeftToWrite = strArray.length;
         int offset = 0;
-        while(chrsLeftToWrite > 0){
-            int nChrs = (chrsLeftToWrite<cols)?chrsLeftToWrite:cols;
+        while (chrsLeftToWrite > 0) {
+            int nChrs = (chrsLeftToWrite < cols) ? chrsLeftToWrite : cols;
             sb.append(strArray, offset, nChrs);
             offset += nChrs;
             chrsLeftToWrite -= nChrs;
-            if(chrsLeftToWrite>0){
+            if (chrsLeftToWrite > 0) {
                 sb.append('\n');
             }
         }

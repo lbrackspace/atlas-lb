@@ -1753,7 +1753,7 @@ public class CaFrame extends javax.swing.JFrame {
             rdn.add(String.format("CN=%s", CN));
         }
 
-        subjStr = StringUtils.joinString(rdn, ",");
+        subjStr = StringUtils.joinStringReverse(rdn, ","); // Not sure why the DNs are being encoded in reverse so I reverse it myself
         if (!email.equals("")) {
             subjStr = String.format("%s/emailAddress=%s", subjStr, email);
         }
