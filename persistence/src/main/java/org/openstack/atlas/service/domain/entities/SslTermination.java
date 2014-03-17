@@ -98,15 +98,11 @@ public class SslTermination extends Entity implements Serializable {
 
     public Boolean isSslReEncryption() { return sslReEncryption; }
 
-    public void setSslReEncryption(Boolean sslEncryption) {
-        this.sslReEncryption = sslEncryption;
+    public void setSslReEncryption(Boolean sslReEncryption) {
+        this.sslReEncryption = sslReEncryption;
     }
 
-    public String getCertificateAuthority() {
-        return certificateAuthority;
-    }
+    public String getSslReEncryptionCA() { return certificateAuthority; }
 
-    public void setCertificateAuthority(String certificateAuthority) {
-        this.certificateAuthority = certificateAuthority;
-    }
+    public void setSslReEncryptionCA(String certificateAuthority) { this.certificateAuthority = certificateAuthority; }
 }

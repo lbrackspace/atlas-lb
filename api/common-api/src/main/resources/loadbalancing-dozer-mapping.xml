@@ -189,10 +189,6 @@
             <a get-method="isHttpsRedirect">httpsRedirect</a>
             <b get-method="isHttpsRedirect">httpsRedirect</b>
         </field>
-        <field>
-            <a get-method="sslEncryption">sslEncryption</a>
-            <b get-method="sslEncryption">sslEncryption</b>
-        </field>
 
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SourceAddressesConverter">
             <a>sourceAddresses</a>
@@ -464,6 +460,14 @@
         <field>
         <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
         <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
+        </field>
+        <field>
+            <a get-method="sslReEncryption">sslReEncryption</a>
+            <b get-method="sslReEncryption">sslReEncryption</b>
+        </field>
+        <field>
+            <a get-method="sslReEncryptionCA">sslReEncryptionCA</a>
+            <b get-method="sslReEncryptionCA">sslReEncryptionCA</b>
         </field>
     </mapping>
 
