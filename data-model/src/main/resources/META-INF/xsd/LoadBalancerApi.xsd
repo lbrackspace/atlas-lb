@@ -456,7 +456,6 @@
         <xsd:sequence>
             <xsd:element name="privatekey" type="xsd:string" minOccurs="0"/>
             <xsd:element name="certificate" type="xsd:string" minOccurs="0"/>
-            <xsd:element name="ca" type="xsd:string" minOccurs="0"/>
             <xsd:element name="intermediateCertificate" type="xsd:string" minOccurs="0"/>
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:int"/>
