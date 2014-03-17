@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.helpers;
 
 import org.openstack.atlas.docs.loadbalancers.api.v1.X509Description;
-import org.openstack.atlas.service.domain.services.helpers.X509Helper;
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.X509ReaderException;
@@ -36,7 +36,7 @@ public class StubFactory {
             + "";
 
     public static X509Description newX509Description() throws X509ReaderException {
-        X509Description x509des = X509Helper.toX509Description(x509strExample);
+        X509Description x509des = SslTerminationHelper.toX509Description(x509strExample);
         return x509des;
     }
 }

@@ -34,7 +34,7 @@ import javax.ws.rs.core.MediaType;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RootCaList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.X509Description;
-import org.openstack.atlas.service.domain.services.helpers.X509Helper;
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.util.ca.util.X509BuiltPath;
 import org.openstack.atlas.util.ca.util.X509PathBuilder;
 import org.openstack.atlas.util.ca.zeus.ErrorEntry;
@@ -47,7 +47,6 @@ import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 public class SSLUtilsResource extends ManagementDependencyProvider {
 
     private final Log LOG = LogFactory.getLog(SSLUtilsResource.class);
-
 
     @GET
     @Path("roots")
@@ -62,7 +61,7 @@ public class SSLUtilsResource extends ManagementDependencyProvider {
         int nCasEncoded = 0;
         for (X509Certificate rootCA : rootCas) {
             try {
-                x509des = X509Helper.toX509Description(rootCA);
+                x509des = SslTerminationHelper.toX509Description(rootCA);
                 caList.getRootCas().add(x509des);
                 nCasEncoded++;
             } catch (X509ReaderException ex) {
@@ -90,6 +89,5 @@ public class SSLUtilsResource extends ManagementDependencyProvider {
         }
 
     }
-
 
 }

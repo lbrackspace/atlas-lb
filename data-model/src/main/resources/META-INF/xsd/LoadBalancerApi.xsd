@@ -421,7 +421,7 @@
         <xsd:sequence>
             <xsd:element name="suggestedCaPaths" type="tns:suggestedCaPath" minOccurs="0" maxOccurs="unbounded" />
         </xsd:sequence>
-        <xsd:attribute name="value" type="xsd:boolean" />
+        <xsd:attribute name="pathFound" type="xsd:boolean" />
     </xsd:complexType>
 
     <xsd:element name="rootCaList" type="tns:rootCaList"/>
