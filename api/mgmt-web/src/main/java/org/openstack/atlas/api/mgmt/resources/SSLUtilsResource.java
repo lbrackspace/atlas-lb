@@ -48,68 +48,6 @@ public class SSLUtilsResource extends ManagementDependencyProvider {
 
     private final Log LOG = LogFactory.getLog(SSLUtilsResource.class);
 
-    @POST
-    @Path("suggestpath")
-    public Response suggestPKIXPath(SslTermination sslTerm) {
-        SuggestedCaPath suggestedPath = new SuggestedCaPath();
-        Set<X509Certificate> rootCaSet = new HashSet<X509Certificate>();
-        Set<X509Certificate> imdSet = new HashSet<X509Certificate>();
-        X509Certificate usrCrt;
-        List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
-
-        if (sslTerm.getCa() == null || sslTerm.getCa().isEmpty()) {
-            rootCaSet = RootCAHelper.getRootCASet();
-        } else {
-            List<X509Certificate> x509List = ZeusUtils.decodeX509s(sslTerm.getCa(), errors);
-            if (ErrorEntry.hasFatal(errors)) {
-                applyErrors(suggestedPath, errors);
-                return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
-            }
-            rootCaSet = new HashSet<X509Certificate>(x509List);
-        }
-
-        if (sslTerm.getIntermediateCertificate() != null && !sslTerm.getIntermediateCertificate().isEmpty()) {
-            List<X509Certificate> x509List = ZeusUtils.decodeX509s(sslTerm.getIntermediateCertificate(), errors);
-            if (ErrorEntry.hasFatal(errors)) {
-                applyErrors(suggestedPath, errors);
-                return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
-            }
-            imdSet = new HashSet<X509Certificate>(x509List);
-        }
-
-        if (sslTerm.getCertificate() == null || sslTerm.getCertificate().isEmpty()) {
-            errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "User cert is empty", true, null));
-            applyErrors(suggestedPath, errors);
-            return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
-        } else {
-            X509Certificate x509 = ZeusUtils.decodeCrt(sslTerm.getCertificate(), errors);
-            if (ErrorEntry.hasFatal(errors)) {
-                applyErrors(suggestedPath, errors);
-                return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
-            }
-            usrCrt = x509;
-        }
-        if (ErrorEntry.hasFatal(errors)) {
-            applyErrors(suggestedPath, errors);
-            return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
-        }
-        X509PathBuilder<X509Certificate> pathBuilder = new X509PathBuilder(rootCaSet, imdSet);
-        X509BuiltPath path;
-        try {
-            path = pathBuilder.buildPath(usrCrt, StaticDateTimeUtils.toDate(Calendar.getInstance()));
-        } catch (X509PathBuildException ex) {
-            String exMsg = Debug.getExtendedStackTrace(ex);
-            errors.add(new ErrorEntry(ErrorType.NO_PATH_TO_ROOT, "No Path to RootCa found", true, ex));
-            applyErrors(suggestedPath, errors);
-            return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
-        }
-        if (ErrorEntry.hasFatal(errors)) {
-            applyErrors(suggestedPath, errors);
-            return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
-        }
-
-        return Response.status(Response.Status.OK).entity(suggestedPath).build();
-    }
 
     @GET
     @Path("roots")
@@ -153,15 +91,5 @@ public class SSLUtilsResource extends ManagementDependencyProvider {
 
     }
 
-    public static boolean applyErrors(SuggestedCaPath path, List<ErrorEntry> errors) {
-        boolean hasFatalErrors = false;
-        path.getErrors().clear();
-        for (ErrorEntry errorEntry : errors) {
-            if (errorEntry.isFatal()) {
-                hasFatalErrors = true;
-                path.getErrors().add(errorEntry.getErrorDetail());
-            }
-        }
-        return hasFatalErrors;
-    }
+
 }

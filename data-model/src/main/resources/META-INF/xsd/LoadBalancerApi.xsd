@@ -416,6 +416,14 @@
         </xsd:sequence>
     </xsd:complexType>
 
+    <xsd:element name="suggestedCaPathList" type="tns:suggestedCaPathList" />
+    <xsd:complexType name="suggestedCaPathList">
+        <xsd:sequence>
+            <xsd:element name="suggestedCaPaths" type="tns:suggestedCaPath" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+        <xsd:attribute name="value" type="xsd:boolean" />
+    </xsd:complexType>
+
     <xsd:element name="rootCaList" type="tns:rootCaList"/>
         <xsd:complexType name="rootCaList">
             <xsd:sequence>

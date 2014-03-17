@@ -50,6 +50,9 @@
         <bindings scd="~tns:suggestedCaPath">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPath"/>
         </bindings>
+        <bindings scd="~tns:suggestedCaPathList">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPathList"/>
+        </bindings>
         <bindings scd="~tns:networkItem">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem"/>
         </bindings>

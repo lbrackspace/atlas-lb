@@ -1,5 +1,21 @@
 package org.openstack.atlas.api.resources;
 
+import java.util.ArrayList;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPath;
+import java.util.Set;
+import org.openstack.atlas.service.domain.services.helpers.RootCAHelper;
+import java.util.HashSet;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import java.util.List;
+import org.openstack.atlas.util.ca.zeus.ErrorType;
+import org.openstack.atlas.util.debug.Debug;
+import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
+import java.util.Calendar;
+import org.openstack.atlas.util.ca.util.X509PathBuilder;
+import org.openstack.atlas.util.ca.zeus.ErrorEntry;
+import java.security.cert.X509Certificate;
+import org.openstack.atlas.util.ca.util.X509BuiltPath;
 import org.apache.abdera.model.Feed;
 import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
@@ -35,8 +51,9 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createSsl(SslTermination ssl) {
-        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination))
+        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
             return ResponseFactory.getErrorResponse(new MethodNotAllowedException("Resource not implemented yet..."), null, null);
+        }
 
         ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
         if (!result.passedValidation()) {
@@ -105,7 +122,6 @@ public class SslTerminationResource extends CommonDependencyProvider {
         }
     }
 
-
     private Response getFeedResponse(Integer page) {
         Map<String, Object> feedAttributes = new HashMap<String, Object>();
         feedAttributes.put("feedType", FeedType.NODE_FEED);
@@ -124,6 +140,82 @@ public class SslTerminationResource extends CommonDependencyProvider {
         }
 
         return Response.status(200).entity(feed).build();
+    }
+
+    @PUT
+    @Path("suggestpath")
+    public Response suggestPKIXPath(SslTermination sslTerm) {
+        SuggestedCaPath suggestedPath = new SuggestedCaPath();
+        Set<X509Certificate> rootCaSet = new HashSet<X509Certificate>();
+        Set<X509Certificate> imdSet = new HashSet<X509Certificate>();
+        X509Certificate usrCrt;
+        List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
+
+        if (sslTerm.getCa() == null || sslTerm.getCa().isEmpty()) {
+            rootCaSet = RootCAHelper.getRootCASet();
+        } else {
+            List<X509Certificate> x509List = ZeusUtils.decodeX509s(sslTerm.getCa(), errors);
+            if (ErrorEntry.hasFatal(errors)) {
+                applyErrors(suggestedPath, errors);
+                return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
+            }
+            rootCaSet = new HashSet<X509Certificate>(x509List);
+        }
+
+        if (sslTerm.getIntermediateCertificate() != null && !sslTerm.getIntermediateCertificate().isEmpty()) {
+            List<X509Certificate> x509List = ZeusUtils.decodeX509s(sslTerm.getIntermediateCertificate(), errors);
+            if (ErrorEntry.hasFatal(errors)) {
+                applyErrors(suggestedPath, errors);
+                return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
+            }
+            imdSet = new HashSet<X509Certificate>(x509List);
+        }
+
+        if (sslTerm.getCertificate() == null || sslTerm.getCertificate().isEmpty()) {
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "User cert is empty", true, null));
+            applyErrors(suggestedPath, errors);
+            return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
+        } else {
+            X509Certificate x509 = ZeusUtils.decodeCrt(sslTerm.getCertificate(), errors);
+            if (ErrorEntry.hasFatal(errors)) {
+                applyErrors(suggestedPath, errors);
+                return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
+            }
+            usrCrt = x509;
+        }
+        if (ErrorEntry.hasFatal(errors)) {
+            applyErrors(suggestedPath, errors);
+            return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
+        }
+        X509PathBuilder<X509Certificate> pathBuilder = new X509PathBuilder(rootCaSet, imdSet);
+        X509BuiltPath path;
+
+        try {
+            path = pathBuilder.buildPath(usrCrt, StaticDateTimeUtils.toDate(Calendar.getInstance()));
+        } catch (X509PathBuildException ex) {
+            String exMsg = Debug.getExtendedStackTrace(ex);
+            errors.add(new ErrorEntry(ErrorType.NO_PATH_TO_ROOT, "No Path to RootCa found", true, ex));
+            applyErrors(suggestedPath, errors);
+            return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
+        }
+        if (ErrorEntry.hasFatal(errors)) {
+            applyErrors(suggestedPath, errors);
+            return Response.status(Response.Status.BAD_REQUEST).entity(suggestedPath).build();
+        }
+
+        return Response.status(Response.Status.OK).entity(suggestedPath).build();
+    }
+
+    private static boolean applyErrors(SuggestedCaPath path, List<ErrorEntry> errors) {
+        boolean hasFatalErrors = false;
+        path.getErrors().clear();
+        for (ErrorEntry errorEntry : errors) {
+            if (errorEntry.isFatal()) {
+                hasFatalErrors = true;
+                path.getErrors().add(errorEntry.getErrorDetail());
+            }
+        }
+        return hasFatalErrors;
     }
 
     public void setId(int id) {
