@@ -455,6 +455,8 @@
         <xsd:attribute name="enabled" type="xsd:boolean"/>
         <xsd:attribute name="securePort" type="xsd:int"/>
         <xsd:attribute name="secureTrafficOnly" type="xsd:boolean"/>
+        <xsd:attribute name="sslReEncryption" type="xsd:boolean"/>
+        <xsd:attribute name="sslReEncryptionCA" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:element name="allowedDomains" type="tns:allowedDomains"/>

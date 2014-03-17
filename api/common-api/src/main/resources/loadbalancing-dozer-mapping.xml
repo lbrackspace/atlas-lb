@@ -189,6 +189,11 @@
             <a get-method="isHttpsRedirect">httpsRedirect</a>
             <b get-method="isHttpsRedirect">httpsRedirect</b>
         </field>
+        <field>
+            <a get-method="sslEncryption">sslEncryption</a>
+            <b get-method="sslEncryption">sslEncryption</b>
+        </field>
+
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SourceAddressesConverter">
             <a>sourceAddresses</a>
             <b>host</b>
