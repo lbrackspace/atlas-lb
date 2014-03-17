@@ -44,7 +44,7 @@ public class UpdateContentCachingListener extends BaseListener {
                 LOG.debug(String.format("Successfully updated content caching for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Updating connection throttle for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.updateConnectionThrottle(dbLoadBalancer);
+                reverseProxyLoadBalancerService.updateContentCaching(dbLoadBalancer);
                 LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
             }
         } catch (Exception e) {
