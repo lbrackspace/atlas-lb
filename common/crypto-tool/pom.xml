@@ -6,6 +6,7 @@
         <artifactId>atlas-common</artifactId>
         <version>1.21.0-SNAPSHOT</version>
 
+
     </parent>
 
     <artifactId>crypto-tool</artifactId>

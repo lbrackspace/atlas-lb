@@ -29,7 +29,7 @@ public class UpdateSessionPersistenceListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.getWithUserPages(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             LOG.error(alertDescription, enfe);
@@ -41,7 +41,7 @@ public class UpdateSessionPersistenceListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Updating session persistence for load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb);
+                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb, loadBalancerService.getUserPages(queueLb.getId(), queueLb.getAccountId()));
                 LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
             } else {
                 if (dbLoadBalancer.getSessionPersistence() != SessionPersistence.NONE) {

@@ -169,7 +169,7 @@ public class UpdateProtocolIntegrationTest extends ZeusTestBase {
         Set<LoadBalancerJoinVip> vipList = new HashSet<LoadBalancerJoinVip>();
         vip1 = new VirtualIp();
         vip1.setId(TEST_VIP_ID);
-        vip1.setIpAddress("10.69.0.60");
+        vip1.setIpAddress(findUsableIPv4Vip());
         LoadBalancerJoinVip loadBalancerJoinVip = new LoadBalancerJoinVip();
         loadBalancerJoinVip.setVirtualIp(vip1);
         vipList.add(loadBalancerJoinVip);

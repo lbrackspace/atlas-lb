@@ -61,13 +61,13 @@ public class LoadBalancerRepository {
 
     public boolean getByIdForOp(Integer id) throws EntityNotFoundException {
         String qStr = "from LoadBalancer lb where lb.id=:lid";
-                List<LoadBalancer> lbList;
-                Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_READ).
-                        setParameter("lid", id);
-                lbList = q.getResultList();
-                if (lbList.size() < 1) {
-                    throw new EntityNotFoundException();
-                }
+        List<LoadBalancer> lbList;
+        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_READ).
+                setParameter("lid", id);
+        lbList = q.getResultList();
+        if (lbList.size() < 1) {
+            throw new EntityNotFoundException();
+        }
         return true ? lbList.get(0).getStatus().equals(LoadBalancerStatus.ACTIVE) : false;
     }
 
@@ -1151,7 +1151,7 @@ public class LoadBalancerRepository {
 
         Query query = entityManager.createQuery(
                 "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 "
-                + "and u.numAttempts <= :numAttempts order by u.id asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+                        + "and u.numAttempts <= :numAttempts order by u.id asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
 
         usageList = query.getResultList();
 
@@ -1167,7 +1167,7 @@ public class LoadBalancerRepository {
 
         Query query = entityManager.createQuery(
                 "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 "
-                + "and u.numAttempts >= :numAttempts order by u.startTime asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+                        + "and u.numAttempts >= :numAttempts order by u.startTime asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
 
         usageList = query.getResultList();
 

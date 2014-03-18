@@ -7,6 +7,7 @@
         <artifactId>atlas-logs</artifactId>
         <version>1.21.0-SNAPSHOT</version>
 
+
     </parent>
 
     <artifactId>atlas-logs-hadoop</artifactId>
@@ -63,6 +64,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>

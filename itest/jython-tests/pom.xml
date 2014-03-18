@@ -6,12 +6,14 @@
         <artifactId>atlas-itest</artifactId>
         <version>1.21.0-SNAPSHOT</version>
 
+
     </parent>
     
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-jython-itest</artifactId>
     <name>Openstack :: Atlas :: Integration tests :: Jython Experiments</name>
     <version>1.21.0-SNAPSHOT</version>
+
     <packaging>jar</packaging>
 
     <dependencies>

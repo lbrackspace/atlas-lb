@@ -36,7 +36,7 @@ public class UpdateSslTerminationListener extends BaseListener {
 
         try {
             LOG.debug("Grabbing loadbalancer...");
-            dbLoadBalancer = loadBalancerService.getWithUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
             dbLoadBalancer.setUserName(dataContainer.getUserName());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
@@ -65,7 +65,7 @@ public class UpdateSslTerminationListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.info("Updating load balancer ssl termination in STM...");
-                reverseProxyLoadBalancerStmService.updateSslTermination(dbLoadBalancer, queTermination);
+                reverseProxyLoadBalancerStmService.updateSslTermination(dbLoadBalancer, queTermination, loadBalancerService.getUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId()));
                 LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
             } else {
                 LOG.info("Updating load balancer ssl termination in ZXTM...");

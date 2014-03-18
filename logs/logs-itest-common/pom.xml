@@ -9,6 +9,7 @@
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-itest-common</artifactId>
     <version>1.21.0-SNAPSHOT</version>
+
     <name>OpenStack :: Atlas :: Logs :: Itest Commons</name>
     <packaging>jar</packaging>
 

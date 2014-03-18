@@ -3,6 +3,7 @@ package org.openstack.atlas.api.async;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 import javax.jms.Message;
@@ -28,7 +29,7 @@ public class DeleteAccessListListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.getWithUserPages(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException ex) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), ex, DATABASE_FAILURE.name(), alertDescription);
@@ -73,6 +74,7 @@ public class DeleteAccessListListener extends BaseListener {
                 saveList.add(item);
             }
         }
+
         dbLoadBalancer.setAccessLists(saveList);
         dbLoadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
         loadBalancerService.update(dbLoadBalancer);

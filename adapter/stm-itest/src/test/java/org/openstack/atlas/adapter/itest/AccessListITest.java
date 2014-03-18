@@ -175,7 +175,7 @@ public class AccessListITest extends STMTestBase {
         sslTermination.setSslTermination(termination);
         lb.setSslTermination(termination);
         try {
-            stmAdapter.updateSslTermination(config, lb, sslTermination);
+            stmAdapter.updateSslTermination(config, lb, sslTermination, null);
         } catch (Exception e) {
             Assert.fail(String.format("Error updating SSL termination on '%s'.", name));
         }
@@ -187,7 +187,7 @@ public class AccessListITest extends STMTestBase {
         sslTermination.setSslTermination(termination);
         lb.setSslTermination(termination);
         try {
-            stmAdapter.updateSslTermination(config, lb, sslTermination);
+            stmAdapter.updateSslTermination(config, lb, sslTermination, null);
         } catch (Exception e) {
             Assert.fail(String.format("Error updating SSL termination on '%s'.", name));
         }

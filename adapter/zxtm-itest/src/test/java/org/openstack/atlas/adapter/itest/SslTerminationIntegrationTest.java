@@ -5,10 +5,7 @@ import com.zxtm.service.client.VirtualServerBasicInfo;
 import com.zxtm.service.client.VirtualServerLocationDefaultRewriteMode;
 import com.zxtm.service.client.VirtualServerRule;
 import org.apache.axis.types.UnsignedInt;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
@@ -28,34 +25,34 @@ import static org.openstack.atlas.service.domain.entities.AccessListType.DENY;
 public class SslTerminationIntegrationTest extends ZeusTestBase {
     //TODO: robustoize it...
 
-    final String testCert = "-----BEGIN CERTIFICATE-----\n" +
-            "MIIERzCCAy+gAwIBAgIBAjANBgkqhkiG9w0BAQUFADB5MQswCQYDVQQGEwJVUzEO\n" +
-            "MAwGA1UECBMFVGV4YXMxDjAMBgNVBAcTBVRleGFzMRowGAYDVQQKExFSYWNrU3Bh\n" +
-            "Y2UgSG9zdGluZzEUMBIGA1UECxMLUmFja0V4cCBDQTQxGDAWBgNVBAMTD2NhNC5y\n" +
-            "YWNrZXhwLm9yZzAeFw0xMjAxMTIxNzU3MDZaFw0xNDAxMTAxNzU3MDZaMHkxCzAJ\n" +
-            "BgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEOMAwGA1UEBxMFVGV4YXMxGjAYBgNV\n" +
-            "BAoTEVJhY2tTcGFjZSBIb3N0aW5nMRQwEgYDVQQLEwtSYWNrRXhwIENBNTEYMBYG\n" +
-            "A1UEAxMPY2E1LnJhY2tleHAub3JnMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB\n" +
-            "CgKCAQEAsVK6npit7Q3NLlVjkpiDj+QuIoYrhHTL5KKzj6CrtQsFYukEL1YEKNlM\n" +
-            "/dv8id/PkmdQ0wCNsk8d69CZKgO4hpN6O/b2aUl/vQcrW5lv3fI8x4wLu2Ri92vJ\n" +
-            "f04RiZ3Jyc0rgrfGyLyNJcnMIMjnFV7mQyy+7cMGKCDgaLzUGNyR5E/Mi4cERana\n" +
-            "xyp1nZI3DjA11Kwums9cx5VzS0Po1RyBsu7Xnpv3Fp2QqCBgdX8uaR5RuSak40/5\n" +
-            "Jv2ORv28mi9AFu2AIRj6lrDdaLQGAXnbDk8b0ImEvVOe/QASsgTSmzOtn3q9Yejl\n" +
-            "peQ9PFImVr2TymTF6UarGRHCWId1dQIDAQABo4HZMIHWMA8GA1UdEwEB/wQFMAMB\n" +
-            "Af8wgaMGA1UdIwSBmzCBmIAUoeopOMWIEeYGtksI+T+ZjXWKc4ahfaR7MHkxCzAJ\n" +
-            "BgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEOMAwGA1UEBxMFVGV4YXMxGjAYBgNV\n" +
-            "BAoTEVJhY2tTcGFjZSBIb3N0aW5nMRQwEgYDVQQLEwtSYWNrRXhwIENBMzEYMBYG\n" +
-            "A1UEAxMPY2EzLnJhY2tleHAub3JnggECMB0GA1UdDgQWBBSJF0Is0Wn7cVQ2iz/x\n" +
-            "W/xdobdNezANBgkqhkiG9w0BAQUFAAOCAQEAHUIe5D3+/j4yca1bxXg0egL0d6ed\n" +
-            "Cam/l+E/SHxFJmlLOfkMnDQQy/P31PBNrHPdNw3CwK5hqFGl8oWGLifRmMVlWhBo\n" +
-            "wD1wmzm++FQeEthhl7gBkgECxZ+U4+WRiqo9ZiHWDf49nr8gUONF/qnHHkXTOZKo\n" +
-            "vB34N2y+nONDvyzky2wzbvU46dW7Wc6Lp2nLTt4amC66V973V31Vlpbzg3C0K7sc\n" +
-            "PA2GGTsiW6NF1mLd4fECgXslaQggoAKax7QY2yKrXLN5tmrHHThV3fIvLbSNFJbl\n" +
-            "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
-            "-----END CERTIFICATE-----";
+    final static String testCert = "-----BEGIN CERTIFICATE-----\n" +
+            "MIIERTCCAy2gAwIBAgIJANISIu8YgMUjMA0GCSqGSIb3DQEBBQUAMHQxCzAJBgNV\n" +
+            "BAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEUMBIGA1UEBxMLU2FuIEFudG9uaW8xGjAY\n" +
+            "BgNVBAoTEVJhY2tzcGFjZSBIb3N0aW5nMQ4wDAYDVQQLEwVMQmFhUzETMBEGA1UE\n" +
+            "AxMKTEJhYVMgVGVhbTAeFw0xNDAzMTIyMjIxMjlaFw0yNzExMTkyMjIxMjlaMHQx\n" +
+            "CzAJBgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEUMBIGA1UEBxMLU2FuIEFudG9u\n" +
+            "aW8xGjAYBgNVBAoTEVJhY2tzcGFjZSBIb3N0aW5nMQ4wDAYDVQQLEwVMQmFhUzET\n" +
+            "MBEGA1UEAxMKTEJhYVMgVGVhbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC\n" +
+            "ggEBALFSup6Yre0NzS5VY5KYg4/kLiKGK4R0y+Sis4+gq7ULBWLpBC9WBCjZTP3b\n" +
+            "/Infz5JnUNMAjbJPHevQmSoDuIaTejv29mlJf70HK1uZb93yPMeMC7tkYvdryX9O\n" +
+            "EYmdycnNK4K3xsi8jSXJzCDI5xVe5kMsvu3DBigg4Gi81BjckeRPzIuHBEWp2scq\n" +
+            "dZ2SNw4wNdSsLprPXMeVc0tD6NUcgbLu156b9xadkKggYHV/LmkeUbkmpONP+Sb9\n" +
+            "jkb9vJovQBbtgCEY+paw3Wi0BgF52w5PG9CJhL1Tnv0AErIE0pszrZ96vWHo5aXk\n" +
+            "PTxSJla9k8pkxelGqxkRwliHdXUCAwEAAaOB2TCB1jAdBgNVHQ4EFgQUiRdCLNFp\n" +
+            "+3FUNos/8Vv8XaG3TXswgaYGA1UdIwSBnjCBm4AUiRdCLNFp+3FUNos/8Vv8XaG3\n" +
+            "TXuheKR2MHQxCzAJBgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEUMBIGA1UEBxML\n" +
+            "U2FuIEFudG9uaW8xGjAYBgNVBAoTEVJhY2tzcGFjZSBIb3N0aW5nMQ4wDAYDVQQL\n" +
+            "EwVMQmFhUzETMBEGA1UEAxMKTEJhYVMgVGVhbYIJANISIu8YgMUjMAwGA1UdEwQF\n" +
+            "MAMBAf8wDQYJKoZIhvcNAQEFBQADggEBAEZjzMfvcBtXQHuaqH8X5exfyn6iqxmo\n" +
+            "S2kOfSvQxm5NLuSsNr5/LaGZpogGyQsywvcwBwmshZWRpNVoujqpujS2RB98nXRf\n" +
+            "b134c1klK4poS3tx2BR+81OZYZG5cPq9S3y/XOBSBpvucSRQwoagf1sQOLB4pU8v\n" +
+            "jgf/2pxJQtjhj7M4gZD7q1qwfTp0M3AyNV9KaI/EZN2e8ZJcpyruUJNe0ZuBW2+Y\n" +
+            "obj7e8ogJJsV2y+DLstjzgFCz2/8upArZ7pI1mYwJMukAPzE8BPntrqHLMweUT3P\n" +
+            "iOCsagBr8I/zbc4m/TwYvkcwxhrkaLlxwEtW7TID+LFnb0/NoPTdjO0=\n" +
+            "-----END CERTIFICATE-----\n";
 
 
-    final String testKey = "-----BEGIN RSA PRIVATE KEY-----\n" +
+    final static String testKey = "-----BEGIN RSA PRIVATE KEY-----\n" +
             "MIIEpAIBAAKCAQEAsVK6npit7Q3NLlVjkpiDj+QuIoYrhHTL5KKzj6CrtQsFYukE\n" +
             "L1YEKNlM/dv8id/PkmdQ0wCNsk8d69CZKgO4hpN6O/b2aUl/vQcrW5lv3fI8x4wL\n" +
             "u2Ri92vJf04RiZ3Jyc0rgrfGyLyNJcnMIMjnFV7mQyy+7cMGKCDgaLzUGNyR5E/M\n" +
@@ -108,8 +105,10 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         updateLoadBalancerAttributes();
     }
 
+    @Ignore
     @Test
     public void testWhenAddingRateLimitWithSslTermination() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+        //Rate limiting is not handled by zxtm any more
         setRateLimitBeforeSsl();
         deleteRateLimit();
         setSslTermination();
@@ -448,6 +447,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
 
             Assert.assertEquals(loadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
             Assert.assertEquals(secureLoadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(errorContent, new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
 
             //remove error page
             zxtmAdapter.removeAndSetDefaultErrorFile(config, lb);
@@ -458,6 +458,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             zxtmAdapter.setErrorFile(config, lb, errorContent);
             Assert.assertEquals(loadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
             Assert.assertEquals(secureLoadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(errorContent, new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -473,12 +474,10 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             String errorContent = "<html><body>ErrorFileContents</body></html>";
 
             zxtmAdapter.deleteErrorFile(config, lb);
-            String blah2 = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0];
-            Assert.assertEquals("", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
+            Assert.assertEquals("Default", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
 
             //no ssl yet
             try {
-                String blah = getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0];
                 Assert.assertEquals("Default", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
             } catch (ObjectDoesNotExist odne) {
                 Assert.assertTrue("ssl not present", odne.getErrmsg().contains(secureLoadBalancerName()));
@@ -528,12 +527,12 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(vsSslName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(vsSslName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(vsSslName)[0]);
-            Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getRateTimer(vsSslName)[0]);
+            Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(vsSslName)[0]);
 
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(vsName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(vsName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(vsName)[0]);
-            Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getRateTimer(vsName)[0]);
+            Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(vsName)[0]);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -740,7 +739,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             final VirtualServerRule[][] virtualServerRules = getServiceStubs().getVirtualServerBinding().getRules(new String[]{loadBalancerName()});
             Assert.assertEquals(1, virtualServerRules.length);
             Assert.assertEquals(3, virtualServerRules[0].length);
-             for (VirtualServerRule rule : virtualServerRules[0]) {
+            for (VirtualServerRule rule : virtualServerRules[0]) {
                 if (!(rule.equals(ZxtmAdapterImpl.ruleRateLimitHttp)) && !(rule.equals(ZxtmAdapterImpl.ruleXForwardedProto)) && !(rule.equals(ZxtmAdapterImpl.ruleXForwardedFor))) {
                     Assert.fail("None of the rules matched, test failed!...");
                 }

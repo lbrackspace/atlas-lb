@@ -103,15 +103,15 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         //TODO: method is private and cannot get around this until the listener is updated...sy
 //        when(updateSslTerminationListener.getUsagesToInsert(Matchers.anyInt(), Matchers.<SslTermination>any(),  Matchers.<SslTermination>any(), Matchers.<Map>any(), Matchers.<Map>any())).thenReturn(usages);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
 
-        verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
+        verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection, times(2)).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
         //TODO: Update for new usage behaviour...
 //        verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_ONLY_ON), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
@@ -132,15 +132,15 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(queTermination.getSslTermination()).thenReturn(sslTermination);
         lb.setSslTermination(sslTermination);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
 
-        verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
+        verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection, times(2)).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
         verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_MIXED_ON), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveSslTerminationEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, SSL_TERMINATION_ID, EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), EventType.UPDATE_SSL_TERMINATION, CategoryType.UPDATE, EventSeverity.INFO);
@@ -159,15 +159,15 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(queTermination.getSslTermination()).thenReturn(sslTermination);
         lb.setSslTermination(sslTermination);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
 
-        verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
+        verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection, times(2)).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
         verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_OFF), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveSslTerminationEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, SSL_TERMINATION_ID, EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), EventType.UPDATE_SSL_TERMINATION, CategoryType.UPDATE, EventSeverity.INFO);
@@ -180,7 +180,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         updateSslTerminationListener.doOnMessage(objectMessage);
 
@@ -203,16 +203,16 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(queTermination.getSslTermination()).thenReturn(sslTermination);
         lb.setSslTermination(sslTermination);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
 
-        verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
+        verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ERROR);
         verify(loadBalancerService).update(lb);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());

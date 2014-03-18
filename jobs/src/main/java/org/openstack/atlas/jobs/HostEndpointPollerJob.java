@@ -50,13 +50,13 @@ public class HostEndpointPollerJob extends AbstractJob {
     //TODO: refactor to use the async service...
     @Override
     public void run() throws Exception {
+
         try {
             boolean endpointWorks;
             boolean restEndpointWorks;
             List<Host> hosts = hostRepository.getAll();
             for (Host host : hosts) {
                 endpointWorks = reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host));
-                restEndpointWorks = reverseProxyLoadBalancerStmAdapter.isEndPointWorking(getConfigHost(host));
                 if (endpointWorks) {
                     host.setSoapEndpointActive(Boolean.TRUE);
                     LOG.info("Host: " + host.getId() + " is active");
@@ -65,13 +65,16 @@ public class HostEndpointPollerJob extends AbstractJob {
                     LOG.info("Host: " + host.getId() + " is inactive");
                 }
 
-                if (restEndpointWorks) {
-                    host.setRestEndpointActive(Boolean.TRUE);
-                    LOG.info("Host: " + host.getId() + " Rest Endpoint is active");
-                } else {
-                    host.setRestEndpointActive(Boolean.FALSE);
-                    LOG.info("Host: " + host.getId() + " Rest Endpoint is inactive");
-                }
+                //TODO: Uncomment when using REST interface, important!!!!
+//                restEndpointWorks = reverseProxyLoadBalancerStmAdapter.isEndPointWorking(getConfigHost(host));
+//                if (restEndpointWorks) {
+//                    host.setRestEndpointActive(Boolean.TRUE);
+//                    LOG.info("Host: " + host.getId() + " Rest Endpoint is active");
+//                } else {
+//                    host.setRestEndpointActive(Boolean.FALSE);
+//                    LOG.info("Host: " + host.getId() + " Rest Endpoint is inactive");
+//                }
+
                 LOG.info("Host: " + host.getId() + " is being updated in the database.");
                 hostRepository.update(host);
                 LOG.info("Finished updating host: " + host.getId() + " in the database.");

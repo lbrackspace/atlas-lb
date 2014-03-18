@@ -67,10 +67,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateLoadBalancer(LoadBalancer lb, LoadBalancer queLb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
+    public void updateLoadBalancer(LoadBalancer lb, LoadBalancer queLb, UserPages up) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.updateLoadBalancer(config, lb, queLb);
+            reverseProxyLoadBalancerStmAdapter.updateLoadBalancer(config, lb, queLb, up);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -266,10 +266,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteVirtualIps(LoadBalancer lb, List<Integer> ids) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void deleteVirtualIps(LoadBalancer lb, List<Integer> ids, UserPages up) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.deleteVirtualIps(config, lb, ids);
+            reverseProxyLoadBalancerStmAdapter.deleteVirtualIps(config, lb, ids, up);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -326,10 +326,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
 //    }
 
     @Override
-    public void deleteErrorFile(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException, StmRollBackException {
+    public void deleteErrorFile(LoadBalancer loadBalancer, UserPages up) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException, StmRollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.deleteErrorFile(config, loadBalancer);
+            reverseProxyLoadBalancerStmAdapter.deleteErrorFile(config, loadBalancer, up);
         } catch (StmRollBackException ex) {
             checkAndSetIfRestEndPointBad(config, ex);
             throw ex;
@@ -433,10 +433,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateSslTermination(LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
+    public void updateSslTermination(LoadBalancer loadBalancer, ZeusSslTermination sslTermination, UserPages up) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.updateSslTermination(config, loadBalancer, sslTermination);
+            reverseProxyLoadBalancerStmAdapter.updateSslTermination(config, loadBalancer, sslTermination, up);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;

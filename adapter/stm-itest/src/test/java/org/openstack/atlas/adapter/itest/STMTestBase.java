@@ -124,8 +124,6 @@ public class STMTestBase extends StmTestConstants {
         lb.setNodes(nodeList);
         lb.setLoadBalancerJoinVipSet(vipList);
 
-        lb.setUserPages(new UserPages());
-
         STMTestBase.lb = lb;
     }
 

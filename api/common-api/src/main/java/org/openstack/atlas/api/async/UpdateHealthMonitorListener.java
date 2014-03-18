@@ -29,7 +29,7 @@ public class UpdateHealthMonitorListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.getWithUserPages(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             LOG.error(alertDescription, enfe);
@@ -45,7 +45,7 @@ public class UpdateHealthMonitorListener extends BaseListener {
                 LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Updating health monitor for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.updateHealthMonitor(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getHealthMonitor());
+                reverseProxyLoadBalancerService.updateHealthMonitor(dbLoadBalancer);
                 LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
             }
         } catch (Exception e) {

@@ -19,7 +19,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, RollBackException;
 
-    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb)
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb, UserPages up)
             throws InsufficientRequestException, StmRollBackException;
 
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
@@ -31,7 +31,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws InsufficientRequestException, RollBackException;
 
-    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination)
+    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination, UserPages up)
             throws InsufficientRequestException, RollBackException;
 
     public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
@@ -49,10 +49,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void updateVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, RollBackException;
 
-    public void deleteVirtualIp(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Integer vipId)
-            throws InsufficientRequestException, RollBackException;
-
-    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId)
+    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId, UserPages up)
             throws InsufficientRequestException, RollBackException;
 
     public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost)
@@ -85,7 +82,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content)
             throws InsufficientRequestException, StmRollBackException;
 
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, UserPages up)
             throws InsufficientRequestException, StmRollBackException;
 
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)

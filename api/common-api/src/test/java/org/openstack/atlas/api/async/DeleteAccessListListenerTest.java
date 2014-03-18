@@ -100,7 +100,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     @Test
     public void testDeleteAccessListItem() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
 
@@ -116,7 +116,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     @Test
     public void testDeleteAccessList() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteAccessListListener.doOnMessage(objectMessage);
@@ -132,7 +132,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
@@ -144,7 +144,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     public void testDeleteInvalidAccessList() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteAccessList(eq(lb), anyList());

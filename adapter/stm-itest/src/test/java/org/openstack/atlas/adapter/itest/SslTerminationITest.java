@@ -133,7 +133,7 @@ public class SslTerminationITest extends STMTestBase {
             VirtualServer createdSecureVs = null;
             VirtualServer createdNormalVs = null;
             try {
-                stmAdapter.updateSslTermination(config, lb, zeusSslTermination);
+                stmAdapter.updateSslTermination(config, lb, zeusSslTermination, null);
                 createdSecureVs = stmClient.getVirtualServer(secureName);
                 createdNormalVs = stmClient.getVirtualServer(normalName);
             } catch (Exception e) {
@@ -194,7 +194,7 @@ public class SslTerminationITest extends STMTestBase {
             boolean isConnectionLogging = true;
             String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
             String normalVsName = ZxtmNameBuilder.genVSName(lb);
-            stmAdapter.updateSslTermination(config, lb, new ZeusSslTermination());
+            stmAdapter.updateSslTermination(config, lb, new ZeusSslTermination(), null);
             VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
             Assert.assertEquals(securePort, (int) createdSecureVs.getProperties().getBasic().getPort());
             VirtualServer createdNormalVs = stmClient.getVirtualServer(normalVsName);
@@ -203,7 +203,7 @@ public class SslTerminationITest extends STMTestBase {
             LoadBalancer nlb = new LoadBalancer();
             lb.setConnectionLogging(isConnectionLogging);
             nlb.setConnectionLogging(isConnectionLogging);
-            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
             createdSecureVs = stmClient.getVirtualServer(secureVsName);
             createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
@@ -212,7 +212,7 @@ public class SslTerminationITest extends STMTestBase {
             isConnectionLogging = false;
             lb.setConnectionLogging(isConnectionLogging);
             nlb.setConnectionLogging(isConnectionLogging);
-            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
             createdSecureVs = stmClient.getVirtualServer(secureVsName);
             createdNormalVs = stmClient.getVirtualServer(normalVsName);
             Assert.assertEquals(isConnectionLogging, createdSecureVs.getProperties().getLog().getEnabled());
@@ -358,19 +358,19 @@ public class SslTerminationITest extends STMTestBase {
 
             lb.getUserPages().setErrorpage(errorFileNormalName);
             nlb.getUserPages().setErrorpage(errorFileNormalName);
-            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
             stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
             lb.getUserPages().setErrorpage(null);
             nlb.getUserPages().setErrorpage(null);
 
-            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
             stmAdapter.setErrorFile(config, lb, "Default");
             //TODO: wont have a file for default, assert just that the name is default
 //            errorPageHelper("Default");
             lb.getUserPages().setErrorpage("Default");
             nlb.getUserPages().setErrorpage("Default");
-            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
             stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
         } catch (Exception e) {
@@ -391,12 +391,12 @@ public class SslTerminationITest extends STMTestBase {
             LoadBalancer nlb = new LoadBalancer();
             lb.setUserPages(userPages);
             nlb.setUserPages(userPages);
-            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
             stmAdapter.setErrorFile(config, lb, errorContent);
             errorPageHelper(errorContent);
             lb.getUserPages().setErrorpage(null);
             nlb.getUserPages().setErrorpage(null);
-            stmAdapter.updateLoadBalancer(config, lb, nlb);
+            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
             stmAdapter.setErrorFile(config, lb, "Default");
 //            errorPageHelper("Default");
         } catch (Exception e) {

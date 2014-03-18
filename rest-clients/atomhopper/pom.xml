@@ -6,6 +6,7 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-rest-clients</artifactId>
         <version>1.21.0-SNAPSHOT</version>
+
     </parent>
 
     <artifactId>atlas-atomhopper-client</artifactId>
@@ -49,9 +50,8 @@
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
-
-                    <optimize>true</optimize>
-                    <!--                    <debug>true</debug>-->
+                    <optimize>false</optimize>
+                    <debug>true</debug>
                 </configuration>
             </plugin>
 

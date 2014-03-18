@@ -26,7 +26,7 @@ public class DeleteErrorFileListener extends BaseListener {
 
         if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
             try {
-                dbLoadBalancer = loadBalancerService.getWithUserPages(data.getLoadBalancerId(), data.getAccountId());
+                dbLoadBalancer = loadBalancerService.get(data.getLoadBalancerId(), data.getAccountId());
             } catch (EntityNotFoundException enfe) {
                 String alertDescription = String.format("Load balancer '%d' not found in database.", data.getLoadBalancerId());
                 LOG.error(alertDescription, enfe);
@@ -39,7 +39,7 @@ public class DeleteErrorFileListener extends BaseListener {
             try {
                 if (isRestAdapter()) {
                     LOG.debug(String.format("Deleting error file for %s in STM...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerStmService.deleteErrorFile(dbLoadBalancer);
+                    reverseProxyLoadBalancerStmService.deleteErrorFile(dbLoadBalancer, loadBalancerService.getUserPages(data.getLoadBalancerId(), data.getAccountId()));
                     LOG.debug(String.format("Successfully deleted error file for %s in Zeus...", dbLoadBalancer.getId()));
                 } else {
                     LOG.debug(String.format("Deleting error file for %s in ZXTM...", dbLoadBalancer.getId()));
