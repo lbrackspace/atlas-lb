@@ -131,8 +131,8 @@ public class SslTerminationResource extends CommonDependencyProvider {
         String imdCrtsStr = sslTerm.getIntermediateCertificate();
         String usrCrt = sslTerm.getCertificate();
         List<String> errors = new ArrayList<String>();
-        X509PathBuilder<X509Certificate> pathBuilder = SslTerminationHelper.newPathBuilder(rootCasStr, imdCrtsStr, errors, true);
-        SuggestedCaPathList suggestedPaths = SslTerminationHelper.suggestCaPaths(sslTerm, pathBuilder);
+        
+        SuggestedCaPathList suggestedPaths = SslTerminationHelper.suggestCaPaths(sslTerm);
         Response.Status status;
         if (suggestedPaths.isPathFound()) {
             status = Response.Status.OK;

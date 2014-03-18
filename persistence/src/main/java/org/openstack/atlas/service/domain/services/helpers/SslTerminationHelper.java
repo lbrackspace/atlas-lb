@@ -255,19 +255,18 @@ public final class SslTerminationHelper {
         Set<X509Certificate> imdSet = new HashSet<X509Certificate>();
 
         List<ErrorEntry> zErrors = new ArrayList<ErrorEntry>();
-
+        List<X509Certificate> x509List = ZeusUtils.decodeX509s(rootsStr, zErrors);
+        for (ErrorEntry ee : zErrors) {
+            if (ee.isFatal()) {
+                errors.add(ee.getErrorDetail());
+            }
+        }
+        for (X509Certificate x509 : x509List) {
+            rootCaSet.add(x509);
+        }
+        rootCaSet.addAll(x509List);
         if (loadDefaultCas) {
-            rootCaSet = RootCAHelper.getRootCASet();
-        } else {
-            List<X509Certificate> x509List = ZeusUtils.decodeX509s(rootsStr, zErrors);
-            for (ErrorEntry ee : zErrors) {
-                if (ee.isFatal()) {
-                    errors.add(ee.getErrorDetail());
-                }
-            }
-            for (X509Certificate x509 : x509List) {
-                rootCaSet.add(x509);
-            }
+            rootCaSet.addAll(RootCAHelper.getRootCASet());
         }
         if (errors.size() > 0) {
             return null;
@@ -275,7 +274,7 @@ public final class SslTerminationHelper {
 
         if (imdStr != null && !imdStr.isEmpty()) {
             zErrors.clear();
-            List<X509Certificate> x509List = ZeusUtils.decodeX509s(rootsStr, zErrors);
+            x509List = ZeusUtils.decodeX509s(rootsStr, zErrors);
             for (ErrorEntry ee : zErrors) {
                 if (ee.isFatal()) {
                     errors.add(ee.getErrorDetail());
@@ -289,14 +288,15 @@ public final class SslTerminationHelper {
         return builder;
     }
 
-    public static SuggestedCaPathList suggestCaPaths(SslTermination sslTerm, X509PathBuilder<X509Certificate> x509PathBuilder) {
+    public static SuggestedCaPathList suggestCaPaths(SslTermination sslTerm) {
         SuggestedCaPath suggestedPath = new SuggestedCaPath();
         SuggestedCaPathList suggestedPathList = new SuggestedCaPathList();
         List<String> errors = suggestedPath.getErrors();
         List<ErrorEntry> zErrors = new ArrayList<ErrorEntry>();
+        suggestedPathList.setPathFound(Boolean.FALSE);
         X509BuiltPath path;
         X509PathBuilder<X509Certificate> pathBuilder;
-        pathBuilder = newPathBuilder(sslTerm.getPrivatekey(), sslTerm.getIntermediateCertificate(), errors, true);
+        pathBuilder = newPathBuilder(sslTerm.getReEncryptionCertificateAuthority(), sslTerm.getIntermediateCertificate(), errors, true);
         boolean atLeastOneCaPathFound = false;
         if (errors.size() > 0) {
             suggestedPath.getErrors().addAll(errors);
