@@ -296,7 +296,7 @@ public final class SslTerminationHelper {
         List<ErrorEntry> zErrors = new ArrayList<ErrorEntry>();
         X509BuiltPath path;
         X509PathBuilder<X509Certificate> pathBuilder;
-        pathBuilder = newPathBuilder(sslTerm.getSslReEncryptionCA(), sslTerm.getIntermediateCertificate(), errors, true);
+        pathBuilder = newPathBuilder(sslTerm.getPrivatekey(), sslTerm.getIntermediateCertificate(), errors, true);
         boolean atLeastOneCaPathFound = false;
         if (errors.size() > 0) {
             suggestedPath.getErrors().addAll(errors);
