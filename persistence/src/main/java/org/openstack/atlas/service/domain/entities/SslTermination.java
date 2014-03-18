@@ -34,12 +34,6 @@ public class SslTermination extends Entity implements Serializable {
     @Column(name = "secure_traffic_only", nullable = true)
     private boolean secureTrafficOnly;
 
-    @Column(name = "reencryption", nullable = false)
-    private Boolean sslReEncryption;
-
-    @Column(name = "certificate_authority", nullable = true, columnDefinition = "mediumtext")
-    private String certificateAuthority;
-
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
     }
@@ -95,14 +89,4 @@ public class SslTermination extends Entity implements Serializable {
     public void setSecurePort(int securePort) {
         this.securePort = securePort;
     }
-
-    public Boolean isSslReEncryption() { return sslReEncryption; }
-
-    public void setSslReEncryption(Boolean sslReEncryption) {
-        this.sslReEncryption = sslReEncryption;
-    }
-
-    public String getSslReEncryptionCA() { return certificateAuthority; }
-
-    public void setSslReEncryptionCA(String certificateAuthority) { this.certificateAuthority = certificateAuthority; }
 }
