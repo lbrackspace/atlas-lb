@@ -1,5 +1,6 @@
 package org.openstack.atlas.ca.gui;
 
+import org.openstack.atlas.util.ca.primitives.Debug;
 import org.openstack.atlas.ca.gui.utils.BytesList;
 import java.net.MalformedURLException;
 import org.openstack.atlas.util.ca.primitives.bcextenders.HackedProviderAccessor;
@@ -56,6 +57,7 @@ import org.openstack.atlas.util.ca.util.X509PathBuilder;
 import org.openstack.atlas.util.ca.util.X509Inspector;
 import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
 import org.openstack.atlas.util.ca.exceptions.X509ReaderException;
+import org.openstack.atlas.util.ca.primitives.RootIntermediateContainer;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.ca.util.X509ReaderWriter;
 import org.openstack.atlas.util.ca.util.fileio.RsaFileUtils;
@@ -2263,7 +2265,7 @@ public class CaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_crtPathCrtFileButtonActionPerformed
 
     private X509Certificate readCrtPathFN() {
-        File file = new File(crtPathFN.getText());
+        File file = new File(RsaFileUtils.expandUser(crtPathFN.getText()));
         byte[] pemBytes;
         X509Certificate x509obj;
 
@@ -2413,6 +2415,11 @@ public class CaFrame extends javax.swing.JFrame {
         X509BuiltPath<X509Certificate> builtPath;
         pathBuilder.getRootCAs().addAll(rootCAs);
         pathBuilder.getIntermediates().addAll(imds);
+        RootIntermediateContainer rootImdContainer = new RootIntermediateContainer(rootCAs, imds);
+        String ricString = rootImdContainer.toString();
+        int ricHashCode = rootImdContainer.hashCode();
+        String classLoaders = rootImdContainer.showClassLoaders();
+        pth.greenWrite("root and Imd hashCode = %d\n", ricHashCode);
         X509Certificate userCrt = readCrtPathFN();
         List<X509Certificate> x509objs;
         if (userCrt == null) {
@@ -2426,12 +2433,10 @@ public class CaFrame extends javax.swing.JFrame {
         }
         X509Certificate topCrt = builtPath.getRoot();
         x509objs = builtPath.getPath();
-        pth.greenWrite(String.format("Found %d certs\n", x509objs.size()));
-        displayChain(x509objs);
-        pth.greenWrite("RootCA for this crt:\n");
-        x509objs = new ArrayList<X509Certificate>();
         x509objs.add(topCrt);
+        pth.greenWrite("Chain:\n");
         displayChain(x509objs);
+        pth.greenWrite("\nClassLoaders:\n%s\n", classLoaders);
     }//GEN-LAST:event_buildPXIXPathButtonActionPerformed
 
     private void clearCrtPathFNButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearCrtPathFNButtonActionPerformed

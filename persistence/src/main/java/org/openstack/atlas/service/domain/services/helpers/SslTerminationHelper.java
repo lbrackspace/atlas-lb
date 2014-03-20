@@ -23,6 +23,7 @@ import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.text.StyledEditorKit.BoldAction;
 import javax.ws.rs.core.Response.Status;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPath;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPathList;
@@ -31,11 +32,13 @@ import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.X509ReaderException;
+import org.openstack.atlas.util.ca.primitives.RootIntermediateContainer;
 import org.openstack.atlas.util.ca.util.X509BuiltPath;
 import org.openstack.atlas.util.ca.util.X509Inspector;
 import org.openstack.atlas.util.ca.util.X509PathBuilder;
 import org.openstack.atlas.util.ca.zeus.ErrorEntry;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 
 public final class SslTerminationHelper {
@@ -255,16 +258,16 @@ public final class SslTerminationHelper {
         Set<X509Certificate> imdSet = new HashSet<X509Certificate>();
 
         List<ErrorEntry> zErrors = new ArrayList<ErrorEntry>();
-        List<X509Certificate> x509List = ZeusUtils.decodeX509s(rootsStr, zErrors);
+        List<X509Certificate> rootX509List = ZeusUtils.decodeX509s(rootsStr, zErrors);
         for (ErrorEntry ee : zErrors) {
             if (ee.isFatal()) {
                 errors.add(ee.getErrorDetail());
             }
         }
-        for (X509Certificate x509 : x509List) {
+        for (X509Certificate x509 : rootX509List) {
             rootCaSet.add(x509);
         }
-        rootCaSet.addAll(x509List);
+        rootCaSet.addAll(rootX509List);
         if (loadDefaultCas) {
             rootCaSet.addAll(RootCAHelper.getRootCASet());
         }
@@ -272,15 +275,17 @@ public final class SslTerminationHelper {
             return null;
         }
 
+
+        List<X509Certificate> imdX509List = new ArrayList<X509Certificate>();
         if (imdStr != null && !imdStr.isEmpty()) {
             zErrors.clear();
-            x509List = ZeusUtils.decodeX509s(rootsStr, zErrors);
+            imdX509List = ZeusUtils.decodeX509s(imdStr, zErrors);
             for (ErrorEntry ee : zErrors) {
                 if (ee.isFatal()) {
                     errors.add(ee.getErrorDetail());
                 }
             }
-            for (X509Certificate x509 : x509List) {
+            for (X509Certificate x509 : imdX509List) {
                 imdSet.add(x509);
             }
         }
@@ -297,7 +302,13 @@ public final class SslTerminationHelper {
         X509BuiltPath path;
         X509PathBuilder<X509Certificate> pathBuilder;
         pathBuilder = newPathBuilder(sslTerm.getReEncryptionCertificateAuthority(), sslTerm.getIntermediateCertificate(), errors, true);
+        RootIntermediateContainer<X509Certificate> rootImdContainer = new RootIntermediateContainer<X509Certificate>();
         boolean atLeastOneCaPathFound = false;
+        if (pathBuilder == null) {
+            suggestedPath.getErrors().add("Unable initialize PKIX Path Builder");
+            suggestedPathList.getSuggestedCaPaths().add(suggestedPath);
+            return suggestedPathList;
+        }
         if (errors.size() > 0) {
             suggestedPath.getErrors().addAll(errors);
             suggestedPathList.getSuggestedCaPaths().add(suggestedPath);
@@ -318,19 +329,30 @@ public final class SslTerminationHelper {
             return suggestedPathList;
         }
 
+        rootImdContainer = new RootIntermediateContainer<X509Certificate>();
+        rootImdContainer.getRootCAs().addAll(pathBuilder.getRootCAs());
+        rootImdContainer.getIntermediates().addAll(pathBuilder.getIntermediates());
         Date now = StaticDateTimeUtils.toDate(Calendar.getInstance());
+        now = null;
+        int numberOfRootsThatSignedCert = 0;
         while (true) {
             try {
+                pathBuilder = new X509PathBuilder<X509Certificate>(rootImdContainer.getRootCAs(), rootImdContainer.getIntermediates());
                 path = pathBuilder.buildPath(usrCrt, now);
                 suggestedPath = toSuggestedPath(path);
                 suggestedPathList.getSuggestedCaPaths().add(suggestedPath);
                 atLeastOneCaPathFound = true;
-                pathBuilder.getRootCAs().remove(path.getRoot());
+                rootImdContainer.getRootCAs().remove(path.getRoot());
+                if (numberOfRootsThatSignedCert > 25) {
+                    throw new X509PathBuildException("To many signers found");
+                }
+                numberOfRootsThatSignedCert++;
             } catch (X509PathBuildException ex) {
+                String exMsg = Debug.getExtendedStackTrace(ex);
                 break;
             }
         }
-        suggestedPathList.setPathFound(atLeastOneCaPathFound);
+        suggestedPathList.setPathFound(numberOfRootsThatSignedCert > 0);
         return suggestedPathList;
     }
 
@@ -344,8 +366,8 @@ public final class SslTerminationHelper {
         } catch (X509ReaderException ex) {
             apiPath.getErrors().add(CA_ENCODE_ERROR);
         }
-        int li = pojoPath.getPath().size() - 1;
-        for (int i = 0; i < li; i++) {
+        int lsize = pojoPath.getPath().size();
+        for (int i = 0; i < lsize; i++) {
             try {
                 X509Description x509Description = toX509Description(pojoPath.getPath().get(i));
                 apiPath.getPaths().add(x509Description);

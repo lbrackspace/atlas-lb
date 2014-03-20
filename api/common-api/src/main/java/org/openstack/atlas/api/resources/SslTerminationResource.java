@@ -127,11 +127,6 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @POST
     @Path("suggestpath")
     public Response suggestPKIXPath(SslTermination sslTerm) {
-        String rootCasStr = sslTerm.getReEncryptionCertificateAuthority();
-        String imdCrtsStr = sslTerm.getIntermediateCertificate();
-        String usrCrt = sslTerm.getCertificate();
-        List<String> errors = new ArrayList<String>();
-        
         SuggestedCaPathList suggestedPaths = SslTerminationHelper.suggestCaPaths(sslTerm);
         Response.Status status;
         if (suggestedPaths.isPathFound()) {
