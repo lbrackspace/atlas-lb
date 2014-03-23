@@ -126,10 +126,7 @@ public class DeleteSslTerminationListener extends BaseListener {
                                                                               currentSslTerm, usagesMap, usagesMap2);
         // Notify usage processor with a usage event
         try {
-            usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
-        } catch (UsageEventCollectionException uex) {
-            LOG.error(String.format("Collection and processing of the usage event failed for load balancer: %s " +
-                    ":: Exception: %s", dbLoadBalancer.getId(), uex));
+            usageEventCollection.processUsageEvent(usagesToInsert, dbLoadBalancer, UsageEvent.SSL_OFF, eventTime);
         } catch (Exception exc) {
             String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
             String usageAlertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",

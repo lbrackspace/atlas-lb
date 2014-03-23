@@ -101,7 +101,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
         verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
         verify(reverseProxyLoadBalancerStmService).removeSslTermination(lb);
         verify(sslTerminationService).deleteSslTermination(LOAD_BALANCER_ID, ACCOUNT_ID);
-        verify(usageEventCollection).collectUsageAndProcessUsageRecords(eq(lb), eq(UsageEvent.SSL_OFF), any(Calendar.class));
+        verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_OFF), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveLoadBalancerEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, "Load Balancer SSL Termination Successfully Deleted", "Load balancer ssl termination successfully deleted", EventType.DELETE_SSL_TERMINATION, CategoryType.DELETE, EventSeverity.INFO);
     }
