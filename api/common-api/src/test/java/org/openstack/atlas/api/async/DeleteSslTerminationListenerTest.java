@@ -12,6 +12,7 @@ import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
@@ -45,6 +46,8 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
     private ObjectMessage objectMessage;
     @Mock
     private MessageDataContainer messageDataContainer;
+    @Mock
+    private SslTermination previousSslTermination;
     @Mock
     private LoadBalancerService loadBalancerService;
     @Mock
@@ -85,6 +88,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
     @Test
     public void testDeleteSslTermination() throws Exception {
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
+        when(messageDataContainer.getPreviousSslTermination()).thenReturn(previousSslTermination);
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);

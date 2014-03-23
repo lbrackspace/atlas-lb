@@ -10,18 +10,12 @@ import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
-<<<<<<< HEAD
 import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
 import java.util.Calendar;
-=======
 import org.openstack.atlas.usagerefactor.SnmpUsage;
-
-import javax.jms.Message;
-
 import java.util.*;
->>>>>>> clb-384-bug updateSslTermination logs now accurately report when the non secure virtual server is enabled/disabled.
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
