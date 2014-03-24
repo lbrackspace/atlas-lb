@@ -12,6 +12,10 @@ public class SslTermination extends Entity implements Serializable {
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }
+    @Column(name = "reencryption", nullable = false)
+    private Boolean sslReEncryption;
+    @Column(name = "certificate_authority", nullable = true, columnDefinition = "mediumtext")
+    private String certificateAuthority;
     @OneToOne
     @JoinColumn(name = "loadbalancer_id")
     private LoadBalancer loadbalancer;
@@ -82,5 +86,21 @@ public class SslTermination extends Entity implements Serializable {
 
     public void setSecurePort(int securePort) {
         this.securePort = securePort;
+    }
+
+    public String getReEncryptionCertificateAuthority() {
+        return certificateAuthority;
+    }
+
+    public void setReEncryptionCertificateAuthority(String value) {
+        certificateAuthority = value;
+    }
+
+    public Boolean isReEncryptionEnabled() {
+        return sslReEncryption;
+    }
+
+    public void setReEncryptionEnabled(Boolean value) {
+        sslReEncryption = value;
     }
 }
