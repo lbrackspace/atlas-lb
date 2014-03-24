@@ -29,6 +29,29 @@ public class DataModelToDomainSslTerminationTest {
         }
 
         @Test
+        public void shouldMapRencryptionBooleanToTrue() {
+            apiSslTermination = new SslTermination();
+            apiSslTermination.setReEncryptionEnabled(Boolean.TRUE);
+            domainSsltermination = mapper.map(apiSslTermination, org.openstack.atlas.service.domain.entities.SslTermination.class);
+            Assert.assertEquals(true, domainSsltermination.isReEncryptionEnabled());
+        }
+
+        @Test
+        public void shouldMapRencryptionBooleanToFalseWhenNotSet() {
+            apiSslTermination = new SslTermination();
+            domainSsltermination = mapper.map(apiSslTermination, org.openstack.atlas.service.domain.entities.SslTermination.class);
+            Assert.assertEquals(false, domainSsltermination.isReEncryptionEnabled());
+        }
+
+        @Test
+        public void shouldMapRencryptionBooleanToFalseWhenSetToFalse() {
+            apiSslTermination = new SslTermination();
+            apiSslTermination.setReEncryptionEnabled(Boolean.FALSE);
+            domainSsltermination = mapper.map(apiSslTermination, org.openstack.atlas.service.domain.entities.SslTermination.class);
+            Assert.assertEquals(false, domainSsltermination.isReEncryptionEnabled());
+        }
+
+        @Test
         public void shouldMapToNoneWhenObjectCorrectly() {
             apiSslTermination = new SslTermination();
             apiSslTermination.setPrivatekey("AKey");
