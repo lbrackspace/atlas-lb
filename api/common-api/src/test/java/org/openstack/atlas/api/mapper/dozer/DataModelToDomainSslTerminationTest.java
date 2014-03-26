@@ -57,7 +57,6 @@ public class DataModelToDomainSslTerminationTest {
             apiSslTermination.setPrivatekey("AKey");
             apiSslTermination.setCertificate("aCert");
             apiSslTermination.setIntermediateCertificate("anIntermediateCert");
-            apiSslTermination.setReEncryptionCertificateAuthority("aCA");
             apiSslTermination.setReEncryptionEnabled(Boolean.TRUE);
             apiSslTermination.setSecurePort(443);
 
@@ -76,8 +75,6 @@ public class DataModelToDomainSslTerminationTest {
             Assert.assertEquals(false, domainSsltermination.isSecureTrafficOnly());
             Assert.assertEquals(apiSslTermination.isReEncryptionEnabled(), domainSsltermination.isReEncryptionEnabled());
             Assert.assertEquals(true, domainSsltermination.isReEncryptionEnabled());
-            Assert.assertEquals(apiSslTermination.getReEncryptionCertificateAuthority(), domainSsltermination.getReEncryptionCertificateAuthority());
-            Assert.assertEquals("aCA", domainSsltermination.getReEncryptionCertificateAuthority());
         }
     }
 }

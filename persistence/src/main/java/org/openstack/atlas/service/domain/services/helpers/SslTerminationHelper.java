@@ -301,7 +301,7 @@ public final class SslTerminationHelper {
         suggestedPathList.setPathFound(Boolean.FALSE);
         X509BuiltPath path;
         X509PathBuilder<X509Certificate> pathBuilder;
-        pathBuilder = newPathBuilder(sslTerm.getReEncryptionCertificateAuthority(), sslTerm.getIntermediateCertificate(), errors, true);
+        pathBuilder = newPathBuilder(null, sslTerm.getIntermediateCertificate(), errors, true);
         RootIntermediateContainer<X509Certificate> rootImdContainer = new RootIntermediateContainer<X509Certificate>();
         boolean atLeastOneCaPathFound = false;
         if (pathBuilder == null) {
