@@ -49,3 +49,6 @@ def load_json(file_path):
     jsonObj = json.loads(jsonStr)
     return pickle.loads(pickle.dumps(jsonObj)) #poor way to strip stringmap
 
+def readFile(file_name):
+    return StaticFileUtils.readFileToString(file_name)
+

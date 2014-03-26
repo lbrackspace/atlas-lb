@@ -126,7 +126,8 @@ class ZxtmStubs(object):
                            "tg":"TrafficIPGroupsBindingStub",
                            "vs":"VirtualServerBindingStub",
                            "cert":"CatalogSSLCertificatesBindingStub",
-                           "ca":"CatalogSSLCertificateAuthoritiesBindingStub"
+                           "ca":"CatalogSSLCertificateAuthoritiesBindingStub",
+                           "u":"UsersBindingStub"
                          }
 
     def __init__(self,endpoints,user,passwd,*args,**kw):
