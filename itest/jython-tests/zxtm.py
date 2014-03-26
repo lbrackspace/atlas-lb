@@ -127,7 +127,9 @@ class ZxtmStubs(object):
                            "vs":"VirtualServerBindingStub",
                            "cert":"CatalogSSLCertificatesBindingStub",
                            "ca":"CatalogSSLCertificateAuthoritiesBindingStub",
-                           "u":"UsersBindingStub"
+                           "u":"UsersBindingStub",
+                           "gs":"GlobalSettingsBindingStub",
+                           "l":"LocationBindingStub"
                          }
 
     def __init__(self,endpoints,user,passwd,*args,**kw):
