@@ -1,21 +1,5 @@
 package org.openstack.atlas.api.resources;
 
-import java.util.ArrayList;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPath;
-import java.util.Set;
-import org.openstack.atlas.service.domain.services.helpers.RootCAHelper;
-import java.util.HashSet;
-import org.openstack.atlas.util.ca.zeus.ZeusUtils;
-import java.util.List;
-import org.openstack.atlas.util.ca.zeus.ErrorType;
-import org.openstack.atlas.util.debug.Debug;
-import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
-import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
-import java.util.Calendar;
-import org.openstack.atlas.util.ca.util.X509PathBuilder;
-import org.openstack.atlas.util.ca.zeus.ErrorEntry;
-import java.security.cert.X509Certificate;
-import org.openstack.atlas.util.ca.util.X509BuiltPath;
 import org.apache.abdera.model.Feed;
 import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
@@ -31,7 +15,7 @@ import org.openstack.atlas.service.domain.exceptions.MethodNotAllowedException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
+
 import javax.ws.rs.*;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -122,19 +106,6 @@ public class SslTerminationResource extends CommonDependencyProvider {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
-    }
-
-    @POST
-    @Path("suggestpath")
-    public Response suggestPKIXPath(SslTermination sslTerm) {
-        SuggestedCaPathList suggestedPaths = SslTerminationHelper.suggestCaPaths(sslTerm);
-        Response.Status status;
-        if (suggestedPaths.isPathFound()) {
-            status = Response.Status.OK;
-        } else {
-            status = Response.Status.BAD_REQUEST;
-        }
-        return Response.status(status).entity(suggestedPaths).build();
     }
 
     private Response getFeedResponse(Integer page) {

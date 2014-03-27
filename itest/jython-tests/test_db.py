@@ -14,6 +14,8 @@ zt = getZeusTest(hid=1)
 
 from db_classes import *
 
+l = qq("from SslTermination")
+
 #a = Account()
 #a.setId(1)
 #sha1=HashUtil.sha1sumHex("1",0,4)

@@ -47,10 +47,10 @@ public final class SslTerminationHelper {
     public static final String CA_ENCODE_ERROR = "error encoding root CA to x509description";
     public static final String X509_ENCODE_ERROR = "error encoding pathX509 to x509description";
 
-    public static boolean modificationStatus(SslTermination sslTermination, LoadBalancer dbLoadBalancer) throws BadRequestException {
+    public static boolean isModifingSslAttrsOnly(SslTermination apiSslTermination, LoadBalancer dbLoadBalancer) throws BadRequestException {
         //Validator let it through, now verify the request is for update of attributes only, skip cert validation...
         //Otherwise inform user that there is no ssl termination to update values for...
-        if (sslTermination.getCertificate() == null && sslTermination.getPrivatekey() == null) {
+        if (apiSslTermination.getCertificate() == null && apiSslTermination.getPrivatekey() == null) {
             if (dbLoadBalancer.hasSsl()) {
                 LOG.info("Updating attributes only, skipping certificate validation.");
                 return true;
@@ -74,23 +74,23 @@ public final class SslTerminationHelper {
         return true;
     }
 
-    public static boolean verifyPortSecurePort(LoadBalancer loadBalancer, SslTermination sslTermination, Map<Integer, List<LoadBalancer>> vipPorts, Map<Integer, List<LoadBalancer>> vip6Ports) {
+    public static boolean verifyPortSecurePort(LoadBalancer loadBalancer, SslTermination apiSslTermination, Map<Integer, List<LoadBalancer>> vipPorts, Map<Integer, List<LoadBalancer>> vip6Ports) {
         LOG.info("Verifying port and secure port are unique for loadbalancer: " + loadBalancer.getId());
-        if (sslTermination != null && sslTermination.getSecurePort() != null) {
+        if (apiSslTermination != null && apiSslTermination.getSecurePort() != null) {
             if (loadBalancer.hasSsl()
-                    && loadBalancer.getSslTermination().getSecurePort() == sslTermination.getSecurePort()) {
+                    && loadBalancer.getSslTermination().getSecurePort() == apiSslTermination.getSecurePort()) {
                 return true;
             }
 
             if (!vipPorts.isEmpty()) {
 
-                if (vipPorts.containsKey(sslTermination.getSecurePort())) {
+                if (vipPorts.containsKey(apiSslTermination.getSecurePort())) {
                     return false;
                 }
             }
 
             if (!vip6Ports.isEmpty()) {
-                if ((vip6Ports.containsKey(sslTermination.getSecurePort()))) {
+                if ((vip6Ports.containsKey(apiSslTermination.getSecurePort()))) {
                     return false;
                 }
             }
@@ -106,7 +106,7 @@ public final class SslTerminationHelper {
         }
     }
 
-    public static org.openstack.atlas.service.domain.entities.SslTermination verifyAttributes(SslTermination queTermination, org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
+    public static org.openstack.atlas.service.domain.entities.SslTermination verifyAndApplyAttributes(SslTermination queTermination, org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
         if (dbTermination == null) {
             dbTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
         }
@@ -143,6 +143,10 @@ public final class SslTerminationHelper {
 
         if (queTermination.getPrivatekey() != null) {
             dbTermination.setPrivatekey(queTermination.getPrivatekey());
+        }
+
+        if (queTermination.isReEncryptionEnabled() != null) {
+            dbTermination.setReEncryptionEnabled(queTermination.isReEncryptionEnabled());
         }
 
         return dbTermination;

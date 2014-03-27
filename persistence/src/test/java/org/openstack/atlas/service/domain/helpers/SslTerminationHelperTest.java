@@ -89,12 +89,12 @@ public class SslTerminationHelperTest {
             org.openstack.atlas.service.domain.entities.SslTermination sslTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
             sslTermination.setEnabled(true);
             lb2.setSslTermination(sslTermination);
-            Assert.assertTrue(SslTerminationHelper.modificationStatus(ssl2, lb2));
+            Assert.assertTrue(SslTerminationHelper.isModifingSslAttrsOnly(ssl2, lb2));
         }
 
         @Test
         public void shouldFailIfNoSslTermToUpdate() throws EntityNotFoundException, BadRequestException {
-            Assert.assertFalse(SslTerminationHelper.modificationStatus(ssl1, lb));
+            Assert.assertFalse(SslTerminationHelper.isModifingSslAttrsOnly(ssl1, lb));
         }
 
         @Test(expected = BadRequestException.class)
@@ -126,9 +126,9 @@ public class SslTerminationHelperTest {
             org.openstack.atlas.service.domain.entities.SslTermination sslTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
             sslTermination.setEnabled(true);
             sslTermination.setSecureTrafficOnly(true);
-            Assert.assertEquals(ssl1.isSecureTrafficOnly(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).isSecureTrafficOnly());
-            Assert.assertEquals(ssl1.isEnabled(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).isEnabled());
-            Assert.assertEquals((Object) ssl1.getSecurePort(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).getSecurePort());
+            Assert.assertEquals(ssl1.isSecureTrafficOnly(), SslTerminationHelper.verifyAndApplyAttributes(ssl1, sslTermination).isSecureTrafficOnly());
+            Assert.assertEquals(ssl1.isEnabled(), SslTerminationHelper.verifyAndApplyAttributes(ssl1, sslTermination).isEnabled());
+            Assert.assertEquals((Object) ssl1.getSecurePort(), SslTerminationHelper.verifyAndApplyAttributes(ssl1, sslTermination).getSecurePort());
         }
 
         @Test

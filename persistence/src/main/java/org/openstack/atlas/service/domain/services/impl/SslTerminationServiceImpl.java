@@ -38,7 +38,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     @Override
     @Transactional
-    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
+    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination apiSslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
         ZeusCrtFile zeusCrtFile = null;
 
@@ -58,38 +58,38 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             vip6Ports = virtualIpv6Repository.getPorts(dbLoadBalancer.getLoadBalancerJoinVip6Set().iterator().next().getVirtualIp().getId());
         }
 
-        if (!SslTerminationHelper.verifyPortSecurePort(dbLoadBalancer, sslTermination, vipPorts, vip6Ports)) {
+        if (!SslTerminationHelper.verifyPortSecurePort(dbLoadBalancer, apiSslTermination, vipPorts, vip6Ports)) {
             throw new BadRequestException(String.format("Secure port: '%s'  must be unique " +
-                    " Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
+                    " Ports taken: '%s'", apiSslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 
         if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
             //Must be secure-only
-            if (sslTermination.isSecureTrafficOnly() != null && !sslTermination.isSecureTrafficOnly()) {
+            if (apiSslTermination.isSecureTrafficOnly() != null && !apiSslTermination.isSecureTrafficOnly()) {
                 throw new BadRequestException("Cannot use 'mixed-mode' SSL termination while HTTPS Redirect is enabled.");
             }
             //Must use secure port 443
-            if (sslTermination.getSecurePort() != null && sslTermination.getSecurePort() != 443) {
+            if (apiSslTermination.getSecurePort() != null && apiSslTermination.getSecurePort() != 443) {
                 throw new BadRequestException("Must use secure port 443 with HTTPS Redirect enabled.");
             }
         }
 
-        org.openstack.atlas.service.domain.entities.SslTermination dbTermination = null;
+        org.openstack.atlas.service.domain.entities.SslTermination dbSslTermination = null;
         try {
-            dbTermination = getSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+            dbSslTermination = getSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
         } catch (EntityNotFoundException e) {
             //this is fine...
             LOG.warn("LoadBalancer ssl termination could not be found, ");
         }
 
         //we wont make it here if no dbTermination and no cert/key values.
-        dbTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
+        dbSslTermination = SslTerminationHelper.verifyAndApplyAttributes(apiSslTermination, dbSslTermination);
 
-        if (dbTermination != null) {
-            if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {
+        if (dbSslTermination != null) {
+            if (!SslTerminationHelper.isModifingSslAttrsOnly(apiSslTermination, dbLoadBalancer)) {
                 //Validate the certifications and key return the list of errors if there are any, otherwise, pass the transport object to async layer...
-                SslTerminationHelper.cleanSSLCertKeyEntries(dbTermination);
-                zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(dbTermination.getPrivatekey(), dbTermination.getCertificate(), dbTermination.getIntermediateCertificate());
+                SslTerminationHelper.cleanSSLCertKeyEntries(dbSslTermination);
+                zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(dbSslTermination.getPrivatekey(), dbSslTermination.getCertificate(), dbSslTermination.getIntermediateCertificate());
                 SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
             }
         } else {
@@ -109,10 +109,10 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%s'", lbId));
-        sslTerminationRepository.setSslTermination(lbId, dbTermination);
+        sslTerminationRepository.setSslTermination(lbId, dbSslTermination);
         LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%s'", lbId));
 
-        zeusSslTermination.setSslTermination(dbTermination);
+        zeusSslTermination.setSslTermination(dbSslTermination);
         if (zeusCrtFile != null) {
             zeusSslTermination.setCertIntermediateCert(zeusCrtFile.getPublic_cert());
         }

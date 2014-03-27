@@ -303,6 +303,7 @@ public class StubResource extends CommonDependencyProvider {
         sslTermination.setEnabled(true);
         sslTermination.setSecurePort(443);
         sslTermination.setSecureTrafficOnly(false);
+        sslTermination.setReEncryptionEnabled(Boolean.TRUE);
         return Response.status(Response.Status.OK).entity(sslTermination).build();
     }
 
