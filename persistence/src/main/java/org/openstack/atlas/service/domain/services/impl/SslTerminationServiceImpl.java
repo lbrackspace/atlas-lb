@@ -25,16 +25,15 @@ import java.util.*;
 
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
+
     protected static final ZeusUtils zeusUtils;
     protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
 
-    static{
+    static {
         zeusUtils = new ZeusUtils();
     }
-
     @Autowired
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-
 
     @Override
     @Transactional
@@ -59,8 +58,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         if (!SslTerminationHelper.verifyPortSecurePort(dbLoadBalancer, apiSslTermination, vipPorts, vip6Ports)) {
-            throw new BadRequestException(String.format("Secure port: '%s'  must be unique " +
-                    " Ports taken: '%s'", apiSslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
+            throw new BadRequestException(String.format("Secure port: '%s'  must be unique "
+                    + " Ports taken: '%s'", apiSslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 
         if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
@@ -82,6 +81,11 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             LOG.warn("LoadBalancer ssl termination could not be found, ");
         }
 
+        // Make sure the user is jacking up Rencryption by turning off secureOnlyTraffic.
+        if (SslTerminationHelper.verifyUserIsNotSettingNonSecureTrafficAndReEncryption(apiSslTermination, dbSslTermination)) {
+            throw new BadRequestException(String.format("Can not disable SecureTraffic only on an ssl termination thats currently reencrypting for for LoadBalancer: %d", lbId));
+        }
+
         //we wont make it here if no dbTermination and no cert/key values.
         dbSslTermination = SslTerminationHelper.verifyAndApplyAttributes(apiSslTermination, dbSslTermination);
 
@@ -93,12 +97,12 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                 SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
             }
         } else {
-          //*Should never happen...
-          LOG.error("The ssl termination service layer could not handle the request, thus not producing a proper sslTermination Object causing this failure...");
-          throw new UnprocessableEntityException("There was a problem generating the ssl termination configuration, please contact support...");
+            //*Should never happen...
+            LOG.error("The ssl termination service layer could not handle the request, thus not producing a proper sslTermination Object causing this failure...");
+            throw new UnprocessableEntityException("There was a problem generating the ssl termination configuration, please contact support...");
         }
 
-          LOG.debug("Updating the lb status to pending_update");
+        LOG.debug("Updating the lb status to pending_update");
         if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
             String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
             LOG.warn(message);
@@ -180,4 +184,3 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         return sslMap;
     }
 }
-

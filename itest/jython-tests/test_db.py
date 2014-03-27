@@ -14,7 +14,9 @@ zt = getZeusTest(hid=1)
 
 from db_classes import *
 
+begin()
 l = qq("from SslTermination")
+
 
 #a = Account()
 #a.setId(1)

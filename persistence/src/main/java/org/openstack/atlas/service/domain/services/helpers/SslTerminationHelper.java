@@ -74,6 +74,31 @@ public final class SslTerminationHelper {
         return true;
     }
 
+    public static boolean verifyUserIsNotSettingNonSecureTrafficAndReEncryption(SslTermination apiTermination, org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
+        boolean isUnSettingSecureTraffic = apiTermination.isSecureTrafficOnly() != null && !apiTermination.isSecureTrafficOnly();
+        boolean isSettingSecureTraffic = apiTermination.isSecureTrafficOnly() != null && apiTermination.isSecureTrafficOnly();
+        boolean isSettingReencryption = apiTermination.isReEncryptionEnabled() != null && apiTermination.isReEncryptionEnabled();
+        boolean isUnSettingReencryption = apiTermination.isReEncryptionEnabled() != null && !apiTermination.isReEncryptionEnabled();
+        boolean dbHadRencryption = dbTermination != null && dbTermination.isReEncryptionEnabled();
+        boolean dbHadSecureOnly = dbTermination != null && dbTermination.isSecureTrafficOnly();
+
+        if (isUnSettingReencryption) {
+            return true;
+        }
+
+        if (isUnSettingSecureTraffic && dbHadRencryption && !isUnSettingReencryption) {
+            return false; // Rejects the case where the user is unsetting Secure traffic on a previesly reencrypting lb
+        }
+
+        if (isSettingReencryption && !dbHadSecureOnly && !isSettingSecureTraffic) {
+            return false; // Reject the case where the user is adding  reencryption to
+        }
+
+        return true;
+
+
+    }
+
     public static boolean verifyPortSecurePort(LoadBalancer loadBalancer, SslTermination apiSslTermination, Map<Integer, List<LoadBalancer>> vipPorts, Map<Integer, List<LoadBalancer>> vip6Ports) {
         LOG.info("Verifying port and secure port are unique for loadbalancer: " + loadBalancer.getId());
         if (apiSslTermination != null && apiSslTermination.getSecurePort() != null) {
