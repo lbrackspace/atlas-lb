@@ -14,6 +14,7 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
+import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.List;
@@ -22,6 +23,8 @@ import java.util.Map;
 public interface ReverseProxyLoadBalancerAdapter {
     public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config)
             throws AxisFault;
+
+    public ZxtmServiceStubs getStatsStubs(URL endpoint, LoadBalancerEndpointConfiguration config) throws AxisFault;
 
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, RollBackException;
@@ -149,7 +152,7 @@ public interface ReverseProxyLoadBalancerAdapter {
     public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config)
             throws RemoteException;
 
-    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, Integer loadbalancerId, Integer accountId)
+    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException;
 
     public Map<String, Long> getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, List<String> names)

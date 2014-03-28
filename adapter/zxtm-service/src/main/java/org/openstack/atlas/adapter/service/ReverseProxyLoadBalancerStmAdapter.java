@@ -5,9 +5,14 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.counters.VirtualServerStats;
+import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
@@ -96,6 +101,9 @@ public interface ReverseProxyLoadBalancerStmAdapter {
 
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit)
             throws InsufficientRequestException, RollBackException;
+
+    public Stats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
 
 //    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
 //            throws StmRollBackException;

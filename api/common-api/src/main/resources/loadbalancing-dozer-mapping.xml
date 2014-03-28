@@ -268,7 +268,7 @@
             <b-hint>org.openstack.atlas.service.domain.events.entities.NodeServiceEvent</b-hint>
         </field>
     </mapping>
-    
+
     <mapping map-null="false" map-id="HIDE_NODE_META">
         <class-a>org.openstack.atlas.service.domain.entities.Node</class-a>
         <class-b bean-factory="org.openstack.atlas.api.mapper.dozer.factory.NodeFactory">org.openstack.atlas.docs.loadbalancers.api.v1.Node</class-b>
@@ -488,6 +488,10 @@
         <field>
             <a>maxConn</a>
             <b>maxConn</b>
+        </field>
+        <field>
+            <a>currentConn</a>
+            <b>currentConn</b>
         </field>
         <field-exclude>
             <a>id</a>

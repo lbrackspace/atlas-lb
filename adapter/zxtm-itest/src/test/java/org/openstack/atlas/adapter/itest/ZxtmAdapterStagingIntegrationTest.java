@@ -21,6 +21,7 @@ public class ZxtmAdapterStagingIntegrationTest {
     private static final String ZXTM_USERNAME = "user_name";
     private static final String ZXTM_PASSWORD = "user_password";
     private static final String ZXTM_ENDPOINT_URI = "https://zeus-endpoint:9090/soap";
+    private static final String ZXTM_REST_ENDPOINT_URI = "https://zeus-endpoint:9090/tm/2.0/config/active/";
     private static final String TARGET_HOST = "ztm-n03.staging1.test.com";
     private static final String FAILOVER_HOST_1 = "ztm-n02.staging1.test.com";
 
@@ -37,9 +38,12 @@ public class ZxtmAdapterStagingIntegrationTest {
         targetFailoverHosts.add(FAILOVER_HOST_1);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
+        soapEndpointHost.setRestEndpoint(ZXTM_REST_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
+        List<Host> failoverHosts = new ArrayList<Host>();
+        failoverHosts.add(soapEndpointHost);
         trafficManagerHost.setTrafficManagerName(TARGET_HOST);
-        this.config = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts, "9070");
+        this.config = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts, failoverHosts);
 
         // This is the default directory where the logs will go.
         this.config.setLogFileLocation("/opt/zeus/zxtm/log/access_log");
@@ -51,7 +55,7 @@ public class ZxtmAdapterStagingIntegrationTest {
 
     @Test
     public void shouldBeValidApiVersion() {
-        String ZEUS_API_VERSION = "7.1";
+        String ZEUS_API_VERSION = "9.5";
         try {
             Assert.assertEquals(ZEUS_API_VERSION, getServiceStubs().getSystemMachineInfoBinding().getProductVersion());
         } catch (RemoteException e) {

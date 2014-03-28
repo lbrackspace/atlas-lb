@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.integration;
 
 
+import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
@@ -9,11 +10,14 @@ import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
+import org.openstack.atlas.api.helpers.CacheKeyGen;
+import org.openstack.atlas.api.helpers.DateHelpers;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
@@ -22,11 +26,18 @@ import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.openstack.atlas.util.debug.Debug;
+import org.rackspace.stingray.client.counters.VirtualServerStats;
+import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.rmi.RemoteException;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
+
+import static java.util.Calendar.getInstance;
 
 public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadBalancerStmService {
 
@@ -333,8 +344,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         } catch (StmRollBackException ex) {
             checkAndSetIfRestEndPointBad(config, ex);
             throw ex;
-        } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -347,8 +356,6 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         } catch (StmRollBackException ex) {
             checkAndSetIfRestEndPointBad(config, ex);
             throw ex;
-        } catch (RollBackException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
         }
     }
 
@@ -366,10 +373,11 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     LoadBalancerEndpointConfiguration getConfigbyClusterId(Integer clusterId) throws EntityNotFoundException, DecryptException {
         Cluster cluster = hostService.getClusterById(clusterId);
         Host soapEndpointHost = hostService.getRestEndPointHost(cluster.getId());
-        List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
+        List<String> failoverHostNames = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
+        List<Host> failoverHosts = hostService.getFailoverHosts(cluster.getId());
 
-        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), soapEndpointHost, failoverHosts, logFileLocation);
+        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), soapEndpointHost, failoverHostNames, logFileLocation, failoverHosts);
     }
 
     // Send request to proper SOAPEndpoint(Calculated by the database) for host's traffic manager
@@ -377,20 +385,22 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
         Host soapEndpointHost = hostService.getRestEndPointHost(cluster.getId());
-        List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
+        List<String> failoverHostNames = hostService.getFailoverHostNames(cluster.getId());
+        List<Host> failoverHosts = hostService.getFailoverHosts(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
 
-        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
+        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, logFileLocation, failoverHosts);
     }
 
     // Send SOAP request directly to the hosts traffic manager.
     @Override
     public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
-        List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
+        List<String> failoverHostNames = hostService.getFailoverHostNames(cluster.getId());
+        List<Host> failoverHosts = hostService.getFailoverHosts(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
 
-        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
+        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, logFileLocation, failoverHosts);
     }
 
     private LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
@@ -398,9 +408,10 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         Host host = loadBalancer.getHost();
         Cluster cluster = host.getCluster();
         Host soapEndpointHost = hostService.getRestEndPointHost(cluster.getId());
-        List<String> failoverHosts = hostService.getFailoverHostNames(cluster.getId());
+        List<String> failoverHostNames = hostService.getFailoverHostNames(cluster.getId());
+        List<Host> failoverHosts = hostService.getFailoverHosts(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, logFileLocation);
+        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, logFileLocation, failoverHosts);
     }
 
     public void setReverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
@@ -452,6 +463,27 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
+    }
+
+    @Override
+    public Stats getVirtualServerStats(LoadBalancer loadBalancer, URI endpoint) throws EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+        Integer accountId = loadBalancer.getAccountId();
+        Integer loadbalancerId = loadBalancer.getId();
+        LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
+        String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
+        Stats stats;
+
+        long cal = getInstance().getTimeInMillis();
+        stats = (Stats) atlasCache.get(key);
+        if (stats == null) {
+            stats = reverseProxyLoadBalancerStmAdapter.getVirtualServerStats(config, loadBalancer);
+            LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
+            atlasCache.set(key, stats);
+        } else {
+            LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, retrieved from cache... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
+            return stats;
+        }
+        return stats;
     }
 
     public void setAtlasCache(AtlasCache atlasCache) {

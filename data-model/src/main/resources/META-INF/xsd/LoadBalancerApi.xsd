@@ -68,6 +68,14 @@
         <xsd:attribute name="dataTimedOut" type="xsd:int"/>
         <xsd:attribute name="keepAliveTimedOut" type="xsd:int"/>
         <xsd:attribute name="maxConn" type="xsd:int"/>
+        <xsd:attribute name="currentConn" type="xsd:int"/>
+        <xsd:attribute name="connectTimeOutSsl" type="xsd:int"/>
+        <xsd:attribute name="connectErrorSsl" type="xsd:int"/>
+        <xsd:attribute name="connectFailureSsl" type="xsd:int"/>
+        <xsd:attribute name="dataTimedOutSsl" type="xsd:int"/>
+        <xsd:attribute name="keepAliveTimedOutSsl" type="xsd:int"/>
+        <xsd:attribute name="maxConnSsl" type="xsd:int"/>
+        <xsd:attribute name="currentConnSsl" type="xsd:int"/>
     </xsd:complexType>
 
     <xsd:element name="connectionLogging" type="tns:connectionLogging"/>

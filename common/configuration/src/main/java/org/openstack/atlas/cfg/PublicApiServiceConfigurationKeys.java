@@ -35,7 +35,8 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     ssl_termination,
     stats,
     ttl,
-    usage_deletion_limit,
     usage_poller_log_all_counters,
-    usage_timezone_code
+    usage_timezone_code,
+    usage_deletion_limit,
+    stingray_stats_base_uri
 }

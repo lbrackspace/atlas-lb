@@ -35,6 +35,7 @@ public class ZeusTestBase {
     public static String ZXTM_USERNAME;
     public static String ZXTM_PASSWORD;
     public static String ZXTM_ENDPOINT_URI;
+    public static String ZXTM_REST_ENDPOINT_URI;
     public static String TARGET_HOST;
     public static String FAILOVER_HOST_1;
     public static String FAILOVER_HOST_2;
@@ -86,6 +87,7 @@ public class ZeusTestBase {
         TEST_IPV6_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.test_ipv6_vip_id));
         ADDITIONAL_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.additional_vip_id));
         ADDITIONAL_IPV6_VIP_ID = Integer.valueOf(configuration.getString(ConfigurationKeys.additional_ipv6_vip_id));
+        ZXTM_REST_ENDPOINT_URI = "https://zeus-endpoint:9090/tm/2.0/config/active/";
     }
 
     private static void setupEndpointConfiguration() throws MalformedURLException {
@@ -94,10 +96,12 @@ public class ZeusTestBase {
         if (!FAILOVER_HOST_1.equals(FAILOVER_HOST_2)) targetFailoverHosts.add(FAILOVER_HOST_2);
         Host soapEndpointHost = new Host();
         soapEndpointHost.setEndpoint(ZXTM_ENDPOINT_URI);
-        soapEndpointHost.setRestEndpoint(ZXTM_ENDPOINT_URI);
+        soapEndpointHost.setRestEndpoint(ZXTM_REST_ENDPOINT_URI);
         Host trafficManagerHost = new Host();
         trafficManagerHost.setTrafficManagerName(TARGET_HOST);
-        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts);
+        List<Host> failoverHosts = new ArrayList<Host>();
+        failoverHosts.add(soapEndpointHost);
+        config = new LoadBalancerEndpointConfiguration(soapEndpointHost, ZXTM_USERNAME, ZXTM_PASSWORD, trafficManagerHost, targetFailoverHosts, failoverHosts);
         config.setLogFileLocation(DEFAULT_LOG_FILE_LOCATION);
     }
 

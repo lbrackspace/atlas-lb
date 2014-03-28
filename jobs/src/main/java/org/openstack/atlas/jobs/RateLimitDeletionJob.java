@@ -91,8 +91,7 @@ public class RateLimitDeletionJob extends AbstractJob {
     private LoadBalancerEndpointConfiguration getConfig(Host hostIn) throws DecryptException, MalformedURLException {
         Host hostEnd = hostRepository.getEndPointHost(hostIn.getCluster().getId());
         Cluster cluster = hostEnd.getCluster();
-        String rest_port = "9070"; //Default
-        return new LoadBalancerEndpointConfiguration(hostEnd, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), hostEnd, hostRepository.getFailoverHostNames(cluster.getId()), rest_port);
+        return new LoadBalancerEndpointConfiguration(hostEnd, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), hostEnd, hostRepository.getFailoverHostNames(cluster.getId()), null);
     }
 
 }
