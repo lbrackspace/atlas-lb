@@ -49,5 +49,5 @@ CREATE TABLE `lb_usage` (
   KEY `lb_usage_lb_key` (`loadbalancer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-UPDATE `meta` SET `meta_value` = '<ADD VALUE HERE>' WHERE `meta_key`='version';
+UPDATE `meta` SET `meta_value` = '63' WHERE `meta_key`='version';
 

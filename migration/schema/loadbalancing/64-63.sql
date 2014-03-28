@@ -11,5 +11,5 @@ CREATE TABLE `test` (
   PRIMARY KEY (`k`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-UPDATE `meta` SET `meta_value` = '<ADD VALUE HERE>' WHERE `meta_key`='version';
+UPDATE `meta` SET `meta_value` = '63' WHERE `meta_key`='version';
 
