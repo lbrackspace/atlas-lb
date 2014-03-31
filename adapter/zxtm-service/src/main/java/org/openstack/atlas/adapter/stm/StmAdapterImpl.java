@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
+import org.openstack.atlas.util.debug.Debug;
 
 @Component
 public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
@@ -484,7 +485,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             try {
                 virtualServer = client.getVirtualServer(vsName);
             } catch (Exception e) {
-                LOG.error(String.format("Error retrieving non-secure virtual server.\n%s", e.getStackTrace()));
+                LOG.error(String.format("Error retrieving non-secure virtual server.\n%s", Debug.getExtendedStackTrace(e)));
                 throw new StmRollBackException("Error retrieving non-secure virtual server.", e);
             }
             if (virtualServer != null) {

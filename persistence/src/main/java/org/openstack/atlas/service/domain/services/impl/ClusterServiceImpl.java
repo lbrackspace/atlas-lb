@@ -48,8 +48,8 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
     }
 
     @Override
-    public Cluster getActiveCluster() throws EntityNotFoundException, ClusterStatusException {
-        return clusterRepository.getActiveCluster();
+    public Cluster getActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException {
+        return clusterRepository.getActiveCluster(accountId);
     }
 
     @Override

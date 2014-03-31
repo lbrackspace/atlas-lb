@@ -18,6 +18,8 @@ import org.springframework.stereotype.Component;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import org.openstack.atlas.util.debug.Debug;
+
 
 /**
  * This Aspect will cause methods to retry if there is a notion of a deadlock.
@@ -30,11 +32,11 @@ import javax.persistence.PersistenceException;
 @Aspect
 @Component
 public class DeadLockRetryAspect implements Ordered {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DeadLockRetryAspect.class);
     private int order = 99; // Transaction manager order should be set to 100
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
-
     private int conncurrencyRetryCalls = 0;
 
     public int getConncurrencyRetryCalls() {
@@ -72,7 +74,8 @@ public class DeadLockRetryAspect implements Ordered {
             } catch (final PersistenceException pe) {
                 deadlockCounter = handleException(pe, deadlockCounter, retryCount);
             } catch (Exception e) {
-                LOGGER.error(e.getMessage(), e);
+                String excMessage = Debug.getExtendedStackTrace(e);
+                LOGGER.error(e.getMessage() + " " + excMessage, e);
                 throw e;
             }
         }
@@ -138,7 +141,9 @@ public class DeadLockRetryAspect implements Ordered {
         final SessionFactory sessionFactory = ((HibernateEntityManagerFactory) entityManager.getEntityManagerFactory()).getSessionFactory();
         Dialect dialect = ((SessionFactoryImplementor) sessionFactory).getDialect();
 
-        if (dialect instanceof org.hibernate.dialect.MySQL5InnoDBDialect) return new MySQL5InnoDBDialect();
+        if (dialect instanceof org.hibernate.dialect.MySQL5InnoDBDialect) {
+            return new MySQL5InnoDBDialect();
+        }
         // Add custom dialect conditionals here.
         return dialect;
     }

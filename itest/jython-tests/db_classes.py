@@ -5,6 +5,7 @@ import org.openstack.atlas.service.domain.entities.Cluster as Cluster
 import org.openstack.atlas.service.domain.entities.ClusterType as ClusterType
 import org.openstack.atlas.service.domain.entities.GroupRateLimit as GroupRateLimit
 import org.openstack.atlas.service.domain.entities.AccountGroup as AccountGroup
+import org.openstack.atlas.service.domain.entities.Account as Accoount
 import org.openstack.atlas.service.domain.entities.ConnectionLimit as ConnectionLimit
 import org.openstack.atlas.service.domain.entities.Entity as Entity
 import org.openstack.atlas.service.domain.entities.HealthMonitor as HealthMonitor

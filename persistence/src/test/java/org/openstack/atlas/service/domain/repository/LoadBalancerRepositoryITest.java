@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Calendar;
 import java.util.Set;
+import org.openstack.atlas.util.debug.Debug;
 
 @RunWith(Enclosed.class)
 public class LoadBalancerRepositoryITest {
@@ -24,6 +25,7 @@ public class LoadBalancerRepositoryITest {
     public static class WhenGettingLoadBalancersActiveDuringPeriod extends Base {
 
         @Before
+        @Override
         public void standUp() throws Exception {
             super.standUp();
 
@@ -46,9 +48,11 @@ public class LoadBalancerRepositoryITest {
             loadBalancer.addNode(node);
 
             loadBalancer = loadBalancerService.create(loadBalancer);
+            Debug.nop();
         }
 
         @After
+        @Override
         public void tearDown() throws Exception {
             loadBalancerRepository.delete(loadBalancer);
             super.tearDown();

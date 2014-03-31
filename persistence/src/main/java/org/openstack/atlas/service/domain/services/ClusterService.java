@@ -21,7 +21,7 @@ import java.util.List;
 public interface ClusterService {
     public Cluster get(Integer clusterId) throws EntityNotFoundException;
 
-    public Cluster getActiveCluster() throws EntityNotFoundException, ClusterStatusException;
+    public Cluster getActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException;
 
     public List<Cluster> getAll();
 
