@@ -44,6 +44,8 @@ public class RootCAHelper {
             rootCaFileReadError(ex);
         } catch (IOException ex) {
             rootCaFileReadError(ex);
+        } catch (Exception ex){
+            // Since we arn't using RootCAs anymore ignore null pointers when trying to load the rootCA file name
         }
     }
 
