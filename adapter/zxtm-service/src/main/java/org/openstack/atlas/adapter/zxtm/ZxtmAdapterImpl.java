@@ -1915,54 +1915,79 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     @Override
     public void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        Integer lbId = loadBalancer.getId();
+        Integer accountId = loadBalancer.getAccountId();
 
-        updateConnectionThrottle(config, loadBalancer, ZxtmNameBuilder.genVSName(loadBalancer));
-        if (loadBalancer.hasSsl()) {
-            updateConnectionThrottle(config, loadBalancer, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(lbId, accountId);
+        String[] vsNames;
+
+        boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+        boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
+
+        if (isSecureServer && isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualRedirectServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isSecureServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualRedirectServerName;
+        } else {
+            vsNames = new String[1];
+            vsNames[0] = virtualServerName;
+        }
+
+        for (String vsName : vsNames) {
+            updateConnectionThrottle(config, loadBalancer, vsName);
         }
     }
 
     private void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String virtualServerName) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        Integer lbId = loadBalancer.getId();
-        Integer accountId = loadBalancer.getAccountId();
         ConnectionLimit throttle = loadBalancer.getConnectionLimit();
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
-        String protectionClassName = virtualServerName;
+        String protectionClassName = ZxtmNameBuilder.genVSName(loadBalancer);
         String rollBackMessage = "Update connection throttle request canceled.";
 
-        addProtectionClass(config, virtualServerName);
+        addProtectionClass(config, protectionClassName);
 
         try {
             if (throttle != null) {
                 if (throttle.getMinConnections() != null) {
                     // Set the minimum connections that will be allowed from any single IP before beginning to apply restrictions.
-                    serviceStubs.getProtectionBinding().setMinConnections(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getMinConnections())});
+                    serviceStubs.getProtectionBinding().setMinConnections(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getMinConnections())});
                 }
 
                 if (throttle.getRateInterval() != null) {
                     // Set the rate interval for the rates
-                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getRateInterval())});
+                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getRateInterval())});
                 }
 
                 //Odd issue in 9.5 where rateInterval must be set before max rate...
 
                 if (throttle.getMaxConnectionRate() != null) {
                     // Set the maximum connection rate + rate interval
-                    serviceStubs.getProtectionBinding().setMaxConnectionRate(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnectionRate())});
+                    serviceStubs.getProtectionBinding().setMaxConnectionRate(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnectionRate())});
                 }
 
 
                 if (throttle.getMaxConnections() != null) {
                     // Set the maximum connections permitted from a single IP address
-                    serviceStubs.getProtectionBinding().setMax1Connections(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnections())});
+                    serviceStubs.getProtectionBinding().setMax1Connections(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnections())});
                 }
 
                 // We wont be using this, but it must be set to 0 as our default
-                serviceStubs.getProtectionBinding().setMax10Connections(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(0)});
+                serviceStubs.getProtectionBinding().setMax10Connections(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(0)});
 
                 // Apply the service protection to the virtual server.
-                serviceStubs.getVirtualServerBinding().setProtection(new String[]{virtualServerName}, new String[]{virtualServerName});
+                serviceStubs.getVirtualServerBinding().setProtection(new String[]{virtualServerName}, new String[]{protectionClassName});
             }
         } catch (Exception e) {
             if (e instanceof ObjectDoesNotExist) {
