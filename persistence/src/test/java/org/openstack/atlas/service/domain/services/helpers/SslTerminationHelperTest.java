@@ -68,11 +68,9 @@ public class SslTerminationHelperTest {
     }
 
     @Test
-    public void shouldBlahTemplate() {
+    public void shouldTestRencryptionSslTermTemplate() {
         apiSslTerm = newApiSslTerm();
         dbSslTerm = newDbSslTerm();
-
-
     }
 
     private static SslTermination newApiSslTerm() {
@@ -85,6 +83,6 @@ public class SslTerminationHelperTest {
 
     // I really don't feel like retyping verifyUserIsNotSettingNonSecureTrafficAndReEncryption over and over and over
     private static boolean isValidRencrypt(SslTermination apiSsl, org.openstack.atlas.service.domain.entities.SslTermination dbSsl) {
-        return SslTerminationHelper.verifyUserIsNotSettingNonSecureTrafficAndReEncryption(apiSsl, dbSsl);
+        return SslTerminationHelper.isRencryptionUsingSecureTrafficOnly(apiSsl, dbSsl);
     }
 }

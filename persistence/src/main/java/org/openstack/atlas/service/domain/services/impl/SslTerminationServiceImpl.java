@@ -81,9 +81,9 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             LOG.warn("LoadBalancer ssl termination could not be found, ");
         }
 
-        // Make sure the user is jacking up Rencryption by turning off secureOnlyTraffic.
-        if (SslTerminationHelper.verifyUserIsNotSettingNonSecureTrafficAndReEncryption(apiSslTermination, dbSslTermination)) {
-            throw new BadRequestException(String.format("Can not disable SecureTraffic only on an ssl termination thats currently reencrypting for for LoadBalancer: %d", lbId));
+        // Make sure the user is not jacking up Rencryption by turning off secureOnlyTraffic.
+        if (!SslTerminationHelper.isRencryptionUsingSecureTrafficOnly(apiSslTermination, dbSslTermination)) {
+            throw new BadRequestException(String.format("SslTermination reEncryption can not be enabled without secureTrafficOnly Either disable reEncryption or enable secureTrafficOnly: %d", lbId));
         }
 
         //we wont make it here if no dbTermination and no cert/key values.

@@ -74,7 +74,7 @@ public final class SslTerminationHelper {
         return true;
     }
 
-    public static boolean verifyUserIsNotSettingNonSecureTrafficAndReEncryption(SslTermination apiTermination, org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
+    public static boolean isRencryptionUsingSecureTrafficOnly(SslTermination apiTermination, org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
         boolean isUnSettingSecureTraffic = apiTermination.isSecureTrafficOnly() != null && !apiTermination.isSecureTrafficOnly();
         boolean isSettingSecureTraffic = apiTermination.isSecureTrafficOnly() != null && apiTermination.isSecureTrafficOnly();
         boolean isSettingReencryption = apiTermination.isReEncryptionEnabled() != null && apiTermination.isReEncryptionEnabled();
