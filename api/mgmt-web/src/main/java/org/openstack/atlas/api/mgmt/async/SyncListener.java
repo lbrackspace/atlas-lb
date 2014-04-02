@@ -174,7 +174,7 @@ public class SyncListener extends BaseListener {
 //                        loadBalancerService.setStatus(dbLoadBalancer, PENDING_UPDATE);
 
                         //We must re-validate cert/keys before sending to zeus  V1-D-04287
-                        ZeusSslTermination zeusTermination = sslTerminationService.updateSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), domainSslTermination);
+                        ZeusSslTermination zeusTermination = sslTerminationService.updateSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), domainSslTermination, true);
 
                         if (isRestAdapter()) {
                             LOG.debug(String.format("Updating ssl termination for load balancer: %s in STM", dbLoadBalancer.getId()));

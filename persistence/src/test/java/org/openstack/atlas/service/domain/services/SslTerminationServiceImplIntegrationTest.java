@@ -131,7 +131,7 @@ public class SslTerminationServiceImplIntegrationTest {
 
             }
 
-            sslTerminationService.updateSslTermination(newLb.getId(), newLb.getAccountId(), sslTermination);
+            sslTerminationService.updateSslTermination(newLb.getId(), newLb.getAccountId(), sslTermination, false);
 
             LoadBalancer lb = loadBalancerService.get(newLb.getId(),  newLb.getAccountId());
             Assert.assertNotNull(sslTermination);
