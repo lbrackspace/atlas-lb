@@ -91,7 +91,7 @@ public class SslTerminationImplTest {
         @Test
         public void shouldReturnTrueWhenSslTerminationIsValid() throws EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
             try {
-                Assert.assertTrue(sslTerminationService.updateSslTermination(lb.getId(), accountId, ssl1) != null);
+                Assert.assertTrue(sslTerminationService.updateSslTermination(lb.getId(), accountId, ssl1, false) != null);
             } catch (Exception ex) {
                 Assert.fail(ex.toString());
             }
@@ -101,7 +101,7 @@ public class SslTerminationImplTest {
         @Test
         public void shouldFailWhenSslTerminationDidNotPassChecks() throws EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
             try {
-                Assert.assertFalse(sslTerminationService.updateSslTermination(lb.getId(), accountId, ssl1) == null);
+                Assert.assertFalse(sslTerminationService.updateSslTermination(lb.getId(), accountId, ssl1, false) == null);
             } catch (Exception ex) {
                 Assert.fail(ex.toString());
             }

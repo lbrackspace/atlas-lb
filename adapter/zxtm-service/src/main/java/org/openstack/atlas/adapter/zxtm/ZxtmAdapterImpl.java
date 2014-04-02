@@ -1213,9 +1213,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             enableDisableSslTermination(conf, loadBalancer, zeusSslTermination.getSslTermination().isEnabled());
             LOG.debug(String.format("Successfully enabled:'%s' load balancer: %s ssl termination", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
 
-            LOG.info(String.format("Non-secure virtual server will be enabled:'%s' load balancer: %s", !zeusSslTermination.getSslTermination().isSecureTrafficOnly(), loadBalancer.getId()));
-            suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, zeusSslTermination.getSslTermination().isSecureTrafficOnly());
-            LOG.debug(String.format("Successfully enabled:'%s' non-secure server for load balancer: %s", !zeusSslTermination.getSslTermination().isSecureTrafficOnly(), loadBalancer.getId()));
+            boolean isRedirectServer = loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect() == true;
+            if (!isRedirectServer) {
+                LOG.info(String.format("Non-secure virtual server will be enabled:'%s' load balancer: %s", !zeusSslTermination.getSslTermination().isSecureTrafficOnly(), loadBalancer.getId()));
+                suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, zeusSslTermination.getSslTermination().isSecureTrafficOnly());
+                LOG.debug(String.format("Successfully enabled:'%s' non-secure server for load balancer: %s", !zeusSslTermination.getSslTermination().isSecureTrafficOnly(), loadBalancer.getId()));
+            }
         } catch (AxisFault af) {
             LOG.error("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId());
 

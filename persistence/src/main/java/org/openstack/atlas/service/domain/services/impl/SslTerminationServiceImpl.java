@@ -28,7 +28,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     protected static final ZeusUtils zeusUtils;
     protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
 
-    static{
+    static {
         zeusUtils = new ZeusUtils();
     }
 
@@ -38,7 +38,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     @Override
     @Transactional
-    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
+    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination, boolean isSync) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
         ZeusCrtFile zeusCrtFile = null;
 
@@ -93,19 +93,21 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                 SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
             }
         } else {
-          //*Should never happen...
-          LOG.error("The ssl termination service layer could not handle the request, thus not producing a proper sslTermination Object causing this failure...");
-          throw new UnprocessableEntityException("There was a problem generating the ssl termination configuration, please contact support...");
+            //*Should never happen...
+            LOG.error("The ssl termination service layer could not handle the request, thus not producing a proper sslTermination Object causing this failure...");
+            throw new UnprocessableEntityException("There was a problem generating the ssl termination configuration, please contact support...");
         }
 
-          LOG.debug("Updating the lb status to pending_update");
-        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
-            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
-            LOG.warn(message);
-            throw new ImmutableEntityException(message);
-        } else {
-            //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        LOG.debug("Updating the lb status to pending_update");
+        if (!isSync) {
+            if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+                String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
+                LOG.warn(message);
+                throw new ImmutableEntityException(message);
+            } else {
+                //Set status record
+                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+            }
         }
 
         LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%s'", lbId));
