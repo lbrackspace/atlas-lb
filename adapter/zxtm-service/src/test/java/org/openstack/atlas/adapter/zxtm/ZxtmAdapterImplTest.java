@@ -537,6 +537,8 @@ public class ZxtmAdapterImplTest {
             zeusSslTermination.setCertIntermediateCert(testChain);
             zeusSslTermination.setSslTermination(sslTermination);
 
+            lb.setHttpsRedirect(false);
+
             InOrder inOrder = inOrder(vsStub, vsStub, vsStub, protectionStub, protectionStub, certificateCatalogService, vsStub, vsStub);
             adapterSpy.updateSslTermination(dummyConfig, lb, zeusSslTermination);
             inOrder.verify(vsStub).addVirtualServer(Matchers.<String[]>anyObject(), Matchers.<VirtualServerBasicInfo[]>anyObject());
