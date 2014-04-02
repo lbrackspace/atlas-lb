@@ -1966,7 +1966,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         String protectionClassName = ZxtmNameBuilder.genVSName(loadBalancer);
-        ;
         String rollBackMessage = "Update connection throttle request canceled.";
 
         addProtectionClass(config, protectionClassName);
