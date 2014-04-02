@@ -218,22 +218,22 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String rollBackMessage = "Create load balancer request canceled.";
         final String secureVsName;
         final String vsName;
+        final String poolName;
         final VirtualServerBasicInfo vsInfo;
 
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
         secureVsName = ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
         vsName = ZxtmNameBuilder.genVSName(lb.getId(), lb.getAccountId());
-
+        //Same name, but differentiate for clarity
+        poolName = vsName;
         String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(vsName);
 
-        boolean isRedirectServer = lb.isHttpsRedirect();
-        boolean isSecureServer = lb.hasSsl();
-
-        String vsNameAltered = (isRedirectServer && isSecureServer) ? vsRedirectName : vsName;
+        boolean isRedirectServer = lb.isHttpsRedirect() != null && lb.isHttpsRedirect() == true;
+        String vsNameAltered = isRedirectServer ? vsRedirectName : vsName;
 
         LOG.debug(String.format("Adding virtual server '%s'...", secureVsName));
-        vsInfo = new VirtualServerBasicInfo(lb.getSslTermination().getSecurePort(), ZxtmConversionUtils.mapProtocol(lb.getProtocol()), vsName);
+        vsInfo = new VirtualServerBasicInfo(lb.getSslTermination().getSecurePort(), ZxtmConversionUtils.mapProtocol(lb.getProtocol()), poolName);
         serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{secureVsName}, new VirtualServerBasicInfo[]{vsInfo});
         LOG.info(String.format("Virtual server '%s' successfully added.", secureVsName));
 
@@ -241,7 +241,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             addVirtualIps(config, lb, secureVsName);
 
             //Verify that the server is not listening to all addresses, zeus does this by default and is an unwanted behaviour.
-            isVSListeningOnAllAddresses(serviceStubs, secureVsName, vsNameAltered);
+            isVSListeningOnAllAddresses(serviceStubs, secureVsName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{secureVsName}, new boolean[]{true});
 
             updateLoadBalancerAttributes(config, serviceStubs, lb, secureVsName);
@@ -1215,9 +1215,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             enableDisableSslTermination(conf, loadBalancer, zeusSslTermination.getSslTermination().isEnabled());
             LOG.debug(String.format("Successfully enabled:'%s' load balancer: %s ssl termination", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
 
-            boolean isRedirectServer = loadBalancer.isHttpsRedirect();
-            boolean isSecureServer = loadBalancer.hasSsl();
-            if (!(isRedirectServer && isSecureServer)) {
+            boolean isRedirectServer = loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect() == true;
+            if (!isRedirectServer) {
                 LOG.info(String.format("Non-secure virtual server will be enabled:'%s' load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
                 suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, zeusSslTermination.getSslTermination().isSecureTrafficOnly());
                 LOG.debug(String.format("Successfully enabled:'%s' non-secure server for load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
