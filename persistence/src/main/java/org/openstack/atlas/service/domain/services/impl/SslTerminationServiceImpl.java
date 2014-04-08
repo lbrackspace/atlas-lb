@@ -134,6 +134,11 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     public void pseudoDeleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
 
+        if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
+            //Must not have HTTPS Redirect Enabled
+            throw new BadRequestException("Cannot delete SSL Termination while HTTPS Redirect is enabled. Please disable HTTPS Redirect and retry the operation.");
+        }
+
         if (dbLoadBalancer.hasSsl()) {
             LOG.debug("Updating the lb status to pending_update");
             if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
