@@ -2433,7 +2433,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 //        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         Stats stats = new Stats();
-        final String virtualServerName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+        String virtualServerName;
+        if (loadBalancer.isSecureOnly() && loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
+            virtualServerName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+        } else {
+            virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        }
         final String sslVirtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         int[] connectionTimedOut = new int[1];
         int[] connectionError = new int[1];
@@ -2450,7 +2455,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         int[] maxConnectionsSsl = new int[1];
         int[] currentConnectionsSsl = new int[1];
 
-        if (!(loadBalancer.isSecureOnly() && loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect())) {
+        if (!loadBalancer.isSecureOnly() || loadBalancer.isHttpsRedirect() == null || !loadBalancer.isHttpsRedirect()) {
             for (ZxtmServiceStubs serviceStubs : allStubs) {
                 connectionTimedOut[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName})[0];
                 connectionError[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName})[0];
