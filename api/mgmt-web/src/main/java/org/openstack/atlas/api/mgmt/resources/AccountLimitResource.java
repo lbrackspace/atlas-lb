@@ -19,7 +19,7 @@ public class AccountLimitResource extends ManagementDependencyProvider {
 
     @DELETE
     public Response deleteAccountLimit() {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
 
@@ -38,7 +38,7 @@ public class AccountLimitResource extends ManagementDependencyProvider {
     @PUT
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response updateAccountLimit(Limit limit) {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
 

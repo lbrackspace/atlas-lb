@@ -74,7 +74,7 @@ public class HostResource extends ManagementDependencyProvider {
             } else {
                 hD.setCurrentUtilization("0 %");
             }
-            HostMachineDetails rHostMD = getDozerMapper().map(hD, HostMachineDetails.class);        
+            HostMachineDetails rHostMD = getDozerMapper().map(hD, HostMachineDetails.class);
 
             return Response.status(200).entity(rHostMD).build();
         } catch (Exception e) {
@@ -119,7 +119,7 @@ public class HostResource extends ManagementDependencyProvider {
     @GET
     @Path("subnetmappings")
     public Response retrieveHostsSubnetMappings() {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
 
@@ -366,7 +366,7 @@ public class HostResource extends ManagementDependencyProvider {
             connection = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host);
 
         } catch (Exception e) {
-            System.out.println(e.getMessage()); 
+            System.out.println(e.getMessage());
         }
         return connection;
     }

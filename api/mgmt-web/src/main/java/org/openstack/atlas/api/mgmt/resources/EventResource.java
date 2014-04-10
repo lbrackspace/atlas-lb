@@ -54,7 +54,7 @@ public class EventResource extends ManagementDependencyProvider {
     @GET
     @Path("user/{username: [0-9A-Za-z ]+}")
     public Response getAllEventsByUsername(@PathParam("username") String username, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate, @QueryParam("page") Integer page) throws DateTimeToolException, ConverterException {
-        if (!isUserInRole("ops")) {
+        if (!isUserInRole("ops,support")) {
             return ResponseFactory.accessDenied();
         }
 

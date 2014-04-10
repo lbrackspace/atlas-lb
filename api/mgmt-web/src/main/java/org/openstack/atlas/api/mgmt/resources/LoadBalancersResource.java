@@ -170,7 +170,9 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
     public Response retrieveLoadBalancers(@QueryParam("vipaddress") String address, @QueryParam("vipid") Integer vipId, @QueryParam("status") String status,
                                           @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker,
                                           @QueryParam("page") Integer page, @QueryParam("changes-since") Integer time, @QueryParam("nodeAddress") String nodeAddress) throws EntityNotFoundException {
-
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
         CheckQueryParams checkParams = new CheckQueryParams();
         Response checkResponseParams = checkParams.checkParams(address, vipId);
         if (checkResponseParams != null) {
