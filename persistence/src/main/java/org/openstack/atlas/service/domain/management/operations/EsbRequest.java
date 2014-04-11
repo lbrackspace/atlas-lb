@@ -12,7 +12,6 @@ import org.openstack.atlas.service.domain.entities.Suspension;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Sync;
 import org.openstack.atlas.service.domain.pojos.VirtualIpBlocks;
 import org.openstack.atlas.service.domain.pojos.ZeusEvent;
 
@@ -32,7 +31,6 @@ public class EsbRequest implements Serializable {
     private Host host;
     private Suspension suspension;
     private ZeusEvent zeusEvent;
-    private Sync syncObject;
     private Alert alert;
     private AccountGroup accountGroup;
     private List<AccountGroup> accountGroups;
@@ -180,20 +178,12 @@ public class EsbRequest implements Serializable {
         return zeusHostConcurrentConnections;
     }
 
-    public Sync getSyncObject() {
-        return syncObject;
-    }
-
     public GroupRateLimit getGroupRateLimit() {
         return groupRateLimit;
     }
 
     public void setGroupRateLimit(GroupRateLimit groupRateLimit) {
         this.groupRateLimit = groupRateLimit;
-    }
-
-    public void setSyncObject(Sync syncObject) {
-        this.syncObject = syncObject;
     }
 
     public Hostssubnet getHostssubnet() {
