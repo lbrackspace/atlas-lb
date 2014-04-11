@@ -41,6 +41,7 @@ public class SyncResource extends ManagementDependencyProvider {
 
             LoadBalancer lb = loadBalancerService.get(loadBalancerId);
             mdc.setAccountId(lb.getAccountId());
+            mdc.setLoadBalancerStatus(lb.getStatus());
             SslTermination sslTerm = lb.getSslTermination();
             if (sslTerm != null) {
                 // Verify sslTerm won't break the LB during sync attempt
