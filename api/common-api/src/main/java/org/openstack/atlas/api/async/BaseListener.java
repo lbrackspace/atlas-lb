@@ -12,7 +12,6 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.exceptions.UnauthorizedException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
-import org.openstack.atlas.service.domain.pojos.Sync;
 import org.openstack.atlas.service.domain.pojos.ZeusEvent;
 import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
@@ -161,11 +160,6 @@ public abstract class BaseListener implements MessageListener {
     protected LoadBalancer getLoadbalancerFromMessage(Message message) throws JMSException {
         ObjectMessage object = (ObjectMessage) message;
         return (LoadBalancer) object.getObject();
-    }
-
-    protected Sync getSyncObjectFromMessage(Message message) throws JMSException {
-        ObjectMessage object = (ObjectMessage) message;
-        return (Sync) object.getObject();
     }
 
     protected EsbRequest getEsbRequestFromMessage(Message message) throws JMSException {

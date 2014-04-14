@@ -4,9 +4,8 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.operations.Operation;
-import org.openstack.atlas.service.domain.pojos.SyncLocation;
+import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 
@@ -16,6 +15,8 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+
+import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.PENDING_UPDATE;
 
 public class SyncResource extends ManagementDependencyProvider {
 
@@ -34,16 +35,13 @@ public class SyncResource extends ManagementDependencyProvider {
         }
 
         try {
-            org.openstack.atlas.service.domain.pojos.Sync domainSyncObject = new org.openstack.atlas.service.domain.pojos.Sync();
-            domainSyncObject.setLoadBalancerId(loadBalancerId);
-            domainSyncObject.setLocationToSyncFrom(SyncLocation.DATABASE);
-
             //create requestObject
-            EsbRequest req = new EsbRequest();
-            req.setSyncObject(domainSyncObject);
+            MessageDataContainer mdc = new MessageDataContainer();
+            mdc.setLoadBalancerId(loadBalancerId);
 
             LoadBalancer lb = loadBalancerService.get(loadBalancerId);
-            domainSyncObject.setAccountId(lb.getAccountId());
+            mdc.setAccountId(lb.getAccountId());
+            mdc.setLoadBalancerStatus(lb.getStatus());
             SslTermination sslTerm = lb.getSslTermination();
             if (sslTerm != null) {
                 // Verify sslTerm won't break the LB during sync attempt
@@ -63,7 +61,8 @@ public class SyncResource extends ManagementDependencyProvider {
                 BadRequestException bre = new BadRequestException("Cannot Sync a Suspended Load Balancer, Please Check With Operations For Further Information...");
                 return ResponseFactory.getErrorResponse(bre, null, null);
             }
-            getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.SYNC, req);
+            loadBalancerService.setStatus(lb, PENDING_UPDATE);
+            getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.SYNC, mdc);
             return Response.status(Response.Status.ACCEPTED).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
