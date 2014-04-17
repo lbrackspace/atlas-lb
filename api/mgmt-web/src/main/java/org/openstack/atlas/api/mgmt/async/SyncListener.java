@@ -38,6 +38,7 @@ public class SyncListener extends BaseListener {
         LOG.debug(message);
         LoadBalancer dbLoadBalancer;
         MessageDataContainer mdc = getDataContainerFromMessage(message);
+        LoadBalancerStatus finalStatus = ACTIVE;
 
         try {
             dbLoadBalancer = loadBalancerService.get(mdc.getLoadBalancerId(), mdc.getAccountId());
@@ -78,8 +79,7 @@ public class SyncListener extends BaseListener {
         }
 
         if (loadBalancerStatus.equals(PENDING_DELETE) || loadBalancerStatus.equals(DELETED)) {
-            loadBalancerService.setStatus(dbLoadBalancer, DELETED);
-
+            finalStatus = DELETED;
             loadBalancerService.pseudoDelete(dbLoadBalancer);
 
             if (loadBalancerStatus.equals(PENDING_DELETE)) {
@@ -105,9 +105,7 @@ public class SyncListener extends BaseListener {
                 tempLb.setSslTermination(null);
 
                 LOG.debug(String.format("Syncing load balancer %s setting status to PENDING_UPDATE", tempLb.getId()));
-                loadBalancerService.setStatus(dbLoadBalancer, PENDING_UPDATE);
 
-                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
                 if (isRestAdapter()) {
                     LOG.debug(String.format("Updating loadbalancer: %s in STM...", tempLb.getId()));
                     reverseProxyLoadBalancerStmService.updateLoadBalancer(tempLb, tempLb, loadBalancerService.getUserPages(tempLb.getId(), tempLb.getAccountId()));
@@ -119,15 +117,10 @@ public class SyncListener extends BaseListener {
                 }
 
                 LOG.debug(String.format("Sync of load balancer %s complete, updating status and saving events and usage...", tempLb.getId()));
-                loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
 
                 if (loadBalancerStatus.equals(BUILD)) {
                     NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
-                    dbLoadBalancer.setStatus(ACTIVE);
-                    dbLoadBalancer = loadBalancerService.update(dbLoadBalancer);
-
-                    //Set status record
-                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
+                    dbLoadBalancer = loadBalancerService.update(dbLoadBalancer); //not sure if this is still needed
 
                     // Add atom entry
                     String atomTitle = "Load Balancer Successfully Created";
@@ -148,7 +141,7 @@ public class SyncListener extends BaseListener {
                 String msg = String.format("Error re-creating loadbalancer #%d in SyncListener(), " +
                         "setting status to ERROR, original status: %s:", mdc.getLoadBalancerId(), loadBalancerStatus);
 
-                loadBalancerService.setStatus(dbLoadBalancer, ERROR);
+                finalStatus = ERROR;
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                 LOG.error(msg, e);
             }
@@ -184,8 +177,6 @@ public class SyncListener extends BaseListener {
                     }
 
                     LOG.debug(String.format("Sync for SSL-Termination load balancer %s complete.", dbLoadBalancer.getId()));
-                    loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
-                    loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.ACTIVE);
 
                     if (loadBalancerStatus.equals(PENDING_UPDATE) || loadBalancerStatus.equals(ERROR)) {
                         Calendar eventTime = Calendar.getInstance();
@@ -204,11 +195,12 @@ public class SyncListener extends BaseListener {
             } catch (Exception e) {
                 String msg = String.format("Error re-creating ssl terminated loadbalancer #%d in SyncListener(), " +
                         "setting status to ERROR, original status: :", mdc.getLoadBalancerId(), loadBalancerStatus);
-                loadBalancerService.setStatus(dbLoadBalancer, ERROR);
+                finalStatus = ERROR;
                 LOG.error(msg, e);
             }
         }
 
+        loadBalancerService.setStatus(dbLoadBalancer, finalStatus);
         LOG.info(String.format("Sync operation complete for loadbalancer #%d ", mdc.getLoadBalancerId()));
     }
 
