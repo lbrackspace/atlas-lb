@@ -98,7 +98,7 @@ public class ClusterResource extends ManagementDependencyProvider {
     @GET
     @Path("virtualips")
     public Response getVirtualIpsDetails(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
         VirtualIps rVips = new VirtualIps();
@@ -210,7 +210,7 @@ public class ClusterResource extends ManagementDependencyProvider {
     @GET
     @Path("virtualips/availabilityreport")
     public Response retrieveCapacityReports() {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
         List<org.openstack.atlas.service.domain.pojos.VirtualIpAvailabilityReport> dVipReports;

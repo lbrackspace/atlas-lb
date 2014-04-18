@@ -21,7 +21,7 @@ public class AccountLimitsResource extends ManagementDependencyProvider {
 
     @GET
     public Response retrieveAllLimitsForAccount(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker) {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
 
@@ -46,7 +46,7 @@ public class AccountLimitsResource extends ManagementDependencyProvider {
     @POST
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response createAccountLimit(Limit limit){
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
 

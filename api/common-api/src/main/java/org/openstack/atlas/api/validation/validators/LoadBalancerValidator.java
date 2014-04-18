@@ -14,15 +14,17 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 
 public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
+
     private Validator<LoadBalancer> validator;
-    private final int MIN_PORT = 1;
-    private final int MAX_PORT = 65535;
-    final int MIN_TIMEOUT = 30;
-    private final int MAX_TIMEOUT = 120;
-    private final int LB_NAME_LENGTH = 128;
+    private static final int MIN_PORT = 1;
+    private static final int MAX_PORT = 65535;
+    private static final int MIN_TIMEOUT = 1;
+    private static final int MAX_TIMEOUT = 120;
+    private static final int LB_NAME_LENGTH = 128;
 
     public LoadBalancerValidator() {
         validator = build(new ValidatorBuilder<LoadBalancer>(LoadBalancer.class) {
+
             {
                 // SHARED EXPECTATIONS
                 result(validationTarget().getProtocol()).if_().exist().then().must().adhereTo(new MustBeInArray(ProtocolPortBindings.getKeysAsArray())).withMessage("Load balancer protocol is invalid. Please specify a valid protocol.");
@@ -67,6 +69,7 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
 
                 // PUT EXPECTATIONS
                 must().adhereTo(new Verifier<LoadBalancer>() {
+
                     @Override
                     public VerifierResult verify(LoadBalancer obj) {
                         return new VerifierResult(obj.getName() != null || obj.getAlgorithm() != null || obj.getPort() != null || obj.getProtocol() != null
@@ -96,5 +99,4 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
     public Validator<LoadBalancer> getValidator() {
         return validator;
     }
-
 }

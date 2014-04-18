@@ -37,7 +37,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     @Override
     @Transactional
-    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination apiSslTermination) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
+    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination apiSslTermination, boolean isSync) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
         ZeusCrtFile zeusCrtFile = null;
 
@@ -103,13 +103,16 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         LOG.debug("Updating the lb status to pending_update");
-        if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
-            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
-            LOG.warn(message);
-            throw new ImmutableEntityException(message);
-        } else {
-            //Set status record
-            loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+
+        if (!isSync) {
+            if (!loadBalancerRepository.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+                String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
+                LOG.warn(message);
+                throw new ImmutableEntityException(message);
+            } else {
+                //Set status record
+                loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+            }
         }
 
         LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%s'", lbId));
@@ -135,6 +138,11 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     @Transactional
     public void pseudoDeleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
+
+        if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
+            //Must not have HTTPS Redirect Enabled
+            throw new BadRequestException("Cannot delete SSL Termination while HTTPS Redirect is enabled. Please disable HTTPS Redirect and retry the operation.");
+        }
 
         if (dbLoadBalancer.hasSsl()) {
             LOG.debug("Updating the lb status to pending_update");
