@@ -41,7 +41,11 @@ public class TrafficScriptHelper extends StmConstants {
     }
 
     public static String getForceHttpsRedirectScript() {
-        return "http.changeSite( \"https://\" . http.getHostHeader() );";
+        return "if( http.headerExists( \"Host\" ) ) {\n" +
+                "   http.changeSite( \"https://\" . http.getHostHeader() );\n" +
+                "} else {\n" +
+                "   http.changeSite( \"https://\" . request.getDestIP() );\n" +
+                "}";
     }
 
     public static void addRateLimitScriptsIfNeeded(ZxtmServiceStubs serviceStubs) throws RemoteException {
