@@ -25,6 +25,7 @@ import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
+import org.openstack.atlas.util.ca.util.ClassSet;
 import org.openstack.atlas.util.ca.util.ResponseWithExcpetions;
 import org.openstack.atlas.util.ca.util.StaticHelpers;
 import org.openstack.atlas.util.ca.util.X509BuiltPath;
@@ -350,6 +351,32 @@ public class ZeusUtils {
         return msg;
     }
 
+    public static List<X509Certificate> decodeX509s(String x509Strings, List<ErrorEntry> errors) {
+        List<X509Certificate> x509s = new ArrayList<X509Certificate>();
+        ErrorEntry errorEntry;
+        X509Certificate x509;
+        List<PemBlock> blocks = PemUtils.parseMultiPem(x509Strings);
+        String msg;
+        for (PemBlock block : blocks) {
+            Object obj = block.getDecodedObject();
+            if (obj == null) {
+                msg = String.format("Empty object at line starting at line %d", block.getLineNum());
+                errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null);
+                errors.add(errorEntry);
+                continue;
+            }
+            if (!ClassSet.isSuperOf(X509Certificate.class, obj.getClass())) {
+                msg = String.format("Object at line %d decoded to class %s but was expecting %s", block.getLineNum(), obj.getClass().getName(), className(X509Certificate.class));
+                errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null);
+                errors.add(errorEntry);
+                continue;
+            }
+            x509 = (X509Certificate) obj;
+            x509s.add(x509);
+        }
+        return x509s;
+    }
+
     private static List<X509CertificateObject> decodeImd(Map<X509CertificateObject, Integer> lineMap, String imdStr, ZeusCrtFile zcf) {
         List<ErrorEntry> errors = zcf.getErrors();
         ErrorEntry errorEntry;
@@ -379,6 +406,27 @@ public class ZeusUtils {
             lineMap.put(x509obj, new Integer(block.getLineNum()));
         }
         return imdCrts;
+    }
+
+    public static X509Certificate decodeCrt(String crtStr, List<ErrorEntry> errors) {
+        X509Certificate crt;
+        ErrorEntry errorEntry;
+        Object obj;
+        try {
+            obj = PemUtils.fromPemString(crtStr);
+            if (!ClassSet.isSuperOf(X509Certificate.class, obj.getClass())) {
+                String msg = String.format("crt object decoded to class %s but was expecting X509CertificateObject", obj.getClass().getName(), className(X509Certificate.class));
+                errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null);
+                errors.add(errorEntry);
+                return null;
+            }
+            crt = (X509Certificate) obj;
+            return crt;
+        } catch (PemException ex) {
+            errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, "Unable to read userCrt", true, ex);
+            errors.add(errorEntry);
+            return null;
+        }
     }
 
     private static X509CertificateObject decodeCrt(String crtStr, ZeusCrtFile zcf) {

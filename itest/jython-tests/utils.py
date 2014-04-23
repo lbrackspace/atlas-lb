@@ -7,6 +7,8 @@ import org.openstack.atlas.util.staticutils.StaticStringUtils as StaticStringUti
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils as StaticDateTimeUtils
 import org.openstack.atlas.util.debug.Debug as Debug
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination as SslTermination
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper as SslTerminationHelper
 import com.xhaus.jyson.JysonCodec as json
 
 import java.util.List as List
@@ -46,4 +48,7 @@ def load_json(file_path):
     fp.close()
     jsonObj = json.loads(jsonStr)
     return pickle.loads(pickle.dumps(jsonObj)) #poor way to strip stringmap
+
+def readFile(file_name):
+    return StaticFileUtils.readFileToString(file_name)
 

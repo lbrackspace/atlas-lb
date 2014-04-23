@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+
+from threading import Thread
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from SocketServer import ForkingMixIn, ThreadingMixIn
+import copy
+import thread
+import time
+import json
+import sys
+import os
+
+def usage(prog):
+    printf("usage is %s <host> <port>\n",prog)
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def fprintf(fp,format,*args): fp.write(format%args)
+
+class ThreadedHTTPServer(ThreadingMixIn,HTTPServer):
+    pass
+
+class TestHandler(BaseHTTPRequestHandler):
+    def __init__(self,*args,**kw):
+        BaseHTTPRequestHandler.__init__(self,*args,**kw)
+
+    def headers2json(self):
+        obj = {}
+        obj["headers"]=[]
+        obj["local_ip"]=self.request.getsockname()[0]
+        obj["remote_ip"]=self.request.getpeername()[0]
+        for hdr in self.headers.headers:
+            obj["headers"].append(hdr)
+        jsonData = json.dumps(obj,indent=2)
+        return jsonData
+
+    def do_GET(self):
+        data = self.headers2json()
+        self.send_response(200)
+        self.send_header("Content-Length",len(data))
+        self.send_header("content-type","application/json")
+        self.end_headers()
+        self.wfile.write(data)
+        return
+
+if __name__ == '__main__':
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<3:
+        usage(prog)
+        sys.exit()
+    host = sys.argv[1]
+    port = int(sys.argv[2])
+    printf("process %i listening on %s:%s\n",os.getpid(),host,port)
+    try:
+        server = ThreadedHTTPServer((host,port),TestHandler)
+        server.serve_forever()
+    except KeyboardInterrupt:
+        sys.exit()
+    
+    
+

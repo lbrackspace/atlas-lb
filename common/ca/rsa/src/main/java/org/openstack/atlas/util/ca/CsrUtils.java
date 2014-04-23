@@ -28,6 +28,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Vector;
 import javax.security.auth.x500.X500Principal;
+import org.bouncycastle.asn1.DERBoolean;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
 
 public class CsrUtils {
@@ -45,6 +47,7 @@ public class CsrUtils {
         Vector extOids = new Vector();
         Vector extVals = new Vector();
 
+        // Add CA constraint
         extOids.add(X509Extension.basicConstraints);
         BasicConstraints basicConstraints = new BasicConstraints(isCa);
         DEROctetString basicConstraintOctets = new DEROctetString(
@@ -52,6 +55,14 @@ public class CsrUtils {
         X509Extension basicConstraintsExt = new X509Extension(true,
                 basicConstraintOctets);
         extVals.add(basicConstraintsExt);
+
+        // Add KeyUsage constraint
+        int keyUsageFlags = KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign;
+        KeyUsage keyUsage = new KeyUsage(keyUsageFlags);
+        extOids.add(X509Extension.keyUsage);
+        DEROctetString keyUsageOctets = new DEROctetString(keyUsage);
+        X509Extension keyUsageExt = new X509Extension(true, keyUsageOctets);
+        extVals.add(keyUsageExt);
         X509Extensions exts = new X509Extensions(extOids, extVals);
         DERSet extDerSet = new DERSet(exts);
         Attribute attr = new Attribute(
