@@ -249,13 +249,13 @@ public class HdfsCli {
 
                     Collections.sort(hourKeysListL);
                     DateTime startDt;
-                    if (args.length > 2) {
+                    if (args.length >= 2) {
                         startDt = StaticDateTimeUtils.hourKeyToDateTime(args[1], false);
                     } else {
                         startDt = StaticDateTimeUtils.hourKeyToDateTime(hourKeysListL.get(0), false);
                     }
                     DateTime endDt;
-                    if (args.length > 3) {
+                    if (args.length >= 3) {
                         endDt = StaticDateTimeUtils.hourKeyToDateTime(args[2], false);
                     } else {
                         endDt = StaticDateTimeUtils.hourKeyToDateTime(hourKeysListL.get(hourKeysListL.size() - 1), false);
@@ -1032,6 +1032,7 @@ public class HdfsCli {
                 for (LogReducerOutputValue zipInfo : zipInfoList) {
                     scan.getPartZipsFound().add(StaticFileUtils.pathTail(zipInfo.getLogFile()));
                     scan.incPartZipCount(1);
+                    scan.incZipByteCount(zipInfo.getFileSize());
                 }
             }
 
