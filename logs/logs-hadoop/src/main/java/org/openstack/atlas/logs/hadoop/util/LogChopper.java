@@ -14,8 +14,8 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 public final class LogChopper {
 
     private static final Log LOGGER = LogFactory.getLog(LogChopper.class);
-    private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++)\\] \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\")$");
-    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++)\\] \"([^ ]++ \\S.*)(HTTP\\/1\\.\\d*)\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\" ([^ ]++))$");
+    private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++)\\] \"(.*)(HTTP\\/1\\.\\d*)\\s*\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\")$");
+    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++)\\] \"(.*)(HTTP\\/1\\.\\d*)\\s*\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\" ([^ ]++))$");
     private static final Pattern NON_HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) \\[([^\\]]++)\\] ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++))$");
 
     private LogChopper() {
