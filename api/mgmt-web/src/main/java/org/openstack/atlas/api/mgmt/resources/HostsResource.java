@@ -183,13 +183,14 @@ public class HostsResource extends ManagementDependencyProvider {
 
         try {
             List<org.openstack.atlas.service.domain.entities.Host> dHosts = hostService.getAll();
-            Host rHost = getDozerMapper().map(dHosts, Host.class);
+            for(org.openstack.atlas.service.domain.entities.Host dHost : dHosts){
+
+            Host rHost = getDozerMapper().map(dHost, Host.class);
             mHcr.setHostName(rHost.getName());
             mHcr.setHostId(rHost.getId());
             mHcr.setTotalConcurrentConnectionCapacity(rHost.getMaxConcurrentConnections());
-
             mHcrs.getHostCapacityReports().add(mHcr);
-
+            }
             return Response.status(200).entity(mHcrs).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
