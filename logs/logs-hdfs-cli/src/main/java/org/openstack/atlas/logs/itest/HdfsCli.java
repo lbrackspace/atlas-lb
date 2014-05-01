@@ -904,7 +904,6 @@ public class HdfsCli {
                             badLines++;
                             totalBadLines++;
                             String excMsg = Debug.getEST(ex);
-                            System.out.printf("BAD=%s\n", line);
                         }
                         lineCounter++;
                         totalLines++;
