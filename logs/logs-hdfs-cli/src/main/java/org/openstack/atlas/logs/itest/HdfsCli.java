@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,7 +57,6 @@ import org.openstack.atlas.logs.hadoop.util.LogChopper;
 public class HdfsCli {
 
     private static final Pattern zipPattern = Pattern.compile(".*\\.zip$");
-
     private static final int LARGEBUFFERSIZE = 8 * 1024 * 1024;
     private static final int PAGESIZE = 4096;
     private static final int HDFSBUFFSIZE = 512 * 1024;
@@ -86,7 +86,7 @@ public class HdfsCli {
         System.setProperty(CommonItestStatic.HDUNAME, user);
         FileSystem lfs = hdfsUtils.getLocalFileSystem();
 
-        BufferedReader stdin = StaticFileUtils.inputStreamToBufferedReader(System.in,BUFFER_SIZE);
+        BufferedReader stdin = StaticFileUtils.inputStreamToBufferedReader(System.in, BUFFER_SIZE);
         System.out.printf("\n");
 
         List<WastedBytesBlock> wastedBlocks = new ArrayList<WastedBytesBlock>();
@@ -160,6 +160,7 @@ public class HdfsCli {
                     System.out.printf("runMain <class> args0..N\n");
                     System.out.printf("uploadLzo <lzoFile> #Upload the the lzo file\n");
                     System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
+                    System.out.printf("scanLinesLzo <logFile> <nLines> <nTicks>\n");
                     System.out.printf("scanhdfszips <yyyymmddhh> <yyyymmddhh> [scanparts=<true|false>]#Scan the hadoop output directories and count how many zips where found between the 2 days\n");
                     System.out.printf("setJobJar <jobJar> #set Jar file to classLoader\n");
                     System.out.printf("setReplCount <FilePath> <nReps> #Set the replication count for this file\n");
@@ -919,6 +920,49 @@ public class HdfsCli {
                     }
                     System.out.printf("Good=%d badLines=%d total = %d\n", totalGoodLines, totalBadLines, totalLines);
                     r.close();
+                } else if (cmd.equals("scanLinesLzo") && args.length >= 3) {
+                    String fileName = args[1];
+                    int nLines = Integer.parseInt(args[2]);
+                    int nTicks = Integer.parseInt(args[3]);
+                    CompressionInputStream cis = hdfsUtils.openLzoDecompressionStream(fileName);
+                    BufferedReader r = new BufferedReader(new InputStreamReader(cis), LARGEBUFFERSIZE);
+                    int badLines = 0;
+                    int goodLines = 0;
+                    int lineCounter = 0;
+                    int totalLines = 0;
+                    int totalGoodLines = 0;
+                    int totalBadLines = 0;
+                    LogMapperOutputValue logValue = new LogMapperOutputValue();
+                    double startTime = StaticDateTimeUtils.getEpochSeconds();
+                    for (int i = 0; i < nLines; i++) {
+                        String line = r.readLine();
+
+                        if (line == null) {
+                            break; // End of file
+                        }
+                        try {
+                            LogChopper.getLogLineValues(line, logValue);
+                            goodLines++;
+                            totalGoodLines++;
+                        } catch (Exception ex) {
+                            badLines++;
+                            totalBadLines++;
+                            String excMsg = Debug.getEST(ex);
+                        }
+                        lineCounter++;
+                        totalLines++;
+                        if (i % nTicks == 0) {
+                            double stopTime = StaticDateTimeUtils.getEpochSeconds();
+                            double lps = (double) lineCounter / (stopTime - startTime);
+                            System.out.printf("read %d lines goodlines=%d badlines=%d secs = %f linespersecond=%f\n", lineCounter, goodLines, badLines, stopTime - startTime, lps);
+                            startTime = stopTime;
+                            lineCounter = 0;
+                            goodLines = 0;
+                            badLines = 0;
+                        }
+                    }
+                    System.out.printf("Good=%d badLines=%d total = %d\n", totalGoodLines, totalBadLines, totalLines);
+                    r.close();
                 } else if (cmd.equals("showCrc") && args.length >= 2) {
                     String fileName = StaticFileUtils.expandUser(args[1]);
                     BufferedInputStream is = new BufferedInputStream(new FileInputStream(fileName), BUFFER_SIZE);
@@ -1006,7 +1050,6 @@ public class HdfsCli {
         }
         return sb.toString();
     }
-
 
     public static HdfsZipDirScan scanHdfsZipDirs(HdfsUtils hdfsUtils, String hourKey, boolean scanParts) {
         Matcher zipMatch = zipPattern.matcher("");
