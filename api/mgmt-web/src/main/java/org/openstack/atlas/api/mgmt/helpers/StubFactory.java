@@ -257,6 +257,18 @@ public class StubFactory {
 //        return cl;
 //    }
 
+    public static HostMachineDetails newHostMachineDetails(){
+        HostMachineDetails hmd = new HostMachineDetails();
+        hmd.setActiveLBConfigurations(new Long(5));
+        hmd.setAvailableConcurrentConnections(20);
+        hmd.setCurrentUtilization("12%");
+        Host host = rndHostPost();
+        hmd.setHost(host);
+        hmd.setTotalConcurrentConnections(25);
+        hmd.setUniqueCustomers(3);
+        return hmd;
+    }
+
     public static HostCapacityReport rndHostCapacityReport() {
         HostCapacityReport h = new HostCapacityReport();
         h.setAllocatedConcurrentConnections(rndInt(0, 10000));

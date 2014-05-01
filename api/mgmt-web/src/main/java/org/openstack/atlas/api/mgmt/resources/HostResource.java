@@ -48,7 +48,6 @@ public class HostResource extends ManagementDependencyProvider {
         }
     }
 
-
     @GET
     public Response getHost() {
         if (!isUserInRole("cp,ops,support")) {
@@ -373,7 +372,7 @@ public class HostResource extends ManagementDependencyProvider {
 
     // Mimics org.openstack.atlas.api.mgmt.async.MgmtSetHostSubnetMappingListener
     // But skips activeMQ so we can get a syncronouse response incase of an Error.
-    private void syncSetHostSubnet(EsbRequest req) throws Exception{
+    private void syncSetHostSubnet(EsbRequest req) throws Exception {
         org.openstack.atlas.service.domain.entities.Host rHost = req.getHost();
         org.openstack.atlas.service.domain.entities.Host dHost = null;
         org.openstack.atlas.service.domain.pojos.Hostssubnet hostssubnet;

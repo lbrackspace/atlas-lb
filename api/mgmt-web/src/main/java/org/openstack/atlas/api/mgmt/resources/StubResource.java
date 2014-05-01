@@ -192,4 +192,11 @@ public class StubResource extends ManagementDependencyProvider {
         }
         return Response.status(200).entity(rEvents).build();
     }
+
+    @GET
+    @Path("hostmachinedetails")
+    public Response getHostMachineDetails() {
+        HostMachineDetails hmd = StubFactory.newHostMachineDetails();
+        return Response.status(200).entity(hmd).build();
+    }
 }
