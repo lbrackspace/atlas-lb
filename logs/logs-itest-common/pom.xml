@@ -4,11 +4,11 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.21.7-SNAPSHOT</version>
+        <version>1.21.7</version>
     </parent>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-itest-common</artifactId>
-    <version>1.21.7-SNAPSHOT</version>
+    <version>1.21.7</version>
 
     <name>OpenStack :: Atlas :: Logs :: Itest Commons</name>
     <packaging>jar</packaging>
