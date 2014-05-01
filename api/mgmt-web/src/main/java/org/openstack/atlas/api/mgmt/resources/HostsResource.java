@@ -178,18 +178,18 @@ public class HostsResource extends ManagementDependencyProvider {
             return ResponseFactory.accessDenied();
         }
         HostCapacityReports mHcrs = new HostCapacityReports();
-        HostCapacityReport mHcr = new HostCapacityReport();
+
         org.openstack.atlas.service.domain.entities.LoadBalancer dLb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
 
         try {
             List<org.openstack.atlas.service.domain.entities.Host> dHosts = hostService.getAll();
-            for(org.openstack.atlas.service.domain.entities.Host dHost : dHosts){
-
-            Host rHost = getDozerMapper().map(dHost, Host.class);
-            mHcr.setHostName(rHost.getName());
-            mHcr.setHostId(rHost.getId());
-            mHcr.setTotalConcurrentConnectionCapacity(rHost.getMaxConcurrentConnections());
-            mHcrs.getHostCapacityReports().add(mHcr);
+            for (org.openstack.atlas.service.domain.entities.Host dHost : dHosts) {
+                HostCapacityReport mHcr = new HostCapacityReport();
+                Host rHost = getDozerMapper().map(dHost, Host.class);
+                mHcr.setHostName(rHost.getName());
+                mHcr.setHostId(rHost.getId());
+                mHcr.setTotalConcurrentConnectionCapacity(rHost.getMaxConcurrentConnections());
+                mHcrs.getHostCapacityReports().add(mHcr);
             }
             return Response.status(200).entity(mHcrs).build();
         } catch (Exception e) {
