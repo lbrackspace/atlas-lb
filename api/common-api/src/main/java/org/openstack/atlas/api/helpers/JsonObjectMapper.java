@@ -34,11 +34,11 @@ public class JsonObjectMapper extends ObjectMapper {
         cdf.addSpecificMapping(Calendar.class, new DateTimeDeserializer(Calendar.class));
 
 
-        Class[] serializerWrapperClasses = new Class[]{AccountRecord.class,HealthMonitor.class,
+        Class[] serializerWrapperClasses = new Class[]{AccountRecord.class, HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class,
-            Node.class, RateLimit.class, Errorpage.class,SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
+            Node.class, RateLimit.class, Errorpage.class, SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
 
-        Class[] deserializerWrapperClasses = new Class[]{AccountRecord.class,Node.class, HealthMonitor.class,
+        Class[] deserializerWrapperClasses = new Class[]{AccountRecord.class, Node.class, HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, Meta.class,
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
             Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class, ContentCaching.class};

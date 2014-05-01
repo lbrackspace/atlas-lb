@@ -81,7 +81,7 @@ public class HostsResource extends ManagementDependencyProvider {
 
         try {
             startTime = isoTocal(startDateParam);
-            endTime =  isoTocal(endDateParam);
+            endTime = isoTocal(endDateParam);
 
             final long timeDiff = endTime.getTimeInMillis() - startTime.getTimeInMillis();
             final long millisecondsIn31Days = 2678400000l;
@@ -195,8 +195,6 @@ public class HostsResource extends ManagementDependencyProvider {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
-
-
 
     @Path("{id: [1-9][0-9]*}")
     public HostResource retrieveHostResource(@PathParam("id") int id) {
