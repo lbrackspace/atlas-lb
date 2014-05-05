@@ -1,6 +1,5 @@
 use `loadbalancing`;
 
-RENAME TABLE deprecated_host_backup TO host_backup;
 RENAME TABLE deprecated_ip_version TO ip_version;
 
 ALTER TABLE access_list ADD ip_version varchar(32) DEFAULT NULL;
