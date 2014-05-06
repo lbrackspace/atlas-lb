@@ -554,19 +554,20 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         enablesXF = new boolean[]{true, true};
         disablesXF = new boolean[]{false, false};
-        if (isSecureServer && isRedirectServer) {
-            vsNames = new String[2];
-            vsNames[0] = virtualRedirectServerName;
-            vsNames[1] = virtualSecureServerName;
-            enablesXF = new boolean[]{false, false};
+        if (isSecureServer && isRedirectServer) { //don't make any changes to the Redirect server here
+            vsNames = new String[1];
+            vsNames[0] = virtualSecureServerName;
+            enablesXF = new boolean[]{true};
+            disablesXF = new boolean[]{false};
         } else if (isSecureServer) {
             vsNames = new String[2];
             vsNames[0] = virtualServerName;
             vsNames[1] = virtualSecureServerName;
-        } else if (isRedirectServer) {
-            vsNames = new String[2];
+        } else if (isRedirectServer) { //don't make any changes to the Redirect server here
+            vsNames = new String[1];
             vsNames[0] = virtualServerName;
-            vsNames[1] = virtualRedirectServerName;
+            enablesXF = new boolean[]{true};
+            disablesXF = new boolean[]{false};
         } else {
             vsNames = new String[1];
             vsNames[0] = virtualServerName;
