@@ -80,7 +80,7 @@ public class HostEndpointPollerJob extends AbstractJob {
                 LOG.info("Finished updating host: " + host.getId() + " in the database.");
             }
         } catch (Exception e) {
-            Alert alert = AlertHelper.createAlert(null, null, e, AlertType.API_FAILURE.name(), e.getMessage());
+            Alert alert = AlertHelper.createAlert(null, null, e, AlertType.API_FAILURE.name(), "HostEndpointPoller Failure, check Alerts for more information... ");
             alertRepository.save(alert);
             throw e;
         }
@@ -93,8 +93,9 @@ public class HostEndpointPollerJob extends AbstractJob {
     //TODO: refactor to use service/null adapter
     public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException {
         Cluster cluster = host.getCluster();
-        List<String> failoverHosts = hostRepository.getFailoverHostNames(cluster.getId());
-        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHosts, null);
+        List<String> failoverHostNames = hostRepository.getFailoverHostNames(cluster.getId());
+        List<Host> failoverHosts = hostRepository.getFailoverHosts(cluster.getId());
+        return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, failoverHosts);
     }
 
 }
