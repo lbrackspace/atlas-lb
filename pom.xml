@@ -5,7 +5,7 @@
     <name>Openstack :: Atlas :: Parent</name>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-parent</artifactId>
-    <version>1.21.11-SNAPSHOT</version>
+    <version>1.21.11</version>
 
 
     <packaging>pom</packaging>
