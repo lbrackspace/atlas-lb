@@ -2651,6 +2651,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     }
 
+    @Override
+    public void syncLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+
+    }
+
     private boolean[] generateBooleanArray(int size, boolean value) {
         boolean[] array = new boolean[size];
         for (boolean b : array) {

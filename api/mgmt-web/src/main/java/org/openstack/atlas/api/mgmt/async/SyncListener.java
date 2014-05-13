@@ -65,6 +65,21 @@ public class SyncListener extends BaseListener {
 
         try {
             if (!isRestAdapter()) {
+                LOG.debug(String.format("Sync loadbalancer in ZXTM for LB: %s", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerService.syncLoadBalancer(dbLoadBalancer);
+                LOG.debug(String.format("Successfully synced loadbalancer in ZXTM for LB: %s", dbLoadBalancer.getId()));
+            }
+        } catch (Exception e) {
+            String msg = String.format("Error syncing loadbalancer #%d in SyncListener(): ", dbLoadBalancer.getId());
+            loadBalancerService.setStatus(dbLoadBalancer, ERROR);
+            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
+            LOG.error(msg, e);
+        }
+
+        // TODO:  Find out how much of the following is necessary after a sync call.
+
+        try {
+            if (!isRestAdapter()) {
 //                    LOG.debug(String.format("Removing loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
 //                    reverseProxyLoadBalancerStmService.deleteLoadBalancer(dbLoadBalancer);
 //                    LOG.debug(String.format("Successfully removed loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
