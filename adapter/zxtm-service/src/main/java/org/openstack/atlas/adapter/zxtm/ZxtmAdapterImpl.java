@@ -2652,8 +2652,97 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void syncLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+    public void syncLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        // TODO: Check all the bindings for the right information according to the loadBalancer fields.
+        // TODO: Duplicate the checks and modifications for SSL Load Balancer
 
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String virtualServerName = ZxtmNameBuilder.genVSName(lb);
+
+        final String poolName = ZxtmNameBuilder.genVSName(lb.getId(), lb.getAccountId());
+        final VirtualServerBasicInfo vsInfo;
+
+        LoadBalancerAlgorithm algorithm = lb.getAlgorithm() == null ? DEFAULT_ALGORITHM : lb.getAlgorithm();
+        final String rollBackMessage = "Create load balancer request canceled.";
+
+        LOG.debug(String.format("Creating load balancer '%s'...", virtualServerName));
+
+        // TODO: Check and update Pool
+        try {
+            createNodePool(config, lb.getId(), lb.getAccountId(), lb.getNodes(), algorithm);
+            setNodesPriorities(config, poolName, lb);
+        } catch (Exception e) {
+            deleteNodePool(serviceStubs, poolName);
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        // TODO: Check headers associated with the virtual server
+        try {
+            LOG.debug(String.format("Adding virtual server '%s'...", virtualServerName));
+            vsInfo = new VirtualServerBasicInfo(lb.getPort(), ZxtmConversionUtils.mapProtocol(lb.getProtocol()), poolName);
+            serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{virtualServerName}, new VirtualServerBasicInfo[]{vsInfo});
+            serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
+            serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
+            LOG.info(String.format("Virtual server '%s' successfully added.", virtualServerName));
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+                throw new ObjectAlreadyExists();
+            }
+            deleteVirtualServer(serviceStubs, virtualServerName);
+            deleteNodePool(serviceStubs, poolName);
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        // TODO: Update other VS fields.
+        try {
+            addVirtualIps(config, lb, virtualServerName);
+            //Verify that the server is not listening to all addresses, zeus does this by default and is an unwanted behaviour.
+            isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
+            serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
+
+//            /* UPDATE REST OF LOADBALANCER CONFIG */
+//            if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
+//                //sessionPersistence is a pool item
+//                setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
+//            }
+//            if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
+//                //Healthmonitor is a pool item
+//                updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
+//            }
+//            //VirtualServer items
+//            if (lb.getConnectionLimit() != null) {
+//                updateConnectionThrottle(config, lb);
+//            }
+//            if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
+//                updateConnectionLogging(config, lb);
+//            }
+//            if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
+//                updateAccessList(config, lb);
+//            }
+            updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
+
+
+            if (lb.getTimeout() != null) {
+                updateTimeout(config, lb);
+            }
+
+            //Added rules for HTTP LB
+            if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+                TrafficScriptHelper.addXForwardedPortScriptIfNeeded(serviceStubs);
+                attachXFPORTRuleToVirtualServer(serviceStubs, virtualServerName);
+                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
+                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
+//                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
+//                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
+
+                setDefaultErrorFile(config, lb);
+            }
+        } catch (Exception e) {
+            deleteLoadBalancer(config, lb);
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        LOG.info(String.format("Load balancer '%s' successfully created.", virtualServerName));
     }
 
     private boolean[] generateBooleanArray(int size, boolean value) {
