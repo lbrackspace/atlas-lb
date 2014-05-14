@@ -2658,8 +2658,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.genVSName(lb);
-
-        final String poolName = ZxtmNameBuilder.genVSName(lb.getId(), lb.getAccountId());
+        final String poolName = ZxtmNameBuilder.genVSName(lb);
         final VirtualServerBasicInfo vsInfo;
 
         LoadBalancerAlgorithm algorithm = lb.getAlgorithm() == null ? DEFAULT_ALGORITHM : lb.getAlgorithm();
@@ -2751,6 +2750,57 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             b = value;
         }
         return array;
+    }
+
+    private void checkAndUpdateNodePool(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String poolName = ZxtmNameBuilder.genVSName(lb);
+        final String[] pool = new String[]{poolName};
+
+        LOG.debug(String.format("Checking pool '%s' for sync...", poolName));
+        if (!serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(pool)[0].equals(ZxtmConversionUtils.mapAlgorithm(lb.getAlgorithm()))) {
+            setLoadBalancingAlgorithm(config, lb.getId(), lb.getAccountId(), lb.getAlgorithm());
+        }
+
+        String[][] disabledNodes = serviceStubs.getPoolBinding().getDisabledNodes(pool);
+        String[][] dbDisabledNodes = NodeHelper.getIpAddressesFromNodes(getNodesWithCondition(lb.getNodes(), NodeCondition.DISABLED));
+        int length = disabledNodes[0].length;
+        int replace = 0;
+        for (String node : disabledNodes[0]) {
+            for (String dbNode : dbDisabledNodes[0]) {
+                if (node.equals(dbNode)) {
+                    replace++;
+                    break;
+                }
+            }
+        }
+        if (replace != length) {
+            setDisabledNodes(config, poolName, getNodesWithCondition(lb.getNodes(), NodeCondition.DISABLED));
+        }
+
+        String[][] drainingNodes = serviceStubs.getPoolBinding().getDrainingNodes(pool);
+        String[][] dbDrainingNodes = NodeHelper.getIpAddressesFromNodes(getNodesWithCondition(lb.getNodes(), NodeCondition.DRAINING));
+        length = drainingNodes[0].length;
+        replace = 0;
+        for (String node : drainingNodes[0]) {
+            for (String dbNode : dbDrainingNodes[0]) {
+                if (node.equals(dbNode)) {
+                    replace++;
+                    break;
+                }
+            }
+        }
+        if (replace != length) {
+            setDisabledNodes(config, poolName, getNodesWithCondition(lb.getNodes(), NodeCondition.DISABLED));
+        }
+
+        PoolWeightingsDefinition[][] nodeWeights = serviceStubs.getPoolBinding().getNodesWeightings(pool, NodeHelper.getIpAddressesFromNodes(lb.getNodes()));
+        PoolWeightingsDefinition[][] dbNodeWeights = buildPoolWeightingsDefinition(lb.getNodes());
+        length = nodeWeights[0].length;
+        replace = 0;
+        for (String node : nodeWeights[0]) {
+
+        }
     }
 
     private void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> allNodes, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
