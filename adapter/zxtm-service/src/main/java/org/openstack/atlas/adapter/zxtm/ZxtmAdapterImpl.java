@@ -2798,8 +2798,16 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         PoolWeightingsDefinition[][] dbNodeWeights = buildPoolWeightingsDefinition(lb.getNodes());
         length = nodeWeights[0].length;
         replace = 0;
-        for (String node : nodeWeights[0]) {
-
+        for (PoolWeightingsDefinition node : nodeWeights[0]) {
+            for (PoolWeightingsDefinition dbNode : dbNodeWeights[0]) {
+                if (node.equals(dbNode)) {
+                    replace++;
+                    break;
+                }
+            }
+        }
+        if (replace != length) {
+            setNodeWeights(config, lb.getId(), lb.getAccountId(), lb.getNodes());
         }
     }
 
