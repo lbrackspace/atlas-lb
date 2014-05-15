@@ -2668,10 +2668,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         // TODO: Check and update Pool
         try {
-            createNodePool(config, lb.getId(), lb.getAccountId(), lb.getNodes(), algorithm);
+            checkAndUpdateNodePool(config, lb);
             setNodesPriorities(config, poolName, lb);
         } catch (Exception e) {
-            deleteNodePool(serviceStubs, poolName);
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
 
@@ -2756,6 +2755,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String poolName = ZxtmNameBuilder.genVSName(lb);
         final String[] pool = new String[]{poolName};
+        Set<Node> nodes = lb.getNodes();
 
         LOG.debug(String.format("Checking pool '%s' for sync...", poolName));
         if (!serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(pool)[0].equals(ZxtmConversionUtils.mapAlgorithm(lb.getAlgorithm()))) {
@@ -2763,8 +2763,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         String[][] disabledNodes = serviceStubs.getPoolBinding().getDisabledNodes(pool);
-        String[][] dbDisabledNodes = NodeHelper.getIpAddressesFromNodes(getNodesWithCondition(lb.getNodes(), NodeCondition.DISABLED));
-        int length = disabledNodes[0].length;
+        String[][] dbDisabledNodes = NodeHelper.getIpAddressesFromNodes(getNodesWithCondition(nodes, NodeCondition.DISABLED));
+        int length = dbDisabledNodes[0].length;
         int replace = 0;
         for (String node : disabledNodes[0]) {
             for (String dbNode : dbDisabledNodes[0]) {
@@ -2779,11 +2779,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         String[][] drainingNodes = serviceStubs.getPoolBinding().getDrainingNodes(pool);
-        String[][] dbDrainingNodes = NodeHelper.getIpAddressesFromNodes(getNodesWithCondition(lb.getNodes(), NodeCondition.DRAINING));
-        length = drainingNodes[0].length;
+        String[][] dbDrainingNodes = NodeHelper.getIpAddressesFromNodes(getNodesWithCondition(nodes, NodeCondition.DRAINING));
+        length = dbDrainingNodes[0].length;
         replace = 0;
-        for (String node : drainingNodes[0]) {
-            for (String dbNode : dbDrainingNodes[0]) {
+        for (String dbNode : dbDrainingNodes[0]) {
+            for (String node : drainingNodes[0]) {
                 if (node.equals(dbNode)) {
                     replace++;
                     break;
@@ -2794,12 +2794,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             setDisabledNodes(config, poolName, getNodesWithCondition(lb.getNodes(), NodeCondition.DISABLED));
         }
 
-        PoolWeightingsDefinition[][] nodeWeights = serviceStubs.getPoolBinding().getNodesWeightings(pool, NodeHelper.getIpAddressesFromNodes(lb.getNodes()));
-        PoolWeightingsDefinition[][] dbNodeWeights = buildPoolWeightingsDefinition(lb.getNodes());
-        length = nodeWeights[0].length;
+        PoolWeightingsDefinition[][] nodeWeights = serviceStubs.getPoolBinding().getNodesWeightings(pool, NodeHelper.getIpAddressesFromNodes(nodes));
+        PoolWeightingsDefinition[][] dbNodeWeights = buildPoolWeightingsDefinition(nodes);
+        length = dbNodeWeights[0].length;
         replace = 0;
-        for (PoolWeightingsDefinition node : nodeWeights[0]) {
-            for (PoolWeightingsDefinition dbNode : dbNodeWeights[0]) {
+        for (PoolWeightingsDefinition dbNode : dbNodeWeights[0]) {
+            for (PoolWeightingsDefinition node  : nodeWeights[0]) {
                 if (node.equals(dbNode)) {
                     replace++;
                     break;
@@ -2808,6 +2808,24 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
         if (replace != length) {
             setNodeWeights(config, lb.getId(), lb.getAccountId(), lb.getNodes());
+        }
+
+        ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
+        PoolPriorityValueDefinition[][] dbPriorities = znpc.getPriorityValues();
+        PoolPriorityValueDefinition[][] priorities = serviceStubs.getPoolBinding().getNodesPriorityValue(pool, NodeHelper.getIpAddressesFromNodes(nodes));
+        length = dbPriorities[0].length;
+        replace = 0;
+        for (PoolPriorityValueDefinition dbDef : dbPriorities[0]) {
+            for (PoolPriorityValueDefinition def : priorities[0]) {
+                if (dbDef.equals(def)) {
+                    replace++;
+                    break;
+                }
+            }
+        }
+        if (replace != length) {
+            serviceStubs.getPoolBinding().setNodesPriorityValue(pool, znpc.getPriorityValues());
+            serviceStubs.getPoolBinding().setPriorityEnabled(pool, new boolean[]{znpc.hasSecondary()});
         }
     }
 
