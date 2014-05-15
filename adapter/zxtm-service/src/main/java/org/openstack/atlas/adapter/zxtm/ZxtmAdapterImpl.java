@@ -2658,13 +2658,14 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.genVSName(lb);
+        final String secureServerName = ZxtmNameBuilder.genSslVSName(lb);
         final String poolName = ZxtmNameBuilder.genVSName(lb);
         final VirtualServerBasicInfo vsInfo;
 
         LoadBalancerAlgorithm algorithm = lb.getAlgorithm() == null ? DEFAULT_ALGORITHM : lb.getAlgorithm();
-        final String rollBackMessage = "Create load balancer request canceled.";
+        final String rollBackMessage = "Sync load balancer request canceled.";
 
-        LOG.debug(String.format("Creating load balancer '%s'...", virtualServerName));
+        LOG.debug(String.format("Syncing load balancer '%s'...", virtualServerName));
 
         // TODO: Check and update Pool
         try {
@@ -2676,18 +2677,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         // TODO: Check headers associated with the virtual server
         try {
-            LOG.debug(String.format("Adding virtual server '%s'...", virtualServerName));
-            vsInfo = new VirtualServerBasicInfo(lb.getPort(), ZxtmConversionUtils.mapProtocol(lb.getProtocol()), poolName);
-            serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{virtualServerName}, new VirtualServerBasicInfo[]{vsInfo});
-            serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
-            serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
-            LOG.info(String.format("Virtual server '%s' successfully added.", virtualServerName));
-        } catch (Exception e) {
-            if (e instanceof ObjectDoesNotExist) {
-                throw new ObjectAlreadyExists();
+            if (lb.getSslTermination().isEnabled()) {
+                checkAndUpdateVirtualServer(config, lb, secureServerName);
             }
-            deleteVirtualServer(serviceStubs, virtualServerName);
-            deleteNodePool(serviceStubs, poolName);
+            checkAndUpdateVirtualServer(config, lb, virtualServerName);
+        } catch (Exception e) {
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
 
@@ -2698,27 +2692,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
-//            /* UPDATE REST OF LOADBALANCER CONFIG */
-//            if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
-//                //sessionPersistence is a pool item
-//                setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
-//            }
-//            if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
-//                //Healthmonitor is a pool item
-//                updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
-//            }
-//            //VirtualServer items
-//            if (lb.getConnectionLimit() != null) {
-//                updateConnectionThrottle(config, lb);
-//            }
-//            if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
-//                updateConnectionLogging(config, lb);
-//            }
-//            if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
-//                updateAccessList(config, lb);
-//            }
             updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
-
 
             if (lb.getTimeout() != null) {
                 updateTimeout(config, lb);
@@ -2826,6 +2800,39 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (replace != length) {
             serviceStubs.getPoolBinding().setNodesPriorityValue(pool, znpc.getPriorityValues());
             serviceStubs.getPoolBinding().setPriorityEnabled(pool, new boolean[]{znpc.hasSecondary()});
+        }
+    }
+
+    private void checkAndUpdateVirtualServer(LoadBalancerEndpointConfiguration config, LoadBalancer lb, String virtualServerName) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String poolName = ZxtmNameBuilder.genVSName(lb);
+        final VirtualServerBasicInfo vsInfo;
+        final String rollBackMessage = "Create load balancer request canceled.";
+
+        Boolean found = false;
+        for (String serverName : serviceStubs.getVirtualServerBinding().getVirtualServerNames()) {
+            if (serverName.equals(virtualServerName)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            try {
+                LOG.debug(String.format("Adding virtual server '%s'...", virtualServerName));
+                vsInfo = new VirtualServerBasicInfo(lb.getPort(), ZxtmConversionUtils.mapProtocol(lb.getProtocol()), poolName);
+                serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{virtualServerName}, new VirtualServerBasicInfo[]{vsInfo});
+                LOG.info(String.format("Virtual server '%s' successfully added.", virtualServerName));
+            } catch(Exception e) {
+                deleteVirtualServer(serviceStubs, virtualServerName);
+                throw new ZxtmRollBackException(rollBackMessage, e);
+            }
+        } else {
+            if (!serviceStubs.getVirtualServerBinding().getAddXForwardedForHeader(new String[]{virtualServerName})[0]) {
+                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
+            }
+            if (!serviceStubs.getVirtualServerBinding().getAddXForwardedProtoHeader(new String[]{virtualServerName})[0]) {
+                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
+            }
         }
     }
 
