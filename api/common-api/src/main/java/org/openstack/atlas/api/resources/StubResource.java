@@ -40,6 +40,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
+import org.openstack.atlas.api.helpers.StubFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.w3.atom.Link;
@@ -282,6 +283,12 @@ public class StubResource extends CommonDependencyProvider {
         sslTermination.setSecurePort(443);
         sslTermination.setSecureTrafficOnly(false);
         return Response.status(Response.Status.OK).entity(sslTermination).build();
+    }
+
+    @GET
+    @Path("virtualipblocks")
+    public Response getVirtualIpBlocks() {
+        return Response.status(200).entity(StubFactory.getVirtualIpBlocks()).build();
     }
 
     private Node newNode(Integer id, Integer port, String address) {

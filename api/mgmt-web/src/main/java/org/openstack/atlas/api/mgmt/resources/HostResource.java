@@ -2,7 +2,7 @@ package org.openstack.atlas.api.mgmt.resources;
 
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
-import org.openstack.atlas.api.mgmt.helpers.StubFactory;
+import org.openstack.atlas.api.helpers.StubFactory;
 import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mgmt.validation.contexts.HostContext;

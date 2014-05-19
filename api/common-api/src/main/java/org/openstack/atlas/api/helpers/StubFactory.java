@@ -1,4 +1,4 @@
-package org.openstack.atlas.api.mgmt.helpers;
+package org.openstack.atlas.api.helpers;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster;
@@ -231,31 +231,6 @@ public class StubFactory {
         return backups;
 
     }
-
-//    public static Customer rndCustomer() {
-//        Customer c = new Customer();
-//        LoadBalancer l;
-//        for (int ri = rndInt(3, 7); ri >= 0; ri--) {
-//            l = new LoadBalancer();
-//            l.setHosts(new Hosts());
-//            l.getHosts().getHosts().add(rndHostPost());
-//            l.getHosts().setSticky((Boolean) rndChoice(new Boolean[]{true, false}));
-//            l.setName(String.format("rndLB.%d", ri));
-//            l.setId(rndInt(0, 10000));
-//            c.getLoadBalancers().add(l);
-//        }
-//        c.setAccountId(rndInt(0, 10000));
-//        return c;
-//    }
-//
-//    public static CustomerList rndCustomerList(int max) {
-//
-//        CustomerList cl = new CustomerList();
-//        for (int i = rndInt(1, max); i >= 0; i--) {
-//            cl.getCustomers().add(rndCustomer());
-//        }
-//        return cl;
-//    }
 
     public static HostMachineDetails newHostMachineDetails(){
         HostMachineDetails hmd = new HostMachineDetails();

@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.helpers;
 
+import org.openstack.atlas.api.helpers.StubFactory;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIps;
