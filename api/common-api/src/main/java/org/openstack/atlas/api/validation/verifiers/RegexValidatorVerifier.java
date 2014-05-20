@@ -8,16 +8,15 @@ import java.util.List;
 public class RegexValidatorVerifier implements Verifier<Object> {
     @Override
     public VerifierResult verify(Object obj) {
-        List<ValidationResult> validationResults = new ArrayList<ValidationResult>();
-        return jValidate(obj, validationResults);
+        return jValidate(obj);
     }
 
-    private VerifierResult jValidate(Object obj, List<ValidationResult> validationResults) {
+    private VerifierResult jValidate(Object obj) {
         try {
             new jregex.Pattern(obj.toString());
         } catch (jregex.PatternSyntaxException exception) {
-            validationResults.add(new ValidationResult(false,
-                    "Must provide a valid Perl regex: " + exception.getMessage()));
+            List<ValidationResult> validationResults = new ArrayList<ValidationResult>();
+            validationResults.add(new ValidationResult(false, exception.getMessage()));
             return new VerifierResult(false, validationResults);
         }
         return new VerifierResult(true);

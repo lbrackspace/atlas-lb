@@ -62,6 +62,10 @@ public class Expectation implements ConditionalExpectation, OngoingExpectation, 
             if (verifier instanceof MustDelegateTo) {
                 validationResults.addAll(result.getResultList());
             }
+            //Should be more general, doing it this way to not break anything else or cause something unexpected :/
+            if (verifier instanceof RegexValidatorVerifier) {
+                validationResults.addAll(result.getResultList());
+            }
         }
 
         return validationResults;
