@@ -2653,8 +2653,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void syncLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
-        // TODO: Check all the bindings for the right information according to the loadBalancer fields.
-        // TODO: Duplicate the checks and modifications for SSL Load Balancer
 
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         final String virtualServerName = ZxtmNameBuilder.genVSName(lb);
@@ -2667,7 +2665,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         LOG.debug(String.format("Syncing load balancer '%s'...", virtualServerName));
 
-        // TODO: Check and update Pool
         try {
             checkAndUpdateNodePool(config, lb);
             setNodesPriorities(config, poolName, lb);
@@ -2675,42 +2672,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
 
-        // TODO: Check headers associated with the virtual server
         try {
             if (lb.getSslTermination().isEnabled()) {
                 checkAndUpdateVirtualServer(config, lb, secureServerName);
             }
             checkAndUpdateVirtualServer(config, lb, virtualServerName);
         } catch (Exception e) {
-            throw new ZxtmRollBackException(rollBackMessage, e);
-        }
-
-        // TODO: Update other VS fields.
-        try {
-            addVirtualIps(config, lb, virtualServerName);
-            //Verify that the server is not listening to all addresses, zeus does this by default and is an unwanted behaviour.
-            isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
-            serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
-
-            updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
-
-            if (lb.getTimeout() != null) {
-                updateTimeout(config, lb);
-            }
-
-            //Added rules for HTTP LB
-            if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
-                TrafficScriptHelper.addXForwardedPortScriptIfNeeded(serviceStubs);
-                attachXFPORTRuleToVirtualServer(serviceStubs, virtualServerName);
-                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
-                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
-//                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
-//                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
-
-                setDefaultErrorFile(config, lb);
-            }
-        } catch (Exception e) {
-            deleteLoadBalancer(config, lb);
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
 
@@ -2827,16 +2794,53 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 throw new ZxtmRollBackException(rollBackMessage, e);
             }
         } else {
-//            VirtualServerBasicInfo vsInfo[] = serviceStubs.getVirtualServerBinding().getBasicInfo(new String[]{virtualServerName});
-//            if (!vsInfo.equals(dbVsInfo)) {
-//
-//            }
-            if (!serviceStubs.getVirtualServerBinding().getAddXForwardedForHeader(new String[]{virtualServerName})[0]) {
-                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
+            VirtualServerBasicInfo vsInfo = serviceStubs.getVirtualServerBinding().getBasicInfo(new String[]{virtualServerName})[0];
+            if (!vsInfo.getDefault_pool().equals(dbVsInfo.getDefault_pool())) {
+                serviceStubs.getVirtualServerBinding().setDefaultPool(new String[]{virtualServerName}, new String[]{dbVsInfo.getDefault_pool()});
             }
-            if (!serviceStubs.getVirtualServerBinding().getAddXForwardedProtoHeader(new String[]{virtualServerName})[0]) {
-                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
+            if (vsInfo.getPort() != dbVsInfo.getPort()) {
+                serviceStubs.getVirtualServerBinding().setPort(new String[]{virtualServerName}, new UnsignedInt[]{new UnsignedInt(dbVsInfo.getPort())});
             }
+            if (!vsInfo.getProtocol().equals(dbVsInfo.getProtocol())) {
+                serviceStubs.getVirtualServerBinding().setProtocol(new String[]{virtualServerName}, new VirtualServerProtocol[]{dbVsInfo.getProtocol()});
+            }
+            if (dbVsInfo.getProtocol().equals(VirtualServerProtocol.http)) {
+                if (!serviceStubs.getVirtualServerBinding().getAddXForwardedForHeader(new String[]{virtualServerName})[0]) {
+                    serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
+                }
+                if (!serviceStubs.getVirtualServerBinding().getAddXForwardedProtoHeader(new String[]{virtualServerName})[0]) {
+                    serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
+                }
+            }
+        }
+
+        //TODO: The following is the rest of the changes done in accordance with VIPs in Stingray
+        try {
+            addVirtualIps(config, lb, virtualServerName);
+            //Verify that the server is not listening to all addresses, zeus does this by default and is an unwanted behaviour.
+            isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
+            serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
+
+            updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
+
+            if (lb.getTimeout() != null) {
+                updateTimeout(config, lb);
+            }
+
+            //Added rules for HTTP LB
+            if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+                TrafficScriptHelper.addXForwardedPortScriptIfNeeded(serviceStubs);
+                attachXFPORTRuleToVirtualServer(serviceStubs, virtualServerName);
+//                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
+//                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
+//                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
+//                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
+
+                setDefaultErrorFile(config, lb);
+            }
+        } catch (Exception e) {
+            deleteLoadBalancer(config, lb);
+            throw new ZxtmRollBackException(rollBackMessage, e);
         }
     }
 
