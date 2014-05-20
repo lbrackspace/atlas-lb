@@ -1,5 +1,6 @@
 package org.openstack.atlas.logs.hadoop.util;
 
+import java.io.FileNotFoundException;
 import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
@@ -9,6 +10,7 @@ import org.openstack.atlas.config.HadoopLogsConfigs;
 import com.hadoop.compression.lzo.LzopCodec;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -190,6 +192,18 @@ public class HdfsUtils {
         StaticFileUtils.copyStreams(cis, cos, ps, recompressBufferSize);
         cis.close();
         cos.close();
+    }
+
+    public CompressionInputStream openLzoDecompressionStream(String file_name) throws FileNotFoundException, IOException{
+        Configuration codecConf = new Configuration();
+        codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
+        codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
+        LzopCodec codec = new LzopCodec();
+        String fullPath = StaticFileUtils.expandUser(file_name);
+        codec.setConf(codecConf);
+        FileInputStream fis = new FileInputStream(fullPath);
+        CompressionInputStream cis = codec.createInputStream(fis);
+        return cis;
     }
 
     public void compressAndIndexStreamToLzo(InputStream uncompressedInputStream, OutputStream lzoOutputStream, OutputStream lzoIndexedOutputStream, int buffSize, PrintStream ps) throws IOException {

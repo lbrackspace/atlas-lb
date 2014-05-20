@@ -13,6 +13,6 @@ public final class HostConfigHelper {
 
     public static LoadBalancerEndpointConfiguration getConfig(Host hostIn, HostRepository hostRepository) throws DecryptException, MalformedURLException {
         Cluster cluster = hostIn.getCluster();
-        return new LoadBalancerEndpointConfiguration(hostIn, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), hostIn, hostRepository.getFailoverHostNames(cluster.getId()), null);
+        return new LoadBalancerEndpointConfiguration(hostIn, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), hostIn, hostRepository.getFailoverHostNames(cluster.getId()), hostRepository.getFailoverHosts(cluster.getId()));
     }
 }

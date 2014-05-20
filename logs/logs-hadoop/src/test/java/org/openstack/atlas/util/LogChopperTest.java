@@ -81,4 +81,11 @@ public class LogChopperTest extends TestCase {
         LbLogsWritable logsWritableWithip = LogChopper.getLbLogStats(testLineWithIv6P);
         Assert.assertEquals(testLineWithIv6P, logsWritableWithip.getLogline());
     }
+
+    @Test
+    public void testWithBorkedWhitespace() throws Exception {
+        String testBorkedLine = "5909655_89317 - 184.106.32.84 - - [24/Apr/2014:19:22:31 +0000] \"GET HTTP/1.0 \" - 304 \"-\" \"-\" 50.56.235.33:80\n";
+        LbLogsWritable logsWritable = LogChopper.getLbLogStats(testBorkedLine);
+        Assert.assertEquals(testBorkedLine,logsWritable.getLogline());
+    }
 }

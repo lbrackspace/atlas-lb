@@ -81,7 +81,7 @@ public class HostsResource extends ManagementDependencyProvider {
 
         try {
             startTime = isoTocal(startDateParam);
-            endTime =  isoTocal(endDateParam);
+            endTime = isoTocal(endDateParam);
 
             final long timeDiff = endTime.getTimeInMillis() - startTime.getTimeInMillis();
             final long millisecondsIn31Days = 2678400000l;
@@ -178,25 +178,24 @@ public class HostsResource extends ManagementDependencyProvider {
             return ResponseFactory.accessDenied();
         }
         HostCapacityReports mHcrs = new HostCapacityReports();
-        HostCapacityReport mHcr = new HostCapacityReport();
+
         org.openstack.atlas.service.domain.entities.LoadBalancer dLb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
 
         try {
             List<org.openstack.atlas.service.domain.entities.Host> dHosts = hostService.getAll();
-            Host rHost = getDozerMapper().map(dHosts, Host.class);
-            mHcr.setHostName(rHost.getName());
-            mHcr.setHostId(rHost.getId());
-            mHcr.setTotalConcurrentConnectionCapacity(rHost.getMaxConcurrentConnections());
-
-            mHcrs.getHostCapacityReports().add(mHcr);
-
+            for (org.openstack.atlas.service.domain.entities.Host dHost : dHosts) {
+                HostCapacityReport mHcr = new HostCapacityReport();
+                Host rHost = getDozerMapper().map(dHost, Host.class);
+                mHcr.setHostName(rHost.getName());
+                mHcr.setHostId(rHost.getId());
+                mHcr.setTotalConcurrentConnectionCapacity(rHost.getMaxConcurrentConnections());
+                mHcrs.getHostCapacityReports().add(mHcr);
+            }
             return Response.status(200).entity(mHcrs).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
-
-
 
     @Path("{id: [1-9][0-9]*}")
     public HostResource retrieveHostResource(@PathParam("id") int id) {

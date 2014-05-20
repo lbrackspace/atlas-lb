@@ -1,5 +1,6 @@
 use `loadbalancing_usage`;
 
+DROP TABLE IF EXISTS `lb_usage_event`;
 CREATE TABLE `lb_usage_event` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
@@ -18,12 +19,14 @@ CREATE TABLE `lb_usage_event` (
   KEY `lb_usage_event_lb_key` (`loadbalancer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `event_type`;
 CREATE TABLE `event_type` (
   `name` varchar(32) NOT NULL,
   `description` varchar(128) NOT NULL,
   PRIMARY KEY (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `lb_usage`;
 CREATE TABLE `lb_usage` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `account_id` int(11) NOT NULL,
