@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.mgmt.resources;
 
 import org.openstack.atlas.api.helpers.ResponseFactory;
-import org.openstack.atlas.api.mgmt.helpers.StubFactory;
+import org.openstack.atlas.api.helpers.StubFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.openstack.atlas.api.mgmt.helpers.StubFactory.newNetInterface;
+import static org.openstack.atlas.api.helpers.StubFactory.newNetInterface;
 
 // Undocumented resource
 public class StubResource extends ManagementDependencyProvider {

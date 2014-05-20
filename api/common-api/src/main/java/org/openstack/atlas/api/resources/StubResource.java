@@ -307,6 +307,12 @@ public class StubResource extends CommonDependencyProvider {
         return Response.status(Response.Status.OK).entity(sslTermination).build();
     }
 
+    @GET
+    @Path("virtualipblocks")
+    public Response getVirtualIpBlocks() {
+        return Response.status(200).entity(StubFactory.getVirtualIpBlocks()).build();
+    }
+
     private Node newNode(Integer id, Integer port, String address) {
         Node node;
         node = new Node();

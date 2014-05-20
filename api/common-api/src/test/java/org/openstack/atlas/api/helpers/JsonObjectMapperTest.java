@@ -13,6 +13,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.util.debug.Debug;
 
 import java.io.IOException;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
 
 public class JsonObjectMapperTest {
 
@@ -37,6 +38,21 @@ public class JsonObjectMapperTest {
 
     @After
     public void tearDown() {
+    }
+
+    // Full root object is now needed on virtualIpBlocks
+    @Test
+    public void shouldMapVirtualIpBlocks() throws IOException {
+        String vbJson = "{\"virtualIpBlocks\":{\"virtualIpBlocks\": [{\"firstIp\": \"10.0.0.5\", \"lastIp\": \"10.0.0.253\"}, {\"firstIp\": \"172.16.0.64\", \"lastIp\": \"172.16.0.128\"}, {\"firstIp\": \"192.168.0.3\", \"lastIp\": \"192.168.0.100\"}], \"type\": \"SERVICENET\"}}";
+        VirtualIpBlocks vb = mapper.readValue(vbJson, VirtualIpBlocks.class);
+        Assert.assertEquals(vb.getType(), VipType.SERVICENET);
+        Assert.assertEquals(vb.getVirtualIpBlocks().size(), 3);
+        Assert.assertEquals(vb.getVirtualIpBlocks().get(0).getFirstIp(), "10.0.0.5");
+        Assert.assertEquals(vb.getVirtualIpBlocks().get(0).getLastIp(), "10.0.0.253");
+        Assert.assertEquals(vb.getVirtualIpBlocks().get(1).getFirstIp(), "172.16.0.64");
+        Assert.assertEquals(vb.getVirtualIpBlocks().get(1).getLastIp(), "172.16.0.128");
+        Assert.assertEquals(vb.getVirtualIpBlocks().get(2).getFirstIp(), "192.168.0.3");
+        Assert.assertEquals(vb.getVirtualIpBlocks().get(2).getLastIp(), "192.168.0.100");
     }
 
     @Test
@@ -225,7 +241,7 @@ public class JsonObjectMapperTest {
             loadBalancer = (LoadBalancer) stub.stubLoadBalancer().getEntity();
         } catch (Throwable th) {
             exMsg = Debug.getEST(th);
-            System.out.printf("Error %s\n",exMsg);
+            System.out.printf("Error %s\n", exMsg);
             nop();
         }
         LoadBalancers loadbalancers = (LoadBalancers) stub.stubLoadBalancers().getEntity();
@@ -234,7 +250,9 @@ public class JsonObjectMapperTest {
         VirtualIps vips = (VirtualIps) stub.stubVirtualIps().getEntity();
         Node node = (Node) stub.stubNode().getEntity();
         ConnectionThrottle ct = (ConnectionThrottle) stub.stubConnectionThrottle().getEntity();
+        VirtualIpBlocks vb = (VirtualIpBlocks) stub.getVirtualIpBlocks().getEntity();
 
+        String vbStr = mapper.writeValueAsString(vb);
         String lbStr = mapper.writeValueAsString(loadBalancer);
         String vipsStr = mapper.writeValueAsString(vips);
         String nodeStr = mapper.writeValueAsString(node);
