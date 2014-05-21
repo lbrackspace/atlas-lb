@@ -324,6 +324,43 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
+    // TODO:  Flesh this out with comparisons rather than defaulting to an update
+    private void checkAndUpdateLoadBalancerAttributes(LoadBalancerEndpointConfiguration config, ZxtmServiceStubs serviceStubs, LoadBalancer lb, String virtualServerName) throws InsufficientRequestException, RemoteException, ZxtmRollBackException {
+        if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
+            //sessionPersistence is a pool item
+            setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
+        }
+
+        if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
+            updateHealthMonitor(config, lb);
+        }
+
+        //VirtualServer items
+        if (lb.getConnectionLimit() != null) {
+            updateConnectionThrottle(config, lb);
+        }
+
+        if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
+            updateConnectionLogging(config, lb);
+        }
+
+        if (lb.isContentCaching() != null && lb.isContentCaching()) {
+            updateContentCaching(config, lb);
+        }
+
+        if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
+            updateAccessList(config, lb);
+        }
+
+        if (lb.isHalfClosed() != null) {
+            updateHalfClosed(config, lb);
+        }
+
+        if (lb.isHttpsRedirect() != null) {
+            updateHttpsRedirect(config, lb);
+        }
+    }
+
     private void updateLoadBalancerAttributes(LoadBalancerEndpointConfiguration config, ZxtmServiceStubs serviceStubs, LoadBalancer lb, String virtualServerName) throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
         /* UPDATE REST OF LOADBALANCER CONFIG */
         if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
@@ -2658,9 +2695,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String virtualServerName = ZxtmNameBuilder.genVSName(lb);
         final String secureServerName = ZxtmNameBuilder.genSslVSName(lb);
         final String poolName = ZxtmNameBuilder.genVSName(lb);
-        final VirtualServerBasicInfo vsInfo;
 
-        LoadBalancerAlgorithm algorithm = lb.getAlgorithm() == null ? DEFAULT_ALGORITHM : lb.getAlgorithm();
         final String rollBackMessage = "Sync load balancer request canceled.";
 
         LOG.debug(String.format("Syncing load balancer '%s'...", virtualServerName));
@@ -2814,27 +2849,21 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
         }
 
-        //TODO: The following is the rest of the changes done in accordance with VIPs in Stingray
         try {
-            addVirtualIps(config, lb, virtualServerName);
-            //Verify that the server is not listening to all addresses, zeus does this by default and is an unwanted behaviour.
+            checkAndUpdateVirtualIps(config, lb, virtualServerName);
             isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
+            checkAndUpdateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
             updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
 
             if (lb.getTimeout() != null) {
                 updateTimeout(config, lb);
             }
 
-            //Added rules for HTTP LB
             if (lb.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
                 TrafficScriptHelper.addXForwardedPortScriptIfNeeded(serviceStubs);
                 attachXFPORTRuleToVirtualServer(serviceStubs, virtualServerName);
-//                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
-//                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
-//                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
-//                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
 
                 setDefaultErrorFile(config, lb);
             }
@@ -2842,6 +2871,58 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             deleteLoadBalancer(config, lb);
             throw new ZxtmRollBackException(rollBackMessage, e);
         }
+    }
+
+    private void checkAndUpdateVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer lb, String vsName) throws RemoteException, ZxtmRollBackException, InsufficientRequestException, IPStringConversionException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        String[] failoverTrafficManagers = config.getFailoverTrafficManagerNames().toArray(new String[config.getFailoverTrafficManagerNames().size()]);
+        final String rollBackMessage = "Sync virtual ips request canceled.";
+        String[][] groups;
+        List<String> listGroups = new ArrayList<String>();
+        List<String> dbGroups = new ArrayList<String>();
+
+        LOG.debug(String.format("Checking virtual ips for virtual server '%s'...", vsName));
+
+        try {
+            // Obtain traffic groups currently associated with the virtual server
+            groups = serviceStubs.getVirtualServerBinding().getListenTrafficIPGroups(new String[]{vsName});
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.error(String.format("Cannot add virtual ips to virtual server %s as it does not exist. %s", vsName, e));
+            }
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        if (groups != null) {
+            listGroups.addAll(Arrays.asList(groups[0]));
+        }
+
+        for (LoadBalancerJoinVip loadBalancerJoinVipToAdd : lb.getLoadBalancerJoinVipSet()) {
+            String group = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVipToAdd.getVirtualIp());
+            dbGroups.add(group);
+            if (!listGroups.contains(group)) {
+                createTrafficIpGroup(config, serviceStubs, loadBalancerJoinVipToAdd.getVirtualIp().getIpAddress(), group);
+                serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{group}, new boolean[]{true});
+                serviceStubs.getTrafficIpGroupBinding().addTrafficManager(new String[]{group}, new String[][]{failoverTrafficManagers});
+                serviceStubs.getTrafficIpGroupBinding().setPassiveMachine(new String[]{group}, new String[][]{failoverTrafficManagers});
+            }
+        }
+
+        for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : lb.getLoadBalancerJoinVip6Set()) {
+            String group = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip6ToAdd.getVirtualIp());
+            dbGroups.add(group);
+            if (!listGroups.contains(group)) {
+                createTrafficIpGroup(config, serviceStubs, loadBalancerJoinVip6ToAdd.getVirtualIp().getDerivedIpString(), group);
+                serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{group}, new boolean[]{true});
+                serviceStubs.getTrafficIpGroupBinding().addTrafficManager(new String[]{group}, new String[][]{failoverTrafficManagers});
+                serviceStubs.getTrafficIpGroupBinding().setPassiveMachine(new String[]{group}, new String[][]{failoverTrafficManagers});
+            }
+        }
+
+        serviceStubs.getVirtualServerBinding().setListenTrafficIPGroups(new String[]{vsName}, groups);
+
+        LOG.info(String.format("Virtual ips successfully synced for virtual server '%s'...", vsName));
     }
 
     private void createNodePool(LoadBalancerEndpointConfiguration config, Integer loadBalancerId, Integer accountId, Collection<Node> allNodes, LoadBalancerAlgorithm algorithm) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
