@@ -27,7 +27,6 @@ public class CallbackServiceImplTest {
     public static class handleZeusEvent {
         CallbackServiceImpl callbackService;
         NodeServiceImpl nodeService;
-        LoadBalancerServiceImpl loadBalancerService;
         NotificationServiceImpl notificationService;
         ZeusEvent zEvent;
 
@@ -37,12 +36,10 @@ public class CallbackServiceImplTest {
         @Before
         public void standUp() {
             nodeService = mock(NodeServiceImpl.class);
-            loadBalancerService = mock(LoadBalancerServiceImpl.class);
             notificationService = mock(NotificationServiceImpl.class);
             callbackService = new CallbackServiceImpl();
             callbackService.setNotificationService(notificationService);
             callbackService.setNodeService(nodeService);
-            callbackService.setLoadBalancerService(loadBalancerService);
             zEvent = new ZeusEvent();
             zEvent.setEventType("EventType");
             zEvent.setParamLine(mFail);
@@ -68,9 +65,6 @@ public class CallbackServiceImplTest {
             lb.setStatus(LoadBalancerStatus.ACTIVE);
             node.setLoadbalancer(lb);
 
-            when(loadBalancerService.get(Matchers.<Integer>any())).thenReturn(lb);
-            when(loadBalancerService.update(Matchers.<LoadBalancer>any())).thenReturn(lb);
-            when(loadBalancerService.testAndSetStatus(Matchers.<Integer>any(), Matchers.anyInt(), Matchers.<LoadBalancerStatus>any())).thenReturn(true);
             when(nodeService.getNodeByLoadBalancerIdIpAddressAndPort(Matchers.<Integer>any(), Matchers.<String>any(), Matchers.<Integer>any())).thenReturn(node);
             callbackService.handleZeusEvent(zEvent);
 
@@ -87,9 +81,6 @@ public class CallbackServiceImplTest {
             lb.setAccountId(12345);
             node.setLoadbalancer(lb);
 
-            when(loadBalancerService.get(Matchers.<Integer>any())).thenReturn(lb);
-            when(loadBalancerService.update(Matchers.<LoadBalancer>any())).thenReturn(lb);
-            when(loadBalancerService.testAndSetStatus(Matchers.<Integer>any(), Matchers.anyInt(), Matchers.<LoadBalancerStatus>any())).thenReturn(true);
             when(nodeService.getNodeByLoadBalancerIdIpAddressAndPort(Matchers.<Integer>any(), Matchers.<String>any(), Matchers.<Integer>any())).thenReturn(node);
             callbackService.handleZeusEvent(zEvent);
 

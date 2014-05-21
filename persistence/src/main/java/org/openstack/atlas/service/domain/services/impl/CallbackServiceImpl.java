@@ -6,6 +6,9 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
+import org.openstack.atlas.service.domain.events.entities.Alert;
+import org.openstack.atlas.service.domain.events.entities.AlertStatus;
+import org.openstack.atlas.service.domain.events.repository.AlertRepository;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
@@ -13,6 +16,7 @@ import org.openstack.atlas.service.domain.pojos.ZeusEvent;
 import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.service.domain.services.helpers.CallbackHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
@@ -33,18 +37,6 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
     private NodeService nodeService;
     @Autowired
     private NotificationService notificationService;
-    @Autowired
-    private LoadBalancerService loadBalancerService;
-    @Autowired
-    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-
-    public void setLoadBalancerService(LoadBalancerService loadBalancerService) {
-        this.loadBalancerService = loadBalancerService;
-    }
-
-    public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
-        this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
-    }
 
     public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
@@ -76,7 +68,6 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
             Integer loadBalancerId = callbackHelper.loadBalancerId;
             String ipAddress = callbackHelper.ipAddress;
             Integer ipPort = callbackHelper.port;
-            Integer lbid = callbackHelper.getLoadBalancerId();
             Node dbNode = nodeService.getNodeByLoadBalancerIdIpAddressAndPort(loadBalancerId, ipAddress, ipPort);
             String status;
 
@@ -90,24 +81,11 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
                 throw new BadRequestException("We currently do not support this callback request.");
             }
 
-            LoadBalancer dbLoadBalancer = loadBalancerService.get(lbid);
-            String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
-            if (!loadBalancerService.testAndSetStatus(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)) {
-                LOG.warn(message);
-                throw new ImmutableEntityException(message);
-            }
-
             nodeService.updateNodeStatus(dbNode);
 
-            dbLoadBalancer.setStatus(ACTIVE);
-            loadBalancerService.update(dbLoadBalancer);
-
-            // Add atom entry
             String atomTitle = "Node Status Updated";
             String atomSummary = String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId);
-            String detailedMessage = "";
-            detailedMessage = (callbackHelper.detailedMessage.equals("")) ? "Node is working" : callbackHelper.detailedMessage;
-
+            String detailedMessage = (callbackHelper.detailedMessage.equals("")) ? "Node is working" : callbackHelper.detailedMessage;
             notificationService.saveNodeServiceEvent("Rackspace Cloud", dbNode.getLoadbalancer().getAccountId(), loadBalancerId, dbNode.getId(), atomTitle, atomSummary, UPDATE_NODE, UPDATE, INFO, detailedMessage);
 
             LOG.info(String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId));
@@ -118,7 +96,6 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
             } else {
                 message = String.format("Could not process Zeus event: '%s'", zeusEvent.getParamLine());
             }
-            LOG.warn(message);
             throw new BadRequestException(message, e);
         }
     }
