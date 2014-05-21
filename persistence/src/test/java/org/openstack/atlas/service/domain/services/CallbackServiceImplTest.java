@@ -7,12 +7,14 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.ZeusEvent;
 import org.openstack.atlas.service.domain.services.impl.CallbackServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.NodeServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.NotificationServiceImpl;
 
@@ -25,6 +27,7 @@ public class CallbackServiceImplTest {
     public static class handleZeusEvent {
         CallbackServiceImpl callbackService;
         NodeServiceImpl nodeService;
+        LoadBalancerServiceImpl loadBalancerService;
         NotificationServiceImpl notificationService;
         ZeusEvent zEvent;
 
@@ -34,10 +37,12 @@ public class CallbackServiceImplTest {
         @Before
         public void standUp() {
             nodeService = mock(NodeServiceImpl.class);
+            loadBalancerService = mock(LoadBalancerServiceImpl.class);
             notificationService = mock(NotificationServiceImpl.class);
             callbackService = new CallbackServiceImpl();
             callbackService.setNotificationService(notificationService);
             callbackService.setNodeService(nodeService);
+            callbackService.setLoadBalancerService(loadBalancerService);
             zEvent = new ZeusEvent();
             zEvent.setEventType("EventType");
             zEvent.setParamLine(mFail);
@@ -52,15 +57,20 @@ public class CallbackServiceImplTest {
         }
 
         @Test
-        public void shouldUpdateNodeStatusOnline() throws EntityNotFoundException, BadRequestException {
+        public void shouldUpdateNodeStatusOnline() throws Exception {
             zEvent.setParamLine(mOK);
 
             Node node = new Node();
             node.setId(373);
             LoadBalancer lb = new LoadBalancer();
             lb.setAccountId(12345);
+            lb.setId(1493);
+            lb.setStatus(LoadBalancerStatus.ACTIVE);
             node.setLoadbalancer(lb);
 
+            when(loadBalancerService.get(Matchers.<Integer>any())).thenReturn(lb);
+            when(loadBalancerService.update(Matchers.<LoadBalancer>any())).thenReturn(lb);
+            when(loadBalancerService.testAndSetStatus(Matchers.<Integer>any(), Matchers.anyInt(), Matchers.<LoadBalancerStatus>any())).thenReturn(true);
             when(nodeService.getNodeByLoadBalancerIdIpAddressAndPort(Matchers.<Integer>any(), Matchers.<String>any(), Matchers.<Integer>any())).thenReturn(node);
             callbackService.handleZeusEvent(zEvent);
 
@@ -68,7 +78,7 @@ public class CallbackServiceImplTest {
         }
 
         @Test
-        public void shouldUpdateNodeStatusOffline() throws EntityNotFoundException, BadRequestException {
+        public void shouldUpdateNodeStatusOffline() throws Exception {
             zEvent.setParamLine(mFail);
 
             Node node = new Node();
@@ -77,6 +87,9 @@ public class CallbackServiceImplTest {
             lb.setAccountId(12345);
             node.setLoadbalancer(lb);
 
+            when(loadBalancerService.get(Matchers.<Integer>any())).thenReturn(lb);
+            when(loadBalancerService.update(Matchers.<LoadBalancer>any())).thenReturn(lb);
+            when(loadBalancerService.testAndSetStatus(Matchers.<Integer>any(), Matchers.anyInt(), Matchers.<LoadBalancerStatus>any())).thenReturn(true);
             when(nodeService.getNodeByLoadBalancerIdIpAddressAndPort(Matchers.<Integer>any(), Matchers.<String>any(), Matchers.<Integer>any())).thenReturn(node);
             callbackService.handleZeusEvent(zEvent);
 
