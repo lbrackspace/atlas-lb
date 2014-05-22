@@ -89,6 +89,10 @@ public class StaticDateTimeUtils {
         return sqlDateTimeFormat.print(toDateTime(date, true));
     }
 
+    public static String toSqlTime(DateTime dt){
+        return sqlDateTimeFormat.print(dt);
+    }
+
     public static double getEpochSeconds() {
         return ((double) System.currentTimeMillis()) * 0.001;
     }
