@@ -2,3 +2,5 @@ target/*
 *.class
 *.json
 !example.json
+*.crt
+*.key

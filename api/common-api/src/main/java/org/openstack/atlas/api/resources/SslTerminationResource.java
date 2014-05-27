@@ -17,10 +17,12 @@ import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import javax.ws.rs.*;
+
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPathList;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
@@ -35,8 +37,9 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createSsl(SslTermination ssl) {
-        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination))
+        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
             return ResponseFactory.getErrorResponse(new MethodNotAllowedException("Resource not implemented yet..."), null, null);
+        }
 
         ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
         if (!result.passedValidation()) {
@@ -104,7 +107,6 @@ public class SslTerminationResource extends CommonDependencyProvider {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
-
 
     private Response getFeedResponse(Integer page) {
         Map<String, Object> feedAttributes = new HashMap<String, Object>();

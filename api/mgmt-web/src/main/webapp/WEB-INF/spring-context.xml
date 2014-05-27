@@ -140,6 +140,11 @@
             <bean class="org.openstack.atlas.api.mgmt.resources.ManagementResource"
                   parent="managementDependencyProvider"
                   scope="request">
+                <property name="sslUtilsResource">
+                    <bean class="org.openstack.atlas.api.mgmt.resources.SSLUtilsResource"
+                          parent="managementDependencyProvider"
+                          scope="request"/>
+                </property>
                 <property name="allowedDomainsResource">
                     <bean class="org.openstack.atlas.api.mgmt.resources.AllowedDomainsResource"
                           parent="managementDependencyProvider"

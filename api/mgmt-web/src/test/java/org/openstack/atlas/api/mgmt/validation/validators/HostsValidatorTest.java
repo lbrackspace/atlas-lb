@@ -2,7 +2,7 @@ package org.openstack.atlas.api.mgmt.validation.validators;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hosts;
-import org.openstack.atlas.api.mgmt.helpers.StubFactory;
+import org.openstack.atlas.api.helpers.StubFactory;
 import org.openstack.atlas.api.mgmt.validation.validators.HostsValidator;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.junit.Before;

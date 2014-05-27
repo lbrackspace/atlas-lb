@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.resources;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
@@ -35,13 +37,21 @@ import java.util.List;
 
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 
 import javax.ws.rs.core.Response;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
+import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.api.helpers.StubFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPathList;
+import org.openstack.atlas.docs.loadbalancers.api.v1.X509Description;
+import org.openstack.atlas.util.ca.exceptions.X509ReaderException;
+import org.openstack.atlas.util.debug.Debug;
 import org.w3.atom.Link;
 
 public class StubResource extends CommonDependencyProvider {
@@ -192,6 +202,18 @@ public class StubResource extends CommonDependencyProvider {
     }
 
     @GET()
+    @Path("x509description")
+    public Response stubX509Description() {
+        try {
+            X509Description x509des = StubFactory.newX509Description();
+            return Response.status(Response.Status.OK).entity(x509des).build();
+        } catch (X509ReaderException ex) {
+            String exMsg = Debug.getExtendedStackTrace(ex);
+            return ResponseFactory.getErrorResponse(ex, "Exception parsing x509 from stub factory", exMsg);
+        }
+    }
+
+    @GET()
     @Path("ssltermination")
     public Response stubSslTerm() {
         if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
@@ -281,7 +303,14 @@ public class StubResource extends CommonDependencyProvider {
         sslTermination.setEnabled(true);
         sslTermination.setSecurePort(443);
         sslTermination.setSecureTrafficOnly(false);
+        sslTermination.setReEncryptionEnabled(Boolean.TRUE);
         return Response.status(Response.Status.OK).entity(sslTermination).build();
+    }
+
+    @GET
+    @Path("virtualipblocks")
+    public Response getVirtualIpBlocks() {
+        return Response.status(200).entity(StubFactory.getVirtualIpBlocks()).build();
     }
 
     private Node newNode(Integer id, Integer port, String address) {
