@@ -322,39 +322,48 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-    // TODO:  Flesh this out with comparisons rather than defaulting to an update
-    private void checkAndUpdateLoadBalancerAttributes(LoadBalancerEndpointConfiguration config, ZxtmServiceStubs serviceStubs, LoadBalancer lb, String virtualServerName) throws InsufficientRequestException, RemoteException, ZxtmRollBackException {
+    // TODO:  Flesh this out with comparisons rather than defaulting to an update, and delete from stingray when null is included.
+    private void checkAndUpdateLoadBalancerAttributes(LoadBalancerEndpointConfiguration config, LoadBalancer lb, String originalName, String currentName) throws InsufficientRequestException, RemoteException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
         if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
-            //sessionPersistence is a pool item
-            setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
+            checkAndUpdateSessionPersistence(config, currentName, lb.getSessionPersistence());
         }
 
         if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
-            updateHealthMonitor(config, lb);
+            checkAndUpdateHealthMonitor(config, lb.getHealthMonitor(), currentName);
         }
 
         //VirtualServer items
         if (lb.getConnectionLimit() != null) {
-            updateConnectionThrottle(config, lb);
+            if (originalName.equals(currentName)) {
+                checkAndUpdateConnectionThrottle(config, lb.getConnectionLimit(), originalName);
+            } else {
+                serviceStubs.getVirtualServerBinding().setProtection(new String[]{currentName}, new String[]{originalName});
+            }
         }
 
         if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
-            updateConnectionLogging(config, lb);
+            checkAndUpdateConnectionLogging(config, lb, currentName);
         }
 
         if (lb.isContentCaching() != null && lb.isContentCaching()) {
+            checkAndUpdateContentCaching(config, lb);
             updateContentCaching(config, lb);
         }
 
         if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
+            checkAndUpdateAccessList(config, lb);
             updateAccessList(config, lb);
         }
 
         if (lb.isHalfClosed() != null) {
+            checkAndUpdateHalfClosed(config, lb);
             updateHalfClosed(config, lb);
         }
 
         if (lb.isHttpsRedirect() != null) {
+            checkAndUpdateHttpsRedirect(config, lb);
             updateHttpsRedirect(config, lb);
         }
     }
@@ -1724,6 +1733,29 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
     }
 
+    private void checkAndUpdateSessionPersistence(LoadBalancerEndpointConfiguration config, String poolName, SessionPersistence mode)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String rollBackMessage = "Sync session persistence request canceled.";
+
+        LOG.debug(String.format("Checking session persistence for node pool '%s'...", poolName));
+
+        try {
+            String[] persistence = serviceStubs.getPoolBinding().getPersistence(new String[]{poolName});
+            if (!persistence.equals(getPersistenceMode(mode))) {
+                serviceStubs.getPoolBinding().setPersistence(new String[]{poolName}, getPersistenceMode(mode));
+            }
+            // Set the session persistence mode for the pool.
+        } catch (Exception e) {
+            if (e instanceof ObjectDoesNotExist) {
+                LOG.error(String.format("Node pool '%s' does not exist. Cannot update session persistence.", poolName));
+            }
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        LOG.info(String.format("Session persistence synced for node pool '%s'.", poolName));
+    }
+
     @Override
     public void setSessionPersistence(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, SessionPersistence mode)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
@@ -1835,6 +1867,38 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
+    private void checkAndUpdateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String virtualServerName)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        boolean isConnectionLogging = loadBalancer.isConnectionLogging();
+        LoadBalancerProtocol protocol = loadBalancer.getProtocol();
+        final String rollBackMessage = "Sync connection logging request canceled.";
+        String[] name = new String[]{virtualServerName};
+
+        LOG.debug(String.format("Syncing logging for virtual server '%s'...", virtualServerName));
+
+        try {
+            if (isConnectionLogging) {
+                if (!serviceStubs.getVirtualServerBinding().getLogFilename(name)[0].equals(config.getLogFileLocation())) {
+                    serviceStubs.getVirtualServerBinding().setLogFilename(name, new String[]{config.getLogFileLocation()});
+                }
+                if (serviceStubs.getVirtualServerBinding().getLogFormat(name)[0].equals(NON_HTTP_LOG_FORMAT) && protocol == LoadBalancerProtocol.HTTP) {
+                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{HTTP_LOG_FORMAT});
+                } else if (serviceStubs.getVirtualServerBinding().getLogFormat(name)[0].equals(HTTP_LOG_FORMAT) && protocol != LoadBalancerProtocol.HTTP) {
+                    serviceStubs.getVirtualServerBinding().setLogFormat(new String[]{virtualServerName}, new String[]{NON_HTTP_LOG_FORMAT});
+                }
+            }
+            if (serviceStubs.getVirtualServerBinding().getLogEnabled(name)[0] != isConnectionLogging) {
+                serviceStubs.getVirtualServerBinding().setLogEnabled(name, new boolean[]{isConnectionLogging});
+            }
+        } catch (Exception e) {
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        LOG.info(String.format("Successfully synced connection logging for virtual server '%s'...", virtualServerName));
+    }
+
     private void updateConnectionLogging(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String virtualServerName)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
 
@@ -1875,6 +1939,43 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void updateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        Integer lbId = loadBalancer.getId();
+        Integer accountId = loadBalancer.getAccountId();
+
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(lbId, accountId);
+        String[] vsNames;
+
+        boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+        boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
+
+        if (isSecureServer && isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualRedirectServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isSecureServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualRedirectServerName;
+        } else {
+            vsNames = new String[1];
+            vsNames[0] = virtualServerName;
+        }
+
+        for (String vsName : vsNames) {
+            updateContentCaching(config, loadBalancer, vsName);
+        }
+    }
+
+    private void checkAndUpdateContentCaching(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
@@ -2000,6 +2101,38 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         for (String vsName : vsNames) {
             updateConnectionThrottle(config, loadBalancer, vsName);
         }
+    }
+
+    private void checkAndUpdateConnectionThrottle(LoadBalancerEndpointConfiguration config, ConnectionLimit throttle, String protectionName) throws RemoteException, ZxtmRollBackException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String rollBackMessage = "Sync Connection Throttle request canceled.";
+        String[] name = new String[]{protectionName};
+
+        if (!Arrays.asList(serviceStubs.getProtectionBinding().getProtectionNames()).contains(protectionName)) {
+            addProtectionClass(config, protectionName);
+        }
+        try {
+            if (!serviceStubs.getProtectionBinding().getMinConnections(name)[0].equals(new UnsignedInt(throttle.getMinConnections()))) {
+                serviceStubs.getProtectionBinding().setMinConnections(name, new UnsignedInt[]{new UnsignedInt(throttle.getMinConnections())});
+            }
+            if (!serviceStubs.getProtectionBinding().getRateTimer(name)[0].equals(new UnsignedInt(throttle.getRateInterval()))) {
+                serviceStubs.getProtectionBinding().setRateTimer(name, new UnsignedInt[]{new UnsignedInt(throttle.getRateInterval())});
+            }
+            if (!serviceStubs.getProtectionBinding().getMaxConnectionRate(name)[0].equals(new UnsignedInt(throttle.getMaxConnectionRate()))) {
+                serviceStubs.getProtectionBinding().setMaxConnectionRate(name, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnectionRate())});
+            }
+            if (!serviceStubs.getProtectionBinding().getMax1Connections(name)[0].equals(new UnsignedInt(throttle.getMaxConnections()))) {
+                serviceStubs.getProtectionBinding().setMax1Connections(name, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnections())});
+            }
+            if (!serviceStubs.getProtectionBinding().getMax10Connections(name)[0].equals(new UnsignedInt(0))) {
+                serviceStubs.getProtectionBinding().setMax10Connections(name, new UnsignedInt[]{new UnsignedInt(0)});
+            }
+            serviceStubs.getVirtualServerBinding().setProtection(name, new String[]{protectionName});
+        } catch (Exception e) {
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+
+        LOG.info(String.format("Successfully updated connection throttle for virtual server '%s'.", protectionName));
     }
 
     private void updateConnectionThrottle(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String virtualServerName) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
@@ -2138,6 +2271,49 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         LOG.info(String.format("Health monitor successfully updated for node pool '%s'.", poolName));
     }
 
+    private void checkAndUpdateHealthMonitor(LoadBalancerEndpointConfiguration config, HealthMonitor healthMonitor, String poolName)
+            throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String[] monitorName = new String[]{poolName};
+
+        LOG.debug(String.format("Syncing health monitor for node pool '%s'.", poolName));
+
+        if (!Arrays.asList(serviceStubs.getMonitorBinding().getAllMonitorNames()).contains(monitorName[0])) {
+            addMonitorClass(config, monitorName[0]);
+        }
+
+        if (!serviceStubs.getMonitorBinding().getDelay(monitorName)[0].equals(new UnsignedInt(healthMonitor.getDelay()))) {
+            serviceStubs.getMonitorBinding().setDelay(monitorName, new UnsignedInt[]{new UnsignedInt(healthMonitor.getDelay())});
+        }
+        if (!serviceStubs.getMonitorBinding().getTimeout(monitorName)[0].equals(new UnsignedInt(healthMonitor.getTimeout()))) {
+            serviceStubs.getMonitorBinding().setTimeout(monitorName, new UnsignedInt[]{new UnsignedInt(healthMonitor.getTimeout())});
+        }
+        if (!serviceStubs.getMonitorBinding().getFailures(monitorName)[0].equals(new UnsignedInt(healthMonitor.getAttemptsBeforeDeactivation()))) {
+            serviceStubs.getMonitorBinding().setFailures(monitorName, new UnsignedInt[]{new UnsignedInt(healthMonitor.getAttemptsBeforeDeactivation())});
+        }
+
+        if (healthMonitor.getType().equals(HealthMonitorType.CONNECT)
+                && !serviceStubs.getMonitorBinding().getType(monitorName)[0].equals(CatalogMonitorType.connect)) {
+            serviceStubs.getMonitorBinding().setType(monitorName, new CatalogMonitorType[]{CatalogMonitorType.connect});
+        } else if ((healthMonitor.getType().equals(HealthMonitorType.HTTP) || healthMonitor.getType().equals(HealthMonitorType.HTTPS))
+                && !serviceStubs.getMonitorBinding().getType(monitorName)[0].equals(CatalogMonitorType.http)) {
+            serviceStubs.getMonitorBinding().setType(monitorName, new CatalogMonitorType[]{CatalogMonitorType.http});
+            serviceStubs.getMonitorBinding().setPath(monitorName, new String[]{healthMonitor.getPath()});
+            serviceStubs.getMonitorBinding().setStatusRegex(monitorName, new String[]{healthMonitor.getStatusRegex()});
+            serviceStubs.getMonitorBinding().setBodyRegex(monitorName, new String[]{healthMonitor.getBodyRegex()});
+            serviceStubs.getMonitorBinding().setHostHeader(monitorName, new String[]{healthMonitor.getHostHeader()});
+            if (healthMonitor.getType().equals(HealthMonitorType.HTTPS)) {
+                serviceStubs.getMonitorBinding().setUseSSL(monitorName, new boolean[]{true});
+            }
+        } else {
+            throw new InsufficientRequestException(String.format("Unsupported monitor type: %s", healthMonitor.getType().name()));
+        }
+
+        serviceStubs.getPoolBinding().setMonitors(new String[]{poolName}, new String[][]{monitorName});
+
+        LOG.info(String.format("Health monitor successfully synced for node pool '%s'.", poolName));
+    }
+
     @Override
     public void removeHealthMonitor(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException {
@@ -2207,8 +2383,69 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
+    private void checkAndUpdateHalfClosed(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
+        if (isRedirectServer && loadBalancer.hasSsl()) {
+            virtualServerName = virtualRedirectServerName;
+        } else if (isRedirectServer) {
+            try {
+                LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualRedirectServerName, loadBalancer.isHalfClosed()));
+                serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualRedirectServerName}, new boolean[]{loadBalancer.isHalfClosed()});
+            } catch (Exception e) {
+                LOG.error("Could not update half close support for virtual server: " + virtualRedirectServerName);
+            }
+        }
+        try {
+            LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualServerName, loadBalancer.isHalfClosed()));
+            serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualServerName}, new boolean[]{loadBalancer.isHalfClosed()});
+        } catch (Exception e) {
+            LOG.error("Could not update half close support for virtual server: " + virtualServerName);
+        }
+        if (loadBalancer.hasSsl()) {
+            try {
+                LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualSecureServerName, loadBalancer.isHalfClosed()));
+                serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualSecureServerName}, new boolean[]{loadBalancer.isHalfClosed()});
+            } catch (Exception e) {
+                LOG.error("Could not update half close support for virtual server: " + virtualSecureServerName);
+            }
+        }
+    }
+
     @Override
     public void updateHttpsRedirect(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+
+        try {
+            LOG.debug(String.format("Updating HTTPS Redirect for virtual server '%s': Value: '%s'...", vsName, loadBalancer.isHttpsRedirect()));
+            ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+            boolean redirectExists = Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(vsRedirectName);
+
+            if (!redirectExists && loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
+                if (loadBalancer.hasSsl() == true) {
+                    repurposeVirtualServerForHttpsRedirect(loadBalancer, serviceStubs);
+                } else {
+                    createRedirectVirtualServer(config, loadBalancer);
+                }
+            } else if (redirectExists && loadBalancer.isHttpsRedirect() == null || !loadBalancer.isHttpsRedirect()) {
+                if (loadBalancer.hasSsl()) {
+                    restoreVirtualServerFromHttpsRedirect(loadBalancer, serviceStubs);
+                } else {
+                    deleteVirtualServer(serviceStubs, vsRedirectName);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error("Could not update HTTPS Redirect for virtual server: " + vsName);
+        }
+    }
+
+    private void checkAndUpdateHttpsRedirect(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
 
@@ -2239,6 +2476,71 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void updateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException {
+        Collection<AccessList> accessListItems = loadBalancer.getAccessLists();
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        String protectionClassName = ZxtmNameBuilder.genVSName(loadBalancer);
+
+        LOG.debug(String.format("Updating access list for protection class '%s'...", protectionClassName));
+
+        if (addProtectionClass(config, protectionClassName)) {
+            try {
+                zeroOutConnectionThrottleConfig(config, loadBalancer);
+            } catch (ZxtmRollBackException zre) {
+                LOG.warn("Could not zero out connection throttle settings. Continuing...", zre);
+            }
+            try {
+                updateConnectionThrottle(config, loadBalancer);
+            } catch (Exception e) {
+                LOG.warn("Could not update connection throttle settings. Continuing...", e);
+            }
+        }
+
+        LOG.info("Removing the old access list...");
+        //remove the current access list...
+        deleteAccessList(config, protectionClassName);
+
+        LOG.debug("adding the new access list...");
+        //add the new access list...
+        serviceStubs.getProtectionBinding().setAllowedAddresses(new String[]{protectionClassName}, buildAccessListItems(accessListItems, AccessListType.ALLOW));
+        serviceStubs.getProtectionBinding().setBannedAddresses(new String[]{protectionClassName}, buildAccessListItems(accessListItems, AccessListType.DENY));
+
+        //Not especially efficient, but we need to *make sure* we have added the protection class to all virtual servers (even though they probably are ok already)
+        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+        String[] vsNames;
+
+        boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+        boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
+
+        if (isSecureServer && isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualRedirectServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isSecureServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualRedirectServerName;
+        } else {
+            vsNames = new String[1];
+            vsNames[0] = virtualServerName;
+        }
+
+        for (String vsName : vsNames) {
+            // Apply the service protection to the virtual server.
+            serviceStubs.getVirtualServerBinding().setProtection(new String[]{vsName}, new String[]{protectionClassName});
+        }
+
+        LOG.info(String.format("Successfully updated access list for protection class '%s'...", protectionClassName));
+    }
+
+    private void checkAndUpdateAccessList(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws RemoteException, InsufficientRequestException {
         Collection<AccessList> accessListItems = loadBalancer.getAccessLists();
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
@@ -2710,7 +3012,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         try {
-            if (lb.getSslTermination().isEnabled()) {
+            if (lb.hasSsl()) {
                 checkAndUpdateVirtualServer(config, lb, secureServerName);
             }
             checkAndUpdateVirtualServer(config, lb, virtualServerName);
@@ -2856,8 +3158,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
-            checkAndUpdateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
-            updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
+            checkAndUpdateLoadBalancerAttributes(config, lb, ZxtmNameBuilder.genVSName(lb), virtualServerName);
 
             if (lb.getTimeout() != null) {
                 updateTimeout(config, lb);
