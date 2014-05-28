@@ -24,6 +24,8 @@ public interface ReverseProxyLoadBalancerService {
 
     void deleteLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
 
+    void syncLoadBalancer(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
+
     void updateAlgorithm(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException;
 
     void updatePort(LoadBalancer lb) throws RemoteException, InsufficientRequestException, RollBackException, Exception;
