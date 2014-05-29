@@ -132,10 +132,9 @@ public class SyncListener extends BaseListener {
                     reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, dbLoadBalancer, loadBalancerService.getUserPages(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId()));
                     LOG.debug(String.format("Successfully Updated loadbalancer: %s in STM...", dbLoadBalancer.getId()));
                 } else {
-                    LOG.debug(String.format("Re-creating loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
+                    LOG.debug(String.format("Syncing loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
                     reverseProxyLoadBalancerService.syncLoadBalancer(dbLoadBalancer);
-                    LOG.debug(String.format("Successfully Re-created loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
+                    LOG.debug(String.format("Successfully synced loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
                 }
 
                 LOG.debug(String.format("Sync of load balancer %s complete, updating status and saving events and usage...", dbLoadBalancer.getId()));
