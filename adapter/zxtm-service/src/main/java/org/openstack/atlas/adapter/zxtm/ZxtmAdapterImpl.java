@@ -161,7 +161,58 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, ZxtmRollBackException, StmRollBackException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        final String name = ZxtmNameBuilder.genVSName(loadBalancer);
+        final String rollBackMessage = "Sync load balancer request canceled.";
+
+        if (!Arrays.asList(serviceStubs.getPoolBinding().getPoolNames()).contains(name)) {
+            LOG.debug(String.format("Adding node pool '%s'...", name));
+            createNodePool(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getNodes(), loadBalancer.getAlgorithm());
+            LOG.info(String.format("Node pool '%s' successfully added.", name));
+        }
+        else {
+            setLoadBalancingAlgorithm(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getAlgorithm());
+
+            setDisabledNodes(config, name, getNodesWithCondition(loadBalancer.getNodes(), NodeCondition.DISABLED));
+            setDrainingNodes(config, name, getNodesWithCondition(loadBalancer.getNodes(), NodeCondition.DRAINING));
+            setNodeWeights(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getNodes());
+            serviceStubs.getPoolBinding().setPassiveMonitoring(new String[]{name}, new boolean[]{false});
+        }
+        setNodesPriorities(config, name, loadBalancer);
+
+        if (!Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(name)) {
+            LOG.debug(String.format("Adding virtual server '%s'...", name));
+            VirtualServerBasicInfo vsInfo = new VirtualServerBasicInfo(loadBalancer.getPort(), ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol()), name);
+            serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{name}, new VirtualServerBasicInfo[]{vsInfo});
+            LOG.info(String.format("Virtual server '%s' successfully added.", name));
+        }
+        serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{name}, new boolean[]{true});
+        serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{name}, new boolean[]{true});
+        addVirtualIps(config, loadBalancer, name);
+        try {
+            isVSListeningOnAllAddresses(serviceStubs, name, name);
+        } catch (Exception e) {
+            throw new ZxtmRollBackException(rollBackMessage, e);
+        }
+        serviceStubs.getVirtualServerBinding().setEnabled(new String[]{name}, new boolean[]{true});
+        updateLoadBalancerAttributes(config, serviceStubs, loadBalancer, name);
+
+        if (loadBalancer.getTimeout() != null) {
+            updateTimeout(config, loadBalancer);
+        }
+
+        if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+            TrafficScriptHelper.addXForwardedPortScriptIfNeeded(serviceStubs);
+            attachXFPORTRuleToVirtualServer(serviceStubs, name);
+            serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{name}, new boolean[]{true});
+            serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{name}, new boolean[]{true});
+//                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
+//                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
+
+            setDefaultErrorFile(config, loadBalancer);
+        }
+
+        LOG.info(String.format("Load balancer '%s' successfully synced.", name));
     }
 
     private void createRedirectVirtualServer(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
