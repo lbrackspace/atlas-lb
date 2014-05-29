@@ -6,6 +6,7 @@ import org.openstack.atlas.api.helpers.NodesHelper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
@@ -43,7 +44,7 @@ public class SyncListener extends BaseListener {
         LoadBalancerStatus finalStatus = ACTIVE;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(mdc.getLoadBalancerId(), mdc.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(mdc.getLoadBalancerId(), mdc.getAccountId());
         } catch (EntityNotFoundException enfe) {
             LOG.error(String.format("EntityNotFoundException thrown while attempting to sync Loadbalancer #%d: ", mdc.getLoadBalancerId()));
             return;
@@ -108,25 +109,28 @@ public class SyncListener extends BaseListener {
                 loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_DELETE);
             }
         } else {
-
             //First recreate the original virtual server...
+            //Temporarily store off and clear the values of SSLTerm and HTTPSRedirect
+            org.openstack.atlas.service.domain.entities.SslTermination tempSslTerm = dbLoadBalancer.getSslTermination();
+            Boolean tempHttpsRedirect = dbLoadBalancer.isHttpsRedirect();
+            if (tempSslTerm != null) { //Only clear HTTPSRedirect if we have an SSL term, because in that case it is added afterwards
+                dbLoadBalancer.setHttpsRedirect(null);
+            }
+            dbLoadBalancer.setSslTermination(null);
             try {
-                LoadBalancer tempLb = loadBalancerService.getWithUserPages(mdc.getLoadBalancerId(), mdc.getAccountId());
-                tempLb.setSslTermination(null);
-
-                LOG.debug(String.format("Syncing load balancer %s setting status to PENDING_UPDATE", tempLb.getId()));
+                LOG.debug(String.format("Syncing load balancer %s setting status to PENDING_UPDATE", dbLoadBalancer.getId()));
 
                 if (isRestAdapter()) {
-                    LOG.debug(String.format("Updating loadbalancer: %s in STM...", tempLb.getId()));
-                    reverseProxyLoadBalancerStmService.updateLoadBalancer(tempLb, tempLb, loadBalancerService.getUserPages(tempLb.getId(), tempLb.getAccountId()));
-                    LOG.debug(String.format("Successfully Updated loadbalancer: %s in STM...", tempLb.getId()));
+                    LOG.debug(String.format("Updating loadbalancer: %s in STM...", dbLoadBalancer.getId()));
+                    reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, dbLoadBalancer, loadBalancerService.getUserPages(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId()));
+                    LOG.debug(String.format("Successfully Updated loadbalancer: %s in STM...", dbLoadBalancer.getId()));
                 } else {
-                    LOG.debug(String.format("Re-creating loadbalancer: %s in ZXTM...", tempLb.getId()));
-                    reverseProxyLoadBalancerService.createLoadBalancer(tempLb);
-                    LOG.debug(String.format("Successfully Re-created loadbalancer: %s in ZXTM...", tempLb.getId()));
+                    LOG.debug(String.format("Re-creating loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
+                    reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
+                    LOG.debug(String.format("Successfully Re-created loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
                 }
 
-                LOG.debug(String.format("Sync of load balancer %s complete, updating status and saving events and usage...", tempLb.getId()));
+                LOG.debug(String.format("Sync of load balancer %s complete, updating status and saving events and usage...", dbLoadBalancer.getId()));
 
                 if (loadBalancerStatus.equals(BUILD)) {
                     NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);
@@ -161,6 +165,9 @@ public class SyncListener extends BaseListener {
                 notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
                 LOG.error(msg, e);
             }
+            //And now add them back for the next operations
+            dbLoadBalancer.setHttpsRedirect(tempHttpsRedirect);
+            dbLoadBalancer.setSslTermination(tempSslTerm);
 
             try {
                 //Now create the secure VS if ssl termination was already on the loadbalancer...
@@ -218,6 +225,17 @@ public class SyncListener extends BaseListener {
                 }
             } catch (Exception e) {
                 String msg = String.format("Error re-creating ssl terminated loadbalancer #%d in SyncListener(), " +
+                        "setting status to ERROR, original status: :", mdc.getLoadBalancerId(), loadBalancerStatus);
+                finalStatus = ERROR;
+                LOG.error(msg, e);
+            }
+            try {
+                UserPages tempUserPages = dbLoadBalancer.getUserPages();
+                if (tempUserPages != null && tempUserPages.getErrorpage() != null) {
+                    reverseProxyLoadBalancerService.setErrorFile(dbLoadBalancer, tempUserPages.getErrorpage());
+                }
+            } catch (Exception e) {
+                String msg = String.format("Error setting error page for loadbalancer #%d in SyncListener(), " +
                         "setting status to ERROR, original status: :", mdc.getLoadBalancerId(), loadBalancerStatus);
                 finalStatus = ERROR;
                 LOG.error(msg, e);
