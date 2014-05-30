@@ -47,7 +47,7 @@ public class HadoopLogSplitterJob extends HadoopJob {
         String outDir = args[1];
         String histDir = args[2];
         String fileHour = args[3];
-        int nReducers = Integer.parseInt(args[4]);
+        int nReducers = Integer.parseInt(args[4]) + 1; // The extra reducer is for the unknown.zip file
         String userName = args[5];
         List<String> lzoFiles = new ArrayList<String>();
         for (int i = 6; i < args.length; i++) {

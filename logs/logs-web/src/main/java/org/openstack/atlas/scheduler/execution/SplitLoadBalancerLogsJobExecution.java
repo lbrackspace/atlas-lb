@@ -32,7 +32,6 @@ import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
-
 public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
     private static final VerboseLogger vlog = new VerboseLogger(SplitLoadBalancerLogsJobExecution.class, VerboseLogger.LogLevel.INFO);
@@ -71,12 +70,15 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
             // Build the local cache file Name
             List<String> localZipPathComponents = new ArrayList<String>();
             localZipPathComponents.add(localCacheDir);
-            localZipPathComponents.add(fileHour);
-            localZipPathComponents.add(Integer.toString(accountId));
+            if (accountId < 0 || loadbalancerId < 0) {
+                localZipPathComponents.add("unknown");
+            } else {
+                localZipPathComponents.add(fileHour);
+                localZipPathComponents.add(Integer.toString(accountId));
+            }
             localZipPathComponents.add(zipFileNameNoDir);
             List<String> mergedCacheZipPathComponents = StaticFileUtils.joinPath(localZipPathComponents);
             String fullCacheZipPath = StaticFileUtils.splitPathToString(mergedCacheZipPathComponents);
-
             // Download The zip file from Hdfs
             FSDataInputStream zipFileInputStream;
             FSDataOutputStream zipfileCacheOutputStream;
@@ -108,8 +110,13 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
                 StaticFileUtils.close(zipfileCacheOutputStream);
                 continue;
             }
+            StaticFileUtils.close(zipFileInputStream);
+            StaticFileUtils.close(zipfileCacheOutputStream);
 
-
+            if (accountId < 0 || loadbalancerId < 0) { // This is the unknown zip file do not upload to cloud Files
+                vlog.printf("found file %s not scheduling for upload to cloudFiles. This is expected\n", fullCacheZipPath);
+                continue;
+            }
             // Build the CloudFilesZipInfo entry and put it on the schedulerConfigs list for the ArchiveLoadbalancerLogsJob
             CloudFilesZipInfo cloudFileZipEntry = new CloudFilesZipInfo();
             cloudFileZipEntry.setAccountId(accountId);
@@ -122,8 +129,6 @@ public class SplitLoadBalancerLogsJobExecution extends LoggableJobExecution impl
             cloudFileZipEntry.setLocalCacheDir(localCacheDir);
             schedulerConfigs.getCloudFilesZipInfoList().add(cloudFileZipEntry);
             vlog.printf("Added %s", cloudFileZipEntry.toString());
-            StaticFileUtils.close(zipFileInputStream);
-            StaticFileUtils.close(zipfileCacheOutputStream);
         }
         try {
             scheduleArchiveLoadBalancerLogsJob(scheduler, schedulerConfigs);

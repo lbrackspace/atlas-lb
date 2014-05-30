@@ -1,7 +1,6 @@
 package org.openstack.atlas.logs.hadoop.util;
 
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
-import org.openstack.atlas.io.LbLogsWritable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -10,135 +9,113 @@ import java.util.regex.Pattern;
 import org.openstack.atlas.exception.DateParseException;
 import org.openstack.atlas.exception.StringParseException;
 import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public final class LogChopper {
 
     private static final Log LOGGER = LogFactory.getLog(LogChopper.class);
-    private static final Pattern HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++)\\] \"(.*)(HTTP\\/1\\.\\d*)\\s*\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\")$");
-    private static final Pattern HTTP_LB_LOG_PATTERN_IP = Pattern.compile("^(([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) \\[([^\\]]++)\\] \"(.*)(HTTP\\/1\\.\\d*)\\s*\" ([^ ]++) (\\d+) \"(.*)\" \"(.*)\" ([^ ]++))$");
-    private static final Pattern NON_HTTP_LB_LOG_PATTERN = Pattern.compile("^(([^ ]++) \\[([^\\]]++)\\] ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++) ([^ ]++))$");
+    private static final Pattern LOG_PATTERN_1 = Pattern.compile("^(([^ ]++)\\s+([^ ]++)\\s+([^ ]++)\\s+([^ ]++)\\s+([^ ]++)\\s+\\[([^\\]]++)\\].*)$");
+    private static final Pattern LOG_PATTERN_2 = Pattern.compile("^(([^ ]++)\\s+([^ ]++)\\s+([^ ]++) ([^ ]++)\\s+\\[([^\\]]++)\\].*)$");
+    private static final Pattern LOG_PATTERN_3 = Pattern.compile("^(([^ ]++)\\s+([^ ]++)\\s+([^ ]++)\\s+\\[([^\\]]++)\\].*)$");
+    private static final Pattern LOG_PATTERN_4 = Pattern.compile("^(([^ ]++) ([^ ]++) \\[([^\\]]++)\\].*)$");
+    private static final Pattern LOG_PATTERN_5 = Pattern.compile("^(([^ ]++)\\s+\\[([^\\]]++)\\].*)$");
+    private static final Pattern LOG_PATTERN_6 = Pattern.compile("^(([^ ]++)\\s+[^\\[]+\\[([^\\]]++)\\].*)$");
 
     private LogChopper() {
     }
 
-    public static void getLogLineValues(String logLine, LogMapperOutputValue val) throws DateParseException, StringParseException {
-
-        Matcher matcher = HTTP_LB_LOG_PATTERN.matcher(logLine);
-        Matcher matcherIP = HTTP_LB_LOG_PATTERN_IP.matcher(logLine);
-        boolean matchFound = matcher.find();
+    public static void getLogLineValues(String logLineIn, LogMapperOutputValue val) throws DateParseException, StringParseException {
+        Matcher matcher;
         String date;
-
-        if (matchFound) {
+        String logLine;
+        String lbName;
+        logLine = StaticStringUtils.justOneCR(logLineIn);
+        matcher = LOG_PATTERN_1.matcher(logLine);
+        if (matcher.find()) {
             date = matcher.group(7);
-            String sourceIp = matcher.group(4);
-            parseLogLine(logLine, matcher, matchFound, date, sourceIp, val);
+            lbName = matcher.group(2);
+            parseLogLine(logLine, lbName, true, date, null, val);
             return;
-        } else if (matcherIP.find()) {
-            matchFound = true;
-            date = matcherIP.group(7);
-            String sourceIp = matcherIP.group(4);
-            parseLogLine(logLine, matcherIP, matchFound, date, sourceIp, val);
+        }
+        matcher = LOG_PATTERN_2.matcher(logLine);
+        if (matcher.find()) {
+            date = matcher.group(6);
+            lbName = matcher.group(2);
+            parseLogLine(logLine, lbName, true, date, null, val);
             return;
-        } else {
-            matcher = NON_HTTP_LB_LOG_PATTERN.matcher(logLine);
-            matchFound = matcher.find();
-            if (!matchFound) {
-                throw new StringParseException("Date did not parse on Non HTTP LoadBalancer");
-            }
+        }
+        matcher = LOG_PATTERN_3.matcher(logLine);
+        if (matcher.find()) {
+            date = matcher.group(5);
+            lbName = matcher.group(2);
+            parseLogLine(logLine, lbName, true, date, null, val);
+            return;
+        }
+        matcher = LOG_PATTERN_4.matcher(logLine);
+        if (matcher.find()) {
+            date = matcher.group(4);
+            lbName = matcher.group(2);
+            parseLogLine(logLine, lbName, true, date, null, val);
+            return;
+        }
+        matcher = LOG_PATTERN_5.matcher(logLine);
+        if (matcher.find()) {
             date = matcher.group(3);
-            parseLogLine(logLine, matcher, matchFound, date, null, val);
+            lbName = matcher.group(2);
+            parseLogLine(logLine, lbName, true, date, null, val);
             return;
         }
-    }
-
-    @Deprecated
-    public static LbLogsWritable getLbLogStats(String logline) throws StringParseException {
-        Matcher matcher = HTTP_LB_LOG_PATTERN.matcher(logline);
-        Matcher matcherIP = HTTP_LB_LOG_PATTERN_IP.matcher(logline);
-        boolean matchFound = matcher.find();
-        String date;
-
-        if (matchFound) {
-            date = matcher.group(7);
-            String sourceIp = matcher.group(4);
-            return parseLogLine(logline, matcher, matchFound, date, sourceIp);
-        } else if (matcherIP.find()) {
-            matchFound = true;
-            date = matcherIP.group(7);
-            String sourceIp = matcherIP.group(4);
-            return parseLogLine(logline, matcherIP, matchFound, date, sourceIp);
-        } else {
-            matcher = NON_HTTP_LB_LOG_PATTERN.matcher(logline);
-            matchFound = matcher.find();
+        matcher = LOG_PATTERN_6.matcher(logLine);
+        if (matcher.find()) {
             date = matcher.group(3);
-            return parseLogLine(logline, matcher, matchFound, date, null);
+            lbName = matcher.group(2);
+            parseLogLine(logLine, lbName, true, date, null, val);
+            return;
         }
+        throw new StringParseException("Line did not match");
+
     }
 
-    @Deprecated
-    private static LbLogsWritable parseLogLine(String logline, Matcher matcher, boolean matchFound, String date, String sourceIp) throws StringParseException {
-        if (matchFound) {
-            String loadBalancerName = matcher.group(2);
-            String[] arr = loadBalancerName.split("_");
-            int accountId = Integer.parseInt(arr[0]);
-            int loadBalancerId = Integer.parseInt(arr[1]);
-            String accountId_loadBalancerId = accountId + "_" + loadBalancerId;
-
-
-            if (loadBalancerName.contains("_S")) {
-                logline = stripSSL(logline, loadBalancerName, accountId_loadBalancerId);
-            }
-
-            if (sourceIp == null) {
-                sourceIp = "";
-            }
-            return new LbLogsWritable(accountId,
-                    sourceIp,
-                    accountId_loadBalancerId,
-                    loadBalancerId,
-                    StaticDateTimeUtils.parseApacheDateTime(date, false).toGregorianCalendar(),
-                    logline);
-        } else {
-            LOGGER.error(logline);
-            throw new StringParseException("Line did not match");
-
+    private static void parseLogLine(String logline, String loadBalancerName, boolean matchFound, String date, String sourceIp, LogMapperOutputValue val) throws DateParseException, StringParseException {
+        String[] arr;
+        int accountId;
+        int loadBalancerId;
+        String accountId_loadBalancerId;
+        try {
+            arr = loadBalancerName.split("_");
+            accountId = Integer.parseInt(arr[0]);
+            loadBalancerId = Integer.parseInt(arr[1]);
+            accountId_loadBalancerId = accountId + "_" + loadBalancerId;
+        } catch (Exception ex) {
+            throw new StringParseException("Error could not decode accountId and loadbalancerId");
         }
-    }
 
-    private static void parseLogLine(String logline, Matcher matcher, boolean matchFound, String date, String sourceIp, LogMapperOutputValue val) throws DateParseException, StringParseException {
-        if (matchFound) {
-            String loadBalancerName = matcher.group(2);
-            String[] arr = loadBalancerName.split("_");
-            int accountId = Integer.parseInt(arr[0]);
-            int loadBalancerId = Integer.parseInt(arr[1]);
-            String accountId_loadBalancerId = accountId + "_" + loadBalancerId;
-
-
-            if (loadBalancerName.contains("_S")) {
-                logline = stripSSL(logline, loadBalancerName, accountId_loadBalancerId);
-            }
-
-            if (sourceIp == null) {
-                sourceIp = "";
-            }
-            val.setAccountId(accountId);
-            val.setSourceIp(sourceIp);
-            val.setLoadbalancerName(accountId_loadBalancerId);
-            val.setLoadbalancerId(loadBalancerId);
-            org.joda.time.DateTime dt;
+        if (loadBalancerName.contains("_S")) {
             try {
-                dt = StaticDateTimeUtils.parseApacheDateTime(date, true);
+                logline = stripSSL(logline, loadBalancerName, accountId_loadBalancerId);
             } catch (Exception ex) {
-                throw new DateParseException("Coulden't parse date");
+                throw new StringParseException("Unable to convert _S lb to standard lb log line");
             }
-            long dateOrd = StaticDateTimeUtils.dateTimeToOrdinalMillis(dt);
-            val.setDate(dateOrd);
-            val.setLogLine(logline + "\n"); // Not sure why the carriage returns were stripped.
-            return;
-        } else {
-            LOGGER.error(logline);
-            throw new StringParseException("Line did not match");
         }
+
+        if (sourceIp == null) {
+            sourceIp = "";
+        }
+        val.setAccountId(accountId);
+        val.setSourceIp(sourceIp);
+        val.setLoadbalancerName(accountId_loadBalancerId);
+        val.setLoadbalancerId(loadBalancerId);
+        val.setLogLine(StaticStringUtils.justOneCR(logline)); // Not sure why the carriage returns were stripped.
+        org.joda.time.DateTime dt;
+        try {
+            dt = StaticDateTimeUtils.parseApacheDateTime(date, true);
+        } catch (Exception ex) {
+            throw new DateParseException("Coulden't parse date");
+        }
+        long dateOrd = StaticDateTimeUtils.dateTimeToOrdinalMillis(dt);
+        val.setDate(dateOrd);
+        return;
+
     }
 
     private static String stripSSL(String logline, String secureLoadBalancerName, String loadBalancerName) {

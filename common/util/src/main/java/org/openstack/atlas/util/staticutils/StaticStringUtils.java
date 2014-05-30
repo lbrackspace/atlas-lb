@@ -147,7 +147,7 @@ public class StaticStringUtils {
         return sb.toString();
     }
 
-      public static String[] stripBlankArgs(String line) {
+    public static String[] stripBlankArgs(String line) {
         int nargs = 0;
         int i;
         int j;
@@ -166,5 +166,33 @@ public class StaticStringUtils {
             }
         }
         return argsOut;
+    }
+
+    public static String justOneCR(String strIn) {
+        StringBuilder sb = new StringBuilder();
+        String[] Strs = strIn.split("\n");
+        for (String str : Strs) {
+            sb.append(str);
+        }
+        sb.append("\n");
+        return sb.toString();
+
+    }
+
+    public static String showDiff(String a, String b) {
+        StringBuilder sb = new StringBuilder();
+        int i;
+        int la = a.length();
+        int lb = b.length();
+        int li = Math.max(la, lb);
+        for (i = 0; i < li; i++) {
+            int aPoint = (i < la) ? a.codePointAt(i) : 0;
+            int bPoint = (i < lb) ? b.codePointAt(i) : 0;
+            String aStr = new String(new int[]{aPoint}, 0, 1);
+            String bStr = new String(new int[]{bPoint}, 0, 1);
+            int delta = aPoint ^ bPoint;
+            sb.append(String.format("str[%3d]: \"%s\" == \"%s\": Diff %8d\n", i, aStr, bStr, delta));
+        }
+        return sb.toString();
     }
 }

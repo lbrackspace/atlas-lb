@@ -17,6 +17,7 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.util.LogChopper;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, LogMapperOutputValue> {
 
@@ -26,14 +27,21 @@ public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, Lo
     @Override
     public void setup(Context ctx) throws IOException {
         ctx.getCounter(LogCounters.MAPPER_SETUP_CALLS).increment(1);
-        oKey.setDate(-1);
-        oKey.setLoadbalancerId(-1);
-        oKey.setAccountId(-1);
+        clearValues();
+    }
+
+    private void mapValuesToKey() {
+        oKey.setAccountId(oVal.getAccountId());
+        oKey.setLoadbalancerId(oVal.getLoadbalancerId());
+        oKey.setDate(oVal.getDate());
+    }
+
+    private void clearValues() {
         oVal.setAccountId(-1);
         oVal.setLoadbalancerId(-1);
         oVal.setLoadbalancerName("null");
         oVal.setLogLine("null");
-        oVal.setSourceIp("127.0.0.1");
+        oVal.setSourceIp("0.0.0.0");
     }
 
     private String getDebugInfo(Context ctx) throws IOException {
@@ -55,23 +63,23 @@ public class LogMapper extends Mapper<LongWritable, Text, LogMapperOutputKey, Lo
     @Override
     public void map(LongWritable mKey, Text mVal, Context ctx) throws IOException, InterruptedException {
         ctx.getCounter(LogCounters.MAPPER_CALLS).increment(1);
-        String line = mVal.toString();
+        String line = StaticStringUtils.justOneCR(mVal.toString());
         try {
             LogChopper.getLogLineValues(line, oVal);
         } catch (DateParseException ex) {
             ctx.getCounter(LogCounters.BAD_LOG_DATE).increment(1);
-            return;
+            clearValues();
+            oVal.setLogLine(line);
         } catch (StringParseException ex) {
             ctx.getCounter(LogCounters.BAD_LOG_STRING).increment(1);
-            return;
+            clearValues();
+            oVal.setLogLine(line);
         } catch (Exception ex) {
-            ctx.getCounter(LogCounters.BAD_LOG_STRING).increment(1);
-            return;
+            ctx.getCounter(LogCounters.MAPPER_UNKNOWN_EXCEPTION).increment(1);
+            clearValues();
+            oVal.setLogLine(line);
         }
-        oKey.setAccountId(oVal.getAccountId());
-        oKey.setLoadbalancerId(oVal.getLoadbalancerId());
-        oKey.setDate(oVal.getDate());
-
+        mapValuesToKey();
         ctx.getCounter(LogCounters.MAPPER_WRITES).increment(1);
         ctx.write(oKey, oVal);
     }
