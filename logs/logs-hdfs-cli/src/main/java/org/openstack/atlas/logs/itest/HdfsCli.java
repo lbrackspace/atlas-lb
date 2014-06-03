@@ -53,9 +53,11 @@ import org.openstack.atlas.util.debug.Debug;
 import org.joda.time.DateTime;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.logs.hadoop.util.LogChopper;
+import org.openstack.atlas.util.debug.SillyTimer;
 
 public class HdfsCli {
 
+    private static final double MILLISECOND_COEF = 0.001;
     private static final Pattern zipPattern = Pattern.compile(".*\\.zip$");
     private static final int LARGEBUFFERSIZE = 8 * 1024 * 1024;
     private static final int PAGESIZE = 4096;
@@ -66,9 +68,11 @@ public class HdfsCli {
     private static List<String> jarFiles = new ArrayList<String>();
     private static URLClassLoader jobClassLoader = null;
     private static String jobJarName = "";
+    private static SillyTimer timer = new SillyTimer();
 
     public static void main(String[] argv) throws IOException, InterruptedException {
         System.out.printf("JAVA_LIBRARY_PATH=%s\n", System.getProperty("java.library.path"));
+        timer.start();
         String cmdLine;
         String[] args;
         if (argv.length >= 1) {
@@ -90,7 +94,6 @@ public class HdfsCli {
         System.out.printf("\n");
 
         List<WastedBytesBlock> wastedBlocks = new ArrayList<WastedBytesBlock>();
-
 
         while (true) {
             try {
@@ -160,6 +163,10 @@ public class HdfsCli {
                     System.out.printf("runSplit <hourKey> #Run the HadoopSplitterJob for the specified hourkey\n");
                     System.out.printf("runMain <class> args0..N\n");
                     System.out.printf("uploadLzo <lzoFile> #Upload the the lzo file\n");
+                    System.out.printf("startTimer #Start timer\n");
+                    System.out.printf("stopTimer #Stop timer\n");
+                    System.out.printf("readTimer #Read timer\n");
+                    System.out.printf("resetTimer #Reset the timer\n");
                     System.out.printf("scanLines <logFile> <nLines> <nTicks>\n");
                     System.out.printf("scanLinesLzo <logFile> <nLines> <nTicks>\n");
                     System.out.printf("scanhdfszips <yyyymmddhh> <yyyymmddhh> [scanparts=<true|false>]#Scan the hadoop output directories and count how many zips where found between the 2 days\n");
@@ -174,6 +181,17 @@ public class HdfsCli {
                     System.out.printf("fb #Free all bytes wasted so far");
                     System.out.printf("wbs #List the number of bytes in the wasted byte Cuffer\n");
                     System.out.printf("whoami\n");
+                } else if (cmd.equals("resetTimer")) {
+                    System.out.printf("Timer reset\n");
+                    timer.reset();
+                } else if (cmd.equals("startTimer")) {
+                    System.out.printf("Starting timer\n");
+                    timer.start();
+                } else if (cmd.equals("stopTimer")) {
+                    System.out.printf("Stopping timer\n");
+                    timer.stop();
+                } else if (cmd.equals("readTimer")) {
+                    System.out.printf("timer now reads %f seconds\n", timer.readSeconds());
                 } else if (cmd.equals("cpjjf")) {
                     System.out.printf("Marking the jobs jar as already copied\n");
                     HadoopLogsConfigs.markJobsJarAsAlreadyCopied();
@@ -392,9 +410,11 @@ public class HdfsCli {
                         System.out.printf("   arg[%d] = \"%s\"\n", i, logSplitArgs.get(i));
                     }
                     hadoopClient.setConfiguration(HadoopLogsConfigs.getHadoopConfiguration());
+                    timer.start();
+                    timer.reset();
                     int errorCode = hadoopClient.run(logSplitArgs);  // Actually runs the Hadoop Job
-                    System.out.printf("Hadoop tun response code was %d\n", errorCode);
-
+                    timer.stop();
+                    System.out.printf("Hadoop tun response code was %d in %f secs\n", errorCode, timer.readSeconds());
                 } else if (cmd.equals("getzip") && args.length > 1) {
                     Map<String, String> kw = CommonItestStatic.argMapper(args);
                     String lid = (kw.containsKey("l")) ? kw.get("l") : null;
@@ -1035,8 +1055,8 @@ public class HdfsCli {
         List<String> pathComps = new ArrayList<String>();
         if (accountId < 0 || loadbalancerId < 0) {
             pathComps.add(HadoopLogsConfigs.getCacheDir());
-            pathComps.add("unknow");
-            pathComps.add("unknown_"+dateHour + ".zip");
+            pathComps.add("unknown");
+            pathComps.add("unknown_" + dateHour + ".zip");
         } else {
             pathComps.add(HadoopLogsConfigs.getCacheDir());
             pathComps.add(dateHour);
@@ -1108,6 +1128,10 @@ public class HdfsCli {
             fileStatuses = null;
         }
         return scan;
+    }
+
+    public static double nowDateSecs() {
+        return (double) System.currentTimeMillis() * MILLISECOND_COEF;
     }
 
     public static String pathTailString(Path path) {

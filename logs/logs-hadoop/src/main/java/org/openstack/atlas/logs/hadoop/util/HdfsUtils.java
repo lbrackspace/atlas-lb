@@ -194,7 +194,7 @@ public class HdfsUtils {
         cos.close();
     }
 
-    public CompressionInputStream openLzoDecompressionStream(String file_name) throws FileNotFoundException, IOException{
+    public CompressionInputStream openLzoDecompressionStream(String file_name) throws FileNotFoundException, IOException {
         Configuration codecConf = new Configuration();
         codecConf.set("io.compression.codecs", "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,com.hadoop.compression.lzo.LzoCodec,com.hadoop.compression.lzo.LzopCodec,org.apache.hadoop.io.compress.BZip2Codec");
         codecConf.set("io.compression.codec.lzo.class", "com.hadoop.compression.lzo.LzoCodec");
