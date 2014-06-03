@@ -33,20 +33,21 @@ public class ZxtmConversionUtils {
 		mapper.put(LoadBalancerProtocol.UDP, VirtualServerProtocol.udp);
 		mapper.put(LoadBalancerProtocol.MYSQL, VirtualServerProtocol.server_first);
 		mapper.put(LoadBalancerProtocol.SFTP, VirtualServerProtocol.server_first);
+        mapper.put(LoadBalancerProtocol.GENERIC_STREAMING, VirtualServerProtocol.stream);
 
 		return (VirtualServerProtocol) mapper.get(Protocol);
 	}
-	
+
 	public static PoolLoadBalancingAlgorithm mapAlgorithm(LoadBalancerAlgorithm algorithm) {
 		final HashMap<Enum<LoadBalancerAlgorithm>, Serializable> mapper = new HashMap<Enum<LoadBalancerAlgorithm>, Serializable>();
-		
+
 		mapper.put(LoadBalancerAlgorithm.LEAST_CONNECTIONS, PoolLoadBalancingAlgorithm.connections);
 		mapper.put(LoadBalancerAlgorithm.RANDOM, PoolLoadBalancingAlgorithm.random);
         mapper.put(LoadBalancerAlgorithm.ROUND_ROBIN, PoolLoadBalancingAlgorithm.roundrobin);
         mapper.put(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS, PoolLoadBalancingAlgorithm.wconnections);
         mapper.put(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN, PoolLoadBalancingAlgorithm.wroundrobin);
-		
-		return (PoolLoadBalancingAlgorithm) mapper.get(algorithm);	
+
+		return (PoolLoadBalancingAlgorithm) mapper.get(algorithm);
 	}
 
 }
