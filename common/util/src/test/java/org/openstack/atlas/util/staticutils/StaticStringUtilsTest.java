@@ -98,4 +98,13 @@ public class StaticStringUtilsTest {
         assertTrue(out.equals("[test1, test2, test3]"));
         assertFalse(out.equals(""));
     }
+    
+    @Test
+    public void testJustOneCR(){
+        assertEquals(StaticStringUtils.justOneCR("123"), "123\n");
+        assertEquals(StaticStringUtils.justOneCR("123\n"),"123\n");
+        assertEquals(StaticStringUtils.justOneCR("123\n\n"),"123\n");
+        assertEquals(StaticStringUtils.justOneCR(""),"\n");
+        assertEquals(StaticStringUtils.justOneCR("1\n2\n3\n"),"123\n");
+    }
 }

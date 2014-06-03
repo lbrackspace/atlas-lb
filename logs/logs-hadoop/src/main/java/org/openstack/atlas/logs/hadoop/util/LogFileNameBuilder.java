@@ -43,10 +43,16 @@ public class LogFileNameBuilder {
     }
 
     public static String getZipFileName(int loadbalancerId, int fileHour) {
+        if (loadbalancerId < 0) {
+            return "unknown_" + fileHour + ".zip";
+        }
         return "access_log_" + loadbalancerId + "_" + fileHour + ".zip";
     }
 
     public static String getZipContentsName(int loadbalancerId, int fileHour) {
+        if (loadbalancerId < 0) {
+            return "unknown_" + fileHour;
+        }
         return "access_log_" + loadbalancerId + "_" + fileHour;
     }
 }

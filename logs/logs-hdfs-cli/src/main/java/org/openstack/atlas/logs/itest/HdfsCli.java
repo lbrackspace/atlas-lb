@@ -124,7 +124,8 @@ public class HdfsCli {
                     System.out.printf("cpLocal <localSrc> <localDst> [buffsize] #None hadoop file copy\n");
                     System.out.printf("cptl <srcPath remote> <dstPath local> #Copy to Local\n");
                     System.out.printf("cpjj #Copy the jobs jar\n");
-                    System.out.printf("cpjjf #Mark the jar as already copied\n");
+                    System.out.printf("cpjjf #Mark the job jar as already copied\n");
+                    System.out.printf("cpjju #Mark the the job jar as not yet copied\n");
                     System.out.printf("diffConfig <confA.xml> <confB.xml># Compare the differences between the configs\n");
                     System.out.printf("du #Get number of free space on HDFS\n");
                     System.out.printf("dumpConfig <outFile.xml> <confIn.xml..> #Dump config to outfile\n");
@@ -176,6 +177,9 @@ public class HdfsCli {
                 } else if (cmd.equals("cpjjf")) {
                     System.out.printf("Marking the jobs jar as already copied\n");
                     HadoopLogsConfigs.markJobsJarAsAlreadyCopied();
+                } else if (cmd.equals("cpjju")) {
+                    System.out.printf("Marking the jobs jar as not yet copied\n");
+                    HadoopLogsConfigs.markJobsJarAsUnCopied();
                 } else if (cmd.equals("spoff")) {
                     System.out.printf("Attempting to disable speculative execution\n");
                     Configuration editConf;
@@ -1029,10 +1033,16 @@ public class HdfsCli {
 
     public static String zipFilePath(String dateHour, int accountId, int loadbalancerId) {
         List<String> pathComps = new ArrayList<String>();
-        pathComps.add(HadoopLogsConfigs.getCacheDir());
-        pathComps.add(dateHour);
-        pathComps.add(Integer.toString(accountId));
-        pathComps.add("access_log_" + Integer.toString(loadbalancerId) + "_" + dateHour + ".zip");
+        if (accountId < 0 || loadbalancerId < 0) {
+            pathComps.add(HadoopLogsConfigs.getCacheDir());
+            pathComps.add("unknow");
+            pathComps.add("unknown_"+dateHour + ".zip");
+        } else {
+            pathComps.add(HadoopLogsConfigs.getCacheDir());
+            pathComps.add(dateHour);
+            pathComps.add(Integer.toString(accountId));
+            pathComps.add("access_log_" + Integer.toString(loadbalancerId) + "_" + dateHour + ".zip");
+        }
         return StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathComps));
     }
 
