@@ -149,8 +149,6 @@ public class ValidationFilter implements Filter {
     }
 
     protected void sendJSONBadRequestError(HttpServletRequest req, HttpServletResponse resp, int status, String err) throws IOException {
-//        resp.setStatus(status);
-//        resp.setContentType("application/json; charset=UTF-8");
         resp.setStatus(status);
         resp.setContentType("application/json; charset=UTF-8");
         PrintWriter writer = resp.getWriter();
@@ -158,8 +156,6 @@ public class ValidationFilter implements Filter {
     }
 
     protected void sendXMLBadRequestError(HttpServletRequest req, HttpServletResponse resp, int status, String err) throws IOException {
-//        resp.setStatus(status);
-//        resp.setContentType("application/xml; charset=UTF-8");
         resp.setStatus(status);
         resp.setContentType("application/xml; charset=UTF-8");
         PrintWriter writer = resp.getWriter();
