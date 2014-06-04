@@ -6,6 +6,7 @@ import org.openstack.atlas.api.filters.wrappers.BufferedRequestWrapper;
 import org.openstack.atlas.api.helpers.reflection.UriClassDiscover;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +57,16 @@ public class JsonValidationFilter extends ValidationFilter {
         if (method == null
                 || containsMethod(method, "GET", "DELETE")
                 || body.length() == 0) {
+            if (containsMethod(method, "POST")) {
+                if (acceptType.equalsIgnoreCase(JSON)) {
+                    sendJSONBadRequestError(hreq, hresp, BADREQ, "");
+                    return;
+                }
+                if (acceptType.equalsIgnoreCase(XML)) {
+                    sendXMLBadRequestError(hreq, hresp, BADREQ, "");
+                    return;
+                }
+            }
             fc.doFilter(breq, sresp);
             return;
         }

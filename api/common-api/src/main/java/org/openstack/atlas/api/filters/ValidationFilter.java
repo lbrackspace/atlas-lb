@@ -24,6 +24,7 @@ import org.openstack.atlas.api.filters.wrappers.BufferedRequestWrapper;
 import org.openstack.atlas.api.helpers.JsonObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.springframework.core.io.ClassPathResource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
@@ -144,6 +145,24 @@ public class ValidationFilter implements Filter {
         result = mapper.writeValueAsString(vFault);
         resp.setContentLength(result.length());
         writer.write(result);
+        writer.flush();
+    }
+
+    protected void sendJSONBadRequestError(HttpServletRequest req, HttpServletResponse resp, int status, String err) throws IOException {
+//        resp.setStatus(status);
+//        resp.setContentType("application/json; charset=UTF-8");
+        resp.setStatus(status);
+        resp.setContentType("application/json; charset=UTF-8");
+        PrintWriter writer = resp.getWriter();
+        writer.flush();
+    }
+
+    protected void sendXMLBadRequestError(HttpServletRequest req, HttpServletResponse resp, int status, String err) throws IOException {
+//        resp.setStatus(status);
+//        resp.setContentType("application/xml; charset=UTF-8");
+        resp.setStatus(status);
+        resp.setContentType("application/xml; charset=UTF-8");
+        PrintWriter writer = resp.getWriter();
         writer.flush();
     }
 

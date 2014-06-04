@@ -41,7 +41,7 @@ public class JsonObjectMapper extends ObjectMapper {
             Node.class, RateLimit.class, Errorpage.class, SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
 
         Class[] deserializerWrapperClasses = new Class[]{VirtualIpBlocks.class,HostMachineDetails.class, AccountRecord.class, Node.class, HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, Meta.class,
+            SessionPersistence.class, ConnectionLogging.class, Meta.class, VirtualIp.class,
             ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
             Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
 
@@ -72,7 +72,7 @@ public class JsonObjectMapper extends ObjectMapper {
 
         cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
         cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
-
+        cdf.addSpecificMapping(VirtualIps.class, new PropertyListDeserializer(VirtualIps.class, VirtualIp.class, "getVirtualIps"));
 
         this.setSerializerFactory(csf);
         this.setDeserializerProvider(new DeserializerProviderBuilder(cdf));
