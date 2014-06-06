@@ -2027,21 +2027,27 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         try {
             if (throttle != null) {
+                // This request is "non-negotiable" until Stingray can fix a bug that makes the remaining fields invalid.
+                serviceStubs.getProtectionBinding().setPerProcessConnectionCount(new String[]{protectionClassName}, new boolean[]{false});
+
                 if (throttle.getMinConnections() != null) {
                     // Set the minimum connections that will be allowed from any single IP before beginning to apply restrictions.
-                    serviceStubs.getProtectionBinding().setMinConnections(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getMinConnections())});
+//                    serviceStubs.getProtectionBinding().setMinConnections(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getMinConnections())});
+                    serviceStubs.getProtectionBinding().setMinConnections(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(0)});
                 }
 
                 if (throttle.getRateInterval() != null) {
                     // Set the rate interval for the rates
-                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getRateInterval())});
+//                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getRateInterval())});
+                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(1)});
                 }
 
                 //Odd issue in 9.5 where rateInterval must be set before max rate...
 
                 if (throttle.getMaxConnectionRate() != null) {
                     // Set the maximum connection rate + rate interval
-                    serviceStubs.getProtectionBinding().setMaxConnectionRate(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnectionRate())});
+//                    serviceStubs.getProtectionBinding().setMaxConnectionRate(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(throttle.getMaxConnectionRate())});
+                    serviceStubs.getProtectionBinding().setMaxConnectionRate(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(0)});
                 }
 
 
