@@ -86,11 +86,14 @@ public class HadoopLogsConfigs {
                 append("    cacheDir = ").append(cacheDir).append("\n").
                 append("    backupdir = ").append(backupDir).append("\n").
                 append("    fileSystemRootDir = ").append(fileSystemRootDir).append("\n").
+                append("    localHobsJarPath= ").append(localJobsJarPath).append("\n").
                 append("    hadoopXmlFile =").append(hadoopXmlFile).append("\n").
                 append("    mapreduceInputPrefix = ").append(mapreduceInputPrefix).append("\n").
                 append("    mapreduceOutputPrefix = ").append(mapreduceOutputPrefix).append("\n").
                 append("    fileRegion = ").append(fileRegion).append("\n").
                 append("    hdfsUserName = ").append(hdfsUserName).append("\n").
+                append("    numReducers = ").append(numReducers).append("\n").
+                append("    hdfsJobsJarPath = ").append(hdfsJobsJarPath).append("\n").
                 append("    jarCopyed = ").append(jarCopyed).append("\n").
                 append("    resetCount = ").append(resetCount).append("\n").
                 append("}\n");
@@ -107,8 +110,8 @@ public class HadoopLogsConfigs {
             hadoopConfiguration.addResource(new Path(StaticFileUtils.expandUser(hadoopXmlFile)));
 
             // Disable Speculative Execution
-            hadoopConfiguration.setBoolean("mapred.reduce.tasks.speculative.execution", false);
-            hadoopConfiguration.setBoolean("mapred.map.tasks.speculative.execution", false);
+            hadoopConfiguration.setBoolean("mapred.reduce.tasks.speculative.execution", true);
+            hadoopConfiguration.setBoolean("mapred.map.tasks.speculative.execution", true);
             // Cause its wastful.
         }
         return hadoopConfiguration;
@@ -178,6 +181,10 @@ public class HadoopLogsConfigs {
 
     public static void markJobsJarAsAlreadyCopied() {
         jarCopyed = true;
+    }
+
+    public static void markJobsJarAsUnCopied() {
+        jarCopyed = false;
     }
 
     public static void copyJobsJar() throws FileNotFoundException, IOException {

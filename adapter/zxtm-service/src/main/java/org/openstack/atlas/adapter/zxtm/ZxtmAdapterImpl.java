@@ -1403,9 +1403,37 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     // upload the file then set the Errorpage.
     @Override
     public void setErrorFile(LoadBalancerEndpointConfiguration conf, LoadBalancer loadbalancer, String content) throws RemoteException, InsufficientRequestException {
-        setErrorFile(conf, ZxtmNameBuilder.genVSName(loadbalancer), content);
-        if (loadbalancer.hasSsl()) {
-            setErrorFile(conf, ZxtmNameBuilder.genSslVSName(loadbalancer), content);
+        Integer lbId = loadbalancer.getId();
+        Integer accountId = loadbalancer.getAccountId();
+        ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
+
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(lbId, accountId);
+        String[] vsNames;
+
+        boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+        boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
+
+        if (isSecureServer && isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualRedirectServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isSecureServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualRedirectServerName;
+        } else {
+            vsNames = new String[1];
+            vsNames[0] = virtualServerName;
+        }
+
+        for (String vsName : vsNames) {
+            setErrorFile(conf, vsName, content);
         }
     }
 
@@ -1458,9 +1486,37 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void setDefaultErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, RemoteException {
-        setDefaultErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer));
-        if (loadBalancer.hasSsl()) {
-            setDefaultErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        Integer lbId = loadBalancer.getId();
+        Integer accountId = loadBalancer.getAccountId();
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(lbId, accountId);
+        String[] vsNames;
+
+        boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+        boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
+
+        if (isSecureServer && isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualRedirectServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isSecureServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualSecureServerName;
+        } else if (isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualRedirectServerName;
+        } else {
+            vsNames = new String[1];
+            vsNames[0] = virtualServerName;
+        }
+
+        for (String vsName : vsNames) {
+            setDefaultErrorFile(config, vsName);
         }
     }
 
@@ -1479,9 +1535,41 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     @Override
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws AxisFault, InsufficientRequestException {
-        deleteErrorFile(config, ZxtmNameBuilder.genVSName(loadBalancer));
-        if (loadBalancer.hasSsl()) {
-            deleteErrorFile(config, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        Integer lbId = loadBalancer.getId();
+        Integer accountId = loadBalancer.getAccountId();
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(lbId, accountId);
+        String[] vsNames;
+
+        try {
+            boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+            boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
+
+            if (isSecureServer && isRedirectServer) {
+                vsNames = new String[2];
+                vsNames[0] = virtualRedirectServerName;
+                vsNames[1] = virtualSecureServerName;
+            } else if (isSecureServer) {
+                vsNames = new String[2];
+                vsNames[0] = virtualServerName;
+                vsNames[1] = virtualSecureServerName;
+            } else if (isRedirectServer) {
+                vsNames = new String[2];
+                vsNames[0] = virtualServerName;
+                vsNames[1] = virtualRedirectServerName;
+            } else {
+                vsNames = new String[1];
+                vsNames[0] = virtualServerName;
+            }
+
+            for (String vsName : vsNames) {
+                deleteErrorFile(config, vsName);
+            }
+        } catch (RemoteException e) {
+            //TODO what should we do here?
         }
     }
 

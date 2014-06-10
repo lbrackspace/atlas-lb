@@ -138,7 +138,7 @@ public class ReuploadCli {
                     System.out.printf("showAuth <accountId> #Get information on account via the god AuthClient\n");
                     System.out.printf("rmlid <lid> #remove zips in the zinfolist that are for the specified loadbalancer\n");
                     System.out.printf("rmaid <aid> #remove zips in the zinfolist that are for the specified account\n");
-                    System.out.printf("keyauth <accountId> #Get service token and other user info from keystone auth\n");
+                    System.out.printf("auth <accountId> #Get service token and other user info from keystone auth\n");
                     System.out.printf("clearDirs <minusHours>    #Remove any empty directories\n");
                     System.out.printf("delDir <path> #Delete directory if its empty\n");
                     System.out.printf("utc [minusHours] #Get the time stamp in utc for the hour Key that clearDirs would scan\n");
