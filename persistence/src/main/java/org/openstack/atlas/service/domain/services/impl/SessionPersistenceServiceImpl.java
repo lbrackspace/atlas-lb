@@ -80,8 +80,7 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
         SessionPersistence persistenceType = inLb.getSessionPersistence();
         LoadBalancerProtocol dbProtocol = dbLb.getProtocol();
 
-        String httpErrMsg = "HTTP_COOKIE session persistence is only valid with the HTTP protocol.";
-        String sipErrMsg = "SOURCE_IP session persistence is only valid with non-HTTP protocols. ";
+        String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP protocol with or without SSL termination.";
         String sslErrMsg = "SSL_ID session persistence is only valid with the HTTPS protocol. ";
 
         LOG.info("Verifying session persistence protocol..." + persistenceType);
@@ -89,11 +88,6 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
             if (persistenceType == HTTP_COOKIE && (dbProtocol != HTTP)) {
                 LOG.info(httpErrMsg);
                 throw new BadRequestException(httpErrMsg);
-            }
-
-            if (persistenceType == SOURCE_IP && (dbProtocol == HTTP || dbProtocol == HTTPS)) {
-                LOG.info(sipErrMsg);
-                throw new BadRequestException(sipErrMsg);
             }
 
             if (persistenceType == SSL_ID && (dbProtocol != HTTPS)) {
