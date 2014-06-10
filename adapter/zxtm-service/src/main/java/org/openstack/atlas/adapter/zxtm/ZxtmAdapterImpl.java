@@ -630,29 +630,44 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //                //V1-B-17728 support for SOURCE_IP
 //                removeSessionPersistence(config, lbId, accountId);
 //            }
-
-            if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
-//                removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
-//                removeXFPRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
-                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, disablesXF);
-                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, disablesXF);
-//                removeXFPORTRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
-                // :/ suppose well handle it like this because we dont know if theres multiple vs names or not...
+            if (protocol.equals(LoadBalancerProtocol.HTTP)) {
+                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, enablesXF);
+                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, enablesXF);
+                attachXFPORTRuleToVirtualServers(serviceStubs, vsNames);
+            } else {
                 for (String vname : vsNames) {
                     serviceStubs.getVirtualServerBinding().setRules(new String[]{(vname)}, new VirtualServerRule[][]{{}});
                 }
                 updateContentCaching(config, lb);
-                if (!SessionPersistence.SOURCE_IP.equals(lb.getSessionPersistence())) {
+                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, disablesXF);
+                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, disablesXF);
+                if (SessionPersistence.HTTP_COOKIE.equals(lb.getSessionPersistence())) {
                     removeSessionPersistence(config, lbId, accountId);
                 }
-            } else {
-                if (!SessionPersistence.HTTP_COOKIE.equals(lb.getSessionPersistence())) {
-                    removeSessionPersistence(config, lbId, accountId);
-                }
-                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, enablesXF);
-                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, enablesXF);
-                attachXFPORTRuleToVirtualServers(serviceStubs, vsNames);
             }
+
+//            if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
+////                removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
+////                removeXFPRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
+//                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, disablesXF);
+//                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, disablesXF);
+////                removeXFPORTRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
+//                // :/ suppose well handle it like this because we dont know if theres multiple vs names or not...
+//                for (String vname : vsNames) {
+//                    serviceStubs.getVirtualServerBinding().setRules(new String[]{(vname)}, new VirtualServerRule[][]{{}});
+//                }
+//                updateContentCaching(config, lb);
+//                if (!SessionPersistence.SOURCE_IP.equals(lb.getSessionPersistence())) {
+//                    removeSessionPersistence(config, lbId, accountId);
+//                }
+//            } else {
+//                if (!SessionPersistence.HTTP_COOKIE.equals(lb.getSessionPersistence())) {
+//                    removeSessionPersistence(config, lbId, accountId);
+//                }
+//                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, enablesXF);
+//                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, enablesXF);
+//                attachXFPORTRuleToVirtualServers(serviceStubs, vsNames);
+//            }
         } catch (Exception e) {
             throw new ZxtmRollBackException(String.format("Update protocol request canceled for %s ", virtualServerName), e);
         }
