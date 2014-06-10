@@ -785,15 +785,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         LoadBalancerProtocol dbProtocol = queueLb.getProtocol();
 
         String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP and HTTP pass-through(ssl-termination) protocols.";
-        String sipErrMsg = "SOURCE_IP Session persistence is only valid with non HTTP protocols.";
         if (inpersist != NONE) {
             if (inpersist == HTTP_COOKIE && (dbProtocol != HTTP)) {
                 throw new BadRequestException(httpErrMsg);
             }
-
-//            if (inpersist == SOURCE_IP && (dbProtocol == HTTP)) {
-//                throw new BadRequestException(sipErrMsg);
-//            }
         }
     }
 
