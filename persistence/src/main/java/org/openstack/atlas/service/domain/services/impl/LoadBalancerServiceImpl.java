@@ -801,20 +801,17 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         String sslErrMsg = "SSL_ID session persistence is only valid with the HTTPS protocol. ";
 
         if (persistenceType != NONE) {
-            if (persistenceType == HTTP_COOKIE &&
-                    (dbProtocol != HTTP)) {
+            if (persistenceType == HTTP_COOKIE && (dbProtocol != HTTP)) {
                 LOG.info(httpErrMsg);
                 throw new BadRequestException(httpErrMsg);
             }
 
-            if (persistenceType == SOURCE_IP &&
-                    (dbProtocol == HTTP || dbProtocol == HTTPS)) {
+            if (persistenceType == SOURCE_IP && (dbProtocol == HTTP || dbProtocol == HTTPS)) {
                 LOG.info(httpErrMsg);
                 throw new BadRequestException(sipErrMsg);
             }
 
-            if (persistenceType == SSL_ID &&
-                    (dbProtocol != HTTPS)) {
+            if (persistenceType == SSL_ID && (dbProtocol != HTTPS)) {
                 LOG.info(sslErrMsg);
                 throw new BadRequestException(sslErrMsg);
             }
