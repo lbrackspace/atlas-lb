@@ -86,20 +86,17 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
 
         LOG.info("Verifying session persistence protocol..." + persistenceType);
         if (persistenceType != NONE) {
-            if (persistenceType == HTTP_COOKIE &&
-                    (dbProtocol != HTTP)) {
+            if (persistenceType == HTTP_COOKIE && (dbProtocol != HTTP)) {
                 LOG.info(httpErrMsg);
                 throw new BadRequestException(httpErrMsg);
             }
 
-            if (persistenceType == SOURCE_IP &&
-                    (dbProtocol == HTTP || dbProtocol == HTTPS)) {
+            if (persistenceType == SOURCE_IP && (dbProtocol == HTTP || dbProtocol == HTTPS)) {
                 LOG.info(sipErrMsg);
                 throw new BadRequestException(sipErrMsg);
             }
 
-            if (persistenceType == SSL_ID &&
-                    (dbProtocol != HTTPS)) {
+            if (persistenceType == SSL_ID && (dbProtocol != HTTPS)) {
                 LOG.info(sslErrMsg);
                 throw new BadRequestException(sslErrMsg);
             }

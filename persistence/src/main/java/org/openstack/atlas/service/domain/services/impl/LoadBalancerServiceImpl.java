@@ -807,7 +807,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
 
             if (persistenceType == SOURCE_IP && (dbProtocol == HTTP || dbProtocol == HTTPS)) {
-                LOG.info(httpErrMsg);
+                LOG.info(sipErrMsg);
                 throw new BadRequestException(sipErrMsg);
             }
 
