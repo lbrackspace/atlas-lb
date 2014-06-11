@@ -198,7 +198,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             TrafficScriptHelper.addForceHttpsRedirectScriptIfNeeded(serviceStubs);
             attachForceHttpsRedirectRuleToVirtualServer(serviceStubs, virtualServerName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
-            //updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
+            updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
 
             if (lb.getTimeout() != null) {
                 updateTimeout(config, lb);
@@ -357,7 +357,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             updateHalfClosed(config, lb);
         }
 
-        if (lb.isHttpsRedirect() != null) {
+        if (lb.isHttpsRedirect() != null && !virtualServerName.equals(ZxtmNameBuilder.genRedirectVSName(lb))) {
             updateHttpsRedirect(config, lb);
         }
     }
