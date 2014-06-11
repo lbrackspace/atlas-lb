@@ -57,7 +57,14 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
             vlog.log(String.format("Searching for %s", "%:" + inputFile));
             List<JobState> states = jobStateRepository.getEntriesLike(JobName.FILECOPY, "%:" + inputFile);
             if (states.isEmpty()) {
-                scheduledFilesToRun.add(inputFile);
+                try {
+                    StaticFileUtils.getDateStringFromFileName(inputFile);
+                    scheduledFilesToRun.add(inputFile);
+                } catch (IllegalArgumentException ae) {
+                    vlog.log(String.format("Not adding file %s as its not a valid log file\n"));
+                    continue;
+                }
+
                 vlog.log(String.format("Scheduling new inputFile %s\n", inputFile));
             } else {
                 vlog.log(String.format("Skipping inputFile %s as it was already in the state table: %s", inputFile, StaticStringUtils.<JobState>collectionToString(states, ",")));
