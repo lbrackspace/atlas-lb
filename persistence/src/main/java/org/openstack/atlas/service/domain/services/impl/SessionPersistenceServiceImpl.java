@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
@@ -81,6 +82,7 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
 
         String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP and HTTP(SSL Termination) protocols. ";
         String sipErrMsg = "SOURCE_IP Session persistence is only valid with non-HTTP protocols. ";
+        String sslErrMsg = "SSL_ID Session persistence is only valid with HTTP(SSL Termination) protocols. ";
 
         LOG.info("Verifying session persistence protocol..." + inpersist);
         if (inpersist != NONE) {
@@ -94,6 +96,12 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
                     (dbProtocol == HTTP)) {
                 LOG.info(httpErrMsg);
                 throw new BadRequestException(sipErrMsg);
+            }
+
+            if (inpersist == SSL_ID &&
+                    (dbProtocol != HTTPS)) {
+                LOG.info(sslErrMsg);
+                throw new BadRequestException(sslErrMsg);
             }
         }
         LOG.info("Successfully verified session persistence protocol..." + inLb.getSessionPersistence());

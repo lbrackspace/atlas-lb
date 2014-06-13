@@ -255,6 +255,7 @@
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="HTTP_COOKIE"/>
             <xsd:enumeration value="SOURCE_IP"/>
+            <xsd:enumeration value="SSL_ID"/>
         </xsd:restriction>
     </xsd:simpleType>
 
