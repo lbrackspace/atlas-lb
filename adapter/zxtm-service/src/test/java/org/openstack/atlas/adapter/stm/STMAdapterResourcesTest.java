@@ -562,6 +562,7 @@ public class STMAdapterResourcesTest extends STMTestBase {
 
             verify(client).getPersistence(StmConstants.HTTP_COOKIE);
             verify(client).getPersistence(StmConstants.SOURCE_IP);
+            verify(client).getPersistence(StmConstants.SSL_ID);
             verify(client).destroy();
             verifyNoMoreInteractions(client);
         }
@@ -575,6 +576,7 @@ public class STMAdapterResourcesTest extends STMTestBase {
             verify(client).getPersistence(StmConstants.HTTP_COOKIE);
             verify(client).createPersistence(eq(StmConstants.HTTP_COOKIE), any(Persistence.class));
             verify(client).getPersistence(StmConstants.SOURCE_IP);
+            verify(client).getPersistence(StmConstants.SSL_ID);
             verify(client).destroy();
             verifyNoMoreInteractions(client);
         }
@@ -588,6 +590,21 @@ public class STMAdapterResourcesTest extends STMTestBase {
             verify(client).getPersistence(StmConstants.HTTP_COOKIE);
             verify(client).getPersistence(StmConstants.SOURCE_IP);
             verify(client).createPersistence(eq(StmConstants.SOURCE_IP), any(Persistence.class));
+            verify(client).getPersistence(StmConstants.SSL_ID);
+            verify(client).destroy();
+            verifyNoMoreInteractions(client);
+        }
+
+        @Test
+        public void testCreatePersistentClassesNoSslId() throws Exception {
+            Exception exception = new StingrayRestClientObjectNotFoundException();
+            doThrow(exception).when(client).getPersistence(StmConstants.SSL_ID);
+            adapterResources.createPersistentClasses(config);
+
+            verify(client).getPersistence(StmConstants.HTTP_COOKIE);
+            verify(client).getPersistence(StmConstants.SOURCE_IP);
+            verify(client).getPersistence(StmConstants.SSL_ID);
+            verify(client).createPersistence(eq(StmConstants.SSL_ID), any(Persistence.class));
             verify(client).destroy();
             verifyNoMoreInteractions(client);
         }
