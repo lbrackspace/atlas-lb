@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ace114c_acba8308",
+        "filename": "adapter/zxtm-itest/src/test/java/org/openstack/atlas/adapter/itest/SimpleIntegrationTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 502,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-06-18T20:23:47Z",
+      "side": 1,
+      "message": "I\u0027m thinking this is extra white space?",
+      "revId": "d81b99923158f445b2fa0d2583559f49f42d735f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
