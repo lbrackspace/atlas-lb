@@ -22,6 +22,7 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.*
 import static org.openstack.atlas.service.domain.entities.NodeCondition.*;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.SOURCE_IP;
+import static org.openstack.atlas.service.domain.entities.SessionPersistence.SSL_ID;
 
 /*
  * IMPORTANT! PLEASE READ!
@@ -412,6 +413,26 @@ public class SimpleIntegrationTest extends ZeusTestBase {
         Assert.assertTrue(doesPersistenceClassExist);
     }
 
+    private void updateSessionPersistenceToSslId() throws Exception {
+        zxtmAdapter.setSessionPersistence(config, lb.getId(), lb.getAccountId(), SSL_ID);
+
+        final String[] persistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(1, persistenceNamesForPools.length);
+        Assert.assertEquals(SSL_ID.name(), persistenceNamesForPools[0]);
+
+        final String[] allPersistenceClasses = getServiceStubs().getPersistenceBinding().getPersistenceNames();
+        boolean doesPersistenceClassExist = false;
+
+        for (String persistenceClass : allPersistenceClasses) {
+            if (persistenceClass.equals(persistenceNamesForPools[0])) {
+                doesPersistenceClassExist = true;
+                break
+            }
+        }
+
+        Assert.assertTrue(doesPersistenceClassExist);
+    }
+
     private void removeSessionPersistenceForCookie() throws Exception {
         final String[] persistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
         Assert.assertEquals(HTTP_COOKIE.name(), persistenceNamesForPools[0]);
@@ -423,9 +444,9 @@ public class SimpleIntegrationTest extends ZeusTestBase {
             Assert.fail(e.getMessage());
         }
 
-        final String[] deletedPersistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
-        Assert.assertEquals(1, deletedPersistenceNamesForPools.length);
-        Assert.assertEquals("", deletedPersistenceNamesForPools[0]);
+        final String[] remainingPersistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(1, remainingPersistenceNamesForPools.length);
+        Assert.assertEquals("", remainingPersistenceNamesForPools[0]);
 
         final String[] allPersistenceClasses = getServiceStubs().getPersistenceBinding().getPersistenceNames();
         boolean doesPersistenceClassExist = false;
@@ -451,9 +472,37 @@ public class SimpleIntegrationTest extends ZeusTestBase {
             Assert.fail(e.getMessage());
         }
 
-        final String[] deletedPersistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
-        Assert.assertEquals(1, deletedPersistenceNamesForPools.length);
-        Assert.assertEquals("", deletedPersistenceNamesForPools[0]);
+        final String[] remainingPersistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(1, remainingPersistenceNamesForPools.length);
+        Assert.assertEquals("", remainingPersistenceNamesForPools[0]);
+
+        final String[] allPersistenceClasses = getServiceStubs().getPersistenceBinding().getPersistenceNames();
+        boolean doesPersistenceClassExist = false;
+
+        for (String persistenceClass : allPersistenceClasses) {
+            if (persistenceClass.equals(persistenceNamesForPools[0])) {
+                doesPersistenceClassExist = true;
+                break;
+            }
+        }
+
+        Assert.assertTrue(doesPersistenceClassExist);
+    }
+
+    private void removeSessionPersistenceForSslId() throws Exception {
+        final String[] persistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(SSL_ID.name(), persistenceNamesForPools[0]);
+
+        try {
+            zxtmAdapter.removeSessionPersistence(config, lb.getId(), lb.getAccountId());
+        } catch (Exception e) {
+            e.printStackTrace();;
+            Assert.fail(e.getMessage());
+        }
+        
+        final String[] remainingPersistenceNamesForPools = getServiceStubs().getPoolBinding().getPersistence(new String[]{poolName()});
+        Assert.assertEquals(1, remainingPersistenceNamesForPools.length);
+        Assert.assertEquals("", remainingPersistenceNamesForPools[0]);
 
         final String[] allPersistenceClasses = getServiceStubs().getPersistenceBinding().getPersistenceNames();
         boolean doesPersistenceClassExist = false;
