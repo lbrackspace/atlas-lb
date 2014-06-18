@@ -364,7 +364,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     }
                 }
             }
-
+            // something with SSL_ID needs to be done here, maybe ask trevor
             if (portHMTypecheck) {
                 /* Notify the Usage Processor on changes of protocol to and from secure protocols */
                 //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
@@ -781,20 +781,30 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     private void verifySessionPersistence(LoadBalancer queueLb) throws BadRequestException {
         //Dupelicated in sessionPersistenceServiceImpl ...
-        SessionPersistence inpersist = queueLb.getSessionPersistence();
+        SessionPersistence persistenceType = queueLb.getSessionPersistence();
         LoadBalancerProtocol dbProtocol = queueLb.getProtocol();
 
-        String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP and HTTP pass-through(ssl-termination) protocols.";
-        String sipErrMsg = "SOURCE_IP Session persistence is only valid with non HTTP protocols.";
-        if (inpersist != NONE) {
-            if (inpersist == HTTP_COOKIE
-                    && (dbProtocol != HTTP)) {
+        String httpErrMsg = "HTTP_COOKIE session persistence is only valid with the HTTP protocol.";
+        String sipErrMsg = "SOURCE_IP session persistence is only valid with non-HTTP protocols. ";
+        String sslErrMsg = "SSL_ID session persistence is only valid with the HTTPS protocol. ";
+
+        if (persistenceType != NONE) {
+            if (persistenceType == HTTP_COOKIE &&
+                    (dbProtocol != HTTP)) {
+                LOG.info(httpErrMsg);
                 throw new BadRequestException(httpErrMsg);
             }
 
-            if (inpersist == SOURCE_IP
-                    && (dbProtocol == HTTP)) {
+            if (persistenceType == SOURCE_IP &&
+                    (dbProtocol == HTTP)) {
+                LOG.info(httpErrMsg);
                 throw new BadRequestException(sipErrMsg);
+            }
+
+            if (persistenceType == SSL_ID &&
+                    (dbProtocol != HTTPS)) {
+                LOG.info(sslErrMsg);
+                throw new BadRequestException(sslErrMsg);
             }
         }
     }

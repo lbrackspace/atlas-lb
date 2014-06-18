@@ -37,6 +37,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public static final LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.RANDOM;
     public static final String SOURCE_IP = "SOURCE_IP";
     public static final String HTTP_COOKIE = "HTTP_COOKIE";
+    public static final String SSL_ID = "SSL_ID";
     public static final String RATE_LIMIT_HTTP = "rate_limit_http";
     public static final String RATE_LIMIT_NON_HTTP = "rate_limit_nonhttp";
     public static final String CONTENT_CACHING = "content_caching";
@@ -1690,6 +1691,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
         boolean httpCookieClassConfigured = false;
         boolean sourceIpClassConfigured = false;
+        boolean sslIdClassConfigured = false;
         final String rollBackMessage = "Update session persistence request canceled.";
 
         LOG.debug(String.format("Setting session persistence for node pool '%s'...", poolName));
@@ -1707,6 +1709,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 if (persistenceClass.equals(SOURCE_IP)) {
                     sourceIpClassConfigured = true;
                 }
+                if (persistenceClass.equals(SSL_ID)) {
+                    sslIdClassConfigured = true;
+                }
             }
         }
 
@@ -1722,6 +1727,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getPersistenceBinding().addPersistence(new String[]{SOURCE_IP});
             serviceStubs.getPersistenceBinding().setType(new String[]{SOURCE_IP}, new CatalogPersistenceType[]{CatalogPersistenceType.value1});
             serviceStubs.getPersistenceBinding().setFailureMode(new String[]{SOURCE_IP}, new CatalogPersistenceFailureMode[]{CatalogPersistenceFailureMode.newnode});
+        }
+
+        // Create the SSL_ID class if it is not yet configured
+        if (!sslIdClassConfigured) {
+            serviceStubs.getPersistenceBinding().addPersistence(new String[]{SSL_ID});
+            serviceStubs.getPersistenceBinding().setType(new String[]{SSL_ID}, new CatalogPersistenceType[]{CatalogPersistenceType.value9});
+            serviceStubs.getPersistenceBinding().setFailureMode(new String[]{SSL_ID}, new CatalogPersistenceFailureMode[]{CatalogPersistenceFailureMode.newnode});
         }
 
         try {
@@ -2723,6 +2735,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             return new String[]{HTTP_COOKIE};
         } else if (mode == SessionPersistence.SOURCE_IP) {
             return new String[]{SOURCE_IP};
+        } else if(mode == SessionPersistence.SSL_ID) {
+            return new String[]{SSL_ID};
         } else {
             throw new InsufficientRequestException("Unrecognized persistence mode.");
         }
