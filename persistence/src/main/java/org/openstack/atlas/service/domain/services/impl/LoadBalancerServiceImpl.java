@@ -364,7 +364,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     }
                 }
             }
-            // something with SSL_ID needs to be done here, maybe ask trevor
+
             if (portHMTypecheck) {
                 /* Notify the Usage Processor on changes of protocol to and from secure protocols */
                 //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
@@ -377,10 +377,18 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     }
-
-                } else if (!loadBalancer.getProtocol().equals(HTTP)) {
+                } else if (loadBalancer.getProtocol().equals(SOURCE_IP)) {
                     dbLoadBalancer.setContentCaching(false);
                     if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP)) {
+                        LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
+                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                    } else {
+                        LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                        dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
+                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                    }
+                } else if (loadBalancer.getProtocol().equals(SSL_ID)) {
+                    if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.SSL_ID)) {
                         LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
                         dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
                     } else {
