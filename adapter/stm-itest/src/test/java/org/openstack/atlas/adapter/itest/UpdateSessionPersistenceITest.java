@@ -54,6 +54,17 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
     }
 
     @Test
+    public void updateSessionPersistenceSslId() throws InsufficientRequestException,
+            StingrayRestClientObjectNotFoundException, StingrayRestClientException, StmRollBackException {
+        StingrayRestClient client = new StingrayRestClient();
+        lb.setSessionPersistence(SessionPersistence.SSL_ID);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+
+        Assert.assertEquals(SessionPersistence.SSL_ID.name(),
+                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+    }
+
+    @Test
     public void removeSessionPersistenceHTTP() throws InsufficientRequestException,
             StingrayRestClientObjectNotFoundException, StingrayRestClientException, StmRollBackException {
         StingrayRestClient client = new StingrayRestClient();
@@ -96,6 +107,32 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
 
         //Set as Null
         lb.setSessionPersistence(SessionPersistence.SOURCE_IP);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        Assert.assertEquals(SessionPersistence.SOURCE_IP.name(),
+                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+
+        lb.setSessionPersistence(null);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+    }
+
+    @Test
+    public void removeSessionPersistenceSslId() throws InsufficientRequestException,
+            StingrayRestClientObjectNotFoundException, StingrayRestClientException, StmRollBackException {
+        StingrayRestClient client = new StingrayRestClient();
+
+        //Set as NONE
+        lb.setSessionPersistence(SessionPersistence.SSL_ID);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        Assert.assertEquals(SessionPersistence.SOURCE_IP.name(),
+                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+
+        lb.setSessionPersistence(SessionPersistence.NONE);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+
+        //Set as Null
+        lb.setSessionPersistence(SessionPersistence.SSL_ID);
         stmAdapter.updateLoadBalancer(config, lb, lb, null);
         Assert.assertEquals(SessionPersistence.SOURCE_IP.name(),
                 client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
