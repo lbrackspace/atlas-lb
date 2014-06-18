@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ace114c_8c5467cb",
+        "filename": "migration/schema/loadbalancing/CLB-182-SSL-PERSISTENCE.sql",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-06-18T20:51:45Z",
+      "side": 1,
+      "message": "Look at the other schema migration files.  This file needs to update the meta tag like the other files have.  You also have to do a meta tag update to the usage tables (they need to match).  Lastly, you need an \"undo\" schema change.  The naming convention will be like the following:\n\"NEW_FEATURE_UP\" to add the change and\n\"NEW_FEATURE_DOWN\" to remove the change in case of roll-back.",
+      "revId": "27b2c185b20e685a5c937211a229890eb63edc54",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
