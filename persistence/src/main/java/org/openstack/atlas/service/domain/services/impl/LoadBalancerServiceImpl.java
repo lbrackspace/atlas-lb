@@ -364,7 +364,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     }
                 }
             }
-
+            // something with SSL_ID needs to be done here, maybe ask trevor
             if (portHMTypecheck) {
                 /* Notify the Usage Processor on changes of protocol to and from secure protocols */
                 //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
@@ -786,6 +786,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP and HTTP pass-through(ssl-termination) protocols.";
         String sipErrMsg = "SOURCE_IP Session persistence is only valid with non HTTP protocols.";
+        String sslErrMsg = "SSL_ID Session persistence is only valid with HTTP(SSL Termination) protocols.";
         if (inpersist != NONE) {
             if (inpersist == HTTP_COOKIE
                     && (dbProtocol != HTTP)) {
@@ -795,6 +796,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (inpersist == SOURCE_IP
                     && (dbProtocol == HTTP)) {
                 throw new BadRequestException(sipErrMsg);
+            }
+
+            if (inpersist == SSL_ID
+                    && (dbProtocol != HTTPS)) {
+                throw new BadRequestException(sslErrMsg);
             }
         }
     }

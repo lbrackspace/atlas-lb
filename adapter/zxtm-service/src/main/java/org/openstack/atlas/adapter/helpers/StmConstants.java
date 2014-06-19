@@ -14,6 +14,7 @@ public class StmConstants {
     public static final String HTTPS_REDIRECT = "force_https_redirect";
     public static final String SOURCE_IP = "ip";
     public static final String HTTP_COOKIE = "cookie";
+    public static final String SSL_ID = "ssl";
     public static final String X_FORWARDED_FOR_SCRIPT = "http.addHeader( \"X-Forwarded-For\", request.getRemoteIP() );\n" +
             "http.addHeader( \"X-Forwarded-Port\", request.getLocalPort() );";
     public static final String X_FORWARDED_PROTO_SCRIPT = "$vserver = connection.getVirtualServer();\n" +
