@@ -304,6 +304,11 @@ public class LoadBalancer extends Entity implements Serializable {
         return protocol;
     }
 
+    public Boolean isUdpProtocol() { return protocol.equals(LoadBalancerProtocol.DNS_UDP) ||
+            protocol.equals(LoadBalancerProtocol.UDP) ||
+            protocol.equals(LoadBalancerProtocol.UDP_STREAM);
+    }
+
     public void setProtocol(LoadBalancerProtocol protocol) {
         this.protocol = protocol;
     }
