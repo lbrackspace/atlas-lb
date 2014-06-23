@@ -30,8 +30,11 @@ public class ContentCachingServiceImpl extends BaseService implements ContentCac
         LOG.debug("Entering " + getClass());
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(queueLb.getId(), queueLb.getAccountId());
 
-        if (queueLb.isContentCaching() && dbLoadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+        // Check is user is trying to enable caching on a non HTTP load balancer
+        if (queueLb.isContentCaching() != null && queueLb.isContentCaching() && dbLoadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
             String msg ="Content caching cannot be enabled for non HTTP load balancers.";
+            if(dbLoadBalancer.isContentCaching())
+                msg += " Please disable content caching on this loadbalancer.";
             LOG.error(msg);
             throw new BadRequestException(msg);
         }
