@@ -2,8 +2,6 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.StaleObjectStateException;
-import org.hibernate.exception.LockAcquisitionException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
@@ -80,6 +78,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw new LimitReachedException(String.format("Load balancer limit reached. "
                     + "Limit is set to '%d'. Contact support if you would like to increase your limit.",
                     getLoadBalancerLimit(lb.getAccountId())));
+        }
+
+        // Check for creation of UDP load balancer with logging enabled
+        if (lb.isConnectionLogging() != null && lb.isConnectionLogging() && lb.isUdpProtocol()) {
+            String message = "Protocol must be a non-UPD protocol for connection logging to be enabled.";
+            LOG.warn(message);
+            throw new BadRequestException(message);
         }
 
         // Drop Health Monitor code here for secNodes
@@ -347,6 +352,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 throw new BadRequestException("Protocol is not valid. Please verify shared virtual ips and the ports being shared.");
             }
 
+            // verify content caching and connection logging
+            LOG.debug(String.format("Verifying contentCaching... if enabled, it is valid only with HTTP protocol.."));
+            verifyProtocolCaching(loadBalancer, dbLoadBalancer);
+
+            LOG.debug(String.format("Verifying connectionLogging... if enabled, it is valid only with non-UDP protocols.."));
+            verifyProtocolLogging(loadBalancer, dbLoadBalancer);
 
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
             if (dbLoadBalancer.getHealthMonitor() != null) {
@@ -395,9 +406,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
         }
 
-        LOG.debug(String.format("Verifying connectionLogging and contentCaching... if enabled, they are valid only with HTTP protocol.."));
-        verifyProtocolLoggingAndCaching(loadBalancer, dbLoadBalancer);
-
         //V1-B-27058 12-10-12
         LOG.debug("Update half close support in load balancer service impl");
         if (loadBalancer.isHalfClosed() != null) {
@@ -424,39 +432,32 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return dbLoadBalancer;
     }
 
-    private void verifyProtocolLoggingAndCaching(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
-        String logErr = "Protocol must be HTTP for connection logging.";
-        String ccErr = "Protocol must be HTTP for content caching.";
-        String enable = " is Being enabled on the loadbalancer";
-        String disable = " is Being disabled on the loadbalancer";
+    private void verifyProtocolLogging(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
+        String logErr = "Cannot change to UDP based protocol while logging is enabled.";
 
-        if (loadBalancer.isConnectionLogging() != null && !loadBalancer.isConnectionLogging().equals(dbLoadBalancer.isConnectionLogging())) {
-            if (loadBalancer.isConnectionLogging()) {
-                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+        if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
+            if (dbLoadBalancer.isConnectionLogging()) {
+                if (loadBalancer.isUdpProtocol()) {
                     LOG.error(logErr);
                     throw new UnprocessableEntityException(logErr);
                 }
-                LOG.debug("ConnectionLogging" + enable);
-            } else {
-                LOG.debug("ConnectionLogging" + disable);
+                LOG.debug("Change to UDP based protocol does not clash with current connection logging state.");
             }
-            dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
         }
+     }
 
-        if (loadBalancer.isContentCaching() != null && !loadBalancer.isContentCaching().equals(dbLoadBalancer.isConnectionLogging())) {
+    private void verifyProtocolCaching(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
+        String ccErr = "Cannot change to non-HTTP protocol while content caching is enabled.";
+
+        if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
             if (loadBalancer.isContentCaching()) {
                 if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
                     LOG.error(ccErr);
                     throw new UnprocessableEntityException(ccErr);
                 }
-                LOG.debug("ContentCaching" + enable);
-            } else {
-                LOG.debug("ContentCaching" + disable);
+                LOG.debug("Change to non-HTTP protocol does not clash with current content caching state.");
             }
-            dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
         }
-
-
     }
 
     @Transactional
