@@ -109,7 +109,7 @@ public class AccountResource extends ManagementDependencyProvider {
 
     @DELETE
     @Path("groups")
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response deleteAccountGroup() {
         if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
@@ -125,7 +125,6 @@ public class AccountResource extends ManagementDependencyProvider {
     }
 
     @GET
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response getAccountRecord() {
         Account account;
         if (!isUserInRole("ops,cp,support,billing")) {
@@ -154,8 +153,7 @@ public class AccountResource extends ManagementDependencyProvider {
     }
 
     @PUT
-    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response updateOrCreateAccountRecord(AccountRecord apiAccount) {
         if (!isUserInRole("ops")) {
             return ResponseFactory.accessDenied();
