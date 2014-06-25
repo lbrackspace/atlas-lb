@@ -21,6 +21,7 @@ public class CallbackHelperTest {
         ZeusEvent zEvent;
         CallbackHelper callbackHelper;
 
+        String mFailDomain = "WARN monitors/582112_23321 monitorfail Monitor has detected a failure in node 'f6fde0b59be015ac.rackspaceclouddb.com:80 (10.1.1.48)': Write failed: Connection refused";
         String mFail = "WARN monitors/12345_62203 monitorfail Monitor has detected a failure in node '10.1.223.134:443': Invalid HTTP response received; premature end of headers";
         String mFail6 = "WARN monitors/386085_3034 monitorfail Monitor has detected a failure in node '[2001:4801:79f1:1:22d6:5749:0:3a]:80 (2001:4801:79f1:1:22d6:5749::3a)': Connect failed: Connection refused";
         String mOK = "INFO monitors/12345_62203 monitorok Monitor is working for node '10.1.223.134:443'.";
@@ -91,6 +92,39 @@ public class CallbackHelperTest {
         public void shouldSplitAddress() throws Exception {
             String address = callbackHelper.ipAddress;
             Assert.assertEquals("10.1.223.134", address);
+        }
+
+        @Test
+        public void shouldSplitDomainAddress() throws Exception {
+            try {
+                callbackHelper = new CallbackHelper(mFailDomain);
+            } catch (Exception e) {
+                Assert.fail(e.getMessage());
+            }
+            String address = callbackHelper.ipAddress;
+            Assert.assertEquals("f6fde0b59be015ac.rackspaceclouddb.com", address);
+        }
+
+        @Test
+        public void shouldSplitDomainDetailedMessage() throws Exception {
+            try {
+                callbackHelper = new CallbackHelper(mFailDomain);
+            } catch (Exception e) {
+                Assert.fail(e.getMessage());
+            }
+            String dm = callbackHelper.detailedMessage;
+            Assert.assertEquals("Write failed: Connection refused", dm);
+        }
+
+        @Test
+        public void shouldSplitDomainPort() throws Exception {
+            try {
+                callbackHelper = new CallbackHelper(mFailDomain);
+            } catch (Exception e) {
+                Assert.fail(e.getMessage());
+            }
+            int port = callbackHelper.port;
+            Assert.assertEquals(80, port);
         }
 
         @Test

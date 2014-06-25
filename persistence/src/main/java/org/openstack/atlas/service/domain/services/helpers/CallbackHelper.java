@@ -80,7 +80,8 @@ public class CallbackHelper {
         try {
             return Integer.parseInt(port);
         } catch (NumberFormatException e) {
-            LOG.warn(String.format("Error converting string to integer for ipv4 port: '%s'", port));
+            LOG.warn(String.format("Error converting string to integer for ipv4 port: '%s, verifying for domain port...'", port));
+            port = parseDomainPort(port);
         }
         return Integer.parseInt(port);
     }
@@ -94,6 +95,11 @@ public class CallbackHelper {
     private String parseAddressObject(String paramLine) {
         String initObj = paramLine.split("'")[1];
         return initObj.split("'")[0];
+    }
+
+    private String parseDomainPort(String dPortObj) {
+        String initObj = dPortObj.split(" ")[0];
+        return initObj;
     }
 
 
@@ -111,6 +117,11 @@ public class CallbackHelper {
     }
 
     private String parseIpv6Address(String paramLine) {
+        String ipv6obj = paramLine.split("'\\[")[1];
+        return ipv6obj.split("]:")[0];
+    }
+
+    private String parseDomainAddress(String paramLine) {
         String ipv6obj = paramLine.split("'\\[")[1];
         return ipv6obj.split("]:")[0];
     }

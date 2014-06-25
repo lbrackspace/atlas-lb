@@ -64,25 +64,27 @@ public class SyncListener extends BaseListener {
                     "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
 
-        try {
-            if (!isRestAdapter()) {
+
+        if (loadBalancerStatus.equals(PENDING_DELETE) || loadBalancerStatus.equals(DELETED)) {
+            finalStatus = DELETED;
+
+            try {
+                if (!isRestAdapter()) {
 //                    LOG.debug(String.format("Removing loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
 //                    reverseProxyLoadBalancerStmService.deleteLoadBalancer(dbLoadBalancer);
 //                    LOG.debug(String.format("Successfully removed loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
 //                } else {
-                LOG.debug(String.format("Removing loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
-                LOG.debug(String.format("Successfully removed loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
+                    LOG.debug(String.format("Removing loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
+                    reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
+                    LOG.debug(String.format("Successfully removed loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
+                }
+            } catch (Exception e) {
+                String msg = String.format("Error deleting loadbalancer #%d in SyncListener(): ", mdc.getLoadBalancerId());
+                loadBalancerService.setStatus(dbLoadBalancer, ERROR);
+                notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
+                LOG.error(msg, e);
             }
-        } catch (Exception e) {
-            String msg = String.format("Error deleting loadbalancer #%d in SyncListener(): ", mdc.getLoadBalancerId());
-            loadBalancerService.setStatus(dbLoadBalancer, ERROR);
-            notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, AlertType.ZEUS_FAILURE.name(), msg);
-            LOG.error(msg, e);
-        }
 
-        if (loadBalancerStatus.equals(PENDING_DELETE) || loadBalancerStatus.equals(DELETED)) {
-            finalStatus = DELETED;
             loadBalancerService.pseudoDelete(dbLoadBalancer);
 
             if (loadBalancerStatus.equals(PENDING_DELETE)) {
@@ -118,6 +120,11 @@ public class SyncListener extends BaseListener {
             }
             dbLoadBalancer.setSslTermination(null);
             try {
+//                LoadBalancer tempLb = loadBalancerService.getWithUserPages(mdc.getLoadBalancerId(), mdc.getAccountId());
+                org.openstack.atlas.service.domain.entities.SslTermination ssl = dbLoadBalancer.getSslTermination();
+                dbLoadBalancer.setSslTermination(null);
+//                tempLb.setSslTermination(null);
+
                 LOG.debug(String.format("Syncing load balancer %s setting status to PENDING_UPDATE", dbLoadBalancer.getId()));
 
                 if (isRestAdapter()) {
@@ -125,12 +132,13 @@ public class SyncListener extends BaseListener {
                     reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, dbLoadBalancer, loadBalancerService.getUserPages(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId()));
                     LOG.debug(String.format("Successfully Updated loadbalancer: %s in STM...", dbLoadBalancer.getId()));
                 } else {
-                    LOG.debug(String.format("Re-creating loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerService.createLoadBalancer(dbLoadBalancer);
-                    LOG.debug(String.format("Successfully Re-created loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
+                    LOG.debug(String.format("Syncing loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
+                    reverseProxyLoadBalancerService.syncLoadBalancer(dbLoadBalancer);
+                    LOG.debug(String.format("Successfully synced loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
                 }
 
                 LOG.debug(String.format("Sync of load balancer %s complete, updating status and saving events and usage...", dbLoadBalancer.getId()));
+                dbLoadBalancer.setSslTermination(ssl);
 
                 if (loadBalancerStatus.equals(BUILD)) {
                     NodesHelper.setNodesToStatus(dbLoadBalancer, ONLINE);

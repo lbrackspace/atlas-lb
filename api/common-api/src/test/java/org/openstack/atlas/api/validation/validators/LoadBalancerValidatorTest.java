@@ -331,7 +331,7 @@ public class LoadBalancerValidatorTest {
 
         @Test
         public void shouldRejectTimeoutUnderValue() {
-            lb.setTimeout(20);
+            lb.setTimeout(0);
             ValidatorResult result = validator.validate(lb, POST);
             assertFalse(result.passedValidation());
         }
@@ -539,7 +539,7 @@ public class LoadBalancerValidatorTest {
 
         @Test
         public void shouldRejectTimeoutUnderValue() {
-            lb.setTimeout(20);
+            lb.setTimeout(0);
             ValidatorResult result = validator.validate(lb, PUT);
             assertFalse(result.passedValidation());
         }

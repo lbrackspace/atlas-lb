@@ -26,6 +26,25 @@ public class StaticDateTimeUtils {
                 + dt.getMillisOfSecond();
     }
 
+    public static String toIso(DateTime dt){
+        if(dt == null){
+            return null;
+        }
+        return isoFormat.print(dt);
+    }
+
+    public static String toIso(Calendar cal){
+        if(cal == null){
+            return null;
+        }
+        DateTime dt = toDateTime(cal, true);
+        if(dt == null){
+            return null;
+        }
+        String iso = isoFormat.print(dt);
+        return iso;
+    }
+    
     public static DateTime OrdinalMillisToDateTime(long ord, boolean useUTC) {
         int millis = (int) (ord % 1000);
         ord /= 1000;
@@ -68,6 +87,10 @@ public class StaticDateTimeUtils {
 
     public static String toSqlTime(Date date) {
         return sqlDateTimeFormat.print(toDateTime(date, true));
+    }
+
+    public static String toSqlTime(DateTime dt){
+        return sqlDateTimeFormat.print(dt);
     }
 
     public static double getEpochSeconds() {
