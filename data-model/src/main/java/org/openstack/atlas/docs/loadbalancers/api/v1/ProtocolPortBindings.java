@@ -34,6 +34,7 @@ public final class ProtocolPortBindings {
         protocolPortMap.put("UDP_STREAM",0);
         protocolPortMap.put("MYSQL",3306);
         protocolPortMap.put("SFTP",22);
+        protocolPortMap.put("GENERIC_STREAMING",0);
 
         keys = new ArrayList<String>();
         protocols = new Protocols();
@@ -41,11 +42,11 @@ public final class ProtocolPortBindings {
         for(Map.Entry<String,Integer> entry: protocolPortMap.entrySet()) {
             Protocol protocol = new Protocol();
             String key = entry.getKey();
-            Integer port = entry.getValue();            
+            Integer port = entry.getValue();
             keys.add(entry.getKey());
             protocol.setName(key);
             protocol.setPort(port);
-            protocols.getProtocols().add(protocol);            
+            protocols.getProtocols().add(protocol);
         }
 
         keysAsArray = new String[keys.size()];
