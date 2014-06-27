@@ -59,6 +59,60 @@ public class ZeusTestBase {
     protected static Node node2;
     protected static Cluster cluster;
 
+    public final static String testCert = "-----BEGIN CERTIFICATE-----\n" +
+            "MIIERTCCAy2gAwIBAgIJANISIu8YgMUjMA0GCSqGSIb3DQEBBQUAMHQxCzAJBgNV\n" +
+            "BAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEUMBIGA1UEBxMLU2FuIEFudG9uaW8xGjAY\n" +
+            "BgNVBAoTEVJhY2tzcGFjZSBIb3N0aW5nMQ4wDAYDVQQLEwVMQmFhUzETMBEGA1UE\n" +
+            "AxMKTEJhYVMgVGVhbTAeFw0xNDAzMTIyMjIxMjlaFw0yNzExMTkyMjIxMjlaMHQx\n" +
+            "CzAJBgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEUMBIGA1UEBxMLU2FuIEFudG9u\n" +
+            "aW8xGjAYBgNVBAoTEVJhY2tzcGFjZSBIb3N0aW5nMQ4wDAYDVQQLEwVMQmFhUzET\n" +
+            "MBEGA1UEAxMKTEJhYVMgVGVhbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC\n" +
+            "ggEBALFSup6Yre0NzS5VY5KYg4/kLiKGK4R0y+Sis4+gq7ULBWLpBC9WBCjZTP3b\n" +
+            "/Infz5JnUNMAjbJPHevQmSoDuIaTejv29mlJf70HK1uZb93yPMeMC7tkYvdryX9O\n" +
+            "EYmdycnNK4K3xsi8jSXJzCDI5xVe5kMsvu3DBigg4Gi81BjckeRPzIuHBEWp2scq\n" +
+            "dZ2SNw4wNdSsLprPXMeVc0tD6NUcgbLu156b9xadkKggYHV/LmkeUbkmpONP+Sb9\n" +
+            "jkb9vJovQBbtgCEY+paw3Wi0BgF52w5PG9CJhL1Tnv0AErIE0pszrZ96vWHo5aXk\n" +
+            "PTxSJla9k8pkxelGqxkRwliHdXUCAwEAAaOB2TCB1jAdBgNVHQ4EFgQUiRdCLNFp\n" +
+            "+3FUNos/8Vv8XaG3TXswgaYGA1UdIwSBnjCBm4AUiRdCLNFp+3FUNos/8Vv8XaG3\n" +
+            "TXuheKR2MHQxCzAJBgNVBAYTAlVTMQ4wDAYDVQQIEwVUZXhhczEUMBIGA1UEBxML\n" +
+            "U2FuIEFudG9uaW8xGjAYBgNVBAoTEVJhY2tzcGFjZSBIb3N0aW5nMQ4wDAYDVQQL\n" +
+            "EwVMQmFhUzETMBEGA1UEAxMKTEJhYVMgVGVhbYIJANISIu8YgMUjMAwGA1UdEwQF\n" +
+            "MAMBAf8wDQYJKoZIhvcNAQEFBQADggEBAEZjzMfvcBtXQHuaqH8X5exfyn6iqxmo\n" +
+            "S2kOfSvQxm5NLuSsNr5/LaGZpogGyQsywvcwBwmshZWRpNVoujqpujS2RB98nXRf\n" +
+            "b134c1klK4poS3tx2BR+81OZYZG5cPq9S3y/XOBSBpvucSRQwoagf1sQOLB4pU8v\n" +
+            "jgf/2pxJQtjhj7M4gZD7q1qwfTp0M3AyNV9KaI/EZN2e8ZJcpyruUJNe0ZuBW2+Y\n" +
+            "obj7e8ogJJsV2y+DLstjzgFCz2/8upArZ7pI1mYwJMukAPzE8BPntrqHLMweUT3P\n" +
+            "iOCsagBr8I/zbc4m/TwYvkcwxhrkaLlxwEtW7TID+LFnb0/NoPTdjO0=\n" +
+            "-----END CERTIFICATE-----\n";
+
+    public final static String testKey = "-----BEGIN RSA PRIVATE KEY-----\n" +
+            "MIIEpAIBAAKCAQEAsVK6npit7Q3NLlVjkpiDj+QuIoYrhHTL5KKzj6CrtQsFYukE\n" +
+            "L1YEKNlM/dv8id/PkmdQ0wCNsk8d69CZKgO4hpN6O/b2aUl/vQcrW5lv3fI8x4wL\n" +
+            "u2Ri92vJf04RiZ3Jyc0rgrfGyLyNJcnMIMjnFV7mQyy+7cMGKCDgaLzUGNyR5E/M\n" +
+            "i4cERanaxyp1nZI3DjA11Kwums9cx5VzS0Po1RyBsu7Xnpv3Fp2QqCBgdX8uaR5R\n" +
+            "uSak40/5Jv2ORv28mi9AFu2AIRj6lrDdaLQGAXnbDk8b0ImEvVOe/QASsgTSmzOt\n" +
+            "n3q9YejlpeQ9PFImVr2TymTF6UarGRHCWId1dQIDAQABAoIBACm7jrBEvqpL1T5S\n" +
+            "WlzmCBCVY0Y8zYEe+92TbS8gYUj6jwn4TUPWuqPigHw+ifDo+7E5H4yJVM/iTuhw\n" +
+            "75szxPnnO51hQh0Fb0rNpSaptepGWIeeLiSsO55/f6y2cuoweI1F/DeHiQE1XwLF\n" +
+            "u4T7w2cELq0gms7aV1iaZDZCOqie3Dub7KAL76jwpG3ECQlWzF04TjQ5lZBdM7Fa\n" +
+            "z3fbaJ497k5DoPbZMqGi2eR7P8NJAPjIpmaL3vls2vlmWwd/7D10AJUNoILb74jm\n" +
+            "648YFo76yKS15jtHFvifSaxEg3gjmth7IuRF4SbL5AjFqhj1qo9yQKLep7pNv9Bx\n" +
+            "0eYoqwECgYEA4r3h/4WGuXrnh36zJW860O7+pO3l8rm83wP1oGc8xCK74aBQP5zL\n" +
+            "JHaJypeImisZg3OcKL5IBop76LZ/i5oCDozHvTRByFHYnkRU3oh6FDcIvPkDCB7o\n" +
+            "qq8y6Q+gbTJlKzpSxoRnj1rkHOweDzNG/7QD/D/g2z5ZejW3xC6H3R8CgYEAyDRe\n" +
+            "Qv/ATAn1F0r7LweShjAcqaf5DxmXNDpaw7Wj0OKZxyxYw6aPVm3LnZP1tmGe9UlE\n" +
+            "CFRTX5Y98x+9Z+PFtYgW0EdZCVQXKLkGJUhD8SRxyaS5Tlz1hzSHtbxGbDFuecRd\n" +
+            "Qv/XmrJapVQrT4TMa5ivw836tjQhVqCrNyCHRusCgYEAk9o793IrkuFI/rqouN1a\n" +
+            "HgnqNMQIcQma1lXvomQPZNo9Z3gxO/nTIXjGizva0KUQIv6NMqg5sUI2YF44t2B6\n" +
+            "vOAiEwdzadutBC8MpHucF3h3kzpRNsdo8nwCF6Wf9/SnsdN7TIXkPb+IBjAVvdWz\n" +
+            "E2RgQOmqh2yVzjIfHac14wMCgYEAkgiA6WYcIlrxB/iNmBRx8KePgMEhjr4f6NzX\n" +
+            "8AHCaE+h1AKpDK2lyGl2KI8Qn+Q9SrYShfDcj9DLh1gTlIA0auHFok8oxwErk2zC\n" +
+            "6tb3mCH5Thh1go+UGPdcNlgLFkhISVHOpVxxLEoEjKwEm5BGfAV3z9+jjNwhpUq1\n" +
+            "GRUFF9kCgYBu/b84bEmflvv0z412hiQuIjDrJWPLUENfJujs6RitU42KV78Momif\n" +
+            "/qrCK1exgdMiXET3nXg7Ff2zi5O8QArM3ITaWOczukAXaAeTPKm9o59ubb4PsU9K\n" +
+            "A8Lv1syLCAC54udcbBGG2gvv7KVwJZQhmwItdX0ev5oAY3DTbJwstg==\n" +
+            "-----END RSA PRIVATE KEY-----";
+
     static {
         zxtmAdapter = new ZxtmAdapterImpl();
         try {
