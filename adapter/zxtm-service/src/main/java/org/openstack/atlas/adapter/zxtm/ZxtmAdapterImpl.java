@@ -174,14 +174,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.info(String.format("Node pool '%s' successfully added.", name));
         }
         else {
-            setLoadBalancingAlgorithm(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getAlgorithm());
-
-            setDisabledNodes(config, name, getNodesWithCondition(loadBalancer.getNodes(), NodeCondition.DISABLED));
-            setDrainingNodes(config, name, getNodesWithCondition(loadBalancer.getNodes(), NodeCondition.DRAINING));
-            setNodeWeights(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getNodes());
+            setNodes(config, loadBalancer);
             serviceStubs.getPoolBinding().setPassiveMonitoring(new String[]{name}, new boolean[]{false});
         }
-        setNodesPriorities(config, name, loadBalancer);
 
         if (!Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(name)) {
             LOG.debug(String.format("Adding virtual server '%s'...", name));
@@ -209,10 +204,19 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             attachXFPORTRuleToVirtualServer(serviceStubs, name);
             serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{name}, new boolean[]{true});
             serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{name}, new boolean[]{true});
-//                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
-//                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
 
-            setDefaultErrorFile(config, loadBalancer);
+            if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
+                setErrorFile(config, loadBalancer, loadBalancer.getUserPages().getErrorpage());
+            } else {
+                setDefaultErrorFile(config, loadBalancer);
+            }
+        }
+
+        if (loadBalancer.getSslTermination() != null && loadBalancer.isUsingSsl()) {
+            ZeusSslTermination sslTerm = new ZeusSslTermination();
+            sslTerm.setCertIntermediateCert(loadBalancer.getSslTermination().getCertificate());
+            sslTerm.setSslTermination(loadBalancer.getSslTermination());
+            updateSslTermination(config, loadBalancer, sslTerm);
         }
 
         LOG.info(String.format("Load balancer '%s' successfully synced.", name));
