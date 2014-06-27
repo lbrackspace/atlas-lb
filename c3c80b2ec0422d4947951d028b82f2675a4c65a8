@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1acb0d3e_65790afc",
+        "filename": "adapter/stm-itest/src/test/java/org/openstack/atlas/adapter/itest/UpdateSessionPersistenceITest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-06-27T19:16:03Z",
+      "side": 1,
+      "message": "Does this test pass? I see that you set session persistence to SSL_ID but then you verify that it is SOURCE_IP.",
+      "revId": "c3c80b2ec0422d4947951d028b82f2675a4c65a8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_857e76e3",
+        "filename": "adapter/stm-itest/src/test/java/org/openstack/atlas/adapter/itest/UpdateSessionPersistenceITest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-06-27T19:16:03Z",
+      "side": 1,
+      "message": "Same here.",
+      "revId": "c3c80b2ec0422d4947951d028b82f2675a4c65a8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
