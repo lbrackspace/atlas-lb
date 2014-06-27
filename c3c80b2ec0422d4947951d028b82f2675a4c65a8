@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1acb0d3e_05d846ee",
+        "filename": "adapter/stm-itest/src/test/java/org/openstack/atlas/adapter/itest/UpdateSessionPersistenceITest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-27T20:09:12Z",
+      "side": 1,
+      "message": "It was indeed passing. But I will double check it.",
+      "parentUuid": "1acb0d3e_65790afc",
+      "revId": "c3c80b2ec0422d4947951d028b82f2675a4c65a8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1acb0d3e_857e76e3",
         "filename": "adapter/stm-itest/src/test/java/org/openstack/atlas/adapter/itest/UpdateSessionPersistenceITest.java",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2014-06-27T19:16:03Z",
       "side": 1,
       "message": "Same here.",
+      "revId": "c3c80b2ec0422d4947951d028b82f2675a4c65a8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_a5e4d2ac",
+        "filename": "adapter/stm-itest/src/test/java/org/openstack/atlas/adapter/itest/UpdateSessionPersistenceITest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-27T20:09:12Z",
+      "side": 1,
+      "message": "See other reply.",
+      "parentUuid": "1acb0d3e_857e76e3",
       "revId": "c3c80b2ec0422d4947951d028b82f2675a4c65a8",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
