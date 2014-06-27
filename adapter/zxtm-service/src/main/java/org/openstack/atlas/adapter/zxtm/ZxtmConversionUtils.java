@@ -19,21 +19,21 @@ public class ZxtmConversionUtils {
 		mapper.put(LoadBalancerProtocol.IMAPv4, VirtualServerProtocol.imapv4);
         mapper.put(LoadBalancerProtocol.TCP, VirtualServerProtocol.server_first);
         mapper.put(LoadBalancerProtocol.TCP_CLIENT_FIRST, VirtualServerProtocol.client_first);
+        mapper.put(LoadBalancerProtocol.TCP_STREAM, VirtualServerProtocol.stream);
         mapper.put(LoadBalancerProtocol.IMAPv2, VirtualServerProtocol.imapv2);
         mapper.put(LoadBalancerProtocol.IMAPv3, VirtualServerProtocol.imapv3);
-		mapper.put(LoadBalancerProtocol.IMAPS, VirtualServerProtocol.imaps);
-		mapper.put(LoadBalancerProtocol.LDAP, VirtualServerProtocol.ldap);
-		mapper.put(LoadBalancerProtocol.LDAPS, VirtualServerProtocol.ldaps);
-		mapper.put(LoadBalancerProtocol.POP3, VirtualServerProtocol.pop3);
-		mapper.put(LoadBalancerProtocol.POP3S, VirtualServerProtocol.pop3s);
-		mapper.put(LoadBalancerProtocol.SMTP, VirtualServerProtocol.smtp);
-		mapper.put(LoadBalancerProtocol.DNS_TCP, VirtualServerProtocol.dns_tcp);
-		mapper.put(LoadBalancerProtocol.DNS_UDP, VirtualServerProtocol.dns);
-		mapper.put(LoadBalancerProtocol.UDP_STREAM, VirtualServerProtocol.udpstreaming);
-		mapper.put(LoadBalancerProtocol.UDP, VirtualServerProtocol.udp);
-		mapper.put(LoadBalancerProtocol.MYSQL, VirtualServerProtocol.server_first);
-		mapper.put(LoadBalancerProtocol.SFTP, VirtualServerProtocol.server_first);
-        mapper.put(LoadBalancerProtocol.GENERIC_STREAMING, VirtualServerProtocol.stream);
+        mapper.put(LoadBalancerProtocol.IMAPS, VirtualServerProtocol.imaps);
+        mapper.put(LoadBalancerProtocol.LDAP, VirtualServerProtocol.ldap);
+        mapper.put(LoadBalancerProtocol.LDAPS, VirtualServerProtocol.ldaps);
+        mapper.put(LoadBalancerProtocol.POP3, VirtualServerProtocol.pop3);
+        mapper.put(LoadBalancerProtocol.POP3S, VirtualServerProtocol.pop3s);
+        mapper.put(LoadBalancerProtocol.SMTP, VirtualServerProtocol.smtp);
+        mapper.put(LoadBalancerProtocol.DNS_TCP, VirtualServerProtocol.dns_tcp);
+        mapper.put(LoadBalancerProtocol.DNS_UDP, VirtualServerProtocol.dns);
+        mapper.put(LoadBalancerProtocol.UDP, VirtualServerProtocol.udp);
+        mapper.put(LoadBalancerProtocol.UDP_STREAM, VirtualServerProtocol.udpstreaming);
+        mapper.put(LoadBalancerProtocol.MYSQL, VirtualServerProtocol.server_first);
+        mapper.put(LoadBalancerProtocol.SFTP, VirtualServerProtocol.server_first);
 
 		return (VirtualServerProtocol) mapper.get(Protocol);
 	}
