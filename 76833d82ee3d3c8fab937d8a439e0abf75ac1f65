@@ -16,6 +16,24 @@
       "revId": "76833d82ee3d3c8fab937d8a439e0abf75ac1f65",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_c5731e14",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 390,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-27T19:59:54Z",
+      "side": 1,
+      "message": "I did make the type?",
+      "parentUuid": "1acb0d3e_c5455eb4",
+      "revId": "76833d82ee3d3c8fab937d8a439e0abf75ac1f65",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
