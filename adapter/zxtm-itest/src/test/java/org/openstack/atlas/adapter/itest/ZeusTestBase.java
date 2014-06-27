@@ -232,10 +232,6 @@ public class ZeusTestBase {
         return ZxtmNameBuilder.genVSName(lb);
     }
 
-    protected static String secureProtectionClassName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genSslVSName(lb);
-    }
-
     protected static String trafficIpGroupName(VirtualIp vip) throws InsufficientRequestException {
         return ZxtmNameBuilder.generateTrafficIpGroupName(lb, vip);
     }

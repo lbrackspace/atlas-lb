@@ -499,28 +499,28 @@ public class SimpleIntegrationTest extends ZeusTestBase {
     @Test
     public void updateConnectionThrottle() throws Exception {
         ConnectionLimit throttle = new ConnectionLimit();
-        throttle.setMinConnections(1000);
         throttle.setMaxConnections(30);
+        throttle.setMinConnections(1000);
         throttle.setMaxConnectionRate(2000);
         throttle.setRateInterval(60);
         lb.setConnectionLimit(throttle);
         zxtmAdapter.updateConnectionThrottle(config, lb);
 
-        final UnsignedInt[] minConnections = getServiceStubs().getProtectionBinding().getMinConnections(new String[]{protectionClassName()});
-        Assert.assertEquals(1, minConnections.length);
-        Assert.assertEquals(throttle.getMinConnections().intValue(), minConnections[0].intValue());
-
         final UnsignedInt[] maxConnections = getServiceStubs().getProtectionBinding().getMax1Connections(new String[]{protectionClassName()});
         Assert.assertEquals(1, maxConnections.length);
         Assert.assertEquals(throttle.getMaxConnections().intValue(), maxConnections[0].intValue());
 
+        final UnsignedInt[] minConnections = getServiceStubs().getProtectionBinding().getMinConnections(new String[]{protectionClassName()});
+        Assert.assertEquals(1, minConnections.length);
+        Assert.assertEquals(0, minConnections[0].intValue());
+
         final UnsignedInt[] maxConnectionRates = getServiceStubs().getProtectionBinding().getMaxConnectionRate(new String[]{protectionClassName()});
         Assert.assertEquals(1, maxConnectionRates.length);
-        Assert.assertEquals(throttle.getMaxConnectionRate().intValue(), maxConnectionRates[0].intValue());
+        Assert.assertEquals(0, maxConnectionRates[0].intValue());
 
         final UnsignedInt[] rateIntervals = getServiceStubs().getProtectionBinding().getRateTimer(new String[]{protectionClassName()});
         Assert.assertEquals(1, rateIntervals.length);
-        Assert.assertEquals(throttle.getRateInterval().intValue(), rateIntervals[0].intValue());
+        Assert.assertEquals(1, rateIntervals[0].intValue());
     }
 
     @Test

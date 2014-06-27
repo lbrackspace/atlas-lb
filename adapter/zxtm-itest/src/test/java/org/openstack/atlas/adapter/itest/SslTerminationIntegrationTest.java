@@ -105,10 +105,9 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         updateLoadBalancerAttributes();
     }
 
-    @Ignore
+    @Ignore // Rate limiting is not handled by zxtm any more
     @Test
     public void testWhenAddingRateLimitWithSslTermination() throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
-        //Rate limiting is not handled by zxtm any more
         setRateLimitBeforeSsl();
         deleteRateLimit();
         setSslTermination();
@@ -503,37 +502,29 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
         String[] vsSslName = new String[]{lb.getAccountId() + "_" + lb.getId() + "_S"};
         try {
             ConnectionLimit throttle = new ConnectionLimit();
-            throttle.setMaxConnectionRate(10);
             throttle.setMaxConnections(20);
+            throttle.setMaxConnectionRate(10);
             throttle.setMinConnections(40);
             throttle.setRateInterval(44);
 
             lb.setConnectionLimit(throttle);
             zxtmAdapter.updateConnectionThrottle(config, lb);
-            Assert.assertEquals(new UnsignedInt(10), getServiceStubs().getProtectionBinding().getMaxConnectionRate(vsName)[0]);
             Assert.assertEquals(new UnsignedInt(20), getServiceStubs().getProtectionBinding().getMax1Connections(vsName)[0]);
-            Assert.assertEquals(new UnsignedInt(40), getServiceStubs().getProtectionBinding().getMinConnections(vsName)[0]);
-            Assert.assertEquals(new UnsignedInt(44), getServiceStubs().getProtectionBinding().getRateTimer(vsName)[0]);
+            Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(vsName)[0]);
+            Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(vsName)[0]);
+            Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(vsName)[0]);
 
-            //set ssl
             setSslTermination();
-            Assert.assertEquals(new UnsignedInt(10), getServiceStubs().getProtectionBinding().getMaxConnectionRate(vsSslName)[0]);
-            Assert.assertEquals(new UnsignedInt(20), getServiceStubs().getProtectionBinding().getMax1Connections(vsSslName)[0]);
-            Assert.assertEquals(new UnsignedInt(40), getServiceStubs().getProtectionBinding().getMinConnections(vsSslName)[0]);
-            Assert.assertEquals(new UnsignedInt(44), getServiceStubs().getProtectionBinding().getRateTimer(vsSslName)[0]);
+            String[] protection = getServiceStubs().getVirtualServerBinding().getProtection(vsName);
+            String[] protectionSsl = getServiceStubs().getVirtualServerBinding().getProtection(vsSslName);
+            Assert.assertEquals(vsName[0], protection[0]);
+            Assert.assertEquals(vsName[0], protectionSsl[0]);
 
-            //removing throttle
             zxtmAdapter.deleteConnectionThrottle(config, lb);
-            Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(vsSslName)[0]);
-            Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(vsSslName)[0]);
-            Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(vsSslName)[0]);
-            Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(vsSslName)[0]);
-
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMaxConnectionRate(vsName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMax1Connections(vsName)[0]);
             Assert.assertEquals(new UnsignedInt(0), getServiceStubs().getProtectionBinding().getMinConnections(vsName)[0]);
             Assert.assertEquals(new UnsignedInt(1), getServiceStubs().getProtectionBinding().getRateTimer(vsName)[0]);
-
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -619,16 +610,6 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             Assert.assertEquals(1, allowedAddresses[0].length);
             Assert.assertEquals(item2.getIpAddress(), allowedAddresses[0][0]);
 
-            final String[][] bannedAddresses2 = getServiceStubs().getProtectionBinding().getBannedAddresses(new String[]{secureProtectionClassName()});
-            Assert.assertEquals(1, bannedAddresses2.length);
-            Assert.assertEquals(1, bannedAddresses2[0].length);
-            Assert.assertEquals(item1.getIpAddress(), bannedAddresses2[0][0]);
-
-            final String[][] allowedAddresses2 = getServiceStubs().getProtectionBinding().getAllowedAddresses(new String[]{secureProtectionClassName()});
-            Assert.assertEquals(1, allowedAddresses2.length);
-            Assert.assertEquals(1, allowedAddresses2[0].length);
-            Assert.assertEquals(item2.getIpAddress(), allowedAddresses2[0][0]);
-
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -659,14 +640,6 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             final String[][] allowedAddresses = getServiceStubs().getProtectionBinding().getAllowedAddresses(new String[]{protectionClassName()});
             Assert.assertEquals(1, allowedAddresses.length);
             Assert.assertEquals(0, allowedAddresses[0].length);
-
-            final String[][] bannedAddresses2 = getServiceStubs().getProtectionBinding().getBannedAddresses(new String[]{secureProtectionClassName()});
-            Assert.assertEquals(1, bannedAddresses2.length);
-            Assert.assertEquals(0, bannedAddresses2[0].length);
-
-            final String[][] allowedAddresses2 = getServiceStubs().getProtectionBinding().getAllowedAddresses(new String[]{secureProtectionClassName()});
-            Assert.assertEquals(1, allowedAddresses2.length);
-            Assert.assertEquals(0, allowedAddresses2[0].length);
 
         } catch (ObjectDoesNotExist odne) {
             Assert.assertTrue("ssl access list does not exist, expected, ignoring error", odne.getErrmsg().contains(lb.getAccountId() + "_" + lb.getId()));
@@ -700,9 +673,6 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             Assert.assertEquals(1, allowedAddresses.length);
             Assert.assertEquals(1, allowedAddresses[0].length);
             Assert.assertEquals(item2.getIpAddress(), allowedAddresses[0][0]);
-
-            final String[][] bannedAddresses2 = getServiceStubs().getProtectionBinding().getBannedAddresses(new String[]{secureProtectionClassName()});
-            final String[][] allowedAddresses2 = getServiceStubs().getProtectionBinding().getAllowedAddresses(new String[]{secureProtectionClassName()});
 
         } catch (ObjectDoesNotExist odne) {
             Assert.assertTrue("ssl does not exist, expected, ignoring error...", odne.getErrmsg().contains(lb.getAccountId() + "_" + lb.getId()));
