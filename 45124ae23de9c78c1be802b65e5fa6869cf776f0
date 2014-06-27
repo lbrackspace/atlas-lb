@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1acb0d3e_25d1c2cd",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/ConnectionLoggingServiceImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-27T20:07:39Z",
+      "side": 1,
+      "message": "Ah ok. I saw references in the code to saying that only HTTP could enable logging/content caching. I\u0027ll fix this in a patch.",
+      "parentUuid": "1acb0d3e_e56c1a39",
+      "revId": "45124ae23de9c78c1be802b65e5fa6869cf776f0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1acb0d3e_056a861a",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2014-06-27T19:23:33Z",
       "side": 1,
       "message": "Sam here.",
+      "revId": "45124ae23de9c78c1be802b65e5fa6869cf776f0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_45d64ec7",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-27T20:07:39Z",
+      "side": 1,
+      "message": "Same reply.",
+      "parentUuid": "1acb0d3e_056a861a",
       "revId": "45124ae23de9c78c1be802b65e5fa6869cf776f0",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
