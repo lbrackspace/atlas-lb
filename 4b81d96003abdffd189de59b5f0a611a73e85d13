@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1acb0d3e_a080408c",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/LoadBalancer.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 307,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-06-30T18:43:00Z",
+      "side": 1,
+      "message": "Nitpick on style. We usually don\u0027t put any code after the opening curly brace.",
+      "revId": "4b81d96003abdffd189de59b5f0a611a73e85d13",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_c07d4cb3",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/ConnectionLoggingServiceImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-06-30T18:43:00Z",
+      "side": 1,
+      "message": "No need for string concatenation here. Just put the entire string into the variable message on declaration.",
+      "revId": "4b81d96003abdffd189de59b5f0a611a73e85d13",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_804f4492",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 448,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-06-30T18:43:00Z",
+      "side": 1,
+      "message": "Isn\u0027t this block of code already handled by the blocks that check for changingProtocol and changingLogging? I think this is redundant because if either protocol or logging changes you will want to check.\n\nInstead of an if-else block couldn\u0027t you just have two if blocks...one that checks for changing protocol and one that checks for changing logging?",
+      "revId": "4b81d96003abdffd189de59b5f0a611a73e85d13",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
