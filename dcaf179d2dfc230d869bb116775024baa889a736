@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1acb0d3e_05512662",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/zxtm/ZxtmAdapterImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1736,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-30T18:04:19Z",
+      "side": 1,
+      "message": "Will fix this in a patch set.",
+      "parentUuid": "1acb0d3e_05236606",
+      "revId": "dcaf179d2dfc230d869bb116775024baa889a736",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1acb0d3e_250c6294",
         "filename": "migration/schema/loadbalancing/CLB-182-SSL-PERSISTENCE-DOWN.sql",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2014-06-27T19:00:28Z",
       "side": 1,
       "message": "Just a nit pick. Put in question mark as a placeholder for the actual meta_value field so we don\u0027t accidentally merge the wrong number.",
+      "revId": "dcaf179d2dfc230d869bb116775024baa889a736",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_a54db2c6",
+        "filename": "migration/schema/loadbalancing/CLB-182-SSL-PERSISTENCE-DOWN.sql",
+        "patchSetId": 2
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-30T18:04:19Z",
+      "side": 1,
+      "message": "Will fix this in a patch set.",
+      "parentUuid": "1acb0d3e_250c6294",
       "revId": "dcaf179d2dfc230d869bb116775024baa889a736",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "1acb0d3e_c54a3eac",
+        "filename": "migration/schema/loadbalancing/CLB-182-SSL-PERSISTENCE-UP.sql",
+        "patchSetId": 2
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-30T18:04:19Z",
+      "side": 1,
+      "message": "Will fix this in a patch set.",
+      "parentUuid": "1acb0d3e_851756a3",
+      "revId": "dcaf179d2dfc230d869bb116775024baa889a736",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1acb0d3e_45116eab",
         "filename": "migration/schema/loadbalancing_usage/CLB-182-SSL-PERSISTENCE-DOWN.sql",
         "patchSetId": 2
@@ -64,6 +118,24 @@
       "writtenOn": "2014-06-27T19:00:28Z",
       "side": 1,
       "message": "Same here.",
+      "revId": "dcaf179d2dfc230d869bb116775024baa889a736",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_65c7ca13",
+        "filename": "migration/schema/loadbalancing_usage/CLB-182-SSL-PERSISTENCE-DOWN.sql",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-30T18:04:19Z",
+      "side": 1,
+      "message": "Will fix this in a patch set.",
+      "parentUuid": "1acb0d3e_45116eab",
       "revId": "dcaf179d2dfc230d869bb116775024baa889a736",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "1acb0d3e_85cc3637",
+        "filename": "migration/schema/loadbalancing_usage/CLB-182-SSL-PERSISTENCE-UP.sql",
+        "patchSetId": 2
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-30T18:04:19Z",
+      "side": 1,
+      "message": "Will fix this in a patch set.",
+      "parentUuid": "1acb0d3e_e525fa0a",
+      "revId": "dcaf179d2dfc230d869bb116775024baa889a736",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1acb0d3e_a51ff2b6",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/SessionPersistenceServiceImpl.java",
         "patchSetId": 2
@@ -98,6 +188,24 @@
       "writtenOn": "2014-06-27T19:00:28Z",
       "side": 1,
       "message": "Aren\u0027t we trying to check if the protocol is HTTP with SSL termination per the error message? I don\u0027t this accomplishes that.",
+      "revId": "dcaf179d2dfc230d869bb116775024baa889a736",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_e553ba6a",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/SessionPersistenceServiceImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-06-30T18:04:19Z",
+      "side": 1,
+      "message": "Isn\u0027t HTTPS, HTTP + SSL encryption?",
+      "parentUuid": "1acb0d3e_a51ff2b6",
       "revId": "dcaf179d2dfc230d869bb116775024baa889a736",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
