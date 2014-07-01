@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1acb0d3e_14f635d8",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 367,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-07-01T15:51:04Z",
+      "side": 1,
+      "message": "See change 4329 for the \"something\".",
+      "revId": "e45286a912b343c142967b7dc167576f70a26d11",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
