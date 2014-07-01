@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1acb0d3e_146f1594",
+        "filename": "adapter/zxtm-itest/src/test/java/org/openstack/atlas/adapter/itest/ZeusTestBase.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-07-01T15:21:59Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1acb0d3e_94a0e5f5",
+      "revId": "1c578eae65c0811b968719a62a3d77c74eb435d4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1acb0d3e_1465d5e0",
         "filename": "adapter/zxtm-itest/src/test/java/org/openstack/atlas/adapter/itest/ZeusTestBase.java",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2014-06-30T22:02:52Z",
       "side": 1,
       "message": "I really think these should be in the SslTermination tests and not in the Base until another test class needs them.  Also, arent there other keys and certs that can be used that are alreayd in the project?",
+      "revId": "1c578eae65c0811b968719a62a3d77c74eb435d4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_946305b1",
+        "filename": "adapter/zxtm-itest/src/test/java/org/openstack/atlas/adapter/itest/ZeusTestBase.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-07-01T15:21:59Z",
+      "side": 1,
+      "message": "This is being used in 2 classes.  The SslTermination tests and my new SyncTests.",
+      "parentUuid": "1acb0d3e_1465d5e0",
       "revId": "1c578eae65c0811b968719a62a3d77c74eb435d4",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -53,6 +89,24 @@
         "endLine": 177,
         "endChar": 43
       },
+      "revId": "1c578eae65c0811b968719a62a3d77c74eb435d4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1acb0d3e_b46ba184",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/zxtm/ZxtmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-07-01T15:21:59Z",
+      "side": 1,
+      "message": "Good catch.  Changed it.",
+      "parentUuid": "1acb0d3e_f467e9e8",
       "revId": "1c578eae65c0811b968719a62a3d77c74eb435d4",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
