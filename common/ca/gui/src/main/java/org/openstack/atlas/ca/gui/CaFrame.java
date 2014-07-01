@@ -106,8 +106,6 @@ public class CaFrame extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         cnTextField = new javax.swing.JTextField();
         cTextField = new javax.swing.JTextField();
-        jLabel7 = new javax.swing.JLabel();
-        emailTextField = new javax.swing.JTextField();
         csrOptionsPanel = new javax.swing.JPanel();
         csrFnButton1 = new javax.swing.JButton();
         csrFN1 = new javax.swing.JTextField();
@@ -329,8 +327,6 @@ public class CaFrame extends javax.swing.JFrame {
             }
         });
 
-        jLabel7.setText("Email");
-
         javax.swing.GroupLayout csrSubjectPanelLayout = new javax.swing.GroupLayout(csrSubjectPanel);
         csrSubjectPanel.setLayout(csrSubjectPanelLayout);
         csrSubjectPanelLayout.setHorizontalGroup(
@@ -342,11 +338,9 @@ public class CaFrame extends javax.swing.JFrame {
                     .addComponent(jLabel3)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6)
-                    .addComponent(jLabel1)
-                    .addComponent(jLabel7))
+                    .addComponent(jLabel1))
                 .addGap(3, 3, 3)
                 .addGroup(csrSubjectPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(emailTextField)
                     .addComponent(cTextField)
                     .addComponent(cnTextField)
                     .addComponent(stTextField)
@@ -378,13 +372,9 @@ public class CaFrame extends javax.swing.JFrame {
                     .addComponent(ouTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(csrSubjectPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(csrSubjectPanelLayout.createSequentialGroup()
-                        .addComponent(jLabel6)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(csrSubjectPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel7)
-                            .addComponent(emailTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addComponent(cnTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jLabel6)
+                    .addComponent(cnTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(20, 20, 20))
         );
 
         csrOptionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("CSR options"));
@@ -517,7 +507,7 @@ public class CaFrame extends javax.swing.JFrame {
                 .addComponent(csrSubjectPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(csrOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(154, Short.MAX_VALUE))
+                .addContainerGap(164, Short.MAX_VALUE))
         );
 
         appTabs.addTab("CSR Generation", csrGenTab);
@@ -1733,7 +1723,6 @@ public class CaFrame extends javax.swing.JFrame {
         String O = oTextField.getText();
         String OU = ouTextField.getText();
         String CN = cnTextField.getText();
-        String email = emailTextField.getText();
         if (!C.equals("")) {
             rdn.add(String.format("C=%s", C));
         }
@@ -1754,9 +1743,7 @@ public class CaFrame extends javax.swing.JFrame {
         }
 
         subjStr = StringUtils.joinString(rdn, ",");
-        if (!email.equals("")) {
-            subjStr = String.format("%s/emailAddress=%s", subjStr, email);
-        }
+
         logDbg("Encoding subjectName as \"%s\"\n", subjStr);
         try {
             csr = CsrUtils.newCsr(subjStr, kp, caCheckBox.isSelected());
@@ -2656,7 +2643,6 @@ public class CaFrame extends javax.swing.JFrame {
     private javax.swing.JButton displayCrtHashCodeButton;
     private javax.swing.JButton displayMemory;
     private javax.swing.JButton displayRootImdHashCodes;
-    private javax.swing.JTextField emailTextField;
     private javax.swing.JButton fetchServerCrtsButton;
     private javax.swing.JButton freeWatedBytesButton;
     private javax.swing.JButton genKeyButton;
@@ -2686,7 +2672,6 @@ public class CaFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
@@ -2802,7 +2787,6 @@ public class CaFrame extends javax.swing.JFrame {
         sb.append(String.format("\tl=\"%s\"\n", lTextField.getText()));
         sb.append(String.format("\tou=\"%s\"\n", ouTextField.getText()));
         sb.append(String.format("\tcn=\"%s\"\n", cnTextField.getText()));
-        sb.append(String.format("\temail=\"%s\"\n", emailTextField.getText()));
         sb.append(String.format("\n"));
         sb.append(String.format("\tkeyFile=\"%s\"\n", keyFN2.getText()));
         sb.append(String.format("\tCsrFile=\"%s\"\n", csrFN1.getText()));
