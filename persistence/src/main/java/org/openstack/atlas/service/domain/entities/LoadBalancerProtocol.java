@@ -7,6 +7,7 @@ public enum LoadBalancerProtocol implements Serializable {
     FTP,
     TCP,
     TCP_CLIENT_FIRST,
+    TCP_STREAM,
     IMAPv2,
     IMAPv3,
     IMAPv4,
@@ -22,8 +23,7 @@ public enum LoadBalancerProtocol implements Serializable {
     UDP_STREAM,
     UDP,
     MYSQL,
-    SFTP,
-    GENERIC_STREAMING;
+    SFTP;
 
     private final static long serialVersionUID = 532512316L;
 }
