@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.22.3</version>
+        <version>1.22.4-SNAPSHOT</version>
 
     </parent>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-archiver-clients</artifactId>
     <name>OpenStack :: Atlas :: Logs :: HDFS :: CloudFiles client</name>
-    <version>1.22.3</version>
+    <version>1.22.4-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
