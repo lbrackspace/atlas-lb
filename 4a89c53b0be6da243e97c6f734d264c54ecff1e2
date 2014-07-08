@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3aa7f18b_84768605",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/zxtm/ZxtmConversionUtils.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1001831
+      },
+      "writtenOn": "2014-07-08T20:33:16Z",
+      "side": 1,
+      "message": "should be TCP_STREAM",
+      "range": {
+        "startLine": 37,
+        "startChar": 0,
+        "endLine": 37,
+        "endChar": 8
+      },
+      "revId": "4a89c53b0be6da243e97c6f734d264c54ecff1e2",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
