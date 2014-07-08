@@ -23,7 +23,8 @@ public enum LoadBalancerProtocol implements Serializable {
     UDP_STREAM,
     UDP,
     MYSQL,
-    SFTP;
+    SFTP,
+    GENERIC_STREAMING;
 
     private final static long serialVersionUID = 532512316L;
 }

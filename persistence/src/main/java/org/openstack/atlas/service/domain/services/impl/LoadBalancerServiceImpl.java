@@ -1006,7 +1006,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     private boolean checkLBProtocol(LoadBalancer loadBalancer) {
         return loadBalancer.getProtocol() == LoadBalancerProtocol.TCP || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_TCP
-                || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP_STREAM || loadBalancer.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST;
+                || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP_STREAM || loadBalancer.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST || loadBalancer.getProtocol() == LoadBalancerProtocol.GENERIC_STREAMING;
     }
 
     private boolean verifySharedVipProtocols(VirtualIp vip, LoadBalancer loadBalancer) {
