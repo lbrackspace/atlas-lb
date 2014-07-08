@@ -27,6 +27,7 @@ public final class ProtocolPortBindings {
         protocolPortMap.put("HTTP",80);
         protocolPortMap.put("TCP",0);
         protocolPortMap.put("TCP_CLIENT_FIRST",0);
+        protocolPortMap.put("TCP_STREAM",0);
         protocolPortMap.put("LDAPS",636);
         protocolPortMap.put("DNS_TCP",53);
         protocolPortMap.put("DNS_UDP",53);
@@ -34,7 +35,6 @@ public final class ProtocolPortBindings {
         protocolPortMap.put("UDP_STREAM",0);
         protocolPortMap.put("MYSQL",3306);
         protocolPortMap.put("SFTP",22);
-        protocolPortMap.put("GENERIC_STREAMING",0);
 
         keys = new ArrayList<String>();
         protocols = new Protocols();
