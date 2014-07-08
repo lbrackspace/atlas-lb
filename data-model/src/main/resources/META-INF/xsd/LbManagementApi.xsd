@@ -270,6 +270,7 @@
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="STANDARD"/>
             <xsd:enumeration value="INTERNAL"/>
+            <xsd:enumeration value="SMOKE"/>
         </xsd:restriction>
     </xsd:simpleType>
 
