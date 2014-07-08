@@ -22,7 +22,7 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import java.util.List;
 
-public class SyncTest extends ZeusTestBase {
+public class SyncIntegrationTest extends ZeusTestBase {
 
     ZeusSslTermination zterm;
     String[] lbName;
