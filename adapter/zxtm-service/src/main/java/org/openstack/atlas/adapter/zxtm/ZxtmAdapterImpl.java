@@ -179,38 +179,35 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getPoolBinding().setPassiveMonitoring(new String[]{name}, new boolean[]{false});
         }
 
-        if (!Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(name)) {
+        if (!(loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect() && loadBalancer.hasSsl())
+                && !Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(name)) {
             LOG.debug(String.format("Adding virtual server '%s'...", name));
             VirtualServerBasicInfo vsInfo = new VirtualServerBasicInfo(loadBalancer.getPort(), ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol()), name);
             serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{name}, new VirtualServerBasicInfo[]{vsInfo});
             LOG.info(String.format("Virtual server '%s' successfully added.", name));
         }
-        serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{name}, new boolean[]{true});
-        serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{name}, new boolean[]{true});
-        addVirtualIps(config, loadBalancer, name);
-        try {
-            isVSListeningOnAllAddresses(serviceStubs, name, name);
-        } catch (Exception e) {
-            throw new ZxtmRollBackException(rollBackMessage, e);
+        if (Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(name)) {
+            serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{name}, new boolean[]{true});
+            serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{name}, new boolean[]{true});
+            serviceStubs.getVirtualServerBinding().setProtocol(new String[]{name}, new VirtualServerProtocol[]{ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol())});
+            serviceStubs.getVirtualServerBinding().setPort(new String[]{name}, new UnsignedInt[]{new UnsignedInt(loadBalancer.getPort())});
+            addVirtualIps(config, loadBalancer, name);
+            try {
+                isVSListeningOnAllAddresses(serviceStubs, name, name);
+            } catch (Exception e) {
+                throw new ZxtmRollBackException(rollBackMessage, e);
+            }
+            serviceStubs.getVirtualServerBinding().setEnabled(new String[]{name}, new boolean[]{true});
+            if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+                TrafficScriptHelper.addXForwardedPortScriptIfNeeded(serviceStubs);
+                attachXFPORTRuleToVirtualServer(serviceStubs, name);
+            }
         }
-        serviceStubs.getVirtualServerBinding().setEnabled(new String[]{name}, new boolean[]{true});
-        syncLoadBalancerAttributes(config, serviceStubs, loadBalancer, name);
+
+        syncLoadBalancerAttributes(config, serviceStubs, loadBalancer, name); // This creates the RedirectVS as a side-effect if it needs to exist
 
         if (loadBalancer.getTimeout() != null) {
             updateTimeout(config, loadBalancer);
-        }
-
-        if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
-            TrafficScriptHelper.addXForwardedPortScriptIfNeeded(serviceStubs);
-            attachXFPORTRuleToVirtualServer(serviceStubs, name);
-            serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{name}, new boolean[]{true});
-            serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{name}, new boolean[]{true});
-
-            if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
-                setErrorFile(config, loadBalancer, loadBalancer.getUserPages().getErrorpage());
-            } else {
-                setDefaultErrorFile(config, loadBalancer);
-            }
         }
 
         if (loadBalancer.getSslTermination() != null && loadBalancer.isUsingSsl()) {
@@ -218,6 +215,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             sslTerm.setCertIntermediateCert(loadBalancer.getSslTermination().getCertificate());
             sslTerm.setSslTermination(loadBalancer.getSslTermination());
             updateSslTermination(config, loadBalancer, sslTerm);
+        }
+
+        if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
+            setErrorFile(config, loadBalancer, loadBalancer.getUserPages().getErrorpage());
+        } else {
+            setDefaultErrorFile(config, loadBalancer);
         }
 
         LOG.info(String.format("Load balancer '%s' successfully synced.", name));
@@ -381,7 +384,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
     }
 
-    private void syncLoadBalancerAttributes(LoadBalancerEndpointConfiguration config, ZxtmServiceStubs serviceStubs, LoadBalancer lb, String virtualServerName) throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
+    private void syncLoadBalancerAttributes(LoadBalancerEndpointConfiguration config, ZxtmServiceStubs serviceStubs, LoadBalancer lb, String virtualServerName)
+            throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
         String redirectName = ZxtmNameBuilder.genRedirectVSName(lb);
 
         if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
@@ -391,10 +395,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             removeSessionPersistence(config, lb.getId(), lb.getAccountId());
         }
 
-        if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
+        if (lb.getHealthMonitor() != null) {
             updateHealthMonitor(config, lb);
-        } else if ((lb.getHealthMonitor() == null || lb.hasSsl())
-                && Arrays.asList(serviceStubs.getMonitorBinding().getCustomMonitorNames()).contains(virtualServerName)) {
+        } else if (lb.getHealthMonitor() == null && Arrays.asList(serviceStubs.getMonitorBinding().getCustomMonitorNames()).contains(virtualServerName)) {
             removeHealthMonitor(config, lb);
         }
 
