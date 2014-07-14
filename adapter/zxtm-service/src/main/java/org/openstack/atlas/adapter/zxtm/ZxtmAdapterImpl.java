@@ -2702,7 +2702,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         int[] maxConnectionsSsl = new int[1];
         int[] currentConnectionsSsl = new int[1];
 
-        if (!loadBalancer.isSecureOnly() && (loadBalancer.isHttpsRedirect() == null || !loadBalancer.isHttpsRedirect())) {
+        if (!loadBalancer.isSecureOnly() || loadBalancer.isHttpsRedirect() == null || !loadBalancer.isHttpsRedirect()) {
             for (ZxtmServiceStubs serviceStubs : allStubs) {
                 connectionTimedOut[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName})[0];
                 connectionError[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName})[0];
