@@ -9,9 +9,9 @@
     <packaging>pom</packaging>
 
     <scm>
-        <url>scm:git:git@github-lbaas:lbrackspace/atlas-lb.git</url>
-        <developerConnection>scm:git:git@github-lbaas:lbrackspace/atlas-lb.git</developerConnection>
-        <connection>scm:git:git@github-lbass:lbrackspace/atlas-lb.git</connection>
+        <url>scm:git:lbrackspace@review.gerrithub.io:29418/lbrackspace/atlas-lb/</url>
+        <developerConnection>scm:git:lbrackspace@review.gerrithub.io:29418/lbrackspace/atlas-lb/</developerConnection>
+        <connection>scm:git:lbrackspace@review.gerrithub.io:29418/lbrackspace/atlas-lb/</connection>
     </scm>
 
     <organization>
