@@ -1,0 +1,5 @@
+[gerrit]
+host=review.gerrithub.io
+port=29418
+project=lbrackspace/atlas-lb
+defaultbranch=1.20-candidate
