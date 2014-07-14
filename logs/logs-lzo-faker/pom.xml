@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.20.34-SNAPSHOT</version>
+        <version>1.20.34</version>
 
     </parent>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-lzo-faker</artifactId>
     <name>Openstack :: Atlas :: Logs :: Lzo Faker</name>
-    <version>1.20.34-SNAPSHOT</version>
+    <version>1.20.34</version>
     <packaging>jar</packaging>
 
     <dependencies>
