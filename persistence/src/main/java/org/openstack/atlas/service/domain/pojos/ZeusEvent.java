@@ -12,6 +12,7 @@ public class ZeusEvent
 
     protected String paramLine;
 
+    protected String callbackHost;
 
     public String getEventType() {
         return eventType;
@@ -27,6 +28,14 @@ public class ZeusEvent
 
     public void setParamLine(String value) {
         this.paramLine = value;
+    }
+
+    public String getCallbackHost() {
+        return callbackHost;
+    }
+
+    public void setCallbackHost(String callbackHost) {
+        this.callbackHost = callbackHost;
     }
 
 }

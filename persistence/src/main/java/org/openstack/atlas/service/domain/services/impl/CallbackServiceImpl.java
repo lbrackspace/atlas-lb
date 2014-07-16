@@ -78,9 +78,10 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
             String atomTitle = "Node Status Updated";
             String atomSummary = String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId);
             String detailedMessage = "";
+            String callbackHost = zeusEvent.getCallbackHost();
             detailedMessage = (callbackHelper.detailedMessage.equals("")) ? "Node is working" : callbackHelper.detailedMessage;
 
-            notificationService.saveNodeServiceEvent("Rackspace Cloud", dbNode.getLoadbalancer().getAccountId(), loadBalancerId, dbNode.getId(), atomTitle, atomSummary, UPDATE_NODE, UPDATE, INFO, detailedMessage);
+            notificationService.saveNodeServiceEvent("Rackspace Cloud", dbNode.getLoadbalancer().getAccountId(), loadBalancerId, dbNode.getId(), atomTitle, atomSummary, UPDATE_NODE, UPDATE, INFO, detailedMessage, callbackHost);
 
             LOG.info(String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId));
         } catch (Exception e) {

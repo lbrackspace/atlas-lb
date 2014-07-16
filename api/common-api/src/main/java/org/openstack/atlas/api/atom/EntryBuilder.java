@@ -62,7 +62,7 @@ public class EntryBuilder {
                 for (NodeServiceEvent event : lbNodeServiceEvents) {
                     Entry entry = createGenericEntry(event, baseUri);
                     entry.setSummary(event.getDescription());
-                    entry.setContent("Details: " + event.getDetailedMessage());
+                    entry.setContent("Details: " + event.getDetailedMessage() + "\nCallback Host: " + event.getCallbackHost());
                     entries.add(entry);
                 }
 

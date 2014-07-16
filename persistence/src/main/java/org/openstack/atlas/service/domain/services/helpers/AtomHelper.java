@@ -55,7 +55,7 @@ public class AtomHelper {
         return ne;
     }
 
-    public static NodeServiceEvent createNodeServiceEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity, String detailedMessage) {
+    public static NodeServiceEvent createNodeServiceEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity, String detailedMessage, String callbackHost) {
         NodeServiceEvent ne = new NodeServiceEvent();
         ne.setAccountId(accountId);
         ne.setLoadbalancerId(loadbalancerId);
@@ -68,6 +68,7 @@ public class AtomHelper {
         ne.setSeverity(severity);
         ne.setType(eventType);
         ne.setDetailedMessage(detailedMessage);
+        ne.setCallbackHost(callbackHost);
         ne.setRelativeUri(createRelativeUri(accountId, loadbalancerId, eventType, nodeId) + "/events");
         return ne;
     }
