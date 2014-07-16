@@ -47,6 +47,7 @@ public class CallbackResourceTest {
         public void shouldReturnOK() throws Exception {
             ZeusEvent zeusEvent = new ZeusEvent();
             zeusEvent.setParamLine("paramLine");
+            zeusEvent.setCallbackHost("hostname");
             Response response = callbackResource.receiveCallbackMessage(zeusEvent);
             Assert.assertEquals(200, response.getStatus());
         }
@@ -55,6 +56,7 @@ public class CallbackResourceTest {
         public void shouldReturn500() throws Exception {
             ZeusEvent zeusEvent = new ZeusEvent();
             zeusEvent.setParamLine("paramLine");
+            zeusEvent.setCallbackHost("hostname");
             doThrow(Exception.class).when(callbackResource.receiveCallbackMessage(zeusEvent));
         }
     }

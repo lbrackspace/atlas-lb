@@ -41,7 +41,7 @@ public class CallbackServiceImplTest {
             zEvent = new ZeusEvent();
             zEvent.setEventType("EventType");
             zEvent.setParamLine(mFail);
-
+            zEvent.setCallbackHost("hostname");
         }
 
         @Test(expected = BadRequestException.class)
