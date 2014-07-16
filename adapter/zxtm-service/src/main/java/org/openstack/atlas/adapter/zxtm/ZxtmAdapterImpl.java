@@ -388,7 +388,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             throws ZxtmRollBackException, InsufficientRequestException, RemoteException {
         String redirectName = ZxtmNameBuilder.genRedirectVSName(lb);
 
-        if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
+        if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE)) {
             setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
         } else if ((lb.getSessionPersistence() == null || lb.getSessionPersistence().equals(NONE) || lb.hasSsl())
                 && serviceStubs.getPoolBinding().getPersistence(new String[]{virtualServerName}).length != 0) {
