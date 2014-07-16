@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa2e39b8_45c7fc12",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/atom/EntryBuilder.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-07-16T19:43:57Z",
+      "side": 1,
+      "message": "Should the text maybe be separated by a newline or a comma maybe?  Not sure, just throwing it out there.",
+      "revId": "09cc3f89631188711fa03dfcc9bf45ed1dc3fc08",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
