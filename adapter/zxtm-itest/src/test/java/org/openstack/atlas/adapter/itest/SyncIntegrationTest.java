@@ -14,10 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
-import org.openstack.atlas.service.domain.entities.ConnectionLimit;
-import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
-import org.openstack.atlas.service.domain.entities.SslTermination;
-import org.openstack.atlas.service.domain.entities.UserPages;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 
 import java.util.List;
@@ -30,6 +27,7 @@ public class SyncIntegrationTest extends ZeusTestBase {
     String[] lbrName;
     String epContent = "test";
     String epName;
+    String epsName;
     final UnsignedInt MAX_CONN = new UnsignedInt(23);
 
     @BeforeClass
@@ -45,12 +43,38 @@ public class SyncIntegrationTest extends ZeusTestBase {
         lbsName = new String[]{secureLoadBalancerName()};
         lbrName = new String[]{redirectLoadBalancerName()};
         epName = String.format("%s_error.html", loadBalancerName());
+        epsName = String.format("%s_error.html", secureLoadBalancerName());
         setupIvars();
     }
 
     @AfterClass
     public static void tearDownClass() {
         removeSimpleLoadBalancer();
+    }
+
+    @Test
+    public void testSyncPort() {
+        try {
+            getServiceStubs().getVirtualServerBinding().setPort(lbName, new UnsignedInt[]{new UnsignedInt(12321)});
+
+            zxtmAdapter.updateLoadBalancer(config, lb);
+            Assert.assertEquals(getServiceStubs().getVirtualServerBinding().getPort(lbName)[0], new UnsignedInt(lb.getPort()));
+        } catch(Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSyncProtocol() {
+        try {
+            getServiceStubs().getVirtualServerBinding().removeRules(lbName, new String[][]{{ZxtmAdapterImpl.ruleXForwardedPort.getName()}});
+            getServiceStubs().getVirtualServerBinding().setProtocol(lbName, new VirtualServerProtocol[]{VirtualServerProtocol.dns});
+
+            zxtmAdapter.updateLoadBalancer(config, lb);
+            Assert.assertEquals(getServiceStubs().getVirtualServerBinding().getProtocol(lbName)[0], VirtualServerProtocol.http);
+        } catch(Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     @Test
@@ -61,6 +85,34 @@ public class SyncIntegrationTest extends ZeusTestBase {
             lb.setConnectionLimit(limit);
             zxtmAdapter.updateConnectionThrottle(config, lb);
             Assert.assertTrue(getServiceStubs().getProtectionBinding().getMax1Connections(lbName)[0].equals(MAX_CONN));
+            Assert.assertTrue(Arrays.asList(getServiceStubs().getVirtualServerBinding().getProtection(lbName)).contains(lbName[0]));
+
+            getServiceStubs().getProtectionBinding().setMax1Connections(lbName, new UnsignedInt[]{new UnsignedInt(0)});
+            Assert.assertTrue(!getServiceStubs().getProtectionBinding().getMax1Connections(lbName)[0].equals(MAX_CONN));
+
+            zxtmAdapter.updateLoadBalancer(config, lb);
+            Assert.assertTrue(getServiceStubs().getProtectionBinding().getMax1Connections(lbName)[0].equals(MAX_CONN));
+        } catch(Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSyncConnectionLimitWithSSLEnabled() {
+        try {
+            addSslTermination();
+
+            zxtmAdapter.updateSslTermination(config, lb, zterm);
+            List certFileNames = Arrays.asList(getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getCertificateNames());
+            Assert.assertTrue(certFileNames.contains(secureLoadBalancerName()));
+
+            ConnectionLimit limit = new ConnectionLimit();
+            limit.setMaxConnections(MAX_CONN.intValue());
+            lb.setConnectionLimit(limit);
+            zxtmAdapter.updateConnectionThrottle(config, lb);
+            Assert.assertTrue(getServiceStubs().getProtectionBinding().getMax1Connections(lbName)[0].equals(MAX_CONN));
+            Assert.assertTrue(Arrays.asList(getServiceStubs().getVirtualServerBinding().getProtection(lbName)).contains(lbName[0]));
+            Assert.assertTrue(Arrays.asList(getServiceStubs().getVirtualServerBinding().getProtection(lbsName)).contains(lbName[0]));
 
             getServiceStubs().getProtectionBinding().setMax1Connections(lbName, new UnsignedInt[]{new UnsignedInt(0)});
             Assert.assertTrue(!getServiceStubs().getProtectionBinding().getMax1Connections(lbName)[0].equals(MAX_CONN));
@@ -156,6 +208,43 @@ public class SyncIntegrationTest extends ZeusTestBase {
     }
 
     @Test
+    public void testSyncErrorPageWithSSLEnabled() {
+        try {
+            addSslTermination();
+
+            zxtmAdapter.updateSslTermination(config, lb, zterm);
+            List certFileNames = Arrays.asList(getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getCertificateNames());
+            Assert.assertTrue(certFileNames.contains(secureLoadBalancerName()));
+
+            UserPages pages = new UserPages();
+            pages.setErrorpage(epContent);
+            pages.setLoadbalancer(lb);
+            lb.setUserPages(pages);
+
+            zxtmAdapter.setErrorFile(config, lb, epContent);
+            List names = Arrays.asList(getServiceStubs().getZxtmConfExtraBinding().getFileNames());
+            Assert.assertTrue(names.contains(epName));
+            Assert.assertTrue(names.contains(epsName));
+
+            getServiceStubs().getVirtualServerBinding().setErrorFile(lbName, new String[]{"Default"});
+            getServiceStubs().getVirtualServerBinding().setErrorFile(lbsName, new String[]{"Default"});
+            getServiceStubs().getZxtmConfExtraBinding().deleteFile(new String[]{epName});
+            getServiceStubs().getZxtmConfExtraBinding().deleteFile(new String[]{epsName});
+            Assert.assertTrue(!Arrays.asList(getServiceStubs().getZxtmConfExtraBinding().getFileNames()).contains(epName));
+            Assert.assertTrue(!Arrays.asList(getServiceStubs().getZxtmConfExtraBinding().getFileNames()).contains(epsName));
+
+            zxtmAdapter.updateLoadBalancer(config, lb);
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getErrorFile(lbName)[0].equals(epName));
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getErrorFile(lbsName)[0].equals(epsName));
+            names = Arrays.asList(getServiceStubs().getZxtmConfExtraBinding().getFileNames());
+            Assert.assertTrue(names.contains(epName));
+            Assert.assertTrue(names.contains(epsName));
+        } catch(Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testSyncAlgorithm() {
         try {
             LoadBalancerAlgorithm algorithm = LoadBalancerAlgorithm.ROUND_ROBIN;
@@ -209,6 +298,29 @@ public class SyncIntegrationTest extends ZeusTestBase {
     }
 
     @Test
+    public void testSyncConnectionLoggingWithSSLEnabled() {
+        try {
+            addSslTermination();
+
+            zxtmAdapter.updateSslTermination(config, lb, zterm);
+            List certFileNames = Arrays.asList(getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getCertificateNames());
+            Assert.assertTrue(certFileNames.contains(secureLoadBalancerName()));
+
+            lb.setConnectionLogging(true);
+            zxtmAdapter.updateConnectionLogging(config, lb);
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getLogEnabled(lbName)[0]);
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getLogEnabled(lbsName)[0]);
+
+            lb.setConnectionLogging(false);
+            zxtmAdapter.updateLoadBalancer(config, lb);
+            Assert.assertTrue(!getServiceStubs().getVirtualServerBinding().getLogEnabled(lbName)[0]);
+            Assert.assertTrue(!getServiceStubs().getVirtualServerBinding().getLogEnabled(lbsName)[0]);
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testSyncAccessList() {
         try {
             String[][] addresses = new String[1][1];
@@ -220,6 +332,35 @@ public class SyncIntegrationTest extends ZeusTestBase {
             getServiceStubs().getProtectionBinding().setAllowedAddresses(lbName, addresses);
             getServiceStubs().getVirtualServerBinding().setProtection(lbName, lbName);
             Assert.assertTrue(Arrays.asList(getServiceStubs().getVirtualServerBinding().getProtection(lbName)).contains(lbName[0]));
+            Assert.assertTrue(getServiceStubs().getProtectionBinding().getAllowedAddresses(lbName)[0].length > 0);
+
+            zxtmAdapter.updateLoadBalancer(config, lb);
+            Assert.assertTrue(getServiceStubs().getProtectionBinding().getAllowedAddresses(lbName)[0].length == 0);
+        } catch(Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSyncAccessListWithSSLEnabled() {
+        try {
+            addSslTermination();
+
+            zxtmAdapter.updateSslTermination(config, lb, zterm);
+            List certFileNames = Arrays.asList(getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getCertificateNames());
+            Assert.assertTrue(certFileNames.contains(secureLoadBalancerName()));
+
+            String[][] addresses = new String[1][1];
+            addresses[0] = new String[]{"10.0.0.1"};
+            // This check is necessary to see if the protection class exists (due to previous tests)
+            if (!Arrays.asList(getServiceStubs().getProtectionBinding().getProtectionNames()).contains(lbName[0])) {
+                getServiceStubs().getProtectionBinding().addProtection(lbName);
+            }
+            getServiceStubs().getProtectionBinding().setAllowedAddresses(lbName, addresses);
+            getServiceStubs().getVirtualServerBinding().setProtection(lbName, lbName);
+            getServiceStubs().getVirtualServerBinding().setProtection(lbsName, lbName);
+            Assert.assertTrue(Arrays.asList(getServiceStubs().getVirtualServerBinding().getProtection(lbName)).contains(lbName[0]));
+            Assert.assertTrue(Arrays.asList(getServiceStubs().getVirtualServerBinding().getProtection(lbsName)).contains(lbName[0]));
             Assert.assertTrue(getServiceStubs().getProtectionBinding().getAllowedAddresses(lbName)[0].length > 0);
 
             zxtmAdapter.updateLoadBalancer(config, lb);
@@ -246,6 +387,32 @@ public class SyncIntegrationTest extends ZeusTestBase {
     }
 
     @Test
+    public void testSyncContentCachingWithSSLEnabled() {
+        try {
+            addSslTermination();
+
+            zxtmAdapter.updateSslTermination(config, lb, zterm);
+            List certFileNames = Arrays.asList(getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getCertificateNames());
+            Assert.assertTrue(certFileNames.contains(secureLoadBalancerName()));
+
+            VirtualServerRule[][] rules = new VirtualServerRule[][]{{
+                    new VirtualServerRule(ZxtmAdapterImpl.CONTENT_CACHING, true, VirtualServerRuleRunFlag.run_every)}};
+            getServiceStubs().getVirtualServerBinding().addRules(lbName, rules);
+            getServiceStubs().getVirtualServerBinding().addRules(lbsName, rules);
+            getServiceStubs().getVirtualServerBinding().setWebcacheEnabled(lbName, new boolean[]{true});
+            getServiceStubs().getVirtualServerBinding().setWebcacheEnabled(lbsName, new boolean[]{true});
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(lbName)[0]);
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(lbsName)[0]);
+
+            zxtmAdapter.updateLoadBalancer(config, lb);
+            Assert.assertTrue(!getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(lbName)[0]);
+            Assert.assertTrue(!getServiceStubs().getVirtualServerBinding().getWebcacheEnabled(lbsName)[0]);
+        } catch(Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void testSyncHalfClosed() {
         try {
             getServiceStubs().getVirtualServerBinding().setProxyClose(lbName, new boolean[]{true});
@@ -253,6 +420,28 @@ public class SyncIntegrationTest extends ZeusTestBase {
 
             zxtmAdapter.updateLoadBalancer(config, lb);
             Assert.assertTrue(!getServiceStubs().getVirtualServerBinding().getProxyClose(lbName)[0]);
+        } catch(Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSyncHalfClosedWithSSLEnabled() {
+        try {
+            addSslTermination();
+
+            zxtmAdapter.updateSslTermination(config, lb, zterm);
+            List certFileNames = Arrays.asList(getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getCertificateNames());
+            Assert.assertTrue(certFileNames.contains(secureLoadBalancerName()));
+
+            getServiceStubs().getVirtualServerBinding().setProxyClose(lbName, new boolean[]{true});
+            getServiceStubs().getVirtualServerBinding().setProxyClose(lbsName, new boolean[]{true});
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getProxyClose(lbName)[0]);
+            Assert.assertTrue(getServiceStubs().getVirtualServerBinding().getProxyClose(lbsName)[0]);
+
+            zxtmAdapter.updateLoadBalancer(config, lb);
+            Assert.assertTrue(!getServiceStubs().getVirtualServerBinding().getProxyClose(lbName)[0]);
+            Assert.assertTrue(!getServiceStubs().getVirtualServerBinding().getProxyClose(lbsName)[0]);
         } catch(Exception e) {
             Assert.fail(e.getMessage());
         }
