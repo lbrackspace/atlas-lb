@@ -3,6 +3,9 @@ package org.openstack.atlas.service.domain.services.helpers;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class CallbackHelper {
     private static final Log LOG = LogFactory.getLog(CallbackHelper.class);
 
@@ -56,13 +59,24 @@ public class CallbackHelper {
         return "";
     }
 
-    private String parseIpAddress(String paramLine) {
-      String address = null;
+    private String parseIpAddress(String paramLine) throws Exception {
+        String address = null;
         try {
-            address = parseIpv6Address(paramLine);
+            Pattern addressRegex = Pattern.compile("^(https?://)?(www.)?(\\S+)(:\\d+){1}$");
+            Matcher addressMatcher = addressRegex.matcher(parseAddressObject(paramLine));
+            if (addressMatcher.find()) {
+                address = addressMatcher.group(3);
+                // go ahead and grab the port with the regex
+                // this.port = Integer.parseInt(addressMatcher.group(4).substring(1));
+            }
+            else {
+                address = parseIpv6Address(paramLine);
+            }
         } catch (ArrayIndexOutOfBoundsException e) {
-            //silent
-            address = parseIpv4Address(paramLine);
+            LOG.warn("Unable to find an valid IP address or domain name.");
+            throw new Exception(e);
+        } catch (NumberFormatException e) {
+            LOG.warn(String.format("Error converting string to integer for ipv4 or domain port: '%s'", port));
         }
         return address;
     }
@@ -74,7 +88,7 @@ public class CallbackHelper {
         } catch (ArrayIndexOutOfBoundsException e) {
             //silent
 //            LOG.warn(String.format("Error converting string to integer for ipv6 port:"));
-            port = parseIpV4Port(paramLine);
+            port = parseIpV4OrDomainPort(paramLine);
         }
 
         try {
@@ -101,8 +115,9 @@ public class CallbackHelper {
         return parseAddressObject(paramLine).split(":")[0];
     }
 
-    private String parseIpV4Port(String paramLine) {
-        return parseAddressObject(paramLine).split(":")[1];
+    private String parseIpV4OrDomainPort(String paramLine) {
+        String parsedAddressObject = parseAddressObject(paramLine);
+        return parsedAddressObject.substring(parsedAddressObject.lastIndexOf(":") + 1);
     }
 
     private String parseIpv6AddressObject(String paramLine) {
