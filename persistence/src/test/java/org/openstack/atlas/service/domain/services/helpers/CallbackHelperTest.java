@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.ZeusEvent;
@@ -23,7 +24,15 @@ public class CallbackHelperTest {
 
         String mFail = "WARN monitors/12345_62203 monitorfail Monitor has detected a failure in node '10.1.223.134:443': Invalid HTTP response received; premature end of headers";
         String mFail6 = "WARN monitors/386085_3034 monitorfail Monitor has detected a failure in node '[2001:4801:79f1:1:22d6:5749:0:3a]:80 (2001:4801:79f1:1:22d6:5749::3a)': Connect failed: Connection refused";
+        String mFailDomain = "WARN monitors/12345_62203 monitorfail Monitor has detected a failure in node 'https://www.example.test.domain.com:443': Invalid HTTP response received; premature end of headers";
         String mOK = "INFO monitors/12345_62203 monitorok Monitor is working for node '10.1.223.134:443'.";
+        String mOKDomain = "INFO monitors/12345_62203 monitorok Monitor is working for node 'https://www.example.test.domain.com:443'.";
+
+        String mMissingPort = "INFO monitors/12345_62203 monitorok Monitor is working for node '10.1.223.134:'.";
+        String mInvalidPort = "INFO monitors/12345_62203 monitorok Monitor is working for node '10.1.223.134:abc'.";
+        String mBadIpV6 = "INFO monitors/12345_62203 monitorok Monitor is working for node '[2001:nodnarb:@@@@:1:lihp:egroj:0:3a]:80 (3000001:4801:79f1:1:remmus:1969::3a)'.";
+        String mBadIpV4 = "INFO monitors/12345_62203 monitorok Monitor is working for node '00810.1.@@@.abc:443'.";
+        String mBadDomain = "INFO monitors/12345_62203 monitorok Monitor is working for node 'http://www.example test domain.com:443'.";
 
         @Before
         public void standUp() {
@@ -32,7 +41,6 @@ public class CallbackHelperTest {
             } catch (Exception e) {
                 Assert.fail(e.getMessage());
             }
-
         }
 
         @Test
@@ -88,6 +96,30 @@ public class CallbackHelperTest {
         }
 
         @Test
+        public void shouldSplitPortForOkDomain() throws Exception {
+            callbackHelper = new CallbackHelper(mOKDomain);
+            Integer port = callbackHelper.port;
+            Assert.assertEquals((Integer) 443, port);
+        }
+
+        @Test
+        public void shouldSplitPortForFailDomain() throws Exception {
+            callbackHelper = new CallbackHelper(mFailDomain);
+            Integer port = callbackHelper.port;
+            Assert.assertEquals((Integer) 443, port);
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldDetectMissingPort() throws Exception {
+            callbackHelper = new CallbackHelper(mMissingPort);
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldDetectInvalidPort() throws Exception {
+            callbackHelper = new CallbackHelper(mInvalidPort);
+        }
+
+        @Test
         public void shouldSplitAddress() throws Exception {
             String address = callbackHelper.ipAddress;
             Assert.assertEquals("10.1.223.134", address);
@@ -105,6 +137,35 @@ public class CallbackHelperTest {
             callbackHelper = new CallbackHelper(mFail6);
             String address = callbackHelper.ipAddress;
             Assert.assertEquals("2001:4801:79f1:1:22d6:5749:0:3a", address);
+        }
+
+        @Test
+        public void shouldSplitAddressForOkDomain() throws Exception {
+            callbackHelper = new CallbackHelper(mOKDomain);
+            String address = callbackHelper.ipAddress;
+            Assert.assertEquals("www.example.test.domain.com", address);
+        }
+
+        @Test
+        public void shouldSplitAddressForFailDomain() throws Exception {
+            callbackHelper = new CallbackHelper(mFailDomain);
+            String address = callbackHelper.ipAddress;
+            Assert.assertEquals("www.example.test.domain.com", address);
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldDetectBadIpV6Address() throws Exception {
+            callbackHelper = new CallbackHelper(mBadIpV6);
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldDetectBadIpV4Address() throws Exception {
+            callbackHelper = new CallbackHelper(mBadIpV4);
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldDetectBadDomain() throws Exception {
+            callbackHelper = new CallbackHelper(mBadDomain);
         }
 
         @Test(expected = Exception.class)
