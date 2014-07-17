@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa2e39b8_c895e389",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/helpers/CallbackHelper.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2014-07-17T15:47:23Z",
+      "side": 1,
+      "message": "I\u0027m not sure how this is functionally different from:\n\n^(https?://)?(\\\\S+)(:\\\\d+)$\n\nThe www part doesn\u0027t really matter (it matches in with S+) and the {1} doesn\u0027t actually enforce anything because S+ is greedy and will eat additional (:\\\\d+) blocks. For instance, this matches:\n4.4.4.4:80:80",
+      "revId": "ec25a74ad4e6f1694de60a21b966b1dbcb089420",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa2e39b8_e85ee711",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/helpers/CallbackHelper.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2014-07-17T15:47:23Z",
+      "side": 1,
+      "message": "We\u0027re going to throw a generic Exception? Do we not want to be more specific? I believe we use more informatively typed exceptions everywhere else.",
+      "revId": "ec25a74ad4e6f1694de60a21b966b1dbcb089420",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa2e39b8_a8921f9d",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/helpers/CallbackHelper.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2014-07-17T15:47:23Z",
+      "side": 1,
+      "message": "Is this function used anymore? If not, we should maybe deprecate it or remove it.",
+      "revId": "ec25a74ad4e6f1694de60a21b966b1dbcb089420",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa2e39b8_28ee0f23",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/helpers/CallbackHelper.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2014-07-17T15:47:23Z",
+      "side": 1,
+      "message": "This seems messy when you could just get the port as part of the regex above. I see that you apparently started to do that, and ended up not -- I am curious about why you abandoned that approach.",
+      "revId": "ec25a74ad4e6f1694de60a21b966b1dbcb089420",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
