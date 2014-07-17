@@ -2,6 +2,10 @@ package org.openstack.atlas.service.domain.services.helpers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CallbackHelper {
     private static final Log LOG = LogFactory.getLog(CallbackHelper.class);
@@ -21,8 +25,7 @@ public class CallbackHelper {
         this.detailedMessage = parseDetailedMessage(paramLine);
         this.loadBalancerId = parseLoadbalancerId(paramLine);
         this.accountId = parseAccountId(paramLine);
-        this.ipAddress = parseIpAddress(paramLine);
-        this.port = parsePort(paramLine);
+        this.ipAddress = parseIpAddressAndSetPort(paramLine);
     }
 
     public Integer parseAccountId(String paramLine) throws Exception {
@@ -56,33 +59,29 @@ public class CallbackHelper {
         return "";
     }
 
-    private String parseIpAddress(String paramLine) {
-      String address = null;
+    private String parseIpAddressAndSetPort(String paramLine) throws Exception {
+        String address = null;
         try {
-            address = parseIpv6Address(paramLine);
+            Pattern addressRegex = Pattern.compile("^(https?://)?(www.)?(\\S+)(:\\d+)$");
+            Matcher addressMatcher = addressRegex.matcher(parseAddressObject(paramLine));
+            if (addressMatcher.find()) {
+                address = addressMatcher.group(3);
+                this.port = Integer.parseInt(addressMatcher.group(4).substring(1));
+            }
+            else {
+                address = parseIpv6Address(paramLine);
+                this.port = Integer.parseInt(parseIpV6Port(paramLine));
+            }
         } catch (ArrayIndexOutOfBoundsException e) {
-            //silent
-            address = parseIpv4Address(paramLine);
+            String message = "Unable to find an valid IP address or domain name.";
+            LOG.warn(message);
+            throw new BadRequestException(message);
+        } catch (NumberFormatException e) {
+            String message = String.format("Error converting string to integer for ipv4 or domain port: '%s'", port);
+            LOG.warn(message);
+            throw new BadRequestException(message);
         }
         return address;
-    }
-
-    private int parsePort(String paramLine) {
-        String port = null;
-        try {
-            port = parseIpV6Port(paramLine);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            //silent
-//            LOG.warn(String.format("Error converting string to integer for ipv6 port:"));
-            port = parseIpV4Port(paramLine);
-        }
-
-        try {
-            return Integer.parseInt(port);
-        } catch (NumberFormatException e) {
-            LOG.warn(String.format("Error converting string to integer for ipv4 port: '%s'", port));
-        }
-        return Integer.parseInt(port);
     }
 
     private String parseAcctLbid(String paramLine) throws Exception {
@@ -94,15 +93,6 @@ public class CallbackHelper {
     private String parseAddressObject(String paramLine) {
         String initObj = paramLine.split("'")[1];
         return initObj.split("'")[0];
-    }
-
-
-    private String parseIpv4Address(String paramLine) {
-        return parseAddressObject(paramLine).split(":")[0];
-    }
-
-    private String parseIpV4Port(String paramLine) {
-        return parseAddressObject(paramLine).split(":")[1];
     }
 
     private String parseIpv6AddressObject(String paramLine) {

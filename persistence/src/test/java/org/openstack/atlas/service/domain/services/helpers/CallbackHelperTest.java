@@ -25,6 +25,9 @@ public class CallbackHelperTest {
         String mFail6 = "WARN monitors/386085_3034 monitorfail Monitor has detected a failure in node '[2001:4801:79f1:1:22d6:5749:0:3a]:80 (2001:4801:79f1:1:22d6:5749::3a)': Connect failed: Connection refused";
         String mOK = "INFO monitors/12345_62203 monitorok Monitor is working for node '10.1.223.134:443'.";
 
+        String mFailDomain = "WARN monitors/12345_62203 monitorfail Monitor has detected a failure in node 'https://www.ex-ample.test.domain.com:443': Invalid HTTP response received; premature end of headers";
+        String mOKDomain = "INFO monitors/12345_62203 monitorok Monitor is working for node 'https://www.ex-ample.test.domain.com:443'.";
+
         @Before
         public void standUp() {
             try {
@@ -105,6 +108,24 @@ public class CallbackHelperTest {
             callbackHelper = new CallbackHelper(mFail6);
             String address = callbackHelper.ipAddress;
             Assert.assertEquals("2001:4801:79f1:1:22d6:5749:0:3a", address);
+        }
+
+        @Test
+        public void shouldSplitAddressAndPortForFailDomain() throws Exception {
+            callbackHelper = new CallbackHelper(mFailDomain);
+            String address = callbackHelper.ipAddress;
+            Integer port = callbackHelper.port;
+            Assert.assertEquals("ex-ample.test.domain.com", address);
+            Assert.assertEquals((Integer) 443, port);
+        }
+
+        @Test
+        public void shouldSplitAddressAndPortForOkDomain() throws Exception {
+            callbackHelper = new CallbackHelper(mOKDomain);
+            String address = callbackHelper.ipAddress;
+            Integer port = callbackHelper.port;
+            Assert.assertEquals("ex-ample.test.domain.com", address);
+            Assert.assertEquals((Integer) 443, port);
         }
 
         @Test(expected = Exception.class)
