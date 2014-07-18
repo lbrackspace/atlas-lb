@@ -175,6 +175,10 @@ public class ZeusTestBase {
     }
 
     protected static void setupIvars() {
+        setupIvars(LoadBalancerProtocol.HTTP, 80);
+    }
+
+    protected static void setupIvars(LoadBalancerProtocol protocol, Integer port) {
         Set<LoadBalancerJoinVip> vipList = new HashSet<LoadBalancerJoinVip>();
         vip1 = new VirtualIp();
         vip1.setId(TEST_VIP_ID);
@@ -198,10 +202,10 @@ public class ZeusTestBase {
         LoadBalancer lb = new LoadBalancer();
         lb.setId(TEST_LOADBALANCER_ID);
         lb.setAccountId(TEST_ACCOUNT_ID);
-        lb.setPort(80);
+        lb.setPort(port);
         lb.setAlgorithm(ROUND_ROBIN);
         lb.setName("integration_test_lb");
-        lb.setProtocol(HTTP);
+        lb.setProtocol(protocol);
         lb.setNodes(nodeList);
         lb.setLoadBalancerJoinVipSet(vipList);
 
@@ -466,7 +470,6 @@ public class ZeusTestBase {
             }
             e.printStackTrace();
             Assert.fail(e.getMessage());
-
         }
     }
 

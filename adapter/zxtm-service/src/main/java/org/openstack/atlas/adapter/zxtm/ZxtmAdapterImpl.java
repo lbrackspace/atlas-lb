@@ -189,6 +189,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         if (Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(name)) {
             serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{name}, new boolean[]{true});
             serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{name}, new boolean[]{true});
+            if (!loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTP)) {
+                try {
+                    serviceStubs.getVirtualServerBinding().removeRules(new String[]{name}, new String[][]{{ZxtmAdapterImpl.ruleXForwardedPort.getName()}});
+                } catch (InvalidInput e) {
+                    LOG.info(String.format("X-Forwarded-Port rule doesn't exist on virtual server '%s': ignoring....", name));
+                }
+            }
             serviceStubs.getVirtualServerBinding().setProtocol(new String[]{name}, new VirtualServerProtocol[]{ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol())});
             serviceStubs.getVirtualServerBinding().setPort(new String[]{name}, new UnsignedInt[]{new UnsignedInt(loadBalancer.getPort())});
             addVirtualIps(config, loadBalancer, name);
