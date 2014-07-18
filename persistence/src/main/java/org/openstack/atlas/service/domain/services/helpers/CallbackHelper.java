@@ -5,9 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 
 import java.net.Inet6Address;
-import java.net.URISyntaxException;
 import java.net.URI;
-import java.util.Arrays;
 import java.net.Inet4Address;
 
 public class CallbackHelper {
@@ -28,8 +26,7 @@ public class CallbackHelper {
         this.detailedMessage = parseDetailedMessage(paramLine);
         this.loadBalancerId = parseLoadbalancerId(paramLine);
         this.accountId = parseAccountId(paramLine);
-        this.ipAddress = parseIpAddress(paramLine);
-        this.port = parsePort(paramLine);
+        parseAddressAndPort(paramLine);
     }
 
     public Integer parseAccountId(String paramLine) throws Exception {
@@ -65,71 +62,63 @@ public class CallbackHelper {
         return "";
     }
 
-    private String parseIpAddress(String paramLine) throws Exception {
-        String address = null;
-        // try to grab address using domain parsing
+    private void parseAddressAndPort(String paramLine) throws Exception {
         try {
-            URI possibleURI = new URI(parseAddressObject(paramLine));
-            address = possibleURI.getHost();
-            return address;
-        } catch (URISyntaxException e) {
-            LOG.warn("Unable to parse domain, attempting IpV6 and IpV4 parsing.");
+            URI domainAddress = new URI(parseAddressObject(paramLine));
+            this.ipAddress = domainAddress.getHost();
+            this.port = domainAddress.getPort();
+            return;
         }
-        // try to grab address using IpV6 and then IpV4 parsing
+        catch (Exception e) {
+            LOG.warn("Unable to parse address and port using domain parsing rules.");
+        }
         try {
-            address = parseIpv6Address(paramLine);
-            // verify that the found address is actually an IpV6 address
-            if (!verifyIPv6Address(address)) {
-                String message = "Unable to validate IpV6 address in the param line.";
-                LOG.warn(message);
-                throw new BadRequestException(message);
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {
-            LOG.warn("Unable to parse IpV6 address, attempting IpV4 parsing.");
-            address = parseIpv4Address(paramLine);
-            // verify that the found address is actually an IpV4 address
-            if (!verifyIpV4Address(address)) {
-                String message = "Unable to a valid Ip address in the param line.";
-                LOG.warn(message);
-                throw new BadRequestException(message);
-            }
+            this.ipAddress = parseIpV4Address(paramLine);
+            this.port = parseIpV4Port(paramLine);
+            return;
         }
-        return address;
+        catch (Exception e) {
+            LOG.warn("Unable to parse address and port using IpV4 parsing rules.");
+        }
+        try {
+            this.ipAddress = parseIpV6Address(paramLine);
+            this.port = parseIpV6Port(paramLine);
+            return;
+        }
+        catch (Exception e) {
+            LOG.warn("Unable to parse address and port using IpV6 parsing rules.");
+        }
+        String message = "Unable to find an address and port in the param line.";
+        LOG.warn(message);
+        throw new BadRequestException(message);
     }
 
-    private int parsePort(String paramLine) throws BadRequestException {
-        String port = null;
-        // try to grab port using domain parsing
-        try {
-            URI possibleURI = new URI(parseAddressObject(paramLine));
-            return possibleURI.getPort();
-        } catch (URISyntaxException e) {
-            LOG.warn("Unable to parse domain port, attempting IpV6 and IpV4 parsing.");
+    private String parseIpV4Address(String paramLine) throws Exception {
+        String ipV4Address = parseAddressObject(paramLine).split(":")[0];
+        if (!verifyIpV4Address(ipV4Address)) {
+            LOG.warn("Unable to verify IpV6 address found in the param line.");
+            throw new Exception();
         }
-        // try to grab port using IpV6 parsing
-        try {
-            port = parseIpV6Port(paramLine);
-            return Integer.parseInt(port);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            LOG.warn(String.format("Unable to parse IpV6 port, attempting IpV4 parsing."));
-        } catch (NumberFormatException e) {
-            LOG.warn(String.format("Error converting string to integer for IpV6 port: '%s'", port));
+        return ipV4Address;
+    }
+
+    private int parseIpV4Port(String paramLine) throws Exception {
+        String port = parseAddressObject(paramLine).split(":")[1];
+        return Integer.parseInt(port);
+    }
+
+    private String parseIpV6Address(String paramLine) throws Exception {
+        String ipV6Address = paramLine.split("'\\[")[1].split("]:")[0];
+        if (!verifyIPv6Address(ipV6Address)) {
+            LOG.warn("Unable to verify IpV6 address found in the param line.");
+            throw new Exception();
         }
-        // try to grab port using IpV4 parsing
-        try {
-            port = parseIpV4Port(paramLine);
-            return Integer.parseInt(port);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            // no way left to find port, throw bad request exception
-            String message = String.format("Unable to parse IpV4 port. Unable to find a valid port in the param line.", port);
-            LOG.warn(message);
-            throw new BadRequestException(message);
-        } catch (NumberFormatException e) {
-            // no way left to find port, throw bad request exception
-            String message = String.format("Error converting string to integer for IpV4 port: '%s'. Unable to find a valid port in the param line.", port);
-            LOG.warn(message);
-            throw new BadRequestException(message);
-        }
+        return ipV6Address;
+    }
+
+    private int parseIpV6Port(String paramLine) throws Exception {
+        String ipv6obj = parseAddressObject(paramLine).split("'\\[")[0].split(" ")[0];
+        return Integer.parseInt(ipv6obj.split("]:")[1]);
     }
 
     private boolean verifyIpV4Address(String address) {
@@ -159,29 +148,6 @@ public class CallbackHelper {
     private String parseAddressObject(String paramLine) {
         String initObj = paramLine.split("'")[1];
         return initObj.split("'")[0];
-    }
-
-    private String parseIpv6AddressObject(String paramLine) {
-        String ipv6obj = parseAddressObject(paramLine).split("'\\[")[0];
-        return ipv6obj.split(" ")[0];
-    }
-
-    private String parseIpv4Address(String paramLine) {
-        return parseAddressObject(paramLine).split(":")[0];
-    }
-
-    private String parseIpV4Port(String paramLine) {
-        return parseAddressObject(paramLine).split(":")[1];
-     }
-
-    private String parseIpv6Address(String paramLine) {
-        String ipv6obj = paramLine.split("'\\[")[1];
-        return ipv6obj.split("]:")[0];
-    }
-
-    private String parseIpV6Port(String paramLine) {
-        String ipv6obj = parseIpv6AddressObject(paramLine).split("'\\[")[0];
-        return ipv6obj.split("]:")[1];
     }
 
     public Integer getAccountId() {
