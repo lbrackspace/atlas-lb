@@ -341,7 +341,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 if (errorFile[0].equals("Default") || errorFile[0].equals(Constants.DEFAULT_ERRORFILE)) {
                     setDefaultErrorFile(config, secureVsName);
                 } else {
-                    setErrorFile(config, secureVsName, new String(serviceStubs.getZxtmConfExtraBinding().downloadFile(errorFile[0])));
+                    setErrorFile(config, secureVsName, vsName, new String(serviceStubs.getZxtmConfExtraBinding().downloadFile(errorFile[0])));
                 }
             }
 
@@ -1469,58 +1469,51 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
         String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
         String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(lbId, accountId);
+        String errorPageName = virtualServerName;
         String[] vsNames;
 
         boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
         boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
 
         if (isSecureServer && isRedirectServer) {
-            vsNames = new String[2];
-            vsNames[0] = virtualRedirectServerName;
-            vsNames[1] = virtualSecureServerName;
+            vsNames = new String[1];
+            vsNames[0] = virtualSecureServerName;
         } else if (isSecureServer) {
             vsNames = new String[2];
             vsNames[0] = virtualServerName;
             vsNames[1] = virtualSecureServerName;
-        } else if (isRedirectServer) {
-            vsNames = new String[2];
-            vsNames[0] = virtualServerName;
-            vsNames[1] = virtualRedirectServerName;
         } else {
             vsNames = new String[1];
             vsNames[0] = virtualServerName;
         }
 
         for (String vsName : vsNames) {
-            setErrorFile(conf, vsName, content);
+            setErrorFile(conf, vsName, errorPageName, content);
         }
     }
 
-    public void setErrorFile(LoadBalancerEndpointConfiguration conf, String vsName, String content) throws RemoteException {
+    public void setErrorFile(LoadBalancerEndpointConfiguration conf, String vsName, String errorPageName, String content) throws RemoteException {
         String[] vsNames = new String[1];
-        String[] errorFiles = new String[1];
+        String[] errorFiles = new String[]{getErrorFileName(errorPageName)};
 
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
         ConfExtraBindingStub extraService = serviceStubs.getZxtmConfExtraBinding();
         VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
 
-        String errorFileName = getErrorFileName(vsName);
         try {
-            LOG.debug(String.format("Attempting to upload the error file: %s for: %s", errorFileName, vsName));
-            extraService.uploadFile(errorFileName, content.getBytes());
-            LOG.info(String.format("Successfully uploaded the error file: %s for: %s...", errorFileName, vsName));
+            LOG.debug(String.format("Attempting to upload the error file: %s for: %s", errorFiles[0], vsName));
+            extraService.uploadFile(errorFiles[0], content.getBytes());
+            LOG.info(String.format("Successfully uploaded the error file: %s for: %s...", errorFiles[0], vsName));
 
             vsNames[0] = String.format("%s", vsName);
-            errorFiles[0] = errorFileName;
 
             LOG.debug("Attempting to set the error file...");
             virtualServerService.setErrorFile(vsNames, errorFiles);
             LOG.info(String.format("Successfully set the error file for: %s...", vsName));
         } catch (InvalidInput ip) {
             //Couldn't find a custom 'default' error file...
-            LOG.error(String.format("The Error file: %s could not be set for: %s", errorFileName, vsName));
+            LOG.error(String.format("The Error file: %s could not be set for: %s", errorFiles[0], vsName));
             virtualServerService.setErrorFile(vsNames, new String[]{"Default"});
-
         }
     }
 

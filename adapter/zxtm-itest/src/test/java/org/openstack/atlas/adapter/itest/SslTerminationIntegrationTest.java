@@ -390,7 +390,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             setSslTermination();
 
             Assert.assertEquals(loadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
-            Assert.assertEquals(secureLoadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(loadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
             Assert.assertEquals(errorContent, new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
 
             //remove error page
@@ -401,14 +401,13 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             //set error file with ssl already there
             zxtmAdapter.setErrorFile(config, lb, errorContent);
             Assert.assertEquals(loadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{loadBalancerName()})[0]);
-            Assert.assertEquals(secureLoadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
+            Assert.assertEquals(loadBalancerName() + "_error.html", getServiceStubs().getVirtualServerBinding().getErrorFile(new String[]{secureLoadBalancerName()})[0]);
             Assert.assertEquals(errorContent, new String(getServiceStubs().getZxtmConfExtraBinding().downloadFile(errorFileName())));
 
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
             removeSimpleLoadBalancer();
-
         }
     }
 
