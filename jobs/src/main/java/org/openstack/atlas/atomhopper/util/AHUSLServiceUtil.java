@@ -42,7 +42,7 @@ public class AHUSLServiceUtil {
     public static ThreadPoolExecutor startThreadExecutor(ThreadPoolExecutor taskExecutor, ThreadPoolExecutorService threadPoolExecutorService, int corePoolSize, int maxPoolSize, long keepAliveTime) {
         try {
             LOG.debug("Setting up the threadPoolExecutor with " + maxPoolSize + " pools");
-            taskExecutor = threadPoolExecutorService.createNewThreadPool(corePoolSize, maxPoolSize, keepAliveTime, QUERY_CAPACITY, new RejectedExecutionHandler());
+//            taskExecutor = threadPoolExecutorService.createNewThreadPool(corePoolSize, maxPoolSize, keepAliveTime, QUERY_CAPACITY, new RejectedExecutionHandler());
         } catch (Exception e) {
             LOG.error("There was an error initiating thread monitors and task executors: " + e);
             throw new AtomHopperUSLJobExecutionException("There was an error initiating thread monitors and task executors: " + e);

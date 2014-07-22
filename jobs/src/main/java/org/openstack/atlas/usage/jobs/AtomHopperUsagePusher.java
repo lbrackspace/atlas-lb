@@ -30,7 +30,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfigurationKeys.*;
 
@@ -47,7 +49,8 @@ public class AtomHopperUsagePusher extends AbstractJob {
     private long keepAliveTime;
     private int corePoolSize;
     private int maxPoolSize;
-    private ThreadPoolExecutor poolExecutor;
+    private int poolThreadDelay;
+    private ScheduledThreadPoolExecutor poolExecutor;
     private AtomHopperClient ahuslClient;
     private IdentityAuthClient identityClient;
 
@@ -84,9 +87,15 @@ public class AtomHopperUsagePusher extends AbstractJob {
         maxPoolSize = Integer.valueOf(configuration.getString(ahusl_pool_max_size));
         corePoolSize = Integer.valueOf(configuration.getString(ahusl_pool_core_size));
         keepAliveTime = Long.valueOf(configuration.getString(ahusl_pool_conn_timeout));
+        try {
+            poolThreadDelay = Integer.valueOf(configuration.getString(ahusl_pool_thread_delay));
+        } catch (Exception npe) {
+//              Default 1 second in millis
+            poolThreadDelay = 1000;
+        }
 
         try {
-            poolExecutor = threadPoolExecutorService.createNewThreadPool(corePoolSize, maxPoolSize, keepAliveTime, QUERY_SIZE, new RejectedExecutionHandler());
+            poolExecutor = threadPoolExecutorService.createNewThreadPool(corePoolSize, maxPoolSize, keepAliveTime, QUERY_SIZE, poolThreadDelay, new RejectedExecutionHandler());
             ThreadServiceUtil.startThreadMonitor(poolExecutor, threadPoolMonitorService);
             LOG.debug("Setting up the ahuslClient...");
             ahuslClient = new AtomHopperClientImpl();
@@ -132,7 +141,9 @@ public class AtomHopperUsagePusher extends AbstractJob {
 
             BatchAction<Usage> batchAction = new BatchAction<Usage>() {
                 public void execute(Collection<Usage> allUsages) throws Exception {
-                    poolExecutor.execute(new UsageThread(allUsages, ahuslClient, identityClient, usageRepository, loadBalancerEventRepository, alertRepository));
+                    poolExecutor.scheduleAtFixedRate(new UsageThread(allUsages, ahuslClient, identityClient,
+                            usageRepository, loadBalancerEventRepository, alertRepository),
+                            10, threadPoolExecutorService.getPoolDelay(), TimeUnit.MILLISECONDS);
                 }
             };
 

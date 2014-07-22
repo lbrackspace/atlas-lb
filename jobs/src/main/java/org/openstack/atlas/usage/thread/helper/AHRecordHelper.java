@@ -129,6 +129,11 @@ public class AHRecordHelper {
             generateServiceEventRecord(usageRecord, entrystring, buildMessage(body));
             logAndAlert(body, usageRecord, entrystring);
 
+        } else if (status == 429) {
+            usageRecord.setNeedsPushed(true);
+            failedRecords.add(usageRecord);
+            generateServiceEventRecord(usageRecord, entrystring, buildMessage(body));
+            logAndAlert(body, usageRecord, entrystring);
         } else {
             LOG.error(String.format("Error processing entry in Atom Hopper service occurred, " +
                     "updating record for re-push for: Account: %d LBID: %d UUID: %s",
@@ -140,20 +145,17 @@ public class AHRecordHelper {
     }
 
     protected boolean isDuplicateEntry(String token, Usage usageRecord) {
+        ClientResponse response = null;
         try {
-            ClientResponse response = client.getEntry(token, usageRecord.getUuid());
-            UsageEntry entry = response.getEntity(UsageEntry.class);
-            if (response.getStatus() == 200) {
-                if (!(entry.getContent().getEvent().getId().equals(usageRecord.getUuid()))) {
-                    return false;
-                }
-            }
+            response = client.getEntry(token, usageRecord.getUuid());
+            return response.getStatus() == 200;
         } catch (Exception e) {
+            String msg = "Could not verify duplicate entry for UUID: %s, attempt to re-push the record...";
             LOG.warn(String.format("Could not verify duplicate entry for UUID: %s, attempt to re-push the record...",
                     usageRecord.getUuid()));
+            logAndAlert(usageRecord, msg);
             return false;
         }
-        return true;
     }
 
     protected void logAndAlert(String body, Usage usageRecord, String entrystring) {
@@ -164,6 +166,15 @@ public class AHRecordHelper {
 
         //LOG all failures regardless of log mode...
         LOG.info(buildEntryLog(body, usageRecord, entrystring));
+    }
+
+    protected void logAndAlert(Usage usageRecord, String msg) {
+        LOG.info(String.format("Creating alert for Atom hopper entry: Account: %d: LBID: %d Entry UUID: %s",
+                usageRecord.getAccountId(), usageRecord.getLoadbalancer().getId(), usageRecord.getUuid()));
+        generateAtomHopperAlertRecord(usageRecord, "AH-FAILED-ENTRY-"
+                + usageRecord.getUuid(), msg);
+        //LOG all failures regardless of log mode...
+        LOG.info(msg + " for record: " + usageRecord.getUuid());
     }
 
     protected void logSuccess(String body, Usage usageRecord, String entrystring) {

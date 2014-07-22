@@ -178,9 +178,20 @@ public class AHRecordHelperTest {
         public void shouldFailAndAlertFor409Status() throws Exception {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
             when(response.getStatus()).thenReturn(409);
+            when(client.getEntry(Matchers.anyString(), Matchers.anyString())).thenReturn(response);
             ahelper.handleUsageRecord(baseUsage, token, emap);
             Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());
+            verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
+        }
+
+        @Test
+        public void shouldFailAndAlertIfDupeCheckFails() throws Exception {
+            when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
+            when(response.getStatus()).thenReturn(409);
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
+            verify(alertRepository, times(2)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
         }
 
@@ -192,6 +203,7 @@ public class AHRecordHelperTest {
             Assert.assertEquals(0, ahelper.getFailedRecords().size());
             verify(alertRepository, times(0)).save(Matchers.<Alert>any());
             verify(loadBalancerEventRepository, times(0)).save(Matchers.<LoadBalancerServiceEvent>any());
+            Assert.assertTrue(baseUsage.isNeedsPushed() == false);
         }
 
         @Test
@@ -223,7 +235,35 @@ public class AHRecordHelperTest {
         @Test
         public void shouldGenUUIDAndBumpNumAttemptsFor409() throws Exception {
             when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
+            when(client.getEntry(Matchers.anyString(), Matchers.anyString())).thenReturn(response);
             when(response.getStatus()).thenReturn(409);
+            Assert.assertNull(baseUsage.getUuid());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
+            verify(alertRepository, times(1)).save(Matchers.<Alert>any());
+            verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
+            Assert.assertNotNull(baseUsage.getUuid());
+            Assert.assertTrue(baseUsage.getNumAttempts() == 1);
+        }
+
+        @Test
+        public void shouldGenUUIDAndBumpNumAttemptsAndAlertFailedDupeCheck() throws Exception {
+            when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
+            when(response.getStatus()).thenReturn(409);
+            Assert.assertNull(baseUsage.getUuid());
+            ahelper.handleUsageRecord(baseUsage, token, emap);
+            Assert.assertEquals(1, ahelper.getFailedRecords().size());
+            verify(alertRepository, times(2)).save(Matchers.<Alert>any());
+            verify(loadBalancerEventRepository, times(1)).save(Matchers.<LoadBalancerServiceEvent>any());
+            Assert.assertNotNull(baseUsage.getUuid());
+            Assert.assertTrue(baseUsage.getNumAttempts() == 1);
+            Assert.assertTrue(baseUsage.isNeedsPushed() == true);
+        }
+
+        @Test
+        public void shouldFailAndAlertFor429() throws Exception {
+            when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(response);
+            when(response.getStatus()).thenReturn(429);
             Assert.assertNull(baseUsage.getUuid());
             ahelper.handleUsageRecord(baseUsage, token, emap);
             Assert.assertEquals(1, ahelper.getFailedRecords().size());

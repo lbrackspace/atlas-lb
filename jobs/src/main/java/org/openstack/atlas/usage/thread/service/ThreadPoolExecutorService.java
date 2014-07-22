@@ -1,13 +1,14 @@
 package org.openstack.atlas.usage.thread.service;
 
 
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
 public interface ThreadPoolExecutorService {
  
-    public ThreadPoolExecutor createNewThreadPool();
+    public ScheduledThreadPoolExecutor createNewThreadPool();
 
-    public ThreadPoolExecutor createNewThreadPool(int corePoolSize, int maxPoolSize, long keepAliveTime, int queryCapacity, RejectedExecutionHandler rejectedExecutionHandler);
+    public ScheduledThreadPoolExecutor createNewThreadPool(int corePoolSize, int maxPoolSize, long keepAliveTime, int queryCapacity, int poolDelay, RejectedExecutionHandler rejectedExecutionHandler);
  
     public int getCorePoolSize();
  
@@ -24,7 +25,11 @@ public interface ThreadPoolExecutorService {
     public int getQueueCapacity();
  
     public void setQueueCapacity(int queueCapacity);
- 
+
+    public long getPoolDelay();
+
+    public void setPoolDelay(long poolDelay);
+
     public RejectedExecutionHandler getRejectedExecutionHandler();
  
     public void setRejectedExecutionHandler(RejectedExecutionHandler rejectedExecutionHandler);

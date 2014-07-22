@@ -5,6 +5,7 @@ import org.openstack.atlas.usage.thread.service.ThreadPoolExecutorService;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -15,23 +16,20 @@ public class ThreadPoolExecutorServiceImpl implements ThreadPoolExecutorService 
     private int maxPoolSize;
     private long keepAliveTime;
     private int queueCapacity;
+    private long poolDelay;
     RejectedExecutionHandler rejectedExecutionHandler;
 
 
-    public ThreadPoolExecutor createNewThreadPool() {
-        return new ThreadPoolExecutor(corePoolSize,
-                maxPoolSize,
-                keepAliveTime,
-                TimeUnit.SECONDS,
-                new ArrayBlockingQueue<Runnable>(queueCapacity),
-                rejectedExecutionHandler);
+    public ScheduledThreadPoolExecutor createNewThreadPool() {
+        return new ScheduledThreadPoolExecutor(corePoolSize, rejectedExecutionHandler);
     }
 
-    public ThreadPoolExecutor createNewThreadPool(int corePoolSize, int maxPoolSize, long keepAliveTime, int queryCapacity, RejectedExecutionHandler rejectedExecutionHandler) {
+    public ScheduledThreadPoolExecutor createNewThreadPool(int corePoolSize, int maxPoolSize, long keepAliveTime, int queryCapacity, int poolDelay, RejectedExecutionHandler rejectedExecutionHandler) {
         this.corePoolSize = corePoolSize;
         this.maxPoolSize = maxPoolSize;
         this.keepAliveTime = keepAliveTime;
         this.queueCapacity = queryCapacity;
+        this.poolDelay = poolDelay;
         this.rejectedExecutionHandler = rejectedExecutionHandler;
 
         return createNewThreadPool();
@@ -67,6 +65,14 @@ public class ThreadPoolExecutorServiceImpl implements ThreadPoolExecutorService 
 
     public void setQueueCapacity(int queueCapacity) {
         this.queueCapacity = queueCapacity;
+    }
+
+    public long getPoolDelay() {
+        return poolDelay;
+    }
+
+    public void setPoolDelay(long poolDelay) {
+        this.poolDelay = poolDelay;
     }
 
     public RejectedExecutionHandler getRejectedExecutionHandler() {
