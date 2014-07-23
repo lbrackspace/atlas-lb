@@ -239,6 +239,8 @@ public class AuthenticationFilter implements Filter {
             LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Token: %s Username: %s", accountId, authToken, username));
             filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
             return;
+        } catch (IllegalArgumentException e) {
+            handleErrorReposnse(httpServletRequest, httpServletResponse, 404, e);
         } catch (RuntimeException e) {
             handleErrorReposnse(httpServletRequest, httpServletResponse, 500, e);
         }
@@ -260,6 +262,7 @@ public class AuthenticationFilter implements Filter {
     private void handleErrorReposnse(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, int errorCode, Exception e) throws IOException {
         final String UNEXPECTED = "Something unexpected happened. Please contact support.";
         final String UNAUTHENTICATED = "User not authenticated, please retry the request with valid auth credentials. ";
+        final String ILLEGALARG = "Illegal argument exception. Check documentation for proper usage.";
 
         if (errorCode == 500) {
             String exceptMsg = getExtendedStackTrace(e);
@@ -268,6 +271,9 @@ public class AuthenticationFilter implements Filter {
         } else if (errorCode == 401) {
             LOG.error(String.format("Error in filterChain:%s\n", e.getLocalizedMessage()));
             sendUnauthorizedResponse(httpServletRequest, httpServletResponse, UNAUTHENTICATED);
+        } else if (errorCode == 404) {
+            LOG.error(String.format("Error in filterChain:%s\n", e.getLocalizedMessage()));
+            httpServletResponse.sendError(errorCode, ILLEGALARG);
         } else {
             LOG.error(String.format("Error in filterChain:%s\n", e.getLocalizedMessage()));
             httpServletResponse.sendError(errorCode, e.getMessage());
