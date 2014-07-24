@@ -57,6 +57,7 @@ import org.openstack.atlas.util.debug.SillyTimer;
 
 public class HdfsCli {
 
+    private static final double GIGBYTES_DOUBLE = 1000.0 * 1000.0 * 1000.0;
     private static final double MILLISECOND_COEF = 0.001;
     private static final Pattern zipPattern = Pattern.compile(".*\\.zip$");
     private static final int LARGEBUFFERSIZE = 8 * 1024 * 1024;
@@ -94,7 +95,6 @@ public class HdfsCli {
         System.out.printf("\n");
 
         List<WastedBytesBlock> wastedBlocks = new ArrayList<WastedBytesBlock>();
-
         while (true) {
             try {
                 System.out.printf("lbaas_hadoop_client %s> ", fs.getWorkingDirectory().toUri().toString());
@@ -122,6 +122,8 @@ public class HdfsCli {
                     System.out.printf("chuser <userName>\n");
                     System.out.printf("compressLzo <srcPath> <dstFile> [buffSize]#Compress lzo file\n");
                     System.out.printf("countLines <zeusFile> <nTicks> [buffSize]\n");
+                    System.out.printf("countzipbytes <ndays> #Count the number of bytes in all the zips\n");
+                    System.out.printf("countlzobytes <ndays> #Count the number of bytes in all the lzos\n");
                     System.out.printf("cpfl <srcPath 1local> <dstPath remote> [reps] [blocksize]#copy from local\n");
                     System.out.printf("cpld <srcDir> <dstDir>  args [reps] [blocksize]\n");
                     System.out.printf("cpLocal <localSrc> <localDst> [buffsize] #None hadoop file copy\n");
@@ -251,6 +253,97 @@ public class HdfsCli {
                     String hourKey = (args.length >= 2) ? args[1] : null;
                     String fileDisplay = listHourKeyFiles(hdfsUtils, outputDir, hourKey);
                     System.out.printf("%s\n", fileDisplay);
+                } else if (cmd.equals("countzipbytes") && args.length > 1) {
+                    ZipBytesCounter totalCounts = new ZipBytesCounter();
+                    Map<String, ZipBytesCounter> counterMap = new HashMap<String, ZipBytesCounter>();
+                    int daysAgo = Integer.parseInt(args[1]);
+                    List<Long> hourKeysListL = new ArrayList<Long>();
+                    String lbLogSplitDir = StaticFileUtils.mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT);
+                    FileStatus[] dateDirsStats = hdfsUtils.getFileSystem().listStatus(new Path(lbLogSplitDir));
+                    DateTime now = StaticDateTimeUtils.nowDateTime(true);
+                    Long daysAgoLong = StaticDateTimeUtils.dateTimeToHourLong(
+                            StaticDateTimeUtils.nowDateTime(
+                            true).minusDays(daysAgo));
+                    System.out.printf("Scanning zipfiles for hours no less then %d days continue (%d) files (Y/N)\n", daysAgo, daysAgoLong);
+                    if (CommonItestStatic.inputStream(stdin, "Y")) {
+                        System.out.printf("Scanning directories\n");
+                    } else {
+                        System.out.printf("not scanning\n");
+                        continue;
+                    }
+                    for (FileStatus fileStatus : dateDirsStats) {
+                        Long hourLong;
+                        String pathStr;
+                        try {
+                            pathStr = pathTailString(fileStatus);
+                            hourLong = Long.parseLong(pathStr);
+                            if (hourLong >= daysAgoLong) {
+                                hourKeysListL.add(hourLong);
+                            }
+                        } catch (Exception ex) {
+                            continue;
+                        }
+                    }
+
+                    Collections.sort(hourKeysListL);
+                    for (Long hourKey : hourKeysListL) {
+                        counterMap.clear();
+                        System.out.printf("scanning zips for hour %d: ", hourKey);
+                        List<String> zipDirComps = new ArrayList<String>();
+                        zipDirComps.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
+                        zipDirComps.add(LB_LOGS_SPLIT);
+                        zipDirComps.add(hourKey.toString());
+                        String partsDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(zipDirComps));
+                        zipDirComps.add("zips");
+                        String zipDirStr = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(zipDirComps));
+                        List<LogReducerOutputValue> zipInfo = hdfsUtils.getZipFileInfoList(partsDir);
+                        FileStatus[] zipStats = hdfsUtils.getFileSystem().listStatus(new Path(zipDirStr));
+                        for (LogReducerOutputValue rout : zipInfo) {
+                            String logFile = rout.getLogFile();
+                            if (!counterMap.containsKey(logFile)) {
+                                ZipBytesCounter zipCounter = new ZipBytesCounter();
+                                zipCounter.setZipCount(1);
+                                counterMap.put(logFile, zipCounter);
+
+                            }
+                            ZipBytesCounter zipCounter = counterMap.get(logFile);
+                            zipCounter.setnLines(rout.getnLines());
+                            zipCounter.setUncompressedBytes(rout.getFileSize());
+                            Debug.nop();
+                        }
+
+                        for (FileStatus zipStat : zipStats) {
+                            String logFile = zipStat.getPath().toUri().getPath();
+                            if (!counterMap.containsKey(logFile)) {
+                                ZipBytesCounter zipCounter = new ZipBytesCounter();
+                                zipCounter.setZipCount(1);
+                                counterMap.put(logFile, zipCounter);
+                            }
+                            ZipBytesCounter zipCounter = counterMap.get(logFile);
+                            zipCounter.setZipBytes(zipStat.getLen());
+                            double ratio = (double) zipCounter.getZipBytes()
+                                    / (double) zipCounter.getUncompressedBytes();
+                            String zipCounterStr = "ratio:" + ratio
+                                    + ":" + logFile + ":"
+                                    + zipCounter.toString();
+                            Debug.nop();
+                        }
+                        ZipBytesCounter hourCount = ZipBytesCounter.countZips(counterMap);
+                        System.out.printf("%s\n", hourCount.toString());
+                        totalCounts.incnLines(hourCount.getnLines());
+                        totalCounts.incZipCount(hourCount.getZipCount());
+                        totalCounts.incZipBytes(hourCount.getZipBytes());
+                        totalCounts.incUncompressedBytes(hourCount.getUncompressedBytes());
+                        Debug.nop();
+                    }
+                    System.out.printf("Total zip bytes are %s\n", totalCounts.toString());
+                    String fmt = "totalbytes in gigs is zipBytes = %f gigs uncompressedBytes = %f gigs\n";
+
+                    double zipBytesGigs = totalCounts.getZipCount()
+                            / GIGBYTES_DOUBLE;
+                    double zipUncompressedGigs = totalCounts.getUncompressedBytes()
+                            / GIGBYTES_DOUBLE;
+                    System.out.printf(fmt, zipBytesGigs, zipUncompressedGigs);
                 } else if (cmd.equals("scanhdfszips")) {
                     Map<String, String> kw = CommonItestStatic.argMapper(args);
                     args = CommonItestStatic.stripKwArgs(args);
@@ -563,6 +656,55 @@ public class HdfsCli {
                     System.out.printf("Total file bytes: %s\n", Debug.humanReadableBytes(total_file_size));
                     System.out.printf("Total file bytes including replication: %s\n", Debug.humanReadableBytes(total_repl_size));
                     System.out.printf("Total file count: %d\n", fileStatusList.length);
+                } else if (cmd.equals("countlzobytes") && args.length > 1) {
+                    long totalLzoBytes = 0L;
+                    long dirBytes = 0L;
+                    int nFiles = 0;
+                    int daysAgo = Integer.parseInt(args[1]);
+                    List<Long> hourDirs = new ArrayList<Long>();
+                    FileStatus[] stats = hdfsUtils.getFileSystem().listStatus(new Path(HadoopLogsConfigs.getMapreduceInputPrefix()));
+                    Long ninetyDaysAgoLong = StaticDateTimeUtils.dateTimeToHourLong(
+                            StaticDateTimeUtils.nowDateTime(
+                            true).minusDays(daysAgo));
+                    System.out.printf("Scanning lzofiles for hours no less then %d days continue (%d) files (Y/N)\n", daysAgo, ninetyDaysAgoLong);
+                    if (CommonItestStatic.inputStream(stdin, "Y")) {
+                        System.out.printf("Scanning directories\n");
+                    } else {
+                        System.out.printf("not scanning\n");
+                        continue;
+                    }
+                    for (FileStatus stat : stats) {
+                        try {
+                            String pathStr = pathTailString(stat);
+                            long hourLong = Long.parseLong(pathStr);
+                            if (hourLong >= ninetyDaysAgoLong) {
+                                hourDirs.add(hourLong);
+                                System.out.flush();
+                            }
+                        } catch (Exception ex) {
+                            continue;
+                        }
+                    }
+                    Collections.sort(hourDirs);
+                    for (Long hourLong : hourDirs) {
+                        String pathStr = StaticFileUtils.joinPath(HadoopLogsConfigs.getMapreduceInputPrefix(), hourLong.toString());
+                        System.out.printf("Scanning hour %d: ", hourLong);
+                        FileStatus[] lzoStats = hdfsUtils.listStatuses(pathStr, false);
+                        dirBytes = 0L;
+                        for (FileStatus fileStat : lzoStats) {
+                            String fileName = fileStat.getPath().toUri().toString();
+                            nFiles++;
+                            dirBytes += fileStat.getLen();
+                        }
+                        System.out.printf("%d\n", dirBytes);
+                        totalLzoBytes += dirBytes;
+                    }
+                    System.out.printf("\n");
+                    System.out.printf("counted %d bytes in %d files\n", totalLzoBytes, nFiles);
+                    double gigs = (double) totalLzoBytes / GIGBYTES_DOUBLE;
+                    System.out.printf("or %f GigaBytes\n", gigs);
+
+
                 } else if (cmd.equals("rmin") && args.length >= 2) {
                     List<String> hourDirs = new ArrayList<String>();
                     if (args.length >= 3) {
