@@ -47,6 +47,12 @@
         <bindings scd="~tns:accessList">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.AccessList"/>
         </bindings>
+        <bindings scd="~tns:suggestedCaPath">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPath"/>
+        </bindings>
+        <bindings scd="~tns:suggestedCaPathList">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.SuggestedCaPathList"/>
+        </bindings>
         <bindings scd="~tns:networkItem">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem"/>
         </bindings>
@@ -67,6 +73,9 @@
         </bindings>
         <bindings scd="~tns:metadata">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Metadata"/>
+        </bindings>
+        <bindings scd="~tns:x509Description">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.X509Description"/>
         </bindings>
         <bindings scd="~tns:meta">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Meta"/>
