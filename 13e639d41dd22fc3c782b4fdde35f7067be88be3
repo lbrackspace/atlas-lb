@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3841fe_c66cb639",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/helpers/CallbackHelper.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-07-25T18:08:03Z",
+      "side": 1,
+      "message": "Was this supposed to say \"try to grab\"?",
+      "revId": "13e639d41dd22fc3c782b4fdde35f7067be88be3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
