@@ -294,9 +294,6 @@ public class FilesClient
             regions.addAll(response.getRegions());
             setDefaultRegion();
             authToken = response.getAuthToken();
-            //logger.debug("storageURL: " + getStorageURL());
-            logger.debug("authToken: " + authToken);
-            //logger.debug("cdnManagementURL:" + getCdnManagementURL());
             logger.debug("ConnectionManager:" + client.getConnectionManager());
         }
         method.abort();
