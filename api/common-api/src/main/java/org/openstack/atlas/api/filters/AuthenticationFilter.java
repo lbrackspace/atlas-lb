@@ -118,7 +118,7 @@ public class AuthenticationFilter implements Filter {
                     HeadersRequestWrapper enhancedHttpRequest = new HeadersRequestWrapper(httpServletRequest);
                     enhancedHttpRequest.overideHeader(X_AUTH_USER_NAME);
                     enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
-                    LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Token: %s Username: %s", accountId, token, username));
+                    LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Username: %s", accountId, username));
                     filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
                     return;
                 }
@@ -185,7 +185,7 @@ public class AuthenticationFilter implements Filter {
         }
 
         try {
-            LOG.debug(String.format("Before calling validate on account: %s with token: %s", accountId, authToken));
+            LOG.debug(String.format("Before calling validate on account: %s", accountId));
             String accountStr = String.format("%d", accountId);
             CacheEntry<AuthInfo> ce = userCache.getEntry(accountStr);
             AuthInfo authInfo = null;
@@ -198,17 +198,17 @@ public class AuthenticationFilter implements Filter {
             }
 
             if (authInfo == null || !authInfo.getAuthToken().equals(authToken)) {
-                LOG.info(String.format("Attempting to contact the auth service for account %s with token: %s", accountId, authToken));
+                LOG.info(String.format("Attempting to contact the auth service for account %s", accountId));
                 username = authTokenValidator.validate(authToken, String.valueOf(accountId)).getUser().getName();
                 if (username == null) {
                     sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                     return;
                 }
 
-                LOG.info(String.format("Successfully retrieved users info from the auth service for account: %s with token: %s returned username: %s", accountId, authToken, username));
+                LOG.info(String.format("Successfully retrieved users info from the auth service for account: %s returned username: %s", accountId, username));
                 authInfo = new AuthInfo(username, authToken);
 
-                LOG.debug(String.format("insert %s-%s-%s into userCache", accountStr, authToken, username));
+                LOG.debug(String.format("insert %s-%s into userCache", accountStr, username));
                 userCache.put(accountStr, authInfo);
             } else {
                 username = authInfo.getUserName();
@@ -216,17 +216,17 @@ public class AuthenticationFilter implements Filter {
         } catch (IdentityFault kex) {
             String exceptMsg = getExtendedStackTrace(kex);
             if (kex.code == 401 || kex.code == 404) {
-                LOG.error(String.format("Error while authenticating user %s-%s-%s: ERROR CODE: %d Message: %s Full-Stack: %s\n", accountId, authToken, username, kex.code, kex.message, exceptMsg));
+                LOG.error(String.format("Error while authenticating user %s-%s: ERROR CODE: %d Message: %s Full-Stack: %s\n", accountId, username, kex.code, kex.message, exceptMsg));
                 sendUnauthorizedResponse(httpServletRequest, httpServletResponse, INVALID_TOKEN_MESSAGE);
                 return;
             } else {
-                LOG.error(String.format("Error while authenticating user %s-%s-%s: ERROR CODE: %d Message: %s Details: %s Full-Stack: %s\n", accountId, authToken, username, kex.code, kex.message, kex.details, exceptMsg));
+                LOG.error(String.format("Error while authenticating user %s-%s: ERROR CODE: %d Message: %s Details: %s Full-Stack: %s\n", accountId, username, kex.code, kex.message, kex.details, exceptMsg));
                 sendUnauthorizedResponse(httpServletRequest, httpServletResponse, AUTH_FAULT_MESSAGE);
                 return;
             }
         } catch (Exception e) {
             String exceptMsg = getExtendedStackTrace(e);
-            LOG.error(String.format("Error while authenticating user %s-%s-%s:%s\n", accountId, authToken, username, exceptMsg));
+            LOG.error(String.format("Error while authenticating user %s-%s:%s\n", accountId, username, exceptMsg));
             httpServletResponse.sendError(500, e.getMessage());
             return;
         }
@@ -236,7 +236,7 @@ public class AuthenticationFilter implements Filter {
         enhancedHttpRequest.addHeader(X_AUTH_USER_NAME, username);
 
         try {
-            LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Token: %s Username: %s", accountId, authToken, username));
+            LOG.info(String.format("Request successfully authenticated, passing control to the servlet. Account: %s Username: %s", accountId, username));
             filterChain.doFilter(enhancedHttpRequest, httpServletResponse);
             return;
         } catch (RuntimeException e) {
