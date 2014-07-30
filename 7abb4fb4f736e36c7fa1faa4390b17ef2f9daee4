@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a42497e_671160ac",
+        "filename": "migration/schema/loadbalancing/CLB-243-SMOKE-DEPLOY-TECHNIQUE-UP.sql",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-07-30T20:26:02Z",
+      "side": 1,
+      "message": "nit: Please format better when time for release.",
+      "revId": "7abb4fb4f736e36c7fa1faa4390b17ef2f9daee4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
