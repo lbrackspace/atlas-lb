@@ -390,7 +390,7 @@ public class HdfsCli {
                     System.out.printf("Total zip bytes are %s\n", totalCounts.toString());
                     String fmt = "totalbytes in gigs is zipBytes = %f gigs uncompressedBytes = %f gigs\n";
 
-                    double zipBytesGigs = totalCounts.getZipCount()
+                    double zipBytesGigs = totalCounts.getZipBytes()
                             / GIGBYTES_DOUBLE;
                     double zipUncompressedGigs = totalCounts.getUncompressedBytes()
                             / GIGBYTES_DOUBLE;
