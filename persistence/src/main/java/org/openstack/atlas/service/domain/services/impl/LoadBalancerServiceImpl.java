@@ -364,29 +364,41 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     }
                 }
             }
-            // something with SSL_ID needs to be done here, maybe ask trevor
+
             if (portHMTypecheck) {
                 /* Notify the Usage Processor on changes of protocol to and from secure protocols */
                 //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
-                if (loadBalancer.getProtocol().equals(HTTP)) {
-                    if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.HTTP_COOKIE)) {
-                        LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
-                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                LoadBalancerProtocol lbProtocol = loadBalancer.getProtocol();
+                SessionPersistence dbPersistenceType = dbLoadBalancer.getSessionPersistence();
+                if (lbProtocol.equals(HTTP)) {
+                    if ((dbPersistenceType == SessionPersistence.HTTP_COOKIE)) {
+                        LOG.debug("Existing session persistence valid with HTTP protocol. Updating loadbalancer protocol to " + lbProtocol);
+                        dbLoadBalancer.setProtocol(lbProtocol);
                     } else {
-                        LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                        LOG.debug("Cannot have HTTP protocol with " + dbPersistenceType + " persistence. Updating loadbalancer protocol, but disabling session persistence.");
                         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
-                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                        dbLoadBalancer.setProtocol(lbProtocol);
                     }
 
-                } else if (!loadBalancer.getProtocol().equals(HTTP)) {
-                    dbLoadBalancer.setContentCaching(false);
-                    if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP)) {
-                        LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
-                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                } else if (lbProtocol.equals(HTTPS)) {
+                    if ((dbPersistenceType == SessionPersistence.SSL_ID)) {
+                        LOG.debug("Existing session persistence valid with HTTPS protocol. Updating loadbalancer protocol to " + lbProtocol);
+                        dbLoadBalancer.setProtocol(lbProtocol);
                     } else {
-                        LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                        LOG.debug("Cannot have HTTPS protocol with " + dbPersistenceType + " persistence. Updating loadbalancer protocol, but disabling session persistence.");
                         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
-                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                        dbLoadBalancer.setProtocol(lbProtocol);
+                    }
+                }
+                else {
+                    dbLoadBalancer.setContentCaching(false);
+                    if ((dbPersistenceType == SessionPersistence.SOURCE_IP)) {
+                        LOG.debug("Existing session persistence valid with " + lbProtocol + " protocol. Updating loadbalancer protocol to " + lbProtocol);
+                        dbLoadBalancer.setProtocol(lbProtocol);
+                    } else {
+                        LOG.debug("Cannot have " +  lbProtocol + " + protocol with " + dbPersistenceType + " persistence. Updating loadbalancer protocol, but disabling session persistence.");
+                        dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
+                        dbLoadBalancer.setProtocol(lbProtocol);
                     }
                 }
             } else {
@@ -796,7 +808,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
 
             if (persistenceType == SOURCE_IP &&
-                    (dbProtocol == HTTP)) {
+                    (dbProtocol == HTTP || dbProtocol == HTTPS)) {
                 LOG.info(httpErrMsg);
                 throw new BadRequestException(sipErrMsg);
             }

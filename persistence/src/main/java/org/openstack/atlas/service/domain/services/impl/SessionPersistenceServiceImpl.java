@@ -93,8 +93,8 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
             }
 
             if (persistenceType == SOURCE_IP &&
-                    (dbProtocol == HTTP)) {
-                LOG.info(httpErrMsg);
+                    (dbProtocol == HTTP || dbProtocol == HTTPS)) {
+                LOG.info(sipErrMsg);
                 throw new BadRequestException(sipErrMsg);
             }
 
