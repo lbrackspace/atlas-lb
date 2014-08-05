@@ -16,6 +16,24 @@
       "revId": "0d65f783cc09e52b4e9e9d3f98fe210a53a8cea7",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a42497e_c592e99e",
+        "filename": "jobs/src/main/java/org/openstack/atlas/usage/thread/helper/AHRecordHelper.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 1001678
+      },
+      "writtenOn": "2014-08-05T15:42:28Z",
+      "side": 1,
+      "message": "Fine... \u003e.\u003e",
+      "parentUuid": "7a42497e_8581014d",
+      "revId": "0d65f783cc09e52b4e9e9d3f98fe210a53a8cea7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
