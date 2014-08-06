@@ -15,6 +15,8 @@ import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
+import javax.mail.Session;
+
 public class UpdateSessionPersistenceITest extends STMTestBase {
 
     @BeforeClass
@@ -29,7 +31,6 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
         removeLoadBalancer();
         stmClient.destroy();
     }
-
 
     @Test
     public void updateSessionPersistenceHTTP() throws InsufficientRequestException,
@@ -50,6 +51,17 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
         stmAdapter.updateLoadBalancer(config, lb, lb, null);
 
         Assert.assertEquals(SessionPersistence.SOURCE_IP.name(),
+                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+    }
+
+    @Test
+    public void updateSessionPersistenceSSLID() throws InsufficientRequestException,
+            StingrayRestClientObjectNotFoundException, StingrayRestClientException, StmRollBackException {
+        StingrayRestClient client = new StingrayRestClient();
+        lb.setSessionPersistence(SessionPersistence.SSL_ID);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+
+        Assert.assertEquals(SessionPersistence.SSL_ID.name(),
                 client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
     }
 
@@ -98,6 +110,32 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
         lb.setSessionPersistence(SessionPersistence.SOURCE_IP);
         stmAdapter.updateLoadBalancer(config, lb, lb, null);
         Assert.assertEquals(SessionPersistence.SOURCE_IP.name(),
+                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+
+        lb.setSessionPersistence(null);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+    }
+
+    @Test
+    public void removeSessionPersistenceSSLID() throws InsufficientRequestException,
+            StingrayRestClientObjectNotFoundException, StingrayRestClientException, StmRollBackException {
+        StingrayRestClient client = new StingrayRestClient();
+
+        //Set as NONE
+        lb.setSessionPersistence(SessionPersistence.SSL_ID);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        Assert.assertEquals(SessionPersistence.SSL_ID.name(),
+                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+
+        lb.setSessionPersistence(SessionPersistence.NONE);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+
+        //Set as Null
+        lb.setSessionPersistence(SessionPersistence.SSL_ID);
+        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        Assert.assertEquals(SessionPersistence.SSL_ID.name(),
                 client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
 
         lb.setSessionPersistence(null);

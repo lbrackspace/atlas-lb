@@ -490,6 +490,29 @@ public class StmAdapterResources {
                         Arrays.toString(ex.getStackTrace())));
             }
         }
+
+        try {
+            client.getPersistence(StmConstants.SSL_ID);
+        } catch (StingrayRestClientException clientException) {
+            LOG.error(String.format("Error retrieving Persistence Class '%s'.\n%s", StmConstants.SSL_ID,
+                    Arrays.toString(clientException.getStackTrace())));
+        } catch (StingrayRestClientObjectNotFoundException notFoundException) {
+            Persistence persistence = new Persistence();
+            PersistenceProperties properties = new PersistenceProperties();
+            PersistenceBasic basic = new PersistenceBasic();
+
+            basic.setType(StmConstants.SSL_ID);
+            properties.setBasic(basic);
+            persistence.setProperties(properties);
+            try {
+                LOG.info(String.format("Updating Persistence type %s...", StmConstants.SSL_ID));
+                client.createPersistence(StmConstants.SSL_ID, persistence);
+                LOG.info(String.format("Successfully updated Persistence type %s.", StmConstants.SSL_ID));
+            } catch (Exception ex) {
+                LOG.error(String.format("Error creating Persistence Class '%s'.\n%s", StmConstants.SSL_ID,
+                        Arrays.toString(ex.getStackTrace())));
+            }
+        }
         client.destroy();
     }
 
