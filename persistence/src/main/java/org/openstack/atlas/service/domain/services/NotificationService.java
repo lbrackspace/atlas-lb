@@ -7,7 +7,7 @@ public interface NotificationService {
 
     public void saveNodeEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity);
 
-    public void saveNodeServiceEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity, String detailedMessage);
+    public void saveNodeServiceEvent(String userName, Integer accountId, Integer loadbalancerId, Integer nodeId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity, String detailedMessage, String callbackHost);
 
     public void saveSslTerminationEvent(String userName, Integer accountId, Integer loadbalancerId, Integer sslTerminationId, String title, String desc, EventType eventType, CategoryType category, EventSeverity severity);
 

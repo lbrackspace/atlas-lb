@@ -177,6 +177,7 @@
             <xsd:extension base="tns:event">
                     <xsd:attribute name="nodeId" type="xsd:int" />
                     <xsd:attribute name="detailedMessage" type="xsd:string" />
+                    <xsd:attribute name="callbackHost" type="xsd:string" />
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
