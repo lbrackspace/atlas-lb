@@ -94,7 +94,7 @@ public class DnsClient1_0 {
         wr = addLimitOffsetParams(wr, limit, offset);
         wr = wr.queryParam("href", deviceUrl);
 
-        String logMsg = String.format("USEING CRED %s:%s CALLING GET %s",authKey,token,wr.toString());
+        String logMsg = String.format("USEING CRED %s CALLING GET %s",authKey,wr.toString());
         LOG.info(logMsg);
         System.out.printf("%s\n", logMsg);
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
@@ -136,8 +136,8 @@ public class DnsClient1_0 {
         Client client = new Client();
         WebResource wr = client.resource(endPoint).path(url);
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
-        fmt = "USEING CRED %s:%s CALLING POST %s\nbody=%s";
-        msg = String.format(fmt,authKey,token,wr.toString(),xml);
+        fmt = "USEING CRED %s CALLING POST %s\nbody=%s";
+        msg = String.format(fmt,authKey,wr.toString(),xml);
         LOG.info(msg);
         System.out.printf("%s\n", msg);
         rb = rb.type(MediaType.APPLICATION_XML);
@@ -163,7 +163,7 @@ public class DnsClient1_0 {
         if (ip != null) {
             wr = wr.queryParam("ip", ip);
         }
-        String logMsg = String.format("USEING CRED %s:%s CALLING DELETE %s",authKey,authValue,wr.toString());
+        String logMsg = String.format("USEING CRED %s CALLING DELETE %s",authKey,wr.toString());
         LOG.info(logMsg);
         System.out.printf("%s\n", logMsg);
         Builder rb = wr.accept(MediaType.APPLICATION_XML);
@@ -242,10 +242,10 @@ public class DnsClient1_0 {
 
     @Override
     public String toString() {
-        String fmt = "{ endPoint=\"%s\",accountId=\"%d\" token=\"%s\","
+        String fmt = "{ endPoint=\"%s\",accountId=\"%d\" "
                 + "adminEndPoint=\"%s\" adminUser = \"%s\", "
                 + "adminPasswd = \"%s\" }";
-        String msg = String.format(fmt, endPoint, accountId, token, adminEndPoint,
+        String msg = String.format(fmt, endPoint, accountId, adminEndPoint,
                 adminUser, adminPasswd);
         return msg;
     }
