@@ -2,6 +2,11 @@ package org.openstack.atlas.service.domain.services.helpers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+
+import java.net.Inet6Address;
+import java.net.URI;
+import java.net.Inet4Address;
 
 public class CallbackHelper {
     private static final Log LOG = LogFactory.getLog(CallbackHelper.class);
@@ -21,8 +26,7 @@ public class CallbackHelper {
         this.detailedMessage = parseDetailedMessage(paramLine);
         this.loadBalancerId = parseLoadbalancerId(paramLine);
         this.accountId = parseAccountId(paramLine);
-        this.ipAddress = parseIpAddress(paramLine);
-        this.port = parsePort(paramLine);
+        parseAddressAndPort(paramLine);
     }
 
     public Integer parseAccountId(String paramLine) throws Exception {
@@ -31,8 +35,9 @@ public class CallbackHelper {
         try {
             return Integer.parseInt(accountId);
         } catch (NumberFormatException e) {
-            LOG.warn(String.format("Error converting string to integer for account id: '%s'", accountId));
-            throw new Exception(e);
+            String message = String.format("Error converting string to integer for account id: '%s'", accountId);
+            LOG.warn(message);
+            throw new BadRequestException(message);
         }
     }
 
@@ -42,8 +47,9 @@ public class CallbackHelper {
         try {
             return Integer.parseInt(loadbalancerId);
         } catch (NumberFormatException e) {
-            LOG.warn(String.format("Error converting string to integer for load balancer id: '%s'", loadbalancerId));
-            throw new Exception(e);
+            String message = String.format("Error converting string to integer for load balancer id: '%s'", accountId);
+            LOG.warn(message);
+            throw new BadRequestException(message);
         }
     }
 
@@ -56,33 +62,81 @@ public class CallbackHelper {
         return "";
     }
 
-    private String parseIpAddress(String paramLine) {
-      String address = null;
+    private void parseAddressAndPort(String paramLine) throws Exception {
         try {
-            address = parseIpv6Address(paramLine);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            //silent
-            address = parseIpv4Address(paramLine);
+            URI domainAddress = new URI(parseAddressObject(paramLine));
+            this.ipAddress = domainAddress.getHost();
+            this.port = domainAddress.getPort();
+            return;
         }
-        return address;
+        catch (Exception e) {
+            LOG.warn("Unable to parse address and port using domain parsing rules.");
+        }
+        try {
+            this.ipAddress = parseIpV4Address(paramLine);
+            this.port = parseIpV4Port(paramLine);
+            return;
+        }
+        catch (Exception e) {
+            LOG.warn("Unable to parse address and port using IpV4 parsing rules.");
+        }
+        try {
+            this.ipAddress = parseIpV6Address(paramLine);
+            this.port = parseIpV6Port(paramLine);
+            return;
+        }
+        catch (Exception e) {
+            LOG.warn("Unable to parse address and port using IpV6 parsing rules.");
+        }
+        String message = "Unable to find an address and port in the param line.";
+        LOG.warn(message);
+        throw new BadRequestException(message);
     }
 
-    private int parsePort(String paramLine) {
-        String port = null;
-        try {
-            port = parseIpV6Port(paramLine);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            //silent
-//            LOG.warn(String.format("Error converting string to integer for ipv6 port:"));
-            port = parseIpV4Port(paramLine);
+    private String parseIpV4Address(String paramLine) throws Exception {
+        String ipV4Address = parseAddressObject(paramLine).split(":")[0];
+        if (!verifyIpV4Address(ipV4Address)) {
+            LOG.warn("Unable to verify IpV6 address found in the param line.");
+            throw new Exception();
         }
+        return ipV4Address;
+    }
 
-        try {
-            return Integer.parseInt(port);
-        } catch (NumberFormatException e) {
-            LOG.warn(String.format("Error converting string to integer for ipv4 port: '%s'", port));
-        }
+    private int parseIpV4Port(String paramLine) throws Exception {
+        String port = parseAddressObject(paramLine).split(":")[1];
         return Integer.parseInt(port);
+    }
+
+    private String parseIpV6Address(String paramLine) throws Exception {
+        String ipV6Address = paramLine.split("'\\[")[1].split("]:")[0];
+        if (!verifyIPv6Address(ipV6Address)) {
+            LOG.warn("Unable to verify IpV6 address found in the param line.");
+            throw new Exception();
+        }
+        return ipV6Address;
+    }
+
+    private int parseIpV6Port(String paramLine) throws Exception {
+        String ipv6obj = parseAddressObject(paramLine).split("'\\[")[0].split(" ")[0];
+        return Integer.parseInt(ipv6obj.split("]:")[1]);
+    }
+
+    private boolean verifyIpV4Address(String address) {
+        try {
+            Inet4Address.getByName(address);
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
+    }
+
+    private static boolean verifyIPv6Address(String address) {
+        try {
+            Inet6Address.getByName(address);
+            return true;
+        } catch(Exception e) {
+            return false;
+        }
     }
 
     private String parseAcctLbid(String paramLine) throws Exception {
@@ -94,30 +148,6 @@ public class CallbackHelper {
     private String parseAddressObject(String paramLine) {
         String initObj = paramLine.split("'")[1];
         return initObj.split("'")[0];
-    }
-
-
-    private String parseIpv4Address(String paramLine) {
-        return parseAddressObject(paramLine).split(":")[0];
-    }
-
-    private String parseIpV4Port(String paramLine) {
-        return parseAddressObject(paramLine).split(":")[1];
-    }
-
-    private String parseIpv6AddressObject(String paramLine) {
-        String ipv6obj = parseAddressObject(paramLine).split("'\\[")[0];
-        return ipv6obj.split(" ")[0];
-    }
-
-    private String parseIpv6Address(String paramLine) {
-        String ipv6obj = paramLine.split("'\\[")[1];
-        return ipv6obj.split("]:")[0];
-    }
-
-    private String parseIpV6Port(String paramLine) {
-        String ipv6obj = parseIpv6AddressObject(paramLine).split("'\\[")[0];
-        return ipv6obj.split("]:")[1];
     }
 
     public Integer getAccountId() {
@@ -159,62 +189,4 @@ public class CallbackHelper {
     public void setPort(int port) {
         this.port = port;
     }
-    //    public static String getIpAddress(String paramLine) {
-////        String nodesObject = paramLine.split(" ")[2];
-////        String ipAddressWithPort = nodesObject.split("/")[1];
-////        return ipAddressWithPort.split(":")[0].replace("[", "");
-//        String nodeLine = paramLine.split("Node ")[1];
-//        return nodeLine.split(" ")[0];
-//    }
-
-//    public static Integer getIpPort(String paramLine) throws Exception {
-//        String object = paramLine.split("'")[1];
-//        String ipAddressWithPort = object.split("'")[0];
-//        String port = ipAddressWithPort.split(":")[1];
-//
-//        try {
-//            return Integer.parseInt(port);
-//        } catch (NumberFormatException e) {
-//            LOG.info("Error parsing paramline for ipv4, trying for ipv6");
-//        }
-//        return getIpPortForIpv6(paramLine);
-//    }
-//
-//    public static Integer getIpPortForIpv6(String paramLine) throws Exception {
-//        String object = paramLine.split("'")[1];
-//        String ipAddressWithPort = object.split(" ")[0];
-//        String port = ipAddressWithPort.split("]:")[1];
-//
-//        try {
-//            return Integer.parseInt(port);
-//        } catch (NumberFormatException e) {
-//            LOG.warn(String.format("Error converting string to integer for port: '%s'", port));
-//            throw new Exception(e);
-//        }
-//    }
-    //    public static Integer getIpPort(String paramLine) throws Exception {
-//        String nodesObject = paramLine.split(" ")[2];
-//        String ipAddressWithPort = nodesObject.split("/")[1];
-//        String port = ipAddressWithPort.split(":")[1];
-//
-//        try {
-//            return Integer.parseInt(port);
-//        } catch (NumberFormatException e) {
-//            LOG.info("Error parsing paramline for ipv4, trying for ipv6");
-//        }
-//        return getIpPortForIpv6(paramLine);
-//    }
-
-//    public static Integer getIpPortForIpv6(String paramLine) throws Exception {
-//        String nodesObject = paramLine.split(" ")[2];
-//        String ipAddressWithPort = nodesObject.split("/")[1];
-//        String port = ipAddressWithPort.split("]:")[1];
-//
-//        try {
-//            return Integer.parseInt(port);
-//        } catch (NumberFormatException e) {
-//            LOG.warn(String.format("Error converting string to integer for port: '%s'", port));
-//            throw new Exception(e);
-//        }
-//    }
 }
