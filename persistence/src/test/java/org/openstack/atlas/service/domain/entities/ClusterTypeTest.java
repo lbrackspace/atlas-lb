@@ -37,6 +37,7 @@ public class ClusterTypeTest {
         ClusterType clusterType;
         assertEquals(ClusterType.valueOf("INTERNAL"), ClusterType.INTERNAL);
         assertEquals(ClusterType.valueOf("STANDARD"), ClusterType.STANDARD);
+        assertEquals(ClusterType.valueOf("SMOKE"), ClusterType.SMOKE);
 
         try {
             // Should trigger Illegal Argument Exceptio

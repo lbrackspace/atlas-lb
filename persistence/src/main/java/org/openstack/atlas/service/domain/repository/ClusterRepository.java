@@ -607,14 +607,17 @@ public class ClusterRepository {
             // This user doesn't look special
             return getDefaultActiveCluster();
         }
-        if (accountList.get(0).getClusterType() != ClusterType.INTERNAL) {
-            // This is not an internal account
+
+        ClusterType accountClusterType = accountList.get(0).getClusterType();
+        if (accountClusterType != ClusterType.SMOKE && accountClusterType != ClusterType.INTERNAL) {
+            // This is not an internal or smoke account
             return getDefaultActiveCluster();
         }
-        List<Cluster> cl = entityManager.createQuery("SELECT cl from Cluster cl where clusterType=:cluster_type").setParameter("cluster_type", ClusterType.INTERNAL).getResultList();
+        List<Cluster> cl = entityManager.createQuery("SELECT cl from Cluster cl where clusterType=:cluster_type").setParameter("cluster_type", accountClusterType).getResultList();
+
         if (cl.size() <= 0) {
-            // This datacenter doesn't have an INTERNAL cluster. :(
-            LOG.warn("Warning account " + accountId + " was marked as internal but this datacenter has no Internal Cluster");
+            // This datacenter doesn't have a matching cluster. :(
+            LOG.warn("Warning account " + accountId + " was marked as " + accountClusterType.name() + " but this datacenter has no " + accountClusterType.name() + " Cluster");
             return getDefaultActiveCluster();
         }
         return cl.get(0);
