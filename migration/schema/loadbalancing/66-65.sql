@@ -1,6 +1,6 @@
 use `loadbalancing`;
 
-DELETE from lb_session_persistence where `name`='SSL_ID'
+DELETE from lb_session_persistence where `name`='SSL_ID';
 DELETE from cl_type where `name`='SMOKE';
 ALTER TABLE node_service_event DROP COLUMN callback_host;
 
