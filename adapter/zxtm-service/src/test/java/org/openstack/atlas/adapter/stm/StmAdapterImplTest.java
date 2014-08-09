@@ -44,14 +44,14 @@ import static org.mockito.Mockito.*;
 public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "com.sun.crypto.provider.*", "javax.crypto.*"})
     @PrepareForTest({ResourceTranslator.class})
     public static class WhenModifyingLoadbalancerResources {
+
         private String vsName;
         private String secureVsName;
         private LoadBalancer loadBalancer;
         private ResourceTranslator resourceTranslator;
-
         @Mock
         private StmAdapterResources resources;
         @Mock
@@ -132,13 +132,13 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "com.sun.crypto.provider.*", "javax.crypto.*"})
     @PrepareForTest(ResourceTranslator.class)
     public static class WhenModifyingVirtualIpResources {
+
         private String vsName;
         private LoadBalancer loadBalancer;
         private ResourceTranslator resourceTranslator;
-
         @Mock
         private StmAdapterResources resources;
         @Mock
@@ -183,8 +183,9 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
         @Test
         public void testDeleteVirtualIps() throws Exception {
             List<Integer> vipsToDelete = new ArrayList<Integer>();
-            for (LoadBalancerJoinVip vip : loadBalancer.getLoadBalancerJoinVipSet())
+            for (LoadBalancerJoinVip vip : loadBalancer.getLoadBalancerJoinVipSet()) {
                 vipsToDelete.add(vip.getVirtualIp().getId());
+            }
 
             adapterSpy.deleteVirtualIps(config, loadBalancer, vipsToDelete, null);
 
@@ -199,13 +200,13 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "com.sun.crypto.provider.*", "javax.crypto.*"})
     @PrepareForTest(ResourceTranslator.class)
     public static class WhenModifyingHealthMonitorResources {
+
         private String vsName;
         private LoadBalancer loadBalancer;
         private ResourceTranslator resourceTranslator;
-
         @Mock
         private StmAdapterResources resources;
         @Mock
@@ -257,13 +258,13 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "com.sun.crypto.provider.*", "javax.crypto.*"})
     @PrepareForTest(ResourceTranslator.class)
     public static class WhenModifyingProtectionResources {
+
         private String vsName;
         private LoadBalancer loadBalancer;
         private ResourceTranslator resourceTranslator;
-
         @Mock
         private StmAdapterResources resources;
         @Mock
@@ -314,14 +315,14 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "com.sun.crypto.provider.*", "javax.crypto.*"})
     @PrepareForTest(ResourceTranslator.class)
     public static class WhenModifyingBandwidthResources { //Lumping ConnectionThrottle and RateLimit together here, even though they aren't both Bandwidth related...
+
         private String vsName;
         private LoadBalancer loadBalancer;
         private ResourceTranslator resourceTranslator;
         private RateLimit testRateLimit;
-
         @Mock
         private StmAdapterResources resources;
         @Mock
@@ -415,11 +416,11 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
     }
 
     public static class WhenModifyingFileResources {
+
         private String vsName;
         private LoadBalancer loadBalancer;
         private String errorContent;
         private File errorFile;
-
         @Mock
         private StmAdapterResources resources;
         @Mock
@@ -477,14 +478,14 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "com.sun.crypto.provider.*", "javax.crypto.*"})
     @PrepareForTest(ResourceTranslator.class)
     public static class WhenModifyingPoolResources {
+
         private String vsName;
         private LoadBalancer loadBalancer;
         private ResourceTranslator resourceTranslator;
         private List<Node> doomedNodes;
-
         @Mock
         private StmAdapterResources resources;
         @Mock
@@ -533,7 +534,6 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(client).destroy();
         }
 
-
         @Test
         public void testRemoveNodes() throws Exception {
             int numNodes = loadBalancer.getNodes().size();
@@ -549,16 +549,16 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "com.sun.crypto.provider.*", "javax.crypto.*"})
     @PrepareForTest(ResourceTranslator.class)
     public static class WhenSuspendingLoadBalancer {
+
         private String vsName;
         private String secureVsName;
         private LoadBalancer loadBalancer;
         private ResourceTranslator resourceTranslator;
         private VirtualServer virtualServer;
         private VirtualServer virtualServerSecure;
-
         @Mock
         private StmAdapterResources resources;
         @Mock
@@ -636,15 +636,15 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "com.sun.crypto.provider.*", "javax.crypto.*"})
     @PrepareForTest({ResourceTranslator.class})
     public static class WhenModifyingSSLResources {
+
         private String vsName;
         private String secureVsName;
         private LoadBalancer loadBalancer;
         private ResourceTranslator resourceTranslator;
         private ZeusSslTermination sslTermination;
-
         @Mock
         private StmAdapterResources resources;
         @Mock
@@ -708,5 +708,4 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(client).destroy();
         }
     }
-
 }

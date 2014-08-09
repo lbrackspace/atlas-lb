@@ -145,7 +145,7 @@ public class LzoFakerMain {
     public static String[] buildRandomStrings(int nChars, int nGets) {
         String[] rndStrings = new String[nGets];
         for (int i = 0; i < nGets; i++) {
-            rndStrings[i] = Debug.buildRandomString(nChars, alphaNum);
+            rndStrings[i] = Debug.rndString(nChars, alphaNum);
         }
         return rndStrings;
     }

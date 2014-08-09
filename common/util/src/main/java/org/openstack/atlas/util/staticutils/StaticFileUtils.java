@@ -3,6 +3,7 @@ package org.openstack.atlas.util.staticutils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -37,6 +38,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.zip.CRC32;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import org.openstack.atlas.util.common.exceptions.FileUtilsException;
 
 public class StaticFileUtils {
@@ -45,6 +48,7 @@ public class StaticFileUtils {
     public static DateFormat filedf = new SimpleDateFormat("yyyyMMddHH");//2011021513
     public static DateFormat jobdf = new SimpleDateFormat("yyyyMMdd-HHmmss"); //20110215-130916
     private static final int DEFAULT_BUFFSIZE = 1024 * 256;
+    private static final int PAGESIZE = 4096;
     private static final Random rnd = new Random();
 
     public static synchronized String generateRandomBase() {
@@ -605,5 +609,25 @@ public class StaticFileUtils {
         List<String> pathList = new ArrayList<String>();
         pathList.addAll(Arrays.asList(pathArray));
         return StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathList));
+    }
+
+    public static byte[] compressBytes(byte[] bytesIn) throws IOException {
+        byte[] bytesOut;
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        GZIPOutputStream gzOs = new GZIPOutputStream(os,PAGESIZE);
+        gzOs.write(bytesIn);
+        gzOs.close();
+        bytesOut = os.toByteArray();
+        return bytesOut;
+    }
+
+    public static byte[] decompressBytes(byte[] bytesIn) throws IOException {
+        byte[] bytesOut;
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ByteArrayInputStream is = new ByteArrayInputStream(bytesIn);
+        GZIPInputStream gzIs = new GZIPInputStream(is,PAGESIZE);
+        StaticFileUtils.copyStreams(gzIs, os, null, PAGESIZE);
+        bytesOut = os.toByteArray();
+        return bytesOut;
     }
 }

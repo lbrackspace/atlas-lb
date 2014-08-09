@@ -10,6 +10,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Random;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
@@ -17,9 +19,21 @@ import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class Debug {
 
-    private static final String[] binBaseNames = new String[]{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
-    private static final int PAGESIZE = 4096;
-    private static final Random rnd = new Random();
+    private static final String[] binBaseNames;
+    private static final int PAGESIZE;
+    private static final SecureRandom rnd;
+
+    static {
+        PAGESIZE = 4096;
+        SecureRandom sr;
+        binBaseNames = new String[]{"B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"};
+        try {
+            sr = SecureRandom.getInstance("SHA1PRNG");
+        } catch (NoSuchAlgorithmException ex) {
+            sr = new SecureRandom();
+        }
+        rnd = sr;
+    }
 
     public static double getEpochSeconds() {
         long millisLong = System.currentTimeMillis();
@@ -32,7 +46,7 @@ public class Debug {
         return System.currentTimeMillis();
     }
 
-    public static String buildRandomString(int nChars, String alphaNum) {
+    public static String rndString(int nChars, String alphaNum) {
         StringBuilder sb = new StringBuilder();
         for (int j = 0; j < nChars; j++) {
             sb.append(alphaNum.charAt(rnd.nextInt(alphaNum.length())));
@@ -335,5 +349,11 @@ public class Debug {
     }
 
     public static void nop() {
+    }
+
+    public static byte[] rndBytes(int nBytes){
+        byte[] out = new byte[nBytes];
+        rnd.nextBytes(out);
+        return out;
     }
 }

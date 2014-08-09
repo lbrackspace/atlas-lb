@@ -6,8 +6,6 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
         <version>1.23.3-SNAPSHOT</version>
-
-
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
@@ -19,6 +17,7 @@
         <module>snmp-test</module>
         <module>jyson</module>
         <module>jython-tests</module>
+        <module>sslkey-encrypt</module>
     </modules>
     <build>
         <pluginManagement>

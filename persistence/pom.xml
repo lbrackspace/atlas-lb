@@ -6,8 +6,6 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
         <version>1.23.3-SNAPSHOT</version>
-
-
     </parent>
 
     <artifactId>atlas-persistence</artifactId>

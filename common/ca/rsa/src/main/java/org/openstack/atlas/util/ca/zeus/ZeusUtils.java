@@ -321,6 +321,11 @@ public class ZeusUtils {
         return kp;
     }
 
+    // I needed a public method to validate keys from the sl key encrypt migration tool
+    public static KeyPair validateKey(String key, List<ErrorEntry> errors) {
+        return parseKey(key, errors);
+    }
+
     private static X509CertificateObject parseCert(String certIn, List<ErrorEntry> errors) {
         X509CertificateObject x509obj = null;
         List<PemBlock> blocks = PemUtils.parseMultiPem(certIn);

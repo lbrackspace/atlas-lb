@@ -9,7 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
-
+import org.openstack.atlas.util.debug.Debug;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -23,10 +23,10 @@ import static org.junit.Assert.*;
  */
 public class Base64Test {
 
+    private static final int BIGBLOCKSIZE = 1024 * 1024 * 64;
     private InputStream is;
     private OutputStream os;
-
-    private static double secsPerMilli = 1.0/1000.0;
+    private static double secsPerMilli = 1.0 / 1000.0;
 
     public Base64Test() {
     }
@@ -159,17 +159,31 @@ public class Base64Test {
     }
 
     @Test
-    public void testLargeBlock() throws PaddingException{
-        assertBigBlockMatches(1024);
-        assertBigBlockMatches(1024*16);
-        assertBigBlockMatches(1024*64);
-        double startTime = getTimeOfDaySecs();
-        assertBigBlockMatches(1024*1024);
-        double stopTime = getTimeOfDaySecs();
-        System.out.printf("Took %f seconds to encode decode 1 Meg of B64 data\n",stopTime - startTime);
-
+    public void testGiantRandomBlock() throws PaddingException {
+        Debug.nop();
+        int i;
+        byte[] inBytes = Debug.rndBytes(BIGBLOCKSIZE);
+        byte[] b64Bytes = Base64.encode(inBytes, BIGBLOCKSIZE);
+        byte[] decodedBytes = Base64.decode(b64Bytes, b64Bytes.length);
+        int nBytesDecoded = decodedBytes.length;
+        assertEquals(inBytes.length, nBytesDecoded);
+        for (i = 0; i < nBytesDecoded; i++) {
+            if (inBytes[i] != decodedBytes[i]) {
+                fail("Error b64decoded failed to block mismatch");
+            }
+        }
     }
 
+    @Test
+    public void testLargeBlock() throws PaddingException {
+        assertBigBlockMatches(1024);
+        assertBigBlockMatches(1024 * 16);
+        assertBigBlockMatches(1024 * 64);
+        double startTime = getTimeOfDaySecs();
+        assertBigBlockMatches(1024 * 1024);
+        double stopTime = getTimeOfDaySecs();
+        System.out.printf("Took %f seconds to encode decode 1 Meg of B64 data\n", stopTime - startTime);
+    }
 
     private byte[] loopBytes(int nbytes) {
         byte[] bytes = new byte[nbytes];
@@ -191,7 +205,7 @@ public class Base64Test {
         byte[] expectedBytes = loopBytes(nbytes);
         byte[] encodedBytes = encodeBytes(expectedBytes);
         byte[] decodedBytes = decodeBytes(encodedBytes);
-        assertArrayEquals(expectedBytes,decodedBytes);
+        assertArrayEquals(expectedBytes, decodedBytes);
     }
 
     private static void assertDecodeMatches(String outStr, String inStr) throws UnsupportedEncodingException, PaddingException {
@@ -208,7 +222,7 @@ public class Base64Test {
         assertEquals(outStr, new String(bytesOut, "us-ascii"));
     }
 
-    double getTimeOfDaySecs(){
-        return ((double)System.currentTimeMillis())*secsPerMilli;
+    double getTimeOfDaySecs() {
+        return ((double) System.currentTimeMillis()) * secsPerMilli;
     }
 }
