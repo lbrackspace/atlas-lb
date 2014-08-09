@@ -1,5 +1,8 @@
 package org.openstack.atlas.util.staticutils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import java.util.Date;
 import java.util.List;
@@ -53,12 +56,12 @@ public class StaticFileUtilsTest {
     public void testPathTail() {
         assertEquals("test.txt", StaticFileUtils.pathTail("test.txt"));
         assertEquals(null, StaticFileUtils.pathTail(null));
-        assertEquals("test.txt",StaticFileUtils.pathTail("/home/someUser/test.txt"));
-        assertEquals("test.txt",StaticFileUtils.pathTail("/tmp/test.txt"));
-        assertEquals("test.txt",StaticFileUtils.pathTail("tmp/test.txt"));
-        assertEquals("test.txt",StaticFileUtils.pathTail("/home/someUser/test.txt"));
-        assertEquals("test.txt",StaticFileUtils.pathTail("home/someUser/test.txt"));
-        assertEquals("test.txt",StaticFileUtils.pathTail("////wtf/test.txt"));
+        assertEquals("test.txt", StaticFileUtils.pathTail("/home/someUser/test.txt"));
+        assertEquals("test.txt", StaticFileUtils.pathTail("/tmp/test.txt"));
+        assertEquals("test.txt", StaticFileUtils.pathTail("tmp/test.txt"));
+        assertEquals("test.txt", StaticFileUtils.pathTail("/home/someUser/test.txt"));
+        assertEquals("test.txt", StaticFileUtils.pathTail("home/someUser/test.txt"));
+        assertEquals("test.txt", StaticFileUtils.pathTail("////wtf/test.txt"));
     }
 
     public void testSplitPathToString() {
@@ -169,5 +172,44 @@ public class StaticFileUtilsTest {
 
         String monthYear = StaticFileUtils.getMonthYearFromFileDate(dateString);
         Assert.assertEquals(monthYear, "Feb_2011");
+    }
+
+    @Test
+    public void testCompressBytes() throws IOException {
+        double ratio;
+        int i;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] rndBytes = Debug.rndBytes(32);
+        for (i = 0; i < 1024 * 1024; i++) {
+            baos.write(rndBytes);
+        }
+        byte[] repetativeBytes = baos.toByteArray();
+        byte[] compressedBytes = StaticFileUtils.compressBytes(repetativeBytes);
+        byte[] decompressedBytes = StaticFileUtils.decompressBytes(compressedBytes);
+        ratio = (double) compressedBytes.length / (double) rndBytes.length;
+        assertTrue(byteArraysEqual(repetativeBytes, decompressedBytes));
+    }
+
+    private static boolean byteArraysEqual(byte[] a, byte[] b) {
+        int i;
+        int nBytes = a.length;
+        if (a == null && b == null) {
+            return true;
+        }
+        if (a == null) {
+            return false;
+        }
+        if (b == null) {
+            return false;
+        }
+        if (nBytes != b.length) {
+            return false;
+        }
+        for (i = 0; i < nBytes; i++) {
+            if (a[i] != b[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 }

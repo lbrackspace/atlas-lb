@@ -63,12 +63,7 @@ public class Base64 {
         if (bi.length == 0) {
             return new byte[0];
         }
-        String dbgStr;
-        try {
-            dbgStr = new String(bi, "us-ascii");
-        } catch (UnsupportedEncodingException ex) {
-            dbgStr = "WTF";
-        }
+
         int ilen = bi.length;
         int olen;
         int ibp = 0;
@@ -83,10 +78,8 @@ public class Base64 {
         int ib2;
         int ib3;
 
-
-
         if (ilen % 4 != 0) {
-            throw new PaddingException(String.format("b64 bytes was %d bytes lond eas expecting a multiple of 4", ilen));
+            throw new PaddingException(String.format("b64 bytes was %d bytes long was expecting a multiple of 4", ilen));
         }
         olen = ((ilen / 4) - 1) * 3;
         // Compute length based on padding
@@ -183,9 +176,9 @@ public class Base64 {
         return filteredInput;
     }
 
-    public static String encode(String utf8Str) throws UnsupportedEncodingException{
+    public static String encode(String utf8Str) throws UnsupportedEncodingException {
         byte[] bytes = toUTF8Bytes(utf8Str);
-        byte[] encoded = encode(bytes,bytes.length);
+        byte[] encoded = encode(bytes, bytes.length);
         return toUTF8String(encoded);
     }
 
@@ -199,7 +192,6 @@ public class Base64 {
         byte b0;
         byte b1;
         byte b2;
-        byte b3;
         int ib0;
         int ib1;
         int ib2;
@@ -260,13 +252,13 @@ public class Base64 {
     }
 
     // For jython
-    public static byte[] toUTF8Bytes(String strIn) throws UnsupportedEncodingException{
+    public static byte[] toUTF8Bytes(String strIn) throws UnsupportedEncodingException {
         byte[] out = strIn.getBytes("utf-8");
         return out;
     }
-    
-    public static String toUTF8String(byte[] bytes) throws UnsupportedEncodingException{
-        String out = new String(bytes,"utf-8");
+
+    public static String toUTF8String(byte[] bytes) throws UnsupportedEncodingException {
+        String out = new String(bytes, "utf-8");
         return out;
 
     }

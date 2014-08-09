@@ -33,6 +33,7 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     root_ca_file,
     service_bus_endpoint_uri,
     ssl_termination,
+    ssl_private_encrypt_key,
     stats,
     stats_timeout_in_millis,
     ttl,
