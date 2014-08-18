@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a42497e_4c76fd3f",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2014-08-18T23:28:13Z",
+      "side": 1,
+      "message": "This message is WAAAY too long. :P",
+      "revId": "587616d9bb36b3abbc75bb6f43d55b4b2000e997",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
