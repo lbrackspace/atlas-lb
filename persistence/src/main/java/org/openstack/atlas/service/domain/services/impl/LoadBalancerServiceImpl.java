@@ -82,8 +82,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     getLoadBalancerLimit(lb.getAccountId())));
         }
 
-        // Drop Health Monitor code here for secNodes
-
         // If user wants secondary nodes they must have some kind of healthmonitoring
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
         if (lb.getHealthMonitor() == null && npc.hasSecondary()) {
@@ -100,8 +98,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
         }
 
-        //check for blacklisted Nodes
         try {
+            // Check for black-listed nodes
             Node badNode = blackListedItemNode(lb.getNodes());
             if (badNode != null) {
                 throw new BadRequestException(String.format("Invalid node address. The address '%s' is currently not accepted for this request.", badNode.getIpAddress()));
@@ -123,10 +121,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         try {
-            //check for TCP protocol and port before adding default, since TCP protocol has no default
+            // Check for TCP protocol and port before adding default, since TCP protocol has no default
             verifyTCPUDPProtocolandPort(lb);
             addDefaultValues(lb);
-            //V1-B-17728 allowing ip SP for non-http protocols
             verifySessionPersistence(lb);
             verifyProtocolAndHealthMonitorType(lb);
             verifyHalfCloseSupport(lb);
@@ -153,13 +150,15 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw e;
         } catch (OutOfVipsException e) {
             LOG.warn("Out of virtual ips! Sending error response to client...");
-            String errorMessage = e.getMessage();
-            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), errorMessage);
+            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), e.getMessage());
+            throw e;
+        } catch (NoAvailableClusterException e) {
+            LOG.warn("No available cluster! Sending error response to client...");
+            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), e.getMessage());
             throw e;
         } catch (IllegalArgumentException e) {
             LOG.warn("Virtual Ip could not be processed....");
-            String errorMessage = e.getMessage();
-            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), errorMessage);
+            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), e.getMessage());
             throw e;
         }
 
@@ -167,12 +166,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         dbLoadBalancer.setUserName(lb.getUserName());
         joinIpv6OnLoadBalancer(dbLoadBalancer);
 
-        // Add atom entry
-//        String atomTitle = "Load Balancer in build status";
-//        String atomSummary = "Load balancer in build status";
-//        notificationService.saveLoadBalancerEvent(lb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, BUILD_LOADBALANCER, CREATE, INFO);
-
-        //Save history record
+        // Save history record
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.BUILD);
 
         return dbLoadBalancer;
@@ -872,7 +866,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
     }
 
-    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, BadRequestException {
+    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, BadRequestException, NoAvailableClusterException {
         boolean isHost = false;
         LoadBalancer gLb = new LoadBalancer();
 
@@ -1111,16 +1105,15 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw new BadRequestException("Found sticky LoadBalancers: " + StringUtilities.buildDelemtedListFromStringArray(invalidLbArray, ",") + " please remove and retry the request");
         }
 
-        //Everythings ok, begin update...
         for (LoadBalancer lb : validLbs) {
+            // Everything's ok! Begin update...
             setStatus(lb, LoadBalancerStatus.PENDING_UPDATE);
-//            loadBalancerRepository.save(lb);
         }
 
         return validLbs;
     }
 
-    private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException, ClusterStatusException {
+    private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException, ClusterStatusException, NoAvailableClusterException {
         Integer hostId = null;
         Host specifiedHost;
 

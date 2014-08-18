@@ -12,8 +12,19 @@ public class OperationResponse implements Serializable {
     private String message;
 
     public enum ErrorReason {
-
-        UNAUTHORIZED, ENTITY_NOT_FOUND, IMMUTABLE_ENTITY, SERVICE_UNAVAILABLE, OUT_OF_VIPS, OVER_LIMIT, BAD_REQUEST, GONE, UNPROCESSABLE_ENTITY, UNKNOWN, CLUSTER_STATUS, METHOD_NOT_ALLOWED
+        BAD_REQUEST,
+        CLUSTER_STATUS,
+        ENTITY_NOT_FOUND,
+        GONE,
+        IMMUTABLE_ENTITY,
+        METHOD_NOT_ALLOWED,
+        NO_AVAILABLE_CLUSTER,
+        OUT_OF_VIPS,
+        OVER_LIMIT,
+        SERVICE_UNAVAILABLE,
+        UNAUTHORIZED,
+        UNKNOWN,
+        UNPROCESSABLE_ENTITY
     }
 
     public OperationResponse() {

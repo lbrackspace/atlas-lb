@@ -1,10 +1,7 @@
 package org.openstack.atlas.service.domain.services;
 
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.Customer;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId;
 
@@ -81,7 +78,7 @@ public interface HostService {
 
     public void deleteHost(Host queueHost) throws Exception;
 
-    public Host getDefaultActiveHostAndActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException;
+    public Host getDefaultActiveHostAndActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
 
     public boolean isActiveHost(Host host) throws EntityNotFoundException;
 

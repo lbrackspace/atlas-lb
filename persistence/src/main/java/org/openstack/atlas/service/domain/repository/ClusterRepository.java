@@ -4,6 +4,7 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.NoAvailableClusterException;
 import org.openstack.atlas.service.domain.pojos.Customer;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.pojos.VirtualIpAvailabilityReport;
@@ -586,41 +587,46 @@ public class ClusterRepository {
     }
 
     public Cluster getDefaultActiveCluster() throws ClusterStatusException {
-        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl where cl.clusterStatus = :status").setParameter("status", ClusterStatus.ACTIVE).getResultList();
+        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl where cl.clusterStatus = :status")
+                .setParameter("status", ClusterStatus.ACTIVE)
+                .getResultList();
         if (cls != null && cls.size() > 0) {
             return cls.get(0);
         } else {
-            String errMsg = "Active cluster not found, please contact support...";
+            String errMsg = "No active clusters found. Please contact support.";
             LOG.warn(errMsg);
             throw new ClusterStatusException(errMsg);
         }
     }
 
-    public Cluster getActiveCluster(Integer accountId) throws ClusterStatusException {
-        // See if this user is an Internal account;
+    public Cluster getActiveCluster(Integer accountId) throws ClusterStatusException, NoAvailableClusterException {
         if (accountId == null) {
-            // No account associated with this query just return the default;
             return getDefaultActiveCluster();
         }
-        List<Account> accountList = entityManager.createQuery("SELECT al FROM Account al where id= :aid").setParameter("aid", accountId).getResultList();
+
+        List<Account> accountList = entityManager.createQuery("SELECT al FROM Account al where id = :aid")
+                .setParameter("aid", accountId)
+                .getResultList();
         if (accountList.size() <= 0) {
-            // This user doesn't look special
-            return getDefaultActiveCluster();
+           return getDefaultActiveCluster();
         }
 
         ClusterType accountClusterType = accountList.get(0).getClusterType();
         if (accountClusterType != ClusterType.SMOKE && accountClusterType != ClusterType.INTERNAL) {
-            // This is not an internal or smoke account
             return getDefaultActiveCluster();
         }
-        List<Cluster> cl = entityManager.createQuery("SELECT cl from Cluster cl where clusterType=:cluster_type").setParameter("cluster_type", accountClusterType).getResultList();
 
-        if (cl.size() <= 0) {
-            // This datacenter doesn't have a matching cluster. :(
-            LOG.warn("Warning account " + accountId + " was marked as " + accountClusterType.name() + " but this datacenter has no " + accountClusterType.name() + " Cluster");
-            return getDefaultActiveCluster();
+        List<Cluster> clusterList = entityManager.createQuery("SELECT cl FROM Cluster cl WHERE cl.clusterType = :type AND cl.clusterStatus = :status")
+                .setParameter("type", accountClusterType)
+                .setParameter("status", ClusterStatus.ACTIVE)
+                .getResultList();
+        if (clusterList.size() <= 0) {
+            String message = String.format("Account '%s' is marked as a(n) %s account but no '%s' clusters are available! Please contact support.", accountId, accountClusterType.name(), accountClusterType.name());
+            LOG.error(message);
+            throw new NoAvailableClusterException(message);
         }
-        return cl.get(0);
+
+        return clusterList.get(0);
     }
 
     public class VipMap {

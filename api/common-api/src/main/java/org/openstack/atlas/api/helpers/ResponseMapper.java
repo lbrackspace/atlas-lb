@@ -50,6 +50,11 @@ public class ResponseMapper {
                 cse.setMessage((message == null) ? "Cluster status is invalid. Please contact support." : message);
                 cse.setDetails(details);
                 return cse;
+            case NO_AVAILABLE_CLUSTER:
+                NoAvailableCluster nac = new NoAvailableCluster();
+                nac.setMessage((message == null) ? "No available cluster found for your account. Please contact support." : message);
+                nac.setDetails(details);
+                return nac;
             case OVER_LIMIT:
                 OverLimit olf = new OverLimit();
                 olf.setMessage((message == null) ? "Your account is currently over the limit so your request could not be processed." : message);
@@ -92,8 +97,10 @@ public class ResponseMapper {
             return getFault(ErrorReason.ENTITY_NOT_FOUND, message, details);
         } else if (e instanceof OutOfVipsException) {
             return getFault(ErrorReason.OUT_OF_VIPS, message, details);
-        }else if (e instanceof ClusterStatusException) {
+        } else if (e instanceof ClusterStatusException) {
             return getFault(ErrorReason.CLUSTER_STATUS, message, details);
+        } else if (e instanceof NoAvailableClusterException) {
+            return getFault(ErrorReason.NO_AVAILABLE_CLUSTER, message, details);
         } else if (e instanceof ServiceUnavailableException) {
             return getFault(ErrorReason.SERVICE_UNAVAILABLE, message, details);
         } else if (e instanceof SingletonEntityAlreadyExistsException) {
@@ -140,6 +147,8 @@ public class ResponseMapper {
             status = getStatus(ErrorReason.OUT_OF_VIPS);
         } else if (e instanceof ClusterStatusException) {
             status = getStatus(ErrorReason.CLUSTER_STATUS);
+        } else if (e instanceof NoAvailableClusterException) {
+            status = getStatus(ErrorReason.NO_AVAILABLE_CLUSTER);
         } else if (e instanceof UnprocessableEntityException) {
             status = getStatus(ErrorReason.UNPROCESSABLE_ENTITY);
         } else if (e instanceof ImmutableEntityException) {
@@ -188,6 +197,9 @@ public class ResponseMapper {
                 status = 500;
                 break;
             case CLUSTER_STATUS:
+                status = 500;
+                break;
+            case NO_AVAILABLE_CLUSTER:
                 status = 500;
                 break;
             case SERVICE_UNAVAILABLE:

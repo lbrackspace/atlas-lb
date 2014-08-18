@@ -79,6 +79,13 @@
         </xsd:complexContent>
     </xsd:complexType>
 
+    <xsd:element name="noAvailableCluster" type="tns:noAvailableCluster"/>
+    <xsd:complexType name="noAvailableCluster">
+        <xsd:complexContent>
+            <xsd:extension base="tns:lbaasFault"/>
+        </xsd:complexContent>
+    </xsd:complexType>
+
     <xsd:element name="clusterStatus" type="tns:clusterStatus"/>
     <xsd:complexType name="clusterStatus">
         <xsd:complexContent>

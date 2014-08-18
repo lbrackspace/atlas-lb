@@ -57,10 +57,6 @@ public class ResponseFactory {
         return Response.status(status).entity(lbaasFault).build();
     }
 
-    public static String getInternalServerErrorMessage() {
-        return "Oopsie! Something happened and we are fanatically trying to resolve it.";
-    }
-
     public static Response getSuccessResponse(String msg, int status) {
         Operationsuccess opResp = new Operationsuccess();
         opResp.setMessage(msg);
@@ -70,14 +66,12 @@ public class ResponseFactory {
     }
 
     public static Response getErrorResponse(Exception e, String message, String detail) {
-        String errMsg;
         LbaasFault lbaasFault = ResponseMapper.getFault(e, message, detail);
         Integer code = ResponseMapper.getStatus(e);
         lbaasFault.setCode(code);
 
         if (code == 500) {
-            errMsg = String.format("Exception Caught: %s", getExtendedStackTrace(e));
-            LOG.debug(errMsg);
+            LOG.debug(String.format("Exception Caught: %s", getExtendedStackTrace(e)));
         }
 
         return Response.status(code).entity(lbaasFault).build();
