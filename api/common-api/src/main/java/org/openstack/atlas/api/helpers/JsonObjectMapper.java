@@ -37,12 +37,13 @@ public class JsonObjectMapper extends ObjectMapper {
 
         Class[] serializerWrapperClasses = new Class[]{HostMachineDetails.class, AccountRecord.class, HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class,
-            Node.class, RateLimit.class, Errorpage.class, SslTermination.class, Link.class, AllowedDomain.class, ContentCaching.class};
+            Node.class, RateLimit.class, Errorpage.class, SslTermination.class, CertificateMapping.class,
+            Link.class, AllowedDomain.class, ContentCaching.class};
 
         Class[] deserializerWrapperClasses = new Class[]{HostMachineDetails.class, AccountRecord.class, Node.class, HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, Meta.class,
-            ConnectionThrottle.class, LoadBalancer.class, NetworkItem.class, RateLimit.class,
-            Errorpage.class, SslTermination.class, Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
+            SessionPersistence.class, ConnectionLogging.class, Meta.class, ConnectionThrottle.class, LoadBalancer.class,
+            NetworkItem.class, RateLimit.class, Errorpage.class, SslTermination.class, CertificateMapping.class,
+            Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
 
 
         for (Class wrapperClass : serializerWrapperClasses) {

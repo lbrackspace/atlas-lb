@@ -5,21 +5,16 @@
 package org.openstack.atlas.util.ca.zeus;
 
 import java.security.KeyPair;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import org.bouncycastle.jce.provider.X509CertificateObject;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
+
 import static org.junit.Assert.*;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.StringUtils;
@@ -28,15 +23,9 @@ import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
 import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
-import org.openstack.atlas.util.ca.zeus.ZeusUtils;
-import org.openstack.atlas.util.ca.zeus.ZeusUtils;
-import org.openstack.atlas.util.ca.zeus.ErrorEntry;
-import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.util.StaticHelpers;
-import org.openstack.atlas.util.ca.util.X509BuiltPath;
 import org.openstack.atlas.util.ca.util.X509ChainEntry;
 import org.openstack.atlas.util.ca.util.X509PathBuilder;
-import org.openstack.atlas.util.ca.util.fileio.RsaFileUtils;
 
 public class ZeusUtilsTest {
 
@@ -332,5 +321,60 @@ public class ZeusUtilsTest {
             x509set.add(x509obj);
         }
         return x509set;
+    }
+
+    @Test
+    public void shouldValidateWellFormedKey() {
+        List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
+        ZeusUtils.parseKey(workingUserKey, errors);
+
+        Assert.assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void shouldInvalidateMalformedKey() {
+        List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
+        ZeusUtils.parseKey("foobar", errors);
+
+        Assert.assertFalse(errors.isEmpty());
+        Assert.assertEquals(ErrorType.UNREADABLE_KEY, errors.get(0).getErrorType());
+    }
+
+    @Test
+    public void shouldValidateWellFormedCertificate() {
+        List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
+        ZeusUtils.parseCert(workingUserCrt, errors);
+
+        Assert.assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void shouldInvalidateMalformedCertificate() {
+        List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
+        ZeusUtils.parseCert("foobar", errors);
+
+        Assert.assertFalse(errors.isEmpty());
+        Assert.assertEquals(ErrorType.UNREADABLE_CERT, errors.get(0).getErrorType());
+    }
+
+    @Test
+    public void shouldValidateWellFormedIntermediateCertificates() {
+        List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
+        ZeusUtils.parseIntermediateCerts(workingUserChain, errors);
+
+        Assert.assertTrue(errors.isEmpty());
+    }
+
+    @Test
+    public void shouldInvalidateMalformedIntermediateCertificates() {
+        String foobar = "-----BEGIN CERTIFICATE-----\n"
+                + "foobar\n"
+                + "-----END CERTIFICATE-----\n";
+
+        List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
+        ZeusUtils.parseIntermediateCerts(foobar, errors);
+
+        Assert.assertFalse(errors.isEmpty());
+        Assert.assertEquals(ErrorType.UNREADABLE_CERT, errors.get(0).getErrorType());
     }
 }
