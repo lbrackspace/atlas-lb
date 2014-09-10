@@ -209,6 +209,7 @@
           class="org.openstack.atlas.api.resources.SslTerminationResource"
           parent="commonDependencyProvider"
           scope="request">
+        <property name="certificateMappingsResource" ref="certificateMappingsResource"/>
     </bean>
 
     <bean id="stubResource"
@@ -330,6 +331,17 @@
     <bean id="userCache" class="org.openstack.atlas.util.simplecache.SimpleCache" scope="singleton">
         <property name="ttl" value="300"/>
         <property name="cleanExpiredOn" value="4096"/>
+    </bean>
+
+    <bean id="certificateMappingsResource"
+          class="org.openstack.atlas.api.resources.CertificateMappingsResource"
+          parent="commonDependencyProvider"
+          scope="request">
+        <property name="certificateMappingResource">
+            <bean class="org.openstack.atlas.api.resources.CertificateMappingResource"
+                  parent="commonDependencyProvider"
+                  scope="request"/>
+        </property>
     </bean>
 
 </beans>

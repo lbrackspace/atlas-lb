@@ -422,6 +422,24 @@
         <xsd:attribute name="secureTrafficOnly" type="xsd:boolean"/>
     </xsd:complexType>
 
+    <xsd:element name="certificateMappings" type="tns:certificateMappings"/>
+    <xsd:complexType name="certificateMappings">
+        <xsd:sequence>
+            <xsd:element name="certificateMapping" minOccurs="1" maxOccurs="unbounded" type="tns:certificateMapping"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="certificateMapping" type="tns:certificateMapping"/>
+    <xsd:complexType name="certificateMapping">
+        <xsd:sequence>
+            <xsd:element name="privateKey" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="certificate" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="intermediateCertificate" type="xsd:string" minOccurs="0"/>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="hostName" type="xsd:string"/>
+    </xsd:complexType>
+
     <xsd:element name="allowedDomains" type="tns:allowedDomains"/>
     <xsd:complexType name="allowedDomains">
         <xsd:sequence>

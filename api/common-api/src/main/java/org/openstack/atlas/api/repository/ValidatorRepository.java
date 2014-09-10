@@ -25,6 +25,7 @@ public final class ValidatorRepository {
         classKeyedValidatorMap.put(ConnectionLogging.class, new ConnectionLoggingValidator());
         classKeyedValidatorMap.put(ContentCaching.class, new ContentCachingValidator());
         classKeyedValidatorMap.put(SslTermination.class, new SslTerminationValidator());
+        classKeyedValidatorMap.put(CertificateMapping.class, new CertificateMappingValidator());
 
         if (!classKeyedValidatorMap.containsKey(classOfObjectToValidate)) {
             throw new NullPointerException(String.format("No Validator registered in repository for Class: %s", classOfObjectToValidate.getName()));

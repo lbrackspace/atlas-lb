@@ -34,7 +34,7 @@ public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonit
                 result(validationTarget().getBodyRegex()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("bodyRegex" + maxStrMsg);
                 result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new RegexValidatorVerifier()).withMessage("Must provide a valid status regex");
                 result(validationTarget().getBodyRegex()).if_().exist().then().must().adhereTo(new RegexValidatorVerifier()).withMessage("Must provide a valid body regex");
-                result(validationTarget().getHostHeader()).if_().exist().then().must().adhereTo(new HostNameRegexValidatorVerifier()).withMessage("Must provide a valid host name.");
+                result(validationTarget().getHostHeader()).if_().exist().then().must().adhereTo(new HostHeaderVerifier()).withMessage("Must provide a valid host header name.");
                 result(validationTarget().getHostHeader()).if_().exist().then().must().adhereTo(new CannotExceedSize(256)).withMessage("Host Header field cannot exceed 256 characters");
 
                 // PUT EXPECTATIONS
