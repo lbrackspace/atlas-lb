@@ -299,10 +299,6 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         this.accountId = accountId;
     }
 
-    public UsageResource getUsageResource() {
-        return usageResource;
-    }
-
     public void setUsageResource(UsageResource usageResource) {
         this.usageResource = usageResource;
     }
@@ -317,10 +313,6 @@ public class LoadBalancerResource extends CommonDependencyProvider {
 
     public void setErrorpageResource(ErrorpageResource errorpageResource) {
         this.errorpageResource = errorpageResource;
-    }
-
-    public SslTerminationResource getSslTerminationResource() {
-        return sslTerminationResource;
     }
 
     public void setSslTerminationResource(SslTerminationResource sslTerminationResource) {

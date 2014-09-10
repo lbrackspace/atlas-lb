@@ -218,19 +218,13 @@ public class ZeusUtils {
             }
         }
         // Retrieve Intermediates.
-        Set<X509CertificateObject> imdSet;
+        Set<X509CertificateObject> intermediateCerts = new HashSet<X509CertificateObject>();
         if (intermediates != null) {
-            ResponseWithExcpetions<Set<X509CertificateObject>> resp = X509ReaderWriter.readSet(intermediates);
-            imdSet = resp.getReturnObject();
-            for (Throwable th : resp.getExceptions()) {
-                errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, th.getMessage(), false, th));
-            }
-        } else {
-            imdSet = new HashSet<X509CertificateObject>();
+            intermediateCerts = parseIntermediateCerts(intermediates, errors);
         }
 
         if (userCrt != null) {
-            X509PathBuilder<X509CertificateObject> pathBuilder = new X509PathBuilder<X509CertificateObject>(roots, imdSet);
+            X509PathBuilder<X509CertificateObject> pathBuilder = new X509PathBuilder<X509CertificateObject>(roots, intermediateCerts);
             X509BuiltPath<X509CertificateObject> builtPath;
             try {
                 builtPath = pathBuilder.buildPath(userCrt, date);
@@ -274,7 +268,7 @@ public class ZeusUtils {
         this.roots = roots;
     }
 
-    private static KeyPair parseKey(String keyIn, List<ErrorEntry> errors) {
+    public static KeyPair parseKey(String keyIn, List<ErrorEntry> errors) {
         KeyPair kp = null;
         List<PemBlock> blocks = PemUtils.parseMultiPem(keyIn);
         Object obj;
@@ -321,7 +315,7 @@ public class ZeusUtils {
         return kp;
     }
 
-    private static X509CertificateObject parseCert(String certIn, List<ErrorEntry> errors) {
+    public static X509CertificateObject parseCert(String certIn, List<ErrorEntry> errors) {
         X509CertificateObject x509obj = null;
         List<PemBlock> blocks = PemUtils.parseMultiPem(certIn);
         Object obj;
@@ -336,12 +330,23 @@ public class ZeusUtils {
         }
         obj = blocks.get(0).getDecodedObject();
         if ((obj == null) || !(obj instanceof X509CertificateObject)) {
-            String msg = String.format("%s Crtificate decoded to class %s but was expecting %s", ERRORDECODINGCERT, obj.getClass().getName(), className(X509CertificateObject.class));
+            String msg = String.format("%s Certificate decoded to class %s but was expecting %s", ERRORDECODINGCERT, obj.getClass().getName(), className(X509CertificateObject.class));
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null));
             return x509obj;
         }
         x509obj = (X509CertificateObject) obj;
         return x509obj;
+    }
+
+    public static Set<X509CertificateObject> parseIntermediateCerts(String intermediates, List<ErrorEntry> errors) {
+        ResponseWithExcpetions<Set<X509CertificateObject>> resp = X509ReaderWriter.readSet(intermediates);
+        Set<X509CertificateObject> intermediateCerts = resp.getReturnObject();
+
+        for (Throwable th : resp.getExceptions()) {
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, th.getMessage(), false, th));
+        }
+
+        return intermediateCerts;
     }
 
     private static String invalidDateMessage(String premsg, Date dateEdge) {
