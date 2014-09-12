@@ -34,6 +34,7 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     service_bus_endpoint_uri,
     ssl_termination,
     stats,
+    stats_timeout_in_millis,
     ttl,
     usage_poller_log_all_counters,
     usage_timezone_code,
