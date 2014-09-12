@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.usagerefactor.SnmpStats;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.util.snmp.RawSnmpUsage;
 import org.openstack.atlas.util.snmp.StingraySnmpClient;
@@ -101,6 +102,37 @@ public class StingrayUsageClientImpl implements StingrayUsageClient {
         usage.setBytesInSsl(client.getBytesIn(shadowName, false, true));
         usage.setBytesOutSsl(client.getBytesOut(shadowName, false, true));
         usage.setConcurrentConnectionsSsl((int) client.getConcurrentConnections(shadowName, false, true));
+        return usage;
+    }
+
+    @Override
+    public SnmpStats getVirtualServerStats(Host host, LoadBalancer lb) throws StingraySnmpGeneralException {
+        SnmpStats usage = new SnmpStats();
+        StingraySnmpClient client = new StingraySnmpClient();
+        client.setAddress(host.getManagementIp());
+
+        usage.setLoadbalancerId(lb.getId());
+        usage.setHostId(host.getId());
+        // Fetch Virtual Server Usage
+        String vsName = buildVsName(lb, false);
+        usage.setConcurrentConnections((int) client.getConcurrentConnections(vsName, true, false));
+        usage.setMaxConnections(client.getMaxConnections(vsName, true, false));
+        usage.setConnectTimedOut(client.getConnectTimedOut(vsName, true, false));
+        usage.setDataTimedOut(client.getDataTimedOut(vsName, true, false));
+        usage.setKeepaliveTimedOut(client.getKeepAliveTimedOut(vsName, true, false));
+        usage.setConnectionErrors(client.getConnectionErrors(vsName, true, false));
+        usage.setConnectionFailures(client.getConnectionFailures(vsName, true, false));
+
+        // Fetch Shadow Server Usage
+        String shadowName = buildVsName(lb, true);
+        usage.setConcurrentConnectionsSsl((int) client.getConcurrentConnections(shadowName, true, false));
+        usage.setMaxConnectionsSsl(client.getMaxConnections(shadowName, true, false));
+        usage.setConnectTimedOutSsl(client.getConnectTimedOut(shadowName, true, false));
+        usage.setDataTimedOutSsl(client.getDataTimedOut(shadowName, true, false));
+        usage.setKeepaliveTimedOutSsl(client.getKeepAliveTimedOut(shadowName, true, false));
+        usage.setConnectionErrorsSsl(client.getConnectionErrors(shadowName, true, false));
+        usage.setConnectionFailuresSsl(client.getConnectionFailures(shadowName, true, false));
+
         return usage;
     }
 

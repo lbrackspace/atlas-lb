@@ -146,6 +146,7 @@
     <bean id="reverseProxyLoadBalancerService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl">
         <property name="notificationService" ref="notificationService"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
+        <property name="statsCollection" ref="statsCollection"/>
         <property name="healthMonitorService" ref="healthMonitorService"/>
         <property name="hostService" ref="hostService"/>
         <property name="reverseProxyLoadBalancerAdapter" ref="reverseProxyLoadBalancerAdapter"/>

@@ -4,13 +4,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -35,7 +33,7 @@ public class UsageEventCollection extends AbstractUsageEventCollection {
         List<Callable<SnmpUsage>> callables = new ArrayList<Callable<SnmpUsage>>();
 
         for (Host h : hosts) {
-            callables.add(new SnmpVSCollector(h, lb));
+            callables.add(new SnmpUsageCollector(h, lb));
         }
         try {
             LOG.debug("Executing SNMP collection tasks for loadbalancer: " + lb.getId());

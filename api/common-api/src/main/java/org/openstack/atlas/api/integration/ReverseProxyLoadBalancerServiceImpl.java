@@ -9,6 +9,7 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.api.exceptions.StingrayTimeoutException;
+import org.openstack.atlas.api.integration.threads.ThreadExecutorService;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
@@ -25,7 +26,8 @@ import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NotificationService;
-import org.openstack.atlas.usagerefactor.threading.InterruptScheduler;
+import org.openstack.atlas.usagerefactor.SnmpStats;
+import org.openstack.atlas.usagerefactor.collection.StatsCollection;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.openstack.atlas.util.debug.Debug;
@@ -33,6 +35,10 @@ import org.openstack.atlas.util.debug.Debug;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static java.util.Calendar.getInstance;
 
@@ -41,6 +47,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceImpl.class);
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
     private LoadBalancerService loadBalancerService;
+    private StatsCollection statsCollection;
     private HostService hostService;
     private NotificationService notificationService;
     private HealthMonitorService healthMonitorService;
@@ -49,6 +56,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     public void setLoadBalancerService(LoadBalancerService loadBalancerService) {
         this.loadBalancerService = loadBalancerService;
+    }
+
+    public void setStatsCollection(StatsCollection statsCollection) {
+        this.statsCollection = statsCollection;
     }
 
     public void setHostService(HostService hostService) {
@@ -482,38 +493,97 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public Stats getLoadBalancerStats(LoadBalancer loadBalancer) throws StingrayTimeoutException, EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, RemoteException {
+    public Stats getLoadBalancerStats(final LoadBalancer loadBalancer) throws StingrayTimeoutException, EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, RemoteException {
         Integer loadbalancerId = loadBalancer.getId();
         Integer accountId = loadBalancer.getAccountId();
-        LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
         String key = CacheKeyGen.generateKeyName(accountId, loadbalancerId);
         Stats lbStats;
 
-        long cal = getInstance().getTimeInMillis();
+        long timer = getInstance().getTimeInMillis();
         lbStats = (Stats) atlasCache.get(key);
+
         if (lbStats == null) {
-            //Set a timer to throw interruption when timeout
-            Timer timer = new Timer();
-            long timeOutValueInMillis = 10000L;
-            timer.schedule(new InterruptScheduler(Thread.currentThread()), timeOutValueInMillis);
+            Host defaultHost = loadBalancerService.get(loadbalancerId).getHost();
+            List<Host> failoverHosts = hostService.getFailoverHosts(defaultHost.getCluster().getId());
+            final long TIMEOUT_IN_MILLIS = Long.parseLong(configuration.getString(PublicApiServiceConfigurationKeys.stats_timeout_in_millis));
+            final List<Host> hostToGatherStatsFrom = new ArrayList<Host>();
+            hostToGatherStatsFrom.add(defaultHost);
+            hostToGatherStatsFrom.addAll(failoverHosts);
+            List<SnmpStats> snmpStatsList;
+
             try {
-                lbStats = reverseProxyLoadBalancerAdapter.getLoadBalancerStats(config, loadBalancer);
-                LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
+                snmpStatsList = ThreadExecutorService.call(new Callable<List<SnmpStats>>() {
+                    public List<SnmpStats> call() throws Exception {
+                        return statsCollection.getStatsForHosts(loadBalancer, hostToGatherStatsFrom);
+                    }
+                }, TIMEOUT_IN_MILLIS, TimeUnit.MILLISECONDS);
+                String message = String.format("Date: %s, AccountId: %d, GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: %s ms. Timeout set to: %d ms.", DateHelpers.getDate(Calendar.getInstance().getTime()), accountId, DateHelpers.getTotalTimeTaken(timer), TIMEOUT_IN_MILLIS);
+                LOG.info(message);
                 atlasCache.set(key, lbStats);
-            } catch (AxisFault af) {
-                checkAndSetIfSoapEndPointBad(config, af);
-                throw af;
-            } catch (InterruptedException e) {
+            } catch (TimeoutException e) {
                 String message = "Stats request is taking too long to complete. Timing out...";
+                LOG.error(message);
                 throw new StingrayTimeoutException(message);
-            } finally {
-                timer.cancel();
+            } catch (InterruptedException e) {
+                // TODO: How to handle this?
+                String message = "Stats request is taking too long to complete. Timing out...";
+                LOG.error(message);
+                throw new StingrayTimeoutException(message);
+            } catch (ExecutionException e) {
+                // TODO: How to handle this?
+                String message = "Stats request is taking too long to complete. Timing out...";
+                LOG.error(message);
+                throw new StingrayTimeoutException(message);
             }
+
+            SnmpStats aggregate = new SnmpStats();
+            for (SnmpStats stats : snmpStatsList) {
+                aggregate = SnmpStats.add(aggregate, stats);
+            }
+
+            lbStats = convertSnmpStatsToStats(aggregate);
+            return lbStats;
         } else {
-            LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, retrieved from cache... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
+            LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, retrieved from cache... Time taken: " + DateHelpers.getTotalTimeTaken(timer) + " ms");
             return lbStats;
         }
-        return lbStats;
+    }
+
+    private Stats convertSnmpStatsToStats(SnmpStats snmpStats) {
+        int[] connectionTimedOut = new int[]{snmpStats.getConnectTimedOut()};
+        int[] connectionError = new int[]{snmpStats.getConnectionErrors()};
+        int[] connectionFailure = new int[]{snmpStats.getConnectionFailures()};
+        int[] dataTimedOut = new int[]{snmpStats.getDataTimedOut()};
+        int[] keepaliveTimedOut = new int[]{snmpStats.getKeepaliveTimedOut()};
+        int[] maxConnections = new int[]{snmpStats.getMaxConnections()};
+        int[] currentConnections = new int[]{snmpStats.getConcurrentConnections()};
+
+        int[] connectionTimedOutSsl = new int[]{snmpStats.getConnectTimedOutSsl()};
+        int[] connectionErrorSsl = new int[]{snmpStats.getConnectionErrorsSsl()};
+        int[] connectionFailureSsl = new int[]{snmpStats.getConnectionFailuresSsl()};
+        int[] dataTimedOutSsl = new int[]{snmpStats.getDataTimedOutSsl()};
+        int[] keepaliveTimedOutSsl = new int[]{snmpStats.getKeepaliveTimedOutSsl()};
+        int[] maxConnectionsSsl = new int[]{snmpStats.getMaxConnectionsSsl()};
+        int[] currentConnectionsSsl = new int[]{snmpStats.getConcurrentConnectionsSsl()};
+
+        Stats stats = new Stats();
+        stats.setConnectTimeOut(connectionTimedOut);
+        stats.setConnectError(connectionError);
+        stats.setConnectFailure(connectionFailure);
+        stats.setDataTimedOut(dataTimedOut);
+        stats.setKeepAliveTimedOut(keepaliveTimedOut);
+        stats.setMaxConn(maxConnections);
+        stats.setCurrentConn(currentConnections);
+
+        stats.setConnectTimeOutSsl(connectionTimedOutSsl);
+        stats.setConnectErrorSsl(connectionErrorSsl);
+        stats.setConnectFailureSsl(connectionFailureSsl);
+        stats.setDataTimedOutSsl(dataTimedOutSsl);
+        stats.setKeepAliveTimedOutSsl(keepaliveTimedOutSsl);
+        stats.setMaxConnSsl(maxConnectionsSsl);
+        stats.setCurrentConnSsl(currentConnectionsSsl);
+
+        return stats;
     }
 
     @Override
