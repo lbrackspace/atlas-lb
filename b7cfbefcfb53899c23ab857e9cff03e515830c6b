@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba51214e_cdcde988",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/validation/validators/CertificateMappingValidatorTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 255,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-09-12T14:59:51Z",
+      "side": 1,
+      "message": "Should probably add test for invalid certs/keys/hostnames as well, rather than just missing information.",
+      "revId": "b7cfbefcfb53899c23ab857e9cff03e515830c6b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba51214e_adca356c",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/validation/verifiers/HostHeaderVerifierTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-09-12T14:59:51Z",
+      "side": 1,
+      "message": "These are only positive tests.  Should probably include some negative tests as well.  (more negative than positive possibilities, sure, but at least some would go a long way)",
+      "revId": "b7cfbefcfb53899c23ab857e9cff03e515830c6b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba51214e_0dc88173",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/validation/verifiers/HostNameVerifierTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1001796
+      },
+      "writtenOn": "2014-09-12T14:59:51Z",
+      "side": 1,
+      "message": "Could add tests checking numbers and ips as valid or not.",
+      "revId": "b7cfbefcfb53899c23ab857e9cff03e515830c6b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
