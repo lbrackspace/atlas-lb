@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
+import org.openstack.atlas.api.exceptions.StingrayTimeoutException;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
@@ -24,16 +25,14 @@ import org.openstack.atlas.service.domain.services.HealthMonitorService;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NotificationService;
+import org.openstack.atlas.usagerefactor.threading.InterruptScheduler;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.openstack.atlas.util.debug.Debug;
 
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.Calendar.getInstance;
 
@@ -483,7 +482,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public Stats getLoadBalancerStats(LoadBalancer loadBalancer) throws Exception {
+    public Stats getLoadBalancerStats(LoadBalancer loadBalancer) throws StingrayTimeoutException, EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, RemoteException {
         Integer loadbalancerId = loadBalancer.getId();
         Integer accountId = loadBalancer.getAccountId();
         LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
@@ -493,6 +492,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         long cal = getInstance().getTimeInMillis();
         lbStats = (Stats) atlasCache.get(key);
         if (lbStats == null) {
+            //Set a timer to throw interruption when timeout
+            Timer timer = new Timer();
+            long timeOutValueInMillis = 10000L;
+            timer.schedule(new InterruptScheduler(Thread.currentThread()), timeOutValueInMillis);
             try {
                 lbStats = reverseProxyLoadBalancerAdapter.getLoadBalancerStats(config, loadBalancer);
                 LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
@@ -500,6 +503,11 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             } catch (AxisFault af) {
                 checkAndSetIfSoapEndPointBad(config, af);
                 throw af;
+            } catch (InterruptedException e) {
+                String message = "Stats request is taking too long to complete. Timing out...";
+                throw new StingrayTimeoutException(message);
+            } finally {
+                timer.cancel();
             }
         } else {
             LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, retrieved from cache... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");

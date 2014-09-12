@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.helpers;
 
 
+import org.openstack.atlas.api.exceptions.StingrayTimeoutException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
@@ -29,6 +30,10 @@ public class ResponseMapper {
                 inf.setMessage((message == null) ? "Object not Found" : message);
                 inf.setCode(getStatus(ErrorReason.ENTITY_NOT_FOUND));
                 return inf;
+            case STINGRAY_TIMEOUT:
+                lbf.setMessage((message == null) ? "We are currently saturated with requests. Please try again later." : message);
+                lbf.setDetails(details);
+                return lbf;
             case IMMUTABLE_ENTITY:
                 ImmutableEntity ie = new ImmutableEntity();
                 ie.setMessage((message == null) ? "The object at the specified URI is immutable and can not be overwritten." : message);
@@ -90,9 +95,11 @@ public class ResponseMapper {
         }
         if (e instanceof EntityNotFoundException) {
             return getFault(ErrorReason.ENTITY_NOT_FOUND, message, details);
+        } else if (e instanceof StingrayTimeoutException) {
+            return getFault(ErrorReason.STINGRAY_TIMEOUT, message, details);
         } else if (e instanceof OutOfVipsException) {
             return getFault(ErrorReason.OUT_OF_VIPS, message, details);
-        }else if (e instanceof ClusterStatusException) {
+        } else if (e instanceof ClusterStatusException) {
             return getFault(ErrorReason.CLUSTER_STATUS, message, details);
         } else if (e instanceof ServiceUnavailableException) {
             return getFault(ErrorReason.SERVICE_UNAVAILABLE, message, details);
@@ -134,7 +141,9 @@ public class ResponseMapper {
             status = 200;
         } else if (e instanceof EntityNotFoundException) {
             status = getStatus(ErrorReason.ENTITY_NOT_FOUND);
-        } else if (e instanceof SingletonEntityAlreadyExistsException) {
+        } else if (e instanceof StingrayTimeoutException) {
+            status = getStatus(ErrorReason.STINGRAY_TIMEOUT);
+        }  else if (e instanceof SingletonEntityAlreadyExistsException) {
             status = getStatus(ErrorReason.IMMUTABLE_ENTITY);
         } else if (e instanceof OutOfVipsException) {
             status = getStatus(ErrorReason.OUT_OF_VIPS);
@@ -186,6 +195,9 @@ public class ResponseMapper {
         switch (errorReason) {
             case OUT_OF_VIPS:
                 status = 500;
+                break;
+            case STINGRAY_TIMEOUT:
+                status = 503;
                 break;
             case CLUSTER_STATUS:
                 status = 500;

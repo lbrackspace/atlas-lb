@@ -1,6 +1,8 @@
 package org.openstack.atlas.api.helpers;
 
 import java.util.ArrayList;
+
+import org.apache.http.HttpHeaders;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import java.util.List;
@@ -78,6 +80,11 @@ public class ResponseFactory {
         if (code == 500) {
             errMsg = String.format("Exception Caught: %s", getExtendedStackTrace(e));
             LOG.debug(errMsg);
+        }
+
+        if (code == 503){
+            String seconds = "300";
+            return Response.status(code).entity(lbaasFault).header(HttpHeaders.RETRY_AFTER, seconds).build();
         }
 
         return Response.status(code).entity(lbaasFault).build();

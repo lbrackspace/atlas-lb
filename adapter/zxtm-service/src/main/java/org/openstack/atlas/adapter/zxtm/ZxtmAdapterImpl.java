@@ -2676,7 +2676,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException {
+    public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws RemoteException, InsufficientRequestException, InterruptedException {
         List<ZxtmServiceStubs> allStubs = new ArrayList<ZxtmServiceStubs>();
         for (URI endpoint : config.getSoapStatsEndpoints()) {
             try {

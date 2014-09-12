@@ -153,7 +153,7 @@ public interface ReverseProxyLoadBalancerAdapter {
             throws RemoteException;
 
     public Stats getLoadBalancerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
-            throws RemoteException, InsufficientRequestException;
+            throws RemoteException, InsufficientRequestException, InterruptedException;
 
     public Map<String, Long> getLoadBalancerBytesIn(LoadBalancerEndpointConfiguration config, List<String> names)
             throws RemoteException;
