@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "ba51214e_ee88a0c8",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/LoadBalancerResource.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 300,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-09-16T15:49:27Z",
+      "side": 1,
+      "message": "Correct. We don\u0027t need getters in the resource layer. In fact, we have to name them \"retrieivers\" because of the way jaxrs works if I remember correctly.",
+      "parentUuid": "ba51214e_d3690327",
+      "revId": "1b2316f4e264de2154bf084292fffee5eda73a20",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba51214e_f36c0739",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/SslTerminationResource.java",
         "patchSetId": 3
