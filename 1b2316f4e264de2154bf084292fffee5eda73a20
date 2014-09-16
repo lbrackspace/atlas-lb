@@ -33,6 +33,24 @@
       "revId": "1b2316f4e264de2154bf084292fffee5eda73a20",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba51214e_ce367ce7",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/SslTerminationResource.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2014-09-16T05:11:40Z",
+      "side": 1,
+      "message": "Ignore this...",
+      "parentUuid": "ba51214e_f36c0739",
+      "revId": "1b2316f4e264de2154bf084292fffee5eda73a20",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
