@@ -48,6 +48,14 @@ public class Stats implements Serializable {
         this.connectFailure = connectFailure;
     }
 
+    public int[] getCurrentConn() {
+        return currentConn;
+    }
+
+    public void setCurrentConn(int[] currentConn) {
+        this.currentConn = currentConn;
+    }
+
     public int[] getDataTimedOut() {
         return dataTimedOut;
     }
@@ -71,10 +79,6 @@ public class Stats implements Serializable {
     public void setMaxConn(int[] maxConn) {
         this.maxConn = maxConn;
     }
-
-    public int[] getCurrentConn() { return currentConn; }
-
-    public void setCurrentConn(int[] currentConn) { this.currentConn = currentConn; }
 
     public int[] getConnectTimeOutSsl() {
         return connectTimeOutSsl;
@@ -100,6 +104,14 @@ public class Stats implements Serializable {
         this.connectFailureSsl = connectFailureSsl;
     }
 
+    public int[] getCurrentConnSsl() {
+        return currentConnSsl;
+    }
+
+    public void setCurrentConnSsl(int[] currentConnSsl) {
+        this.currentConnSsl = currentConnSsl;
+    }
+
     public int[] getDataTimedOutSsl() {
         return dataTimedOutSsl;
     }
@@ -121,10 +133,6 @@ public class Stats implements Serializable {
     }
 
     public void setMaxConnSsl(int[] maxConnSsl) {
-        this.maxConnSsl = maxConn;
+        this.maxConnSsl = maxConnSsl;
     }
-
-    public int[] getCurrentConnSsl() { return currentConnSsl; }
-
-    public void setCurrentConnSsl(int[] currentConnSsl) { this.currentConnSsl = currentConnSsl; }
 }

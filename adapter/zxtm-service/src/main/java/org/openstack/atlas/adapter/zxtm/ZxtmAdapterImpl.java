@@ -6,10 +6,7 @@ import org.apache.axis.types.UnsignedInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.exceptions.VirtualServerListeningOnAllAddressesException;
-import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
+import org.openstack.atlas.adapter.exceptions.*;
 import org.openstack.atlas.adapter.helpers.*;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
@@ -517,6 +514,35 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.warn(String.format("Nodes %s not updated as it no longer exist...", poolNames[0]));
         }
         LOG.debug(String.format("setNodePriority for pool %s priority=%s Finished....", poolNames[0], znpc));
+    }
+
+    @Override
+    public void updateCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, CertificateMapping certMappingToUpdate) throws RemoteException, InsufficientRequestException, RollBackException {
+//        final String virtualServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+//        final String virtualServerNameNonSecure = ZxtmNameBuilder.genVSName(lbId, accountId);
+//
+//        String userKey = certMappingToUpdate.getPrivateKey();
+//        String userCrt = certMappingToUpdate.getCertificate();
+//        String imdCrt = certMappingToUpdate.getIntermediateCertificate();
+//        ZeusCrtFile zeusCrtFile = zeusUtil.buildZeusCrtFileLbassValidation(userKey, userCrt, imdCrt);
+//        if (zeusCrtFile.hasFatalErrors()) {
+//            String errors = StringUtils.joinString(zeusCrtFile.getFatalErrorList(), ",");
+//            String msg = String.format("ZeusCrtFile generation failure: %s", errors);
+//            throw new InsufficientRequestException(msg);
+//        }
+//
+//        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+//        VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
+//        CatalogSSLCertificatesBindingStub certificateCatalogService = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
+//
+//
+
+        // TODO: Implement
+    }
+
+    @Override
+    public void deleteCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Integer certificateMappingId) throws RemoteException, InsufficientRequestException, RollBackException {
+        // TODO: Implement
     }
 
     @Override
@@ -1288,7 +1314,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String imdCrt = zeusSslTermination.getSslTermination().getIntermediateCertificate();
         ZeusCrtFile zeusCrtFile = zeusUtil.buildZeusCrtFileLbassValidation(userKey, userCrt, imdCrt);
         if (zeusCrtFile.hasFatalErrors()) {
-            String fmt = "ZuesertFile generation Failure: %s";
+            String fmt = "ZeusCrtFile generation Failure: %s";
             String errors = StringUtils.joinString(zeusCrtFile.getFatalErrorList(), ",");
             String msg = String.format(fmt, errors);
             throw new InsufficientRequestException(msg);
@@ -1307,8 +1333,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
         }
 
-
-        if (!serviceStubs.getVirtualServerBinding().getPort(new String[]{virtualServerName})[0].equals(zeusSslTermination.getSslTermination().getSecurePort())) {
+        if (!virtualServerService.getPort(new String[]{virtualServerName})[0].equals(zeusSslTermination.getSslTermination().getSecurePort())) {
             LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in zeus...", virtualServerName));
             updatePort(conf, virtualServerName, zeusSslTermination.getSslTermination().getSecurePort());
             LOG.debug(String.format("Successfully updated secure servers port for ssl termination load balancer %s in zeus...", virtualServerName));
@@ -3179,11 +3204,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             zeusMap[i].setSubnetmappings(zsubnetMappings);
         }
         return zeusMap;
-    }
-
-    private String getErrorFileName(Integer loadbalancerId, Integer accountId) {
-        String msg = String.format("%d_%d_error.html", accountId, loadbalancerId);
-        return msg;
     }
 
     private String getErrorFileName(String vsName) {

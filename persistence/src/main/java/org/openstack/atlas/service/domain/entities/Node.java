@@ -17,7 +17,7 @@ public class Node extends Entity implements Serializable {
     @OrderBy("id")
     private List<NodeMeta> nodeMetadata;
 
-    @Column(name = "ip_address", length = 39)
+    @Column(name = "ip_address", length = 128)
     private String ipAddress;
 
     @Column(name = "port")

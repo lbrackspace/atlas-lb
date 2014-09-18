@@ -8,6 +8,7 @@
         <class>org.openstack.atlas.service.domain.entities.AccessList</class>
         <class>org.openstack.atlas.service.domain.entities.AccessListType</class>
         <class>org.openstack.atlas.service.domain.entities.Cluster</class>
+        <class>org.openstack.atlas.service.domain.entities.CertificateMapping</class>
         <class>org.openstack.atlas.service.domain.entities.GroupRateLimit</class>
         <class>org.openstack.atlas.service.domain.entities.AccountGroup</class>
         <class>org.openstack.atlas.service.domain.entities.ConnectionLimit</class>
@@ -74,7 +75,7 @@
             <property name="hibernate.connection.autocommit" value="false"/>
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.connection.release_mode" value="auto"/>
-            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/> <!-- DO NOT UPDATE! -->
         </properties>
     </persistence-unit>
 </persistence>

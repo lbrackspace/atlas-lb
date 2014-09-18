@@ -110,7 +110,8 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @Path("certificatemappings")
     public CertificateMappingsResource retrieveCertificateMappingsResource() {
         certificateMappingsResource.setAccountId(accountId);
-        certificateMappingsResource.setLoadBalancerId(id);
+        certificateMappingsResource.setLoadBalancerId(loadBalancerId);
+        certificateMappingsResource.setRequestHeaders(requestHeaders);
         return certificateMappingsResource;
     }
 

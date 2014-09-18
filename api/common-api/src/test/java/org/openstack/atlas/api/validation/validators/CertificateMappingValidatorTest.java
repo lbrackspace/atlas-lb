@@ -10,6 +10,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
+import static org.openstack.atlas.api.validation.validators.CertificateMappingValidator.*;
 
 @RunWith(Enclosed.class)
 public class CertificateMappingValidatorTest {
@@ -162,6 +163,14 @@ public class CertificateMappingValidatorTest {
         }
 
         @Test
+        public void shouldAcceptWhenHostNameAtMaxLength() {
+            String longName = buildHostNameWithLength(MAX_HOST_NAME_LENGTH);
+
+            certificateMapping.setHostName(longName);
+            assertTrue(validator.validate(certificateMapping, POST).passedValidation());
+        }
+
+        @Test
         public void shouldRejectWhenMissingPrivateKey() {
             certificateMapping.setPrivateKey(null);
             assertFalse(validator.validate(certificateMapping, POST).passedValidation());
@@ -191,6 +200,14 @@ public class CertificateMappingValidatorTest {
         @Test
         public void shouldRejectWhenIdSupplied() {
             certificateMapping.setId(1);
+            assertFalse(validator.validate(certificateMapping, POST).passedValidation());
+        }
+
+        @Test
+        public void shouldRejectWhenHostNameTooLong() {
+            String longName = buildHostNameWithLength(MAX_HOST_NAME_LENGTH) + "a";
+
+            certificateMapping.setHostName(longName);
             assertFalse(validator.validate(certificateMapping, POST).passedValidation());
         }
     }
@@ -240,6 +257,14 @@ public class CertificateMappingValidatorTest {
         }
 
         @Test
+        public void shouldAcceptWhenHostNameAtMaxLength() {
+            String longName = buildHostNameWithLength(MAX_HOST_NAME_LENGTH);
+
+            certificateMapping.setHostName(longName);
+            assertTrue(validator.validate(certificateMapping, PUT).passedValidation());
+        }
+
+        @Test
         public void shouldRejectWhenMissingAllAttributes() {
             certificateMapping.setPrivateKey(null);
             certificateMapping.setCertificate(null);
@@ -253,5 +278,23 @@ public class CertificateMappingValidatorTest {
             certificateMapping.setId(1);
             assertFalse(validator.validate(certificateMapping, PUT).passedValidation());
         }
+
+        @Test
+        public void shouldRejectWhenHostNameTooLong() {
+            String longName = buildHostNameWithLength(MAX_HOST_NAME_LENGTH) + "a";
+
+            certificateMapping.setHostName(longName);
+            assertFalse(validator.validate(certificateMapping, PUT).passedValidation());
+        }
+    }
+
+    private static String buildHostNameWithLength(int length) {
+        String longName = "";
+
+        for (int i = 0; i < length; i++) {
+            longName += "a";
+        }
+
+        return longName;
     }
 }

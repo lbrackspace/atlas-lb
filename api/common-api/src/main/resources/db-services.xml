@@ -32,6 +32,7 @@
     <bean id="alertRepository" class="org.openstack.atlas.service.domain.events.repository.AlertRepository" depends-on="entityManagerFactory1"/>
     <bean id="blacklistRepository" class="org.openstack.atlas.service.domain.repository.BlacklistRepository" depends-on="entityManagerFactory1"/>
     <bean id="clusterRepository" class="org.openstack.atlas.service.domain.repository.ClusterRepository" depends-on="entityManagerFactory1"/>
+    <bean id="certificateMappingRepository" class="org.openstack.atlas.service.domain.repository.CertificateMappingRepository" depends-on="entityManagerFactory1"/>
     <bean id="loadBalancerEventRepository" class="org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository" depends-on="entityManagerFactory1"/>
     <bean id="groupRepository" class="org.openstack.atlas.service.domain.repository.GroupRepository" depends-on="entityManagerFactory1"/>
     <bean id="hostRepository" class="org.openstack.atlas.service.domain.repository.HostRepository" depends-on="entityManagerFactory1"/>

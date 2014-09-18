@@ -766,6 +766,28 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     }
 
+    @Override
+    public void updateCertificateMapping(Integer lbId, Integer accountId, CertificateMapping certMappingToUpdate) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        try {
+            reverseProxyLoadBalancerAdapter.updateCertificateMapping(config, lbId, accountId, certMappingToUpdate);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void removeCertificateMapping(Integer lbId, Integer accountId, Integer certificateMappingId) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
+        try {
+            reverseProxyLoadBalancerAdapter.deleteCertificateMapping(config, lbId, accountId, certificateMappingId);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+    }
+
     public void setAtlasCache(AtlasCache atlasCache) {
         this.atlasCache = atlasCache;
     }

@@ -76,6 +76,8 @@ public class BaseService {
     protected LoadBalancerMergedHostUsageRepository loadBalancerMergedHostUsageRepository;
     @Autowired
     protected HostUsageRefactorRepository hostUsageRefactorRepository;
+    @Autowired
+    protected CertificateMappingRepository certificateMappingRepository;
 
     static {
         org.openstack.atlas.util.ca.primitives.RsaConst.init();
@@ -168,6 +170,11 @@ public class BaseService {
     public void setHostUsageRefactorRepository(HostUsageRefactorRepository hostUsageRefactorRepository) {
         this.hostUsageRefactorRepository = hostUsageRefactorRepository;
     }
+
+    public void setCertificateMappingRepository(CertificateMappingRepository certificateMappingRepository) {
+        this.certificateMappingRepository = certificateMappingRepository;
+    }
+
     public void isLbActive(LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, ImmutableEntityException {
         if (dbLoadBalancer.getStatus().equals(DELETED)) {
             throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);

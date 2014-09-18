@@ -31,10 +31,12 @@ import java.util.List;
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class CommonDependencyProvider {
 
+    private RequestStateContainer requestStateContainer;
+
     protected final static String NOBODY = "Undefined User";
     protected final static String USERHEADERNAME = "X-PP-User";
     protected final static String VFAIL = "Validation Failure";
-    private RequestStateContainer requestStateContainer;
+
     protected RestApiConfiguration restApiConfiguration;
     protected AsyncService asyncService;
     protected LoadBalancerRepository lbRepository;
@@ -56,19 +58,12 @@ public class CommonDependencyProvider {
     protected UsageService usageService;
     protected ProtocolsService protocolsService;
     protected SslTerminationService sslTerminationService;
+    protected CertificateMappingService certificateMappingService;
     protected AllowedDomainsService allowedDomainsService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected LoadBalancerEventRepository loadBalancerEventRepository;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
-
-    public ReverseProxyLoadBalancerService getReverseProxyLoadBalancerService() {
-        return reverseProxyLoadBalancerService;
-    }
-
-    public ReverseProxyLoadBalancerStmService getReverseProxyLoadBalancerStmService() {
-        return reverseProxyLoadBalancerStmService;
-    }
 
     public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
         this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
@@ -126,10 +121,6 @@ public class CommonDependencyProvider {
         this.nodeMetadataService = nodeMetadataService;
     }
 
-    public LoadBalancerEventRepository getLoadBalancerEventRepository() {
-        return loadBalancerEventRepository;
-    }
-
     public void setLoadBalancerEventRepository(LoadBalancerEventRepository loadBalancerEventRepository) {
         this.loadBalancerEventRepository = loadBalancerEventRepository;
     }
@@ -166,6 +157,10 @@ public class CommonDependencyProvider {
         this.sslTerminationService = sslTerminationService;
     }
 
+    public void setCertificateMappingService(CertificateMappingService certificateMappingService) {
+        this.certificateMappingService = certificateMappingService;
+    }
+
     public void setAllowedDomainsService(AllowedDomainsService allowedDomainsService) {
         this.allowedDomainsService = allowedDomainsService;
     }
@@ -183,19 +178,6 @@ public class CommonDependencyProvider {
             return NOBODY;
         }
         return userName;
-    }
-
-    public static String getStackTraceMessage(Exception e) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Exception: %s:%s\n", e.getMessage(), e.getClass().getName()));
-        for (StackTraceElement se : e.getStackTrace()) {
-            sb.append(String.format("%s\n", se.toString()));
-        }
-        return sb.toString();
-    }
-
-    public String getExceptionMessage(Exception e) {
-        return String.format("%s\n%s\n", e.toString(), e.getMessage());
     }
 
     public Response getValidationFaultResponse(ValidatorResult result) {
@@ -230,10 +212,6 @@ public class CommonDependencyProvider {
 
     public void setRestApiConfiguration(RestApiConfiguration restApiConfiguration) {
         this.restApiConfiguration = restApiConfiguration;
-    }
-
-    public RestApiConfiguration getRestApiConfiguration() {
-        return restApiConfiguration;
     }
 
     public List<String> verifyNodeDomains(Collection<Node> nodes) throws BadRequestException {

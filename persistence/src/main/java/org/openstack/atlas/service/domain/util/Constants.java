@@ -12,6 +12,7 @@ public final class Constants {
     public static final String MetaNotFound = "Meta data item not found";
     public static final String ErrorPageNotFound = "Error Page not found";
     public static final String SslTerminationNotFound = "SSL termination not found for requested load balancer.";
+    public static final String CertificateMappingNotFound = "Certificate mapping not found for requested load balancer.";
     public static final String NoMonitorLogs = "Monitor logs not found for load balancer.";
     public static final String JobNotFound = "Job not found";
     public static final String VirtualIpNotFound = "Virtual ip not found";

@@ -13,6 +13,7 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 public class CertificateMappingValidator implements ResourceValidator<CertificateMapping> {
 
     private final Validator<CertificateMapping> validator;
+    protected static final int MAX_HOST_NAME_LENGTH = 128;
 
     public CertificateMappingValidator() {
         validator = build(new ValidatorBuilder<CertificateMapping>(CertificateMapping.class) {
@@ -23,6 +24,7 @@ public class CertificateMappingValidator implements ResourceValidator<Certificat
                 result(validationTarget().getCertificate()).if_().exist().then().must().adhereTo(new CertificateVerifier()).withMessage("Certificate is invalid. Please provide a valid certificate.");
                 result(validationTarget().getIntermediateCertificate()).if_().exist().then().must().adhereTo(new IntermediateCertificateVerifier()).withMessage("Intermediate certificate is invalid. Please provide a valid intermediate certificate.");
                 result(validationTarget().getHostName()).if_().exist().then().must().adhereTo(new HostNameVerifier()).withMessage("Host name is invalid. Please provide a valid host name.");
+                result(validationTarget().getHostName()).if_().exist().then().must().adhereTo(new MustHaveLengthVerifier(MAX_HOST_NAME_LENGTH)).withMessage(String.format("Host name is too long. Maximum length for the host name is %d characters.", MAX_HOST_NAME_LENGTH));
 
                 // POST EXPECTATIONS
                 result(validationTarget().getPrivateKey()).must().exist().forContext(POST).withMessage("Must provide a private key for the certificate mapping.");

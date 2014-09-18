@@ -8,7 +8,7 @@ public class NodeFactory implements BeanFactory {
     @Override
     public Object createBean(Object source, Class<?> sourceClass, String targetBeanId) {
 
-        if(sourceClass.equals(org.openstack.atlas.service.domain.entities.Node.class)) {
+        if (sourceClass.equals(org.openstack.atlas.service.domain.entities.Node.class)) {
             Node node = new Node();
             node.setId(null);
             node.setAddress(null);
@@ -21,9 +21,8 @@ public class NodeFactory implements BeanFactory {
             return node;
         }
 
-        if(sourceClass.equals(Node.class)) {
-            org.openstack.atlas.service.domain.entities.Node node = new org.openstack.atlas.service.domain.entities.Node();
-            return node;
+        if (sourceClass.equals(Node.class)) {
+            return new org.openstack.atlas.service.domain.entities.Node();
         }
 
         return null;

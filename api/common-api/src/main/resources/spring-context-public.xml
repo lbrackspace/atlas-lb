@@ -38,15 +38,6 @@
     <!-- END NAMESPACE PREFIX CONFIGURATION-->
 
     <!--FILTERS-->
-    <!--REPOSE HANDLES AUTH AND RATELIMITS..-->
-    <!--<bean id="authTokenValidator" class="org.openstack.atlas.api.auth.AuthTokenValidator"-->
-    <!--scope="singleton">-->
-    <!--<constructor-arg index="0" ref="configuration"/>-->
-    <!--</bean>-->
-    <!--<bean id="rateLimitingFilter"-->
-    <!--class="com.rackspace.cloud.jee.filters.limits.rate.RateLimitingFilter"-->
-    <!--scope="request"/>-->
-
     <bean id="requestSanitationFilter"
           class="org.openstack.atlas.api.filters.RequestSanitationFilter"
           scope="request"/>
@@ -69,10 +60,6 @@
           class="org.openstack.atlas.api.filters.GroupsSanitationFilter"
           scope="request">
     </bean>
-    <!--<bean id="rolesFilter"-->
-          <!--class="org.openstack.atlas.api.filters.RolesFilter"-->
-          <!--scope="request">-->
-    <!--</bean>-->
     <bean id="validationFilter"
           class="org.openstack.atlas.api.filters.ValidationFilter"
           scope="request">
@@ -127,6 +114,7 @@
         <property name="reverseProxyLoadBalancerStmService" ref="reverseProxyLoadBalancerStmService"/>
         <property name="restApiConfiguration" ref="configuration"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
+        <property name="certificateMappingService" ref="certificateMappingService"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
 
@@ -139,12 +127,10 @@
         </property>
         <property name="eventListeners">
             <list>
-                <ref bean="dozerEventListener"/>
+                <bean class="org.openstack.atlas.api.mapper.dozer.converter.EventListener"/>
             </list>
         </property>
     </bean>
-    <bean id="dozerEventListener"
-          class="org.openstack.atlas.api.mapper.dozer.converter.EventListener"/>
 
     <!--RESOURCE BEANS-->
     <bean id="loadBalancingPublicImpl"
