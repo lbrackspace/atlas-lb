@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba51214e_a4440775",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/async/DeleteCertificateMappingListener.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2014-09-18T23:14:50Z",
+      "side": 1,
+      "message": "Specifically what things are you expecting? Blind catches are not generally recommended... I see that this is done in most of our Listeners, but if you\u0027re cleaning up the rest of the codebase, why not Zoidberg?",
+      "revId": "a60fe5a88b442baa5476b7a90674604adfae0cb8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba51214e_8449038e",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/async/UpdateCertificateMappingListener.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2014-09-18T23:14:50Z",
+      "side": 1,
+      "message": "Same comment as the previous file.",
+      "revId": "a60fe5a88b442baa5476b7a90674604adfae0cb8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba51214e_e45d5f4a",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/mapper/dozer/factory/CertificateMappingFactory.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2014-09-18T23:14:50Z",
+      "side": 1,
+      "message": "Why are all of these necessary? In what case could a newly created CertificateMapping object NOT have these already null? Again, I see this is done in other places, but I still am not sure what\u0027s going on. Maybe this is a Bean specific thing?",
+      "revId": "a60fe5a88b442baa5476b7a90674604adfae0cb8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
