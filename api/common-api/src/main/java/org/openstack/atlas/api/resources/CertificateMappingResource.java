@@ -79,11 +79,14 @@ public class CertificateMappingResource extends CommonDependencyProvider {
         try {
             certificateMappingService.prepareForDelete(id, loadBalancerId);
 
+            org.openstack.atlas.service.domain.entities.CertificateMapping certMapping = new org.openstack.atlas.service.domain.entities.CertificateMapping();
+            certMapping.setId(id);
+
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
             dataContainer.setLoadBalancerId(loadBalancerId);
             dataContainer.setUserName(getUserName(requestHeaders));
-            dataContainer.setCertificateMappingId(id);
+            dataContainer.setCertificateMapping(certMapping);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_CERTIFICATE_MAPPING, dataContainer);
             return Response.status(Response.Status.ACCEPTED).build();

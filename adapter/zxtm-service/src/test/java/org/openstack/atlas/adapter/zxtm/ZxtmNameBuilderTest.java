@@ -2,6 +2,7 @@ package org.openstack.atlas.adapter.zxtm;
 
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.service.domain.entities.CertificateMapping;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.junit.Assert;
@@ -11,15 +12,18 @@ import org.junit.Test;
 public class ZxtmNameBuilderTest {
     private LoadBalancer loadBalancer;
     private VirtualIp virtualIp;
+    private CertificateMapping certMapping;
 
     @Before
     public void setUpIds() {
         loadBalancer = new LoadBalancer();
         virtualIp = new VirtualIp();
+        certMapping = new CertificateMapping();
 
         loadBalancer.setId(1234);
         loadBalancer.setAccountId(777);
         virtualIp.setId(1);
+        certMapping.setId(100);
     }
 
     @Test
@@ -75,5 +79,17 @@ public class ZxtmNameBuilderTest {
     @Test(expected = InsufficientRequestException.class)
     public void generateNameWithAccountIdAndLoadBalancerIdShouldThrowExceptionWhenMissingActId() throws InsufficientRequestException {
         ZxtmNameBuilder.genVSName(1, null);
+    }
+
+    @Test
+    public void generateCertificateNameWithAllParameters() throws InsufficientRequestException {
+        String expectedName = loadBalancer.getAccountId() + "_" + loadBalancer.getId() + "_" + certMapping.getId();
+        String generatedName = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(), loadBalancer.getAccountId(), certMapping.getId());
+        Assert.assertEquals(expectedName, generatedName);
+    }
+
+    @Test(expected = InsufficientRequestException.class)
+    public void generateCertificateNameWithSomeParameters() throws InsufficientRequestException {
+        ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(), loadBalancer.getAccountId(), null);
     }
 }

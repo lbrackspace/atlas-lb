@@ -2,6 +2,7 @@ package org.openstack.atlas.api.async;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.CertificateMapping;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -24,6 +25,7 @@ public class DeleteCertificateMappingListener extends BaseListener {
         LOG.debug(message);
 
         MessageDataContainer dataContainer = getDataContainerFromMessage(message);
+        CertificateMapping queueCertMapping = dataContainer.getCertificateMapping();
         LoadBalancer dbLoadBalancer;
 
         try {
@@ -37,12 +39,13 @@ public class DeleteCertificateMappingListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Removing certificate mapping '%d' from load balancer '%d' in ZXTM...", dataContainer.getCertificateMappingId(), dataContainer.getLoadBalancerId()));
-            reverseProxyLoadBalancerService.removeCertificateMapping(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dataContainer.getCertificateMappingId());
-            LOG.debug(String.format("Successfully removed certificate mapping '%d' from load balancer '%d' in Zeus.", dataContainer.getCertificateMappingId(), dataContainer.getLoadBalancerId()));
+            LOG.debug(String.format("Removing certificate mapping '%d' from load balancer '%d' in ZXTM...", queueCertMapping.getId(), dataContainer.getLoadBalancerId()));
+            CertificateMapping dbCertMapping = certificateMappingService.getByIdAndLoadBalancerId(queueCertMapping.getId(), dbLoadBalancer.getId());
+            reverseProxyLoadBalancerService.removeCertificateMapping(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbCertMapping);
+            LOG.debug(String.format("Successfully removed certificate mapping '%d' from load balancer '%d' in Zeus.", queueCertMapping.getId(), dataContainer.getLoadBalancerId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error removing certificate mapping '%d' in Zeus for loadbalancer '%d'.", dataContainer.getCertificateMappingId(), dataContainer.getLoadBalancerId());
+            String alertDescription = String.format("Error removing certificate mapping '%d' in Zeus for loadbalancer '%d'.", queueCertMapping.getId(), dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dataContainer);
@@ -50,13 +53,13 @@ public class DeleteCertificateMappingListener extends BaseListener {
         }
 
         // Remove the certificate mapping from the database
-        certificateMappingService.deleteByIdAndLoadBalancerId(dataContainer.getCertificateMappingId(), dataContainer.getLoadBalancerId());
+        certificateMappingService.deleteByIdAndLoadBalancerId(queueCertMapping.getId(), dataContainer.getLoadBalancerId());
         // Update load balancer status in database
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
         // Save a load balancer status record
         loadBalancerStatusHistoryService.save(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), LoadBalancerStatus.ACTIVE);
 
-        LOG.info(String.format("Delete certificate mapping operation complete for load balancer '%d' with certificate mapping '%d'.", dataContainer.getLoadBalancerId(), dataContainer.getCertificateMappingId()));
+        LOG.info(String.format("Delete certificate mapping operation complete for load balancer '%d' with certificate mapping '%d'.", dataContainer.getLoadBalancerId(), queueCertMapping.getId()));
     }
 
     private void sendErrorToEventResource(MessageDataContainer dataContainer) {

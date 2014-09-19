@@ -4,11 +4,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.CertificateMapping;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.pojos.SslDetails;
 import org.openstack.atlas.service.domain.services.CertificateMappingService;
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,16 +23,22 @@ import java.util.Set;
 @Service
 public class CertificateMappingServiceImpl extends BaseService implements CertificateMappingService {
     private final Log LOG = LogFactory.getLog(CertificateMappingServiceImpl.class);
+    private static final ZeusUtils zeusUtils;
+
+    static {
+        zeusUtils = new ZeusUtils();
+    }
 
     // TODO: Perhaps add AOP for ensureSslTerminationConfigIsAvailable since it is called "before" every method.
 
     @Override
-    public CertificateMapping create(LoadBalancer lb) throws UnprocessableEntityException, EntityNotFoundException {
+    public CertificateMapping create(LoadBalancer lb) throws UnprocessableEntityException, EntityNotFoundException, BadRequestException {
         ensureSslTerminationConfigIsAvailable(lb.getId());
         List<CertificateMapping> dbCertificateMappings = certificateMappingRepository.getAllForLoadBalancerId(lb.getId());
         CertificateMapping newMapping = lb.getCertificateMappings().iterator().next();
 
         detectDuplicateHostName(dbCertificateMappings, newMapping);
+        validateCertificateMapping(newMapping);
 
         return certificateMappingRepository.save(newMapping, lb.getId());
     }
@@ -46,7 +56,7 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
     }
 
     @Override
-    public void update(LoadBalancer messengerLb) throws EntityNotFoundException, UnprocessableEntityException {
+    public void update(LoadBalancer messengerLb) throws EntityNotFoundException, UnprocessableEntityException, BadRequestException {
         ensureSslTerminationConfigIsAvailable(messengerLb.getId());
         LoadBalancer dbLb = loadBalancerRepository.getByIdAndAccountId(messengerLb.getId(), messengerLb.getAccountId());
         Set<CertificateMapping> dbCertMappings = dbLb.getCertificateMappings();
@@ -59,22 +69,24 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
 
         detectDuplicateHostName(dbCertMappings, certificateMappingToUpdate);
 
-        LOG.debug("Certificate mappings on dbLoadbalancer: " + dbCertMappings.size());
-        for (CertificateMapping certificateMapping : dbCertMappings) {
-            if (certificateMapping.getId().equals(certificateMappingToUpdate.getId())) {
-                LOG.info("Certificate mapping to be update found: " + certificateMapping.getId());
+        LOG.debug("Certificate mappings on dbLoadBalancer: " + dbCertMappings.size());
+        for (CertificateMapping dbCertMapping : dbCertMappings) {
+            if (dbCertMapping.getId().equals(certificateMappingToUpdate.getId())) {
+                LOG.info("Certificate mapping to be update found: " + dbCertMapping.getId());
                 if (certificateMappingToUpdate.getPrivateKey() != null) {
-                    certificateMapping.setPrivateKey(certificateMappingToUpdate.getPrivateKey());
+                    dbCertMapping.setPrivateKey(certificateMappingToUpdate.getPrivateKey());
                 }
                 if (certificateMappingToUpdate.getCertificate() != null) {
-                    certificateMapping.setCertificate(certificateMappingToUpdate.getCertificate());
+                    dbCertMapping.setCertificate(certificateMappingToUpdate.getCertificate());
                 }
                 if (certificateMappingToUpdate.getIntermediateCertificate() != null) {
-                    certificateMapping.setIntermediateCertificate(certificateMappingToUpdate.getIntermediateCertificate());
+                    dbCertMapping.setIntermediateCertificate(certificateMappingToUpdate.getIntermediateCertificate());
                 }
                 if (certificateMappingToUpdate.getHostName() != null) {
-                    certificateMapping.setHostName(certificateMappingToUpdate.getHostName());
+                    dbCertMapping.setHostName(certificateMappingToUpdate.getHostName());
                 }
+
+                validateCertificateMapping(dbCertMapping);
                 break;
             }
         }
@@ -109,6 +121,14 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
             String message = String.format("Duplicate host name detected. Certificate mapping with id '%d' has already configured the host name provided.", dbMappingWithHostName.getId());
             throw new UnprocessableEntityException(message);
         }
+    }
+
+    private void validateCertificateMapping(CertificateMapping mapping) throws BadRequestException {
+        SslDetails sslDetails = new SslDetails(mapping.getPrivateKey(), mapping.getCertificate(), mapping.getIntermediateCertificate());
+        sslDetails = SslDetails.sanitize(sslDetails);
+
+        ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(sslDetails.getPrivateKey(), sslDetails.getCertificate(), sslDetails.getIntermediateCertificate());
+        SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
     }
 
     private CertificateMapping getMappingWithDuplicateHostName(CertificateMapping newMapping, Collection<CertificateMapping> dbCertificateMappings) {

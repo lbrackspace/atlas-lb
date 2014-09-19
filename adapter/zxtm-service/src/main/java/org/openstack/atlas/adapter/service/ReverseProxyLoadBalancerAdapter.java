@@ -217,6 +217,6 @@ public interface ReverseProxyLoadBalancerAdapter {
     void updateCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, CertificateMapping certMappingToUpdate)
             throws RemoteException, InsufficientRequestException, RollBackException;
 
-    void deleteCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Integer certificateMappingId)
+    void deleteCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, CertificateMapping certMappingToDelete)
             throws RemoteException, InsufficientRequestException, RollBackException;
 }

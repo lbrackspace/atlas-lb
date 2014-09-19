@@ -778,10 +778,10 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
-    public void removeCertificateMapping(Integer lbId, Integer accountId, Integer certificateMappingId) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException {
+    public void removeCertificateMapping(Integer lbId, Integer accountId, CertificateMapping certMappingToDelete) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            reverseProxyLoadBalancerAdapter.deleteCertificateMapping(config, lbId, accountId, certificateMappingId);
+            reverseProxyLoadBalancerAdapter.deleteCertificateMapping(config, lbId, accountId, certMappingToDelete);
         } catch (AxisFault af) {
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
