@@ -18,4 +18,6 @@ CREATE TABLE `certificate_mapping` (
 insert into `event_type` values('UPDATE_CERTIFICATE_MAPPING', 'Update Certificate Mapping');
 insert into `event_type` values('DELETE_CERTIFICATE_MAPPING', 'Delete Certificate Mapping');
 
+insert into `limit_type`(`name`, `default_value`, `description`) values('CERTIFICATE_MAPPING_LIMIT', 20, 'Max number of certificate mappings for a load balancer');
+
 update `meta` set `meta_value` = '???' where `meta_key`='version';

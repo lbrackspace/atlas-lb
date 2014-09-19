@@ -2,13 +2,20 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.CertificateMapping;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.exceptions.*;
+import org.openstack.atlas.service.domain.pojos.SslDetails;
 import org.openstack.atlas.service.domain.services.CertificateMappingService;
+import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
+import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,18 +26,38 @@ import java.util.Set;
 @Service
 public class CertificateMappingServiceImpl extends BaseService implements CertificateMappingService {
     private final Log LOG = LogFactory.getLog(CertificateMappingServiceImpl.class);
+    private static final ZeusUtils zeusUtils;
 
-    // TODO: Perhaps add AOP for ensureSslTerminationConfigIsAvailable since it is called "before" every method.
+    @Autowired
+    private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+    @Autowired
+    private AccountLimitServiceImpl accountLimitService;
+
+    static {
+        zeusUtils = new ZeusUtils();
+    }
 
     @Override
-    public CertificateMapping create(LoadBalancer lb) throws UnprocessableEntityException, EntityNotFoundException {
-        ensureSslTerminationConfigIsAvailable(lb.getId());
-        List<CertificateMapping> dbCertificateMappings = certificateMappingRepository.getAllForLoadBalancerId(lb.getId());
-        CertificateMapping newMapping = lb.getCertificateMappings().iterator().next();
+    @Transactional
+    public CertificateMapping create(LoadBalancer messengerLb) throws UnprocessableEntityException, EntityNotFoundException, BadRequestException, ImmutableEntityException, LimitReachedException {
+        ensureSslTerminationConfigIsAvailable(messengerLb.getId());
+        List<CertificateMapping> dbCertificateMappings = certificateMappingRepository.getAllForLoadBalancerId(messengerLb.getId());
+        CertificateMapping newMapping = messengerLb.getCertificateMappings().iterator().next();
+
+        int certMappingLimit = accountLimitService.getLimit(messengerLb.getAccountId(), AccountLimitType.CERTIFICATE_MAPPING_LIMIT);
+        if (dbCertificateMappings.size() >= certMappingLimit) {
+            throw new LimitReachedException(String.format("Certificate mapping limit reached. Limit is set to '%d'. Please contact support if you would like to increase your limit.", certMappingLimit));
+        }
 
         detectDuplicateHostName(dbCertificateMappings, newMapping);
+        validateCertificateMapping(newMapping);
 
-        return certificateMappingRepository.save(newMapping, lb.getId());
+        if (newMapping.getIntermediateCertificate() != null && newMapping.getIntermediateCertificate().trim().isEmpty()) {
+            newMapping.setIntermediateCertificate(null);
+        }
+
+        setLbToPendingUpdate(messengerLb);
+        return certificateMappingRepository.save(newMapping, messengerLb.getId());
     }
 
     @Override
@@ -46,7 +73,8 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
     }
 
     @Override
-    public void update(LoadBalancer messengerLb) throws EntityNotFoundException, UnprocessableEntityException {
+    @Transactional
+    public void update(LoadBalancer messengerLb) throws EntityNotFoundException, UnprocessableEntityException, BadRequestException, ImmutableEntityException {
         ensureSslTerminationConfigIsAvailable(messengerLb.getId());
         LoadBalancer dbLb = loadBalancerRepository.getByIdAndAccountId(messengerLb.getId(), messengerLb.getAccountId());
         Set<CertificateMapping> dbCertMappings = dbLb.getCertificateMappings();
@@ -59,40 +87,59 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
 
         detectDuplicateHostName(dbCertMappings, certificateMappingToUpdate);
 
-        LOG.debug("Certificate mappings on dbLoadbalancer: " + dbCertMappings.size());
-        for (CertificateMapping certificateMapping : dbCertMappings) {
-            if (certificateMapping.getId().equals(certificateMappingToUpdate.getId())) {
-                LOG.info("Certificate mapping to be update found: " + certificateMapping.getId());
+        LOG.debug("Certificate mappings on dbLoadBalancer: " + dbCertMappings.size());
+        for (CertificateMapping dbCertMapping : dbCertMappings) {
+            if (dbCertMapping.getId().equals(certificateMappingToUpdate.getId())) {
+                LOG.info("Certificate mapping to be update found: " + dbCertMapping.getId());
                 if (certificateMappingToUpdate.getPrivateKey() != null) {
-                    certificateMapping.setPrivateKey(certificateMappingToUpdate.getPrivateKey());
+                    dbCertMapping.setPrivateKey(certificateMappingToUpdate.getPrivateKey());
                 }
                 if (certificateMappingToUpdate.getCertificate() != null) {
-                    certificateMapping.setCertificate(certificateMappingToUpdate.getCertificate());
+                    dbCertMapping.setCertificate(certificateMappingToUpdate.getCertificate());
                 }
                 if (certificateMappingToUpdate.getIntermediateCertificate() != null) {
-                    certificateMapping.setIntermediateCertificate(certificateMappingToUpdate.getIntermediateCertificate());
+                    if (certificateMappingToUpdate.getIntermediateCertificate().trim().isEmpty()) {
+                        dbCertMapping.setIntermediateCertificate(null);
+                    } else {
+                        dbCertMapping.setIntermediateCertificate(certificateMappingToUpdate.getIntermediateCertificate());
+                    }
                 }
                 if (certificateMappingToUpdate.getHostName() != null) {
-                    certificateMapping.setHostName(certificateMappingToUpdate.getHostName());
+                    dbCertMapping.setHostName(certificateMappingToUpdate.getHostName());
                 }
+
+                validateCertificateMapping(dbCertMapping);
                 break;
             }
         }
 
+        setLbToPendingUpdate(messengerLb);
         certificateMappingRepository.update(dbLb);
     }
 
     @Override
-    public void prepareForDelete(Integer id, Integer loadBalancerId) {
-        // TODO: Implement
+    @Transactional
+    public void prepareForDelete(LoadBalancer messengerLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+        ensureSslTerminationConfigIsAvailable(messengerLb.getId());
+        setLbToPendingUpdate(messengerLb);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void deleteByIdAndLoadBalancerId(Integer id, Integer lbId) throws EntityNotFoundException {
         ensureSslTerminationConfigIsAvailable(lbId);
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getById(lbId);
         certificateMappingRepository.delete(dbLoadBalancer, id);
+    }
+
+    private void setLbToPendingUpdate(LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
+        if (!loadBalancerRepository.testAndSetStatus(lb.getAccountId(), lb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)) {
+            String message = StringHelper.immutableLoadBalancer(lb);
+            LOG.warn(message);
+            throw new ImmutableEntityException(message);
+        } else {
+            loadBalancerStatusHistoryService.save(lb.getAccountId(), lb.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        }
     }
 
     private void ensureSslTerminationConfigIsAvailable(Integer lbId) throws EntityNotFoundException {
@@ -109,6 +156,14 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
             String message = String.format("Duplicate host name detected. Certificate mapping with id '%d' has already configured the host name provided.", dbMappingWithHostName.getId());
             throw new UnprocessableEntityException(message);
         }
+    }
+
+    private void validateCertificateMapping(CertificateMapping mapping) throws BadRequestException {
+        SslDetails sslDetails = new SslDetails(mapping.getPrivateKey(), mapping.getCertificate(), mapping.getIntermediateCertificate());
+        sslDetails = SslDetails.sanitize(sslDetails);
+
+        ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(sslDetails.getPrivateKey(), sslDetails.getCertificate(), sslDetails.getIntermediateCertificate());
+        SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
     }
 
     private CertificateMapping getMappingWithDuplicateHostName(CertificateMapping newMapping, Collection<CertificateMapping> dbCertificateMappings) {

@@ -13,7 +13,6 @@ public class MessageDataContainer implements Serializable {
     private String userName;
     private Integer accountId;
     private Integer loadBalancerId;
-    private Integer certificateMappingId;
     private Integer virtualIpId;
     private String errorFileContents;
     private Integer nodeId;
@@ -167,13 +166,5 @@ public class MessageDataContainer implements Serializable {
 
     public void setCertificateMapping(CertificateMapping certificateMapping) {
         this.certificateMapping = certificateMapping;
-    }
-
-    public Integer getCertificateMappingId() {
-        return certificateMappingId;
-    }
-
-    public void setCertificateMappingId(Integer certificateMappingId) {
-        this.certificateMappingId = certificateMappingId;
     }
 }

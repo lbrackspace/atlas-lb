@@ -77,13 +77,24 @@ public class CertificateMappingResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteCertificateMapping() {
         try {
-            certificateMappingService.prepareForDelete(id, loadBalancerId);
+            Set<org.openstack.atlas.service.domain.entities.CertificateMapping> certificateMappingSet = new HashSet<org.openstack.atlas.service.domain.entities.CertificateMapping>();
+            org.openstack.atlas.service.domain.entities.CertificateMapping domainCertMapping = new org.openstack.atlas.service.domain.entities.CertificateMapping();
+            domainCertMapping.setId(id);
+            certificateMappingSet.add(domainCertMapping);
+
+            LoadBalancer lb = new LoadBalancer();
+            lb.setId(loadBalancerId);
+            lb.setAccountId(accountId);
+            lb.setUserName(getUserName(requestHeaders));
+            lb.setCertificateMappings(certificateMappingSet);
+
+            certificateMappingService.prepareForDelete(lb);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
             dataContainer.setLoadBalancerId(loadBalancerId);
             dataContainer.setUserName(getUserName(requestHeaders));
-            dataContainer.setCertificateMappingId(id);
+            dataContainer.setCertificateMapping(domainCertMapping);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_CERTIFICATE_MAPPING, dataContainer);
             return Response.status(Response.Status.ACCEPTED).build();

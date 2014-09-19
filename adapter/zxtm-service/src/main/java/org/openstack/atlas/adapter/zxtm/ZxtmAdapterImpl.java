@@ -115,25 +115,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             isVSListeningOnAllAddresses(serviceStubs, virtualServerName, poolName);
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, new boolean[]{true});
 
-//            /* UPDATE REST OF LOADBALANCER CONFIG */
-//            if (lb.getSessionPersistence() != null && !lb.getSessionPersistence().equals(NONE) && !lb.hasSsl()) {
-//                //sessionPersistence is a pool item
-//                setSessionPersistence(config, lb.getId(), lb.getAccountId(), lb.getSessionPersistence());
-//            }
-//            if (lb.getHealthMonitor() != null && !lb.hasSsl()) {
-//                //Healthmonitor is a pool item
-//                updateHealthMonitor(config, lb.getId(), lb.getAccountId(), lb.getHealthMonitor());
-//            }
-//            //VirtualServer items
-//            if (lb.getConnectionLimit() != null) {
-//                updateConnectionThrottle(config, lb);
-//            }
-//            if (lb.isConnectionLogging() != null && lb.isConnectionLogging()) {
-//                updateConnectionLogging(config, lb);
-//            }
-//            if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
-//                updateAccessList(config, lb);
-//            }
             updateLoadBalancerAttributes(config, serviceStubs, lb, virtualServerName);
 
 
@@ -147,8 +128,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 attachXFPORTRuleToVirtualServer(serviceStubs, virtualServerName);
                 serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{virtualServerName}, new boolean[]{true});
                 serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{virtualServerName}, new boolean[]{true});
-//                TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
-//                attachXFPRuleToVirtualServer(serviceStubs, virtualServerName);
 
                 setDefaultErrorFile(config, lb);
             }
@@ -170,8 +149,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             LOG.debug(String.format("Adding node pool '%s'...", name));
             createNodePool(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getNodes(), loadBalancer.getAlgorithm());
             LOG.info(String.format("Node pool '%s' successfully added.", name));
-        }
-        else {
+        } else {
             setLoadBalancingAlgorithm(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getAlgorithm());
             setNodes(config, loadBalancer);
             serviceStubs.getPoolBinding().setPassiveMonitoring(new String[]{name}, new boolean[]{false});
@@ -184,6 +162,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{name}, new VirtualServerBasicInfo[]{vsInfo});
             LOG.info(String.format("Virtual server '%s' successfully added.", name));
         }
+
         if (Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(name)) {
             serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(new String[]{name}, new boolean[]{true});
             serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(new String[]{name}, new boolean[]{true});
@@ -220,6 +199,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             sslTerm.setCertIntermediateCert(loadBalancer.getSslTermination().getCertificate());
             sslTerm.setSslTermination(loadBalancer.getSslTermination());
             updateSslTermination(config, loadBalancer, sslTerm);
+
+            for (CertificateMapping certificateMapping : loadBalancer.getCertificateMappings()) {
+                updateCertificateMapping(config, loadBalancer.getId(), loadBalancer.getAccountId(), certificateMapping);
+            }
+
         }
 
         if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
@@ -517,32 +501,94 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     }
 
     @Override
-    public void updateCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, CertificateMapping certMappingToUpdate) throws RemoteException, InsufficientRequestException, RollBackException {
-//        final String virtualServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
-//        final String virtualServerNameNonSecure = ZxtmNameBuilder.genVSName(lbId, accountId);
-//
-//        String userKey = certMappingToUpdate.getPrivateKey();
-//        String userCrt = certMappingToUpdate.getCertificate();
-//        String imdCrt = certMappingToUpdate.getIntermediateCertificate();
-//        ZeusCrtFile zeusCrtFile = zeusUtil.buildZeusCrtFileLbassValidation(userKey, userCrt, imdCrt);
-//        if (zeusCrtFile.hasFatalErrors()) {
-//            String errors = StringUtils.joinString(zeusCrtFile.getFatalErrorList(), ",");
-//            String msg = String.format("ZeusCrtFile generation failure: %s", errors);
-//            throw new InsufficientRequestException(msg);
-//        }
-//
-//        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-//        VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
-//        CatalogSSLCertificatesBindingStub certificateCatalogService = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
-//
-//
+    public void updateCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, CertificateMapping certMappingToUpdate) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        final String virtualServerNameSecure = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        final String certificateName = ZxtmNameBuilder.generateCertificateName(lbId, accountId, certMappingToUpdate.getId());
 
-        // TODO: Implement
+        String userKey = certMappingToUpdate.getPrivateKey();
+        String userCrt = certMappingToUpdate.getCertificate();
+        String imdCrt = certMappingToUpdate.getIntermediateCertificate();
+        ZeusCrtFile zeusCrtFile = zeusUtil.buildZeusCrtFileLbassValidation(userKey, userCrt, imdCrt);
+
+        if (zeusCrtFile.hasFatalErrors()) {
+            String errors = StringUtils.joinString(zeusCrtFile.getFatalErrorList(), ",");
+            String msg = String.format("ZeusCrtFile generation failure: %s", errors);
+            throw new InsufficientRequestException(msg);
+        }
+
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
+        CatalogSSLCertificatesBindingStub certificateCatalogService = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
+
+        try {
+            LOG.debug(String.format("Removing certificate mappings for load balancer '%d' that use certificate '%s'...", lbId, certificateName));
+            VirtualServerSSLSite[][] sslSites = virtualServerService.getSSLSites(new String[]{virtualServerNameSecure});
+            List<String> siteIpsArray = new ArrayList<String>();
+
+            for (VirtualServerSSLSite sslSite : sslSites[0]) {
+                if (sslSite.getCertificate().equals(certificateName)) {
+                    LOG.debug(String.format("Marking SSLSite with host name '%s' for removal for load balancer '%d' that uses certificate '%s'...", sslSite.getDest_address(), lbId, certificateName));
+                    siteIpsArray.add(sslSite.getDest_address());
+                }
+            }
+
+            String[] siteIps = new String[siteIpsArray.size()];
+            siteIpsArray.toArray(siteIps);
+            virtualServerService.deleteSSLSites(new String[]{virtualServerNameSecure}, new String[][]{siteIps});
+            LOG.debug(String.format("Successfully removed certificate mappings for load balancer '%d' that used certificate '%s'.", lbId, certificateName));
+        } catch (ObjectDoesNotExist odne) {
+            LOG.debug(String.format("Cannot remove certificate mappings for load balancer '%d' that use certificate '%s' as the virtual server does not exist. Ignoring...", lbId, certificateName));
+        }
+
+        try {
+            LOG.debug(String.format("Removing certificate '%s' for certificate mapping '%d' for load balancer '%d'...", certificateName, certMappingToUpdate.getId(), lbId));
+            certificateCatalogService.deleteCertificate(new String[]{certificateName});
+            LOG.debug(String.format("Successfully removed certificate mapping '%d' for load balancer '%d'.", certMappingToUpdate.getId(), lbId));
+        } catch (ObjectDoesNotExist odne) {
+            LOG.debug(String.format("Cannot remove certificate '%s' as it does not exist for certificate mapping '%d' for load balancer '%d'. Ignoring...", certificateName, certMappingToUpdate.getId(), lbId));
+        }
+
+        try {
+            LOG.debug(String.format("Importing certificate '%s' for certificate mapping '%d' for load balancer '%d'...", certificateName, certMappingToUpdate.getId(), lbId));
+            CertificateFiles certificateFiles = new CertificateFiles(zeusCrtFile.getPublic_cert(), zeusCrtFile.getPrivate_key());
+            certificateCatalogService.importCertificate(new String[]{certificateName}, new CertificateFiles[]{certificateFiles});
+            LOG.debug(String.format("Successfully imported certificate '%s' for certificate mapping '%d' for load balancer '%d'.", certificateName, certMappingToUpdate.getId(), lbId));
+
+            VirtualServerSSLSite sslSite = new VirtualServerSSLSite(certMappingToUpdate.getHostName(), certificateName);
+
+            LOG.debug(String.format("Attaching certificate mapping '%d' (certificate '%s') to load balancer %d (virtual server '%s')...", certMappingToUpdate.getId(), certificateName, lbId, virtualServerNameSecure));
+            virtualServerService.addSSLSites(new String[]{virtualServerNameSecure}, new VirtualServerSSLSite[][]{new VirtualServerSSLSite[]{sslSite}});
+            LOG.debug(String.format("Successfully attached certificate mapping '%d' (certificate '%s') to load balancer %d (virtual server '%s').", certMappingToUpdate.getId(), certificateName, lbId, virtualServerNameSecure));
+        } catch (AxisFault af) {
+            String message = String.format("Error updating certificate mapping '%d' (certificate '%s') for load balancer %d (virtual server '%s').", certMappingToUpdate.getId(), certificateName, lbId, virtualServerNameSecure);
+            LOG.error(message);
+            throw new ZxtmRollBackException(message, af);
+        }
     }
 
     @Override
-    public void deleteCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, Integer certificateMappingId) throws RemoteException, InsufficientRequestException, RollBackException {
-        // TODO: Implement
+    public void deleteCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, CertificateMapping certMappingToDelete) throws RemoteException, InsufficientRequestException, RollBackException {
+        final String virtualServerNameSecure = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        final String certificateName = ZxtmNameBuilder.generateCertificateName(lbId, accountId, certMappingToDelete.getId());
+
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
+        CatalogSSLCertificatesBindingStub certificateCatalogService = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
+
+        try {
+            LOG.debug(String.format("Removing certificate mapping with host name '%s' and id '%d' for load balancer '%d'...", certMappingToDelete.getHostName(), certMappingToDelete.getId(), lbId));
+            virtualServerService.deleteSSLSites(new String[]{virtualServerNameSecure}, new String[][]{new String[]{certMappingToDelete.getHostName()}});
+        } catch (ObjectDoesNotExist odne) {
+            LOG.debug(String.format("Cannot remove certificate with host name '%s' and id '%d' as it does not exist for load balancer '%d'. Ignoring...", certMappingToDelete.getHostName(), certMappingToDelete.getId(), lbId));
+        }
+
+        try {
+            LOG.debug(String.format("Removing certificate '%s' for certificate mapping '%d' for load balancer '%d'...", certificateName, certMappingToDelete.getId(), lbId));
+            certificateCatalogService.deleteCertificate(new String[]{certificateName});
+            LOG.debug(String.format("Successfully removed certificate mapping '%d' for load balancer '%d'.", certMappingToDelete.getId(), lbId));
+        } catch (ObjectDoesNotExist odne) {
+            LOG.debug(String.format("Cannot remove certificate '%s' as it does not exist for certificate mapping '%d' for load balancer '%d'. Ignoring...", certificateName, certMappingToDelete.getId(), lbId));
+        }
     }
 
     @Override
@@ -1403,6 +1449,18 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                 serviceStubs.getZxtmCatalogSSLCertificatesBinding().deleteCertificate(new String[]{virtualServerName});
             } catch (ObjectDoesNotExist ex) {
                 LOG.info(String.format("Certificates or key does not exist for load balancer: %d ignoring... Exception: %s", loadBalancer.getId(), ex.getErrmsg()));
+            }
+
+            // Remove all certificates used for certificate mappings
+            for (CertificateMapping certificateMapping : loadBalancer.getCertificateMappings()) {
+                String certificateName = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(), loadBalancer.getAccountId(), certificateMapping.getId());
+                try {
+                    LOG.info(String.format("Removing certificate '%s' for load balancer %d...", certificateName, loadBalancer.getId()));
+                    serviceStubs.getZxtmCatalogSSLCertificatesBinding().deleteCertificate(new String[]{certificateName});
+                    LOG.info(String.format("Successfully removed certificate '%s' for load balancer %d.", certificateName, loadBalancer.getId()));
+                } catch (ObjectDoesNotExist odne) {
+                    LOG.info(String.format("Certificate '%s' does not exist for load balancer %d. Ignoring...", certificateName, loadBalancer.getId()));
+                }
             }
 
             try {
