@@ -5,16 +5,16 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.pojos.SslDetails;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
 import java.util.List;
 import java.util.Map;
 
-
 public final class SslTerminationHelper {
     protected static final Log LOG = LogFactory.getLog(SslTerminationHelper.class);
-
 
     public static boolean modificationStatus(SslTermination sslTermination, LoadBalancer dbLoadBalancer) throws BadRequestException {
         //Validator let it through, now verify the request is for update of attributes only, skip cert validation...
@@ -69,7 +69,7 @@ public final class SslTerminationHelper {
 
     public static void verifyCertificationCredentials(ZeusCrtFile zeusCrtFile) throws BadRequestException {
         if (zeusCrtFile.getFatalErrorList().size() > 0) {
-            String errors = StringUtilities.buildDelemtedListFromStringArray(zeusCrtFile.getFatalErrorList().toArray(new String[zeusCrtFile.getFatalErrorList().size()]), ",");
+            String errors = StringUtilities.buildDelemtedListFromStringArray(zeusCrtFile.getFatalErrorList().toArray(new String[zeusCrtFile.getFatalErrorList().size()]), ", ");
             LOG.error(String.format("There was an error(s) while updating ssl termination: '%s'", errors));
             throw new BadRequestException(errors);
         }
@@ -117,26 +117,12 @@ public final class SslTerminationHelper {
         return dbTermination;
     }
 
-    public static void cleanSSLCertKeyEntries(org.openstack.atlas.service.domain.entities.SslTermination sslTermination) {
-        final String cleanRegex = "(?m)^[ \t]*\r?\n";
+    public static void sanitizeSslCertKeyEntries(org.openstack.atlas.service.domain.entities.SslTermination sslTermination) {
+        SslDetails sslDetails = new SslDetails(sslTermination.getPrivatekey(), sslTermination.getCertificate(), sslTermination.getIntermediateCertificate());
+        sslDetails = SslDetails.sanitize(sslDetails);
 
-        String dirtyKey = sslTermination.getPrivatekey();
-        String dirtyCert = sslTermination.getCertificate();
-        String dirtyChain = sslTermination.getIntermediateCertificate();
-
-        if (dirtyKey != null) {
-            dirtyKey = dirtyKey.replaceAll(cleanRegex, "");
-            sslTermination.setPrivatekey(dirtyKey.trim());
-        }
-
-        if (dirtyCert != null) {
-            dirtyCert = dirtyCert.replaceAll(cleanRegex, "");
-            sslTermination.setCertificate(dirtyCert.trim());
-        }
-
-        if (dirtyChain != null) {
-            dirtyChain = dirtyChain.replaceAll(cleanRegex, "");
-            sslTermination.setIntermediateCertificate(dirtyChain.trim());
-        }
+        sslTermination.setPrivatekey(sslDetails.getPrivateKey());
+        sslTermination.setCertificate(sslDetails.getCertificate());
+        sslTermination.setIntermediateCertificate(sslDetails.getIntermediateCertificate());
     }
 }

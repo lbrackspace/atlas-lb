@@ -70,10 +70,6 @@ public class SyncListener extends BaseListener {
 
             try {
                 if (!isRestAdapter()) {
-//                    LOG.debug(String.format("Removing loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
-//                    reverseProxyLoadBalancerStmService.deleteLoadBalancer(dbLoadBalancer);
-//                    LOG.debug(String.format("Successfully removed loadbalancer for sync in STM for LB: %s", dbLoadBalancer.getId()));
-//                } else {
                     LOG.debug(String.format("Removing loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
                     reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
                     LOG.debug(String.format("Successfully removed loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));

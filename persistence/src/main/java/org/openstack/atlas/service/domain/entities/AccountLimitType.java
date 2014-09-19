@@ -5,6 +5,7 @@ import java.io.Serializable;
 public enum AccountLimitType implements Serializable {
     ACCESS_LIST_LIMIT,
     BATCH_DELETE_LIMIT,
+    CERTIFICATE_MAPPING_LIMIT,
     IPV6_LIMIT,
     LOADBALANCER_LIMIT,
     LOADBALANCER_META_LIMIT,

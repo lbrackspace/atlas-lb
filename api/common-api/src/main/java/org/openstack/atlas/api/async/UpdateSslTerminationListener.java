@@ -44,8 +44,6 @@ public class UpdateSslTerminationListener extends BaseListener {
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, enfe);
-            //OPS requested 11/07/12
-//            notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
             sendErrorToEventResourceUsingDataContainer(dataContainer);
             return;
         }
