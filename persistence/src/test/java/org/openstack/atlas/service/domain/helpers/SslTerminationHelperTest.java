@@ -163,7 +163,7 @@ public class SslTerminationHelperTest {
                     "dZsGmy48UFF4pBHdhnE8bCAt8KgK3BJb0XqNrUxxI6Jc/Hcl9AfppFIEGw==\n" +
                     "-----END CERTIFICATE-----\n        \n");
 
-            SslTerminationHelper.cleanSSLCertKeyEntries(sslTermination);
+            SslTerminationHelper.sanitizeSslCertKeyEntries(sslTermination);
             Assert.assertEquals(cleanSTring, sslTermination.getCertificate());
             Assert.assertEquals(cleanSTring, sslTermination.getIntermediateCertificate());
             Assert.assertEquals(cleanSTring, sslTermination.getPrivatekey());

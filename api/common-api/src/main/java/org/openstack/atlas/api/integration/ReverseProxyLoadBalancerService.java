@@ -132,5 +132,5 @@ public interface ReverseProxyLoadBalancerService {
 
     void updateCertificateMapping(Integer lbId, Integer accountId, CertificateMapping certMappingToUpdate) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException;
 
-    void removeCertificateMapping(Integer lbId, Integer accountId, Integer certificateMappingId) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException;
+    void removeCertificateMapping(Integer lbId, Integer accountId, CertificateMapping certMappingToDelete) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException;
 }

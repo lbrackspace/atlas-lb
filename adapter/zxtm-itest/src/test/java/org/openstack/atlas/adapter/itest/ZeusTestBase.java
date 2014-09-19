@@ -14,7 +14,9 @@ import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ip.IPUtils;
 import org.xml.sax.SAXException;
 
@@ -310,6 +312,10 @@ public class ZeusTestBase {
         return ZxtmNameBuilder.genVSName(lb);
     }
 
+    protected static String certificateName(Integer certificateMappingId) throws InsufficientRequestException {
+        return ZxtmNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), certificateMappingId);
+    }
+
     protected static void setupSimpleLoadBalancer() {
         shouldBeValidApiVersion();
         createSimpleLoadBalancer();
@@ -470,6 +476,70 @@ public class ZeusTestBase {
             }
             e.printStackTrace();
             Assert.fail(e.getMessage());
+        }
+    }
+
+   protected static void setSslTermination() {
+        String sVs = null;
+
+        try {
+            sVs = ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
+        } catch (InsufficientRequestException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(443);
+            sslTermination.setCertificate(testCert);
+            sslTermination.setPrivatekey(testKey);
+
+            ZeusCrtFile zeusCrtFile = new ZeusCrtFile();
+            zeusCrtFile.setPublic_cert(testCert);
+            zeusCrtFile.setPrivate_key(testKey);
+
+            ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+            zeusSslTermination.setCertIntermediateCert(testCert);
+            zeusSslTermination.setSslTermination(sslTermination);
+
+            lb.setSslTermination(zeusSslTermination.getSslTermination());
+
+            zxtmAdapter.updateSslTermination(config, lb, zeusSslTermination);
+
+            //Check to see if VS was created
+            String[] virtualServers = getServiceStubs().getVirtualServerBinding().getVirtualServerNames();
+            boolean doesExist = false;
+            for (String vsName : virtualServers) {
+                if (vsName.equals(sVs)) {
+                    doesExist = true;
+                    break;
+                }
+            }
+            Assert.assertTrue(doesExist);
+
+            String[] certificate = getServiceStubs().getVirtualServerBinding().getSSLCertificate(new String[]{sVs});
+            Assert.assertEquals(sVs, certificate[0]);
+
+            final VirtualServerBasicInfo[] serverBasicInfos = getServiceStubs().getVirtualServerBinding().getBasicInfo(new String[]{sVs});
+            Assert.assertEquals(sslTermination.getSecurePort(), serverBasicInfos[0].getPort());
+            Assert.assertEquals(true, lb.getProtocol().toString().equalsIgnoreCase(serverBasicInfos[0].getProtocol().toString()));
+            Assert.assertEquals(ZxtmNameBuilder.genVSName(lb), serverBasicInfos[0].getDefault_pool());
+
+            boolean[] vsEnabled = getServiceStubs().getVirtualServerBinding().getEnabled(new String[]{ZxtmNameBuilder.genVSName(lb)});
+            Assert.assertEquals(true, vsEnabled[0]);
+
+            boolean[] vsNonSecureEnabled = getServiceStubs().getVirtualServerBinding().getSSLDecrypt(new String[]{sVs});
+            Assert.assertEquals(sslTermination.isEnabled(), vsNonSecureEnabled[0]);
+
+            String[] vsSecureInfo = getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getRawCertificate(new String[]{sVs});
+            Assert.assertEquals(sslTermination.getCertificate(), vsSecureInfo[0]);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
         }
     }
 
