@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "ba51214e_0ab05d8a",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/async/DeleteCertificateMappingListener.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-09-19T17:47:07Z",
+      "side": 1,
+      "message": "Stingray\u0027s SOAP API returns a bunch of different types of exceptions which is one reason for this. The other reason is that there is no where for the exception to bubble up to since the listener is the \"end of the line\" so to speak. If the request works then great. If it fails for any reason then we want to put the lb in an \u0027ERROR\u0027 state. Usually, we will go and look at what weird exception Stingray gave us and then write more code to handle those specific exceptions.",
+      "parentUuid": "ba51214e_a4440775",
+      "revId": "a60fe5a88b442baa5476b7a90674604adfae0cb8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba51214e_8449038e",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/async/UpdateCertificateMappingListener.java",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "ba51214e_eaac0938",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/async/UpdateCertificateMappingListener.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-09-19T17:47:07Z",
+      "side": 1,
+      "message": "Same for me too ;)",
+      "parentUuid": "ba51214e_8449038e",
+      "revId": "a60fe5a88b442baa5476b7a90674604adfae0cb8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba51214e_e45d5f4a",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/mapper/dozer/factory/CertificateMappingFactory.java",
         "patchSetId": 1
@@ -47,6 +83,24 @@
       "writtenOn": "2014-09-18T23:14:50Z",
       "side": 1,
       "message": "Why are all of these necessary? In what case could a newly created CertificateMapping object NOT have these already null? Again, I see this is done in other places, but I still am not sure what\u0027s going on. Maybe this is a Bean specific thing?",
+      "revId": "a60fe5a88b442baa5476b7a90674604adfae0cb8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba51214e_4aaa551a",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/mapper/dozer/factory/CertificateMappingFactory.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-09-19T17:47:07Z",
+      "side": 1,
+      "message": "To reiterate what I explained yesterday the reason is that we don\u0027t want our JSON/XML requests to have elements with no actual data in them. The only way to accomplish this with dozer is to null out variables that are empty lists, strings, etc.",
+      "parentUuid": "ba51214e_e45d5f4a",
       "revId": "a60fe5a88b442baa5476b7a90674604adfae0cb8",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
