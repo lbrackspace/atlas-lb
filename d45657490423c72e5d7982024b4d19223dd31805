@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a6b29fe_f619a023",
+        "filename": "adapter/zxtm-itest/src/test/java/org/openstack/atlas/adapter/itest/SyncIntegrationTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-09-21T21:39:41Z",
+      "side": 1,
+      "message": "Dammit",
+      "revId": "d45657490423c72e5d7982024b4d19223dd31805",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
