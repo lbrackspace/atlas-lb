@@ -36,6 +36,24 @@
     },
     {
       "key": {
+        "uuid": "7a6b29fe_b6da88e7",
+        "filename": "migration/schema/loadbalancing/cert-mappings_DOWN.sql",
+        "patchSetId": 3
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-09-22T17:33:40Z",
+      "side": 1,
+      "message": "I was holding off, but I guess I don\u0027t have to since we know this is the next release. Will change.",
+      "parentUuid": "7a6b29fe_96502c60",
+      "revId": "d45657490423c72e5d7982024b4d19223dd31805",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a6b29fe_b653a86b",
         "filename": "migration/schema/loadbalancing/cert-mappings_UP.sql",
         "patchSetId": 3
@@ -64,6 +82,24 @@
       "writtenOn": "2014-09-22T15:59:43Z",
       "side": 1,
       "message": "There is a bug in the String helper, or the LB is not populated entirely. \n\nThe message returned has \u0027null\u0027 status",
+      "revId": "d45657490423c72e5d7982024b4d19223dd31805",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a6b29fe_36ee788c",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/CertificateMappingServiceImpl.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-09-22T17:33:40Z",
+      "side": 1,
+      "message": "Good catch. It\u0027s because I\u0027m passing in a messenger lb, not the lb from the database. Will fix.",
+      "parentUuid": "7a6b29fe_d64aa4ab",
       "revId": "d45657490423c72e5d7982024b4d19223dd31805",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
