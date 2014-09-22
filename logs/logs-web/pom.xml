@@ -6,8 +6,6 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
         <version>1.23.4-SNAPSHOT</version>
-
-
     </parent>
 
     <artifactId>atlas-logs-web</artifactId>
@@ -36,11 +34,6 @@
             <artifactId>atlas-logs-archiver-clients</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.openstack.client.keystone</groupId>-->
-            <!--<artifactId>java-keystone</artifactId>-->
-            <!--<version>1.2</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.springmodules</groupId>
             <artifactId>spring-modules-jakarta-commons
@@ -51,10 +44,6 @@
             <groupId>org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-common</artifactId>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>com.rackspacecloud</groupId>-->
-            <!--<artifactId>java-cloudfiles</artifactId>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>org.apache.xmlrpc</groupId>
             <artifactId>xmlrpc-server</artifactId>

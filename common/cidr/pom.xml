@@ -5,8 +5,6 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-common</artifactId>
         <version>1.23.4-SNAPSHOT</version>
-
-
     </parent>
 
     <groupId>org.openstack.atlas</groupId>

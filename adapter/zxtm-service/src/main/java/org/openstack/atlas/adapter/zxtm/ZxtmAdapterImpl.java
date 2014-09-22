@@ -718,15 +718,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
             LOG.debug(String.format("There was an error removing traffic ip group: %s Message: %s Stack-Trace: %s", trafficIpGroupName, e.getMessage(), Arrays.toString(e.getStackTrace())));
         }
-
-        //(VERSION 1) D-01942 failed when trying to verify tig, code not needed...
-//        try {
-//            //Verify the TIG was in fact deleted...
-//            String[][] tig = serviceStubs.getTrafficIpGroupBinding().getTrafficManager(new String[]{trafficIpGroupName});
-//            if (tig != null) throw new ObjectInUse();
-//        } catch (ObjectDoesNotExist odne) {
-//            LOG.debug(String.format(String.format("Traffic ip group '%s' successfully deleted.", trafficIpGroupName)));
-//        }
     }
 
     @Override
@@ -781,48 +772,27 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         }
 
         try {
-//            if (lb.getSessionPersistence() == SessionPersistence.NONE) {
-//                //V1-B-17728 support for SOURCE_IP
-//                removeSessionPersistence(config, lbId, accountId);
-//            }
             if (protocol.equals(LoadBalancerProtocol.HTTP)) {
+                if (SessionPersistence.NONE.equals(lb.getSessionPersistence()) || SessionPersistence.SSL_ID.equals(lb.getSessionPersistence())) {
+                    removeSessionPersistence(config, lbId, accountId);
+                }
+
                 serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, enablesXF);
                 serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, enablesXF);
                 attachXFPORTRuleToVirtualServers(serviceStubs, vsNames);
             } else {
+                if (SessionPersistence.NONE.equals(lb.getSessionPersistence()) || SessionPersistence.HTTP_COOKIE.equals(lb.getSessionPersistence())) {
+                    removeSessionPersistence(config, lbId, accountId);
+                }
+                
                 for (String vname : vsNames) {
                     serviceStubs.getVirtualServerBinding().setRules(new String[]{(vname)}, new VirtualServerRule[][]{{}});
                 }
                 updateContentCaching(config, lb);
                 serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, disablesXF);
                 serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, disablesXF);
-                if (SessionPersistence.HTTP_COOKIE.equals(lb.getSessionPersistence())) {
-                    removeSessionPersistence(config, lbId, accountId);
-                }
-            }
 
-//            if (!protocol.equals(LoadBalancerProtocol.HTTP)) {
-////                removeXFFRuleFromVirtualServers(serviceStubs, vsNames); // XFF is only for the HTTP protocol
-////                removeXFPRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
-//                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, disablesXF);
-//                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, disablesXF);
-////                removeXFPORTRuleFromVirtualServers(serviceStubs, vsNames); // XFP is only for the HTTP protocol
-//                // :/ suppose well handle it like this because we dont know if theres multiple vs names or not...
-//                for (String vname : vsNames) {
-//                    serviceStubs.getVirtualServerBinding().setRules(new String[]{(vname)}, new VirtualServerRule[][]{{}});
-//                }
-//                updateContentCaching(config, lb);
-//                if (!SessionPersistence.SOURCE_IP.equals(lb.getSessionPersistence())) {
-//                    removeSessionPersistence(config, lbId, accountId);
-//                }
-//            } else {
-//                if (!SessionPersistence.HTTP_COOKIE.equals(lb.getSessionPersistence())) {
-//                    removeSessionPersistence(config, lbId, accountId);
-//                }
-//                serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, enablesXF);
-//                serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, enablesXF);
-//                attachXFPORTRuleToVirtualServers(serviceStubs, vsNames);
-//            }
+            }
         } catch (Exception e) {
             throw new ZxtmRollBackException(String.format("Update protocol request canceled for %s ", virtualServerName), e);
         }
@@ -846,7 +816,6 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
             // Disable logging for protocol switch (keeping trevors commit)
             updateConnectionLogging(config, lb);
-//            serviceStubs.getVirtualServerBinding().setLogEnabled(vsNames, isConnectionLoggings);
 
             LOG.debug(String.format("Updating protocol to '%s' for virtual server '%s'...", protocol.name(), virtualServerName));
             serviceStubs.getVirtualServerBinding().setProtocol(new String[]{vsNames[0]}, new VirtualServerProtocol[]{ZxtmConversionUtils.mapProtocol(protocol)});
@@ -858,15 +827,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
                     attachXFPORTRuleToVirtualServers(serviceStubs, vsNames);
                     serviceStubs.getVirtualServerBinding().setAddXForwardedForHeader(vsNames, enablesXF);
                     serviceStubs.getVirtualServerBinding().setAddXForwardedProtoHeader(vsNames, enablesXF);
-
-
-//                    TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(serviceStubs);
-//                    attachXFPRuleToVirtualServers(serviceStubs, vsNames);
                 }
             } catch (Exception ex) {
                 throw new ZxtmRollBackException("Update protocol request canceled.", ex);
             }
-
             // Re-add rate-limit Rule
             if (rateLimitExists) {
                 attachRateLimitRulesToVirtualServers(serviceStubs, vsNames);

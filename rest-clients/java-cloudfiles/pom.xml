@@ -6,8 +6,6 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-rest-clients</artifactId>
         <version>1.23.4-SNAPSHOT</version>
-
-
     </parent>
 
     <artifactId>atlas-cloudfiles-client</artifactId>

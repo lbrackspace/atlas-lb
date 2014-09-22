@@ -25,9 +25,11 @@ import org.openstack.atlas.service.domain.services.UsageRefactorService;
 import org.openstack.atlas.service.domain.services.UsageService;
 import org.openstack.atlas.service.domain.services.impl.UsageServiceImpl;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepository;
+import org.openstack.atlas.usagerefactor.SnmpStats;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.usagerefactor.collection.SnmpStatsCollector;
 import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClient;
-import org.openstack.atlas.usagerefactor.collection.SnmpVSCollector;
+import org.openstack.atlas.usagerefactor.collection.SnmpUsageCollector;
 import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl;
@@ -227,7 +229,9 @@ public class UsageEventCollectionTest {
         StingrayUsageClient stingrayUsageClient;
 
         @InjectMocks
-        SnmpVSCollector vsCollector = new SnmpVSCollector();
+        SnmpUsageCollector usageCollector = new SnmpUsageCollector();
+        @InjectMocks
+        SnmpStatsCollector statsCollector = new SnmpStatsCollector();
 
         @Before
         public void standUp() {
@@ -250,11 +254,20 @@ public class UsageEventCollectionTest {
 
         @Test
         public void shouldReturnSnmpUsage() throws UsageEventCollectionException, StingraySnmpGeneralException {
-            vsCollector.setHost(host);
-            vsCollector.setLoadbalancer(loadBalancer);
+            usageCollector.setHost(host);
+            usageCollector.setLoadbalancer(loadBalancer);
             when(stingrayUsageClient.getVirtualServerUsage(Matchers.<Host>any(), Matchers.<LoadBalancer>any())).thenReturn(new SnmpUsage());
-            SnmpUsage usage = vsCollector.call();
+            SnmpUsage usage = usageCollector.call();
             Assert.assertNotNull(usage);
+        }
+
+        @Test
+        public void shouldReturnSnmpStats() throws UsageEventCollectionException, StingraySnmpGeneralException {
+            usageCollector.setHost(host);
+            usageCollector.setLoadbalancer(loadBalancer);
+            when(stingrayUsageClient.getVirtualServerStats(Matchers.<Host>any(), Matchers.<LoadBalancer>any())).thenReturn(new SnmpStats());
+            SnmpStats stats = statsCollector.call();
+            Assert.assertNotNull(stats);
         }
     }
 }

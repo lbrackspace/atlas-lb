@@ -6,13 +6,10 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
         <version>1.23.4-SNAPSHOT</version>
-
-
     </parent>
 
     <artifactId>atlas-logs-hadoop</artifactId>
     <name>Openstack :: Atlas :: Logs :: Hadoop</name>
-
     <packaging>jar</packaging>
 
     <dependencies>

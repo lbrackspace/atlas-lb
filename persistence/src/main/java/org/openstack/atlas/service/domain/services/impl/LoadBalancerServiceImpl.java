@@ -201,17 +201,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Override
     @Transactional(rollbackFor = {Exception.class})
     public LoadBalancer prepareForUpdate(LoadBalancer loadBalancer) throws Exception {
-        LoadBalancer dbLoadBalancer;
-        boolean portHMTypecheck = true;
-
-        dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
         if (dbLoadBalancer.hasSsl()) {
             LOG.debug("Verifying protocol, cannot update protocol while using ssl termination...");
             if (loadBalancer.getProtocol() != null && loadBalancer.getProtocol() != dbLoadBalancer.getProtocol()) {
                 throw new BadRequestException("Cannot update protocol on a load balancer with ssl termination.");
             }
-//            SslTerminationHelper.isProtocolSecure(loadBalancer);
         }
 
         LOG.info("Performing SSL verifications.");
@@ -253,7 +249,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                             "or for load balancers with a 'Secure Only' SSL Termination.");
                 } else if ((loadBalancer.getPort() != null && loadBalancer.getPort() != 443)
                         || (loadBalancer.getPort() == null && dbLoadBalancer.getPort() != 443)) {
-                //We just redirect to https://original.url.com which goes to 443
+                    //We just redirect to https://original.url.com which goes to 443
                     LOG.error("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
                     throw new BadRequestException("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
                 }
@@ -277,7 +273,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 throw new BadRequestException(String.format("Port currently assigned to one of the virtual ips. Please verify protocol/port combinations."));
             }
         }
-
 
         if (loadBalancer.getName() != null && !loadBalancer.getName().equals(dbLoadBalancer.getName())) {
             LOG.debug("Updating loadbalancer name to " + loadBalancer.getName());
@@ -341,8 +336,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 throw new BadRequestException("Protocol is not valid. Please verify shared virtual ips and the ports being shared.");
             }
 
-
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
+            boolean portHMTypecheck = true;
             if (dbLoadBalancer.getHealthMonitor() != null) {
                 if (dbLoadBalancer.getHealthMonitor().getType() != null) {
                     if (dbLoadBalancer.getHealthMonitor().getType().name().equals(LoadBalancerProtocol.HTTP.name())) {
@@ -360,8 +355,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
 
             if (portHMTypecheck) {
-                /* Notify the Usage Processor on changes of protocol to and from secure protocols */
-                //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
                 LoadBalancerProtocol lbProtocol = loadBalancer.getProtocol();
                 SessionPersistence dbPersistenceType = dbLoadBalancer.getSessionPersistence();
                 if (lbProtocol.equals(HTTP)) {
@@ -373,7 +366,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
                         dbLoadBalancer.setProtocol(lbProtocol);
                     }
-
                 } else if (lbProtocol.equals(HTTPS)) {
                     if ((dbPersistenceType == SessionPersistence.SSL_ID)) {
                         LOG.debug("Existing session persistence valid with HTTPS protocol. Updating loadbalancer protocol to " + lbProtocol);
@@ -383,8 +375,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
                         dbLoadBalancer.setProtocol(lbProtocol);
                     }
-                }
-                else {
+                } else {
                     dbLoadBalancer.setContentCaching(false);
                     if ((dbPersistenceType == SessionPersistence.SOURCE_IP)) {
                         LOG.debug("Existing session persistence valid with " + lbProtocol + " protocol. Updating loadbalancer protocol to " + lbProtocol);
@@ -404,7 +395,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         LOG.debug(String.format("Verifying connectionLogging and contentCaching... if enabled, they are valid only with HTTP protocol.."));
         verifyProtocolLoggingAndCaching(loadBalancer, dbLoadBalancer);
 
-        //V1-B-27058 12-10-12
         LOG.debug("Update half close support in load balancer service impl");
         if (loadBalancer.isHalfClosed() != null) {
             verifyHalfCloseSupport(dbLoadBalancer, loadBalancer.isHalfClosed());
@@ -420,13 +410,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
         LOG.debug("Updated the loadbalancer in DB. Now sending response back.");
 
-//        // Add atom entry
-//        String atomTitle = "Load Balancer in pending update status";
-//        String atomSummary = "Load balancer in pending update status";
-//        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_UPDATE_LOADBALANCER, UPDATE, INFO);
-
-        // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
-        LOG.debug("Leaving " + getClass());
         return dbLoadBalancer;
     }
 
