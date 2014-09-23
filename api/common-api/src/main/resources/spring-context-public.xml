@@ -127,10 +127,12 @@
         </property>
         <property name="eventListeners">
             <list>
-                <bean class="org.openstack.atlas.api.mapper.dozer.converter.EventListener"/>
+                <ref bean="dozerEventListener"/>
             </list>
         </property>
     </bean>
+    <bean id="dozerEventListener"
+          class="org.openstack.atlas.api.mapper.dozer.converter.EventListener"/>
 
     <!--RESOURCE BEANS-->
     <bean id="loadBalancingPublicImpl"
