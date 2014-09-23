@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.23.4-SNAPSHOT</version>
+        <version>1.23.4</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-exp-cache-faker</artifactId>
     <name>OpenStack :: Atlas :: Logs :: HDFS :: Cache zip faker</name>
-    <version>1.23.4-SNAPSHOT</version>
+    <version>1.23.4</version>
     <packaging>jar</packaging>
 
     <dependencies>
