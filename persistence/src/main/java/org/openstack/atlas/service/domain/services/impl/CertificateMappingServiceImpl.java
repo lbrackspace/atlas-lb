@@ -121,6 +121,7 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
     @Transactional
     public void prepareForDelete(LoadBalancer messengerLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
         ensureSslTerminationConfigIsAvailable(messengerLb.getId());
+        certificateMappingRepository.getByIdAndLoadBalancerId(messengerLb.getCertificateMappings().iterator().next().getId(), messengerLb.getId());
         setLbToPendingUpdate(messengerLb);
     }
 
