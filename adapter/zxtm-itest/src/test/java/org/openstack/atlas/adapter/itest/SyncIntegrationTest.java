@@ -1,10 +1,13 @@
 package org.openstack.atlas.adapter.itest;
 
+import com.zxtm.service.client.Certificate;
 import com.zxtm.service.client.CatalogMonitorType;
 import com.zxtm.service.client.VirtualServerBasicInfo;
 import com.zxtm.service.client.VirtualServerProtocol;
 import com.zxtm.service.client.VirtualServerRule;
 import com.zxtm.service.client.VirtualServerRuleRunFlag;
+import com.zxtm.service.client.VirtualServerSSLSite;
+
 import org.apache.axis.types.UnsignedInt;
 
 import java.rmi.RemoteException;
@@ -17,14 +20,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
-import org.openstack.atlas.adapter.exceptions.ZxtmRollBackException;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.junit.experimental.runners.Enclosed;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @RunWith(Enclosed.class)
 public class SyncIntegrationTest extends ZeusTestBase {
@@ -762,6 +766,33 @@ public class SyncIntegrationTest extends ZeusTestBase {
             termination.setLoadbalancer(lb);
             zterm.setSslTermination(termination);
             lb.setSslTermination(termination);
+        }
+
+        @Test
+        public void testSyncCertificateMappings() throws RollBackException, InsufficientRequestException, RemoteException {
+            addSslTermination();
+            zxtmAdapter.updateSslTermination(config, lb, zterm);
+
+            CertificateMapping certMapping = new CertificateMapping();
+            certMapping.setId(1234);
+            certMapping.setPrivateKey(testKey);
+            certMapping.setCertificate(testCert);
+            certMapping.setHostName("sync.host-name.com");
+
+            Set<CertificateMapping> certMappings = new HashSet<CertificateMapping>();
+            certMappings.add(certMapping);
+            lb.setCertificateMappings(certMappings);
+
+            zxtmAdapter.updateLoadBalancer(config, lb);
+
+            final Certificate[] certificateInfo = getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getCertificateInfo(new String[]{certificateName(certMapping.getId())});
+            Assert.assertEquals(1, certificateInfo.length);
+
+            final VirtualServerSSLSite[][] sslSites = getServiceStubs().getVirtualServerBinding().getSSLSites(new String[]{secureLoadBalancerName()});
+            Assert.assertEquals(1, sslSites.length);
+            Assert.assertEquals(1, sslSites[0].length);
+            Assert.assertEquals(certificateName(certMapping.getId()), sslSites[0][0].getCertificate());
+            Assert.assertEquals(certMapping.getHostName(), sslSites[0][0].getDest_address());
         }
     }
 

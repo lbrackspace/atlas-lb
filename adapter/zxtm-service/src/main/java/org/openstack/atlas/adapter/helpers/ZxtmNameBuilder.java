@@ -149,4 +149,14 @@ public final class ZxtmNameBuilder {
     public static String generateErrorPageName(String vsName) throws InsufficientRequestException {
         return vsName+ "_error.html";
     }
+
+    public static String generateCertificateName(Integer lbId, Integer accountId, Integer certificateMappingId) throws InsufficientRequestException {
+        String vsName = genVSName(lbId, accountId);
+
+        if (certificateMappingId == null) {
+            throw new InsufficientRequestException("Missing certificate mapping id for certificate.");
+        }
+
+        return vsName + "_" + certificateMappingId;
+    }
 }

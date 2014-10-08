@@ -91,6 +91,7 @@ public class SnmpMain {
                     System.out.printf("    display_usage_map [vs_filter]#display the usage as a map of Clients\n");
                     System.out.printf("    set_retrys <num> #Sets the maximum retries\n");
                     System.out.printf("    lookup <oid> <vsName> #Lookup the given OID for the specified virtual server on the default zxtm host\n");
+                    System.out.printf("    lookup_loop <oid> <vsName> #Lookup the given OID for the specified virtual server on all zxtm host, then sum them up\n");
                     System.out.printf("    client <clientKey> #Set the clientKey for the default run\n");
                     System.out.printf("    run_jobs #Run threaded jobs client for itest\n");
                     System.out.printf("    run_all #Run stats for all zxtm hosts\n");
@@ -365,9 +366,20 @@ public class SnmpMain {
                 } else if (cmd.equals("lookup") && args.length >= 3) {
                     String oid = args[1];
                     String vsName = args[2];
-                    long val = defaultClient.getLongValueForVirtualServer(vsName, oid, false, false);
+                    long val = defaultClient.getValueForVirtualServer(vsName, oid, false, false).toLong();
                     System.out.printf("%s for %s = %d\n", oid, vsName, val);
-                } else if (cmd.equals("set_retrys") && args.length >= 2) {
+                } else if (cmd.equals("lookup_loop") && args.length >= 3) {
+                    String oid = args[1];
+                    String vsName = args[2];
+                    long sum = 0l;
+                    for (String clientKey : clients.keySet()) {
+                        StingraySnmpClient client = clients.get(clientKey);
+                        long val = client.getValueForVirtualServer(vsName, oid, false, false).toLong();
+                        sum += val;
+                    }
+                    System.out.printf("%s for %s = %d\n", oid, vsName, sum);
+
+                }  else if (cmd.equals("set_retrys") && args.length >= 2) {
                     System.out.printf("Setting retries to ");
                     System.out.flush();
                     int maxRetrys = Integer.parseInt(args[1]);

@@ -1,10 +1,6 @@
 package org.openstack.atlas.service.domain.pojos;
 
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.LoadbalancerMeta;
-import org.openstack.atlas.service.domain.entities.SslTermination;
-import org.openstack.atlas.service.domain.usage.BitTag;
+import org.openstack.atlas.service.domain.entities.*;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -30,6 +26,7 @@ public class MessageDataContainer implements Serializable {
     private List<Integer> ids;
     private SslTermination previousSslTermination;
     private LoadBalancerStatus loadBalancerStatus;
+    private CertificateMapping certificateMapping;
 
     public List<Integer> getIds() {
         if(ids == null){
@@ -161,5 +158,13 @@ public class MessageDataContainer implements Serializable {
 
     public void setLoadBalancerStatus(LoadBalancerStatus loadBalancerStatus) {
         this.loadBalancerStatus = loadBalancerStatus;
+    }
+
+    public CertificateMapping getCertificateMapping() {
+        return certificateMapping;
+    }
+
+    public void setCertificateMapping(CertificateMapping certificateMapping) {
+        this.certificateMapping = certificateMapping;
     }
 }

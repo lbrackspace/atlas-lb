@@ -1,10 +1,7 @@
 package org.openstack.atlas.service.domain.services.impl;
 
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.Customer;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId;
 import org.openstack.atlas.service.domain.services.HostService;
@@ -42,7 +39,7 @@ public class HostServiceImpl extends BaseService implements HostService {
     }
 
     @Override
-    public Host getDefaultActiveHostAndActiveCluster(Integer accountId) throws ClusterStatusException, EntityNotFoundException {
+    public Host getDefaultActiveHostAndActiveCluster(Integer accountId) throws ClusterStatusException, EntityNotFoundException, NoAvailableClusterException {
         return hostRepository.getDefaultActiveHost(clusterRepository.getActiveCluster(accountId).getId());
     }
 

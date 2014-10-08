@@ -8,10 +8,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.repository.*;
 import org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.HostServiceImpl;
@@ -265,7 +262,7 @@ public class LoadBalancerServiceImplTest {
         LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
 
         @Before
-        public void standUp() throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException {
+        public void standUp() throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, NoAvailableClusterException {
             lb = new LoadBalancer();
             lbRepository = mock(LoadBalancerRepository.class);
             lbService = new LoadBalancerServiceImpl();

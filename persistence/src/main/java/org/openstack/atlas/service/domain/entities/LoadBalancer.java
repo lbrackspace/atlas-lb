@@ -18,8 +18,10 @@ import java.util.Set;
 public class LoadBalancer extends Entity implements Serializable {
 
     private final static long serialVersionUID = 532512316L;
-    @Column(name = "name", length = 128)
-    private String name;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "host_id", nullable = true)
+    private Host host;
 
     @OneToMany(mappedBy = "loadBalancer", fetch = FetchType.EAGER)
     private Set<LoadBalancerJoinVip> loadBalancerJoinVipSet = new HashSet<LoadBalancerJoinVip>();
@@ -32,10 +34,6 @@ public class LoadBalancer extends Entity implements Serializable {
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<Node> nodes = new HashSet<Node>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.LAZY)
-    @OrderBy("id")
-    private Set<Usage> usage = new HashSet<Usage>();
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
@@ -44,21 +42,30 @@ public class LoadBalancer extends Entity implements Serializable {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
     @OrderBy("id")
     @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    private Set<CertificateMapping> certificateMappings = new HashSet<CertificateMapping>();
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OrderBy("id")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<LoadbalancerMeta> loadbalancerMetadata = new HashSet<LoadbalancerMeta>();
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "host_id", nullable = true)
-    private Host host;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OrderBy("ticketId")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
+    private Set<Ticket> tickets = new HashSet<Ticket>();
 
-    @Column(name = "algorithm", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LoadBalancerAlgorithm algorithm;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.LAZY)
+    @OrderBy("id")
+    private Set<Usage> usage = new HashSet<Usage>();
 
-    @Column(name = "port", nullable = false)
-    private Integer port;
+    @Column(name = "name", length = 128)
+    private String name;
 
     @Column(name = "account_id", nullable = false, length = 32)
     private Integer accountId;
+
+    @Column(name = "port", nullable = false)
+    private Integer port;
 
     @Column(name = "timeout", nullable = false)
     private Integer timeout;
@@ -72,12 +79,19 @@ public class LoadBalancer extends Entity implements Serializable {
     @Column(name = "https_redirect", nullable = false)
     private Boolean httpsRedirect;
 
+    @Column(name = "half_closed", nullable = false)
+    private Boolean halfClosed;
+
+    @Column(name = "is_sticky", nullable = false)
+    private boolean isSticky;
+
+    @Column(name = "algorithm", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private LoadBalancerAlgorithm algorithm;
+
     @JoinColumn(name = "protocol", nullable = false)
     @Enumerated(EnumType.STRING)
     private LoadBalancerProtocol protocol;
-
-    @Column(name = "half_closed", nullable = false)
-    private Boolean halfClosed;
 
     @JoinColumn(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -99,12 +113,12 @@ public class LoadBalancer extends Entity implements Serializable {
     @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
     private RateLimit rateLimit;
 
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
+    private SslTermination sslTermination;
+
     @OneToOne(mappedBy = "loadbalancer", fetch = FetchType.LAZY, optional = true)
     @LazyToOne(LazyToOneOption.NO_PROXY)
     private UserPages userPages;
-
-    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REMOVE}, mappedBy = "loadbalancer")
-    private SslTermination sslTermination;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar created;
@@ -114,14 +128,6 @@ public class LoadBalancer extends Entity implements Serializable {
 
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar provisioned;
-
-    @Column(name = "is_sticky", nullable = false)
-    private boolean isSticky;
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
-    @OrderBy("ticketId")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
-    private Set<Ticket> tickets = new HashSet<Ticket>();
 
     @Transient
     private VirtualIpDozerWrapper virtualIpDozerWrapper;
@@ -186,6 +192,14 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public void setAccessLists(Set<AccessList> accessLists) {
         this.accessLists = accessLists;
+    }
+
+    public Set<CertificateMapping> getCertificateMappings() {
+        return certificateMappings;
+    }
+
+    public void setCertificateMappings(Set<CertificateMapping> certificateMappings) {
+        this.certificateMappings = certificateMappings;
     }
 
     public Set<LoadbalancerMeta> getLoadbalancerMetadata() {
@@ -349,6 +363,11 @@ public class LoadBalancer extends Entity implements Serializable {
         accessLists.add(accessList);
     }
 
+    public void addCertificateMapping(CertificateMapping certificateMapping) {
+        certificateMapping.setLoadbalancer(this);
+        certificateMappings.add(certificateMapping);
+    }
+
     public void addNode(Node node) {
         node.setLoadbalancer(this);
         nodes.add(node);
@@ -385,51 +404,6 @@ public class LoadBalancer extends Entity implements Serializable {
 
     public boolean isSecureOnly() {
         return (sslTermination != null && sslTermination.isSecureTrafficOnly());
-    }
-
-    public String getIpv6Servicenet() {
-        return null;
-//        if (host == null) {
-//            return null;
-//        }
-//        return host.getIpv6Servicenet();
-    }
-
-    public String getIpv6Public() {
-        return null;
-//        if (host == null) {
-//            return null;
-//        }
-//
-//        return host.getIpv6Public();
-    }
-
-    public String getIpv4Servicenet() {
-        return null;
-//        if (host == null) {
-//            return null;
-//        }
-//        return host.getIpv4Servicenet();
-    }
-
-    public String getIpv4Public() {
-        return null;
-//        if (host == null) {
-//            return null;
-//        }
-//        return host.getIpv4Public();
-    }
-
-    public void getIpv6Servicenet(String throwaway) {
-    }
-
-    public void setIpv6Public(String throwaway) {
-    }
-
-    public void setIpv4Servicenet(String throwaway) {
-    }
-
-    public void setIpv4Public(String throwaway) {
     }
 
     public Set<LoadBalancerJoinVip6> getLoadBalancerJoinVip6Set() {

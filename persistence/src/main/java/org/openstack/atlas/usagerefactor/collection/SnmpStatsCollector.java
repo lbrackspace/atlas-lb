@@ -4,8 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
-import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.usagerefactor.SnmpStats;
 import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClient;
 import org.openstack.atlas.usagerefactor.snmp.StingrayUsageClientImpl;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
@@ -13,56 +12,60 @@ import org.openstack.atlas.util.snmp.exceptions.StingraySnmpObjectNotFoundExcept
 
 import java.util.concurrent.Callable;
 
-public class SnmpVSCollector implements Callable<SnmpUsage> {
-    private final Log LOG = LogFactory.getLog(SnmpVSCollector.class);
+public class SnmpStatsCollector implements Callable<SnmpStats> {
+    private final Log LOG = LogFactory.getLog(SnmpStatsCollector.class);
 
     public StingrayUsageClient stingrayUsageClient;
     public Host host;
     public LoadBalancer loadbalancer;
 
-    public SnmpVSCollector(Host host, LoadBalancer lb) {
+    public SnmpStatsCollector(Host host, LoadBalancer lb) {
         stingrayUsageClient = new StingrayUsageClientImpl();
         this.host = host;
         this.loadbalancer = lb;
     }
 
-    public SnmpVSCollector() {
+    public SnmpStatsCollector() {
     }
 
     @Override
-    public SnmpUsage call(){
-        SnmpUsage snmpusage = null;
+    public SnmpStats call(){
+        SnmpStats snmpStats = null;
+
         try {
-            snmpusage = stingrayUsageClient.getVirtualServerUsage(host, loadbalancer);
-            snmpusage = handleNullUsageResponse(snmpusage);
+            snmpStats = stingrayUsageClient.getVirtualServerStats(host, loadbalancer);
+            snmpStats = handleNullStatsResponse(snmpStats);
         } catch (StingraySnmpObjectNotFoundException ex) {
-            String retString = String.format("Request for host %s usage from SNMP server failed. SnmpUsage Object" +
-                    " is Not found for host", host.getName());
+            String retString = String.format("Request for host %s stats from SNMP server failed. SnmpStats object" +
+                    " is not found for host", host.getName());
             LOG.info(retString);
-            snmpusage = handleNullUsageResponse(snmpusage);
+            snmpStats = handleNullStatsResponse(snmpStats);
         } catch (StingraySnmpGeneralException eg) {
-            String retString = String.format("Request for host %s usage from SNMP server failed. A default SnmpUsage will be created.", host.getName());
+            String retString = String.format("Request for host %s stats from SNMP server failed. A default SnmpStats will be created.", host.getName());
             LOG.info(retString);
-            snmpusage = handleNullUsageResponse(snmpusage);
+            snmpStats = handleNullStatsResponse(snmpStats);
         } catch (Exception e) {
-            String retString = String.format("Request for host %s usage from SNMP server failed.", host.getName());
+            String retString = String.format("Request for host %s stas from SNMP server failed.", host.getName());
             LOG.error(retString, e);
-            snmpusage = handleNullUsageResponse(snmpusage);
+            snmpStats = handleNullStatsResponse(snmpStats);
         }
-        if(snmpusage != null) {
-            LOG.info(String.format("Stored snmp usage: %s", snmpusage.toString()));
+
+        if(snmpStats != null) {
+            LOG.info(String.format("Stored snmp stats: %s", snmpStats.toString()));
         }
-        return snmpusage;
+
+        return snmpStats;
     }
 
-    private SnmpUsage handleNullUsageResponse(SnmpUsage snmpusage){
-        if (snmpusage == null){
-            SnmpUsage blankSnmpUsage = new SnmpUsage();
-            blankSnmpUsage.setHostId(host.getId());
-            blankSnmpUsage.setLoadbalancerId(loadbalancer.getId());
-            return blankSnmpUsage;
+    private SnmpStats handleNullStatsResponse(SnmpStats snmpStats){
+        if (snmpStats == null){
+            SnmpStats blankSnmpStats = new SnmpStats();
+            blankSnmpStats.setHostId(host.getId());
+            blankSnmpStats.setLoadbalancerId(loadbalancer.getId());
+            return blankSnmpStats;
         }
-        return snmpusage;
+
+        return snmpStats;
     }
 
     public StingrayUsageClient getStingrayUsageClient() {

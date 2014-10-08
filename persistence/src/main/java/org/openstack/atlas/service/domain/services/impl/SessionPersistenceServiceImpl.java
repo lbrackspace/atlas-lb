@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
@@ -76,24 +77,22 @@ public class SessionPersistenceServiceImpl extends BaseService implements Sessio
     }
 
     public void validateSessionPersistenceProtocolCompatibility(LoadBalancer inLb, LoadBalancer dbLb) throws BadRequestException, UnprocessableEntityException {
-        SessionPersistence inpersist = inLb.getSessionPersistence();
+        SessionPersistence persistenceType = inLb.getSessionPersistence();
         LoadBalancerProtocol dbProtocol = dbLb.getProtocol();
 
-        String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP and HTTP(SSL Termination) protocols. ";
-        String sipErrMsg = "SOURCE_IP Session persistence is only valid with non-HTTP protocols. ";
+        String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP protocol with or without SSL termination.";
+        String sslErrMsg = "SSL_ID session persistence is only valid with the HTTPS protocol. ";
 
-        LOG.info("Verifying session persistence protocol..." + inpersist);
-        if (inpersist != NONE) {
-            if (inpersist == HTTP_COOKIE &&
-                    (dbProtocol != HTTP)) {
+        LOG.info("Verifying session persistence protocol..." + persistenceType);
+        if (persistenceType != NONE) {
+            if (persistenceType == HTTP_COOKIE && (dbProtocol != HTTP)) {
                 LOG.info(httpErrMsg);
                 throw new BadRequestException(httpErrMsg);
             }
 
-            if (inpersist == SOURCE_IP &&
-                    (dbProtocol == HTTP)) {
-                LOG.info(httpErrMsg);
-                throw new BadRequestException(sipErrMsg);
+            if (persistenceType == SSL_ID && (dbProtocol != HTTPS)) {
+                LOG.info(sslErrMsg);
+                throw new BadRequestException(sslErrMsg);
             }
         }
         LOG.info("Successfully verified session persistence protocol..." + inLb.getSessionPersistence());

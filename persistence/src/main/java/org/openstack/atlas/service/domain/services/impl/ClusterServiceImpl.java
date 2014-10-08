@@ -14,6 +14,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.NoAvailableClusterException;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.pojos.VirtualIpAvailabilityReport;
 import org.openstack.atlas.service.domain.pojos.VirtualIpBlock;
@@ -22,7 +23,6 @@ import org.openstack.atlas.service.domain.services.ClusterService;
 import org.openstack.atlas.service.domain.services.TicketService;
 import org.openstack.atlas.service.domain.services.VirtualIpService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,8 +30,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-//import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
 
 @Service
 public class ClusterServiceImpl extends BaseService implements ClusterService {
@@ -48,7 +46,7 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
     }
 
     @Override
-    public Cluster getActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException {
+    public Cluster getActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException {
         return clusterRepository.getActiveCluster(accountId);
     }
 

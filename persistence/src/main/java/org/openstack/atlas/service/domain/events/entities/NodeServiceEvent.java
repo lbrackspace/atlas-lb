@@ -15,6 +15,9 @@ public class NodeServiceEvent extends Event implements Serializable {
     @Column(name = "detailed_message", columnDefinition = "mediumtext")
     private String detailedMessage;
 
+    @Column(name = "callback_host", nullable=false)
+    private String callbackHost;
+
     public Integer getNodeId() {
         return nodeId;
     }
@@ -29,5 +32,13 @@ public class NodeServiceEvent extends Event implements Serializable {
 
     public void setDetailedMessage(String detailedMessage) {
         this.detailedMessage = detailedMessage;
+    }
+
+    public String getCallbackHost() {
+        return callbackHost;
+    }
+
+    public void setCallbackHost(String callbackHost) {
+        this.callbackHost = callbackHost;
     }
 }

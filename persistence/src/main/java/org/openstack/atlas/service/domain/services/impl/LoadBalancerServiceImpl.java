@@ -82,8 +82,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                     getLoadBalancerLimit(lb.getAccountId())));
         }
 
-        // Drop Health Monitor code here for secNodes
-
         // If user wants secondary nodes they must have some kind of healthmonitoring
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(lb.getNodes());
         if (lb.getHealthMonitor() == null && npc.hasSecondary()) {
@@ -100,8 +98,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
         }
 
-        //check for blacklisted Nodes
         try {
+            // Check for black-listed nodes
             Node badNode = blackListedItemNode(lb.getNodes());
             if (badNode != null) {
                 throw new BadRequestException(String.format("Invalid node address. The address '%s' is currently not accepted for this request.", badNode.getIpAddress()));
@@ -123,10 +121,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         try {
-            //check for TCP protocol and port before adding default, since TCP protocol has no default
+            // Check for TCP protocol and port before adding default, since TCP protocol has no default
             verifyTCPUDPProtocolandPort(lb);
             addDefaultValues(lb);
-            //V1-B-17728 allowing ip SP for non-http protocols
             verifySessionPersistence(lb);
             verifyProtocolAndHealthMonitorType(lb);
             verifyHalfCloseSupport(lb);
@@ -153,13 +150,15 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw e;
         } catch (OutOfVipsException e) {
             LOG.warn("Out of virtual ips! Sending error response to client...");
-            String errorMessage = e.getMessage();
-            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), errorMessage);
+            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), e.getMessage());
+            throw e;
+        } catch (NoAvailableClusterException e) {
+            LOG.warn("No available cluster! Sending error response to client...");
+            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), e.getMessage());
             throw e;
         } catch (IllegalArgumentException e) {
             LOG.warn("Virtual Ip could not be processed....");
-            String errorMessage = e.getMessage();
-            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), errorMessage);
+            notificationService.saveAlert(lb.getAccountId(), lb.getId(), e, AlertType.API_FAILURE.name(), e.getMessage());
             throw e;
         }
 
@@ -167,12 +166,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         dbLoadBalancer.setUserName(lb.getUserName());
         joinIpv6OnLoadBalancer(dbLoadBalancer);
 
-        // Add atom entry
-//        String atomTitle = "Load Balancer in build status";
-//        String atomSummary = "Load balancer in build status";
-//        notificationService.saveLoadBalancerEvent(lb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, BUILD_LOADBALANCER, CREATE, INFO);
-
-        //Save history record
+        // Save history record
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.BUILD);
 
         return dbLoadBalancer;
@@ -207,17 +201,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Override
     @Transactional(rollbackFor = {Exception.class})
     public LoadBalancer prepareForUpdate(LoadBalancer loadBalancer) throws Exception {
-        LoadBalancer dbLoadBalancer;
-        boolean portHMTypecheck = true;
-
-        dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
 
         if (dbLoadBalancer.hasSsl()) {
             LOG.debug("Verifying protocol, cannot update protocol while using ssl termination...");
             if (loadBalancer.getProtocol() != null && loadBalancer.getProtocol() != dbLoadBalancer.getProtocol()) {
                 throw new BadRequestException("Cannot update protocol on a load balancer with ssl termination.");
             }
-//            SslTerminationHelper.isProtocolSecure(loadBalancer);
         }
 
         LOG.info("Performing SSL verifications.");
@@ -259,7 +249,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                             "or for load balancers with a 'Secure Only' SSL Termination.");
                 } else if ((loadBalancer.getPort() != null && loadBalancer.getPort() != 443)
                         || (loadBalancer.getPort() == null && dbLoadBalancer.getPort() != 443)) {
-                //We just redirect to https://original.url.com which goes to 443
+                    //We just redirect to https://original.url.com which goes to 443
                     LOG.error("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
                     throw new BadRequestException("HTTPS Redirect can only be enabled for HTTPS load balancers using port 443.");
                 }
@@ -283,7 +273,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 throw new BadRequestException(String.format("Port currently assigned to one of the virtual ips. Please verify protocol/port combinations."));
             }
         }
-
 
         if (loadBalancer.getName() != null && !loadBalancer.getName().equals(dbLoadBalancer.getName())) {
             LOG.debug("Updating loadbalancer name to " + loadBalancer.getName());
@@ -347,8 +336,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 throw new BadRequestException("Protocol is not valid. Please verify shared virtual ips and the ports being shared.");
             }
 
-
             //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
+            boolean portHMTypecheck = true;
             if (dbLoadBalancer.getHealthMonitor() != null) {
                 if (dbLoadBalancer.getHealthMonitor().getType() != null) {
                     if (dbLoadBalancer.getHealthMonitor().getType().name().equals(LoadBalancerProtocol.HTTP.name())) {
@@ -366,27 +355,35 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             }
 
             if (portHMTypecheck) {
-                /* Notify the Usage Processor on changes of protocol to and from secure protocols */
-                //notifyUsageProcessorOfSslChanges(message, queueLb, dbLoadBalancer);
-                if (loadBalancer.getProtocol().equals(HTTP)) {
-                    if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.HTTP_COOKIE)) {
-                        LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
-                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                LoadBalancerProtocol lbProtocol = loadBalancer.getProtocol();
+                SessionPersistence dbPersistenceType = dbLoadBalancer.getSessionPersistence();
+                if (lbProtocol.equals(HTTP)) {
+                    if ((dbPersistenceType == SessionPersistence.HTTP_COOKIE)) {
+                        LOG.debug("Existing session persistence valid with HTTP protocol. Updating loadbalancer protocol to " + lbProtocol);
+                        dbLoadBalancer.setProtocol(lbProtocol);
                     } else {
-                        LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                        LOG.debug("Cannot have HTTP protocol with " + dbPersistenceType + " persistence. Updating loadbalancer protocol, but disabling session persistence.");
                         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
-                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                        dbLoadBalancer.setProtocol(lbProtocol);
                     }
-
-                } else if (!loadBalancer.getProtocol().equals(HTTP)) {
-                    dbLoadBalancer.setContentCaching(false);
-                    if ((dbLoadBalancer.getSessionPersistence() == SessionPersistence.SOURCE_IP)) {
-                        LOG.debug("Updating loadbalancer protocol to " + loadBalancer.getProtocol());
-                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                } else if (lbProtocol.equals(HTTPS)) {
+                    if ((dbPersistenceType == SessionPersistence.SSL_ID)) {
+                        LOG.debug("Existing session persistence valid with HTTPS protocol. Updating loadbalancer protocol to " + lbProtocol);
+                        dbLoadBalancer.setProtocol(lbProtocol);
                     } else {
-                        LOG.debug("Updating loadbalancer protocol to " + SessionPersistence.NONE);
+                        LOG.debug("Cannot have HTTPS protocol with " + dbPersistenceType + " persistence. Updating loadbalancer protocol, but disabling session persistence.");
                         dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
-                        dbLoadBalancer.setProtocol(loadBalancer.getProtocol());
+                        dbLoadBalancer.setProtocol(lbProtocol);
+                    }
+                } else {
+                    dbLoadBalancer.setContentCaching(false);
+                    if ((dbPersistenceType == SessionPersistence.SOURCE_IP)) {
+                        LOG.debug("Existing session persistence valid with " + lbProtocol + " protocol. Updating loadbalancer protocol to " + lbProtocol);
+                        dbLoadBalancer.setProtocol(lbProtocol);
+                    } else {
+                        LOG.debug("Cannot have " +  lbProtocol + " + protocol with " + dbPersistenceType + " persistence. Updating loadbalancer protocol, but disabling session persistence.");
+                        dbLoadBalancer.setSessionPersistence(SessionPersistence.NONE);
+                        dbLoadBalancer.setProtocol(lbProtocol);
                     }
                 }
             } else {
@@ -398,7 +395,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         LOG.debug(String.format("Verifying connectionLogging and contentCaching... if enabled, they are valid only with HTTP protocol.."));
         verifyProtocolLoggingAndCaching(loadBalancer, dbLoadBalancer);
 
-        //V1-B-27058 12-10-12
         LOG.debug("Update half close support in load balancer service impl");
         if (loadBalancer.isHalfClosed() != null) {
             verifyHalfCloseSupport(dbLoadBalancer, loadBalancer.isHalfClosed());
@@ -414,13 +410,6 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
         LOG.debug("Updated the loadbalancer in DB. Now sending response back.");
 
-//        // Add atom entry
-//        String atomTitle = "Load Balancer in pending update status";
-//        String atomSummary = "Load balancer in pending update status";
-//        notificationService.saveLoadBalancerEvent(loadBalancer.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), atomTitle, atomSummary, PENDING_UPDATE_LOADBALANCER, UPDATE, INFO);
-
-        // TODO: Sending db loadbalancer causes everything to update. Tweek for performance
-        LOG.debug("Leaving " + getClass());
         return dbLoadBalancer;
     }
 
@@ -780,21 +769,22 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     private void verifySessionPersistence(LoadBalancer queueLb) throws BadRequestException {
-        //Dupelicated in sessionPersistenceServiceImpl ...
-        SessionPersistence inpersist = queueLb.getSessionPersistence();
+        // Duplicated in sessionPersistenceServiceImpl ...
+        SessionPersistence persistenceType = queueLb.getSessionPersistence();
         LoadBalancerProtocol dbProtocol = queueLb.getProtocol();
 
-        String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP and HTTP pass-through(ssl-termination) protocols.";
-        String sipErrMsg = "SOURCE_IP Session persistence is only valid with non HTTP protocols.";
-        if (inpersist != NONE) {
-            if (inpersist == HTTP_COOKIE
-                    && (dbProtocol != HTTP)) {
+        String httpErrMsg = "HTTP_COOKIE Session persistence is only valid with HTTP protocol with or without SSL termination.";
+        String sslErrMsg = "SSL_ID session persistence is only valid with the HTTPS protocol. ";
+
+        if (persistenceType != NONE) {
+            if (persistenceType == HTTP_COOKIE && (dbProtocol != HTTP)) {
+                LOG.info(httpErrMsg);
                 throw new BadRequestException(httpErrMsg);
             }
 
-            if (inpersist == SOURCE_IP
-                    && (dbProtocol == HTTP)) {
-                throw new BadRequestException(sipErrMsg);
+            if (persistenceType == SSL_ID && (dbProtocol != HTTPS)) {
+                LOG.info(sslErrMsg);
+                throw new BadRequestException(sslErrMsg);
             }
         }
     }
@@ -859,7 +849,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
     }
 
-    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, BadRequestException {
+    private void setHostForNewLoadBalancer(LoadBalancer loadBalancer) throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, BadRequestException, NoAvailableClusterException {
         boolean isHost = false;
         LoadBalancer gLb = new LoadBalancer();
 
@@ -1098,16 +1088,15 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             throw new BadRequestException("Found sticky LoadBalancers: " + StringUtilities.buildDelemtedListFromStringArray(invalidLbArray, ",") + " please remove and retry the request");
         }
 
-        //Everythings ok, begin update...
         for (LoadBalancer lb : validLbs) {
+            // Everything's ok! Begin update...
             setStatus(lb, LoadBalancerStatus.PENDING_UPDATE);
-//            loadBalancerRepository.save(lb);
         }
 
         return validLbs;
     }
 
-    private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException, ClusterStatusException {
+    private void processSpecifiedOrDefaultHost(LoadBalancer lb) throws EntityNotFoundException, BadRequestException, ClusterStatusException, NoAvailableClusterException {
         Integer hostId = null;
         Host specifiedHost;
 

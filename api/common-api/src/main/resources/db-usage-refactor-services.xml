@@ -48,4 +48,6 @@
         <property name="loadBalancerService" ref="loadBalancerService" />
     </bean>
 
+    <bean id="statsCollection" class="org.openstack.atlas.usagerefactor.collection.StatsCollection"/>
+
 </beans>

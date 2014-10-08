@@ -356,6 +356,7 @@ LOCK TABLES `lb_session_persistence` WRITE;
 INSERT INTO `lb_session_persistence` VALUES ('HTTP_COOKIE','Indicates that the load balancer uses HTTP_COOKIE session persistence',1);
 INSERT INTO `lb_session_persistence` VALUES ('NONE','Indicates that the load balancer does not have session persistence enabled',1);
 INSERT INTO `lb_session_persistence` VALUES ('SOURCE_IP','Indicates that the load balancer uses SOURCE_IP session persistence',1);
+INSERT INTO `lb_session_persistence` VALUES ('SSL_ID', 'Indicates that the load balancer uses SSL_ID session persistence',1);
 /*!40000 ALTER TABLE `lb_session_persistence` ENABLE KEYS */;
 UNLOCK TABLES;
 

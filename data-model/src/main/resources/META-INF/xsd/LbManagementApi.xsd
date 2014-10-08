@@ -270,6 +270,7 @@
         <xsd:restriction base="xsd:string">
             <xsd:enumeration value="STANDARD"/>
             <xsd:enumeration value="INTERNAL"/>
+            <xsd:enumeration value="SMOKE"/>
         </xsd:restriction>
     </xsd:simpleType>
 
@@ -492,6 +493,7 @@
     <xsd:complexType name="zeusEvent">
         <xsd:attribute name="eventType" type="xsd:string"/>
         <xsd:attribute name="paramLine" type="xsd:string"/>
+        <xsd:attribute name="callbackHost" type="xsd:string"/>
     </xsd:complexType>
     <!-- END Zeus callback contract -->
 

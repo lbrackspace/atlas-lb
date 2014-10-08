@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.helpers;
 
 
+import org.openstack.atlas.api.exceptions.StingrayTimeoutException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
@@ -29,6 +30,10 @@ public class ResponseMapper {
                 inf.setMessage((message == null) ? "Object not Found" : message);
                 inf.setCode(getStatus(ErrorReason.ENTITY_NOT_FOUND));
                 return inf;
+            case STINGRAY_TIMEOUT:
+                lbf.setMessage((message == null) ? "We are currently saturated with requests. Please try again later." : message);
+                lbf.setDetails(details);
+                return lbf;
             case IMMUTABLE_ENTITY:
                 ImmutableEntity ie = new ImmutableEntity();
                 ie.setMessage((message == null) ? "The object at the specified URI is immutable and can not be overwritten." : message);
@@ -50,6 +55,11 @@ public class ResponseMapper {
                 cse.setMessage((message == null) ? "Cluster status is invalid. Please contact support." : message);
                 cse.setDetails(details);
                 return cse;
+            case NO_AVAILABLE_CLUSTER:
+                NoAvailableCluster nac = new NoAvailableCluster();
+                nac.setMessage((message == null) ? "No available cluster found for your account. Please contact support." : message);
+                nac.setDetails(details);
+                return nac;
             case OVER_LIMIT:
                 OverLimit olf = new OverLimit();
                 olf.setMessage((message == null) ? "Your account is currently over the limit so your request could not be processed." : message);
@@ -90,10 +100,14 @@ public class ResponseMapper {
         }
         if (e instanceof EntityNotFoundException) {
             return getFault(ErrorReason.ENTITY_NOT_FOUND, message, details);
+        } else if (e instanceof StingrayTimeoutException) {
+            return getFault(ErrorReason.STINGRAY_TIMEOUT, message, details);
         } else if (e instanceof OutOfVipsException) {
             return getFault(ErrorReason.OUT_OF_VIPS, message, details);
-        }else if (e instanceof ClusterStatusException) {
+        } else if (e instanceof ClusterStatusException) {
             return getFault(ErrorReason.CLUSTER_STATUS, message, details);
+        } else if (e instanceof NoAvailableClusterException) {
+            return getFault(ErrorReason.NO_AVAILABLE_CLUSTER, message, details);
         } else if (e instanceof ServiceUnavailableException) {
             return getFault(ErrorReason.SERVICE_UNAVAILABLE, message, details);
         } else if (e instanceof SingletonEntityAlreadyExistsException) {
@@ -134,12 +148,16 @@ public class ResponseMapper {
             status = 200;
         } else if (e instanceof EntityNotFoundException) {
             status = getStatus(ErrorReason.ENTITY_NOT_FOUND);
-        } else if (e instanceof SingletonEntityAlreadyExistsException) {
+        } else if (e instanceof StingrayTimeoutException) {
+            status = getStatus(ErrorReason.STINGRAY_TIMEOUT);
+        }  else if (e instanceof SingletonEntityAlreadyExistsException) {
             status = getStatus(ErrorReason.IMMUTABLE_ENTITY);
         } else if (e instanceof OutOfVipsException) {
             status = getStatus(ErrorReason.OUT_OF_VIPS);
         } else if (e instanceof ClusterStatusException) {
             status = getStatus(ErrorReason.CLUSTER_STATUS);
+        } else if (e instanceof NoAvailableClusterException) {
+            status = getStatus(ErrorReason.NO_AVAILABLE_CLUSTER);
         } else if (e instanceof UnprocessableEntityException) {
             status = getStatus(ErrorReason.UNPROCESSABLE_ENTITY);
         } else if (e instanceof ImmutableEntityException) {
@@ -187,7 +205,13 @@ public class ResponseMapper {
             case OUT_OF_VIPS:
                 status = 500;
                 break;
+            case STINGRAY_TIMEOUT:
+                status = 503;
+                break;
             case CLUSTER_STATUS:
+                status = 500;
+                break;
+            case NO_AVAILABLE_CLUSTER:
                 status = 500;
                 break;
             case SERVICE_UNAVAILABLE:

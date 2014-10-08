@@ -107,6 +107,12 @@ public class AHRecordHelper {
             usageRecord.setCorrected(false);
             logSuccess(body, usageRecord, entrystring);
 
+        } else if (status == 429) {
+            usageRecord.setNeedsPushed(true);
+            failedRecords.add(usageRecord);
+            generateServiceEventRecord(usageRecord, entrystring, buildMessage(body));
+            logAndAlert(body, usageRecord, entrystring);
+            LOG.warn("Reached Atom Hopper usage rate limit.");
         } else if (status == 409) {
             boolean isDupe = isDuplicateEntry(authToken, usageRecord);
             if (isDupe) {
@@ -142,18 +148,14 @@ public class AHRecordHelper {
     protected boolean isDuplicateEntry(String token, Usage usageRecord) {
         try {
             ClientResponse response = client.getEntry(token, usageRecord.getUuid());
-            UsageEntry entry = response.getEntity(UsageEntry.class);
             if (response.getStatus() == 200) {
-                if (!(entry.getContent().getEvent().getId().equals(usageRecord.getUuid()))) {
-                    return false;
-                }
+                return true;
             }
         } catch (Exception e) {
             LOG.warn(String.format("Could not verify duplicate entry for UUID: %s, attempt to re-push the record...",
                     usageRecord.getUuid()));
-            return false;
         }
-        return true;
+        return false;
     }
 
     protected void logAndAlert(String body, Usage usageRecord, String entrystring) {

@@ -32,6 +32,8 @@ public class SslTerminationResource extends CommonDependencyProvider {
     private Integer loadBalancerId;
     private HttpHeaders requestHeaders;
 
+    private CertificateMappingsResource certificateMappingsResource;
+
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createSsl(SslTermination ssl) {
@@ -105,6 +107,13 @@ public class SslTerminationResource extends CommonDependencyProvider {
         }
     }
 
+    @Path("certificatemappings")
+    public CertificateMappingsResource retrieveCertificateMappingsResource() {
+        certificateMappingsResource.setAccountId(accountId);
+        certificateMappingsResource.setLoadBalancerId(loadBalancerId);
+        certificateMappingsResource.setRequestHeaders(requestHeaders);
+        return certificateMappingsResource;
+    }
 
     private Response getFeedResponse(Integer page) {
         Map<String, Object> feedAttributes = new HashMap<String, Object>();
@@ -152,5 +161,9 @@ public class SslTerminationResource extends CommonDependencyProvider {
 
     public void setRequestHeaders(HttpHeaders requestHeaders) {
         this.requestHeaders = requestHeaders;
+    }
+
+    public void setCertificateMappingsResource(CertificateMappingsResource certificateMappingsResource) {
+        this.certificateMappingsResource = certificateMappingsResource;
     }
 }

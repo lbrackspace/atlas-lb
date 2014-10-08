@@ -19,6 +19,7 @@
         <class>org.openstack.atlas.service.domain.entities.AccessList</class>
         <class>org.openstack.atlas.service.domain.entities.AccessListType</class>
         <class>org.openstack.atlas.service.domain.entities.Cluster</class>
+        <class>org.openstack.atlas.service.domain.entities.CertificateMapping</class>
         <class>org.openstack.atlas.service.domain.entities.GroupRateLimit</class>
         <class>org.openstack.atlas.service.domain.entities.AccountGroup</class>
         <class>org.openstack.atlas.service.domain.entities.ConnectionLimit</class>

@@ -17,7 +17,7 @@ public class DomainToDataModelSslTerminationTest {
 
         private DozerBeanMapper mapper;
         private SslTermination sslTermination;
-        private org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination domainSsltermination;
+        private org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination dataModelSslTermination;
 
         @Before
         public void standUp() {
@@ -32,17 +32,17 @@ public class DomainToDataModelSslTerminationTest {
             sslTermination.setIntermediateCertificate("anIntermediateCert");
             sslTermination.setSecurePort(443);
             try {
-                domainSsltermination = mapper.map(sslTermination, org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination.class);
+                dataModelSslTermination = mapper.map(sslTermination, org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination.class);
             } catch (Exception e) {
                 Assert.fail("Exception caused by ssl termination types being null");
             }
 
-            Assert.assertEquals(sslTermination.getPrivatekey(), domainSsltermination.getPrivatekey());
-            Assert.assertEquals(sslTermination.getCertificate(), domainSsltermination.getCertificate());
-            Assert.assertEquals(sslTermination.getIntermediateCertificate(), domainSsltermination.getIntermediateCertificate());
-            Assert.assertEquals(sslTermination.getSecurePort(), (long)domainSsltermination.getSecurePort());
-            Assert.assertEquals(true, domainSsltermination.isEnabled());
-            Assert.assertEquals(false, domainSsltermination.isSecureTrafficOnly());
+            Assert.assertNull(dataModelSslTermination.getPrivatekey());
+            Assert.assertEquals(sslTermination.getCertificate(), dataModelSslTermination.getCertificate());
+            Assert.assertEquals(sslTermination.getIntermediateCertificate(), dataModelSslTermination.getIntermediateCertificate());
+            Assert.assertEquals(sslTermination.getSecurePort(), (long) dataModelSslTermination.getSecurePort());
+            Assert.assertEquals(true, dataModelSslTermination.isEnabled());
+            Assert.assertEquals(false, dataModelSslTermination.isSecureTrafficOnly());
         }
     }
 }

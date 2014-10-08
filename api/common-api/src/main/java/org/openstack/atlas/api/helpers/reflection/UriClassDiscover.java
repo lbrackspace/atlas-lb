@@ -19,6 +19,7 @@ public class UriClassDiscover {
     static {
         rList = new ArrayList<REFCN>();
 
+        // If you don't add new URI's to the following list then customers will get a 500 response on bad JSON.
         getrList().add(new REFCN(".*\\d+/loadbalancers(\\.json|\\.xml)?/?$", LoadBalancer.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+(\\.json|\\.xml)?/?$", LoadBalancer.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/accesslist(\\.json|\\.xml)?/?$", AccessList.class));
@@ -31,6 +32,8 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/sessionpersistence(\\.json|\\.xml)?/?$", SessionPersistence.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
+        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination/certificatemappings(\\.json|\\.xml)?/?$", CertificateMapping.class));
+        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination/certificatemappings/\\d+(\\.json|\\.xml)?/?$", CertificateMapping.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/errorpage(\\.json|\\.xml)?/?$", Errorpage.class));
 
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));

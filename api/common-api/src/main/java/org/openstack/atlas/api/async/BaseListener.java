@@ -38,6 +38,7 @@ public abstract class BaseListener implements MessageListener {
     protected RateLimitingService rateLimitingService;
     protected NodeService nodeService;
     protected SslTerminationService sslTerminationService;
+    protected CertificateMappingService certificateMappingService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
@@ -110,13 +111,14 @@ public abstract class BaseListener implements MessageListener {
         this.sslTerminationService = sslTerminationService;
     }
 
+    public void setCertificateMappingService(CertificateMappingService certificateMappingService) {
+        this.certificateMappingService = certificateMappingService;
+    }
+
     public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
         this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 
-//    public void setUsageEventProcessor(UsageEventProcessor usageEventProcessor) {
-//        this.usageEventProcessor = usageEventProcessor;
-//    }
     public void setUsageEventCollection(UsageEventCollection usageEventCollection) {
         this.usageEventCollection = usageEventCollection;
     }
@@ -128,8 +130,7 @@ public abstract class BaseListener implements MessageListener {
             System.err.println("Error processing message, " + ue);
             ue.printStackTrace();
         } catch (Exception e) {
-            //ToDo: When in production log a cleaner message. But for now show the whole stack trace
-//            System.out.println("Exception in BaseListener" + e.getMessage());
+            // TODO: When in production log a cleaner message. But for now show the whole stack trace
             LOG.error(getStackTrace(e));
             Log L = LogFactory.getLog(this.getClass());
             L.error(String.format("Error processing message In Class %s: %s ", this.getClass().getSimpleName(), getStackTrace(e)));

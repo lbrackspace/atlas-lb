@@ -99,8 +99,6 @@ public class StmAdapterImplTestHelper {
     public static LoadBalancer generateLoadBalancer() {
         LoadBalancer loadBalancer = new LoadBalancer();
         loadBalancer.setPort(port);
-        loadBalancer.setIpv6Public(ipv6);
-        loadBalancer.setIpv4Public(ipv41);
         Set<AccessList> accessLists = new HashSet<AccessList>();
         AccessList item = new AccessList();
         item.setUserName(username);
