@@ -25,10 +25,8 @@ public class AHRecordHelper {
     private final Log LOG = LogFactory.getLog(AHRecordHelper.class);
 
     protected AtomHopperClient client;
-
     protected AlertRepository alertRepository;
     protected LoadBalancerEventRepository loadBalancerEventRepository;
-
     protected List<Usage> failedRecords;
     protected boolean isVerboseLog;
 
@@ -39,8 +37,7 @@ public class AHRecordHelper {
         this.client = client;
         this.loadBalancerEventRepository = loadBalancerEventRepository;
         this.alertRepository = alertRepository;
-
-        failedRecords = new ArrayList<Usage>();
+        this.failedRecords = new ArrayList<Usage>();
     }
 
     public List<Usage> handleUsageRecord(Usage usageRecord, String authToken, Map<Object, Object> entryMap) {
@@ -63,9 +60,7 @@ public class AHRecordHelper {
                     failedRecords.add(usageRecord);
                     return failedRecords;
                 }
-                response.close();
             }
-
         } catch (ClientHandlerException che) {
             LOG.error(String.format("Could not post entry because " +
                     "client handler exception for load balancer: %d :\n: Exception: %s ",
@@ -87,7 +82,20 @@ public class AHRecordHelper {
             generateSevereAlert("Severe Failure processing Atom Hopper requests: ", getExtendedStackTrace(t));
             generateServiceEventRecord(usageRecord, entryString, buildMessage(responseBody));
             failedRecords.add(usageRecord);
+        } finally {
+            if (response != null) {
+                try {
+                    response.close();
+                } catch (ClientHandlerException che) {
+                    LOG.error(String.format("Could not post entry because " +
+                            "client handler exception for load balancer: %d :\n: Exception: %s ",
+                            usageRecord.getLoadbalancer().getId(), getStackTrace(che)));
+                    logAndAlert(getStackTrace(che), usageRecord, entryString);
+                    failedRecords.add(usageRecord);
+                }
+            }
         }
+
         return failedRecords;
     }
 
@@ -106,7 +114,6 @@ public class AHRecordHelper {
             usageRecord.setNumAttempts(0);
             usageRecord.setCorrected(false);
             logSuccess(body, usageRecord, entrystring);
-
         } else if (status == 429) {
             usageRecord.setNeedsPushed(true);
             failedRecords.add(usageRecord);
@@ -146,15 +153,21 @@ public class AHRecordHelper {
     }
 
     protected boolean isDuplicateEntry(String token, Usage usageRecord) {
+        ClientResponse response = null;
+
         try {
-            ClientResponse response = client.getEntry(token, usageRecord.getUuid());
+            response = client.getEntry(token, usageRecord.getUuid());
             if (response.getStatus() == 200) {
                 return true;
             }
         } catch (Exception e) {
-            LOG.warn(String.format("Could not verify duplicate entry for UUID: %s, attempt to re-push the record...",
-                    usageRecord.getUuid()));
+            LOG.warn(String.format("Could not verify duplicate entry for UUID: %s, attempt to re-push the record...", usageRecord.getUuid()));
+        } finally {
+            if (response != null)  {
+                response.close();
+            }
         }
+
         return false;
     }
 

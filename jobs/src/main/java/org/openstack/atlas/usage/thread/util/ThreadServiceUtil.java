@@ -53,10 +53,11 @@ public class ThreadServiceUtil {
         } catch (InterruptedException e) {
             LOG.error("There was an error shutting down threadPool: " + AtomHopperUtil.getStackTrace(e));
             throw new AtomHopperUSLJobExecutionException("There was an error destroying thread monitors and task executors: " + e);
+        } finally {
+            LOG.debug("Destroying the AHUSL Client");
+            atomHopperClient.destroy();
         }
 
-        LOG.debug("Destroying the AHUSL Client");
-        atomHopperClient.destroy();
         return true;
     }
 }
