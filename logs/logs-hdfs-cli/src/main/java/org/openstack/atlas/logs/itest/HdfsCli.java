@@ -51,6 +51,7 @@ import org.openstack.atlas.logs.hadoop.writables.LogMapperOutputValue;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.debug.Debug;
 import org.joda.time.DateTime;
+import org.openstack.atlas.logs.hadoop.util.DeleteDirectoryResponse;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.logs.hadoop.util.LogChopper;
 import org.openstack.atlas.util.debug.SillyTimer;
@@ -157,6 +158,7 @@ public class HdfsCli {
                     System.out.printf("pwd   #print remote current directory\n");
                     System.out.printf("rebasePath <srcBase> <srcPath> <dstPath> #Show what the rebasePath method in StaticFileUtils would do\n");
                     System.out.printf("recompressIndex <srcFile> <hdfsDstFile> #Recompress and index lzo file and upload to hdfs\n");
+                    System.out.printf("resetConfig #Reset hadoop configs to test for changes\n");
                     System.out.printf("rmdir <path>\n");
                     System.out.printf("rmin <daysAgo> #Remove the input directories for entries that are older then daysAgo\n");
                     System.out.printf("rmout <daysAgo> #Remove the output directories for enrties that are older then daysAgo\n");
@@ -180,9 +182,10 @@ public class HdfsCli {
                     System.out.printf("showConfig #Show hadoop configs\n");
                     System.out.printf("showCrc <fileName> #Show crc value that would be reported by Zip\n");
                     System.out.printf("wb <size> #Wast nbytes to experiment with the Garbage colector\n");
-                    System.out.printf("fb #Free all bytes wasted so far");
+                    System.out.printf("fb #Free all bytes wasted so far\n");
                     System.out.printf("wbs #List the number of bytes in the wasted byte Cuffer\n");
                     System.out.printf("whoami\n");
+                    System.out.printf("\n");
                 } else if (cmd.equals("resetTimer")) {
                     System.out.printf("Timer reset\n");
                     timer.reset();
@@ -253,56 +256,49 @@ public class HdfsCli {
                     String hourKey = (args.length >= 2) ? args[1] : null;
                     String fileDisplay = listHourKeyFiles(hdfsUtils, outputDir, hourKey);
                     System.out.printf("%s\n", fileDisplay);
-                } else if (cmd.equals("rmout") && args.length > 1) {
-                    int nFiles = 0;
+                } else if (cmd.equals("rmin") && args.length > 1) {
                     int daysAgo = Integer.parseInt(args[1]);
-                    List<Long> hourKeysListL = new ArrayList<Long>();
-                    List<String> dirComps = new ArrayList<String>();
-                    String lbLogSplitDir = StaticFileUtils.mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT);
-                    FileStatus[] dateDirsStats = hdfsUtils.getFileSystem().listStatus(new Path(lbLogSplitDir));
-                    DateTime now = StaticDateTimeUtils.nowDateTime(true);
-                    Long daysAgoLong = StaticDateTimeUtils.dateTimeToHourLong(
-                            StaticDateTimeUtils.nowDateTime(
-                            true).minusDays(daysAgo));
-                    for (FileStatus fileStatus : dateDirsStats) {
-                        Long hourLong;
-                        String pathStr;
-                        try {
-                            pathStr = pathTailString(fileStatus);
-                            hourLong = Long.parseLong(pathStr);
-                            if (hourLong < daysAgoLong) {
-                                hourKeysListL.add(hourLong);
-                                nFiles++;
-                            }
-                        } catch (Exception ex) {
-                            continue;
-                        }
+                    List<String> hourDirs = hdfsUtils.getLZOsOlderThan(daysAgo);
+                    int nFiles = hourDirs.size();
+                    System.out.printf("attempting to delete input files ");
+                    for (String hourDir : hourDirs) {
+                        System.out.printf("%s\n", hourDir);
                     }
-                    Collections.sort(hourKeysListL);
-                    System.out.printf("Attempting to delete hours ");
-                    for (Long hourKey : hourKeysListL) {
-                        System.out.printf("%s ", hourKey);
-                        System.out.flush();
-                    }
-                    System.out.printf(" Delete above Files(Y/N) %f days of data\n", nFiles / 24.0);
+                    System.out.printf(" Delete above Files(Y/N) %f days worth\n", nFiles / 24.0);
                     if (CommonItestStatic.inputStream(stdin, "Y")) {
                         System.out.printf("Deleting\n");
-                        for (Long hourLong : hourKeysListL) {
-                            dirComps.clear();
-                            dirComps.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
-                            dirComps.add(LB_LOGS_SPLIT);
-                            dirComps.add(hourLong.toString());
-                            String pathStr = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(dirComps));
-                            System.out.printf("Delete %s = ", pathStr);
-                            System.out.flush();
-                            boolean resp = fs.delete(new Path(pathStr), true);
-                            System.out.printf("%s\n", resp);
+                        List<DeleteDirectoryResponse> respList = hdfsUtils.rmLZOsOlderThan(daysAgo);
+                        for (DeleteDirectoryResponse resp : respList) {
+                            System.out.printf("%s = %s\n", resp.getDirectory(), resp.getStatus());
+                            if (resp.getException() != null) {
+                                System.out.printf("%s\n", Debug.getEST(resp.getException()));
+                            }
                         }
                     } else {
                         System.out.printf("bailing out\n");
                         continue;
                     }
-
+                } else if (cmd.equals("rmout") && args.length > 1) {
+                    int daysAgo = Integer.parseInt(args[1]);
+                    List<String> oldZips = hdfsUtils.getZipsOlderThan(daysAgo);
+                    int nFiles = oldZips.size();
+                    System.out.printf("Attempting to delete hours ");
+                    for (String hourKey : oldZips) {
+                        System.out.printf("%s\n", hourKey);
+                    }
+                    System.out.printf(" Delete above Files(Y/N) %f days of data\n", nFiles / 24.0);
+                    if (CommonItestStatic.inputStream(stdin, "Y")) {
+                        List<DeleteDirectoryResponse> respList = hdfsUtils.rmZipsOlderThan(daysAgo);
+                        for (DeleteDirectoryResponse resp : respList) {
+                            System.out.printf("%s = %s\n", resp.getDirectory(), resp.getStatus());
+                            if (resp.getException() != null) {
+                                System.out.printf("%s\n", Debug.getEST(resp.getException()));
+                            }
+                        }
+                    } else {
+                        System.out.printf("bailing out\n");
+                        continue;
+                    }
                 } else if (cmd.equals("countzipbytes") && args.length > 1) {
                     List<String> zipDirComps = new ArrayList<String>();
                     ZipBytesCounter totalCounts = new ZipBytesCounter();
@@ -326,7 +322,7 @@ public class HdfsCli {
                         Long hourLong;
                         String pathStr;
                         try {
-                            pathStr = pathTailString(fileStatus);
+                            pathStr = HdfsUtils.pathTailString(fileStatus);
                             hourLong = Long.parseLong(pathStr);
                             if (hourLong >= daysAgoLong) {
                                 hourKeysListL.add(hourLong);
@@ -405,7 +401,7 @@ public class HdfsCli {
                         Long hourLong;
                         String pathStr;
                         try {
-                            pathStr = pathTailString(fileStatus);
+                            pathStr = HdfsUtils.pathTailString(fileStatus);
                             hourLong = Long.parseLong(pathStr);
                         } catch (Exception ex) {
                             continue;
@@ -707,48 +703,6 @@ public class HdfsCli {
                     System.out.printf("Total file bytes: %s\n", Debug.humanReadableBytes(total_file_size));
                     System.out.printf("Total file bytes including replication: %s\n", Debug.humanReadableBytes(total_repl_size));
                     System.out.printf("Total file count: %d\n", fileStatusList.length);
-                } else if (cmd.equals("rmin") && args.length > 1) {
-                    int daysAgo = Integer.parseInt(args[1]);
-                    List<Long> hourDirs = new ArrayList<Long>();
-                    int nFiles = 0;
-
-                    FileStatus[] stats = hdfsUtils.getFileSystem().listStatus(new Path(HadoopLogsConfigs.getMapreduceInputPrefix()));
-                    Long ninetyDaysAgoLong = StaticDateTimeUtils.dateTimeToHourLong(
-                            StaticDateTimeUtils.nowDateTime(
-                            true).minusDays(daysAgo));
-                    for (FileStatus stat : stats) {
-                        try {
-                            String pathStr = pathTailString(stat);
-                            long hourLong = Long.parseLong(pathStr);
-                            if (hourLong < ninetyDaysAgoLong) {
-                                nFiles++;
-                                hourDirs.add(hourLong);
-                            }
-                        } catch (Exception ex) {
-                            continue;
-                        }
-                    }
-                    Collections.sort(hourDirs);
-                    System.out.printf("attempting to delete input files ");
-                    for (Long hourDir : hourDirs) {
-                        System.out.printf(" %s ", hourDir);
-                        System.out.flush();
-                    }
-                    System.out.printf(" Delete above Files(Y/N) %f days worth\n", nFiles / 24.0);
-                    if (CommonItestStatic.inputStream(stdin, "Y")) {
-                        System.out.printf("Deleting\n");
-                        for (Long hourLong : hourDirs) {
-                            String pathStr = StaticFileUtils.joinPath(HadoopLogsConfigs.getMapreduceInputPrefix(), hourLong.toString());
-                            System.out.printf("Delete %s = ", pathStr);
-                            System.out.flush();
-                            boolean resp = fs.delete(new Path(pathStr), true);
-                            System.out.printf("%s\n", resp);
-                        }
-                    } else {
-                        System.out.printf("bailing out\n");
-                        continue;
-                    }
-
                 } else if (cmd.equals("countlzobytes") && args.length > 1) {
                     long totalLzoBytes = 0L;
                     long dirBytes = 0L;
@@ -763,7 +717,7 @@ public class HdfsCli {
 
                     for (FileStatus stat : stats) {
                         try {
-                            String pathStr = pathTailString(stat);
+                            String pathStr = HdfsUtils.pathTailString(stat);
                             long hourLong = Long.parseLong(pathStr);
                             if (hourLong >= ninetyDaysAgoLong) {
                                 hourDirs.add(hourLong);
@@ -811,7 +765,7 @@ public class HdfsCli {
                         long endHour = Long.parseLong(args[2]);
                         FileStatus[] stats = hdfsUtils.getFileSystem().listStatus(new Path(logSplitDir));
                         for (FileStatus stat : stats) {
-                            String tail = pathTailString(stat.getPath());
+                            String tail = HdfsUtils.pathTailString(stat.getPath());
                             if (!stat.isDir()) {
                                 continue; // If its a plain file don't count this one
                             }
@@ -1060,6 +1014,9 @@ public class HdfsCli {
                         entryNum++;
                     }
                     System.out.printf("Total entries = %d\n", totalEntryCount);
+                } else if (cmd.equals("resetConfig")) {
+                    System.out.printf("Reloading configs\n");
+                    HadoopLogsConfigs.resetConfigs(null);
                 } else if (cmd.equals("scanLines") && args.length >= 3) {
                     String fileName = args[1];
                     int nLines = Integer.parseInt(args[2]);
@@ -1290,13 +1247,5 @@ public class HdfsCli {
 
     public static double nowDateSecs() {
         return (double) System.currentTimeMillis() * MILLISECOND_COEF;
-    }
-
-    public static String pathTailString(Path path) {
-        return StaticFileUtils.pathTail(path.toUri().getRawPath());
-    }
-
-    public static String pathTailString(FileStatus fileStatus) {
-        return pathTailString(fileStatus.getPath());
     }
 }

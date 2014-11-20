@@ -27,7 +27,11 @@ public class HadoopLogsConfigs {
     protected static String mapreduceOutputPrefix;
     protected static String fileRegion;
     protected static String hdfsUserName;
-    private static String numReducers;
+    protected static int daysOfZipsToKeep;
+    protected static int daysOfLZOsToKeep;
+    protected static int replicationCount;
+    protected static int HdfsBlockSize;
+    protected static String numReducers;
     protected static String hdfsJobsJarPath;
     protected static Configuration hadoopConfiguration = null;
     protected static HdfsUtils hdfsUtils = null;
@@ -60,7 +64,31 @@ public class HadoopLogsConfigs {
         hdfsUserName = lbLogsConf.getString(LbLogsConfigurationKeys.hdfs_user_name);
         hdfsJobsJarPath = lbLogsConf.getString(LbLogsConfigurationKeys.hdfs_job_jar_path);
         numReducers = lbLogsConf.getString(LbLogsConfigurationKeys.num_reducers);
+        daysOfLZOsToKeep = getIntOrDefault(lbLogsConf, LbLogsConfigurationKeys.days_of_lzos_to_keep, 90);
+        daysOfZipsToKeep = getIntOrDefault(lbLogsConf, LbLogsConfigurationKeys.days_of_zips_to_keep, 7);
+        HdfsBlockSize = getIntOrDefault(lbLogsConf, LbLogsConfigurationKeys.hdfs_block_size_megs, 128);
+        replicationCount = getIntOrDefault(lbLogsConf, LbLogsConfigurationKeys.replication_count, 2);
+    }
 
+    private static int getIntOrDefault(LbLogsConfiguration lbConf, LbLogsConfigurationKeys key, int defaultValue) {
+        String valString;
+        int valInt;
+        valString = lbConf.getString(key);
+        if (valString == null) {
+            String fmt = "no value for %s specified for hadoop logging. Using default of %d\n";
+            String msg = String.format(fmt, key.name(), defaultValue);
+            LOG.warn(msg);
+            return defaultValue;
+        }
+        try {
+            valInt = Integer.parseInt(valString);
+        } catch (NumberFormatException ex) {
+            String fmt = "could not convert value of %s to an integer in the hadoop logging option %s using default value of %d instead\n";
+            String msg = String.format(fmt, valString, key.name(), defaultValue);
+            LOG.warn(msg);
+            return defaultValue;
+        }
+        return valInt;
     }
 
     public static HadoopJob getHadoopJob(Class<? extends HadoopJob> jobClass) {
@@ -96,6 +124,10 @@ public class HadoopLogsConfigs {
                 append("    hdfsJobsJarPath = ").append(hdfsJobsJarPath).append("\n").
                 append("    jarCopyed = ").append(jarCopyed).append("\n").
                 append("    resetCount = ").append(resetCount).append("\n").
+                append("    replicationCount = ").append(replicationCount).append("\n").
+                append("    hdfs_block_size_megs = ").append(HdfsBlockSize).append("\n").
+                append("    days_of_lzos_to_keep = ").append(daysOfLZOsToKeep).append("\n").
+                append("    days_of_zips_to_keep = ").append(daysOfZipsToKeep).append("\n").
                 append("}\n");
         return sb.toString();
     }
@@ -201,5 +233,25 @@ public class HadoopLogsConfigs {
 
     public static String getNumReducers() {
         return numReducers;
+    }
+
+    public static int getResetCount() {
+        return resetCount;
+    }
+
+    public static int getDaysOfZipsToKeep() {
+        return daysOfZipsToKeep;
+    }
+
+    public static int getDaysOfLZOsToKeep() {
+        return daysOfLZOsToKeep;
+    }
+
+    public static int getReplicationCount() {
+        return replicationCount;
+    }
+
+    public static int getHdfsBlockSize() {
+        return HdfsBlockSize;
     }
 }
