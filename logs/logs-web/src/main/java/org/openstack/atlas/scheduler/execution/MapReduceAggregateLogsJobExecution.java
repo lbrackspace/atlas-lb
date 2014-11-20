@@ -16,23 +16,54 @@ import org.openstack.atlas.service.domain.entities.JobState;
 import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 
 import org.openstack.atlas.config.HadoopLogsConfigs;
+import org.openstack.atlas.logs.hadoop.util.DeleteDirectoryResponse;
 import org.openstack.atlas.service.domain.entities.JobStateVal;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.common.VerboseLogger;
+import org.openstack.atlas.util.debug.Debug;
 import org.springframework.beans.factory.annotation.Required;
 
 public class MapReduceAggregateLogsJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
     private static final Log LOG = LogFactory.getLog(MapReduceAggregateLogsJobExecution.class);
     private static final VerboseLogger vlog = new VerboseLogger(MapReduceAggregateLogsJobExecution.class);
+    private static final int daysOfLZOsToKeep = 90;
+    private static final int daysOfZIPsToKeep = 7;
+
+    private static void logDeleteResults(List<DeleteDirectoryResponse> deletedDirs, String goodFmt, String badFmt) {
+        String excMsg;
+        String msg;
+        for (DeleteDirectoryResponse resp : deletedDirs) {
+            if (resp.getException() != null) {
+                excMsg = Debug.getExtendedStackTrace(resp.getException());
+                msg = String.format(badFmt, resp.getDirectory(), excMsg);
+                LOG.error(msg, resp.getException());
+            } else {
+                vlog.printf(goodFmt, resp.getDirectory());
+            }
+        }
+    }
 
     @Override
     public void execute(JobScheduler scheduler, QuartzSchedulerConfigs schedulerConfigs) throws ExecutionException {
         JobState state = createJob(JobName.MAPREDUCE, schedulerConfigs.getInputString());
+        List<DeleteDirectoryResponse> deletedDirs;
         int hadoopErrorCode = -1;
+        String excMsg;
         //tool.setupHadoopRun(schedulerConfigs);
-
+        try {
+            // Delete LZOs over 90 days old
+            deletedDirs = hdfsUtils.rmLZOsOlderThan(daysOfLZOsToKeep);
+            logDeleteResults(deletedDirs, "deleted %s", "Error in attempt to delete HDFS old LZO %s: %s\n");
+            // Delete zips over 7 days old
+            deletedDirs = hdfsUtils.rmZipsOlderThan(daysOfZIPsToKeep);
+            logDeleteResults(deletedDirs, "deleted %s", "Error in attempt to delete HDFS old ZIPs %s: %s\n");
+        } catch (Exception ex) {
+            excMsg = Debug.getEST(ex);
+            LOG.error(String.format("Error trying to delete old HDFS files:%s\n", excMsg), ex);
+        }
+        
         try {
 
             String dstJarPath = HadoopLogsConfigs.getHdfsJobsJarPath();
