@@ -1,0 +1,191 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fafc7978_506e7a02",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/config/HadoopLogsConfigs.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "Nit pick: Even though the method says default, it\u0027s good practice to always name your constants. In this case something like \u0027DEFAULT_DAYS_OF_LZO_RETENTION\u0027 or whatever. Same applies to the other config values",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_3073f6ea",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/config/HadoopLogsConfigs.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "Nit: Camelcase please :) \u0027hdfsBlockSize\u0027 instead of \u0027HdfsBlockSize\u0027",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_907742d4",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/config/HadoopLogsConfigs.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "Won\u0027t this potentially use the default without the user knowing it because they may not be looking at the logs. Perhaps we should just let it fail so that they are forced to add a correct value into the config variable in question.",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_503cbae2",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "This should be static right? Does it need to be configurable? Your call as I\u0027m not quite sure what it does.",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_902582c4",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 270,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "Nit: I think the \u0027L\u0027 is a typo for this variable. :)",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_10199288",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 288,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "Should we add debug logging here? I\u0027m guessing we don\u0027t care about exceptions here?",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_f01dee74",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 343,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "The variable \u0027ninetyDaysAgoLong\u0027 should be changed to \u0027daysAgoLong\u0027 or something similar as it may not be ninety days.",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_30181681",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "Thank you for making this into a variable...good practice :)",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_7009fe30",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 496,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "The constant should be a static variable. It looks like it is converting megabytes to bytes? If so, how about \u0027MB_TO_BYTES_CONVERSION\u0027?",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_d006ea1f",
+        "filename": "logs/logs-web/src/main/java/org/openstack/atlas/scheduler/execution/MapReduceAggregateLogsJobExecution.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "Either remove comment or update it to reflect the change.",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_b003660e",
+        "filename": "logs/logs-web/src/main/java/org/openstack/atlas/scheduler/execution/MapReduceAggregateLogsJobExecution.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2014-12-08T20:53:13Z",
+      "side": 1,
+      "message": "Either remove comment or update it to reflect the change.",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
