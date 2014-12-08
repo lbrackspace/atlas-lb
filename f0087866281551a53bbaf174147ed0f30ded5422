@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "fafc7978_eb2b3f80",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/config/HadoopLogsConfigs.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "At this poiint I\u0027m just gonna let the application crash on a Null Pointer. I don\u0027t feel like doing Defaults anymore.",
+      "parentUuid": "fafc7978_506e7a02",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fafc7978_3073f6ea",
         "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/config/HadoopLogsConfigs.java",
         "patchSetId": 2
@@ -30,6 +48,24 @@
       "writtenOn": "2014-12-08T20:53:13Z",
       "side": 1,
       "message": "Nit: Camelcase please :) \u0027hdfsBlockSize\u0027 instead of \u0027HdfsBlockSize\u0027",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_cb1d9b68",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/config/HadoopLogsConfigs.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "agreed not sure how shit happened err shift + H",
+      "parentUuid": "fafc7978_3073f6ea",
       "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "fafc7978_ab3137ee",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/config/HadoopLogsConfigs.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "Writing to the log and not crashing would have been the polite thing to do but the app will just crash now on Null PointerException or NumberFormatException.",
+      "parentUuid": "fafc7978_907742d4",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fafc7978_503cbae2",
         "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
         "patchSetId": 2
@@ -64,6 +118,24 @@
       "writtenOn": "2014-12-08T20:53:13Z",
       "side": 1,
       "message": "This should be static right? Does it need to be configurable? Your call as I\u0027m not quite sure what it does.",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_eb521f12",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "This isn\u0027t a config option. This was added since the value appeared to be literaled in multiple places.",
+      "parentUuid": "fafc7978_503cbae2",
       "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "fafc7978_4b588b32",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 270,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "Not sure where it came from.",
+      "parentUuid": "fafc7978_902582c4",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fafc7978_10199288",
         "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
         "patchSetId": 2
@@ -98,6 +188,24 @@
       "writtenOn": "2014-12-08T20:53:13Z",
       "side": 1,
       "message": "Should we add debug logging here? I\u0027m guessing we don\u0027t care about exceptions here?",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_2b5d4722",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 288,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "The exception is not an error. Its just here to prevent the code from dying when some one injects a \"./temp\" directory. IE if the directory is not a number then it is ignored as its not expected to contain an LZO. Don\u0027t think of it as an attempt to swallow an error.\n\nI\u0027ll just leave a comment instead.",
+      "parentUuid": "fafc7978_10199288",
       "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -121,6 +229,24 @@
     },
     {
       "key": {
+        "uuid": "fafc7978_6b3e2fba",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 343,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "This was back when we were doing the fastest effort to get the code working. Now it seems that discussion was a waste of tinme.",
+      "parentUuid": "fafc7978_f01dee74",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fafc7978_30181681",
         "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
         "patchSetId": 2
@@ -132,6 +258,24 @@
       "writtenOn": "2014-12-08T20:53:13Z",
       "side": 1,
       "message": "Thank you for making this into a variable...good practice :)",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_cb4bdb57",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "This of course relates to your comment above where you objected to it.",
+      "parentUuid": "fafc7978_30181681",
       "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -155,6 +299,24 @@
     },
     {
       "key": {
+        "uuid": "fafc7978_4b6febc5",
+        "filename": "logs/logs-hadoop/src/main/java/org/openstack/atlas/logs/hadoop/util/HdfsUtils.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 496,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "I was orignally going to use 1024L*1024L as this is the cleanest representation of what this does but the java compiler won\u0027t optimize this into 1048576L which is a travisty already so I did this by hand. \n\n     1024L*1024L is my biggest compramise.",
+      "parentUuid": "fafc7978_7009fe30",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fafc7978_d006ea1f",
         "filename": "logs/logs-web/src/main/java/org/openstack/atlas/scheduler/execution/MapReduceAggregateLogsJobExecution.java",
         "patchSetId": 2
@@ -172,6 +334,24 @@
     },
     {
       "key": {
+        "uuid": "fafc7978_2b742798",
+        "filename": "logs/logs-web/src/main/java/org/openstack/atlas/scheduler/execution/MapReduceAggregateLogsJobExecution.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "sure why not.",
+      "parentUuid": "fafc7978_d006ea1f",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fafc7978_b003660e",
         "filename": "logs/logs-web/src/main/java/org/openstack/atlas/scheduler/execution/MapReduceAggregateLogsJobExecution.java",
         "patchSetId": 2
@@ -183,6 +363,24 @@
       "writtenOn": "2014-12-08T20:53:13Z",
       "side": 1,
       "message": "Either remove comment or update it to reflect the change.",
+      "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fafc7978_8b68b3bb",
+        "filename": "logs/logs-web/src/main/java/org/openstack/atlas/scheduler/execution/MapReduceAggregateLogsJobExecution.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2014-12-08T22:02:18Z",
+      "side": 1,
+      "message": "sure.",
+      "parentUuid": "fafc7978_b003660e",
       "revId": "f0087866281551a53bbaf174147ed0f30ded5422",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
