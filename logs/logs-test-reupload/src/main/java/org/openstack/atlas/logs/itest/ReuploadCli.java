@@ -502,9 +502,17 @@ public class ReuploadCli {
         }
         List<Long> keys = new ArrayList<Long>(counts.keySet());
         Collections.sort(keys);
+        List<IdCounter> countList = new ArrayList<IdCounter>();
         for (Long key : keys) {
             System.out.printf("    %d = %d\n", key, counts.get(key));
+            countList.add(new IdCounter(key, counts.get(key)));
         }
+        System.out.printf("================== (sorted) ==================\n");
+        Collections.sort(countList, new IdCounterComparator());
+        for (IdCounter idCount : countList) {
+            System.out.printf("  %6d = %6d\n", idCount.getId(), idCount.getCount());
+        }
+
     }
 
     private void countZinfo() {
