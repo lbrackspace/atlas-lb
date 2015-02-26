@@ -6,11 +6,15 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpAvailab
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadbalancerDetails;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.TrafficType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -66,6 +70,66 @@ public class VirtualIpsResource extends ManagementDependencyProvider {
     public VirtualIpResource appendVirtualIpsId(@PathParam("id") int id) {
         virtualIpResource.setId(id);
         return virtualIpResource;
+    }
+
+    @Path("detailsbyip")
+    @GET
+    public Response retrieveDetailsForIp(@QueryParam("ip") String ipAddress) {
+        if (!isUserInRole("cp,ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        VirtualIpLoadbalancerDetails rLbDetails = new VirtualIpLoadbalancerDetails();
+        TrafficType rProtocol;
+        List<LoadBalancer> lbsByIp;
+        try {
+            lbsByIp = getVipRepository().getLoadBalancerByVipAddress(ipAddress);
+            if (!lbsByIp.isEmpty()) {
+                LoadBalancer lb = lbsByIp.get(0);
+
+                rLbDetails.setAccountId(lb.getAccountId());
+                rLbDetails.setLoadBalancerId(lb.getId());
+                Set<LoadBalancerJoinVip> vipSet = lb.getLoadBalancerJoinVipSet();
+                for (LoadBalancerJoinVip vip : vipSet) {
+                    if (vip.getVirtualIp().getIpAddress().equals(ipAddress)) {
+                        rLbDetails.setVirtualIpId(vip.getVirtualIp().getId());
+                    }
+                }
+
+                if (lb.isHttpsRedirect()) {
+                    // In case of HTTPS Redirect, add 80/443 since they are always static
+                    rProtocol = new TrafficType();
+                    rProtocol.setProtocol("TCP");
+                    rProtocol.setPort(80);
+                    rLbDetails.getProtocols().add(rProtocol);
+
+                    rProtocol = new TrafficType();
+                    rProtocol.setProtocol("TCP");
+                    rProtocol.setPort(443);
+                    rLbDetails.getProtocols().add(rProtocol);
+                } else {
+                    // If not HTTPS Redirect, add the main VS config and then check for SSL
+                    rProtocol = new TrafficType();
+                    rProtocol.setProtocol(lb.getProtocol().name());
+                    rProtocol.setPort(lb.getPort());
+                    rLbDetails.getProtocols().add(rProtocol);
+
+                    if (lb.hasSsl() && lb.getSslTermination().isEnabled()) {
+                        // for SSL term, add HTTPS and whatever port
+                        rProtocol = new TrafficType();
+                        rProtocol.setProtocol("TCP");
+                        rProtocol.setPort(lb.getSslTermination().getSecurePort());
+                        rLbDetails.getProtocols().add(rProtocol);
+                    }
+                }
+            }
+            else {
+                return Response.status(Response.Status.NOT_FOUND).entity(rLbDetails).build();
+            }
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+
+        return Response.status(200).entity(rLbDetails).build();
     }
 
     @Path("lbsbyvipblocks")
