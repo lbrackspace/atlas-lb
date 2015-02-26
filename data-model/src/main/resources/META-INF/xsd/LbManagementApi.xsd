@@ -373,11 +373,26 @@
         </xsd:sequence>
         <xsd:attribute name="type" type="papi:vipType"/>
     </xsd:complexType>
-    
+
     <xsd:element name="virtualIpBlock" type="tns:virtualIpBlock"/>
     <xsd:complexType name="virtualIpBlock">
         <xsd:attribute name="firstIp" type="xsd:string"/>
         <xsd:attribute name="lastIp" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="trafficType">
+        <xsd:attribute name="protocol" type="xsd:string"/>
+        <xsd:attribute name="port" type="xsd:int"/>
+    </xsd:complexType>
+
+    <xsd:element name="virtualIpLoadbalancerDetails" type="tns:virtualIpLoadbalancerDetails"/>
+    <xsd:complexType name="virtualIpLoadbalancerDetails">
+        <xsd:sequence>
+            <xsd:element name="protocols" type="tns:trafficType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="accountId" type="xsd:int"/>
+        <xsd:attribute name="loadBalancerId" type="xsd:int"/>
+        <xsd:attribute name="virtualIpId" type="xsd:int"/>
     </xsd:complexType>
 
     <xsd:element name="rateLimit" type="tns:rateLimit"/>

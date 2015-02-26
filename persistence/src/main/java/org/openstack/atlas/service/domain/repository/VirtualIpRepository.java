@@ -122,7 +122,7 @@ public class VirtualIpRepository {
         return loadBalancers;
     }
 
-    public List<LoadBalancer> getLoadBalancerByVipAddress(String address) {
+    public List<LoadBalancer> getLoadBalancersByVipAddress(String address) {
         List<LoadBalancer> loadBalancers;
         Integer vipId;
         String query = "select v.id from VirtualIp v where v.ipAddress = :address";
