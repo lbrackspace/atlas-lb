@@ -1,6 +1,8 @@
 package org.openstack.atlas.service.domain.services;
 
 import org.junit.Test;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.TrafficType;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadbalancerDetails;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
@@ -26,7 +28,7 @@ public class VirtualIpServiceImplTest {
         LoadBalancerRepository loadBalancerRepository;
         VirtualIpServiceImpl virtualIpService;
         LoadBalancer lb;
-        LoadBalancerJoinVip lbjv;
+        LoadBalancerJoinVip lbJoinVip;
         Set<LoadBalancerJoinVip> loadBalancerJoinVips;
         VirtualIp vip;
 
@@ -42,13 +44,309 @@ public class VirtualIpServiceImplTest {
         @Before
         public void standUpObjects() {
             lb = new LoadBalancer();
-            lb.setAccountId(898989);
+            lb.setAccountId(accountId);
             lb.setId(12);
             lb.setStatus(LoadBalancerStatus.ACTIVE);
-            lbjv = new LoadBalancerJoinVip();
+            lbJoinVip = new LoadBalancerJoinVip();
             loadBalancerJoinVips = new HashSet<LoadBalancerJoinVip>();
             vip = new VirtualIp();
         }
+    }
+
+    public static class WhenRetrievingLoadbalancerDetailsByIp {
+        VirtualIpRepository virtualIpRepository;
+        LoadBalancerRepository loadBalancerRepository;
+        VirtualIpServiceImpl virtualIpService;
+
+        String ipAddress = "10.2.3.4";
+        Integer accountId = 1234;
+        Integer lbId = 5678;
+        Integer vipId = 23945;
+        List<LoadBalancer> lbList = new ArrayList<LoadBalancer>();
+
+        @Before
+        public void standUp() {
+            virtualIpRepository = mock(VirtualIpRepository.class);
+            loadBalancerRepository = mock(LoadBalancerRepository.class);
+            virtualIpService = new VirtualIpServiceImpl();
+            virtualIpService.setLoadBalancerRepository(loadBalancerRepository);
+            virtualIpService.setVirtualIpRepository(virtualIpRepository);
+
+            when(virtualIpRepository.getLoadBalancersByVipAddress(ipAddress)).thenReturn(lbList);
+        }
+
+        private LoadBalancer getNewLb() {
+            LoadBalancer newLb = new LoadBalancer();
+            newLb.setAccountId(accountId);
+            newLb.setId(lbId);
+            newLb.setHttpsRedirect(false);
+            newLb.setStatus(LoadBalancerStatus.ACTIVE);
+
+            VirtualIp vip = new VirtualIp();
+            vip.setIpAddress(ipAddress);
+            vip.setId(vipId);
+
+            LoadBalancerJoinVip lbJoinVip = new LoadBalancerJoinVip();
+            lbJoinVip.setLoadBalancer(newLb);
+            lbJoinVip.setVirtualIp(vip);
+
+            Set<LoadBalancerJoinVip> lbJoinVipSet = new HashSet<LoadBalancerJoinVip>();
+            lbJoinVipSet.add(lbJoinVip);
+
+            newLb.setLoadBalancerJoinVipSet(lbJoinVipSet);
+
+            return newLb;
+        }
+
+        private HashMap<Integer, String> getActualProtocols(VirtualIpLoadbalancerDetails lbDetails) {
+            HashMap<Integer, String> actualProtocols = new HashMap<Integer, String>();
+            for (TrafficType p : lbDetails.getProtocols()) {
+                actualProtocols.put(p.getPort(), p.getProtocol());
+            }
+            return actualProtocols;
+        }
+
+        @Test
+        public void testSimpleLB() {
+            Integer port = 80;
+
+            LoadBalancer lb = getNewLb();
+            lb.setPort(port);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+
+            lbList.add(lb);
+
+            VirtualIpLoadbalancerDetails lbDetails = virtualIpService.getLoadbalancerDetailsForIp(ipAddress);
+
+            Assert.assertNotNull(lbDetails);
+            Assert.assertEquals(lbDetails.getLoadBalancerId(), lbId);
+            Assert.assertEquals(lbDetails.getAccountId(), accountId);
+            Assert.assertEquals(lbDetails.getVirtualIpId(), vipId);
+
+            HashMap<Integer, String> expectedProtocols = new HashMap<Integer, String>();
+            expectedProtocols.put(80, "TCP");
+
+            Assert.assertEquals(expectedProtocols, getActualProtocols(lbDetails));
+        }
+
+        @Test
+        public void testHttpsRedirectLB() {
+            Integer port = 443;
+
+            LoadBalancer lb = getNewLb();
+            lb.setPort(port);
+            lb.setProtocol(LoadBalancerProtocol.HTTPS);
+            lb.setHttpsRedirect(true);
+
+            lbList.add(lb);
+
+            VirtualIpLoadbalancerDetails lbDetails = virtualIpService.getLoadbalancerDetailsForIp(ipAddress);
+
+            Assert.assertNotNull(lbDetails);
+            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
+            Assert.assertEquals(accountId, lbDetails.getAccountId());
+            Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
+
+            HashMap<Integer, String> expectedProtocols = new HashMap<Integer, String>();
+            expectedProtocols.put(80, "TCP");
+            expectedProtocols.put(443, "TCP");
+
+            Assert.assertEquals(expectedProtocols, getActualProtocols(lbDetails));
+        }
+
+        @Test
+        public void testSSLTermMixedLB() {
+            Integer port = 80;
+            Integer securePort = 443;
+
+            LoadBalancer lb = getNewLb();
+            lb.setPort(port);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(securePort);
+            sslTermination.setSecureTrafficOnly(false);
+            lb.setSslTermination(sslTermination);
+
+            lbList.add(lb);
+
+            VirtualIpLoadbalancerDetails lbDetails = virtualIpService.getLoadbalancerDetailsForIp(ipAddress);
+
+            Assert.assertNotNull(lbDetails);
+            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
+            Assert.assertEquals(accountId, lbDetails.getAccountId());
+            Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
+
+            HashMap<Integer, String> expectedProtocols = new HashMap<Integer, String>();
+            expectedProtocols.put(80, "TCP");
+            expectedProtocols.put(443, "TCP");
+
+            Assert.assertEquals(expectedProtocols, getActualProtocols(lbDetails));
+        }
+
+        @Test
+        public void testSSLTermSecureOnlyLB() {
+            Integer port = 80;
+            Integer securePort = 443;
+
+            LoadBalancer lb = getNewLb();
+            lb.setPort(port);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(securePort);
+            sslTermination.setSecureTrafficOnly(true);
+            lb.setSslTermination(sslTermination);
+
+            lbList.add(lb);
+
+            VirtualIpLoadbalancerDetails lbDetails = virtualIpService.getLoadbalancerDetailsForIp(ipAddress);
+
+            Assert.assertNotNull(lbDetails);
+            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
+            Assert.assertEquals(accountId, lbDetails.getAccountId());
+            Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
+
+            HashMap<Integer, String> expectedProtocols = new HashMap<Integer, String>();
+            expectedProtocols.put(443, "TCP");
+
+            Assert.assertEquals(expectedProtocols, getActualProtocols(lbDetails));
+        }
+
+        @Test
+        public void testDisabledSSLTermLB() {
+            Integer port = 80;
+            Integer securePort = 443;
+
+            LoadBalancer lb = getNewLb();
+            lb.setPort(port);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setEnabled(false);
+            sslTermination.setSecurePort(securePort);
+            lb.setSslTermination(sslTermination);
+
+            lbList.add(lb);
+
+            VirtualIpLoadbalancerDetails lbDetails = virtualIpService.getLoadbalancerDetailsForIp(ipAddress);
+
+            Assert.assertNotNull(lbDetails);
+            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
+            Assert.assertEquals(accountId, lbDetails.getAccountId());
+            Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
+
+            HashMap<Integer, String> expectedProtocols = new HashMap<Integer, String>();
+            expectedProtocols.put(80, "TCP");
+
+            Assert.assertEquals(expectedProtocols, getActualProtocols(lbDetails));
+        }
+
+        @Test
+        public void testSSLTermWithHttpsRedirectLB() {
+            Integer port = 80;
+            Integer securePort = 443;
+
+            LoadBalancer lb = getNewLb();
+            lb.setPort(port);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            lb.setHttpsRedirect(true);
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(securePort);
+            sslTermination.setSecureTrafficOnly(true);
+            lb.setSslTermination(sslTermination);
+
+            lbList.add(lb);
+
+            VirtualIpLoadbalancerDetails lbDetails = virtualIpService.getLoadbalancerDetailsForIp(ipAddress);
+
+            Assert.assertNotNull(lbDetails);
+            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
+            Assert.assertEquals(accountId, lbDetails.getAccountId());
+            Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
+
+            HashMap<Integer, String> expectedProtocols = new HashMap<Integer, String>();
+            expectedProtocols.put(80, "TCP");
+            expectedProtocols.put(443, "TCP");
+
+            Assert.assertEquals(expectedProtocols, getActualProtocols(lbDetails));
+        }
+
+        @Test
+        public void testSharedVipLB() {
+            Integer port1 = 21;
+            Integer port2 = 53;
+
+            LoadBalancer lb1 = getNewLb();
+            lb1.setPort(port1);
+            lb1.setProtocol(LoadBalancerProtocol.FTP);
+            LoadBalancer lb2 = getNewLb();
+            lb2.setPort(port2);
+            lb2.setProtocol(LoadBalancerProtocol.DNS_TCP);
+
+            lbList.add(lb1);
+            lbList.add(lb2);
+
+            VirtualIpLoadbalancerDetails lbDetails = virtualIpService.getLoadbalancerDetailsForIp(ipAddress);
+
+            Assert.assertNotNull(lbDetails);
+            Assert.assertEquals(lbDetails.getLoadBalancerId(), lbId);
+            Assert.assertEquals(lbDetails.getAccountId(), accountId);
+            Assert.assertEquals(lbDetails.getVirtualIpId(), vipId);
+
+            HashMap<Integer, String> expectedProtocols = new HashMap<Integer, String>();
+            expectedProtocols.put(21, "TCP");
+            expectedProtocols.put(53, "TCP");
+
+            Assert.assertEquals(expectedProtocols, getActualProtocols(lbDetails));
+        }
+
+        @Test
+        public void testSharedVipWithHttpsRedirectLB() {
+            Integer port1 = 80;
+            Integer port2 = 53;
+
+            LoadBalancer lb1 = getNewLb();
+            lb1.setPort(port1);
+            lb1.setProtocol(LoadBalancerProtocol.HTTP);
+            lb1.setHttpsRedirect(true);
+            LoadBalancer lb2 = getNewLb();
+            lb2.setPort(port2);
+            lb2.setProtocol(LoadBalancerProtocol.DNS_TCP);
+
+            lbList.add(lb1);
+            lbList.add(lb2);
+
+            VirtualIpLoadbalancerDetails lbDetails = virtualIpService.getLoadbalancerDetailsForIp(ipAddress);
+
+            Assert.assertNotNull(lbDetails);
+            Assert.assertEquals(lbDetails.getLoadBalancerId(), lbId);
+            Assert.assertEquals(lbDetails.getAccountId(), accountId);
+            Assert.assertEquals(lbDetails.getVirtualIpId(), vipId);
+
+            HashMap<Integer, String> expectedProtocols = new HashMap<Integer, String>();
+            expectedProtocols.put(80, "TCP");
+            expectedProtocols.put(443, "TCP");
+            expectedProtocols.put(53, "TCP");
+
+            Assert.assertEquals(expectedProtocols, getActualProtocols(lbDetails));
+        }
+
+        @Test
+        public void shouldReturnEmptyResultWhenNoLBsMatchIp() {
+            VirtualIpLoadbalancerDetails lbDetails = virtualIpService.getLoadbalancerDetailsForIp(ipAddress);
+
+            Assert.assertNotNull(lbDetails);
+            Assert.assertNull(lbDetails.getAccountId());
+            Assert.assertNull(lbDetails.getLoadBalancerId());
+            Assert.assertNull(lbDetails.getVirtualIpId());
+            Assert.assertEquals(0, lbDetails.getProtocols().size());
+        }
+
     }
 
     public static class WhenRetrievingVirtualIps {
