@@ -113,6 +113,11 @@
             <class ref="org.openstack.atlas.docs.loadbalancers.api.management.v1.Cidr"/>
         </bindings>
 
+        <!--IpDetails-->
+        <bindings scd="~tns:virtualIpLoadbalancerDetails">
+            <class ref="org.openstack.docs.loadbalancers.api.management.v1.VirtualIpLoadbalancerDetails"/>
+        </bindings>
+
         <!--Reports-->
         <bindings scd="~tns:hostCapacityReports">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.management.v1.HostCapacityReports"/>
