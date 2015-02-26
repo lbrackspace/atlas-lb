@@ -6,11 +6,17 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpAvailab
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadbalancerDetails;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.TrafficType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -66,6 +72,81 @@ public class VirtualIpsResource extends ManagementDependencyProvider {
     public VirtualIpResource appendVirtualIpsId(@PathParam("id") int id) {
         virtualIpResource.setId(id);
         return virtualIpResource;
+    }
+
+    @Path("detailsbyip")
+    @GET
+    public Response retrieveDetailsForIp(@QueryParam("ip") String ipAddress) {
+        if (!isUserInRole("cp,ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        VirtualIpLoadbalancerDetails rLbDetails = new VirtualIpLoadbalancerDetails();
+        TrafficType rProtocol;
+        List<LoadBalancer> lbsByIp;
+        ArrayList<LoadBalancerProtocol> udpProtocols = new ArrayList<LoadBalancerProtocol>();
+        udpProtocols.add(LoadBalancerProtocol.DNS_UDP);
+        udpProtocols.add(LoadBalancerProtocol.UDP);
+        udpProtocols.add(LoadBalancerProtocol.UDP_STREAM);
+        try {
+            lbsByIp = getVipRepository().getLoadBalancersByVipAddress(ipAddress);
+            for (LoadBalancer lb : lbsByIp) {
+                // Just set the top-level attributes once
+                if (rLbDetails.getAccountId() == null) {
+                    rLbDetails.setAccountId(lb.getAccountId());
+                    rLbDetails.setLoadBalancerId(lb.getId());
+                    Set<LoadBalancerJoinVip> vipSet = lb.getLoadBalancerJoinVipSet();
+                    for (LoadBalancerJoinVip vip : vipSet) {
+                        if (vip.getVirtualIp().getIpAddress().equals(ipAddress)) {
+                            rLbDetails.setVirtualIpId(vip.getVirtualIp().getId());
+                        }
+                    }
+                }
+
+                if (lb.isHttpsRedirect()) {
+                    // In case of HTTPS Redirect, add 80/443 since they are always static
+                    rProtocol = new TrafficType();
+                    rProtocol.setProtocol("TCP");
+                    rProtocol.setPort(80);
+                    rLbDetails.getProtocols().add(rProtocol);
+
+                    rProtocol = new TrafficType();
+                    rProtocol.setProtocol("TCP");
+                    rProtocol.setPort(443);
+                    rLbDetails.getProtocols().add(rProtocol);
+                } else if (!lb.hasSsl()) {
+                    // If no HTTPS Redirect or SSL, add the main VS config
+                    rProtocol = new TrafficType();
+                    LoadBalancerProtocol lbProtocol = lb.getProtocol();
+                    rProtocol.setProtocol(udpProtocols.contains(lbProtocol) ? "UDP" : "TCP");
+                    rProtocol.setPort(lb.getPort());
+                    rLbDetails.getProtocols().add(rProtocol);
+                } else {
+                    // For SSL term, add HTTPS and whatever port, as long as SSL is enabled
+                    if (lb.getSslTermination().isEnabled()) {
+                        rProtocol = new TrafficType();
+                        rProtocol.setProtocol("TCP");
+                        rProtocol.setPort(lb.getSslTermination().getSecurePort());
+                        rLbDetails.getProtocols().add(rProtocol);
+                    }
+
+                    // If SSL is disabled or in mixed mode, add the main VS config too
+                    if (!lb.getSslTermination().isSecureTrafficOnly() || !lb.getSslTermination().isEnabled()) {
+                        rProtocol = new TrafficType();
+                        LoadBalancerProtocol lbProtocol = lb.getProtocol();
+                        rProtocol.setProtocol(udpProtocols.contains(lbProtocol) ? "UDP" : "TCP");
+                        rProtocol.setPort(lb.getPort());
+                        rLbDetails.getProtocols().add(rProtocol);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+
+        if (rLbDetails.getAccountId() == null) {
+            return Response.status(Response.Status.NO_CONTENT).build();
+        }
+        return Response.status(200).entity(rLbDetails).build();
     }
 
     @Path("lbsbyvipblocks")

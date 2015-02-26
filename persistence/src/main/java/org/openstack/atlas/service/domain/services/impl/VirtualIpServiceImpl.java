@@ -1,9 +1,6 @@
 package org.openstack.atlas.service.domain.services.impl;
 
 import com.sun.jersey.api.client.ClientResponse;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
@@ -74,7 +71,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     @Override
     public List<org.openstack.atlas.service.domain.entities.LoadBalancer> getLoadBalancerByVipAddress(String address) {
-        return virtualIpRepository.getLoadBalancerByVipAddress(address);
+        return virtualIpRepository.getLoadBalancersByVipAddress(address);
     }
 
     @Override
