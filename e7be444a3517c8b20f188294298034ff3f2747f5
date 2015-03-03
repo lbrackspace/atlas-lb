@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a1969be_4364b2e4",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/VirtualIpsResource.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 1001869
+      },
+      "writtenOn": "2015-03-03T19:51:00Z",
+      "side": 1,
+      "message": "https://docs.oracle.com/javaee/6/api/javax/ws/rs/core/Response.Status.html#OK",
+      "revId": "e7be444a3517c8b20f188294298034ff3f2747f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_43c0327c",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/VirtualIpServiceImpl.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 807,
+      "author": {
+        "id": 1001869
+      },
+      "writtenOn": "2015-03-03T19:51:00Z",
+      "side": 1,
+      "message": "LoadBalancerProtocol.TCP? or some equivalent constant?",
+      "revId": "e7be444a3517c8b20f188294298034ff3f2747f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
