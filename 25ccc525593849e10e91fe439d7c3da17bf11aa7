@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a1969be_eff77ff3",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/VirtualIpServiceImpl.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 788,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2015-03-04T17:16:16Z",
+      "side": 1,
+      "message": "Nit: Ideally this should be decomposed in its own method and tested.",
+      "revId": "25ccc525593849e10e91fe439d7c3da17bf11aa7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_2fd99783",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/VirtualIpServiceImplTest.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2015-03-04T17:16:16Z",
+      "side": 1,
+      "message": "All of these tests don\u0027t run due to this @Ignore annotation. Either fix other tests or ignore everything but your test inner class",
+      "revId": "25ccc525593849e10e91fe439d7c3da17bf11aa7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_0fcc9bbb",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/VirtualIpServiceImplTest.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 394,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2015-03-04T17:16:16Z",
+      "side": 1,
+      "message": "lbList is not used after this line. Why are you adding to it?",
+      "revId": "25ccc525593849e10e91fe439d7c3da17bf11aa7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
