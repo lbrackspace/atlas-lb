@@ -6,8 +6,6 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-restclients-objects</artifactId>
         <version>1.24.0-SNAPSHOT</version>
-
-
     </parent>
 
     <artifactId>atlas-restclients-objs-dns</artifactId>

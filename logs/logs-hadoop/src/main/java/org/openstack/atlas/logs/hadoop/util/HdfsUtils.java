@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.compress.CompressionInputStream;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
+import org.joda.time.DateTime;
 import org.openstack.atlas.util.common.exceptions.DebugException;
 import org.openstack.atlas.exception.ReflectionException;
 import org.openstack.atlas.logs.hadoop.sequencefiles.EndOfIteratorException;
@@ -47,6 +48,7 @@ import org.openstack.atlas.logs.hadoop.sequencefiles.SequenceFileReaderException
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.debug.Debug;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 
 public class HdfsUtils {
 
@@ -58,13 +60,12 @@ public class HdfsUtils {
     public static final Pattern hdfsLzoPatternPre = Pattern.compile("^([0-9]{10})-access_log.aggregated.lzo$");
     public static final Pattern dateHourPattern = Pattern.compile("[0-9]{10}");
     public static final String HADOOP_USER_NAME = "HADOOP_USER_NAME"; // Silly isn't it.
+    public static final String LB_LOGS_SPLIT = "lb_logs_split";
     protected int bufferSize = 256 * 1024;
     protected Configuration conf;
     protected String user;
     protected FileSystem remoteFileSystem;
     protected FileSystem localFileSystem;
-    protected short repCount = 3;
-    protected long blockSize = 64 * 1024 * 1024;
     protected static int recompressBufferSize = 8 * 1024 * 1024;
 
     public HdfsUtils() {
@@ -72,6 +73,8 @@ public class HdfsUtils {
 
     @Override
     public String toString() {
+        short repCount = (short) HadoopLogsConfigs.getReplicationCount();
+        long blockSize = (long) HadoopLogsConfigs.getHdfsBlockSize() * 1024L*1024L;
         return "HdfsUtils{bufferSize=" + bufferSize + ", user=" + user
                 + ", repCount=" + repCount + ", blockSize="
                 + blockSize + ", nameNode=" + getNameNode() + "}";
@@ -262,11 +265,110 @@ public class HdfsUtils {
         return lzoStatusList;
     }
 
+    public List<String> getZipsOlderThan(int daysAgo) throws Exception {
+        List<String> out = new ArrayList<String>();
+        List<Long> hourKeysList = new ArrayList<Long>();
+        List<String> dirComps = new ArrayList<String>();
+        String lbLogSplitDir = StaticFileUtils.mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT);
+        FileStatus[] dateDirsStats = getFileSystem().listStatus(new Path(lbLogSplitDir));
+        DateTime now = StaticDateTimeUtils.nowDateTime(true);
+        Long daysAgoLong = StaticDateTimeUtils.dateTimeToHourLong(
+                StaticDateTimeUtils.nowDateTime(
+                true).minusDays(daysAgo));
+        for (FileStatus fileStatus : dateDirsStats) {
+            Long hourLong;
+            String pathStr;
+            try {
+                pathStr = HdfsUtils.pathTailString(fileStatus);
+                hourLong = Long.parseLong(pathStr);
+                if (hourLong < daysAgoLong) {
+                    hourKeysList.add(hourLong);
+                }
+            } catch (NumberFormatException ex) {
+                // This non number directory will not contain an LZO so skip it.
+                continue;
+            }
+        }
+        Collections.sort(hourKeysList);
+        for (Long hourLong : hourKeysList) {
+            dirComps.clear();
+            dirComps.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
+            dirComps.add(LB_LOGS_SPLIT);
+            dirComps.add(hourLong.toString());
+            String pathStr = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(dirComps));
+            out.add(pathStr);
+        }
+        return out;
+    }
+
+    public List<DeleteDirectoryResponse> rmZipsOlderThan(int daysAgo) throws Exception {
+        List<DeleteDirectoryResponse> resp = new ArrayList<DeleteDirectoryResponse>();
+        List<String> doomedZIPs = getZipsOlderThan(daysAgo);
+        for (String doomedZip : doomedZIPs) {
+            try {
+                boolean status = remoteFileSystem.delete(new Path(doomedZip), true);
+                resp.add(new DeleteDirectoryResponse(doomedZip, status, null));
+            } catch (Exception ex) {
+                String fmt = "Error could not delete HDFS %s %s\n";
+                String excMsg = Debug.getEST(ex);
+                LOG.error(String.format(fmt, doomedZip, excMsg), ex);
+                resp.add(new DeleteDirectoryResponse(doomedZip, false, ex));
+            }
+        }
+        return resp;
+    }
+
+    public List<DeleteDirectoryResponse> rmLZOsOlderThan(int daysAgo) throws IOException {
+        List<DeleteDirectoryResponse> resp = new ArrayList<DeleteDirectoryResponse>();
+        List<String> doomedLZOs = getLZOsOlderThan(daysAgo);
+        for (String doomedLZO : doomedLZOs) {
+            try {
+                boolean status = remoteFileSystem.delete(new Path(doomedLZO), true);
+                resp.add(new DeleteDirectoryResponse(doomedLZO, status, null));
+            } catch (Exception ex) {
+                String fmt = "Error could not delete HDFS %s %s\n";
+                String excMsg = Debug.getEST(ex);
+                LOG.error(String.format(fmt, doomedLZO, excMsg), ex);
+                resp.add(new DeleteDirectoryResponse(doomedLZO, false, ex));
+            }
+        }
+        return resp;
+    }
+
+    public List<String> getLZOsOlderThan(int daysAgo) throws IOException {
+        List<String> out = new ArrayList<String>();
+        List<Long> hourDirs = new ArrayList<Long>();
+        int nFiles = 0;
+
+        FileStatus[] stats = getFileSystem().listStatus(new Path(HadoopLogsConfigs.getMapreduceInputPrefix()));
+        Long daysAgoLimit = StaticDateTimeUtils.dateTimeToHourLong(
+                StaticDateTimeUtils.nowDateTime(
+                true).minusDays(daysAgo));
+        for (FileStatus stat : stats) {
+            try {
+                String pathStr = pathTailString(stat);
+                long hourLong = Long.parseLong(pathStr);
+                if (hourLong < daysAgoLimit) {
+                    nFiles++;
+                    hourDirs.add(hourLong);
+                }
+            } catch (Exception ex) {
+                continue;
+            }
+        }
+        Collections.sort(hourDirs);
+        for (Long hourLong : hourDirs) {
+            String pathStr = StaticFileUtils.joinPath(HadoopLogsConfigs.getMapreduceInputPrefix(), hourLong.toString());
+            out.add(pathStr);
+        }
+        return out;
+    }
+
     public List<FileStatus> listHdfsZipsStatus(String dateHourSearch, String lidSearch, boolean showMissingDirsOnly) {
         List<FileStatus> statusList = new ArrayList<FileStatus>();
         List<String> lbSplitDirComponents = new ArrayList<String>();
         lbSplitDirComponents.add(HadoopLogsConfigs.getMapreduceOutputPrefix());
-        lbSplitDirComponents.add("lb_logs_split");
+        lbSplitDirComponents.add(LB_LOGS_SPLIT);
         FileStatus[] logDirStatusArray;
         String logSplitDir = StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(lbSplitDirComponents));
         try {
@@ -391,6 +493,8 @@ public class HdfsUtils {
     }
 
     public FSDataOutputStream openHdfsOutputFile(Path path, boolean useLocal, boolean allowOveride) throws IOException {
+        short repCount = (short) HadoopLogsConfigs.getReplicationCount();
+        long blockSize = (long) HadoopLogsConfigs.getHdfsBlockSize() * 1024L*1024L;
         if (useLocal) {
             return localFileSystem.create(path, allowOveride, bufferSize, repCount, blockSize);
         } else {
@@ -486,22 +590,6 @@ public class HdfsUtils {
 
     public String getUser() {
         return user;
-    }
-
-    public short getRepCount() {
-        return repCount;
-    }
-
-    public void setRepCount(short repCount) {
-        this.repCount = repCount;
-    }
-
-    public long getBlockSize() {
-        return blockSize;
-    }
-
-    public void setBlockSize(long blockSize) {
-        this.blockSize = blockSize;
     }
 
     public FileSystem getFileSystem() {
@@ -677,5 +765,13 @@ public class HdfsUtils {
             throw new ReflectionException(ex);
         }
         return obj;
+    }
+
+    public static String pathTailString(Path path) {
+        return StaticFileUtils.pathTail(path.toUri().getRawPath());
+    }
+
+    public static String pathTailString(FileStatus fileStatus) {
+        return pathTailString(fileStatus.getPath());
     }
 }

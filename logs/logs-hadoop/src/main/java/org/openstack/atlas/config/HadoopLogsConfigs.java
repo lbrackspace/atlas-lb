@@ -27,7 +27,11 @@ public class HadoopLogsConfigs {
     protected static String mapreduceOutputPrefix;
     protected static String fileRegion;
     protected static String hdfsUserName;
-    private static String numReducers;
+    protected static int daysOfZipsToKeep;
+    protected static int daysOfLZOsToKeep;
+    protected static int replicationCount;
+    protected static int hdfsBlockSize;
+    protected static String numReducers;
     protected static String hdfsJobsJarPath;
     protected static Configuration hadoopConfiguration = null;
     protected static HdfsUtils hdfsUtils = null;
@@ -60,7 +64,14 @@ public class HadoopLogsConfigs {
         hdfsUserName = lbLogsConf.getString(LbLogsConfigurationKeys.hdfs_user_name);
         hdfsJobsJarPath = lbLogsConf.getString(LbLogsConfigurationKeys.hdfs_job_jar_path);
         numReducers = lbLogsConf.getString(LbLogsConfigurationKeys.num_reducers);
+        daysOfLZOsToKeep = getInt(lbLogsConf, LbLogsConfigurationKeys.days_of_lzos_to_keep);
+        daysOfZipsToKeep = getInt(lbLogsConf, LbLogsConfigurationKeys.days_of_zips_to_keep);
+        hdfsBlockSize = getInt(lbLogsConf, LbLogsConfigurationKeys.hdfs_block_size_megs);
+        replicationCount = getInt(lbLogsConf, LbLogsConfigurationKeys.replication_count);
+    }
 
+    private static int getInt(LbLogsConfiguration lbConf, LbLogsConfigurationKeys key) {
+        return Integer.parseInt(lbConf.getString(key));
     }
 
     public static HadoopJob getHadoopJob(Class<? extends HadoopJob> jobClass) {
@@ -96,6 +107,10 @@ public class HadoopLogsConfigs {
                 append("    hdfsJobsJarPath = ").append(hdfsJobsJarPath).append("\n").
                 append("    jarCopyed = ").append(jarCopyed).append("\n").
                 append("    resetCount = ").append(resetCount).append("\n").
+                append("    replicationCount = ").append(replicationCount).append("\n").
+                append("    hdfs_block_size_megs = ").append(hdfsBlockSize).append("\n").
+                append("    days_of_lzos_to_keep = ").append(daysOfLZOsToKeep).append("\n").
+                append("    days_of_zips_to_keep = ").append(daysOfZipsToKeep).append("\n").
                 append("}\n");
         return sb.toString();
     }
@@ -201,5 +216,25 @@ public class HadoopLogsConfigs {
 
     public static String getNumReducers() {
         return numReducers;
+    }
+
+    public static int getResetCount() {
+        return resetCount;
+    }
+
+    public static int getDaysOfZipsToKeep() {
+        return daysOfZipsToKeep;
+    }
+
+    public static int getDaysOfLZOsToKeep() {
+        return daysOfLZOsToKeep;
+    }
+
+    public static int getReplicationCount() {
+        return replicationCount;
+    }
+
+    public static int getHdfsBlockSize() {
+        return hdfsBlockSize;
     }
 }

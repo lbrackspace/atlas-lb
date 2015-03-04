@@ -3,6 +3,7 @@ package org.openstack.atlas.config;
 import org.openstack.atlas.cfg.ConfigurationKey;
 
 public enum LbLogsConfigurationKeys implements ConfigurationKey {
+
     auth_management_uri,
     basic_auth_key,
     basic_auth_user,
@@ -18,5 +19,9 @@ public enum LbLogsConfigurationKeys implements ConfigurationKey {
     hadoop_xml_file,
     hdfs_job_jar_path,
     num_reducers,
-    logs_use_service_admin
+    logs_use_service_admin,
+    days_of_lzos_to_keep,
+    days_of_zips_to_keep,
+    hdfs_block_size_megs,
+    replication_count
 }
