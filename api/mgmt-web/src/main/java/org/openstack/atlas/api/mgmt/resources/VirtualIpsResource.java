@@ -6,6 +6,7 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpAvailab
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadBalancerDetails;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
@@ -66,6 +67,23 @@ public class VirtualIpsResource extends ManagementDependencyProvider {
     public VirtualIpResource appendVirtualIpsId(@PathParam("id") int id) {
         virtualIpResource.setId(id);
         return virtualIpResource;
+    }
+
+    @Path("detailsbyip")
+    @GET
+    public Response retrieveDetailsForIp(@QueryParam("ip") String ipAddress) {
+        if (!isUserInRole("cp,ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        VirtualIpLoadBalancerDetails rLbDetails;
+
+        try {
+            rLbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+
+        return Response.status(Response.Status.OK).entity(rLbDetails).build();
     }
 
     @Path("lbsbyvipblocks")
