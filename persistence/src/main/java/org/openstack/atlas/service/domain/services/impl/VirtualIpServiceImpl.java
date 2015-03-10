@@ -793,7 +793,6 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             // Just set the top-level attributes once
             if (rLbDetails.getAccountId() == null) {
                 rLbDetails.setAccountId(lb.getAccountId());
-                rLbDetails.setLoadBalancerId(lb.getId());
                 Set<LoadBalancerJoinVip> vipSet = lb.getLoadBalancerJoinVipSet();
                 for (LoadBalancerJoinVip vip : vipSet) {
                     if (vip.getVirtualIp().getIpAddress().equals(ipAddress)) {

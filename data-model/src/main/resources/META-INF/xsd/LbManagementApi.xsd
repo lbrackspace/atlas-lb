@@ -398,7 +398,6 @@
             <xsd:element name="protocols" type="tns:trafficTypeList"/>
         </xsd:sequence>
         <xsd:attribute name="accountId" type="xsd:int"/>
-        <xsd:attribute name="loadBalancerId" type="xsd:int"/>
         <xsd:attribute name="virtualIpId" type="xsd:int"/>
     </xsd:complexType>
 

@@ -87,7 +87,6 @@ public class VirtualIpServiceImplTest {
             VirtualIpLoadBalancerDetails lbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
 
             Assert.assertNotNull(lbDetails);
-            Assert.assertEquals(lbDetails.getLoadBalancerId(), lbId);
             Assert.assertEquals(lbDetails.getAccountId(), accountId);
             Assert.assertEquals(lbDetails.getVirtualIpId(), vipId);
 
@@ -111,7 +110,6 @@ public class VirtualIpServiceImplTest {
             VirtualIpLoadBalancerDetails lbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
 
             Assert.assertNotNull(lbDetails);
-            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
             Assert.assertEquals(accountId, lbDetails.getAccountId());
             Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
 
@@ -142,7 +140,6 @@ public class VirtualIpServiceImplTest {
             VirtualIpLoadBalancerDetails lbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
 
             Assert.assertNotNull(lbDetails);
-            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
             Assert.assertEquals(accountId, lbDetails.getAccountId());
             Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
 
@@ -173,7 +170,6 @@ public class VirtualIpServiceImplTest {
             VirtualIpLoadBalancerDetails lbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
 
             Assert.assertNotNull(lbDetails);
-            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
             Assert.assertEquals(accountId, lbDetails.getAccountId());
             Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
 
@@ -202,7 +198,6 @@ public class VirtualIpServiceImplTest {
             VirtualIpLoadBalancerDetails lbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
 
             Assert.assertNotNull(lbDetails);
-            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
             Assert.assertEquals(accountId, lbDetails.getAccountId());
             Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
 
@@ -233,7 +228,6 @@ public class VirtualIpServiceImplTest {
             VirtualIpLoadBalancerDetails lbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
 
             Assert.assertNotNull(lbDetails);
-            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
             Assert.assertEquals(accountId, lbDetails.getAccountId());
             Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
 
@@ -262,7 +256,6 @@ public class VirtualIpServiceImplTest {
             VirtualIpLoadBalancerDetails lbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
 
             Assert.assertNotNull(lbDetails);
-            Assert.assertEquals(lbDetails.getLoadBalancerId(), lbId);
             Assert.assertEquals(lbDetails.getAccountId(), accountId);
             Assert.assertEquals(lbDetails.getVirtualIpId(), vipId);
 
@@ -292,7 +285,6 @@ public class VirtualIpServiceImplTest {
             VirtualIpLoadBalancerDetails lbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
 
             Assert.assertNotNull(lbDetails);
-            Assert.assertEquals(lbDetails.getLoadBalancerId(), lbId);
             Assert.assertEquals(lbDetails.getAccountId(), accountId);
             Assert.assertEquals(lbDetails.getVirtualIpId(), vipId);
 
@@ -366,7 +358,6 @@ public class VirtualIpServiceImplTest {
             VirtualIpLoadBalancerDetails lbDetails = virtualIpService.getLoadBalancerDetailsForIp(ipAddress);
 
             Assert.assertNotNull(lbDetails);
-            Assert.assertEquals(lbId, lbDetails.getLoadBalancerId());
             Assert.assertEquals(accountId, lbDetails.getAccountId());
             Assert.assertEquals(vipId, lbDetails.getVirtualIpId());
             Assert.assertEquals(expectedProtocols, getActualProtocols(lbDetails));
@@ -378,7 +369,6 @@ public class VirtualIpServiceImplTest {
 
             Assert.assertNotNull(lbDetails);
             Assert.assertNull(lbDetails.getAccountId());
-            Assert.assertNull(lbDetails.getLoadBalancerId());
             Assert.assertNull(lbDetails.getVirtualIpId());
             Assert.assertNull(lbDetails.getProtocols());
         }
