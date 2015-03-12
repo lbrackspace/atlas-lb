@@ -317,7 +317,7 @@ public class ReuploaderUtils {
                 throw new IOException(msg);
             }
         } catch (Exception ex) {
-            String msg = String.format("Warning listing directory %s: Exception: %s", Debug.getExtendedStackTrace(ex));
+            String msg = String.format("Warning listing directory %s: Exception: %s", dir, Debug.getExtendedStackTrace(ex));
             LOG.error(msg, ex);
             return numericDirectories;
         }

@@ -38,6 +38,7 @@ public class ReuploadCli {
     private static final int BUFFSIZE = 1024 * 32;
     private static final Comparator<CacheZipInfo> lidComparator;
     private static final Comparator<CacheZipInfo> aidComparator;
+    private static final Comparator<CacheZipInfo> hourComparator;
     private HdfsUtils hdfsUtils;
     private Configuration conf;
     private Map<Integer, LoadBalancerIdAndName> lbMap;
@@ -53,6 +54,7 @@ public class ReuploadCli {
     static {
         lidComparator = new CacheZipInfo.LidComparator();
         aidComparator = new CacheZipInfo.AidComparator();
+        hourComparator = new CacheZipInfo.HourComparator();
     }
 
     public void run(String[] argv) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException, AuthException {
@@ -138,6 +140,7 @@ public class ReuploadCli {
                     System.out.printf("showAuth <accountId> #Get information on account via the god AuthClient\n");
                     System.out.printf("rmlid <lid> #remove zips in the zinfolist that are for the specified loadbalancer\n");
                     System.out.printf("rmaid <aid> #remove zips in the zinfolist that are for the specified account\n");
+                    System.out.printf("rmhour <hour1> <hour2> <...> <hourn>\n");
                     System.out.printf("auth <accountId> #Get service token and other user info from keystone auth\n");
                     System.out.printf("clearDirs <minusHours>    #Remove any empty directories\n");
                     System.out.printf("delDir <path> #Delete directory if its empty\n");
@@ -260,6 +263,18 @@ public class ReuploadCli {
                         continue;
                     }
                     deleteAidZips(aid);
+                } else if (cmd.equals("rmhour") && (args.length >= 2)) {
+                    List<Long> hours = new ArrayList<Long>();
+                    for (int i = 1; i < args.length; i++) {
+                        try {
+                            long hour = Long.parseLong(args[i]);
+                            hours.add(hour);
+                        } catch (NumberFormatException ex) {
+                            System.out.printf("Error converting %s to hour id\n", args[i]);
+                            continue;
+                        }
+                    }
+                    deleteHourZips(hours);
                 } else if (cmd.equals("showZips")) {
                     showZips();
                 } else if (cmd.equals("showzinfo")) {
@@ -392,6 +407,33 @@ public class ReuploadCli {
         String adminAuthUser = cfg.getString(LbLogsConfigurationKeys.basic_auth_user);
         String adminAuthKey = cfg.getString(LbLogsConfigurationKeys.basic_auth_key);
         keyStoneAdminClient = new KeyStoneAdminClient(adminAuthUrl, adminAuthKey, adminAuthUser);
+    }
+
+    private void deleteHourZips(List<Long> hours) throws IOException {
+        int nDeleted = 0;
+        Set<Long> rmHours = new HashSet<Long>(hours);
+        List<CacheZipInfo> doomedZips = new ArrayList<CacheZipInfo>();
+        List<CacheZipInfo> sortedZips = new ArrayList<CacheZipInfo>(zipInfoList);
+        Collections.sort(sortedZips, hourComparator);
+        for (CacheZipInfo zipFile : sortedZips) {
+            long hour = zipFile.getHourKey();
+            if (rmHours.contains((Long) hour)) {
+                System.out.printf("%s\n", zipFile.getZipFile());
+                doomedZips.add(zipFile);
+            }
+        }
+        System.out.printf("Are you sure you want to delete the above %d zips(Y/N)\n", doomedZips.size());
+        if (CommonItestStatic.inputStream(stdin, "Y")) {
+            System.out.printf("Deleting files\n");
+            for (CacheZipInfo doomedZip : doomedZips) {
+                if (deleteFile(doomedZip.getZipFile())) {
+                    nDeleted++;
+                }
+            }
+        } else {
+            System.out.printf("Bailing out\n");
+        }
+        System.out.printf("Deleted %d files\n", nDeleted);
     }
 
     private void deleteLidZips(int lid) throws IOException {
