@@ -22,6 +22,7 @@
         <class>org.openstack.atlas.service.domain.entities.AccountGroup</class>
         <class>org.openstack.atlas.service.domain.entities.ConnectionLimit</class>
         <class>org.openstack.atlas.service.domain.entities.Entity</class>
+        <class>org.openstack.atlas.service.domain.entities.HdfsLzo</class>
         <class>org.openstack.atlas.service.domain.entities.HealthMonitor</class>
         <class>org.openstack.atlas.service.domain.entities.HealthMonitorType</class>
         <class>org.openstack.atlas.service.domain.entities.Host</class>

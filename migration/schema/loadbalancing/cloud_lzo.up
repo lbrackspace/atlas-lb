@@ -1,0 +1,29 @@
+use loadbalancing;
+
+CREATE TABLE `cloud_files_lzo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `hour_key` int(11) NOT NULL,
+  `frag` smallint(6) NOT NULL,
+  `finished` tinyint(1) NOT NULL,
+  `md5` varchar(48) NOT NULL,
+  `start_time` datetime NOT NULL,
+  `end_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `hdfs_lzo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `hour_key` int(11) NOT NULL,
+  `finished` tinyint(1) NOT NULL,
+  `start_time` datetime NOT NULL,
+  `end_time` datetime DEFAULT NULL,
+  PRIMARY KEY(`id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+alter table cloud_files_lzo add unique index hour_key_frag_idx(hour_key,frag);
+alter table cloud_files_lzo add index hour_key_idx(hour_key);
+alter table cloud_files_lzo add index start_time_idx(start_time);
+
+alter table hdfs_lzo add unique index hour_key_idx(hour_key);
+alter table hdfs_lzo add index start_time_idx(start_time);

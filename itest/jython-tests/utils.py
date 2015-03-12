@@ -16,8 +16,13 @@ import org.openstack.atlas.util.ca.PemUtils as PemUtils
 
 import pickle
 
+import db
 import sys
 import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def fprintf(fp,format,*args): fp.write(format%args)
 
 conf_file = "./local.json"
 
@@ -54,4 +59,11 @@ def load_json(file_path):
     fp.close()
     jsonObj = json.loads(jsonStr)
     return pickle.loads(pickle.dumps(jsonObj)) #poor way to strip stringmap
+
+def getcurrcal():
+    return Calendar.getInstance()
+
+def nowCal():
+    dt = StaticDateTimeUtils.nowDateTime(True)
+    return StaticDateTimeUtils.toCal(dt)
 

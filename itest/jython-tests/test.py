@@ -4,11 +4,35 @@ import org.openstack.atlas.util.crypto.HashUtil as HashUtil
 from zxtm import *
 from utils import *
 from db import *
-
+from db_utils import *
 app = getDb()
 #db.buildClassImportFile("db_classes.py","local.json")
-
 from db_classes import *
+
+h = []
+for i in xrange(0, 1024*1024):
+    h.append(newHdfsLzo(i))
+    if i%1024==0:
+         print i/1024
+
+for i in xrange(0,1024):
+    print i
+    for j in xrange(0,1024):
+        h.append(newCloudFilesLzo(i,frag=j))
+
+save_list(h)
+
+
+
+
+
+
+
+
+
+
+
+
 
 a = Account()
 a.setId(1)

@@ -1,0 +1,4 @@
+use loadbalancing;
+drop table cloud_files_lzo;
+drop table hdfs_lzo;
+
