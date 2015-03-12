@@ -98,7 +98,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
     private void deleteIfFinished(Map<String, JobState> fastValues) throws ExecutionException {
         for (Entry<String, JobState> inputEntry : fastValues.entrySet()) {
             if (inputEntry.getValue().getState() == JobStateVal.FINISHED) {
-                new File(inputEntry.getKey()).delete();
+                // new File(inputEntry.getKey()).delete(); // Deletion now handled by WatchDog
                 try {
                     String filename = inputEntry.getKey().substring(inputEntry.getKey().lastIndexOf("/") + 1);
 
@@ -113,7 +113,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                                 // this is a backup file that needs to be deleted,
                                 // its from the same hour as the regular file
                                 LOG.info("deleting file " + HadoopLogsConfigs.getBackupDir() + file);
-                                new File(HadoopLogsConfigs.getBackupDir() + file).delete();
+                                new File(HadoopLogsConfigs.getBackupDir() + file).delete(); // Still don't want files in /tmp
                             }
                         }
                     }
@@ -155,18 +155,18 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                     FSDataOutputStream lzoOS = hdfsUtils.openHdfsOutputFile(placedFile, false, true);
                     FSDataOutputStream idxOS = hdfsUtils.openHdfsOutputFile(placedFile + ".index", false, true);
                     hdfsUtils.recompressAndIndexLzoStream(lzoIS, lzoOS, idxOS, null);
-                    idxOS.close();
-                    lzoOS.close();
-                    lzoIS.close();
+                    StaticFileUtils.close(idxOS);
+                    StaticFileUtils.close(lzoOS);
+                    StaticFileUtils.close(lzoIS);
                 } else {
                     vlog.log(String.format("file %s is not compressed: Calling compression and indexer functions", inputFile));
                     FSDataInputStream uncompressedIS = hdfsUtils.openHdfsInputFile(inputFile, true);
                     FSDataOutputStream lzoOS = hdfsUtils.openHdfsOutputFile(placedFile + ".lzo", false, true);
                     FSDataOutputStream idxOS = hdfsUtils.openHdfsOutputFile(placedFile + ".lzo.index", false, true);
                     hdfsUtils.compressAndIndexStreamToLzo(uncompressedIS, lzoOS, lzoOS, hdfsUtils.getBufferSize(), null);
-                    idxOS.close();
-                    lzoOS.close();
-                    uncompressedIS.close();
+                    StaticFileUtils.close(idxOS);
+                    StaticFileUtils.close(lzoOS);
+                    StaticFileUtils.close(uncompressedIS);
                 }
                 offset++;
 

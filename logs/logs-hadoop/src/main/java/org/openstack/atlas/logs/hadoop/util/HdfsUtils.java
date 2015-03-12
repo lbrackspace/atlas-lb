@@ -49,7 +49,7 @@ import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
-
+import org.apache.hadoop.hdfs.protocol.DatanodeInfo.AdminStates;
 public class HdfsUtils {
 
     private final Log LOG = LogFactory.getLog(HdfsUtils.class);
@@ -66,9 +66,9 @@ public class HdfsUtils {
     protected String user;
     protected FileSystem remoteFileSystem;
     protected FileSystem localFileSystem;
-    protected static int recompressBufferSize = 8 * 1024 * 1024;
 
     public HdfsUtils() {
+        
     }
 
     @Override
@@ -192,7 +192,7 @@ public class HdfsUtils {
         codec.setConf(codecConf);
         CompressionInputStream cis = codec.createInputStream(lzoInputStream);
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
-        StaticFileUtils.copyStreams(cis, cos, ps, recompressBufferSize);
+        StaticFileUtils.copyStreams(cis, cos, ps, bufferSize);
         cis.close();
         cos.close();
     }
