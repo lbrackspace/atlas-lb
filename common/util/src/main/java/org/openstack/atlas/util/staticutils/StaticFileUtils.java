@@ -3,6 +3,7 @@ package org.openstack.atlas.util.staticutils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -17,6 +18,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.debug.Debug;
@@ -38,6 +42,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.zip.CRC32;
 import org.openstack.atlas.util.common.exceptions.FileUtilsException;
+import org.openstack.atlas.util.converters.BitConverters;
 
 public class StaticFileUtils {
 
@@ -46,6 +51,7 @@ public class StaticFileUtils {
     public static DateFormat jobdf = new SimpleDateFormat("yyyyMMdd-HHmmss"); //20110215-130916
     private static final int DEFAULT_BUFFSIZE = 1024 * 256;
     private static final Random rnd = new Random();
+    private static final String MD5 = "MD5";
 
     public static synchronized String generateRandomBase() {
         return "-" + rnd.nextLong() + ".tmp";
@@ -326,6 +332,28 @@ public class StaticFileUtils {
         return newPath;
     }
 
+    public static String directoryNameFromFullPath(String fullFilePath) {
+        int i = 0;
+        String[] pathComponents = splitPath(fullFilePath);
+        List<String> pathCompsOut = new ArrayList<String>();
+        int newLen = pathComponents.length - 1;
+        if (newLen <= 0) {
+            return "";
+        }
+        for (i = 0; i < newLen; i++) {
+            pathCompsOut.add(pathComponents[i]);
+        }
+        return splitPathToString(pathCompsOut);
+    }
+
+    public static String stripDirectoryFromFileName(String fullFilePath) {
+        String[] pathComponents = splitPath(fullFilePath);
+        if (pathComponents == null || pathComponents.length == 0) {
+            return "";
+        }
+        return pathComponents[pathComponents.length - 1];
+    }
+
     public static String pathTail(String path) {
         if (path == null) {
             return null;
@@ -347,23 +375,18 @@ public class StaticFileUtils {
         return newPath;
     }
 
-    public static String listDir(String path) {
-        if (path == null) {
-            return "null";
+    public static List<String> listDir(String filePath) throws IOException {
+        List<String> fileList = new ArrayList<String>();
+        try {
+            File directory = new File(expandUser(filePath));
+            File[] files = directory.listFiles();
+            for (File file : files) {
+                fileList.add(file.toString());
+            }
+        } catch (Exception ex) {
+            throw new IOException(String.format("Error listing directory %s", filePath), ex);
         }
-        StringBuilder sb = new StringBuilder();
-        sb.append(path).append(":{");
-        File[] files = new File(path).listFiles();
-        if (files.length <= 0) {
-            sb.append("}");
-            return sb.toString();
-        }
-        int i;
-        for (i = 0; i < files.length - 1; i++) {
-            sb.append(files[i].toString()).append(",");
-        }
-        sb.append(files[i]).append("}");
-        return sb.toString();
+        return fileList;
     }
 
     // Be careful your not reading a huge file
@@ -411,14 +434,6 @@ public class StaticFileUtils {
             sanitized = sanitized.replace("-*", "");
         }
         return sanitized;
-    }
-
-    public static String stripDirectoryFromFileName(String fullFilePath) {
-        String[] pathComponents = splitPath(fullFilePath);
-        if (pathComponents == null || pathComponents.length == 0) {
-            return "";
-        }
-        return pathComponents[pathComponents.length - 1];
     }
 
     /**
@@ -587,9 +602,9 @@ public class StaticFileUtils {
         return org.apache.commons.io.FileUtils.isSymlink(file);
     }
 
-    public static void close(Closeable is) {
+    public static void close(Closeable stream) {
         try {
-            is.close();
+            stream.close();
         } catch (Exception ex) {
             // Not logging since the stream is likely already closed
         }
@@ -605,5 +620,26 @@ public class StaticFileUtils {
         List<String> pathList = new ArrayList<String>();
         pathList.addAll(Arrays.asList(pathArray));
         return StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathList));
+    }
+
+    public static RandomAccessFile openRandomReadFile(String filePath) throws FileNotFoundException {
+        RandomAccessFile ra = new RandomAccessFile(new File(StaticFileUtils.expandUser(filePath)), "r");
+        return ra;
+    }
+
+    public static long fileSize(String filePath) {
+        File file = new File(expandUser(filePath));
+        return file.length();
+    }
+
+    public static void drainInputStream(InputStream is) throws IOException {
+        byte[] buff = new byte[DEFAULT_BUFFSIZE];
+        int nBytes;
+        while (true) {
+            nBytes = is.read(buff, 0, DEFAULT_BUFFSIZE);
+            if (nBytes <= 0) {
+                break;
+            }
+        }
     }
 }
