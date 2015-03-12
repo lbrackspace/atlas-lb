@@ -96,6 +96,7 @@ def parseAndSave(xmlFileName,jsonFileName,persistName):
             continue
         printf("Including %s in %s\n",className,jsonFileName)
         classes.append(className)
+    classes.sort()
     save_json(jsonFileName,config)
 
 def usage(prog):
