@@ -1,0 +1,26 @@
+use loadbalancing;
+
+CREATE TABLE `hdfs_lzo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `hour_key` int(11) NOT NULL,
+  `finished` tinyint(1) NOT NULL,
+  `start_time` datetime NOT NULL,
+  `end_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hour_key_idx` (`hour_key`),
+  KEY `finished_idx` (`finished`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `cloud_files_lzo` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `hour_key` int(11) NOT NULL,
+  `frag` smallint(6) NOT NULL,
+  `finished` tinyint(1) NOT NULL,
+  `md5` varchar(48) NOT NULL,
+  `start_time` datetime NOT NULL,
+  `end_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `hour_key_frag_idx` (`hour_key`,`frag`),
+  KEY `hour_key_idx` (`hour_key`),
+  KEY `finished_idx` (`finished`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

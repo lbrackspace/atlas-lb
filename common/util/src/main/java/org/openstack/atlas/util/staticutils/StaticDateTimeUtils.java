@@ -2,6 +2,7 @@ package org.openstack.atlas.util.staticutils;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -24,6 +25,11 @@ public class StaticDateTimeUtils {
                 + dt.getMinuteOfHour() * 100000L
                 + dt.getSecondOfMinute() * 1000L
                 + dt.getMillisOfSecond();
+    }
+
+    public static DateTime iso8601ToDateTime(String iso8601Str) {
+        DateTime dt = DateTime.parse(iso8601Str, ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.UTC));
+        return dt;
     }
 
     public static DateTime OrdinalMillisToDateTime(long ord, boolean useUTC) {
@@ -106,5 +112,16 @@ public class StaticDateTimeUtils {
 
     public static long dateTimeToHourLong(DateTime dt) {
         return StaticDateTimeUtils.dateTimeToOrdinalMillis(dt) / MILLIS_COEF;
+    }
+
+    public static Calendar toCal(DateTime dt) {
+        return dt.toCalendar(Locale.getDefault());
+    }
+
+    public static int DateTimeToHourKeyInt(DateTime dt) {
+        return dt.getHourOfDay() * 1
+                + dt.getDayOfMonth() * 100
+                + dt.getMonthOfYear() * 10000
+                + dt.getYear() * 1000000;
     }
 }
