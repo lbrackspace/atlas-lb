@@ -655,6 +655,7 @@ public class HdfsCli {
                     double endTime = Debug.getEpochSeconds();
                     System.out.printf("took %f seconds running job %s\n", endTime - startTime, jobDriverClassName);
                     System.out.printf("Exit status = %d\n", exitCode);
+                    continue;
                 } else if (cmd.equals("runMain") && args.length >= 2) {
                     String className = args[1];
                     String[] mainArgs = new String[args.length - 2];
@@ -665,6 +666,7 @@ public class HdfsCli {
                     Class mainClass = Class.forName(args[1]);
                     Method mainMethod = mainClass.getDeclaredMethod("main", String[].class);
                     mainMethod.invoke(null, (Object) mainArgs);
+                    continue;
                 } else if (cmd.equals("gc")) {
                     System.out.printf("Calling garbage collector\n");
                     Debug.gc();

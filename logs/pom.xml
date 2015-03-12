@@ -24,6 +24,7 @@
         <module>logs-lzo-faker</module>
         <module>logs-test-compress</module>
         <module>logs-cache-faker</module>
+        <module>cloudfiles-segmenter</module>
     </modules>
 
     <build>
