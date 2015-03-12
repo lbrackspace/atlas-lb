@@ -3,6 +3,7 @@ package org.openstack.atlas.util.staticutils;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataInputStream;
@@ -17,6 +18,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.RandomAccessFile;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.debug.Debug;
@@ -38,6 +42,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.zip.CRC32;
 import org.openstack.atlas.util.common.exceptions.FileUtilsException;
+import org.openstack.atlas.util.converters.BitConverters;
 
 public class StaticFileUtils {
 
@@ -46,6 +51,7 @@ public class StaticFileUtils {
     public static DateFormat jobdf = new SimpleDateFormat("yyyyMMdd-HHmmss"); //20110215-130916
     private static final int DEFAULT_BUFFSIZE = 1024 * 256;
     private static final Random rnd = new Random();
+    private static final String MD5 = "MD5";
 
     public static synchronized String generateRandomBase() {
         return "-" + rnd.nextLong() + ".tmp";
@@ -606,4 +612,34 @@ public class StaticFileUtils {
         pathList.addAll(Arrays.asList(pathArray));
         return StaticFileUtils.splitPathToString(StaticFileUtils.joinPath(pathList));
     }
+
+    public static RandomAccessFile openRandomReadFile(String filePath) throws FileNotFoundException{
+        RandomAccessFile ra = new RandomAccessFile(new File(StaticFileUtils.expandUser(filePath)), "r");
+        return ra;
+    }
+
+    public static String computeMd5SumForFile(String filePath, int buffsize) throws FileNotFoundException, IOException, NoSuchAlgorithmException {
+        File file = new File(StaticFileUtils.expandUser(filePath));
+        long size = file.length();
+        return computeMd5SumForFile(filePath, 0, size, buffsize);
+    }
+
+    public static String computeMd5SumForFile(String filePath, long offset, long length, int buffsize) throws FileNotFoundException, IOException, NoSuchAlgorithmException {
+        long nBytesLeft = length;
+        int nBytes;
+        int bytesRead;
+        RandomAccessFile ra = openRandomReadFile(filePath);
+        ra.seek(offset);
+        byte[] buff = new byte[buffsize];
+        MessageDigest md = MessageDigest.getInstance(MD5);
+        while (nBytesLeft > 0) {
+            nBytes = (nBytesLeft < buffsize) ? (int) nBytesLeft : buffsize;
+            bytesRead = ra.read(buff, 0, nBytes);
+            md.update(buff, 0, bytesRead);
+            nBytesLeft -= bytesRead;
+        }
+        String md5hex = BitConverters.bytes2hex(md.digest());
+        return md5hex;
+    }
+
 }

@@ -17,6 +17,7 @@
         <module>logs-hadoop</module>
         <module>logs-common</module>
         <module>logs-itest-common</module>
+        <module>cloudfiles-segmenter</module>
         <module>logs-test-reupload</module>
         <module>logs-archive-clients</module>
         <module>logs-web</module>
