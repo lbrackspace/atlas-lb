@@ -1,0 +1,141 @@
+#!/usr/bin/env python
+
+import Crypto.Hash.SHA
+import MySQLdb
+import netaddr
+import json
+import sys
+import os
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def load_json(pathIn):
+    return json.loads(open(os.path.expanduser(pathIn),"r").read())
+
+def save_json(pathOut,obj):
+    open(os.path.expanduser(pathOut),"w").write(json.dumps(obj,indent=2))
+
+def account_part_of_ipv6(account_id_str):
+    sha = Crypto.Hash.SHA.new()
+    sha.update(account_id_str)
+    shaw_bytes = sha.digest()[0:4]
+    account_bits = 0
+    for ch in shaw_bytes:
+        account_bits <<= 8
+        account_bits |= ord(ch)
+    return account_bits
+
+def ipv6addr(cluster_cidr, account_id, vip_octet_num):
+    cluster_bits = int(netaddr.IPNetwork(cluster_cidr).ip)
+    if isinstance(account_id, int) or isinstance(account_id, long):
+        account_bits = account_part_of_ipv6("{0}".format(account_id))
+    else:
+        account_bits = account_part_of_ipv6(account_id)
+    composit_bits = cluster_bits | (account_bits << 32) | vip_octet_num
+    return netaddr.IPAddress(composit_bits)
+
+
+def usage(prog,conf):
+    printf("usage is %s <datacenter> <new_cluster_id> <lb_id>\n", prog)
+    printf("\n")
+    printf("prints the old ipv6 address along with the new ipv6 address\n")
+    printf("for the given loadbalancer\n")
+    for dc in conf["db"].iterkeys():
+        printf("    %s\n",dc)
+
+def get_ipv6_rows(conn, lid):
+    ipv6_query = """select v6.account_id as account_id,
+                    v6.vip_octets as vip_octets,
+                    v6.cluster_id as cluster_id, 
+                    lv.port as port 
+                    from virtual_ip_ipv6 v6, loadbalancer_virtualipv6 lv 
+                         where lv.loadbalancer_id = %s
+                         and v6.id = lv.virtualip6_id;"""
+    curr = conn.cursor(MySQLdb.cursors.DictCursor)
+    curr.execute(ipv6_query, lid)
+    rows = curr.fetchall()
+    curr.close()
+    rows_out = []
+    for r in rows:
+        row_out = []
+        row_out.append(r["cluster_id"])
+        row_out.append(r["account_id"])
+        row_out.append(r["vip_octets"])
+        row_out.append(r["port"])
+        rows_out.append(row_out)
+    return rows_out
+
+def get_new_cidr(conn,cid):
+    new_cidr_query = """select cluster_ipv6_cidr from cluster where id = %s"""
+    curr = conn.cursor(MySQLdb.cursors.DictCursor)
+    curr.execute(new_cidr_query, cid)
+    rows = curr.fetchall()
+    curr.close()
+    return rows[0]["cluster_ipv6_cidr"]
+
+def get_old_cidr(conn,lid):
+    old_cidr_query = """select c.cluster_ipv6_cidr 
+        from cluster c, host h, loadbalancer l 
+            where l.id = %s and l.host_id=h.id and h.cluster_id = c.id;"""
+    curr = conn.cursor(MySQLdb.cursors.DictCursor)
+    curr.execute(old_cidr_query,lid)
+    rows = curr.fetchall()
+    curr.close()
+    return rows[0]["cluster_ipv6_cidr"]
+
+def get_account_from_loadbalancer(conn, lid):
+    account_query = """select account_id from loadbalancer where id = %s"""
+    curr = conn.cursor(MySQLdb.cursors.DictCursor)
+    curr.execute(account_query, lid)
+    rows = curr.fetchall()
+    curr.close()
+    return rows[0]["account_id"]
+
+def get_maps(conn):
+    host_map_query = """
+    select h.id as host_id, c.id as cluster_id, c.cluster_ipv6_cidr as cidr 
+        from host h join cluster c on h.cluster_id = c.id order by host_id"""
+
+    curr = conn.cursor(MySQLdb.cursors.DictCursor)
+    curr.execute(host_map_query)
+    rows = curr.fetchall()
+    curr.close()
+    host_to_cidr = {}
+    cluster_to_cidr = {}
+    for r in rows:
+        cid = r["cluster_id"]
+        hid = r["host_id"]
+        cidr = r["cidr"]
+        host_to_cidr[hid] = cidr
+        cluster_to_cidr[cid] = cidr
+    return (host_to_cidr, cluster_to_cidr)
+
+def main(args):
+    conf_file_name = "~/lbaas_dbs.json"
+    conf = load_json(conf_file_name)
+    if len(args)<4:
+        usage(args[0], conf)
+        sys.exit()
+    dc = args[1]
+    cid = int(args[2])
+    lid = int(args[3])
+    dbconf = conf["db"][dc]
+    conn = MySQLdb.connect(**dbconf)
+    (host_map, cluster_map) = get_maps(conn)
+    old_cidr = get_old_cidr(conn, lid)
+    new_cidr = get_new_cidr(conn, cid)
+    ipv6_addrs = get_ipv6_rows(conn, lid)
+    account_id = get_account_from_loadbalancer(conn, lid)
+    #printf("account_id = %s\n", account_id)
+    #printf("old_cidr = %s\n", old_cidr)
+    #printf("new_cidr = %s\n", new_cidr)
+    #printf("migration for lb %d:\n", lid)
+    for (cluster_id, account_id, vip_octets, port) in ipv6_addrs:
+        old_ipv6 = ipv6addr(old_cidr, account_id, vip_octets)
+        new_ipv6 = ipv6addr(new_cidr, account_id, vip_octets)
+        printf("%s -> %s for port %d\n", old_ipv6, new_ipv6, port)
+
+
+if __name__ == "__main__":
+    main(sys.argv)
+

@@ -8,8 +8,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
-import org.openstack.atlas.config.LbLogsConfiguration;
-import org.openstack.atlas.config.LbLogsConfigurationKeys;
 import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
@@ -31,14 +29,24 @@ public class HadoopLogsConfigs {
     protected static int daysOfLZOsToKeep;
     protected static int replicationCount;
     protected static int hdfsBlockSize;
+    private static String cloudFilesUser;
+    private static String cloudFilesKey;
+    private static int cloudFilesDaysLzos;
+    private static int cloudFilesLzoSegmentSize;
     protected static String numReducers;
     protected static String hdfsJobsJarPath;
+    private static String cloudFilesAccount;
+    private static String cloudFilesAuthEndpoint;
+    private static String cloudFilesStorageEndpoint;
     protected static Configuration hadoopConfiguration = null;
     protected static HdfsUtils hdfsUtils = null;
     protected static boolean jarCopyed = false;
 
     static {
         resetConfigs(null);
+    }
+
+    public HadoopLogsConfigs() {
     }
 
     public static void resetConfigs(String filePath) {
@@ -68,6 +76,13 @@ public class HadoopLogsConfigs {
         daysOfZipsToKeep = getInt(lbLogsConf, LbLogsConfigurationKeys.days_of_zips_to_keep);
         hdfsBlockSize = getInt(lbLogsConf, LbLogsConfigurationKeys.hdfs_block_size_megs);
         replicationCount = getInt(lbLogsConf, LbLogsConfigurationKeys.replication_count);
+        cloudFilesDaysLzos = getInt(lbLogsConf, LbLogsConfigurationKeys.cloud_files_days_of_lzos_to_keep);
+        cloudFilesLzoSegmentSize = getInt(lbLogsConf, LbLogsConfigurationKeys.cloud_files_lzo_segment_size);
+        cloudFilesUser = lbLogsConf.getString(LbLogsConfigurationKeys.cloud_files_lzo_user);
+        cloudFilesKey = lbLogsConf.getString(LbLogsConfigurationKeys.cloud_files_lzo_key);
+        cloudFilesAccount = lbLogsConf.getString(LbLogsConfigurationKeys.cloud_files_lzo_account);
+        cloudFilesAuthEndpoint = lbLogsConf.getString(LbLogsConfigurationKeys.cloud_files_lzo_auth_api_endpoint);
+        cloudFilesStorageEndpoint = lbLogsConf.getString(LbLogsConfigurationKeys.cloud_files_lzo_storage_api_endpoint);
     }
 
     private static int getInt(LbLogsConfiguration lbConf, LbLogsConfigurationKeys key) {
@@ -111,6 +126,13 @@ public class HadoopLogsConfigs {
                 append("    hdfs_block_size_megs = ").append(hdfsBlockSize).append("\n").
                 append("    days_of_lzos_to_keep = ").append(daysOfLZOsToKeep).append("\n").
                 append("    days_of_zips_to_keep = ").append(daysOfZipsToKeep).append("\n").
+                append("    cloud_files_lzo_segment_size = ").append(cloudFilesLzoSegmentSize).append("\n").
+                append("    cloud_files_days_of_lzos_to_keep = ").append(cloudFilesDaysLzos).append("\n").
+                append("    cloud_files_lzo_user = ").append(cloudFilesUser).append("\n").
+                append("    cloud_files_lzo_key = ").append(cloudFilesKey).append("\n").
+                append("    cloud_files_lzo_account = ").append(cloudFilesAccount).append("\n").
+                append("    cloud_files_lzo_auth_api_endpoint = ").append(cloudFilesAuthEndpoint).append("\n").
+                append("    cloud_files_lzo_storage_api_endpoint = ").append(cloudFilesStorageEndpoint).append("\n").
                 append("}\n");
         return sb.toString();
     }
@@ -236,5 +258,37 @@ public class HadoopLogsConfigs {
 
     public static int getHdfsBlockSize() {
         return hdfsBlockSize;
+    }
+
+    public static String getCloudFilesUser() {
+        return cloudFilesUser;
+    }
+
+    public static String getCloudFilesKey() {
+        return cloudFilesKey;
+    }
+
+    public static int getCloudFilesDaysLzos() {
+        return cloudFilesDaysLzos;
+    }
+
+    public static int getCloudFilesLzoSegmentSize() {
+        return cloudFilesLzoSegmentSize;
+    }
+
+    public static String getCloudFilesAccount() {
+        return cloudFilesAccount;
+    }
+
+    public static String getCloudFilesAuthEndpoint() {
+        return cloudFilesAuthEndpoint;
+    }
+
+    public static String getCloudFilesStorageEndpoint() {
+        return cloudFilesStorageEndpoint;
+    }
+
+    public static HadoopLogsConfigs getInstance() {
+        return new HadoopLogsConfigs();
     }
 }
