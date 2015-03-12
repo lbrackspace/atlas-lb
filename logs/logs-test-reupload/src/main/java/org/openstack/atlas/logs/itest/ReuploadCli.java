@@ -30,14 +30,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class ReuploadCli {
 
     public static final String DEFAULT_HADOOP_CONF_FILE = "/etc/openstack/atlas/hadoop-logs.conf";
     public static final String DEFAULT_CONF_FILE = "~/conf.json";
     private static final int BUFFSIZE = 1024 * 32;
+    private static final Map<Integer, Integer> lid2aidMap;
+    private static final Map<Integer, List<Integer>> aid2lidMap;
     private static final Comparator<CacheZipInfo> lidComparator;
     private static final Comparator<CacheZipInfo> aidComparator;
+    private static final Comparator<CacheZipInfo> hourComparator;
+    private static final Comparator<LoadBalancerIdAndName> aidlidComparator;
+    private static final List<LoadBalancerIdAndName> lbList;
     private HdfsUtils hdfsUtils;
     private Configuration conf;
     private Map<Integer, LoadBalancerIdAndName> lbMap;
@@ -53,6 +59,11 @@ public class ReuploadCli {
     static {
         lidComparator = new CacheZipInfo.LidComparator();
         aidComparator = new CacheZipInfo.AidComparator();
+        hourComparator = new CacheZipInfo.HourComparator();
+        aidlidComparator = new AccountIdLoadBalancerIdComparator();
+        lid2aidMap = new HashMap<Integer, Integer>();
+        aid2lidMap = new HashMap<Integer, List<Integer>>();
+        lbList = new ArrayList<LoadBalancerIdAndName>();
     }
 
     public void run(String[] argv) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException, AuthException {
@@ -64,7 +75,7 @@ public class ReuploadCli {
             System.out.printf("will be deduced from the %s file\n", DEFAULT_HADOOP_CONF_FILE);
             System.out.printf("\n");
         }
-        List<ReuploaderThread> uploaders = new ArrayList<ReuploaderThread>();
+        List<Thread> uploaders = new ArrayList<Thread>();
         stdin = StaticFileUtils.inputStreamToBufferedReader(System.in, BUFFSIZE);
         //System.out.printf("Press enter to continue\n");
         //stdin.readLine();
@@ -100,6 +111,8 @@ public class ReuploadCli {
         huApp.setDbMap(hConf);
         System.out.printf("Reading LoadBalancers from databases\n");
         lbMap = CommonItestStatic.getLbIdMap(huApp);
+        System.out.printf("Loaded %d lbs from databases\n", lbMap.keySet().size());
+        buildIdAidMap(lbMap);
         System.out.printf("HadoopLogsConfig=%s\n", HadoopLogsConfigs.staticToString());
 
         ru = new ReuploaderUtils(HadoopLogsConfigs.getCacheDir(), lbMap);
@@ -114,9 +127,9 @@ public class ReuploadCli {
                 if (cmdLine == null) {
                     break;// Eof
                 }
-                String[] args = CommonItestStatic.stripBlankArgs(cmdLine);
-                Map<String, String> kwArgs = CommonItestStatic.argMapper(args);
-                args = CommonItestStatic.stripKwArgs(args);
+                String[] args = StaticStringUtils.stripBlankArgs(cmdLine);
+                Map<String, String> kwArgs = StaticStringUtils.argMapper(args);
+                args = StaticStringUtils.stripKwArgs(args);
                 if (args.length < 1) {
                     System.out.printf("usage is help\n");
                     continue;
@@ -126,6 +139,8 @@ public class ReuploadCli {
                     System.out.printf("gc         #Run garbage collector\n");
                     System.out.printf("mem        #Display memory usage\n");
                     System.out.printf("exit       #exit program\n");
+                    System.out.printf("aid2lid <aid> #Show the lid associated with this aid\n");
+                    System.out.printf("lid2aid <lid> #Show the aid associated with this lid\n");
                     System.out.printf("clzinfo    #reset the zipInfo from memory from memory\n");
                     System.out.printf("getzinfo [lastHour]   #Scan the cache dir for the zips still in localcache\n");
                     System.out.printf("setComp <size,hour> reverse=false  # Set the comparator to sort by size or by hour\n");
@@ -138,14 +153,18 @@ public class ReuploadCli {
                     System.out.printf("showAuth <accountId> #Get information on account via the god AuthClient\n");
                     System.out.printf("rmlid <lid> #remove zips in the zinfolist that are for the specified loadbalancer\n");
                     System.out.printf("rmaid <aid> #remove zips in the zinfolist that are for the specified account\n");
+                    System.out.printf("rmhour <hour1> <hour2> <...> <hourn>\n");
                     System.out.printf("auth <accountId> #Get service token and other user info from keystone auth\n");
                     System.out.printf("clearDirs <minusHours>    #Remove any empty directories\n");
                     System.out.printf("delDir <path> #Delete directory if its empty\n");
                     System.out.printf("utc [minusHours] #Get the time stamp in utc for the hour Key that clearDirs would scan\n");
                     System.out.printf("addLock <fileName> #Test the file locker\n");
+                    System.out.printf("showLbMap #Dump a list of Lb Names accounts and Lids\n");
                     System.out.printf("showLocks #Show the current file locks\n");
                     System.out.printf("clearOldLocks <secs> #Test the lock expiration counter\n");
                     System.out.printf("ru #run the uploader thread\n");
+                    System.out.printf("rulids <lid1> .. <lidN>  #Just reupload the following lids\n");
+                    System.out.printf("ruaids <aid1> .. <aidN>  #Just reupload the following aids\n");
                     System.out.printf("joinThreads #Join reuploader threads\n");
 
                 } else if (cmd.equals("countzinfo")) {
@@ -173,15 +192,37 @@ public class ReuploadCli {
                         uploaders.add(uploader);
                     }
                     System.out.printf("All threads running\n");
-
-                } else if (cmd.equals("joinThreads")) {
-                    int nThreads = uploaders.size();
-                    System.out.printf("Joining %d threads\n", nThreads);
-                    for (int i = 0; i < uploaders.size(); i++) {
-                        System.out.printf("Joining %d of %d threads\n", i, nThreads);
-                        uploaders.get(i).join();
+                    continue;
+                } else if (cmd.equals("rulids") && (args.length >= 2)) {
+                    List<Integer> lids = new ArrayList<Integer>();
+                    for (int i = 1; i < args.length; i++) {
+                        int lid;
+                        try {
+                            lid = Integer.parseInt(args[i]);
+                        } catch (NumberFormatException ex) {
+                            System.out.printf("Skipping %d\n", args[i]);
+                            continue;
+                        }
+                        lids.add(lid);
                     }
-                    uploaders = new ArrayList<ReuploaderThread>();
+                    ReuploadLidsThread uploader = new ReuploadLidsThread(lids, new ReuploaderUtils(HadoopLogsConfigs.getCacheDir(), lbMap));
+                    uploader.start();
+                    uploaders.add(uploader);
+                } else if (cmd.equals("ruaids") && (args.length >= 2)) {
+                    List<Integer> aids = new ArrayList<Integer>();
+                    for (int i = 1; i < args.length; i++) {
+                        int aid;
+                        try {
+                            aid = Integer.parseInt(args[i]);
+                        } catch (NumberFormatException ex) {
+                            System.out.printf("Skipping %d\n", args[i]);
+                            continue;
+                        }
+                        aids.add(aid);
+                    }
+                    ReuploadAidsThread uploader = new ReuploadAidsThread(aids, new ReuploaderUtils(HadoopLogsConfigs.getCacheDir(), lbMap));
+                    uploader.start();
+                    uploaders.add(uploader);
                 } else if (cmd.equals("addLock") && args.length >= 2) {
                     String fileName = args[1];
                     System.out.printf("Locking file %s = ", fileName);
@@ -260,6 +301,41 @@ public class ReuploadCli {
                         continue;
                     }
                     deleteAidZips(aid);
+                    continue;
+                } else if (cmd.equals("aid2lid") && (args.length >= 2)) {
+                    int aid = Integer.parseInt(args[1]);
+                    List<Integer> lids = aid2lid(aid);
+                    System.out.printf("Account %d contains the following lids:\n", aid);
+                    System.out.printf("--------------------------------\n");
+                    for (Integer lid : lids) {
+                        System.out.printf("%d\n", lid);
+                    }
+                    continue;
+                } else if (cmd.equals("lid2aid") && (args.length >= 2)) {
+                    int lid = Integer.parseInt(args[1]);
+                    int aid = lid2aid(lid);
+                    System.out.printf("lid[%d] -> aid[%d]\n", lid, aid);
+                    continue;
+                } else if (cmd.equals("rmhour") && (args.length >= 2)) {
+                    List<Long> hours = new ArrayList<Long>();
+                    for (int i = 1; i < args.length; i++) {
+                        try {
+                            long hour = Long.parseLong(args[i]);
+                            hours.add(hour);
+                        } catch (NumberFormatException ex) {
+                            System.out.printf("Error converting %s to hour id\n", args[i]);
+                            continue;
+                        }
+                    }
+                    deleteHourZips(hours);
+                } else if (cmd.equals("joinThreads")) {
+                    int nThreads = uploaders.size();
+                    System.out.printf("Joining %d threads\n", nThreads);
+                    for (int i = 0; i < nThreads; i++) {
+                        System.out.printf("Joining %d of %d threads\n", i, nThreads);
+                        uploaders.get(i).join();
+                    }
+                    uploaders.clear();
                 } else if (cmd.equals("showZips")) {
                     showZips();
                 } else if (cmd.equals("showzinfo")) {
@@ -270,6 +346,12 @@ public class ReuploadCli {
                     countIds(CountTypes.ACCOUNT);
                 } else if (cmd.equals("counthours")) {
                     countIds(CountTypes.HOUR);
+                } else if (cmd.equals("showLbMap")) {
+                    System.out.printf("loadbalancers are:\n");
+                    System.out.printf("--------------------\n");
+                    for (LoadBalancerIdAndName lb : lbList) {
+                        System.out.printf("%s\n", lb.toString());
+                    }
                 } else {
                     System.out.printf("Unknown Command %s\n", cmdLine);
                 }
@@ -394,8 +476,38 @@ public class ReuploadCli {
         keyStoneAdminClient = new KeyStoneAdminClient(adminAuthUrl, adminAuthKey, adminAuthUser);
     }
 
+    private void deleteHourZips(List<Long> hours) throws IOException {
+        int nDeleted = 0;
+        long nBytes = 0;
+        Set<Long> rmHours = new HashSet<Long>(hours);
+        List<CacheZipInfo> doomedZips = new ArrayList<CacheZipInfo>();
+        List<CacheZipInfo> sortedZips = new ArrayList<CacheZipInfo>(zipInfoList);
+        Collections.sort(sortedZips, hourComparator);
+        for (CacheZipInfo zipFile : sortedZips) {
+            long hour = zipFile.getHourKey();
+            if (rmHours.contains((Long) hour)) {
+                System.out.printf("%s\n", zipFile.getZipFile());
+                doomedZips.add(zipFile);
+                nBytes += zipFile.getFileSize();
+            }
+        }
+        System.out.printf("Are you sure you want to delete the above %d zips of %d bytes(Y/N)\n", doomedZips.size(),nBytes);
+        if (CommonItestStatic.inputStream(stdin, "Y")) {
+            System.out.printf("Deleting files\n");
+            for (CacheZipInfo doomedZip : doomedZips) {
+                if (deleteFile(doomedZip.getZipFile())) {
+                    nDeleted++;
+                }
+            }
+        } else {
+            System.out.printf("Bailing out\n");
+        }
+        System.out.printf("Deleted %d files\n", nDeleted);
+    }
+
     private void deleteLidZips(int lid) throws IOException {
         int nDeleted = 0;
+        long nBytes = 0;
         List<CacheZipInfo> doomedZips = new ArrayList<CacheZipInfo>();
         List<CacheZipInfo> sortedZips = new ArrayList<CacheZipInfo>(zipInfoList);
         Collections.sort(sortedZips, lidComparator);
@@ -403,9 +515,10 @@ public class ReuploadCli {
             if (zipFile.getLoadbalancerId() == lid) {
                 System.out.printf("%s\n", zipFile.getZipFile());
                 doomedZips.add(zipFile);
+                nBytes += zipFile.getFileSize();
             }
         }
-        System.out.printf("Are you sure you want to delete the above %d zips(Y/N): ", doomedZips.size());
+        System.out.printf("Are you sure you want to delete the above %d zips of %d bytes(Y/N): ", doomedZips.size(), nBytes);
         if (CommonItestStatic.inputStream(stdin, "Y")) {
             System.out.printf("Deleting files\n");
             for (CacheZipInfo doomedZip : doomedZips) {
@@ -420,6 +533,7 @@ public class ReuploadCli {
     }
 
     private void deleteAidZips(int aid) throws IOException {
+        long nBytes = 0;
         int nDeleted = 0;
         List<CacheZipInfo> doomedZips = new ArrayList<CacheZipInfo>();
         List<CacheZipInfo> sortedZips = new ArrayList<CacheZipInfo>(zipInfoList);
@@ -428,9 +542,10 @@ public class ReuploadCli {
             if (zipFile.getAccountId() == aid) {
                 System.out.printf("%s\n", zipFile.getZipFile());
                 doomedZips.add(zipFile);
+                nBytes += zipFile.getFileSize();
             }
         }
-        System.out.printf("Are you sure you want to delete the above %d zips(Y/N): ", doomedZips.size());
+        System.out.printf("Are you sure you want to delete the above %d zips of %d bytes (Y/N): ", doomedZips.size(),nBytes);
         if (CommonItestStatic.inputStream(stdin, "Y")) {
             System.out.printf("Deleting files\n");
             for (CacheZipInfo doomedZip : doomedZips) {
@@ -544,5 +659,43 @@ public class ReuploadCli {
             nCount++;
         }
         System.out.printf("Total files = %d\n", nCount);
+    }
+
+    public static int lid2aid(int lid) {
+        if (lid2aidMap.containsKey(lid)) {
+            return lid2aidMap.get(lid);
+        } else {
+            return -1;
+        }
+    }
+
+    public static List<Integer> aid2lid(int aid) {
+        if (aid2lidMap.containsKey(aid)) {
+            return aid2lidMap.get(aid);
+        } else {
+            return new ArrayList<Integer>();
+        }
+    }
+
+    public static void buildIdAidMap(Map<Integer, LoadBalancerIdAndName> idMap) {
+        Map<Integer, Set<Integer>> lidSets = new HashMap<Integer, Set<Integer>>();
+        for (LoadBalancerIdAndName lb : idMap.values()) {
+            int lid = lb.getLoadbalancerId();
+            int aid = lb.getAccountId();
+            if (!lidSets.containsKey(aid)) {
+                lidSets.put(aid, new HashSet<Integer>());
+            }
+            lidSets.get(aid).add(lid);
+            lid2aidMap.put(lid, aid);
+            lbList.add(lb);
+        }
+        for (Map.Entry<Integer, Set<Integer>> e : lidSets.entrySet()) {
+            int aid = e.getKey();
+            Set<Integer> lidSet = e.getValue();
+            List<Integer> lidList = new ArrayList<Integer>(lidSet);
+            Collections.sort(lidList);
+            aid2lidMap.put(aid, lidList);
+        }
+        Collections.sort(lbList, aidlidComparator);
     }
 }

@@ -103,7 +103,7 @@ public class HdfsCli {
                 if (cmdLine == null) {
                     break; // EOF
                 }
-                args = CommonItestStatic.stripBlankArgs(cmdLine);
+                args = StaticStringUtils.stripBlankArgs(cmdLine);
                 if (args.length < 1) {
                     System.out.printf("Usage is help\n");
                     continue;
@@ -392,8 +392,8 @@ public class HdfsCli {
                             / GIGBYTES_DOUBLE;
                     System.out.printf(fmt, zipBytesGigs, zipUncompressedGigs);
                 } else if (cmd.equals("scanhdfszips")) {
-                    Map<String, String> kw = CommonItestStatic.argMapper(args);
-                    args = CommonItestStatic.stripKwArgs(args);
+                    Map<String, String> kw = StaticStringUtils.argMapper(args);
+                    args = StaticStringUtils.stripKwArgs(args);
                     List<Long> hourKeysListL = new ArrayList<Long>();
                     String lbLogSplitDir = StaticFileUtils.mergePathString(HadoopLogsConfigs.getMapreduceOutputPrefix(), LB_LOGS_SPLIT);
                     FileStatus[] dateDirsStats = hdfsUtils.getFileSystem().listStatus(new Path(lbLogSplitDir));
@@ -556,7 +556,7 @@ public class HdfsCli {
                     timer.stop();
                     System.out.printf("Hadoop tun response code was %d in %f secs\n", errorCode, timer.readSeconds());
                 } else if (cmd.equals("getzip") && args.length > 1) {
-                    Map<String, String> kw = CommonItestStatic.argMapper(args);
+                    Map<String, String> kw =StaticStringUtils.argMapper(args);
                     String lid = (kw.containsKey("l")) ? kw.get("l") : null;
                     String hourKey = (kw.containsKey("h")) ? kw.get("h") : null;
                     String downloadDir = args[1];
@@ -655,6 +655,7 @@ public class HdfsCli {
                     double endTime = Debug.getEpochSeconds();
                     System.out.printf("took %f seconds running job %s\n", endTime - startTime, jobDriverClassName);
                     System.out.printf("Exit status = %d\n", exitCode);
+                    continue;
                 } else if (cmd.equals("runMain") && args.length >= 2) {
                     String className = args[1];
                     String[] mainArgs = new String[args.length - 2];
@@ -665,11 +666,12 @@ public class HdfsCli {
                     Class mainClass = Class.forName(args[1]);
                     Method mainMethod = mainClass.getDeclaredMethod("main", String[].class);
                     mainMethod.invoke(null, (Object) mainArgs);
+                    continue;
                 } else if (cmd.equals("gc")) {
                     System.out.printf("Calling garbage collector\n");
                     Debug.gc();
                 } else if (cmd.equals("lszip")) {
-                    Map<String, String> kw = CommonItestStatic.argMapper(args);
+                    Map<String, String> kw = StaticStringUtils.argMapper(args);
                     String dateHour = (kw.containsKey("h")) ? kw.get("h") : null;
                     String lid = (kw.containsKey("l")) ? kw.get("l") : null;
                     System.out.printf("Scanning for zips on hour[%s] lid[%s]\n", dateHour, lid);
@@ -748,8 +750,8 @@ public class HdfsCli {
 
 
                 } else if (cmd.equals("dlzip") && args.length >= 2) {
-                    Map<String, String> kw = CommonItestStatic.argMapper(args);
-                    args = CommonItestStatic.stripKwArgs(args);
+                    Map<String, String> kw = StaticStringUtils.argMapper(args);
+                    args = StaticStringUtils.stripKwArgs(args);
 
                     Integer lid = (kw.containsKey("l")) ? Integer.valueOf(kw.get("l")) : null;
                     Integer aid = (kw.containsKey("a")) ? Integer.valueOf(kw.get("a")) : null;
