@@ -160,6 +160,32 @@ public class CacheZipInfo {
             return 0;
         }
     }
+    public static class HourComparator implements Comparator<CacheZipInfo> {
+
+        @Override
+        public int compare(CacheZipInfo o1, CacheZipInfo o2) {
+            if (o1 == null && o2 == null) {
+                return 0;
+            }
+            if (o1 == null) {
+                return 1;
+            }
+            if (o2 == null) {
+                return -1;
+            }
+            
+            long oa1 = o1.getHourKey();
+            long oa2 = o2.getHourKey();
+            if (oa1 < oa2) {
+                return -1;
+            }
+            if (oa2 > oa2) {
+                return 1;
+            }
+            return 0;
+        }
+    }
+
 
     public static class ByteCountComparator implements Comparator<CacheZipInfo> {
 
