@@ -26,6 +26,11 @@ public class StaticDateTimeUtils {
                 + dt.getMillisOfSecond();
     }
 
+    public static DateTime iso8601ToDateTime(String iso8601Str) {
+        DateTime dt = DateTime.parse(iso8601Str, ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.UTC));
+        return dt;
+    }
+
     public static DateTime OrdinalMillisToDateTime(long ord, boolean useUTC) {
         int millis = (int) (ord % 1000);
         ord /= 1000;
