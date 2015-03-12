@@ -334,6 +334,13 @@ public class Debug {
         return Thread.currentThread().getName();
     }
 
+    public static void sleep(int nMillis) {
+        try {
+            Thread.sleep(nMillis);
+        } catch (Exception ex) {
+        }
+    }
+
     public static void nop() {
     }
 }
