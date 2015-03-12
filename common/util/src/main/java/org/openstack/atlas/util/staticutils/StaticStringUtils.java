@@ -3,6 +3,7 @@ package org.openstack.atlas.util.staticutils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -165,6 +166,31 @@ public class StaticStringUtils {
                 j++;
             }
         }
+        return argsOut;
+    }
+
+    public static Map<String, String> argMapper(String[] args) {
+        Map<String, String> argMap = new HashMap<String, String>();
+        for (String arg : args) {
+            String[] kwArg = arg.split("=");
+            if (kwArg.length == 2) {
+                argMap.put(kwArg[0], kwArg[1]);
+            }
+        }
+        return argMap;
+    }
+
+    public static String[] stripKwArgs(String[] args) {
+        String[] argsOut;
+        List<String> filteredArgs = new ArrayList<String>();
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.split("=").length >= 2) {
+                continue;
+            }
+            filteredArgs.add(arg);
+        }
+        argsOut = filteredArgs.toArray(new String[filteredArgs.size()]);
         return argsOut;
     }
 

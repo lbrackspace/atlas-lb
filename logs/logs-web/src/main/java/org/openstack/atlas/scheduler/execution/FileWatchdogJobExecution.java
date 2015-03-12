@@ -1,11 +1,15 @@
 package org.openstack.atlas.scheduler.execution;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.cloudfiles.CloudFilesUtils;
+import org.openstack.atlas.cloudfiles.objs.AuthToken;
+import org.openstack.atlas.cloudfiles.objs.ResponseContainer;
 import org.openstack.atlas.exception.ExecutionException;
 import org.openstack.atlas.exception.SchedulingException;
 import org.openstack.atlas.scheduler.FileMoveJob;
@@ -18,16 +22,23 @@ import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import org.openstack.atlas.cloudfiles.CloudFilesConfig;
+import org.openstack.atlas.cloudfiles.SegmentMd5Thread;
 
 
 import org.openstack.atlas.config.HadoopLogsConfigs;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
+import org.openstack.atlas.service.domain.entities.CloudFilesLzo;
+import org.openstack.atlas.service.domain.entities.HdfsLzo;
+import org.openstack.atlas.util.common.CloudFilesSegmentContainer;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.common.VerboseLogger;
 import org.openstack.atlas.util.debug.Debug;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 
 public class FileWatchdogJobExecution extends LoggableJobExecution implements QuartzExecutable {
 
@@ -41,6 +52,7 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
         // By configureing the app to attempt to copy the Jar before THE_ONE_TO_RULE_THEM_ALL
         // is checked this will allow all DCs to copy their jars before the LZO is uploaded and a job
         // is run.
+
         try {
             HadoopLogsConfigs.copyJobsJar();
         } catch (IOException ex) {
@@ -48,8 +60,14 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
             LOG.error(String.format("Unable to copy JobsJar: %s", excMsg), ex);
         }
         if (!jobStateRepository.isJobReadyToGo()) {
-            LOG.warn(String.format("THE_ONE_TO_RULE_THEM_ALL jobstate is not set to GO. Not running log processing yet"));
+            LOG.warn(String.format("THE_ONE_TO_RULE_THEM_ALL jobstate is not set to \"GO\". Not running log processing yet"));
             return;
+        }
+        try {
+            uploadLzoToCloudFilesIfNeeded();
+        } catch (Exception ex) {
+            String excMsg = Debug.getExtendedStackTrace(ex);
+            LOG.error(String.format("Unable to check and upload LZOs to cloudFiles: %s", excMsg), ex);
         }
         List<String> localInputFiles = hdfsUtils.getLocalInputFiles(HadoopLogsConfigs.getFileSystemRootDir());
         List<String> scheduledFilesToRun = new ArrayList<String>();
@@ -109,5 +127,63 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
             throw new ExecutionException(e);
         }
         finishJob(state);
+    }
+
+    private void uploadLzoToCloudFilesIfNeeded() {
+        CloudFilesUtils cfu = new CloudFilesUtils();
+        int flags = 0;
+        String excMsg;
+        String localLzoDir = HadoopLogsConfigs.getFileSystemRootDir();
+        List<Integer> foundHours = new ArrayList<Integer>();
+        try {
+            foundHours = cfUtils.listLzoHourKeysFromLocal(localLzoDir);
+        } catch (Exception ex) {
+            excMsg = Debug.getExtendedStackTrace(ex);
+            LOG.error(String.format("Error coulden't search for local LZO files in %s: %s", localLzoDir, excMsg), ex);
+            return;
+        }
+        Collections.sort(foundHours);
+        for (Integer hourKey : foundHours) {
+            String lzoName = CloudFilesUtils.hourKeyToFileName(hourKey);
+            String joinPath = StaticFileUtils.joinPath(localLzoDir, lzoName);
+            String expandedPath = StaticFileUtils.expandUser(joinPath);
+            try {
+                flags = lzoService.newHdfsLzo(hourKey);
+                if (flags < 0) {
+                    // Start uploading this new LZO
+                    LOG.info(String.format("new LZO %s found spinning up MD5 threads\n", expandedPath));
+                    CloudFilesSegmentContainer sc = SegmentMd5Thread.threadedSegmentFile(expandedPath, CloudFilesConfig.getSegmentSize());
+                    sc.toString();
+                    LOG.info(String.format("Computed lzo for file set %s\n", sc.toString()));
+                    lzoService.setStateFlagsFalse(hourKey, HdfsLzo.NEEDS_MD5);
+                    List<CloudFilesLzo> lzos = lzoService.getCloudFilesLzo(hourKey);
+                    LOG.info(String.format("md5 completed for %d %s: %s", hourKey, expandedPath, sc.toString()));
+                    // Start upload
+                    cfu.getAuthToken();
+                    cfu.emptyContainer(lzoName);
+                    cfu.deleteContainer(lzoName);
+                    List<ResponseContainer<Boolean>> uploadResp = cfu.writeSegmentContainer(lzoName, sc);
+                    for(ResponseContainer<Boolean> resp : uploadResp){
+                        if(resp == null || resp.getEntity() == null || !resp.getEntity()){
+                            String error = String.format("unable to upload LZO for hour %d scheduling a resend",hourKey);
+                            throw new Exception(error);
+                        }
+                    }
+                    lzoService.finishCloudFilesLzo(hourKey, sc);
+                    // Mark that CloudFiles have been uploaded
+                    lzoService.setStateFlagsFalse(flags, HdfsLzo.NEEDS_CF);
+                } else if ((lzoService.getStateFlags(hourKey) & HdfsLzo.NEEDS_MASK) == 0) {
+                    // Files are ready to be deleted
+                    LOG.info(String.format("deleting local file: %s as its uploaded to CloudFiles and Hdfs.\n", expandedPath));
+                    File doomedFile = new File(expandedPath);
+                    doomedFile.delete();
+                }
+            } catch (Exception ex) {
+                excMsg = Debug.getExtendedStackTrace(ex);
+                LOG.error(String.format("Error checking hour %d for lzo %s due to Exception %s", hourKey, expandedPath, excMsg), ex);
+                lzoService.setStateFlagsTrue(hourKey, HdfsLzo.NEEDS_REUPLOAD | HdfsLzo.NEEDS_MD5 | HdfsLzo.NEEDS_CF);
+                continue;
+            }
+        }
     }
 }
