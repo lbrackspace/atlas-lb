@@ -1,0 +1,102 @@
+#!/usr/bin/env python
+
+import MySQLdb.cursors
+import MySQLdb
+import string
+import json
+import sys
+import os
+
+vips_free_query = """
+select count(*) as free_ips,cluster_id,type 
+                from virtual_ip_ipv4 
+                where is_allocated=0 
+                group by cluster_id,type order by cluster_id,type;
+"""
+
+def max_collengths(rows,include_key_length=False):
+    max_length = {}
+    for r in rows:
+        for (k,v) in r.iteritems():
+            if not max_length.has_key(k):
+                max_length[k] = 0
+            if max_length[k] < len(str(v)):
+                max_length[k] = len(str(v))
+            if include_key_length and max_length[k] < len(k):
+                max_length[k] = len(k)
+    return max_length
+
+def lpad(str_val,padlength,padchar=" "):
+    return "%s%s%s%s"%(padchar,str_val,padchar*(padlength-len(str_val)),padchar)
+
+def format_rows(rows,keys=None,include_key_length=False):
+    col_length = max_collengths(rows,include_key_length)
+    if keys == None:
+        keys = sorted(col_length.keys())
+    border = "+" + string.join(["-"*(col_length[k]+2) for k in keys],"+") + "+\n"
+    out  = ""
+    out += border
+    out += "|" + string.join([lpad(str(k),col_length[k]," ") for k in keys],"|") + "|\n"
+    out += border
+    for r in rows:
+        out += "|" + string.join([lpad(str(r[k]),col_length[k]," ") for k in keys],"|") + "|\n"
+    out += border
+    return out
+
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def usage(prog,conf):
+    printf("usage is %s <dataCenter>\n",prog)
+    printf("\n")
+    printf("Scans the database at the specified data center\n")
+    printf("To count how many vips are free\n")
+    printf("valid choices for data centers are:\n")
+    for dc in conf["db"].iterkeys():
+        printf("    %s\n",dc)
+
+def load_json(pathIn):
+    return json.loads(open(os.path.expanduser(pathIn),"r").read())
+
+def save_json(pathOut,obj):
+    open(os.path.expanduser(pathOut),"w").write(json.dumps(obj,indent=2))
+
+def main(*args):
+    prog = os.path.basename(args[0])
+    conf = load_json("~/lbaas_dbs.json")
+    if len(args)<2:
+        usage(prog,conf)
+        sys.exit()
+    dc = args[1]
+    dbconf = conf["db"][dc]
+    conn = MySQLdb.connect(**dbconf)
+    curr = conn.cursor(MySQLdb.cursors.DictCursor)
+    curr.execute(vips_free_query)
+    db_rows = curr.fetchall()
+    db_items = {}
+    curr.execute("select id from cluster where cluster_status=%s","ACTIVE")
+    cluster_rows = curr.fetchall()
+    curr.close()
+    conn.close()
+    ip_types = sorted(list(set([r["type"] for r in db_rows])))
+    d = {}
+    for r in db_rows:
+        cid = r["cluster_id"]
+        tid = r["type"]
+        if not d.has_key(cid):
+            d[cid] = {"cluster_id":cid}
+            for ip_type in ip_types:
+                d[cid][ip_type] = 0
+        d[cid][tid] = r["free_ips"]
+    rows = []
+    for cid in sorted(d.keys()):
+        rows.append(d[cid])
+    keys = ["cluster_id"]
+    keys.extend(ip_types)
+    printf("%s",format_rows(rows,keys=keys,include_key_length=True))
+    for cluster in cluster_rows:
+        printf("ACTIVE CLUSTER = %s\n",cluster["id"])
+
+if __name__ == "__main__":
+    main(*sys.argv)
+
