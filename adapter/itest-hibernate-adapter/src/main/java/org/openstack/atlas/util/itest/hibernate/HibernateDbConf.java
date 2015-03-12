@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -108,6 +109,7 @@ public class HibernateDbConf {
                 append(", dialect=").append(dialect).
                 append(", hbm2ddl=").append(hbm2ddl).
                 append(", packageName=").append(packageName).
+                append(", db_key=").append(dbKey).
                 append(", classNames=");
         if (classNames == null) {
             sb.append("null");
@@ -139,6 +141,7 @@ public class HibernateDbConf {
                 classList.add((String) classes.get(i));
             }
         }
+        Collections.sort(classList);
         return classList;
     }
 
@@ -153,7 +156,7 @@ public class HibernateDbConf {
         conf.setUser((String) dbConf.get("user"));
         conf.setPasswd((String) dbConf.get("passwd"));
         conf.setClassNames(classList);
-        conf.setDbKey((String) dbConf.get("dbkey"));
+        conf.setDbKey((String) dbConf.get("db_key"));
         conf.setDialect((String) dbConf.get("dialect"));
         conf.setDriver((String) dbConf.get("driver"));
         conf.setPackageName((String) dbConf.get("package"));
