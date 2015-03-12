@@ -31,6 +31,7 @@ import org.openstack.atlas.util.itest.hibernate.HuApp;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.logs.hadoop.util.StaticLogUtils;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
+import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class CacheFakerMain {
 
@@ -80,8 +81,8 @@ public class CacheFakerMain {
     }
 
     public static void main(String[] args) throws ParseException, UnsupportedEncodingException, FileNotFoundException, IOException {
-        Map<String, String> kwArgs = CommonItestStatic.argMapper(args);
-        String[] nonKeywordArgs = CommonItestStatic.stripKwArgs(args);
+        Map<String, String> kwArgs = StaticStringUtils.argMapper(args);
+        String[] nonKeywordArgs = StaticStringUtils.stripKwArgs(args);
         if (nonKeywordArgs.length < 2) {
             System.out.printf("Usage is <configFile> <startHour> [stopHour] [outdir=someDir] ");
             System.out.printf("[aid=SomeAid] [lid=SomeLid] [dirsonly=<true|false>\n");

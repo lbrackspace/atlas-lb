@@ -2,7 +2,6 @@ package org.openstack.atlas.logs.itest;
 
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import com.hadoop.compression.lzo.LzopCodec;
-import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,14 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import org.apache.commons.math.linear.Array2DRowFieldMatrix;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.compress.CompressionOutputStream;
 import org.hibernate.Query;
 import org.joda.time.DateTime;
-import org.openstack.atlas.config.HadoopLogsConfigs;
-
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.util.itest.hibernate.HibernateDbConf;
 import org.openstack.atlas.util.itest.hibernate.HuApp;
 import org.openstack.atlas.util.debug.Debug;
@@ -119,16 +114,24 @@ public class LzoFakerMain {
         String[] rndStrings = buildRandomStrings(32, 32768);
         System.out.printf("Building Random Log Lines\n");
         StringBuilder logBuilder = new StringBuilder(SB_MAX_SIZE);
+        int ci = 0;
+        int li = 0;
         for (int i = 0; i < nLines; i++) {
-            if (i % 100000 == 0) {
+            if (ci >= 100000) {
                 System.out.printf("wrote %d lines %d lines left to go\n", i, nLines - i);
+                ci = 0;
+
             }
+            ci++;
             DateTime offsetDt = dt.plusMillis((int) (stepMillis * i));
             String apacheTime = StaticDateTimeUtils.toApacheDateTime(offsetDt);
-            LoadBalancerIdAndName lb = lbArray[i % lbArrayLength];
+            if (li >= lbArrayLength) {
+                li = 0;
+            }
+            LoadBalancerIdAndName lb = lbArray[li];
+            li++;
             String vsName = lb.getAccountId() + "_" + lb.getLoadbalancerId();
-            String rndString = pickRandomString(rndStrings);
-            buildFakeLogLine(vsName, apacheTime, logBuilder, rndString);
+            buildFakeLogLine(vsName, apacheTime, logBuilder, rndStrings[i & 0x1f]);
 
             if (logBuilder.length() >= SB_MAX_SIZE) {
                 cos.write(logBuilder.toString().getBytes());
@@ -148,10 +151,6 @@ public class LzoFakerMain {
             rndStrings[i] = Debug.buildRandomString(nChars, alphaNum);
         }
         return rndStrings;
-    }
-
-    public static String pickRandomString(String[] strings) {
-        return strings[rnd.nextInt(strings.length)];
     }
 
     public static void buildFakeLogLine(String lbName, String apacheTime, StringBuilder sb, String rndString) {
