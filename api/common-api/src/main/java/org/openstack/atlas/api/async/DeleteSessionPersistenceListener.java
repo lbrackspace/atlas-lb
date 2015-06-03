@@ -30,7 +30,7 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         LoadBalancer transportLb;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(queLb.getId(), queLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(queLb.getId(), queLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queLb.getId());
             LOG.error(alertDescription, enfe);
