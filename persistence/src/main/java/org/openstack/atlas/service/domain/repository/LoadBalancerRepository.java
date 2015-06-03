@@ -146,7 +146,7 @@ public class LoadBalancerRepository {
     public LoadBalancer getByIdAndAccountIdWithUserPages(Integer id, Integer accountId) throws EntityNotFoundException {
         LoadBalancer lb;
         lb = getById(id);
-        if (!lb.getAccountId().equals(accountId)) {
+        if (lb == null || !lb.getAccountId().equals(accountId)) {
             String message = Constants.LoadBalancerNotFound;
             LOG.warn(message);
             throw new EntityNotFoundException(message);

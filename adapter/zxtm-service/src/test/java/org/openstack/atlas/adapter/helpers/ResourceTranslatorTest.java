@@ -909,9 +909,14 @@ public class ResourceTranslatorTest extends STMTestBase {
             ProtectionConnectionLimiting createdLimiting = createdProtection.getProperties().getConnection_limiting();
             Assert.assertNotNull(createdLimiting);
             Assert.assertEquals(maxConnections, (int) createdLimiting.getMax_1_connections());
-            Assert.assertEquals(maxRateInterval, (int) createdLimiting.getMax_connection_rate());
-            Assert.assertEquals(minConnections, (int) createdLimiting.getMin_connections());
-            Assert.assertEquals(rateTiming, (int) createdLimiting.getRate_timer());
+            /* Due to a Zeus bug, this all has to be ignored and set to static values */
+            // Assert.assertEquals(maxRateInterval, (int) createdLimiting.getMax_connection_rate());
+            // Assert.assertEquals(minConnections, (int) createdLimiting.getMin_connections());
+            // Assert.assertEquals(rateTiming, (int) createdLimiting.getRate_timer());
+            Assert.assertFalse(createdProtection.getProperties().getBasic().getPer_process_connection_count());
+            Assert.assertEquals(0, (int) createdLimiting.getMax_connection_rate());
+            Assert.assertEquals(0, (int) createdLimiting.getMin_connections());
+            Assert.assertEquals(1, (int) createdLimiting.getRate_timer());
             ProtectionAccessRestriction createdRestriction = createdProtection.getProperties().getAccess_restriction();
             Assert.assertNotNull(createdRestriction);
             Assert.assertTrue(createdRestriction.getAllowed().contains(accessListAllowed.getIpAddress()));
