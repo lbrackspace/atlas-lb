@@ -30,7 +30,7 @@ public class SetNodesITest extends STMTestBase {
     public void standUp() throws Exception {
         vsName = ZxtmNameBuilder.genVSName(lb);
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
-        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        stmAdapter.updateLoadBalancer(config, lb, lb);
     }
 
     private void setNodes() throws Exception {

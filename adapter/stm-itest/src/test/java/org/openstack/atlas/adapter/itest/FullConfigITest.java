@@ -146,10 +146,10 @@ public class FullConfigITest extends STMTestBase {
             zeusSslTermination.setCertIntermediateCert(StmTestConstants.SSL_CERT);
             zeusSslTermination.setSslTermination(sslTermination);
 
-            stmAdapter.updateLoadBalancer(config, lb, nlb, up);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
 
             lb.setSslTermination(zeusSslTermination.getSslTermination());
-            stmAdapter.updateSslTermination(config, lb, zeusSslTermination, up);
+            stmAdapter.updateSslTermination(config, lb, zeusSslTermination);
             verifySsltermination(lb);
 
             Thread.sleep(3000);
@@ -189,7 +189,7 @@ public class FullConfigITest extends STMTestBase {
             lb.setSslTermination(null);
             lb.setHealthMonitor(mon);
 
-            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             Assert.fail("Should have failed to update");
 
         } catch (Exception e) {
@@ -206,12 +206,12 @@ public class FullConfigITest extends STMTestBase {
             clb.setConnectionLimit(lb.getConnectionLimit());
 
             buildHydratedLb();
-            stmAdapter.updateLoadBalancer(config, lb, lb, null);
+            stmAdapter.updateLoadBalancer(config, lb, lb);
 
             lb.getConnectionLimit().setRateInterval(-2);
             nlb.setConnectionLimit(lb.getConnectionLimit());
 
-            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             Assert.fail("Should have failed to update");
 
         } catch (Exception e) {
@@ -237,12 +237,12 @@ public class FullConfigITest extends STMTestBase {
             clb.setProtocol(lb.getProtocol());
 
             buildHydratedLb();
-            stmAdapter.updateLoadBalancer(config, lb, lb, null);
+            stmAdapter.updateLoadBalancer(config, lb, lb);
 
             lb.getSslTermination().setSecurePort(-10);
             nlb.setSslTermination(lb.getSslTermination());
 
-            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             Assert.fail("Should have failed to update");
         } catch (Exception e) {
             verifySsltermination(clb);
@@ -257,7 +257,7 @@ public class FullConfigITest extends STMTestBase {
             clb = new LoadBalancer();
 
             buildHydratedLb();
-            stmAdapter.updateLoadBalancer(config, lb, lb, null);
+            stmAdapter.updateLoadBalancer(config, lb, lb);
 
             clb.getLoadBalancerJoinVipSet().addAll(lb.getLoadBalancerJoinVipSet());
 
@@ -265,7 +265,7 @@ public class FullConfigITest extends STMTestBase {
             nlb.setLoadBalancerJoinVipSet(lb.getLoadBalancerJoinVipSet());
 
 
-            stmAdapter.updateLoadBalancer(config, lb, nlb, null);
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
             Assert.fail("Should have failed to update");
         } catch (Exception e) {
             verifyVips(clb);
@@ -276,7 +276,7 @@ public class FullConfigITest extends STMTestBase {
     public void updateFullyConfiguredLoadBalancerForRateLimitRollbacks() throws StingrayRestClientException, IPStringConversionException, StingrayRestClientObjectNotFoundException, InsufficientRequestException {
         try {
             buildHydratedLb();
-            stmAdapter.updateLoadBalancer(config, lb, lb, null);
+            stmAdapter.updateLoadBalancer(config, lb, lb);
             stmAdapter.updateRateLimit(config, lb, null);
             Assert.fail("Should have failed to update");
         } catch (Exception e) {
@@ -288,7 +288,7 @@ public class FullConfigITest extends STMTestBase {
     public void updateFullyConfiguredLoadBalancerForErrorPageRollbacks() {
         try {
             buildHydratedLb();
-            stmAdapter.updateLoadBalancer(config, lb, lb, null);
+            stmAdapter.updateLoadBalancer(config, lb, lb);
             stmAdapter.setErrorFile(config, lb, "");
             Assert.fail("Should have failed to update");
         } catch (Exception e) {

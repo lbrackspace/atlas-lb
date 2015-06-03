@@ -84,7 +84,7 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
     @Test
     public void testUpdateLoadBalancerWithValidMonitor() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateHealthMonitorListener.doOnMessage(objectMessage);
@@ -98,7 +98,7 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         updateHealthMonitorListener.doOnMessage(objectMessage);
 
@@ -110,7 +110,7 @@ public class UpdateHealthMonitorListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidMonitor() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).updateHealthMonitor(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 

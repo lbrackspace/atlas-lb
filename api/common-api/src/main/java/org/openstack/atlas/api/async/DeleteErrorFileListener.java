@@ -26,7 +26,7 @@ public class DeleteErrorFileListener extends BaseListener {
 
         if (data.getAccountId() != null && data.getLoadBalancerId() != null) {
             try {
-                dbLoadBalancer = loadBalancerService.get(data.getLoadBalancerId(), data.getAccountId());
+                dbLoadBalancer = loadBalancerService.getWithUserPages(data.getLoadBalancerId(), data.getAccountId());
             } catch (EntityNotFoundException enfe) {
                 String alertDescription = String.format("Load balancer '%d' not found in database.", data.getLoadBalancerId());
                 LOG.error(alertDescription, enfe);
