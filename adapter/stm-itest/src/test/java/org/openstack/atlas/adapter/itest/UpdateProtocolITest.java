@@ -41,7 +41,7 @@ public class UpdateProtocolITest extends STMTestBase {
         Assert.assertEquals(LoadBalancerProtocol.HTTP.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
 
         lb.setProtocol(LoadBalancerProtocol.HTTPS);
-        stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer(), null);
+        stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
 
         Assert.assertEquals(LoadBalancerProtocol.HTTPS.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
     }
@@ -55,7 +55,7 @@ public class UpdateProtocolITest extends STMTestBase {
         Assert.assertEquals(LoadBalancerProtocol.HTTPS.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
 
         lb.setProtocol(LoadBalancerProtocol.HTTP);
-        stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer(), null);
+        stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer());
 
         Assert.assertEquals(LoadBalancerProtocol.HTTP.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
     }

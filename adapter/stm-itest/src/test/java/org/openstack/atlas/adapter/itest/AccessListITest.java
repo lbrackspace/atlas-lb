@@ -5,7 +5,6 @@ import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.AccessListType;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
-import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -173,7 +172,7 @@ public class AccessListITest extends STMTestBase {
         sslTermination.setSslTermination(termination);
         lb.setSslTermination(termination);
         try {
-            stmAdapter.updateSslTermination(config, lb, sslTermination, null);
+            stmAdapter.updateSslTermination(config, lb, sslTermination);
         } catch (Exception e) {
             Assert.fail(String.format("Error updating SSL termination on '%s'.", name));
         }
@@ -185,7 +184,7 @@ public class AccessListITest extends STMTestBase {
         sslTermination.setSslTermination(termination);
         lb.setSslTermination(termination);
         try {
-            stmAdapter.updateSslTermination(config, lb, sslTermination, null);
+            stmAdapter.updateSslTermination(config, lb, sslTermination);
         } catch (Exception e) {
             Assert.fail(String.format("Error updating SSL termination on '%s'.", name));
         }

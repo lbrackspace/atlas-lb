@@ -17,7 +17,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void createLoadBalancer(LoadBalancer lb) throws Exception;
 
-    void updateLoadBalancer(LoadBalancer loadBalancer, LoadBalancer queLb, UserPages up) throws Exception;
+    void updateLoadBalancer(LoadBalancer loadBalancer, LoadBalancer queLb) throws Exception;
 
     void deleteLoadBalancer(LoadBalancer lb) throws Exception;
 
@@ -65,7 +65,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void updateRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws Exception;
 
-    Stats getVirtualServerStats(LoadBalancer loadBalancer, URI endpoint) throws Exception;
+    Stats getVirtualServerStats(LoadBalancer loadBalancer) throws Exception;
 
     boolean isEndPointWorking(Host host) throws Exception;
     //Deprecated

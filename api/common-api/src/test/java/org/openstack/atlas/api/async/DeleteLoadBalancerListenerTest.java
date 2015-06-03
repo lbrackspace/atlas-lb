@@ -85,7 +85,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
     public void testDeleteValidLoadBalancerWithoutSSL() throws Exception {
         lb.setSslTermination(null);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.pseudoDelete(lb)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
@@ -103,7 +103,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
     public void testDeleteValidLoadBalancerWithSSL() throws Exception {
         lb.setSslTermination(new SslTermination());
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.pseudoDelete(lb)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
@@ -122,7 +122,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception { //This is named oddly for this specific test, but left it alone for consistency
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         deleteLoadBalancerListener.doOnMessage(objectMessage);
 
@@ -134,7 +134,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
     public void testDeleteInvalidLoadBalancer() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
