@@ -11,6 +11,7 @@ import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
+import org.openstack.atlas.adapter.stm.StmAdapterUtils.VSType;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -52,29 +53,36 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
 
-        ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+        Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+
 
         try {
+            rt.translateLoadBalancerResource(config, virtualServerName, loadBalancer, loadBalancer);
             getResources().createPersistentClasses(config);
 
             if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
-                getResources().updateHealthMonitor(client, vsName, translator.getcMonitor());
+                getResources().updateHealthMonitor(client, virtualServerName, rt.getcMonitor());
             }
 
             if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
                     || loadBalancer.getConnectionLimit() != null) {
-                getResources().updateProtection(client, vsName, translator.getcProtection());
+                getResources().updateProtection(client, virtualServerName, rt.getcProtection());
             }
 
-            getResources().updateVirtualIps(client, vsName, translator.getcTrafficIpGroups());
-            getResources().updatePool(client, vsName, translator.getcPool());
-            getResources().updateVirtualServer(client, vsName, translator.getcVServer());
-            if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
-                getResources().updateVirtualServer(client, vsRedirectName, translator.getcRedirectVServer());
+            getResources().updateVirtualIps(client, virtualServerName, rt.getcTrafficIpGroups());
+            getResources().updatePool(client, virtualServerName, rt.getcPool());
+
+            for (VSType vsType : vsNames.keySet()) {
+                String vsName = vsNames.get(vsType);
+
+                if (vsType == VSType.REDIRECT_VS) {
+                    getResources().updateVirtualServer(client, vsName, rt.getcRedirectVServer());
+                } else {
+                    getResources().updateVirtualServer(client, vsName, rt.getcVServer());
+                }
             }
             client.destroy();
         } catch (Exception e) {
@@ -87,28 +95,27 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb, UserPages up)
             throws InsufficientRequestException, StmRollBackException {
-
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-        ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
-        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
+
+        Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
 
         try {
-
-            translator.translateLoadBalancerResource(config, vsName, loadBalancer, queLb);
+            rt.translateLoadBalancerResource(config, virtualServerName, loadBalancer, queLb);
 
             if (queLb.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
-                getResources().updateHealthMonitor(client, vsName, translator.getcMonitor());
+                getResources().updateHealthMonitor(client, virtualServerName, rt.getcMonitor());
             }
 
             if ((queLb.getAccessLists() != null && !queLb.getAccessLists().isEmpty())
                     || queLb.getConnectionLimit() != null) {
-                getResources().updateProtection(client, vsName, translator.getcProtection());
+                getResources().updateProtection(client, virtualServerName, rt.getcProtection());
             }
 
             if ((queLb.getLoadBalancerJoinVip6Set() != null && !queLb.getLoadBalancerJoinVip6Set().isEmpty())
                     || (queLb.getLoadBalancerJoinVipSet() != null && !queLb.getLoadBalancerJoinVipSet().isEmpty())) {
-                getResources().updateVirtualIps(client, vsName, translator.getcTrafficIpGroups());
+                getResources().updateVirtualIps(client, virtualServerName, rt.getcTrafficIpGroups());
             }
 
 
@@ -119,33 +126,27 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 }
             }
 
-            if (loadBalancer.isUsingSsl()) {
-                //Handle SSLTerm https-redirect
-                if (queLb.isHttpsRedirect() != null && queLb.isHttpsRedirect()) {
-                    getResources().updateVirtualServer(client, vsName, translator.getcRedirectVServer());
-                } else {
-                    getResources().updatePool(client, vsName, translator.getcPool());
-                    getResources().updateVirtualServer(client, vsName, translator.getcVServer());
-                }
-
-                //Handle SSLTerm LB
-                String secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-                translator.translateLoadBalancerResource(config, secureVsName, loadBalancer, queLb);
-                getResources().updateVirtualServer(client, secureVsName, translator.getcVServer());
-            } else {
-                //Handle non-SSLTerm (normal) LB
-                getResources().updatePool(client, vsName, translator.getcPool());
-                getResources().updateVirtualServer(client, vsName, translator.getcVServer());
-
-                //Handle non-SSLTerm https-redirect
-                if (queLb.isHttpsRedirect() != null && queLb.isHttpsRedirect()) {
-                    getResources().updateVirtualServer(client, vsRedirectName, translator.getcRedirectVServer());
-                } else {
-                    getResources().deleteVirtualServer(client, vsRedirectName);
-                    getResources().deletePool(client, vsRedirectName);
-                }
+            // Temporarily have to do a delete/create instead of a rename! FIX THIS ONCE SUPPORTED BY ZEUS
+            if (vsNames.containsKey(VSType.REDIRECT_VS) && vsNames.containsKey(VSType.SECURE_VS)) {
+                getResources().deleteVirtualServer(client, virtualServerName);
+            }
+            if (!vsNames.containsKey(VSType.REDIRECT_VS)) {
+                String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+                getResources().deleteVirtualServer(client, vsRedirectName);
             }
 
+            getResources().updatePool(client, virtualServerName, rt.getcPool());
+
+            for (VSType vsType : vsNames.keySet()) {
+                String vsName = vsNames.get(vsType);
+
+                if (vsType == VSType.REDIRECT_VS) {
+                    getResources().updateVirtualServer(client, vsName, rt.getcRedirectVServer());
+                } else {
+                    rt.translateVirtualServerResource(config, vsName, loadBalancer);
+                    getResources().updateVirtualServer(client, vsName, rt.getcVServer());
+                }
+            }
         } catch (Exception ex) {
             client.destroy();
             LOG.error("Exception updating load balancer: " + ex);
@@ -157,28 +158,40 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
-        String errorPageName = ZxtmNameBuilder.generateErrorPageName(vsName);
+        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String errorPageName = ZxtmNameBuilder.generateErrorPageName(virtualServerName);
 
-        LOG.debug(String.format("Removing loadbalancer: %s ...", vsName));
-        getResources().deleteRateLimit(config, loadBalancer, vsName);
-        getResources().deleteHealthMonitor(client, vsName);
-        getResources().deleteProtection(client, vsName);
+        Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+
+        LOG.debug(String.format("Removing loadbalancer: %s ...", virtualServerName));
+        loadBalancer.setProcessingDeletion(true);
+
         deleteVirtualIps(config, loadBalancer);
-        getResources().deletePool(client, vsName);
-        getResources().deleteVirtualServer(client, vsName);
-        if (loadBalancer.hasSsl()) {
-            getResources().deleteVirtualServer(client, ZxtmNameBuilder.genSslVSName(loadBalancer));
+        getResources().deletePool(client, virtualServerName);
+
+        for (VSType vsType : vsNames.keySet()) {
+            String vsName = vsNames.get(vsType);
+
+            if (vsType == VSType.REDIRECT_VS) {
+                getResources().deleteVirtualServer(client, vsName);
+            } else {
+                getResources().deleteRateLimit(config, loadBalancer, vsName);
+                getResources().deleteHealthMonitor(client, vsName);
+                getResources().deleteProtection(client, vsName);
+                getResources().deleteVirtualServer(client, vsName);
+            }
+
+            if (vsType == VSType.SECURE_VS) {
+                getResources().deleteKeypair(client, vsName);
+            }
         }
-        if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
-            getResources().deleteVirtualServer(client, vsRedirectName);
-        }
+
         try {
             client.deleteExtraFile(errorPageName);
         } catch (Exception ignoredException) {}
+
         client.destroy();
-        LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM service...", vsName));
+        LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM service...", virtualServerName));
     }
 
     /*
@@ -265,6 +278,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         //Lazy loading...
+        // Is this necessary anymore?
         loadBalancer.setUserPages(up);
 
         translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
@@ -317,9 +331,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 LOG.info(String.format("Successfully removed virtual ip %s...", tigname));
 
             }
-            LOG.debug(String.format("Updating virtual server %s for updated virtual ip configuration..", vsName));
-            getResources().updateVirtualServer(client, vsName, translator.getcVServer());
-            LOG.info(String.format("Successfully updated traffic ip configuration and removed vips %s for virtual server %s", vipsToRemove, vsName));
+            if (!loadBalancer.isProcessingDeletion()) {
+                LOG.debug(String.format("Updating virtual server %s for updated virtual ip configuration..", vsName));
+                getResources().updateAppropriateVirtualServers(config, translator, loadBalancer);
+                LOG.info(String.format("Successfully updated traffic ip configuration and removed vips %s for virtual server %s", vipsToRemove, vsName));
+            }
         } catch (StingrayRestClientObjectNotFoundException e) {
             LOG.error(String.format("Object not found when removing virtual ip: %s for virtual server %s, continue...", tname, vsName));
         } catch (Exception ex) {
@@ -474,8 +490,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
         loadBalancer.setUserPages(up);
-        translator.translateVirtualServerResource(config, sslVsName, loadBalancer);
-        translator.translateKeypairResource(loadBalancer, true);
+        translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
         VirtualServer createdServer = translator.getcVServer();
         VirtualServerHttp http = new VirtualServerHttp();
         http.setLocation_rewrite(EnumFactory.Accept_from.NEVER.toString());
@@ -494,14 +509,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             }
         }
 
-        Keypair keypair = translator.getcKeypair();
         LOG.info(String.format("Updating certificate for load balancer: %s", loadBalancer.getId()));
-        getResources().updateKeypair(client, sslVsName, keypair);
+        getResources().updateKeypair(client, sslVsName, translator.getcKeypair());
 
         try {
-            translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
-            translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
-
             if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty())
                     || loadBalancer.getConnectionLimit() != null) {
                 getResources().updateProtection(client, vsName, translator.getcProtection());
