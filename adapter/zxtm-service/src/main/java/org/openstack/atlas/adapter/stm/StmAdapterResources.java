@@ -659,9 +659,9 @@ public class StmAdapterResources {
             }
 
             if (!(loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect())) {
+                LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
                 rt = new ResourceTranslator();
                 rt.translateVirtualServerResource(config, vsName, loadBalancer);
-                LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
                 updateVirtualServer(client, vsName, rt.getcVServer());
             }
 
