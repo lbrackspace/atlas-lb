@@ -29,7 +29,7 @@ public class DeleteAccessListListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException ex) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             notificationService.saveAlert(queueLb.getAccountId(), queueLb.getId(), ex, DATABASE_FAILURE.name(), alertDescription);

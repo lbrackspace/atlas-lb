@@ -214,7 +214,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     public void updateConnectionThrottle(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            reverseProxyLoadBalancerStmAdapter.updateProtection(config, loadBalancer);
+            reverseProxyLoadBalancerStmAdapter.updateConnectionThrottle(config, loadBalancer);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -466,7 +466,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public Stats getVirtualServerStats(LoadBalancer loadBalancer, URI endpoint) throws EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+    public Stats getVirtualServerStats(LoadBalancer loadBalancer) throws EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         Integer accountId = loadBalancer.getAccountId();
         Integer loadbalancerId = loadBalancer.getId();
         LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
