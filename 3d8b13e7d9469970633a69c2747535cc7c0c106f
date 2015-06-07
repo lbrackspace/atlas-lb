@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_43de9b12",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/helpers/ResourceTranslator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2015-06-07T20:41:18Z",
+      "side": 1,
+      "message": "Looking at again, I think id rather keep it this way. That way if they decide to default back to false and the next go we dont have to worry about it.",
+      "parentUuid": "facab960_03ae5385",
+      "revId": "3d8b13e7d9469970633a69c2747535cc7c0c106f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_e3908f50",
         "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
         "patchSetId": 1
