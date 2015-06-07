@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "facab960_63a55fb4",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/helpers/ResourceTranslator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-07T19:40:45Z",
+      "side": 1,
+      "message": "The rule has to be set regardless of whether caching is enabled or not? This shouldn\u0027t be inside the above if-statement?",
+      "revId": "3d8b13e7d9469970633a69c2747535cc7c0c106f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_e3908f50",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-07T19:40:45Z",
+      "side": 1,
+      "message": "Yeah this is weird, need to do some testing and find out why it was ever like that -- is it a bug, or do I just not understand what is happening here? \u003e_\u003e",
+      "revId": "3d8b13e7d9469970633a69c2747535cc7c0c106f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_03a0139e",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/LoadBalancer.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 460,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-07T19:40:45Z",
+      "side": 1,
+      "message": "Good call. Whoops.\n\nAlthough, might want to check if the new userPages object is null, and possibly set it to true, in case someone is TRYING to null it out. :)",
+      "revId": "3d8b13e7d9469970633a69c2747535cc7c0c106f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
