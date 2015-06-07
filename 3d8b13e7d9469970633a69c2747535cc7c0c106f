@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_03ae5385",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/helpers/ResourceTranslator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2015-06-07T20:29:37Z",
+      "side": 1,
+      "message": "Well, good call, as before it was defaulting to false and we only set if logic were true, so, i should have just reversed this. not sure what i was thinking.",
+      "parentUuid": "facab960_63a55fb4",
+      "revId": "3d8b13e7d9469970633a69c2747535cc7c0c106f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_e3908f50",
         "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
         "patchSetId": 1
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_43b77bd8",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2015-06-07T20:29:37Z",
+      "side": 1,
+      "message": "Agreed, I dont remember what the idea for this was.",
+      "parentUuid": "facab960_e3908f50",
+      "revId": "3d8b13e7d9469970633a69c2747535cc7c0c106f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_03a0139e",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/LoadBalancer.java",
         "patchSetId": 1
@@ -47,6 +83,24 @@
       "writtenOn": "2015-06-07T19:40:45Z",
       "side": 1,
       "message": "Good call. Whoops.\n\nAlthough, might want to check if the new userPages object is null, and possibly set it to true, in case someone is TRYING to null it out. :)",
+      "revId": "3d8b13e7d9469970633a69c2747535cc7c0c106f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_63babfc1",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/LoadBalancer.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 460,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2015-06-07T20:29:37Z",
+      "side": 1,
+      "message": "Ill update",
+      "parentUuid": "facab960_03a0139e",
       "revId": "3d8b13e7d9469970633a69c2747535cc7c0c106f",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
