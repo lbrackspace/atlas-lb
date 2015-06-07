@@ -1,25 +1,16 @@
 {
-   "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/2.0/config/active/monitor_scripts#update",
-   "title":                 "Monitor Program",
-   "description":           "An executable program that can be used to by external program monitors to report the health of backend services.",
-   "javaType" :     "org.rackspace.stingray.client.monitor.script.MonitorScript",
-
-   "type":                  "object",
-   "additionalProperties":  false,
-
-   "properties": {
-
-      "properties": {
-         "javaType" :     "org.rackspace.stingray.client.monitor.script.MonitorScriptProperties",
-
-         "type":                  "object",
-         "additionalProperties":  false,
-
-         "properties": {
-
-         }
-      }
-   }
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": false,
+    "description": "An executable program that can be used to by external program monitors to report the health of backend services.",
+    "id": "/rvbd-schema/tm/3.3/config/active/monitor_scripts#update",
+    "javaType": "org.rackspace.stingray.pojo.monitor.script.MonitorScript",
+    "properties": {
+        "properties": {
+            "additionalProperties": false,
+            "properties": {},
+            "type": "object"
+        }
+    },
+    "title": "Monitor Program",
+    "type": "object"
 }
-

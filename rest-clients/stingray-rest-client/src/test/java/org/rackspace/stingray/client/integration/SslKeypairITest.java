@@ -7,17 +7,17 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
-import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.ssl.keypair.Keypair;
+import org.rackspace.stingray.pojo.ssl.keypair.Basic;
+import org.rackspace.stingray.pojo.ssl.keypair.Properties;
 
 import java.util.List;
 
 public class SslKeypairITest extends StingrayTestBase {
     Keypair keypair;
-    KeypairProperties properties;
-    KeypairBasic basic;
+    Properties properties;
+    Basic basic;
 
     /**
      * Initializes variables prior to test execution
@@ -26,8 +26,8 @@ public class SslKeypairITest extends StingrayTestBase {
     @Override
     public void standUp() throws DecryptException {
         super.standUp();
-        basic = new KeypairBasic();
-        properties = new KeypairProperties();
+        basic = new Basic();
+        properties = new Properties();
         properties.setBasic(basic);
         keypair = new Keypair();
         keypair.setProperties(properties);

@@ -17,9 +17,11 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.pojo.glb.Basic;
+import org.rackspace.stingray.pojo.pool.Load_balancing;
+import org.rackspace.stingray.pojo.pool.Pool;
+import org.rackspace.stingray.pojo.traffic.ip.TrafficIp;
+import org.rackspace.stingray.pojo.virtualserver.VirtualServer;
 
 import java.net.MalformedURLException;
 import java.util.*;
@@ -198,7 +200,8 @@ public class STMTestBase extends StmTestConstants {
             pool = stmClient.getPool(loadBalancerName());
             Assert.assertNotNull(pool);
             Assert.assertEquals(0, pool.getProperties().getBasic().getMonitors().size());
-            Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoad_balancing().getAlgorithm());
+            Assert.assertEquals(Load_balancing.Algorithm.fromValue(lb.getAlgorithm().name().toLowerCase()),
+                    pool.getProperties().getLoad_balancing().getAlgorithm());
 
             TrafficIp vip;
             for (String v : vs.getProperties().getBasic().getListen_on_traffic_ips()) {

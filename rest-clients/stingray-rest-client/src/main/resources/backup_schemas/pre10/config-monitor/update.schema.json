@@ -1,0 +1,205 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": false,
+    "description": "Monitors check important remote services are running, by periodically sending them traffic and checking the response is correct. They are used by virtual servers to detect the failure of backend nodes.",
+    "id": "/rvbd-schema/tm/2.0/config/active/monitors#update",
+    "javaType": "org.rackspace.stingray.pojo.monitor.Monitor",
+    "properties": {
+        "properties": {
+            "additionalProperties": false,
+            "properties": {
+                "basic": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "back_off": {
+                            "description": "Should the monitor slowly increase the delay after it has failed?",
+                            "type": "boolean"
+                        },
+                        "delay": {
+                            "description": "The minimum time between calls to a monitor.",
+                            "maximum": 999990,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "failures": {
+                            "description": "The number of times in a row that a node must fail execution of the monitor before it is classed as unavailable.",
+                            "maximum": 99999,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "machine": {
+                            "description": "The machine to monitor, where relevant this should be in the form \"<hostname>:<port>\", for \"ping\" monitors the \":<port>\" part must not be specified.",
+                            "type": "string"
+                        },
+                        "note": {
+                            "description": "A description of the montitor.",
+                            "type": "string"
+                        },
+                        "scope": {
+                            "description": "A monitor can either monitor each node in the pool separately and disable an individual node if it fails, or it can monitor a specific machine and disable the entire pool if that machine fails. GLB location monitors must monitor a specific machine.",
+                            "type": "string"
+                        },
+                        "timeout": {
+                            "description": "The maximum runtime for an individual instance of the monitor.",
+                            "maximum": 99999,
+                            "minimum": 1,
+                            "type": "integer"
+                        },
+                        "type": {
+                            "description": "The internal monitor implementation of this monitor.",
+                            "type": "string"
+                        },
+                        "use_ssl": {
+                            "description": "Whether or not the monitor should connect using SSL.",
+                            "type": "boolean"
+                        },
+                        "verbose": {
+                            "description": "Whether or not the monitor should emit verbose logging. This is useful for diagnosing problems.",
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                },
+                "http": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "authentication": {
+                            "description": "The HTTP basic-auth \"<user>:<password>\" to use for the test HTTP request.",
+                            "type": "string"
+                        },
+                        "body_regex": {
+                            "description": "A regular expression that the HTTP response body must match.  If the response body content doesn't matter then set this to \".*\" (match anything).",
+                            "type": "string"
+                        },
+                        "host_header": {
+                            "description": "The host header to use in the test HTTP request.",
+                            "type": "string"
+                        },
+                        "path": {
+                            "description": "The path to use in the test HTTP request.  This must be a string beginning with a \"/\" (forward slash).",
+                            "type": "string"
+                        },
+                        "status_regex": {
+                            "description": "A regular expression that the HTTP status code must match.  If the status code doesn't matter then set this to \".*\" (match anything).",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "rtsp": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body_regex": {
+                            "description": "The regular expression that the RTSP response body must match.",
+                            "type": "string"
+                        },
+                        "path": {
+                            "description": "The path to use in the RTSP request (some servers will return 500 Internal Server Error unless this is a valid media file).",
+                            "type": "string"
+                        },
+                        "status_regex": {
+                            "description": "The regular expression that the RTSP response status code must match.",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "script": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "arguments": {
+                            "description": "A table containing arguments and argument values to be passed to the monitor program.",
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "description": {
+                                        "description": "A description for the argument provided to the program.",
+                                        "type": "string"
+                                    },
+                                    "name": {
+                                        "description": "The name of the argument to be passed to the monitor program.",
+                                        "type": "string"
+                                    },
+                                    "value": {
+                                        "description": "The value of the argument to be passed to the monitor program.",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [
+                                    "name",
+                                    "value",
+                                    "description"
+                                ],
+                                "type": "object"
+                            },
+                            "type": "array"
+                        },
+                        "program": {
+                            "description": "The program to run.  This must be an executable file, either within the monitor scripts directory or specified as an absolute path to some other location on the filesystem.",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "sip": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "body_regex": {
+                            "description": "The regular expression that the SIP response body must match.",
+                            "type": "string"
+                        },
+                        "status_regex": {
+                            "description": "The regular expression that the SIP response status code must match.",
+                            "type": "string"
+                        },
+                        "transport": {
+                            "description": "Which transport protocol the SIP monitor will use to query the server.",
+                            "enum": [
+                                "tcp",
+                                "udp"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "tcp": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "close_string": {
+                            "description": "An optional string to write to the server before closing the connection.",
+                            "type": "string"
+                        },
+                        "max_response_len": {
+                            "description": "The maximum amount of data to read back from a server, use 0 for unlimited. Applies to TCP and HTTP monitors.",
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "response_regex": {
+                            "description": "A regular expression to match against the response from the server. Applies to TCP monitors only.",
+                            "type": "string"
+                        },
+                        "write_string": {
+                            "description": "The string to write down the TCP connection.",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                },
+                "udp": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "accept_all": {
+                            "description": "If this monitor uses UDP, should it accept responses from any IP and port?",
+                            "type": "boolean"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "title": "Monitor",
+    "type": "object"
+}

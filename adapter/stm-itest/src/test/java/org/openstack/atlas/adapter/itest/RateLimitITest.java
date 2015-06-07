@@ -10,7 +10,7 @@ import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.RateLimit;
 import org.rackspace.stingray.client.StingrayRestClient;
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.pojo.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 

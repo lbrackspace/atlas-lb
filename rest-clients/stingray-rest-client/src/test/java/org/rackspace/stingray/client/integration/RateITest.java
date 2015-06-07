@@ -7,18 +7,18 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.rate.Rate;
-import org.rackspace.stingray.client.rate.RateBasic;
-import org.rackspace.stingray.client.rate.RateProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.rate.Rate;
+import org.rackspace.stingray.pojo.rate.Basic;
+import org.rackspace.stingray.pojo.rate.Properties;
 
 import java.util.List;
 
 public class RateITest extends StingrayTestBase {
     String vsName;
     Rate rate;
-    RateProperties rateProperties;
-    RateBasic rateBasic;
+    Properties rateProperties;
+    Basic rateBasic;
 
     /**
      * Initializes variables prior to test execution
@@ -29,8 +29,8 @@ public class RateITest extends StingrayTestBase {
         super.standUp();
         vsName = TESTNAME;
         rate = new Rate();
-        rateProperties = new RateProperties();
-        rateBasic = new RateBasic();
+        rateProperties = new Properties();
+        rateBasic = new Basic();
 
         rateProperties.setBasic(rateBasic);
         rate.setProperties(rateProperties);

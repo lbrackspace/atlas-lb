@@ -7,18 +7,18 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
-import org.rackspace.stingray.client.glb.GlobalLoadBalancingBasic;
-import org.rackspace.stingray.client.glb.GlobalLoadBalancingProperties;
-import org.rackspace.stingray.client.list.Child;
+import org.rackspace.stingray.pojo.glb.GlobalLoadBalancing;
+import org.rackspace.stingray.pojo.glb.Basic;
+import org.rackspace.stingray.pojo.glb.Properties;
+import org.rackspace.stingray.pojo.list.Child;
 
 import java.util.List;
 
 
 public class GlobalLoadBalancingITest extends StingrayTestBase {
     GlobalLoadBalancing glb;
-    GlobalLoadBalancingProperties glbProperties;
-    GlobalLoadBalancingBasic glbBasic;
+    Properties glbProperties;
+    Basic glbBasic;
     String vsName;
 
     /**
@@ -28,8 +28,8 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
     @Override
     public void standUp() throws DecryptException {
         super.standUp();
-        glbBasic = new GlobalLoadBalancingBasic();
-        glbProperties = new GlobalLoadBalancingProperties();
+        glbBasic = new Basic();
+        glbProperties = new Properties();
         glb = new GlobalLoadBalancing();
         glbProperties.setBasic(glbBasic);
         glb.setProperties(glbProperties);

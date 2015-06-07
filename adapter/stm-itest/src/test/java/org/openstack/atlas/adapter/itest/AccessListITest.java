@@ -10,7 +10,7 @@ import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.protection.Protection;
+import org.rackspace.stingray.pojo.protection.Protection;
 
 import java.util.*;
 

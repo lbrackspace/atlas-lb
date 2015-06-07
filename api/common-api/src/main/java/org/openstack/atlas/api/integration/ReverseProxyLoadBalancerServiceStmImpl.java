@@ -26,7 +26,7 @@ import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.openstack.atlas.util.debug.Debug;
-import org.rackspace.stingray.client.counters.VirtualServerStats;
+import org.rackspace.stingray.pojo.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 

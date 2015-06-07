@@ -9,7 +9,7 @@ import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
-import org.rackspace.stingray.client.pool.Pool;
+import org.rackspace.stingray.pojo.pool.Pool;
 
 import javax.net.ssl.*;
 import java.security.SecureRandom;

@@ -12,20 +12,18 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.adapter.stm.StmAdapterUtils.VSType;
 import org.rackspace.stingray.client.StingrayRestClient;
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.pojo.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.monitor.Monitor;
-import org.rackspace.stingray.client.persistence.Persistence;
-import org.rackspace.stingray.client.persistence.PersistenceBasic;
-import org.rackspace.stingray.client.persistence.PersistenceProperties;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.protection.Protection;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.pojo.monitor.Monitor;
+import org.rackspace.stingray.pojo.persistence.Persistence;
+import org.rackspace.stingray.pojo.pool.Pool;
+import org.rackspace.stingray.pojo.protection.Protection;
+import org.rackspace.stingray.pojo.ssl.keypair.Keypair;
+import org.rackspace.stingray.pojo.traffic.ip.TrafficIp;
+import org.rackspace.stingray.pojo.virtualserver.Basic;
+import org.rackspace.stingray.pojo.virtualserver.Properties;
+import org.rackspace.stingray.pojo.virtualserver.VirtualServer;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -468,10 +466,11 @@ public class StmAdapterResources {
                     Arrays.toString(clientException.getStackTrace())));
         } catch (StingrayRestClientObjectNotFoundException notFoundException) {
             Persistence persistence = new Persistence();
-            PersistenceProperties properties = new PersistenceProperties();
-            PersistenceBasic basic = new PersistenceBasic();
+            org.rackspace.stingray.pojo.persistence.Properties properties = new org.rackspace.stingray.pojo.persistence.Properties();
+            org.rackspace.stingray.pojo.persistence.Basic basic = new org.rackspace.stingray.pojo.persistence.Basic();
 
-            basic.setType(StmConstants.HTTP_COOKIE);
+            org.rackspace.stingray.pojo.persistence.Basic.Type type = org.rackspace.stingray.pojo.persistence.Basic.Type.fromValue(StmConstants.HTTP_COOKIE);
+            basic.setType(type);
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
@@ -491,10 +490,11 @@ public class StmAdapterResources {
                     Arrays.toString(clientException.getStackTrace())));
         } catch (StingrayRestClientObjectNotFoundException notFoundException) {
             Persistence persistence = new Persistence();
-            PersistenceProperties properties = new PersistenceProperties();
-            PersistenceBasic basic = new PersistenceBasic();
+            org.rackspace.stingray.pojo.persistence.Properties properties = new org.rackspace.stingray.pojo.persistence.Properties();
+            org.rackspace.stingray.pojo.persistence.Basic basic = new org.rackspace.stingray.pojo.persistence.Basic();
 
-            basic.setType(StmConstants.SOURCE_IP);
+            org.rackspace.stingray.pojo.persistence.Basic.Type type = org.rackspace.stingray.pojo.persistence.Basic.Type.fromValue(StmConstants.SOURCE_IP);
+            basic.setType(type);
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
@@ -514,10 +514,11 @@ public class StmAdapterResources {
                     Arrays.toString(clientException.getStackTrace())));
         } catch (StingrayRestClientObjectNotFoundException notFoundException) {
             Persistence persistence = new Persistence();
-            PersistenceProperties properties = new PersistenceProperties();
-            PersistenceBasic basic = new PersistenceBasic();
+            org.rackspace.stingray.pojo.persistence.Properties properties = new org.rackspace.stingray.pojo.persistence.Properties();
+            org.rackspace.stingray.pojo.persistence.Basic basic = new org.rackspace.stingray.pojo.persistence.Basic();
 
-            basic.setType(StmConstants.SSL_ID);
+            org.rackspace.stingray.pojo.persistence.Basic.Type type = org.rackspace.stingray.pojo.persistence.Basic.Type.fromValue(StmConstants.SSL_ID);
+            basic.setType(type);
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
@@ -601,8 +602,8 @@ public class StmAdapterResources {
         ResourceTranslator rt = new ResourceTranslator();
         rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
         VirtualServer virtualServer = rt.getcVServer();
-        VirtualServerProperties properties = virtualServer.getProperties();
-        VirtualServerBasic basic = properties.getBasic();
+        Properties properties = virtualServer.getProperties();
+        Basic basic = properties.getBasic();
         basic.setBandwidth_class("");
 
         try {

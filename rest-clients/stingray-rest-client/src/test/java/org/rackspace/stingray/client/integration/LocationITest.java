@@ -7,17 +7,17 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.location.Location;
-import org.rackspace.stingray.client.location.LocationBasic;
-import org.rackspace.stingray.client.location.LocationProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.location.Location;
+import org.rackspace.stingray.pojo.location.Basic;
+import org.rackspace.stingray.pojo.location.Properties;
 
 import java.util.List;
 
 public class LocationITest extends StingrayTestBase {
     Location location;
-    LocationProperties locationProperties;
-    LocationBasic locationBasic;
+    Properties locationProperties;
+    Basic locationBasic;
     String vsName;
     int locationId;
 
@@ -30,8 +30,8 @@ public class LocationITest extends StingrayTestBase {
     public void standUp() throws DecryptException {
         super.standUp();
         location = new Location();
-        locationProperties = new LocationProperties();
-        locationBasic = new LocationBasic();
+        locationProperties = new Properties();
+        locationBasic = new Basic();
         locationId = 20;
         vsName = TESTNAME;
         locationBasic.setId(locationId);

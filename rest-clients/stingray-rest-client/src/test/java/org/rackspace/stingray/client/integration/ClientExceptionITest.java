@@ -7,16 +7,16 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolBasic;
-import org.rackspace.stingray.client.pool.PoolProperties;
+import org.rackspace.stingray.pojo.pool.Pool;
+import org.rackspace.stingray.pojo.pool.Basic;
+import org.rackspace.stingray.pojo.pool.Properties;
 
 public class ClientExceptionITest extends StingrayTestBase {
     //Verify marshaling of all exception messages...
     String vsName;
     Pool pool;
-    PoolProperties poolProperties;
-    PoolBasic poolBasic;
+    Properties poolProperties;
+    Basic poolBasic;
 
     @Before
     @Override
@@ -24,8 +24,8 @@ public class ClientExceptionITest extends StingrayTestBase {
         super.standUp();
         vsName = TESTNAME;
         pool = new Pool();
-        poolProperties = new PoolProperties();
-        poolBasic = new PoolBasic();
+        poolProperties = new Properties();
+        poolBasic = new Basic();
 
         poolProperties.setBasic(poolBasic);
         pool.setProperties(poolProperties);

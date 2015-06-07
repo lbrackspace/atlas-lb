@@ -8,17 +8,17 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.monitor.Monitor;
-import org.rackspace.stingray.client.monitor.MonitorBasic;
-import org.rackspace.stingray.client.monitor.MonitorProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.monitor.Monitor;
+import org.rackspace.stingray.pojo.monitor.Basic;
+import org.rackspace.stingray.pojo.monitor.Properties;
 
 import java.util.List;
 
 public class MonitorITest extends StingrayTestBase {
     Monitor monitor;
-    MonitorProperties monitorProperties;
-    MonitorBasic monitorBasic;
+    Properties monitorProperties;
+    Basic monitorBasic;
     String vsName;
 
     /**
@@ -29,8 +29,8 @@ public class MonitorITest extends StingrayTestBase {
     public void standUp() throws DecryptException {
         super.standUp();
         monitor = new Monitor();
-        monitorProperties = new MonitorProperties();
-        monitorBasic = new MonitorBasic();
+        monitorProperties = new Properties();
+        monitorBasic = new Basic();
         vsName = TESTNAME;
 
         monitorProperties.setBasic(monitorBasic);

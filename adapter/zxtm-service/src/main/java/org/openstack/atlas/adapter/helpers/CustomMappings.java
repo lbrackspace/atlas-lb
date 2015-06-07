@@ -1,8 +1,8 @@
 package org.openstack.atlas.adapter.helpers;
 
 import org.openstack.atlas.service.domain.pojos.Stats;
-import org.rackspace.stingray.client.counters.VirtualServerStats;
-import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.pojo.counters.VirtualServerStats;
+import org.rackspace.stingray.pojo.counters.Statistics;
 
 import java.util.List;
 
@@ -10,8 +10,8 @@ public class CustomMappings {
 
     public static Stats mapVirtualServerStats(VirtualServerStats virtualServerStats, VirtualServerStats virtualServerStatsSsl) {
         Stats stats = new Stats();
-        VirtualServerStatsProperties properties = virtualServerStats.getStatistics();
-        VirtualServerStatsProperties propertiesSsl = virtualServerStatsSsl.getStatistics();
+        Statistics properties = virtualServerStats.getStatistics();
+        Statistics propertiesSsl = virtualServerStatsSsl.getStatistics();
         stats.setConnectError(new int[]{properties.getConnection_errors()});
         stats.setConnectFailure(new int[]{properties.getConnection_failures()});
         stats.setConnectTimeOut(new int[]{properties.getConnect_timed_out()});
@@ -48,7 +48,7 @@ public class CustomMappings {
         Stats stats = new Stats();
 
         for (VirtualServerStats vss : virtualServerStats) {
-            VirtualServerStatsProperties properties = vss.getStatistics();
+            Statistics properties = vss.getStatistics();
             connectionError[0] += properties.getConnection_errors();
             connectionFailure[0] += properties.getConnection_failures();
             connectionTimedOut[0] += properties.getConnect_timed_out();
@@ -63,7 +63,7 @@ public class CustomMappings {
         }
 
         for (VirtualServerStats vsss : virtualServerStatsSsl) {
-            VirtualServerStatsProperties propertiesSsl = vsss.getStatistics();
+            Statistics propertiesSsl = vsss.getStatistics();
             connectionErrorSsl[0] += propertiesSsl.getConnection_errors();
             connectionFailureSsl[0] += propertiesSsl.getConnection_failures();
             connectionTimedOutSsl[0] += propertiesSsl.getConnect_timed_out();

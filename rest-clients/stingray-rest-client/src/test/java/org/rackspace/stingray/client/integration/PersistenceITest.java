@@ -7,17 +7,17 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.persistence.Persistence;
-import org.rackspace.stingray.client.persistence.PersistenceBasic;
-import org.rackspace.stingray.client.persistence.PersistenceProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.persistence.Persistence;
+import org.rackspace.stingray.pojo.persistence.Basic;
+import org.rackspace.stingray.pojo.persistence.Properties;
 
 import java.util.List;
 
 public class PersistenceITest extends StingrayTestBase {
     Persistence persistence;
-    PersistenceProperties persistenceProperties;
-    PersistenceBasic persistenceBasic;
+    Properties persistenceProperties;
+    Basic persistenceBasic;
     String vsName;
 
     /**
@@ -29,8 +29,8 @@ public class PersistenceITest extends StingrayTestBase {
         super.standUp();
         vsName = TESTNAME;
         persistence = new Persistence();
-        persistenceProperties = new PersistenceProperties();
-        persistenceBasic = new PersistenceBasic();
+        persistenceProperties = new Properties();
+        persistenceBasic = new Basic();
 
         persistenceProperties.setBasic(persistenceBasic);
         persistence.setProperties(persistenceProperties);

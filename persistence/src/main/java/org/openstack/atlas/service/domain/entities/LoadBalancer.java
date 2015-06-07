@@ -457,6 +457,7 @@ public class LoadBalancer extends Entity implements Serializable {
      */
     public void setUserPages(UserPages userPages) {
         this.userPages = userPages;
+        userPagesNull = false;
     }
 
     public SslTermination getSslTermination() {

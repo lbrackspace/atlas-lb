@@ -18,21 +18,23 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.rackspace.stingray.client.StingrayRestClient;
-import org.rackspace.stingray.client.counters.VirtualServerStats;
+import org.rackspace.stingray.pojo.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.util.EnumFactory;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerHttp;
+import org.rackspace.stingray.pojo.pool.Nodes_table;
+import org.rackspace.stingray.pojo.pool.Pool;
+import org.rackspace.stingray.pojo.ssl.keypair.Keypair;
+import org.rackspace.stingray.pojo.traffic.ip.TrafficIp;
+import org.rackspace.stingray.pojo.util.EnumFactory;
+import org.rackspace.stingray.pojo.virtualserver.VirtualServer;
+import org.rackspace.stingray.pojo.virtualserver.Http;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
+
 import org.openstack.atlas.util.debug.Debug;
 
 @Component
@@ -120,10 +122,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
 
             UserPages userPages = queLb.getUserPages();
-            if (userPages != null) {
-                if (userPages.getErrorpage() != null) {
+            if (userPages != null && userPages.getErrorpage() != null) {
                     setErrorFile(config, loadBalancer, loadBalancer.getUserPages().getErrorpage());
-                }
             }
 
             // Temporarily have to do a delete/create instead of a rename! FIX THIS ONCE SUPPORTED BY ZEUS
@@ -196,7 +196,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             client.deleteExtraFile(errorPageName);
         } catch (Exception ignoredException) {}
-
         client.destroy();
         LOG.debug(String.format("Successfully removed loadbalancer: %s from the STM service...", virtualServerName));
     }
@@ -240,7 +239,16 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
 
         Pool cpool = getResources().getPool(client, poolName);
-        cpool.getProperties().getBasic().getNodes().remove(doomedNodes.get(0).getIpAddress() + ":" + doomedNodes.get(0).getPort());
+        List<Nodes_table> nt = cpool.getProperties().getBasic().getNodes_table();
+        List<Nodes_table> rmlist = new ArrayList<Nodes_table>();
+        for (Nodes_table n : nt) {
+            // TODO: verify why this is this (Updated from 'old' schemas), need to verify why only the first one...
+            if (n.getNode().equals(doomedNodes.get(0).getIpAddress() + ":" + doomedNodes.get(0).getPort())) {
+               rmlist.add(n);
+            }
+        }
+        nt.removeAll(rmlist);
+
 //        cpool.getProperties().getLoad_balancing().getNode_weighting().get(0)
         loadBalancer.setNodes(currentNodes);
         translator.translatePoolResource(poolName, loadBalancer, loadBalancer);
@@ -520,8 +528,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         loadBalancer.setUserPages(up);
         translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
         VirtualServer createdServer = translator.getcVServer();
-        VirtualServerHttp http = new VirtualServerHttp();
-        http.setLocation_rewrite(EnumFactory.Accept_from.NEVER.toString());
+        Http http = new Http();
+        http.setLocation_rewrite(Http.Location_rewrite.fromValue(EnumFactory.Accept_from.NEVER.toString()));
         createdServer.getProperties().setHttp(http);
         if (loadBalancer.isSecureOnly()) {
             VirtualServer virtualServer;

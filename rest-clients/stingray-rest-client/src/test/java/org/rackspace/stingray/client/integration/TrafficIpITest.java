@@ -7,17 +7,17 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
-import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.traffic.ip.TrafficIp;
+import org.rackspace.stingray.pojo.traffic.ip.Basic;
+import org.rackspace.stingray.pojo.traffic.ip.Properties;
 
 import java.util.List;
 
 public class TrafficIpITest extends StingrayTestBase {
     TrafficIp tip;
-    TrafficIpProperties properties;
-    TrafficIpBasic basic;
+    Properties properties;
+    Basic basic;
 
     /**
      * Initializes variables prior to test execution
@@ -26,8 +26,8 @@ public class TrafficIpITest extends StingrayTestBase {
     @Override
     public void standUp() throws DecryptException {
         super.standUp();
-        basic = new TrafficIpBasic();
-        properties = new TrafficIpProperties();
+        basic = new Basic();
+        properties = new Properties();
         properties.setBasic(basic);
         tip = new TrafficIp();
         tip.setProperties(properties);

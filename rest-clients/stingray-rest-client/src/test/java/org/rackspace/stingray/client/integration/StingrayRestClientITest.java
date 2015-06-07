@@ -3,14 +3,13 @@ package org.rackspace.stingray.client.integration;
 import org.junit.Assert;
 import org.junit.Test;
 import org.rackspace.stingray.client.StingrayRestClient;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolBasic;
-import org.rackspace.stingray.client.pool.PoolLoadbalancing;
-import org.rackspace.stingray.client.pool.PoolProperties;
-import org.rackspace.stingray.client.util.EnumFactory;
+import org.rackspace.stingray.pojo.pool.*;
+import org.rackspace.stingray.pojo.util.EnumFactory;
 
 import javax.xml.bind.JAXBException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class StingrayRestClientITest {
@@ -21,20 +20,22 @@ public class StingrayRestClientITest {
         StingrayRestClient client = new StingrayRestClient();
 
         Pool pool = new Pool();
-        PoolProperties poolProperties = new PoolProperties();
-        PoolBasic poolBasic = new PoolBasic();
+        Properties poolProperties = new Properties();
+        Basic poolBasic = new Basic();
 
-        Set<String> nodes = new HashSet<String>();
-        nodes.add("10.1.1.1:80");
-        poolBasic.setNodes(nodes);
+        List<Nodes_table> nodes = new ArrayList<Nodes_table>();
+        Nodes_table nt = new Nodes_table();
+        nt.setNode("10.1.1.1:80");
+        nodes.add(nt);
+        poolBasic.setNodes_table(nodes);
 
         poolBasic.setPassive_monitoring(false);
 
-        PoolLoadbalancing lbalgo = new PoolLoadbalancing();
-        lbalgo.setAlgorithm(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString());
+        Load_balancing lb = new Load_balancing();
+        lb.setAlgorithm(Load_balancing.Algorithm.fromValue(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString()));
 
         poolProperties.setBasic(poolBasic);
-        poolProperties.setLoad_balancing(lbalgo);
+        poolProperties.setLoad_balancing(lb);
 
         pool.setProperties(poolProperties);
 
@@ -43,10 +44,11 @@ public class StingrayRestClientITest {
         Assert.assertNotNull(rpool);
         Assert.assertEquals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString(), rpool.getProperties().getLoad_balancing().getAlgorithm());
 
-        rpool.getProperties().getBasic().getNodes().add("10.2.2.2:8080");
+        nt.setNode("10.2.2.2:8080");
+        rpool.getProperties().getBasic().getNodes_table().add(nt);
         Pool upool = client.updatePool("ctest_001", rpool);
 
-        Assert.assertEquals(2, upool.getProperties().getBasic().getNodes().size());
+        Assert.assertEquals(2, upool.getProperties().getBasic().getNodes_table().size());
 
 
     }

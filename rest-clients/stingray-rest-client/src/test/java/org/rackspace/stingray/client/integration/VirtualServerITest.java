@@ -7,12 +7,11 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolProperties;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.pool.Pool;
+import org.rackspace.stingray.pojo.virtualserver.Properties;
+import org.rackspace.stingray.pojo.virtualserver.VirtualServer;
+import org.rackspace.stingray.pojo.virtualserver.Basic;
 
 import java.util.List;
 
@@ -22,8 +21,8 @@ public class VirtualServerITest extends StingrayTestBase {
     Integer port;
     Pool pool;
     VirtualServer virtualServer;
-    VirtualServerProperties properties;
-    VirtualServerBasic basic;
+    org.rackspace.stingray.pojo.virtualserver.Properties properties;
+    Basic basic;
 
     /**
      * This method is the beginning for every test following.  Initial steps to the testing are completed here.
@@ -33,13 +32,13 @@ public class VirtualServerITest extends StingrayTestBase {
     public void standUp() throws DecryptException {
         super.standUp();
         virtualServer = new VirtualServer();
-        properties = new VirtualServerProperties();
-        basic = new VirtualServerBasic();
+        properties = new Properties();
+        basic = new Basic();
         poolName = TESTNAME;
         vsName = TESTNAME;
         port = 8998;
         pool = new Pool();
-        pool.setProperties(new PoolProperties());
+        pool.setProperties(new org.rackspace.stingray.pojo.pool.Properties());
         basic.setPool(poolName);
         basic.setPort(port);
         properties.setBasic(basic);

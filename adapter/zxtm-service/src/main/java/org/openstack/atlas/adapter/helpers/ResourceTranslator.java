@@ -6,28 +6,25 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
-import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
-import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
-import org.rackspace.stingray.client.monitor.Monitor;
-import org.rackspace.stingray.client.monitor.MonitorBasic;
-import org.rackspace.stingray.client.monitor.MonitorHttp;
-import org.rackspace.stingray.client.monitor.MonitorProperties;
-import org.rackspace.stingray.client.pool.*;
-import org.rackspace.stingray.client.protection.*;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
-import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
-import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
-import org.rackspace.stingray.client.util.EnumFactory;
-import org.rackspace.stingray.client.virtualserver.*;
-
+import org.rackspace.stingray.pojo.bandwidth.Bandwidth;
+import org.rackspace.stingray.pojo.monitor.Monitor;
+import org.rackspace.stingray.pojo.pool.*;
+import org.rackspace.stingray.pojo.protection.Access_restriction;
+import org.rackspace.stingray.pojo.protection.Connection_limiting;
+import org.rackspace.stingray.pojo.protection.Protection;
+import org.rackspace.stingray.pojo.ssl.keypair.Keypair;
+import org.rackspace.stingray.pojo.traffic.ip.TrafficIp;
+import org.rackspace.stingray.pojo.util.EnumFactory;
+import org.rackspace.stingray.pojo.virtualserver.*;
+import org.rackspace.stingray.pojo.virtualserver.Basic;
+import org.rackspace.stingray.pojo.virtualserver.Properties;
+import org.rackspace.stingray.pojo.virtualserver.Ssl;
+import org.rackspace.stingray.pojo.virtualserver.Tcp;
 import java.io.IOException;
 import java.util.*;
 
@@ -76,11 +73,11 @@ public class ResourceTranslator {
 
     //This could probably be trimmed down a bit
     public VirtualServer translateRedirectVirtualServerResource(LoadBalancerEndpointConfiguration config, String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
-        VirtualServerBasic basic = new VirtualServerBasic();
-        VirtualServerSsl ssl = new VirtualServerSsl();
-        VirtualServerProperties properties = new VirtualServerProperties();
-        VirtualServerConnectionError ce = new VirtualServerConnectionError();
-        VirtualServerLog log;
+        org.rackspace.stingray.pojo.virtualserver.Basic basic = new org.rackspace.stingray.pojo.virtualserver.Basic();
+        org.rackspace.stingray.pojo.virtualserver.Properties properties = new org.rackspace.stingray.pojo.virtualserver.Properties();
+        Ssl ssl = new Ssl();
+        Connection_errors ce = new Connection_errors();
+        Log log;
         List<String> rules = new ArrayList<String>();
 
         properties.setBasic(basic);
@@ -93,9 +90,9 @@ public class ResourceTranslator {
         // Redirection specific
         basic.setPort(80);
         basic.setPool("discard");
-        basic.setProtocol(VirtualServerProtocol.http.getValue());
+        basic.setProtocol(Basic.Protocol.fromValue(VirtualServerProtocol.http.getValue()));
 
-        log = new VirtualServerLog();
+        log = new Log();
         log.setEnabled(false);
         properties.setLog(log);
 
@@ -125,12 +122,12 @@ public class ResourceTranslator {
 
     public VirtualServer translateVirtualServerResource(LoadBalancerEndpointConfiguration config,
                                                         String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
-        VirtualServerBasic basic = new VirtualServerBasic();
-        VirtualServerSsl ssl = new VirtualServerSsl();
-        VirtualServerProperties properties = new VirtualServerProperties();
-        VirtualServerConnectionError ce = new VirtualServerConnectionError();
-        VirtualServerTcp tcp = new VirtualServerTcp();
-        VirtualServerLog log;
+        org.rackspace.stingray.pojo.virtualserver.Basic basic = new org.rackspace.stingray.pojo.virtualserver.Basic();
+        org.rackspace.stingray.pojo.virtualserver.Properties properties = new org.rackspace.stingray.pojo.virtualserver.Properties();
+        Ssl ssl = new Ssl();
+        Connection_errors ce = new Connection_errors();
+        Tcp tcp = new Tcp();
+        Log log;
         List<String> rules = new ArrayList<String>();
 
         properties.setBasic(basic);
@@ -153,7 +150,8 @@ public class ResourceTranslator {
         }
 
         basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));
-        basic.setProtocol(ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol()).getValue());
+        Basic.Protocol proto = Basic.Protocol.fromValue(ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol()).getValue());
+        basic.setProtocol(proto);
 
         //protection class settings
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
@@ -164,7 +162,7 @@ public class ResourceTranslator {
 
         //connection log settings
         if (loadBalancer.isConnectionLogging() != null && loadBalancer.isConnectionLogging()) {
-            log = new VirtualServerLog();
+            log = new Log();
             final String nonHttpLogFormat = "%v %t %h %A:%p %n %B %b %T";
             final String httpLogFormat = "%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n";
 
@@ -178,18 +176,20 @@ public class ResourceTranslator {
             log.setFilename(config.getLogFileLocation());
             properties.setLog(log);
         } else if (loadBalancer.isConnectionLogging() != null && !loadBalancer.isConnectionLogging()) {
-            log = new VirtualServerLog();
+            log = new Log();
             log.setEnabled(false);
             properties.setLog(log);
         }
 
         //webcache settings
+        Web_cache cache = new Web_cache();
         if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) {
-            VirtualServerWebcache cache = new VirtualServerWebcache();
             cache.setEnabled(true);
-            properties.setWeb_cache(cache);
-            rules.add(StmConstants.CONTENT_CACHING);
+        } else {
+            cache.setEnabled(false);
         }
+        properties.setWeb_cache(cache);
+        rules.add(StmConstants.CONTENT_CACHING);
 
         //error file settings
         if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
@@ -253,8 +253,8 @@ public class ResourceTranslator {
     private TrafficIp translateTrafficIpGroupResource(LoadBalancerEndpointConfiguration config
             , String ipaddress, boolean isEnabled) {
         TrafficIp tig = new TrafficIp();
-        TrafficIpProperties properties = new TrafficIpProperties();
-        TrafficIpBasic basic = new TrafficIpBasic();
+        org.rackspace.stingray.pojo.traffic.ip.Properties properties = new org.rackspace.stingray.pojo.traffic.ip.Properties();
+        org.rackspace.stingray.pojo.traffic.ip.Basic basic = new org.rackspace.stingray.pojo.traffic.ip.Basic();
 
 //        TrafficIpIpMapping mapping = new TrafficIpIpMapping();
 //        List<TrafficIpIpMapping> mappings = new ArrayList<TrafficIpIpMapping>(Arrays.asList(mapping));
@@ -294,10 +294,9 @@ public class ResourceTranslator {
 
     public Pool translatePoolResource(String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
         cPool = new Pool();
-        PoolProperties properties = new PoolProperties();
-        PoolBasic basic = new PoolBasic();
-        List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
-        PoolLoadbalancing poollb = new PoolLoadbalancing();
+        org.rackspace.stingray.pojo.pool.Properties properties = new org.rackspace.stingray.pojo.pool.Properties();
+        org.rackspace.stingray.pojo.pool.Basic basic = new org.rackspace.stingray.pojo.pool.Basic();
+        Load_balancing poollb = new Load_balancing();
 
         Set<Node> nodes = loadBalancer.getNodes();
         Set<Node> enabledNodes = new HashSet<Node>();
@@ -306,36 +305,27 @@ public class ResourceTranslator {
         enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.ENABLED));
         enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING));
 
-        basic.setNodes(NodeHelper.getNodeStrValue(enabledNodes));
-        basic.setDraining(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING)));
-        basic.setDisabled(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DISABLED)));
+        List<Nodes_table> stmnodes = new ArrayList<Nodes_table>();
+        NodeHelper.getNodeStrValue(enabledNodes);
+        for (Node n : nodes) {
+            Nodes_table nt = new Nodes_table();
+            nt.setNode(n.getIpAddress() + ":" + Integer.toString(n.getPort()));
+            nt.setWeight(n.getWeight());
+            String ncond = n.getCondition().toString().toLowerCase();
+            Nodes_table.State nodestate = Nodes_table.State.fromValue(ncond.equals("enabled") ? "active" : ncond);
+            nt.setState(nodestate);
+            nt.setPriority(n.getType().toString().equals(NodeType.PRIMARY.toString()) ? 1 : 2);
+            stmnodes.add(nt);
+        }
+        basic.setNodes_table(stmnodes);
         basic.setPassive_monitoring(false);
 
-
         String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
+        poollb.setAlgorithm(Load_balancing.Algorithm.fromValue(lbAlgo));
 
-        if (queLb.getNodes() != null && !queLb.getNodes().isEmpty()) {
-            if (lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString())
-                    || lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_LEAST_CONNECTIONS.toString())) {
-                PoolNodeWeight nw;
-                for (Node n : nodes) {
-                    nw = new PoolNodeWeight();
-                    nw.setNode(n.getIpAddress() + ":" + Integer.toString(n.getPort()));
-                    nw.setWeight(n.getWeight());
-                    weights.add(nw);
-                }
-                poollb.setNode_weighting(weights);
-            }
-        }
-
-        ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
-        poollb.setPriority_enabled(znpc.hasSecondary());
-        poollb.setPriority_values(znpc.getPriorityValuesSet());
-        poollb.setAlgorithm(lbAlgo);
-
-        PoolConnection connection = null;
+        org.rackspace.stingray.pojo.pool.Connection connection = null;
         if (queLb.getTimeout() != null) {
-            connection = new PoolConnection();
+            connection = new org.rackspace.stingray.pojo.pool.Connection();
             connection.setMax_reply_time(loadBalancer.getTimeout());
         }
 
@@ -364,9 +354,9 @@ public class ResourceTranslator {
 
     public Monitor translateMonitorResource(LoadBalancer loadBalancer) {
         Monitor monitor = new Monitor();
-        MonitorProperties properties = new MonitorProperties();
-        MonitorBasic basic = new MonitorBasic();
-        MonitorHttp http;
+        org.rackspace.stingray.pojo.monitor.Properties properties = new org.rackspace.stingray.pojo.monitor.Properties();
+        org.rackspace.stingray.pojo.monitor.Basic basic = new org.rackspace.stingray.pojo.monitor.Basic();
+        org.rackspace.stingray.pojo.monitor.Http http;
 
         HealthMonitor hm = loadBalancer.getHealthMonitor();
 
@@ -375,10 +365,10 @@ public class ResourceTranslator {
         basic.setFailures(hm.getAttemptsBeforeDeactivation());
 
         if (hm.getType().equals(HealthMonitorType.CONNECT)) {
-            basic.setType(EnumFactory.Accept_from.CONNECT.toString());
+            basic.setType(org.rackspace.stingray.pojo.monitor.Basic.Type.fromValue(EnumFactory.Accept_from.CONNECT.toString()));
         } else if (hm.getType().equals(HealthMonitorType.HTTP) || hm.getType().equals(HealthMonitorType.HTTPS)) {
-            basic.setType(EnumFactory.Accept_from.HTTP.toString());
-            http = new MonitorHttp();
+            basic.setType(org.rackspace.stingray.pojo.monitor.Basic.Type.fromValue(EnumFactory.Accept_from.HTTP.toString()));
+            http = new org.rackspace.stingray.pojo.monitor.Http();
             http.setPath(hm.getPath());
             http.setStatus_regex(hm.getStatusRegex());
             http.setBody_regex(hm.getBodyRegex());
@@ -400,13 +390,13 @@ public class ResourceTranslator {
 
     public Protection translateProtectionResource(LoadBalancer loadBalancer) {
         cProtection = new Protection();
-        ProtectionBasic basic = new ProtectionBasic();
-        ProtectionProperties properties = new ProtectionProperties();
+        org.rackspace.stingray.pojo.protection.Basic basic = new org.rackspace.stingray.pojo.protection.Basic();
+        org.rackspace.stingray.pojo.protection.Properties properties = new org.rackspace.stingray.pojo.protection.Properties();
 
         ConnectionLimit limits = loadBalancer.getConnectionLimit();
         Set<AccessList> accessList = loadBalancer.getAccessLists();
 
-        ProtectionAccessRestriction pac = new ProtectionAccessRestriction();
+        Access_restriction pac = new Access_restriction();
         if (accessList != null && !accessList.isEmpty()) {
             Set<String> allowed = new HashSet<String>();
             Set<String> banned = new HashSet<String>();
@@ -422,7 +412,7 @@ public class ResourceTranslator {
         }
         properties.setAccess_restriction(pac);
 
-        ProtectionConnectionLimiting limiting = new ProtectionConnectionLimiting();
+        Connection_limiting limiting = new Connection_limiting();
         if (limits != null) {
             Integer maxConnections = limits.getMaxConnections();
             if (maxConnections == null) maxConnections = 0;
@@ -472,8 +462,8 @@ public class ResourceTranslator {
         }
 
         cKeypair = new Keypair();
-        KeypairProperties keypairProperties = new KeypairProperties();
-        KeypairBasic keypairBasic = new KeypairBasic();
+        org.rackspace.stingray.pojo.ssl.keypair.Properties keypairProperties = new org.rackspace.stingray.pojo.ssl.keypair.Properties();
+        org.rackspace.stingray.pojo.ssl.keypair.Basic keypairBasic = new org.rackspace.stingray.pojo.ssl.keypair.Basic();
         keypairBasic.setPrivate(zeusCertFile.getPrivate_key());
         keypairBasic.setPublic(zeusCertFile.getPublic_cert());
         keypairProperties.setBasic(keypairBasic);
@@ -483,8 +473,8 @@ public class ResourceTranslator {
 
     public Bandwidth translateBandwidthResource(LoadBalancer loadBalancer) throws InsufficientRequestException {
         Bandwidth bandwidth = new Bandwidth();
-        BandwidthProperties properties = new BandwidthProperties();
-        BandwidthBasic basic = new BandwidthBasic();
+        org.rackspace.stingray.pojo.bandwidth.Properties properties = new org.rackspace.stingray.pojo.bandwidth.Properties();
+        org.rackspace.stingray.pojo.bandwidth.Basic basic = new org.rackspace.stingray.pojo.bandwidth.Basic();
 
         RateLimit rateLimit = loadBalancer.getRateLimit();
 

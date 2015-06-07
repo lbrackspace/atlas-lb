@@ -6,19 +6,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
-import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
-import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
+import org.rackspace.stingray.pojo.bandwidth.Bandwidth;
+import org.rackspace.stingray.pojo.bandwidth.Basic;
+import org.rackspace.stingray.pojo.bandwidth.Properties;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
+import org.rackspace.stingray.pojo.list.Child;
 
 import java.util.List;
 
 public class BandwidthITest extends StingrayTestBase {
     Bandwidth bandwidth;
-    BandwidthProperties bandwidthProperties;
-    BandwidthBasic bandwidthBasic;
+    Properties bandwidthProperties;
+    Basic bandwidthBasic;
     String vsName;
 
     /**
@@ -29,8 +29,8 @@ public class BandwidthITest extends StingrayTestBase {
     public void standUp() throws DecryptException {
         super.standUp();
         bandwidth = new Bandwidth();
-        bandwidthProperties = new BandwidthProperties();
-        bandwidthBasic = new BandwidthBasic();
+        bandwidthProperties = new Properties();
+        bandwidthBasic = new Basic();
         bandwidthProperties.setBasic(bandwidthBasic);
         bandwidth.setProperties(bandwidthProperties);
         vsName = TESTNAME;

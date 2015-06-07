@@ -1,53 +1,37 @@
 {
-   "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/2.0/config/active/rate#update",
-   "title":                 "Rate Shaping Class",
-   "description":           "A rate shaping class restricts the number of connections being processed by a virtual server at once.",
-   "javaType" :     "org.rackspace.stingray.client.rate.Rate",
-
-   "type":                  "object",
-   "additionalProperties":  false,
-
-   "properties": {
-
-      "properties": {
-         "javaType" :     "org.rackspace.stingray.client.rate.RateProperties",
-
-         "type":                  "object",
-         "additionalProperties":  false,
-
-         "properties": {
-
-            "basic": {
-               "javaType" :     "org.rackspace.stingray.client.rate.RateBasic",
-
-               "type":                  "object",
-               "additionalProperties":  false,
-
-               "properties": {
-                  "max_rate_per_minute": {
-                     "description":   "Requests that are associated with this rate class will be rate-shaped to this many requests per minute, set to \"0\" to disable the limit.",
-
-                     "type":          "integer",
-                     "minimum":       0
-                  },
-
-                  "max_rate_per_second": {
-                     "description":   "Although requests will be rate-shaped to the \"max_rate_per_minute\", the traffic manager will also rate limit per-second. This smooths traffic so that a full minute's traffic will not be serviced in the first second of the minute, set this to \"0\" to disable the per-second limit.",
-
-                     "type":          "integer",
-                     "minimum":       0
-                  },
-
-                  "note": {
-                     "description":   "A description of the rate class.",
-
-                     "type":          "string"
-                  }
-               }
-            }
-         }
-      }
-   }
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": false,
+    "description": "A rate shaping class restricts the number of connections being processed by a virtual server at once.",
+    "id": "/rvbd-schema/tm/3.3/config/active/rate#update",
+    "javaType": "org.rackspace.stingray.pojo.rate.Rate",
+    "properties": {
+        "properties": {
+            "additionalProperties": false,
+            "properties": {
+                "basic": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "max_rate_per_minute": {
+                            "description": "Requests that are associated with this rate class will be rate-shaped to this many requests per minute, set to \"0\" to disable the limit.",
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "max_rate_per_second": {
+                            "description": "Although requests will be rate-shaped to the \"max_rate_per_minute\", the traffic manager will also rate limit per-second. This smooths traffic so that a full minute's traffic will not be serviced in the first second of the minute, set this to \"0\" to disable the per-second limit.",
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "note": {
+                            "description": "A description of the rate class.",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "title": "Rate Shaping Class",
+    "type": "object"
 }
-

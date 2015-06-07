@@ -4,7 +4,7 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-import org.rackspace.stingray.client.counters.VirtualServerStats;
+import org.rackspace.stingray.pojo.counters.VirtualServerStats;
 
 import java.net.URI;
 import java.util.List;
