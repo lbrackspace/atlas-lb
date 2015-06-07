@@ -1,23 +1,20 @@
 package org.rackspace.stingray.client.integration.stats;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
-import org.rackspace.stingray.client.counters.VirtualServerStats;
-import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.pojo.counters.VirtualServerStats;
+import org.rackspace.stingray.pojo.counters.Statistics;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.integration.StingrayTestBase;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolProperties;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.pool.Pool;
+import org.rackspace.stingray.pojo.virtualserver.VirtualServer;
+import org.rackspace.stingray.pojo.virtualserver.Basic;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -30,10 +27,10 @@ public class VirtualServerStatsITest extends StingrayTestBase {
     Pool pool;
     int port;
     VirtualServer virtualServer;
-    VirtualServerBasic basic;
-    VirtualServerProperties properties;
+    Basic basic;
+    org.rackspace.stingray.pojo.virtualserver.Properties properties;
     VirtualServerStats stats;
-    VirtualServerStatsProperties statsProperties;
+    Statistics statsProperties;
 
     /**
      * This method is the beginning for every test following.  Initial steps to the testing are completed here.
@@ -43,20 +40,20 @@ public class VirtualServerStatsITest extends StingrayTestBase {
     public void standUp() throws DecryptException {
         super.standUp();
         stats = new VirtualServerStats();
-        statsProperties = new VirtualServerStatsProperties();
+        statsProperties = new Statistics();
         vsName = TESTNAME;
         endpoint = URI.create(config.getString(ClientConfigKeys.stingray_rest_endpoint)
                 + config.getString(ClientConfigKeys.stingray_stats_base_uri));
         stats.setStatistics(statsProperties);
         virtualServer = new VirtualServer();
-        properties = new VirtualServerProperties();
-        basic = new VirtualServerBasic();
+        properties = new org.rackspace.stingray.pojo.virtualserver.Properties();
+        basic = new Basic();
         basic.setEnabled(true);
         poolName = TESTNAME;
         vsName = TESTNAME;
         port = 8998;
         pool = new Pool();
-        pool.setProperties(new PoolProperties());
+        pool.setProperties(new org.rackspace.stingray.pojo.pool.Properties());
         basic.setPool(poolName);
         basic.setPort(port);
         properties.setBasic(basic);

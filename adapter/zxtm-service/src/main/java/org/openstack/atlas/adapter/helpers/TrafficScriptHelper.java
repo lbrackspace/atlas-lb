@@ -7,7 +7,7 @@ import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
+import org.rackspace.stingray.pojo.list.Child;
 
 import java.io.BufferedWriter;
 import java.io.File;

@@ -7,10 +7,10 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair;
-import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairBasic;
-import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.ssl.client.keypair.ClientKeypair;
+import org.rackspace.stingray.pojo.ssl.client.keypair.Basic;
+import org.rackspace.stingray.pojo.ssl.client.keypair.Properties;
 
 import java.util.List;
 
@@ -18,8 +18,8 @@ import java.util.List;
 public class SslClientKeypairITest extends StingrayTestBase {
     String vsName;
     ClientKeypair clientKeypair;
-    ClientKeypairProperties clientKeypairProperties;
-    ClientKeypairBasic clientKeypairBasic;
+    Properties clientKeypairProperties;
+    Basic clientKeypairBasic;
 
     /**
      * Initializes variables prior to test execution
@@ -30,8 +30,8 @@ public class SslClientKeypairITest extends StingrayTestBase {
         super.standUp();
         vsName = TESTNAME;
         clientKeypair = new ClientKeypair();
-        clientKeypairProperties = new ClientKeypairProperties();
-        clientKeypairBasic = new ClientKeypairBasic();
+        clientKeypairProperties = new Properties();
+        clientKeypairBasic = new Basic();
 
         clientKeypairProperties.setBasic(clientKeypairBasic);
         clientKeypair.setProperties(clientKeypairProperties);

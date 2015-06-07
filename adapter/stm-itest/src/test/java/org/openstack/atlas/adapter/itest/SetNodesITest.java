@@ -4,6 +4,8 @@ import org.junit.*;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.NodeType;
+import org.rackspace.stingray.pojo.pool.Nodes_table;
 
 import java.util.*;
 
@@ -79,33 +81,22 @@ public class SetNodesITest extends STMTestBase {
     @Test
     public void testSetNodes() throws Exception {
         setNodes();
-
-        int expectedDisabledNodes = 0;
-        int expectedDrainingNodes = 0;
-        int expectedEnabledNodes = 0;
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
-
-        for (Node node : createdNodes) {
-            if (node.getCondition() == DRAINING) {
-                Assert.assertTrue(setOfDrainingNodes.contains(getFullAddress(node)));
-                expectedDrainingNodes++;
-                expectedEnabledNodes++;
-            } else if (node.getCondition() == DISABLED) {
-                Assert.assertTrue(setOfDisabledNodes.contains(getFullAddress(node)));
-                expectedDisabledNodes++;
-            } else if (node.getCondition() == ENABLED) {
-                Assert.assertTrue(setOfEnabledNodes.contains(getFullAddress(node)));
-                expectedEnabledNodes++;
-            } else {
-                Assert.fail();
+        List<Nodes_table> nodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes_table();
+        Assert.assertEquals(3, nodes.size());
+        for (Nodes_table n : nodes) {
+            Node lbn = createdNodes.iterator().next();
+            if (n.getNode().equals(getFullAddress(lbn))) {
+                String lbncond = lbn.getCondition().toString().toLowerCase();
+               Nodes_table.State state = (lbncond.equalsIgnoreCase(
+                       "enabled") ? Nodes_table.State.ACTIVE : Nodes_table.State.fromValue(
+                       lbn.getCondition().toString().toLowerCase()));
+               Assert.assertTrue(n.getState() == state);
+               Assert.assertEquals(lbn.getWeight(), n.getWeight());
+               Assert.assertEquals(lbn.getIpAddress(), n.getNode().split(":")[0]);
+               int type = lbn.getType().toString().equals(NodeType.PRIMARY.toString()) ? 1 : 2;
+               Assert.assertEquals((int) n.getPriority(), type);
             }
         }
-
-        Assert.assertEquals(expectedEnabledNodes, setOfEnabledNodes.size());
-        Assert.assertEquals(expectedDisabledNodes, setOfDisabledNodes.size());
-        Assert.assertEquals(expectedDrainingNodes, setOfDrainingNodes.size());
     }
 
     @Test
@@ -117,33 +108,22 @@ public class SetNodesITest extends STMTestBase {
 
         stmAdapter.removeNode(config, lb, nodeToRemove);
 
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
-
-        int expectedDisabledNodes = 0;
-        int expectedDrainingNodes = 0;
-        int expectedEnabledNodes = 0;
-
-        for (Node node : createdNodes) {
-            if (node.getCondition() == DRAINING) {
-                Assert.assertTrue(setOfDrainingNodes.contains(getFullAddress(node)));
-                expectedDrainingNodes++;
-                expectedEnabledNodes++;
-            } else if (node.getCondition() == DISABLED) {
-                Assert.assertTrue(setOfDisabledNodes.contains(getFullAddress(node)));
-                expectedDisabledNodes++;
-            } else if (node.getCondition() == ENABLED) {
-                Assert.assertTrue(setOfEnabledNodes.contains(getFullAddress(node)));
-                expectedEnabledNodes++;
-            } else {
-                Assert.fail();
+        List<Nodes_table> nodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes_table();
+        for (Nodes_table n : nodes) {
+            Node lbn = createdNodes.iterator().next();
+            Assert.assertFalse(n.getNode() == getFullAddress(nodeToRemove));
+            if (n.getNode().equals(getFullAddress(lbn))) {
+                String lbncond = lbn.getCondition().toString().toLowerCase();
+                Nodes_table.State state = (lbncond.equalsIgnoreCase(
+                        "enabled") ? Nodes_table.State.ACTIVE : Nodes_table.State.fromValue(
+                        lbn.getCondition().toString().toLowerCase()));
+                Assert.assertTrue(n.getState() == state);
+                Assert.assertEquals(lbn.getWeight(), n.getWeight());
+                Assert.assertEquals(lbn.getIpAddress(), n.getNode().split(":")[0]);
+                int type = lbn.getType().toString().equals(NodeType.PRIMARY.toString()) ? 1 : 2;
+                Assert.assertEquals((int) n.getPriority(), type);
             }
         }
-
-        Assert.assertEquals(expectedEnabledNodes, setOfEnabledNodes.size());
-        Assert.assertEquals(expectedDisabledNodes, setOfDisabledNodes.size());
-        Assert.assertEquals(expectedDrainingNodes, setOfDrainingNodes.size());
     }
 
     @Test
@@ -154,37 +134,27 @@ public class SetNodesITest extends STMTestBase {
         List<Node> nodesToRemove = new ArrayList<Node>();
         nodesToRemove.add(createdNodesIterator.next());
         nodesToRemove.add(createdNodesIterator.next());
-//        createdNodes.remove(nodesToRemove);
         for (Node node : nodesToRemove) createdNodes.remove(node);
 
         stmAdapter.removeNodes(config, lb, nodesToRemove);
 
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
-
-        int expectedDisabledNodes = 0;
-        int expectedDrainingNodes = 0;
-        int expectedEnabledNodes = 0;
-
-        for (Node node : createdNodes) {
-            if (node.getCondition() == DRAINING) {
-                Assert.assertTrue(setOfDrainingNodes.contains(getFullAddress(node)));
-                expectedDrainingNodes++;
-                expectedEnabledNodes++;
-            } else if (node.getCondition() == DISABLED) {
-                Assert.assertTrue(setOfDisabledNodes.contains(getFullAddress(node)));
-                expectedDisabledNodes++;
-            } else if (node.getCondition() == ENABLED) {
-                Assert.assertTrue(setOfEnabledNodes.contains(getFullAddress(node)));
-                expectedEnabledNodes++;
-            } else {
-                Assert.fail();
+        List<Nodes_table> nodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes_table();
+        for (Nodes_table n : nodes) {
+            Node lbn = createdNodes.iterator().next();
+            for (Node ntr : nodesToRemove) {
+                Assert.assertFalse(n.getNode() == getFullAddress(ntr));
+            }
+            if (n.getNode().equals(getFullAddress(lbn))) {
+                String lbncond = lbn.getCondition().toString().toLowerCase();
+                Nodes_table.State state = (lbncond.equalsIgnoreCase(
+                        "enabled") ? Nodes_table.State.ACTIVE : Nodes_table.State.fromValue(
+                        lbn.getCondition().toString().toLowerCase()));
+                Assert.assertTrue(n.getState() == state);
+                Assert.assertEquals(lbn.getWeight(), n.getWeight());
+                Assert.assertEquals(lbn.getIpAddress(), n.getNode().split(":")[0]);
+                int type = lbn.getType().toString().equals(NodeType.PRIMARY.toString()) ? 1 : 2;
+                Assert.assertEquals((int) n.getPriority(), type);
             }
         }
-
-        Assert.assertEquals(expectedEnabledNodes, setOfEnabledNodes.size());
-        Assert.assertEquals(expectedDisabledNodes, setOfDisabledNodes.size());
-        Assert.assertEquals(expectedDrainingNodes, setOfDrainingNodes.size());
     }
 }

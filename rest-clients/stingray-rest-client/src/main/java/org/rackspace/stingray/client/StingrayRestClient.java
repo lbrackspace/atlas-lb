@@ -2,31 +2,31 @@ package org.rackspace.stingray.client;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.pojo.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.Configuration;
-import org.rackspace.stingray.client.counters.VirtualServerStats;
-import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.pojo.counters.VirtualServerStats;
+import org.rackspace.stingray.pojo.counters.Statistics;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.list.Children;
-import org.rackspace.stingray.client.location.Location;
+import org.rackspace.stingray.pojo.glb.GlobalLoadBalancing;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.list.Children;
+import org.rackspace.stingray.pojo.location.Location;
 import org.rackspace.stingray.client.manager.RequestManager;
 import org.rackspace.stingray.client.manager.StingrayRestClientManager;
 import org.rackspace.stingray.client.manager.impl.RequestManagerImpl;
-import org.rackspace.stingray.client.monitor.Monitor;
-import org.rackspace.stingray.client.persistence.Persistence;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.protection.Protection;
-import org.rackspace.stingray.client.rate.Rate;
-import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.tm.TrafficManager;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
+import org.rackspace.stingray.pojo.monitor.Monitor;
+import org.rackspace.stingray.pojo.persistence.Persistence;
+import org.rackspace.stingray.pojo.pool.Pool;
+import org.rackspace.stingray.pojo.protection.Protection;
+import org.rackspace.stingray.pojo.rate.Rate;
+import org.rackspace.stingray.pojo.ssl.client.keypair.ClientKeypair;
+import org.rackspace.stingray.pojo.ssl.keypair.Keypair;
+import org.rackspace.stingray.pojo.tm.TrafficManager;
+import org.rackspace.stingray.pojo.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.util.ClientConstants;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.pojo.virtualserver.VirtualServer;
+import org.rackspace.stingray.pojo.virtualserver.Properties;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -1128,8 +1128,8 @@ public class StingrayRestClient extends StingrayRestClientManager {
         client.destroy();
     }
 
-    private VirtualServerStatsProperties getZeroStats() {
-        VirtualServerStatsProperties props = new VirtualServerStatsProperties();
+    private Statistics getZeroStats() {
+        Statistics props = new Statistics();
         props.setConnect_timed_out(0);
         props.setConnection_errors(0);
         props.setConnection_failures(0);

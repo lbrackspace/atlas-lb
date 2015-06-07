@@ -13,10 +13,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.pojo.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
+import org.rackspace.stingray.pojo.list.Child;
 import org.rackspace.stingray.client.manager.RequestManager;
 
 import javax.ws.rs.core.MediaType;

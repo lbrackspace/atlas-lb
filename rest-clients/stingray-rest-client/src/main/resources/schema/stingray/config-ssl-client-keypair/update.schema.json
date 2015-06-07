@@ -1,57 +1,39 @@
 {
-   "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/2.0/config/active/ssl/client_keys#update",
-   "title":                 "SSL Client Key Pair",
-   "description":           "SSL Client Certificates are used when connecting to backend nodes that require client certificate authentication.",
-   "javaType" :     "org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair",
-
-   "type":                  "object",
-   "additionalProperties":  false,
-
-   "properties": {
-
-      "properties": {
-         "javaType" :     "org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairProperties",
-
-         "type":                  "object",
-         "additionalProperties":  false,
-
-         "properties": {
-
-            "basic": {
-               "javaType" :     "org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairBasic",
-
-               "type":                  "object",
-               "additionalProperties":  false,
-
-               "properties": {
-                  "public": {
-                     "description":   "Public certificate",
-
-                     "type":          "string"
-                  },
-
-                  "request": {
-                     "description":   "Certificate Signing Request for certificate",
-
-                     "type":          "string"
-                  },
-
-                  "private": {
-                     "description":   "Private key for certificate",
-
-                     "type":          "string"
-                  },
-
-                  "note": {
-                     "description":   "Notes for this certificate",
-
-                     "type":          "string"
-                  }
-               }
-            }
-         }
-      }
-   }
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": false,
+    "description": "SSL Client Certificates are used when connecting to backend nodes that require client certificate authentication.",
+    "id": "/rvbd-schema/tm/3.3/config/active/ssl/client_keys#update",
+    "javaType": "org.rackspace.stingray.pojo.ssl.client.keypair.ClientKeypair",
+    "properties": {
+        "properties": {
+            "additionalProperties": false,
+            "properties": {
+                "basic": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "note": {
+                            "description": "Notes for this certificate",
+                            "type": "string"
+                        },
+                        "private": {
+                            "description": "Private key for certificate",
+                            "type": "string"
+                        },
+                        "public": {
+                            "description": "Public certificate",
+                            "type": "string"
+                        },
+                        "request": {
+                            "description": "Certificate Signing Request for certificate",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "title": "SSL Client Key Pair",
+    "type": "object"
 }
-

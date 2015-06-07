@@ -3,14 +3,13 @@
     "id": "/rvbd/schema/tm/1.0/config/active/list#",
     "title": "StingrayList",
     "description": "List of items by name and the href used to get specific item information.",
-    "javaType": "org.rackspace.stingray.client.util.StingrayList",
+    "javaType": "org.rackspace.stingray.pojo.util.StingrayList",
     "type": "object",
     "properties": {
         "stingrayList": {
             "type": "array",
             "required": true,
             "items": {
-                "javaType": "org.rackspace.stingray.client.util.StingrayListItem",
                 "type": "object",
                 "properties": {
                     "name": {

@@ -1,0 +1,178 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": true,
+    "description": "Virtual servers statistics values.",
+    "id": "/rvbd-schema/tm/2.0/status/local_tm/statistics/virtual_servers#read",
+    "javaType": "org.rackspace.stingray.pojo.counters.VirtualServerStats",
+    "properties": {
+        "statistics": {
+            "additionalProperties": true,
+            "properties": {
+                "bytes_in": {
+                    "description": "Bytes received by this virtual server from clients.",
+                    "type": "integer"
+                },
+                "bytes_in_hi": {
+                    "description": "Bytes received by this virtual server from clients ( high 32bits ).",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "bytes_in_lo": {
+                    "description": "Bytes received by this virtual server from clients ( low 32bits ).",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "bytes_out": {
+                    "description": "Bytes sent by this virtual server to clients.",
+                    "type": "integer"
+                },
+                "bytes_out_hi": {
+                    "description": "Bytes sent by this virtual server to clients ( high 32bits ).",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "bytes_out_lo": {
+                    "description": "Bytes sent by this virtual server to clients ( low 32bits ).",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "cert_status_requests": {
+                    "description": "Number of incoming TLS handshakes for this virtual server with certificate status requests.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "cert_status_responses": {
+                    "description": "Number of incoming TLS handshakes for this virtual server to which certificate status responses were attached.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "connect_timed_out": {
+                    "description": "Connections closed by this virtual server because the 'connect_timeout' interval was exceeded.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "connection_errors": {
+                    "description": "Number of transaction or protocol errors in this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "connection_failures": {
+                    "description": "Number of connection failures in this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "current_conn": {
+                    "description": "TCP connections currently established to this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "data_timed_out": {
+                    "description": "Connections closed by this virtual server because the 'timeout' interval was exceeded.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "direct_replies": {
+                    "description": "Direct replies from this virtual server, without forwarding to a node.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "discard": {
+                    "description": "Connections discarded by this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "gzip": {
+                    "description": "Responses which have been compressed by content compression.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "gzip_bytes_saved": {
+                    "description": "Bytes of network traffic saved by content compression.",
+                    "type": "integer"
+                },
+                "gzip_bytes_saved_hi": {
+                    "description": "Bytes of network traffic saved by content compression ( high 32bits ).",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "gzip_bytes_saved_lo": {
+                    "description": "Bytes of network traffic saved by content compression ( low 32bits ).",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "http_cache_hit_rate": {
+                    "description": "Percentage hit rate of the web cache for this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "http_cache_hits": {
+                    "description": "HTTP responses sent directly from the web cache by this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "http_cache_lookups": {
+                    "description": "HTTP requests that are looked up in the web cache by this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "http_rewrite_cookie": {
+                    "description": "HTTP Set-Cookie headers, supplied by a node, that have been rewritten.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "http_rewrite_location": {
+                    "description": "HTTP Location headers, supplied by a node, that have been rewritten.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "keepalive_timed_out": {
+                    "description": "Connections closed by this virtual server because the 'keepalive_timeout' interval was exceeded.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "max_conn": {
+                    "description": "Maximum number of simultaneous TCP connections this virtual server has processed at any one time.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "port": {
+                    "description": "The port the virtual server listens on.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "protocol": {
+                    "description": "The protocol the virtual server is operating.",
+                    "type": "string"
+                },
+                "sip_rejected_requests": {
+                    "description": "Number of SIP requests rejected due to them exceeding the maximum amount of memory allocated to the connection.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "sip_total_calls": {
+                    "description": "Total number of SIP INVITE requests seen by this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "total_conn": {
+                    "description": "Requests received by this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "total_dgram": {
+                    "description": "UDP datagrams processed by this virtual server.",
+                    "minimum": 0,
+                    "type": "integer"
+                },
+                "udp_timed_out": {
+                    "description": "Connections closed by this virtual server because the 'udp_timeout' interval was exceeded.",
+                    "minimum": 0,
+                    "type": "integer"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "title": "Virtual servers",
+    "type": "object"
+}

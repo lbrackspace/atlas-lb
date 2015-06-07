@@ -3,7 +3,7 @@
     "id":            "/rvbd/schema/tm/1.0/config/active/util#factory",
     "title":         "Pool",
     "description":   "The ENUM factory for the Stingray Rest API",
-    "javaType" :     "org.rackspace.stingray.client.util.EnumFactory",
+    "javaType" :     "org.rackspace.stingray.pojo.util.EnumFactory",
     "type":          "object",
     "required":      true,
 

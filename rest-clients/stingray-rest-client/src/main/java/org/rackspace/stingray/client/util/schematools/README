@@ -1,0 +1,19 @@
+The tools provided here are designed to take in a directory containing JSON schemas for the Stingray/Brocade product.
+
+Usage: python jsupdate.py schema/directory datamap True
+
+jsupdate will take in the schema directory which contains other schema directories.
+datamap is a mapping file between the directory and the desired javaType.
+cleanup is a way to remove unwanted files from the schema directory. Set to True to clean up.
+
+Format:
+      Schemas directories should be top level to the directory provided in the args. Sub directories that are not
+      valid schema directories are ignored. Some special case directories like 'util', 'exception' and 'list' are allowed.
+
+      Datamap must contain a dictionary mapping of the directory name, ex. 'config-pool' or 'counters-virtual-server'
+      to the desired javaType and namespace. Ex: "config-pool": "org.rackspace.stingray.pojo.pool.Pool"
+
+Make a backup of the schema directory.
+
+Once the files have been converted, the directory containing the schemas should be placed in the resource package of
+stingray-rest-client in order for proper generation of the pojos.

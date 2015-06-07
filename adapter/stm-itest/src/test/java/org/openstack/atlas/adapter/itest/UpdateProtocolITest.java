@@ -14,6 +14,7 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.pojo.virtualserver.Basic;
 
 public class UpdateProtocolITest extends STMTestBase {
 
@@ -38,12 +39,14 @@ public class UpdateProtocolITest extends STMTestBase {
         StingrayRestClient client = new StingrayRestClient();
         String vsName = ZxtmNameBuilder.genVSName(lb);
 
-        Assert.assertEquals(LoadBalancerProtocol.HTTP.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
+        Assert.assertEquals(Basic.Protocol.fromValue(LoadBalancerProtocol.HTTP.name().toLowerCase()),
+                client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
 
         lb.setProtocol(LoadBalancerProtocol.HTTPS);
         stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer(), null);
 
-        Assert.assertEquals(LoadBalancerProtocol.HTTPS.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
+        Assert.assertEquals(Basic.Protocol.fromValue(LoadBalancerProtocol.HTTPS.name().toLowerCase()),
+                client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
     }
 
     //These tests need to run in order -- HTTP is the second test
@@ -52,11 +55,13 @@ public class UpdateProtocolITest extends STMTestBase {
         StingrayRestClient client = new StingrayRestClient();
         String vsName = ZxtmNameBuilder.genVSName(lb);
 
-        Assert.assertEquals(LoadBalancerProtocol.HTTPS.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
+        Assert.assertEquals(Basic.Protocol.fromValue(LoadBalancerProtocol.HTTPS.name().toLowerCase()),
+                client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
 
         lb.setProtocol(LoadBalancerProtocol.HTTP);
         stmAdapter.updateLoadBalancer(config, lb, new LoadBalancer(), null);
 
-        Assert.assertEquals(LoadBalancerProtocol.HTTP.name().toLowerCase(), client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
+        Assert.assertEquals(Basic.Protocol.fromValue(LoadBalancerProtocol.HTTP.name().toLowerCase()),
+                client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
     }
 }

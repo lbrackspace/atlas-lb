@@ -7,17 +7,17 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.tm.TrafficManager;
-import org.rackspace.stingray.client.tm.TrafficManagerBasic;
-import org.rackspace.stingray.client.tm.TrafficManagerProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.tm.TrafficManager;
+import org.rackspace.stingray.pojo.tm.Basic;
+import org.rackspace.stingray.pojo.tm.Properties;
 
 import java.util.List;
 
 public class TrafficManagerITest extends StingrayTestBase {
     TrafficManager manager;
-    TrafficManagerProperties properties;
-    TrafficManagerBasic basic;
+    Properties properties;
+    Basic basic;
 
     /**
      * Initializes variables prior to test execution
@@ -26,8 +26,8 @@ public class TrafficManagerITest extends StingrayTestBase {
     @Override
     public void standUp() throws DecryptException {
         super.standUp();
-        basic = new TrafficManagerBasic();
-        properties = new TrafficManagerProperties();
+        basic = new Basic();
+        properties = new Properties();
         properties.setBasic(basic);
         manager = new TrafficManager();
         manager.setProperties(properties);

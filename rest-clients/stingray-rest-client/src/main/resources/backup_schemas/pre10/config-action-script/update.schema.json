@@ -1,0 +1,17 @@
+{
+    "$schema": "http://json-schema.org/draft-03/schema#",
+    "description": "This is a program or script that can be referenced and used by actions of type 'Program'",
+    "id": "/rvbd/schema/tm/1.0/config/active/actionprogs#",
+    "javaType": "org.rackspace.stingray.pojo.action.ActionScript",
+    "properties": {
+        "properties": {
+            "additionalProperties": false,
+            "properties": {},
+            "required": true,
+            "type": "object"
+        }
+    },
+    "required": false,
+    "title": "Action Program",
+    "type": "object"
+}

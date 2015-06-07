@@ -16,9 +16,9 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.manager.impl.RequestManagerImpl;
 import org.rackspace.stingray.client.mock.MockClientHandler;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolHttp;
-import org.rackspace.stingray.client.pool.PoolProperties;
+import org.rackspace.stingray.pojo.pool.Pool;
+import org.rackspace.stingray.pojo.pool.Http;
+import org.rackspace.stingray.pojo.pool.Properties;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -59,8 +59,8 @@ public class RequestManagerTest {
         }
 
         private Pool createPool() {
-            PoolProperties poolProperties = new PoolProperties();
-            PoolHttp poolHttp = new PoolHttp();
+            Properties poolProperties = new Properties();
+            Http poolHttp = new Http();
             poolHttp.setKeepalive(true);
             poolProperties.setHttp(poolHttp);
 
@@ -139,8 +139,8 @@ public class RequestManagerTest {
         }
 
         private Pool createPool() {
-            PoolProperties poolProperties = new PoolProperties();
-            PoolHttp poolHttp = new PoolHttp();
+            Properties poolProperties = new Properties();
+            Http poolHttp = new Http();
             poolHttp.setKeepalive(true);
             poolProperties.setHttp(poolHttp);
 
@@ -221,8 +221,8 @@ public class RequestManagerTest {
         }
 
         private Pool createPool() {
-                   PoolProperties poolProperties = new PoolProperties();
-                   PoolHttp poolHttp = new PoolHttp();
+                   Properties poolProperties = new Properties();
+                   Http poolHttp = new Http();
                    poolHttp.setKeepalive(true);
                    poolProperties.setHttp(poolHttp);
 

@@ -7,18 +7,18 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.protection.Protection;
-import org.rackspace.stingray.client.protection.ProtectionBasic;
-import org.rackspace.stingray.client.protection.ProtectionProperties;
+import org.rackspace.stingray.pojo.list.Child;
+import org.rackspace.stingray.pojo.protection.Protection;
+import org.rackspace.stingray.pojo.protection.Basic;
+import org.rackspace.stingray.pojo.protection.Properties;
 
 import java.util.List;
 
 public class ProtectionITest extends StingrayTestBase {;
     String vsName = TESTNAME;
     Protection protection;
-    ProtectionProperties protectionProperties;
-    ProtectionBasic protectionBasic;
+    Properties protectionProperties;
+    Basic protectionBasic;
 
     /**
      * Initializes variables prior to test execution
@@ -28,8 +28,8 @@ public class ProtectionITest extends StingrayTestBase {;
     public void standUp() throws DecryptException {
         super.standUp();
         protection = new Protection();
-        protectionProperties = new ProtectionProperties();
-        protectionBasic = new ProtectionBasic();
+        protectionProperties = new Properties();
+        protectionBasic = new Basic();
 
         protectionProperties.setBasic(protectionBasic);
         protection.setProperties(protectionProperties);

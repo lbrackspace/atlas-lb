@@ -1,0 +1,47 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": false,
+    "description": "A session persistence class is used to identify the session a new connection belongs too and deliver it to the same backend node.",
+    "id": "/rvbd-schema/tm/2.0/config/active/persistence#update",
+    "javaType": "org.rackspace.stingray.pojo.persistence.Persistence",
+    "properties": {
+        "properties": {
+            "additionalProperties": false,
+            "properties": {
+                "basic": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "cookie": {
+                            "description": "The cookie name to use for tracking session persistence.",
+                            "type": "string"
+                        },
+                        "delete": {
+                            "description": "Whether or not the session should be deleted when a session failure occurs. (Note, setting a failure mode of 'choose a new node' implicitly deletes the session.)",
+                            "type": "boolean"
+                        },
+                        "failure_mode": {
+                            "description": "The action the pool should take if the session data is invalid or it cannot contact the node specified by the session.",
+                            "type": "string"
+                        },
+                        "note": {
+                            "description": "A description of the session persistence class.",
+                            "type": "string"
+                        },
+                        "type": {
+                            "description": "The type of session persistence to use.",
+                            "type": "string"
+                        },
+                        "url": {
+                            "description": "The redirect URL to send clients to if the session persistence is configured to redirect users when a node dies.",
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "title": "Session Persistence Class",
+    "type": "object"
+}

@@ -1,61 +1,49 @@
 {
-   "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/2.0/config/active/locations#update",
-   "title":                 "Location",
-   "description":           "These are geographic locations as used by *Global Load Balancing* services. Such a location may not necessarily contain a traffic manager; instead it could refer to the location of a remote datacenter.",
-   "javaType" :     "org.rackspace.stingray.client.location.Location",
-
-   "type":                  "object",
-   "additionalProperties":  false,
-
-   "properties": {
-
-      "properties": {
-         "javaType" :     "org.rackspace.stingray.client.location.LocationProperties",
-         "type":                  "object",
-         "additionalProperties":  false,
-
-         "properties": {
-
-            "basic": {
-               "javaType" :     "org.rackspace.stingray.client.location.LocationBasic",
-               "type":                  "object",
-               "additionalProperties":  false,
-
-               "properties": {
-                  "id": {
-                     "description":   "The identifier of this location.",
-
-                     "type":          "integer",
-                     "minimum":       0
-                  },
-
-                  "latitude": {
-                     "description":   "The latitude of this location.",
-
-                     "type":          "number"
-                  },
-
-                  "longitude": {
-                     "description":   "The longitude of this location.",
-
-                     "type":          "number"
-                  },
-
-                  "note": {
-                     "description":   "A note, used to describe this location.",
-
-                     "type":          "string"
-                  },
-
-                  "type": {
-                     "description":   "Does this location contain traffic managers and configuration or is it a recipient of GLB requests?",
-
-                     "type":          "string"
-                  }
-               }
-            }
-         }
-      }
-   }
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "additionalProperties": false,
+    "description": "These are geographic locations as used by *Global Load Balancing* services. Such a location may not necessarily contain a traffic manager; instead it could refer to the location of a remote datacenter.",
+    "id": "/rvbd-schema/tm/3.3/config/active/locations#update",
+    "javaType": "org.rackspace.stingray.pojo.location.Location",
+    "properties": {
+        "properties": {
+            "additionalProperties": false,
+            "properties": {
+                "basic": {
+                    "additionalProperties": false,
+                    "properties": {
+                        "id": {
+                            "description": "The identifier of this location.",
+                            "maximum": 2000000000,
+                            "minimum": 0,
+                            "type": "integer"
+                        },
+                        "latitude": {
+                            "description": "The latitude of this location.",
+                            "type": "number"
+                        },
+                        "longitude": {
+                            "description": "The longitude of this location.",
+                            "type": "number"
+                        },
+                        "note": {
+                            "description": "A note, used to describe this location.",
+                            "type": "string"
+                        },
+                        "type": {
+                            "description": "Does this location contain traffic managers and configuration or is it a recipient of GLB requests?",
+                            "enum": [
+                                "config",
+                                "glb"
+                            ],
+                            "type": "string"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        }
+    },
+    "title": "Location",
+    "type": "object"
 }

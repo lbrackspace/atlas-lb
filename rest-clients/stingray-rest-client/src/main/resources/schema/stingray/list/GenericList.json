@@ -1,28 +1,27 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "id": "/rvbd/schema/tm/1.0/config/active/list#",
-    "title": "Children",
+    "additionalProperties": false,
     "description": "List of items by name and the href used to get specific item information.",
-    "javaType": "org.rackspace.stingray.client.list.Children",
-    "type": "object",
+    "id": "/rvbd/schema/tm/1.0/config/active/list#",
+    "javaType": "org.rackspace.stingray.pojo.list.Children",
     "properties": {
         "children": {
-            "type": "array",
-            "required": true,
             "items": {
-                "javaType": "org.rackspace.stingray.client.list.Child",
-                "type": "object",
+                "additionalProperties": false,
                 "properties": {
-                    "name": {
+                    "href": {
                         "type": "string"
                     },
-                    "href": {
+                    "name": {
                         "type": "string"
                     }
                 },
-                "additionalProperties": false
-            }
+                "type": "object"
+            },
+            "required": true,
+            "type": "array"
         }
     },
-    "additionalProperties": false
+    "title": "Children",
+    "type": "object"
 }
