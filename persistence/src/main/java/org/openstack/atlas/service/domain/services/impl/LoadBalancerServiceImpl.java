@@ -463,6 +463,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Override
     @Transactional
+    public LoadBalancer getWithUserPages(Integer id) throws EntityNotFoundException {
+        return loadBalancerRepository.getByIdWithUserPages(id);
+    }
+
+    @Override
+    @Transactional
     public LoadBalancer getWithUserPages(Integer id, Integer accountId) throws EntityNotFoundException {
         return loadBalancerRepository.getByIdAndAccountIdWithUserPages(id, accountId);
     }
