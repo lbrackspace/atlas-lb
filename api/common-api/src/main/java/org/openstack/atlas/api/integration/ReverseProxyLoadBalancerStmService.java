@@ -21,7 +21,7 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void deleteLoadBalancer(LoadBalancer lb) throws Exception;
 
-    void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws Exception;
+    void changeHostForLoadBalancers(List<LoadBalancer> lbs, Host newHost) throws Exception;
 
     void suspendLoadBalancer(LoadBalancer lb) throws Exception;
 

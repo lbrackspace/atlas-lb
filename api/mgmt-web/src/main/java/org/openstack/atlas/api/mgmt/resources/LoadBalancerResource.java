@@ -26,6 +26,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
     private LoadbalancerVipResource loadbalancerVipResource;
     private HostsResource hostsResource;
     private SyncResource syncResource;
+    private ChangeHostResource changeHostResource;
     private TicketsResource ticketsResource;
     private int id;
     private ErrorpageResource errorPageResource;
@@ -269,8 +270,20 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
         }
     }
 
+    @Path("changeHost")
+    public ChangeHostResource retrieveChangeHostResource() {
+        changeHostResource.setLoadBalancerId(id);
+        return changeHostResource;
+    }
+
+
+
     public void setSyncResource(SyncResource syncResource) {
         this.syncResource = syncResource;
+    }
+
+    public void setChangeHostResource(ChangeHostResource changeHostResource) {
+        this.changeHostResource = changeHostResource;
     }
 
     public void setLoadBalancerSuspensionResource(LoadBalancerSuspensionResource loadBalancerSuspensionResource) {

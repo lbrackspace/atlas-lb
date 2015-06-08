@@ -50,7 +50,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId)
             throws InsufficientRequestException, RollBackException;
 
-    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost)
+    public void changeHostForLoadBalancers(LoadBalancerEndpointConfiguration configOld, LoadBalancerEndpointConfiguration configNew, List<LoadBalancer> loadBalancers)
             throws InsufficientRequestException, RollBackException;
 
     public void updateProtection(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
