@@ -94,6 +94,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb)
             throws InsufficientRequestException, StmRollBackException {
+        updateLoadBalancer(config, loadBalancer, queLb, true);
+    }
+
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb, boolean enabled)
+            throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
         ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
@@ -139,15 +144,24 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
                 switch(vsType) {
                     case REDIRECT_VS:
+                        if (!enabled) {
+                            rt.getcRedirectVServer().getProperties().getBasic().setEnabled(false);
+                        }
                         getResources().updateVirtualServer(client, vsName, rt.getcRedirectVServer());
                         break;
                     case SECURE_VS:
                         rt.translateVirtualServerResource(config, vsName, loadBalancer);
+                        if (!enabled) {
+                            rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                        }
                         getResources().updateKeypair(client, vsName, rt.getcKeypair());
                         getResources().updateVirtualServer(client, vsName, rt.getcVServer());
                         break;
                     default:
                         rt.translateVirtualServerResource(config, vsName, loadBalancer);
+                        if (!enabled) {
+                            rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                        }
                         getResources().updateVirtualServer(client, vsName, rt.getcVServer());
                 }
             }
@@ -641,8 +655,65 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws InsufficientRequestException, RollBackException {
+    public void changeHostForLoadBalancers(LoadBalancerEndpointConfiguration configOld, LoadBalancerEndpointConfiguration configNew, List<LoadBalancer> loadBalancers)
+            throws InsufficientRequestException, RollBackException {
+        ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
+        StingrayRestClient clientNew = getResources().loadSTMRestClient(configNew);
+        StingrayRestClient clientOld = getResources().loadSTMRestClient(configOld);
 
+        // Create the LB in a disabled state on the new host
+        for (LoadBalancer lb : loadBalancers) {
+            updateLoadBalancer(configNew, lb, lb, false);
+        }
+
+        // Disable the VirtualServers for all LBs on the old host (to bring down the VIPs)
+        for (LoadBalancer lb : loadBalancers) {
+            Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(lb);
+
+            for (VSType vsType : vsNames.keySet()) {
+                String vsName = vsNames.get(vsType);
+
+                switch(vsType) {
+                    case REDIRECT_VS:
+                        rt.translateRedirectVirtualServerResource(configOld, vsName, lb);
+                        rt.getcRedirectVServer().getProperties().getBasic().setEnabled(false);
+                        getResources().updateVirtualServer(clientOld, vsName, rt.getcRedirectVServer());
+                        break;
+                    case SECURE_VS:
+                        rt.translateVirtualServerResource(configOld, vsName, lb);
+                        rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                        getResources().updateVirtualServer(clientOld, vsName, rt.getcVServer());
+                        break;
+                    default:
+                        rt.translateVirtualServerResource(configOld, vsName, lb);
+                        rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                        getResources().updateVirtualServer(clientOld, vsName, rt.getcVServer());
+                }
+            }
+        }
+
+        // Enable the VirtualServers for all LBs on the new host (to bring up the VIPs)
+        for (LoadBalancer lb : loadBalancers) {
+            Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(lb);
+
+            for (VSType vsType : vsNames.keySet()) {
+                String vsName = vsNames.get(vsType);
+
+                switch(vsType) {
+                    case REDIRECT_VS:
+                        rt.translateRedirectVirtualServerResource(configNew, vsName, lb);
+                        getResources().updateVirtualServer(clientNew, vsName, rt.getcRedirectVServer());
+                        break;
+                    case SECURE_VS:
+                        rt.translateVirtualServerResource(configNew, vsName, lb);
+                        getResources().updateVirtualServer(clientNew, vsName, rt.getcVServer());
+                        break;
+                    default:
+                        rt.translateVirtualServerResource(configNew, vsName, lb);
+                        getResources().updateVirtualServer(clientNew, vsName, rt.getcVServer());
+                }
+            }
+        }
     }
 
     /*

@@ -18,6 +18,8 @@ public interface LoadBalancerService {
 
     LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException;
 
+    LoadBalancer getWithUserPages(Integer id) throws EntityNotFoundException;
+
     LoadBalancer getWithUserPages(Integer id, Integer accountId) throws EntityNotFoundException;
 
     List<AccountLoadBalancer> getAccountLoadBalancers(Integer accountId);
@@ -71,7 +73,11 @@ public interface LoadBalancerService {
 
     boolean testAndSetStatusPending(Integer accountId,Integer loadbalancerId) throws EntityNotFoundException, UnprocessableEntityException;
 
+    boolean testAndSetStatusPending(LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException;
+
     boolean testAndSetStatus(Integer accountId,Integer loadbalancerId, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException;
+
+    boolean testAndSetStatus(LoadBalancer lb, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException;
 
     UserPages getUserPages(Integer id,Integer accountId) throws EntityNotFoundException;
 

@@ -488,6 +488,12 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         virtualIpRepository.persist(obj);
     }
 
+    @Override
+    @Transactional
+    public void merge(Object obj) {
+        virtualIpRepository.merge(obj);
+    }
+
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
             delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());

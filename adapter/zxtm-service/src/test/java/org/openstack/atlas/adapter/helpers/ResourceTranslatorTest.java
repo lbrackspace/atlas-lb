@@ -291,6 +291,9 @@ public class ResourceTranslatorTest extends STMTestBase {
             List<String> failoverHosts = new ArrayList<String>();
             failoverHosts.add(failoverHost);
             when(config.getFailoverTrafficManagerNames()).thenReturn(failoverHosts);
+            Host tmHost = new Host();
+            tmHost.setCluster(cluster);
+            when(config.getTrafficManagerHost()).thenReturn(tmHost);
         }
 
         @Test

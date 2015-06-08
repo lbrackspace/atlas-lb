@@ -185,6 +185,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
+    @Transactional
+    public boolean testAndSetStatusPending(LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException {
+        return loadBalancerRepository.testAndSetStatus(lb.getAccountId(), lb.getId(), LoadBalancerStatus.PENDING_UPDATE, false);
+    }
+
+    @Override
     @DeadLockRetry
     @Transactional
     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException {
@@ -196,6 +202,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         return isStatusSet;
+    }
+
+    @Override
+    @DeadLockRetry
+    @Transactional
+    public boolean testAndSetStatus(LoadBalancer lb, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException {
+        return testAndSetStatus(lb.getAccountId(), lb.getId(), loadBalancerStatus);
     }
 
     @Override
@@ -459,6 +472,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     public LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException {
         return loadBalancerRepository.getByIdAndAccountId(id, accountId);
+    }
+
+    @Override
+    @Transactional
+    public LoadBalancer getWithUserPages(Integer id) throws EntityNotFoundException {
+        return loadBalancerRepository.getByIdWithUserPages(id);
     }
 
     @Override
