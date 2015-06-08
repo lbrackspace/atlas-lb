@@ -94,6 +94,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb)
             throws InsufficientRequestException, StmRollBackException {
+        updateLoadBalancer(config, loadBalancer, queLb, true);
+    }
+
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb, boolean enabled)
+            throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
         ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
@@ -139,15 +144,24 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
 
                 switch(vsType) {
                     case REDIRECT_VS:
+                        if (!enabled) {
+                            rt.getcRedirectVServer().getProperties().getBasic().setEnabled(false);
+                        }
                         getResources().updateVirtualServer(client, vsName, rt.getcRedirectVServer());
                         break;
                     case SECURE_VS:
                         rt.translateVirtualServerResource(config, vsName, loadBalancer);
+                        if (!enabled) {
+                            rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                        }
                         getResources().updateKeypair(client, vsName, rt.getcKeypair());
                         getResources().updateVirtualServer(client, vsName, rt.getcVServer());
                         break;
                     default:
                         rt.translateVirtualServerResource(config, vsName, loadBalancer);
+                        if (!enabled) {
+                            rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                        }
                         getResources().updateVirtualServer(client, vsName, rt.getcVServer());
                 }
             }
@@ -641,8 +655,54 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost) throws InsufficientRequestException, RollBackException {
+    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration configOld, LoadBalancerEndpointConfiguration configNew, LoadBalancer loadBalancer)
+            throws InsufficientRequestException, RollBackException {
+        ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
+        Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+        StingrayRestClient clientNew = getResources().loadSTMRestClient(configNew);
 
+        updateLoadBalancer(configNew, loadBalancer, loadBalancer, false);
+
+        // Disable old VS
+        for (VSType vsType : vsNames.keySet()) {
+            String vsName = vsNames.get(vsType);
+
+            switch(vsType) {
+                case REDIRECT_VS:
+                    rt.translateRedirectVirtualServerResource(configNew, vsName, loadBalancer);
+                    rt.getcRedirectVServer().getProperties().getBasic().setEnabled(false);
+                    getResources().updateVirtualServer(clientNew, vsName, rt.getcRedirectVServer());
+                    break;
+                case SECURE_VS:
+                    rt.translateVirtualServerResource(configNew, vsName, loadBalancer);
+                    rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                    getResources().updateVirtualServer(clientNew, vsName, rt.getcVServer());
+                    break;
+                default:
+                    rt.translateVirtualServerResource(configNew, vsName, loadBalancer);
+                    rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                    getResources().updateVirtualServer(clientNew, vsName, rt.getcVServer());
+            }
+        }
+
+        // Enable new VS
+        for (VSType vsType : vsNames.keySet()) {
+            String vsName = vsNames.get(vsType);
+
+            switch(vsType) {
+                case REDIRECT_VS:
+                    rt.translateRedirectVirtualServerResource(configNew, vsName, loadBalancer);
+                    getResources().updateVirtualServer(clientNew, vsName, rt.getcRedirectVServer());
+                    break;
+                case SECURE_VS:
+                    rt.translateVirtualServerResource(configNew, vsName, loadBalancer);
+                    getResources().updateVirtualServer(clientNew, vsName, rt.getcVServer());
+                    break;
+                default:
+                    rt.translateVirtualServerResource(configNew, vsName, loadBalancer);
+                    getResources().updateVirtualServer(clientNew, vsName, rt.getcVServer());
+            }
+        }
     }
 
     /*

@@ -18,6 +18,8 @@ public interface LoadBalancerService {
 
     LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException;
 
+    LoadBalancer getWithUserPages(Integer id) throws EntityNotFoundException;
+
     LoadBalancer getWithUserPages(Integer id, Integer accountId) throws EntityNotFoundException;
 
     List<AccountLoadBalancer> getAccountLoadBalancers(Integer accountId);

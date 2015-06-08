@@ -27,6 +27,7 @@ public class MessageDataContainer implements Serializable {
     private SslTermination previousSslTermination;
     private LoadBalancerStatus loadBalancerStatus;
     private CertificateMapping certificateMapping;
+    private Host moveHost;
 
     public List<Integer> getIds() {
         if(ids == null){
@@ -167,4 +168,8 @@ public class MessageDataContainer implements Serializable {
     public void setCertificateMapping(CertificateMapping certificateMapping) {
         this.certificateMapping = certificateMapping;
     }
+
+    public Host getMoveHost() { return moveHost; }
+
+    public void setMoveHost(Host moveHost) { this.moveHost = moveHost; }
 }
