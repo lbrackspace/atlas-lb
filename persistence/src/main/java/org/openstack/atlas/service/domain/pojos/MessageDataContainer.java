@@ -22,11 +22,12 @@ public class MessageDataContainer implements Serializable {
     private ZeusSslTermination zeusSslTermination;
     private Collection<LoadbalancerMeta> metadata;
     private LoadBalancer loadBalancer;
-    //for batch deletes
+    //for batch deletes AND batch changeHosts
     private List<Integer> ids;
     private SslTermination previousSslTermination;
     private LoadBalancerStatus loadBalancerStatus;
     private CertificateMapping certificateMapping;
+    private Host moveHost;
 
     public List<Integer> getIds() {
         if(ids == null){
@@ -167,4 +168,8 @@ public class MessageDataContainer implements Serializable {
     public void setCertificateMapping(CertificateMapping certificateMapping) {
         this.certificateMapping = certificateMapping;
     }
+
+    public Host getMoveHost() { return moveHost; }
+
+    public void setMoveHost(Host moveHost) { this.moveHost = moveHost; }
 }

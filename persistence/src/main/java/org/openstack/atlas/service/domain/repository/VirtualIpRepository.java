@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.repository;
 
-import javassist.tools.rmi.ObjectNotFoundException;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Range;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
@@ -159,18 +158,6 @@ public class VirtualIpRepository {
         }
         vips = query.getResultList();
         return vips;
-    }
-
-    //moved this to cluster repository
-    public Cluster getClusterById(Integer id) throws EntityNotFoundException {
-        List<Cluster> cl = entityManager.createQuery("from Cluster c where c.id = :id").setParameter("id",
-                id).getResultList();
-        if (cl.isEmpty()) {
-            String errMsg = String.format("Cannot access cluster {id=%d}", id);
-            LOG.warn(errMsg);
-            throw new EntityNotFoundException(errMsg);
-        }
-        return cl.get(0);
     }
 
     public List<LoadBalancer> getLbsByVirtualIp4Blocks(VirtualIpBlocks vblocks) throws IPStringException {

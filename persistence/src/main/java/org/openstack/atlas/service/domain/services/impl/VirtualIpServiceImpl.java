@@ -488,6 +488,20 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         virtualIpRepository.persist(obj);
     }
 
+    @Override
+    @Transactional
+    public void updateCluster(VirtualIp vip, Cluster cluster) {
+        vip.setCluster(cluster);
+        virtualIpRepository.merge(vip);
+    }
+
+    @Override
+    @Transactional
+    public void updateCluster(VirtualIpv6 vip, Cluster cluster) {
+        vip.setCluster(cluster);
+        virtualIpRepository.merge(vip);
+    }
+
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
             delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
