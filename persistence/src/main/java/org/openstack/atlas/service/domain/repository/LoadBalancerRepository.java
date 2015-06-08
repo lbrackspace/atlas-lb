@@ -161,6 +161,19 @@ public class LoadBalancerRepository {
         return lb;
     }
 
+    public LoadBalancer getByIdWithUserPages(Integer id) throws EntityNotFoundException {
+        LoadBalancer lb;
+        lb = getById(id);
+        try {
+            lb.getUserPages();
+        } catch (Exception e) {
+            UserPages up = new UserPages();
+            up.setErrorpage(null);
+            lb.setUserPages(up);
+        }
+        return lb;
+    }
+
     public void detach(Object entity) {
         entityManager.detach(entity);
     }

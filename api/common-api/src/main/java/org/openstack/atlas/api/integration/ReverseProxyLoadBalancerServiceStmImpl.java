@@ -130,11 +130,14 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
 
     @Override
     public void changeHostForLoadBalancer(LoadBalancer lb, Host newHost) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
-        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
+        LoadBalancerEndpointConfiguration configOld = getConfigbyLoadBalancerId(lb.getId());
+        LoadBalancerEndpointConfiguration configNew = getConfigHost(newHost);
+
         try {
-            reverseProxyLoadBalancerStmAdapter.changeHostForLoadBalancer(config, lb, newHost);
+            reverseProxyLoadBalancerStmAdapter.changeHostForLoadBalancer(configOld, configNew, lb);
         } catch (RollBackException af) {
-            checkAndSetIfRestEndPointBad(config, af);
+            checkAndSetIfRestEndPointBad(configOld, af);
+            checkAndSetIfRestEndPointBad(configNew, af);
             throw af;
         }
     }
