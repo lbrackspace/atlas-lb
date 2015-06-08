@@ -70,6 +70,8 @@ public interface VirtualIpService {
 
     public void persist(Object obj);
 
+    public void merge(Object obj);
+
     public List<VirtualIp> getVipsByClusterId(Integer clusterId);
 
     public Integer getNextVipOctet(Integer accountId);

@@ -241,8 +241,10 @@ public class ResourceTranslator {
         // Add new traffic ip groups for IPv6 vips
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : loadBalancer.getLoadBalancerJoinVip6Set()) {
             try {
+                VirtualIpv6 virtualIpv6 = loadBalancerJoinVip6ToAdd.getVirtualIp();
+                virtualIpv6.setCluster(config.getTrafficManagerHost().getCluster());
                 nameandgroup.put(ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVip6ToAdd.getVirtualIp()),
-                        translateTrafficIpGroupResource(config, loadBalancerJoinVip6ToAdd.getVirtualIp().getDerivedIpString(), isEnabled));
+                        translateTrafficIpGroupResource(config, virtualIpv6.getDerivedIpString(), isEnabled));
             } catch (IPStringConversionException e) {
                 //Generally means there is a missing value, wrap up the exception into general IRE;
                 throw new InsufficientRequestException(e);

@@ -336,6 +336,11 @@
                   parent="managementDependencyProvider"
                   scope="request"/>
         </property>
+        <property name="changeHostResource">
+            <bean class="org.openstack.atlas.api.mgmt.resources.ChangeHostResource"
+                  parent="managementDependencyProvider"
+                  scope="request"/>
+        </property>
         <property name="ticketsResource">
             <bean class="org.openstack.atlas.api.mgmt.resources.TicketsResource"
                   parent="managementDependencyProvider"
