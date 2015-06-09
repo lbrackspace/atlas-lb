@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_d9029b0a",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-09T00:46:14Z",
+      "side": 1,
+      "message": "Lines up with some of my other cleanup. I\u0027ll get this in.",
+      "parentUuid": "facab960_f9bd9f69",
+      "range": {
+        "startLine": 287,
+        "startChar": 29,
+        "endLine": 287,
+        "endChar": 36
+      },
+      "revId": "51d52f432af7da3d24db84364f06f865d659777e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_798a6fc0",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/integration/ReverseProxyLoadBalancerServiceStmImpl.java",
         "patchSetId": 6
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_5c0e7935",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/integration/ReverseProxyLoadBalancerServiceStmImpl.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-09T00:46:14Z",
+      "side": 1,
+      "message": "AH yes, this should also have gone away. I\u0027ll do another sweep.",
+      "parentUuid": "facab960_798a6fc0",
+      "range": {
+        "startLine": 443,
+        "startChar": 99,
+        "endLine": 443,
+        "endChar": 108
+      },
+      "revId": "51d52f432af7da3d24db84364f06f865d659777e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_998573af",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/integration/ReverseProxyLoadBalancerStmService.java",
         "patchSetId": 6
@@ -59,6 +107,30 @@
       "writtenOn": "2015-06-09T00:20:57Z",
       "side": 1,
       "message": "Do we need UserPages here anymore?",
+      "range": {
+        "startLine": 30,
+        "startChar": 92,
+        "endLine": 30,
+        "endChar": 101
+      },
+      "revId": "51d52f432af7da3d24db84364f06f865d659777e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_7c141d44",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/integration/ReverseProxyLoadBalancerStmService.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-09T00:46:14Z",
+      "side": 1,
+      "message": "Nope.",
+      "parentUuid": "facab960_998573af",
       "range": {
         "startLine": 30,
         "startChar": 92,
