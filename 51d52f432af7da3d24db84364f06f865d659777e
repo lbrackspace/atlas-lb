@@ -49,6 +49,23 @@
     },
     {
       "key": {
+        "uuid": "facab960_5c2599a9",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 519,
+      "author": {
+        "id": 1001869
+      },
+      "writtenOn": "2015-06-09T01:57:08Z",
+      "side": 1,
+      "message": "this is kind of weird and i am sure I am not understanding it correctly.  but if this get method already returns a value, then setting would just be redundant.  Unless of course this isn\u0027t a typical java getter in that its actually going to some external storage to retrieve.",
+      "revId": "51d52f432af7da3d24db84364f06f865d659777e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_798a6fc0",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/integration/ReverseProxyLoadBalancerServiceStmImpl.java",
         "patchSetId": 6
@@ -137,6 +154,23 @@
         "endLine": 30,
         "endChar": 101
       },
+      "revId": "51d52f432af7da3d24db84364f06f865d659777e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_dc47e949",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/LoadBalancer.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1001869
+      },
+      "writtenOn": "2015-06-09T01:57:08Z",
+      "side": 1,
+      "message": "this is an odd one.  Why not check if this.userPages \u003d\u003d null.  if thats too much why not just make a private method of isUserPagesNull or doesUserPagesExist, that does this null check.\n\nThen again I\u0027m sure its something I\u0027m missing.",
       "revId": "51d52f432af7da3d24db84364f06f865d659777e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
