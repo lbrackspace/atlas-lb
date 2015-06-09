@@ -66,6 +66,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_fc890d27",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 519,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-09T04:40:12Z",
+      "side": 1,
+      "message": "Yeah this needs to go away entirely, I didn\u0027t read the line very well, just did a find/replace, and this is what I ended up with. Good catch. :P",
+      "parentUuid": "facab960_5c2599a9",
+      "revId": "51d52f432af7da3d24db84364f06f865d659777e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_798a6fc0",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/integration/ReverseProxyLoadBalancerServiceStmImpl.java",
         "patchSetId": 6
@@ -171,6 +189,24 @@
       "writtenOn": "2015-06-09T01:57:08Z",
       "side": 1,
       "message": "this is an odd one.  Why not check if this.userPages \u003d\u003d null.  if thats too much why not just make a private method of isUserPagesNull or doesUserPagesExist, that does this null check.\n\nThen again I\u0027m sure its something I\u0027m missing.",
+      "revId": "51d52f432af7da3d24db84364f06f865d659777e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_bca065a0",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/LoadBalancer.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-09T04:40:12Z",
+      "side": 1,
+      "message": "Yeah, Spring/Hibernate bullshit. Have to jump through hoops to avoid ACTUALLY checking userPages, because it will try to lazyload and break everything.",
+      "parentUuid": "facab960_dc47e949",
       "revId": "51d52f432af7da3d24db84364f06f865d659777e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
