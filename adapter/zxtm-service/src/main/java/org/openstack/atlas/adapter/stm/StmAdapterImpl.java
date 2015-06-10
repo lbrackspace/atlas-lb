@@ -179,9 +179,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             if (vsType == VSType.REDIRECT_VS) {
                 getResources().deleteVirtualServer(client, vsName);
             } else {
-                getResources().deleteRateLimit(config, loadBalancer, vsName);
-                getResources().deleteHealthMonitor(client, vsName);
-                getResources().deleteProtection(client, vsName);
                 getResources().deleteVirtualServer(client, vsName);
             }
 
@@ -190,8 +187,17 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             }
         }
 
+        getResources().deleteRateLimit(config, loadBalancer, virtualServerName);
+        getResources().deleteHealthMonitor(client, virtualServerName);
+        getResources().deleteProtection(client, virtualServerName);
+
         try {
             client.deleteExtraFile(errorPageName);
+            // Also delete any other permutations for the time being
+            String virtualServerSecureName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+            client.deleteExtraFile(virtualServerSecureName);
+            String virtualServerRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+            client.deleteExtraFile(virtualServerRedirectName);
         } catch (Exception ignoredException) {}
 
         client.destroy();
@@ -278,8 +284,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipIds) throws InsufficientRequestException, StmRollBackException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         ResourceTranslator translator = ResourceTranslator.getNewResourceTranslator();
-        String vsName;
-        vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
         Map<String, TrafficIp> curTigMap = translator.getcTrafficIpGroups();
@@ -323,7 +328,6 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String tname = null;
         try {
             LOG.debug(String.format("Attempting to update traffic ip configuration and remove vips %s for virtual server %s", vipsToRemove, vsName));
-            tname = null;
             for (String tigname : tigsToRemove) {
                 tname = tigname;
                 LOG.debug(String.format("Removing virtual ip %s...", tigname));
@@ -410,7 +414,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         for (VSType vsType : vsNames.keySet()) {
             String vsName = vsNames.get(vsType);
 
-            if (vsType != VSType.REDIRECT_VS) {
+            if (vsType == VSType.REDIRECT_VS) {
+                rt.translateRedirectVirtualServerResource(config, vsName, loadBalancer);
+                getResources().updateVirtualServer(client, vsName, rt.getcRedirectVServer());
+            } else {
                 rt.translateVirtualServerResource(config, vsName, loadBalancer);
                 getResources().updateVirtualServer(client, vsName, rt.getcVServer());
             }
@@ -431,7 +438,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         for (VSType vsType : vsNames.keySet()) {
             String vsName = vsNames.get(vsType);
 
-            if (vsType != VSType.REDIRECT_VS) {
+            if (vsType == VSType.REDIRECT_VS) {
+                rt.translateRedirectVirtualServerResource(config, vsName, loadBalancer);
+                getResources().updateVirtualServer(client, vsName, rt.getcRedirectVServer());
+            } else {
                 rt.translateVirtualServerResource(config, vsName, loadBalancer);
                 getResources().updateVirtualServer(client, vsName, rt.getcVServer());
             }
@@ -463,11 +473,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         loadBalancer.setAccessLists(saveItems);
         String name = ZxtmNameBuilder.genVSName(loadBalancer);
         LOG.info(String.format("Deleting Access List on '%s'...", name));
-        if (loadBalancer.getConnectionLimit() != null || !loadBalancer.getAccessLists().isEmpty()) {
-            updateProtection(config, loadBalancer);
-        } else {
-            deleteProtection(config, loadBalancer);
-        }
+        updateProtection(config, loadBalancer);
         LOG.info(String.format("Successfully deleted Access List on '%s'.", name));
     }
 
@@ -486,17 +492,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         String name = ZxtmNameBuilder.genVSName(loadBalancer);
 
         LOG.info(String.format("Deleting Connection Throttling on '%s'...", name));
-        if (loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) {
-            ConnectionLimit nullConnectionLimit = new ConnectionLimit();
-            nullConnectionLimit.setRateInterval(1);
-            nullConnectionLimit.setMaxConnections(0);
-            nullConnectionLimit.setMinConnections(0);
-            nullConnectionLimit.setMaxConnectionRate(0);
-            loadBalancer.setConnectionLimit(nullConnectionLimit);
-            updateProtection(config, loadBalancer);
-        } else {
-            deleteProtection(config, loadBalancer);
-        }
+        ConnectionLimit nullConnectionLimit = new ConnectionLimit();
+        nullConnectionLimit.setRateInterval(1);
+        nullConnectionLimit.setMaxConnections(0);
+        nullConnectionLimit.setMinConnections(0);
+        nullConnectionLimit.setMaxConnectionRate(0);
+        loadBalancer.setConnectionLimit(nullConnectionLimit);
+        updateProtection(config, loadBalancer);
         LOG.info(String.format("Successfully deleted Connection Throttling on '%s'.", name));
     }
 
