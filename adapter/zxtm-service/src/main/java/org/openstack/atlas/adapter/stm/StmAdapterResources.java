@@ -694,7 +694,7 @@ public class StmAdapterResources {
 
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException {
-        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
         String errorFileName = ZxtmNameBuilder.generateErrorPageName(virtualServerName);
         Map<StmAdapterUtils.VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
 
@@ -719,6 +719,12 @@ public class StmAdapterResources {
 
             // Delete the old error file
             client.deleteExtraFile(errorFileName);
+            // Also delete any other permutations for the time being,
+            //  even though we don't create them, because they could exist from SOAP
+            String virtualServerSecureName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+            client.deleteExtraFile(virtualServerSecureName);
+            String virtualServerRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
+            client.deleteExtraFile(virtualServerRedirectName);
 
             LOG.info(String.format("Successfully deleted a custom error file for %s (%s)", virtualServerName, errorFileName));
         } catch (StingrayRestClientObjectNotFoundException onf) {

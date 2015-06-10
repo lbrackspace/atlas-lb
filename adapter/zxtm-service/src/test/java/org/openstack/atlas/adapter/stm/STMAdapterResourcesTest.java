@@ -762,6 +762,8 @@ public class STMAdapterResourcesTest extends STMTestBase {
 
             verify(adapterResources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
             verify(client).deleteExtraFile(errorFileName);
+            verify(client).deleteExtraFile(sslVsName);
+            verify(client).deleteExtraFile(redirectLoadBalancerName());
             verifyNoMoreInteractions(client);
         }
     }
