@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_6791d651",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 418,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-11T19:06:20Z",
+      "side": 1,
+      "message": "This doesn\u0027t block them -- changing this actually just UNBLOCKED redirects. Normal and SSL will both fall into the \"else\" block below, redirects are the only ones that are different and used to be ignored. Now all three types will have ProtectionClasses added, to match SOAP.",
+      "parentUuid": "facab960_8456d8d0",
+      "range": {
+        "startLine": 418,
+        "startChar": 0,
+        "endLine": 418,
+        "endChar": 16
+      },
+      "revId": "4992c9cec8ca537456376e2227aa211c74badeb5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_2446ec23",
         "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
         "patchSetId": 1
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_e78c0638",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 477,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-11T19:06:20Z",
+      "side": 1,
+      "message": "Technically it\u0027s just telling us that the named operation succeeded. It\u0027s a tiny bit misleading, but so would saying \"Access List Updated\" when we tried to run a delete command. It\u0027s just a log message, I\u0027ll probably leave it as-is. For all intents and purposes, any access list data *was* deleted, just the protection object was left around (which is shared with ConnectionLimits)...",
+      "parentUuid": "facab960_2446ec23",
+      "range": {
+        "startLine": 477,
+        "startChar": 0,
+        "endLine": 477,
+        "endChar": 8
+      },
+      "revId": "4992c9cec8ca537456376e2227aa211c74badeb5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_846df89a",
         "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterResources.java",
         "patchSetId": 1
@@ -59,6 +107,24 @@
       "writtenOn": "2015-06-11T16:20:14Z",
       "side": 1,
       "message": "should logging of success/failure of deleting the secure and redirect file names be done as well?",
+      "revId": "4992c9cec8ca537456376e2227aa211c74badeb5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_47a4d2a5",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterResources.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 728,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-11T19:06:20Z",
+      "side": 1,
+      "message": "Today I am rewriting all of the errorfile handling anyway, so this will change soon. I am literally making it *dumber*, and making it not share error pages anymore.",
+      "parentUuid": "facab960_846df89a",
       "revId": "4992c9cec8ca537456376e2227aa211c74badeb5",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
