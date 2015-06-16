@@ -78,14 +78,6 @@
 
     <bean name="fileWatchdogJob" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass" value="org.openstack.atlas.scheduler.FileWatchdogJob"/>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="jobStateService" value-ref="jobStateService"/>
-                <entry key="lzoService" value-ref="lzoService"/>
-                <entry key="loadBalancerRepository" value-ref="loadBalancerRepository"/>
-            </map>
-        </property>
-
     </bean>
 
     <bean id="runFileWatchdogTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
@@ -134,7 +126,6 @@
 
     <bean id="loggableJobExecution" class="org.openstack.atlas.scheduler.execution.LoggableJobExecution">
         <property name="jobStateRepository" ref="jobStateRepository"/>
-        <property name="lzoService" ref="lzoService" />
         <property name="conf" ref="conf"/>
     </bean>
     <bean id="fileWatchdogJobExecution"
@@ -172,14 +163,8 @@
           class="org.openstack.atlas.service.domain.repository.JobStateRepository"
           scope="prototype"/>
 
-    <bean id="lzoRepository"
-          class="org.openstack.atlas.service.domain.repository.LzoRepository"
-          scope="prototype"/>
-
     <bean id="jobStateService" class="org.openstack.atlas.service.domain.services.impl.JobStateServiceImpl" parent="baseService"/>
-    <bean id="lzoService" class="org.openstack.atlas.service.domain.services.impl.LzoServiceImpl" parent="baseService"/>
     <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
         <property name="jobStateRepository" ref="jobStateRepository" />
-        <property name="lzoRepository" ref="lzoRepository" />
     </bean>
 </beans>

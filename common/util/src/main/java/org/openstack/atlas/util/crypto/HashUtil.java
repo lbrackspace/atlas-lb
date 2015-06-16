@@ -1,6 +1,5 @@
 package org.openstack.atlas.util.crypto;
 
-import java.io.UnsupportedEncodingException;
 import org.openstack.atlas.util.converters.BitConverters;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -20,10 +19,6 @@ public class HashUtil {
         return out;
     }
 
-    public static byte[] sha1sum(String data) throws UnsupportedEncodingException, NoSuchAlgorithmException{
-        return sha1sum(data.getBytes("UTF=8"));
-    }
-
     public static byte[] sha1sum(byte[] data) throws NoSuchAlgorithmException {
         return sha1sum(data, null, null);
     }
@@ -38,9 +33,5 @@ public class HashUtil {
 
     public static String sha1sumHex(byte[] data) throws NoSuchAlgorithmException {
         return sha1sumHex(data, null, null);
-    }
-
-    public static String sha1sumHex(String data) throws UnsupportedEncodingException, NoSuchAlgorithmException{
-        return sha1sumHex(data.getBytes("UTF-8"),null,null);
     }
 }

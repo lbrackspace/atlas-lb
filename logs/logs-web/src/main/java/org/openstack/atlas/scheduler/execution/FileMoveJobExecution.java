@@ -14,6 +14,7 @@ import org.openstack.atlas.tools.QuartzSchedulerConfigs;
 import org.springframework.beans.factory.annotation.Required;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.openstack.atlas.config.HadoopLogsConfigs;
-import org.openstack.atlas.service.domain.entities.HdfsLzo;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.common.VerboseLogger;
@@ -98,7 +98,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
     private void deleteIfFinished(Map<String, JobState> fastValues) throws ExecutionException {
         for (Entry<String, JobState> inputEntry : fastValues.entrySet()) {
             if (inputEntry.getValue().getState() == JobStateVal.FINISHED) {
-                // new File(inputEntry.getKey()).delete(); // Deletion now handled by WatchDog
+                new File(inputEntry.getKey()).delete();
                 try {
                     String filename = inputEntry.getKey().substring(inputEntry.getKey().lastIndexOf("/") + 1);
 
@@ -113,7 +113,7 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                                 // this is a backup file that needs to be deleted,
                                 // its from the same hour as the regular file
                                 LOG.info("deleting file " + HadoopLogsConfigs.getBackupDir() + file);
-                                new File(HadoopLogsConfigs.getBackupDir() + file).delete(); // Still don't want files in /tmp
+                                new File(HadoopLogsConfigs.getBackupDir() + file).delete();
                             }
                         }
                     }
@@ -136,18 +136,17 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
 
 
         for (Entry<String, JobState> inputEntry : fileNameStateMap.entrySet()) {
-            // inputFile = /var/log/zxtm/rotated/2015061021-access_log.aggregated.lzo
             String inputFile = inputEntry.getKey();
-            String lzoName = StaticFileUtils.stripDirectoryFromFileName(inputFile);
-            Integer hourKey = hdfsUtils.getLzoHourKey(lzoName);
             JobState state = inputEntry.getValue();
             try {
                 LOG.info("putting file on the DFS at " + inputDir);
+
                 hdfsUtils.mkDirs(inputDir, false);
                 // The files will be the same, so we have to place it as the
                 // named file, so we need a n
                 String placedFile = inputDir + "/" + offset + "-" + StaticFileUtils.stripDirectoryFromFileName(inputFile);
                 vlog.log(String.format("copying file %s -> to Hdfs %s", inputFile, placedFile));
+
                 //utils.placeFileOnDFS(inputFile, placedFile);
                 //if its a LZO file, index it
                 if (placedFile.endsWith(".lzo")) {
@@ -156,26 +155,22 @@ public class FileMoveJobExecution extends LoggableJobExecution implements Quartz
                     FSDataOutputStream lzoOS = hdfsUtils.openHdfsOutputFile(placedFile, false, true);
                     FSDataOutputStream idxOS = hdfsUtils.openHdfsOutputFile(placedFile + ".index", false, true);
                     hdfsUtils.recompressAndIndexLzoStream(lzoIS, lzoOS, idxOS, null);
-                    StaticFileUtils.close(idxOS);
-                    StaticFileUtils.close(lzoOS);
-                    StaticFileUtils.close(lzoIS);
+                    idxOS.close();
+                    lzoOS.close();
+                    lzoIS.close();
                 } else {
                     vlog.log(String.format("file %s is not compressed: Calling compression and indexer functions", inputFile));
                     FSDataInputStream uncompressedIS = hdfsUtils.openHdfsInputFile(inputFile, true);
                     FSDataOutputStream lzoOS = hdfsUtils.openHdfsOutputFile(placedFile + ".lzo", false, true);
                     FSDataOutputStream idxOS = hdfsUtils.openHdfsOutputFile(placedFile + ".lzo.index", false, true);
                     hdfsUtils.compressAndIndexStreamToLzo(uncompressedIS, lzoOS, lzoOS, hdfsUtils.getBufferSize(), null);
-                    StaticFileUtils.close(idxOS);
-                    StaticFileUtils.close(lzoOS);
-                    StaticFileUtils.close(uncompressedIS);
+                    idxOS.close();
+                    lzoOS.close();
+                    uncompressedIS.close();
                 }
                 offset++;
+
                 finishJob(state);
-                if (hourKey != null) {
-                    // File finished uploading to HDFS. mark it for deletion
-                    LOG.info(System.out.printf("Log file for hour %d finished HDFS upload", hourKey));
-                    lzoService.setStateFlagsFalse(hourKey, HdfsLzo.NEEDS_HDFS);
-                }
 
             } catch (Exception e) {
                 LOG.error(e);

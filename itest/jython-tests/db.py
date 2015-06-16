@@ -4,15 +4,11 @@ import org.openstack.atlas.util.itest.hibernate.HuApp as HuApp
 import org.openstack.atlas.util.crypto.CryptoUtil as CryptoUtil
 
 import utils
-import sys
-import os
 
 app = HuApp()
 
-def printf(format,*args): sys.stdout.write(format%args)
-
-def fprintf(fp,format,*args): fp.write(format%args)
-
+fprintf = utils.fprintf
+printf = utils.printf
 
 def getDb(*args):
     global app
@@ -61,8 +57,4 @@ def buildClassImportFile(outfile,infile):
     for className in HibernateDbConf.getHibernateClasses(infile):
         fp.write("import %s as %s\n"%(className,className.split(".")[-1]))
     fp.close()
-
-def save_list(obj_list):
-    for obj in obj_list:
-        app.save(obj)
 

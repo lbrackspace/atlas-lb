@@ -1062,7 +1062,7 @@ public class FilesClient
 	    				throw new FilesContainerExistsException(name, response.getResponseHeaders(), response.getStatusLine());
 	    			}
 	    			else {
-	    				throw new FilesException("Unexpected Response: " + response.getResponseBodyAsString(), response.getResponseHeaders(), response.getStatusLine());
+	    				throw new FilesException("Unexpected Response", response.getResponseHeaders(), response.getStatusLine());
 	    			}
     			}
     			finally {
@@ -1192,7 +1192,7 @@ public class FilesClient
     					throw new FilesAuthorizationException("User not Authorized!",response.getResponseHeaders(), response.getStatusLine());
     				}
     				else {
-    					throw new FilesException("Unexpected Server Response: "+response.getResponseBodyAsString(),response.getResponseHeaders(), response.getStatusLine());
+    					throw new FilesException("Unexpected Server Response",response.getResponseHeaders(), response.getStatusLine());
     				}
     			}
     			finally	{

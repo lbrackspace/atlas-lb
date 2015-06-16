@@ -30,10 +30,8 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACT
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DELETED;
 
 public class BaseService {
-
     protected final Log LOG = LogFactory.getLog(BaseService.class);
-    @Autowired
-    protected LzoRepository lzoRepository;
+
     @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
     @Autowired
@@ -259,9 +257,5 @@ public class BaseService {
             }
         }
         return null;
-    }
-
-    public void setLzoRepository(LzoRepository lzoRepository) {
-        this.lzoRepository = lzoRepository;
     }
 }

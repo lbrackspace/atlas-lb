@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+
+import org.openstack.atlas.util.ca.primitives.RsaConst as RsaConst
+import org.openstack.atlas.util.ca.primitives.RsaPair as RsaPair
+import org.openstack.atlas.util.ca.RSAKeyUtils as RSAKeyUtils
+import org.openstack.atlas.util.ca.CertUtils as CertUtils
+import org.openstack.atlas.util.ca.PemUtils as PemUtils
+import org.openstack.atlas.util.ca.CsrUtils as CsrUtils
+import java.lang.String as String
+
+import simplejson as json
+import SimpleXMLRPCServer
+import traceback
+import sys
+import os
+
+import xmlrpclib
+import sys
+import os
+
+baseSubj = {
+         "C":   "US",
+         "ST":  "Texas",
+         "L":   "San Antonio",
+         "O":   "RackExp",
+         "OU":  "RackExp Organization",
+         }
+
+s = xmlrpclib.ServerProxy("http://10.6.61.86:12345")
+
+caKey = open("ca.key","r").read()
+caCrt = open("ca.crt","r").read()
+
+subj = dict(baseSubj)
+subj["CN"]="test.rackexp.org"
+
+(key,csr,crt) = s.newCrt(1024,subj,caKey,caCrt)
+
+
+
+
+
+from sslServer import *
+subj = {
+        "C":   "US",
+        "ST":  "Texas",
+        "L":   "San Antonio",
+        "O":   "RackExp",
+        "OU":  "RackExp Organization",
+        "CN":  "test.rackexp.org"
+        }
+
+caKeyStr = open("ca.key","r").read()
+caCrtStr = open("ca.crt","r").read()
+
+bits=1024
+certainity = 32
+
+
+caCrt = fromPemStr(caCrtStr)
+caKey = RsaPair(fromPemStr(caKeyStr))
+
+key = RSAKeyUtils.genRSAPair(bits,certainity)
+csr = CsrUtils.newCsr(subjStr(subj),key,False)
+crt = CertUtils.signCSR(csr,caKey,caCrt,730,None)
+
+subjname = subjStr(subj)
+
+(key,csr,crt) = newCrtBytes(1024,subjname,caKey,caCrt,certainity=32)

@@ -6,7 +6,6 @@ import org.hibernate.Transaction;
 import org.openstack.atlas.util.itest.hibernate.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.openstack.atlas.util.debug.Debug;
 
 public class HuApp {
 
@@ -73,21 +72,20 @@ public class HuApp {
         return hu.getInstance(db).getCurrentSession();
     }
 
-    public void save(Object obj) {
+    public void addObj(Object obj) {
         Session session;
         Class cls;
 
         cls = obj.getClass();
         session = hu.getInstance(db).getCurrentSession();
-        //session.beginTransaction();
         try {
+            //session.beginTransaction();
             session.save(obj);
-        } catch (Exception ex) {
-            System.out.printf("Exception %s\n", Debug.getExtendedStackTrace(ex));
+            //session.flush();
+            //session.getTransaction().commit();
+        } catch (Exception e) {
+            session.getTransaction().rollback();
         }
-        //session.flush();
-        //session.getTransaction().commit();
-
 
     }
 

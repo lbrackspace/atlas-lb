@@ -1,0 +1,15 @@
+#!/usr/bin/env jython
+	
+import util
+util.setConfig("stag.json")
+from util import *
+
+begin()
+
+lbIds = loadbalancerWithPTREvents()
+
+printf("\n\n")
+for lbId in lbIds:
+    printf("%s\n",lbId)
+
+

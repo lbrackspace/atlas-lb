@@ -8,6 +8,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.Path;
+import org.openstack.atlas.config.LbLogsConfiguration;
+import org.openstack.atlas.config.LbLogsConfigurationKeys;
 import org.openstack.atlas.logs.hadoop.jobs.HadoopJob;
 import org.openstack.atlas.logs.hadoop.util.HdfsUtils;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
@@ -37,9 +39,6 @@ public class HadoopLogsConfigs {
 
     static {
         resetConfigs(null);
-    }
-
-    public HadoopLogsConfigs() {
     }
 
     public static void resetConfigs(String filePath) {
@@ -237,9 +236,5 @@ public class HadoopLogsConfigs {
 
     public static int getHdfsBlockSize() {
         return hdfsBlockSize;
-    }
-
-    public static HadoopLogsConfigs getInstance() {
-        return new HadoopLogsConfigs();
     }
 }

@@ -1,0 +1,13 @@
+#!/usr/bin/env jython
+
+SEEDFILE="utils.seed"
+
+fp = open("/dev/random","r")
+seed = fp.read(32)
+fp.close()
+
+fp = open("util.seed","w")
+fp.write(seed)
+fp.close()
+
+

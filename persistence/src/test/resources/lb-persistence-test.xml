@@ -14,8 +14,6 @@
         <class>org.openstack.atlas.service.domain.entities.Entity</class>
         <class>org.openstack.atlas.service.domain.entities.HealthMonitor</class>
         <class>org.openstack.atlas.service.domain.entities.HealthMonitorType</class>
-        <class>org.openstack.atlas.service.domain.entities.HdfsLzo</class>
-        <class>org.openstack.atlas.service.domain.entities.CloudFilesLzo</class>
         <class>org.openstack.atlas.service.domain.entities.Host</class>
         <class>org.openstack.atlas.service.domain.entities.HostStatus</class>
         <class>org.openstack.atlas.service.domain.entities.Backup</class>

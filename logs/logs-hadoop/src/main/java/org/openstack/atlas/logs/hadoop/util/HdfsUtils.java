@@ -49,7 +49,6 @@ import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputKey;
 import org.openstack.atlas.logs.hadoop.writables.LogReducerOutputValue;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
-import org.apache.hadoop.hdfs.protocol.DatanodeInfo.AdminStates;
 
 public class HdfsUtils {
 
@@ -67,6 +66,7 @@ public class HdfsUtils {
     protected String user;
     protected FileSystem remoteFileSystem;
     protected FileSystem localFileSystem;
+    protected static int recompressBufferSize = 8 * 1024 * 1024;
 
     public HdfsUtils() {
     }
@@ -74,7 +74,7 @@ public class HdfsUtils {
     @Override
     public String toString() {
         short repCount = (short) HadoopLogsConfigs.getReplicationCount();
-        long blockSize = (long) HadoopLogsConfigs.getHdfsBlockSize() * 1024L * 1024L;
+        long blockSize = (long) HadoopLogsConfigs.getHdfsBlockSize() * 1024L*1024L;
         return "HdfsUtils{bufferSize=" + bufferSize + ", user=" + user
                 + ", repCount=" + repCount + ", blockSize="
                 + blockSize + ", nameNode=" + getNameNode() + "}";
@@ -192,7 +192,7 @@ public class HdfsUtils {
         codec.setConf(codecConf);
         CompressionInputStream cis = codec.createInputStream(lzoInputStream);
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
-        StaticFileUtils.copyStreams(cis, cos, ps, bufferSize);
+        StaticFileUtils.copyStreams(cis, cos, ps, recompressBufferSize);
         cis.close();
         cos.close();
     }
@@ -218,20 +218,6 @@ public class HdfsUtils {
         CompressionOutputStream cos = codec.createIndexedOutputStream(lzoOutputStream, new DataOutputStream(lzoIndexedOutputStream));
         StaticFileUtils.copyStreams(uncompressedInputStream, cos, ps, bufferSize);
         cos.close();
-    }
-
-    public Integer getLzoHourKey(String lzoPath) {
-        String lzoName = StaticFileUtils.stripDirectoryFromFileName(lzoPath);
-        Matcher m = hdfsLzoPatternPre.matcher(lzoName);
-        if (m.find()) {
-            try {
-                return Integer.parseInt(m.group(1));
-            } catch (ArithmeticException ex) {
-                return null;
-            }
-        } else {
-            return null;
-        }
     }
 
     public List<FileStatus> listHdfsLzoStatus(String dateHourSearch) {
@@ -508,7 +494,7 @@ public class HdfsUtils {
 
     public FSDataOutputStream openHdfsOutputFile(Path path, boolean useLocal, boolean allowOveride) throws IOException {
         short repCount = (short) HadoopLogsConfigs.getReplicationCount();
-        long blockSize = (long) HadoopLogsConfigs.getHdfsBlockSize() * 1024L * 1024L;
+        long blockSize = (long) HadoopLogsConfigs.getHdfsBlockSize() * 1024L*1024L;
         if (useLocal) {
             return localFileSystem.create(path, allowOveride, bufferSize, repCount, blockSize);
         } else {

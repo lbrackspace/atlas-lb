@@ -9,10 +9,8 @@ import org.openstack.atlas.service.domain.repository.AccountLimitRepository;
 import org.openstack.atlas.service.domain.repository.ClusterRepository;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import org.openstack.atlas.service.domain.repository.LzoRepository;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
-import org.openstack.atlas.service.domain.services.LzoService;
 import org.openstack.atlas.service.domain.services.VirtualIpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,12 +35,6 @@ public class Base {
     protected AccountLimitRepository accountLimitRepository;
     @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
-
-    @Autowired
-    protected LzoRepository lzoRepository;
-
-    @Autowired
-    protected LzoService lzoService;
 
     protected LoadBalancer loadBalancer;
     protected Integer accountId = 1234;

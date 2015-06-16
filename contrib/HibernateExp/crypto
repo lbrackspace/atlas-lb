@@ -1,0 +1,50 @@
+#!/usr/bin/env jython
+
+import org.hexp.hibernateexp.util.FileUtils as FileUtils
+import org.hexp.hibernateexp.util.Aes as Aes
+import traceback
+import sys
+import os
+import java.lang.String as String
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+SEEDFILE = "util.seed"
+
+if not os.path.isfile(SEEDFILE):
+    printf("Please run the seedKey script first")
+
+seed = FileUtils.readFileToBytes(SEEDFILE)
+aes = Aes(seed)
+
+
+def usage(prog):
+    printf("usage is %s <encrypt|decrypt> <ptext|ctext>\n",prog)
+    printf("\n")
+    printf("Encrypt or decrypt the password for cluster\n")
+
+if __name__=="__main__":
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv)<3:
+        usage(prog)
+        sys.exit()
+
+    
+    operation = sys.argv[1].lower()
+    val = sys.argv[2]
+
+    printf("\n\n\n")
+
+    if operation == "encrypt":
+        ctext = "%s"%aes.encryptString(val)
+        printf("encrypted = \"%s\"\n",ctext)
+
+    elif operation == "decrypt":
+        ptext = aes.decryptString(val)
+        printf("decrypted = \"%s\"\n",ptext)
+    else:
+        printf("1st parameter should be encrypt or decrypt\n")
+        printf("\n")
+        usage(prog)
+        sys.exit()
+

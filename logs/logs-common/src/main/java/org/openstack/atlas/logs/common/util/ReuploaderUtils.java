@@ -103,70 +103,11 @@ public class ReuploaderUtils {
         for (CacheZipDirInfo cacheZipDirInfo : cacheZipDirInfoList) {
             zipsList.addAll(cacheZipDirInfo.getZips());
         }
-        reuploadFiles(zipsList);
-    }
-
-    public List<CacheZipInfo> getAllZipsList() {
-        int nFiles = 0;
-        List<CacheZipDirInfo> cacheZipDirInfoList = getLocalZipDirInfo(getCurrentHourKeyMinusHours(hoursToStartOn));
-        List<CacheZipInfo> zipsList = new ArrayList<CacheZipInfo>();
-        for (CacheZipDirInfo cacheZipDirInfo : cacheZipDirInfoList) {
-            for (CacheZipInfo zipFile : cacheZipDirInfo.getZips()) {
-                zipsList.add(zipFile);
-                nFiles++;
-            }
-        }
-        return zipsList;
-    }
-
-    public void reuploadLids(Set<Integer> lids) {
-        List<CacheZipDirInfo> cacheZipDirInfoList = getLocalZipDirInfo(getCurrentHourKeyMinusHours(hoursToStartOn));
-        List<CacheZipInfo> zipsList = new ArrayList<CacheZipInfo>();
-        for (CacheZipDirInfo cacheZipDirInfo : cacheZipDirInfoList) {
-            for (CacheZipInfo zipFile : cacheZipDirInfo.getZips()) {
-                int lid = zipFile.getLoadbalancerId();
-                if (lids.contains(lid)) {
-                    zipsList.add(zipFile);
-                    LOG.warn(String.format("Adding log file %s\n", zipFile.getZipFile()));
-                }
-            }
-        }
-        reuploadFiles(zipsList);
-    }
-
-    public void reuploadHours(Set<Long> hours) {
-        List<CacheZipDirInfo> cacheZipDirInfoList = getLocalZipDirInfo(getCurrentHourKeyMinusHours(hoursToStartOn));
-        List<CacheZipInfo> zipsList = new ArrayList<CacheZipInfo>();
-        for (CacheZipDirInfo cacheZipDirInfo : cacheZipDirInfoList) {
-
-            for (CacheZipInfo zipFile : cacheZipDirInfo.getZips()) {
-                long hour = zipFile.getHourKey();
-                if (hours.contains(hour)) {
-                    zipsList.add(zipFile);
-                    LOG.warn(String.format("Adding log file %s\n", zipFile.getZipFile()));
-                }
-            }
-        }
-        reuploadFiles(zipsList);
-    }
-
-    public void reuploadAids(Set<Integer> aids) {
-        List<CacheZipDirInfo> cacheZipDirInfoList = getLocalZipDirInfo(getCurrentHourKeyMinusHours(hoursToStartOn));
-        List<CacheZipInfo> zipsList = new ArrayList<CacheZipInfo>();
-        for (CacheZipDirInfo cacheZipDirInfo : cacheZipDirInfoList) {
-            for (CacheZipInfo zipFile : cacheZipDirInfo.getZips()) {
-                int aid = zipFile.getAccountId();
-                if (aids.contains(aid)) {
-                    zipsList.add(zipFile);
-                    LOG.warn(String.format("Adding log file %s\n", zipFile.getZipFile()));
-                }
-            }
-        }
-        reuploadFiles(zipsList);
-    }
-
-    public void reuploadFiles(List<CacheZipInfo> zipsList) {
+        // Sort by date,accountId, and lastly Loadbalancer Id.
+        Collections.sort(zipsList, new CacheZipInfo.ZipComparator());
+        int currAccountId = -1;
         LoadBalancerIdAndName lb;
+
 
         int zipListSize = zipsList.size();
         for (int i = 0; i < zipListSize; i++) {
@@ -202,7 +143,7 @@ public class ReuploaderUtils {
                 }
                 removeLock(zipFile.getZipFile());
             } catch (Exception ex) {
-                LOG.error(String.format("%s:Error uploading file %s :( %s", Debug.threadName(), zipFile.getZipFile(),Debug.getExtendedStackTrace(ex)), ex);
+                LOG.error(String.format("%s:Error uploading file %s :(", Debug.threadName(), zipFile.getZipFile()), ex);
                 removeLock(zipFile.getZipFile());
             }
         }
@@ -376,7 +317,7 @@ public class ReuploaderUtils {
                 throw new IOException(msg);
             }
         } catch (Exception ex) {
-            String msg = String.format("Warning listing directory %s: Exception: %s", dir, Debug.getExtendedStackTrace(ex));
+            String msg = String.format("Warning listing directory %s: Exception: %s", Debug.getExtendedStackTrace(ex));
             LOG.error(msg, ex);
             return numericDirectories;
         }

@@ -11,18 +11,61 @@ import org.joda.time.DateTime;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.util.itest.hibernate.HuApp;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
-import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class CommonItestStatic {
 
     public static final String HDUNAME = "HADOOP_USER_NAME";
 
     public static boolean inputStream(BufferedReader stdin, String val) throws IOException {
-        String[] resp = StaticStringUtils.stripBlankArgs(stdin.readLine());
+        String[] resp = stripBlankArgs(stdin.readLine());
         return (resp.length > 0 && resp[0].equalsIgnoreCase(val));
     }
 
- 
+    public static String[] stripBlankArgs(String line) {
+        int nargs = 0;
+        int i;
+        int j;
+        String[] argsIn = line.replace("\r", "").replace("\n", "").split(" ");
+        for (i = 0; i < argsIn.length; i++) {
+            if (argsIn[i].length() > 0) {
+                nargs++;
+            }
+        }
+        String[] argsOut = new String[nargs];
+        j = 0;
+        for (i = 0; i < argsIn.length; i++) {
+            if (argsIn[i].length() > 0) {
+                argsOut[j] = argsIn[i];
+                j++;
+            }
+        }
+        return argsOut;
+    }
+
+    public static Map<String, String> argMapper(String[] args) {
+        Map<String, String> argMap = new HashMap<String, String>();
+        for (String arg : args) {
+            String[] kwArg = arg.split("=");
+            if (kwArg.length == 2) {
+                argMap.put(kwArg[0], kwArg[1]);
+            }
+        }
+        return argMap;
+    }
+
+    public static String[] stripKwArgs(String[] args) {
+        String[] argsOut;
+        List<String> filteredArgs = new ArrayList<String>();
+        for (int i = 0; i < args.length; i++) {
+            String arg = args[i];
+            if (arg.split("=").length >= 2) {
+                continue;
+            }
+            filteredArgs.add(arg);
+        }
+        argsOut = filteredArgs.toArray(new String[filteredArgs.size()]);
+        return argsOut;
+    }
 
     public static Map<Integer, LoadBalancerIdAndName> getLbIdMap(HuApp huApp) {
         Map<Integer, LoadBalancerIdAndName> map = new HashMap<Integer, LoadBalancerIdAndName>();

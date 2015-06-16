@@ -14,7 +14,6 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import javax.activation.FileTypeMap;
 import java.io.File;
 import java.util.HashMap;
-import org.openstack.atlas.util.debug.Debug;
 
 public class CloudFilesDaoImpl implements CloudFilesDao {
 
@@ -38,7 +37,7 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
         }
 
         if (user.isEnabled()) {
-            client = new FilesClient(user.getUsername(), user.getAuthKey(), user.getCloudFilesAuthUrl(), null, 20000);
+            client = new FilesClient(user.getUsername(), user.getAuthKey(), user.getCloudFilesAuthUrl(), null, 5000);
             client.setAuthenticationURL(user.getCloudFilesAuthUrl());
 
             String fullFilename = localFileName.replaceAll("\\.\\./", "./");
@@ -65,8 +64,7 @@ public class CloudFilesDaoImpl implements CloudFilesDao {
                         throw new FilesException("Could not add file [" + localFileName + "]", null);
                     }
                 } catch (FilesNotFoundException e) {
-                    //LOG.warn(String.format("Exception:%s\n",Debug.getExtendedStackTrace(e)));
-                    // No need to upload
+                    //file does not exist, good.
                 }
                 File file = new File(fullFilename);
                 String contentType = fileMap.getContentType(file);
