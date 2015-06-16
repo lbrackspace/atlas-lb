@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_bb33eba9",
+        "filename": "adapter/itest-hibernate-adapter/src/main/java/org/openstack/atlas/util/itest/hibernate/HuApp.java",
+        "patchSetId": 20
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-16T19:18:40Z",
+      "side": 1,
+      "message": "Ah, whoops, missed that. I tried to ignore pretty much any of the itest/jython files, sorry.",
+      "parentUuid": "facab960_1b74d766",
+      "revId": "3935f65458ff84cbb7c873bb5106daa8394dd117",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_9b39c7a6",
         "filename": "logs/logs-hdfs-cli/src/main/java/org/openstack/atlas/logs/itest/HdfsCli.java",
         "patchSetId": 20
