@@ -2,4 +2,4 @@
 host=review.gerrithub.io
 port=29418
 project=lbrackspace/atlas-lb
-defaultbranch=1.24-candidate
+defaultbranch=1.25-candidate
