@@ -112,7 +112,7 @@ public class SyncListener extends BaseListener {
 
                 if (isRestAdapter()) {
                     LOG.debug(String.format("Updating loadbalancer: %s in STM...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, dbLoadBalancer);
+                    reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, dbLoadBalancer, loadBalancerService.getUserPages(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId()));
                     LOG.debug(String.format("Successfully Updated loadbalancer: %s in STM...", dbLoadBalancer.getId()));
                 } else {
                     LOG.debug(String.format("Syncing loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));

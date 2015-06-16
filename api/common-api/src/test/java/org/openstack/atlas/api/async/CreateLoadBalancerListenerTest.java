@@ -189,7 +189,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
     @Test
     public void testCreateValidLoadBalancer() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(loadBalancerService.update(lb)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
@@ -221,7 +221,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception { //This is named oddly for this specific test, but left it alone for consistency
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         createLoadBalancerListener.doOnMessage(objectMessage);
 
@@ -233,7 +233,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
     public void testCreateInvalidLoadBalancer() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).createLoadBalancer(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 

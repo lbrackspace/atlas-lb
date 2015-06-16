@@ -24,6 +24,7 @@ import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
 import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
+import org.rackspace.stingray.client.traffic.ip.TrafficIpIpMapping;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.*;
@@ -58,7 +59,7 @@ public class ResourceTranslator {
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert) throws InsufficientRequestException {
         //Order matters when translating the entire entity.
-        if (loadBalancer.getHealthMonitor() != null) translateMonitorResource(loadBalancer);
+        if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
 
         translateTrafficIpGroupsResource(config, loadBalancer, true);
@@ -75,7 +76,7 @@ public class ResourceTranslator {
     }
 
     //This could probably be trimmed down a bit
-    public VirtualServer translateRedirectVirtualServerResource(LoadBalancerEndpointConfiguration config, String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
+    private VirtualServer translateRedirectVirtualServerResource(LoadBalancerEndpointConfiguration config, String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
         VirtualServerBasic basic = new VirtualServerBasic();
         VirtualServerSsl ssl = new VirtualServerSsl();
         VirtualServerProperties properties = new VirtualServerProperties();
@@ -99,14 +100,7 @@ public class ResourceTranslator {
         log.setEnabled(false);
         properties.setLog(log);
 
-        //error file settings
-        if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
-            // if userPages is null, just leave the ce object alone and it should use the default page
-            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genVSName(loadBalancer)));
-        } else {
-            //Doesnt look like thats the case for some reason :( may be bug in STM -- need to reverify this
-            ce.setError_file("Default");
-        }
+        ce.setError_file("Default");
         properties.setConnection_errors(ce);
 
         //trafficscript or rule settings
@@ -158,8 +152,6 @@ public class ResourceTranslator {
         //protection class settings
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
             basic.setProtection_class(ZxtmNameBuilder.genVSName(loadBalancer));
-        } else {
-            basic.setProtection_class("");
         }
 
         //connection log settings
@@ -192,8 +184,7 @@ public class ResourceTranslator {
         }
 
         //error file settings
-        if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
-            // if userPages is null, just leave the ce object alone and it should use the default page
+        if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) { // if userPages is null, just leave the ce object alone and it should use the default page
             ce.setError_file(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genVSName(loadBalancer)));
         } else {
             //Doesnt look like thats the case for some reason :( may be bug in STM -- need to reverify this
@@ -427,26 +418,16 @@ public class ResourceTranslator {
             Integer maxConnections = limits.getMaxConnections();
             if (maxConnections == null) maxConnections = 0;
             limiting.setMax_1_connections(maxConnections);
-
-            /* Zeus bug requires us to set per-process to false and ignore most of these settings */
-            basic.setPer_process_connection_count(false);
-            limiting.setMin_connections(0);
-            limiting.setRate_timer(1);
-            limiting.setMax_connection_rate(0);
-            limiting.setMax_10_connections(0);
-            //limiting.setMin_connections(limits.getMinConnections());
-            //limiting.setRate_timer(limits.getRateInterval());
-            //limiting.setMax_connection_rate(limits.getMaxConnectionRate());
-            //limiting.setMax_10_connections(maxConnections * 10);
+            limiting.setMax_10_connections(maxConnections * 10);
+            limiting.setMax_connection_rate(limits.getMaxConnectionRate());
+            limiting.setMin_connections(limits.getMinConnections());
+            limiting.setRate_timer(limits.getRateInterval());
         } else {
+            limiting.setMax_10_connections(0);
             limiting.setMax_1_connections(0);
-
-            /* Zeus bug requires us to set per-process to false */
-            basic.setPer_process_connection_count(false);
+            limiting.setMax_connection_rate(0);
             limiting.setMin_connections(0);
             limiting.setRate_timer(1);
-            limiting.setMax_connection_rate(0);
-            limiting.setMax_10_connections(0);
         }
         properties.setConnection_limiting(limiting);
 

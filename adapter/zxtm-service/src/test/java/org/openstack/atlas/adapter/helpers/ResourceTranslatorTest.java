@@ -220,7 +220,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(vsName, createdBasic.getProtection_class());
             pathOne();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
-            Assert.assertEquals("", createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertNull(createdServer.getProperties().getBasic().getProtection_class());
             pathTwo();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             Assert.assertEquals(vsName, createdServer.getProperties().getBasic().getProtection_class());
@@ -230,7 +230,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             pathFour();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             //TODO:  Intern will handle this bug
-            Assert.assertEquals("", createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertNull(createdServer.getProperties().getBasic().getProtection_class());
 
         }
     }
@@ -909,14 +909,9 @@ public class ResourceTranslatorTest extends STMTestBase {
             ProtectionConnectionLimiting createdLimiting = createdProtection.getProperties().getConnection_limiting();
             Assert.assertNotNull(createdLimiting);
             Assert.assertEquals(maxConnections, (int) createdLimiting.getMax_1_connections());
-            /* Due to a Zeus bug, this all has to be ignored and set to static values */
-            // Assert.assertEquals(maxRateInterval, (int) createdLimiting.getMax_connection_rate());
-            // Assert.assertEquals(minConnections, (int) createdLimiting.getMin_connections());
-            // Assert.assertEquals(rateTiming, (int) createdLimiting.getRate_timer());
-            Assert.assertFalse(createdProtection.getProperties().getBasic().getPer_process_connection_count());
-            Assert.assertEquals(0, (int) createdLimiting.getMax_connection_rate());
-            Assert.assertEquals(0, (int) createdLimiting.getMin_connections());
-            Assert.assertEquals(1, (int) createdLimiting.getRate_timer());
+            Assert.assertEquals(maxRateInterval, (int) createdLimiting.getMax_connection_rate());
+            Assert.assertEquals(minConnections, (int) createdLimiting.getMin_connections());
+            Assert.assertEquals(rateTiming, (int) createdLimiting.getRate_timer());
             ProtectionAccessRestriction createdRestriction = createdProtection.getProperties().getAccess_restriction();
             Assert.assertNotNull(createdRestriction);
             Assert.assertTrue(createdRestriction.getAllowed().contains(accessListAllowed.getIpAddress()));

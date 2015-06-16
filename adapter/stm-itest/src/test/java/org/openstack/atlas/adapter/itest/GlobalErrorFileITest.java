@@ -6,13 +6,16 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
 import java.io.File;
+import java.rmi.RemoteException;
 import java.util.Scanner;
 
 public class GlobalErrorFileITest extends STMTestBase {
@@ -94,7 +97,7 @@ public class GlobalErrorFileITest extends STMTestBase {
 
         Assert.assertNotNull(errorFile);
 
-        stmAdapter.deleteErrorFile(config, lb);
+        stmAdapter.deleteErrorFile(config, lb, new UserPages());
         String errorFileNameLocal = stmClient.getVirtualServer(vsName).getProperties().getConnection_errors().getError_file();
         Assert.assertEquals("Default", errorFileNameLocal);
         stmClient.getExtraFile(errorFileName); //expect ONFException

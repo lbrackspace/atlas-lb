@@ -28,7 +28,7 @@ public class UpdateContentCachingListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.getWithUserPages(queLb.getId(), queLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queLb.getId(), queLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queLb.getId());
             LOG.error(alertDescription, enfe);
@@ -40,7 +40,7 @@ public class UpdateContentCachingListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Updating content caching for load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queLb);
+                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queLb, loadBalancerService.getUserPages(queLb.getId(), queLb.getAccountId()));
                 LOG.debug(String.format("Successfully updated content caching for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Updating connection throttle for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));

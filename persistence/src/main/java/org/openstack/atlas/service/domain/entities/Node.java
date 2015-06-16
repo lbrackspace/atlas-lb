@@ -134,7 +134,7 @@ public class Node extends Entity implements Serializable {
         sb.append(String.format("id=%s, ", vorn(this.getId())));
         sb.append(String.format("loadbalancer_id=%s, ", lid));
         sb.append(String.format("port=%s, ", vorn(this.getPort())));
-        sb.append(String.format("weight=%s, ", vorn(this.getWeight())));
+        sb.append(String.format("wieght=%s, ", vorn(this.getWeight())));
         sb.append(String.format("condition=%s, ", vorn(this.getCondition())));
         sb.append(String.format("status=%s,", vorn(this.getStatus())));
         sb.append(String.format("type=%s",this.getType().toString()));

@@ -101,10 +101,10 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
         @Test
         public void testUpdateLoadBalancer() throws Exception {
-            adapterSpy.updateLoadBalancer(config, loadBalancer, loadBalancer);
+            adapterSpy.updateLoadBalancer(config, loadBalancer, loadBalancer, null);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resourceTranslator, times(1)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+            verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
@@ -186,14 +186,14 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             for (LoadBalancerJoinVip vip : loadBalancer.getLoadBalancerJoinVipSet())
                 vipsToDelete.add(vip.getVirtualIp().getId());
 
-            adapterSpy.deleteVirtualIps(config, loadBalancer, vipsToDelete);
+            adapterSpy.deleteVirtualIps(config, loadBalancer, vipsToDelete, null);
 
             verify(resources).loadSTMRestClient(config);
             verify(resourceTranslator, times(2)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
             verify(loadBalancer.getLoadBalancerJoinVipSet()).removeAll(anySetOf(LoadBalancerJoinVip.class));
             verify(loadBalancer.getLoadBalancerJoinVipSet()).addAll(anySetOf(LoadBalancerJoinVip.class));
             verify(client).deleteTrafficIp(anyString());
-            verify(resources).updateAppropriateVirtualServers(config, resourceTranslator, loadBalancer);
+            verify(resources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
             verify(client).destroy();
         }
     }
@@ -459,10 +459,10 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
         @Test
         public void testDeleteErrorFile() throws Exception {
-            adapterSpy.deleteErrorFile(config, loadBalancer);
+            adapterSpy.deleteErrorFile(config, loadBalancer, null);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resources).deleteErrorFile(config, client, loadBalancer);
+            verify(resources).deleteErrorFile(config, client, loadBalancer, null);
             verify(client).destroy();
         }
 
@@ -684,12 +684,13 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
         @Test
         public void testUpdateSslTermination() throws Exception {
-            adapterSpy.updateSslTermination(config, loadBalancer, sslTermination);
+            adapterSpy.updateSslTermination(config, loadBalancer, sslTermination, null);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
-            verify(resourceTranslator).translateKeypairResource(loadBalancer, true);
+            verify(resourceTranslator).translateVirtualServerResource(config, vsName, loadBalancer);
+            verify(resourceTranslator, times(3)).translateKeypairResource(loadBalancer, true);
             verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
+            verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             verify(resourceTranslator).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));

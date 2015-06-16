@@ -30,7 +30,7 @@ public class UpdateConnectionThrottleListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.getWithUserPages(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format(Constants.LoadBalancerNotFound);
             LOG.error(alertDescription, enfe);

@@ -120,9 +120,6 @@ public class LoadBalancer extends Entity implements Serializable {
     @LazyToOne(LazyToOneOption.NO_PROXY)
     private UserPages userPages;
 
-    @Transient
-    private Boolean userPagesNull;
-
     @Temporal(TemporalType.TIMESTAMP)
     private Calendar created;
 
@@ -137,13 +134,6 @@ public class LoadBalancer extends Entity implements Serializable {
 
     @Transient
     private SourceAddresses sourceAddresses;
-
-    @Transient
-    private boolean processingDeletion = false;
-
-    public void setProcessingDeletion(boolean processingDeletion) { this.processingDeletion = processingDeletion; }
-
-    public boolean isProcessingDeletion() { return processingDeletion; }
 
     public SourceAddresses getSourceAddresses() {
         return sourceAddresses;
@@ -438,17 +428,6 @@ public class LoadBalancer extends Entity implements Serializable {
      * @return the userPages
      */
     public UserPages getUserPages() {
-        if (userPagesNull == null) {
-            if (userPages == null) {
-                userPagesNull = true;
-            } else {
-                userPagesNull = false;
-                userPages.setLoadbalancer(this);
-            }
-            return userPages;
-        } else if (userPagesNull) {
-            return null;
-        }
         return userPages;
     }
 
@@ -457,11 +436,6 @@ public class LoadBalancer extends Entity implements Serializable {
      */
     public void setUserPages(UserPages userPages) {
         this.userPages = userPages;
-        if (userPages == null) {
-            userPagesNull = true;
-        } else {
-            userPagesNull = false;
-        }
     }
 
     public SslTermination getSslTermination() {
