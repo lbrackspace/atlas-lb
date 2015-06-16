@@ -1,6 +1,0 @@
-util.seed
-*.class
-*.pyc
-*.json
-!pom.xml
-target/*
