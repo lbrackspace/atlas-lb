@@ -220,7 +220,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(vsName, createdBasic.getProtection_class());
             pathOne();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
-            Assert.assertEquals(null, createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertEquals("", createdServer.getProperties().getBasic().getProtection_class());
             pathTwo();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             Assert.assertEquals(vsName, createdServer.getProperties().getBasic().getProtection_class());
@@ -230,7 +230,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             pathFour();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             //TODO:  Intern will handle this bug
-            Assert.assertEquals(null, createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertEquals("", createdServer.getProperties().getBasic().getProtection_class());
 
         }
     }

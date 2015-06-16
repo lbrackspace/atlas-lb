@@ -90,11 +90,6 @@ public class ResourceTranslator {
 
         basic.setEnabled(true);
 
-        //protection class settings
-        if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
-            basic.setProtection_class(ZxtmNameBuilder.genVSName(loadBalancer));
-        }
-
         // Redirection specific
         basic.setPort(80);
         basic.setPool("discard");
@@ -106,8 +101,10 @@ public class ResourceTranslator {
 
         //error file settings
         if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
-            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genRedirectVSName(loadBalancer)));
+            // if userPages is null, just leave the ce object alone and it should use the default page
+            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genVSName(loadBalancer)));
         } else {
+            //Doesnt look like thats the case for some reason :( may be bug in STM -- need to reverify this
             ce.setError_file("Default");
         }
         properties.setConnection_errors(ce);
@@ -161,11 +158,9 @@ public class ResourceTranslator {
         //protection class settings
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
             basic.setProtection_class(ZxtmNameBuilder.genVSName(loadBalancer));
+        } else {
+            basic.setProtection_class("");
         }
-        // Dumbing this down for SOAP compatibility, this isn't deleted now
-        // else {
-        //     basic.setProtection_class("");
-        // }
 
         //connection log settings
         if (loadBalancer.isConnectionLogging() != null && loadBalancer.isConnectionLogging()) {
@@ -198,8 +193,10 @@ public class ResourceTranslator {
 
         //error file settings
         if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
-            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(vsName));
+            // if userPages is null, just leave the ce object alone and it should use the default page
+            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genVSName(loadBalancer)));
         } else {
+            //Doesnt look like thats the case for some reason :( may be bug in STM -- need to reverify this
             ce.setError_file("Default");
         }
         properties.setConnection_errors(ce);

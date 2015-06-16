@@ -385,8 +385,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
             adapterSpy.deleteConnectionThrottle(config, loadBalancer);
 
-            // verify(adapterSpy).deleteProtection(config, loadBalancer); // matching SOAP for now... :(
-            verify(adapterSpy).updateProtection(config, loadBalancer);
+            verify(adapterSpy).deleteProtection(config, loadBalancer);
         }
 
         @Test

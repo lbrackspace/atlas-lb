@@ -644,32 +644,36 @@ public class StmAdapterResources {
     }
 
     public void setErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer, String content) throws InsufficientRequestException, StmRollBackException {
+        File errorFile = null;
+
         String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        String errorFileName = ZxtmNameBuilder.generateErrorPageName(virtualServerName);
         Map<StmAdapterUtils.VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+
+        try {
+            LOG.debug(String.format("Attempting to upload the error file for %s (%s)", virtualServerName, errorFileName));
+            errorFile = getFileWithContent(content);
+            client.createExtraFile(errorFileName, errorFile);
+            errorFile.delete();
+            LOG.info(String.format("Successfully uploaded the error file for %s (%s)", virtualServerName, errorFileName));
+        } catch (Exception e) {
+            errorFile.delete();
+            // Failed to create error file, error out..
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) Exception: %s -- exception", virtualServerName, errorFileName, e));
+            throw new StmRollBackException(String.format("Failed creating error page %s for: %s.", errorFileName, virtualServerName), e);
+        }
 
         UserPages up = new UserPages();
         up.setErrorpage(content);
         loadBalancer.setUserPages(up);
         ResourceTranslator rt;
 
-        File errorFile;
-        try {
-            errorFile = getFileWithContent(content);
-        } catch (IOException e) {
-            throw new StmRollBackException(String.format("Failed creating error file for: %s.", virtualServerName), e);
-        }
-
         try {
             // Update client with new properties
             for (StmAdapterUtils.VSType vsType : vsNames.keySet()) {
                 String vsName = vsNames.get(vsType);
-                String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
                 LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
                 rt = new ResourceTranslator();
-
-                LOG.debug(String.format("Attempting to upload the error file for %s (%s)", vsName, errorFileName));
-                client.createExtraFile(errorFileName, errorFile);
-                LOG.info(String.format("Successfully uploaded the error file for %s (%s)", vsName, errorFileName));
 
                 if (vsType == StmAdapterUtils.VSType.REDIRECT_VS) {
                     rt.translateRedirectVirtualServerResource(config, vsName, loadBalancer);
@@ -678,28 +682,20 @@ public class StmAdapterResources {
                     rt.translateVirtualServerResource(config, vsName, loadBalancer);
                     updateVirtualServer(client, vsName, rt.getcVServer());
                 }
-                LOG.info(String.format("Successfully set the error file for %s (%s)", vsName, errorFileName));
             }
+
+            LOG.info(String.format("Successfully set the error file for %s (%s)", virtualServerName, errorFileName));
         } catch (StmRollBackException re) {
             // REST failure...
-            LOG.error(String.format("Failed to set ErrorFile for %s -- Rolling back.", virtualServerName));
+            LOG.error(String.format("Failed to set ErrorFile for %s (%s) -- Rolling back.", virtualServerName, errorFileName));
             throw re;
-        } catch (StingrayRestClientObjectNotFoundException e) {
-            // Failed to create error file, error out..
-            LOG.error(String.format("Failed to set ErrorFile for %s Exception: %s -- exception", virtualServerName, e));
-            throw new StmRollBackException(String.format("Failed creating error page for: %s.", virtualServerName), e);
-        } catch (StingrayRestClientException e) {
-            // Failed to create error file, error out..
-            LOG.error(String.format("Failed to set ErrorFile for %s Exception: %s -- exception", virtualServerName, e));
-            throw new StmRollBackException(String.format("Failed creating error page for: %s.", virtualServerName), e);
-        } finally {
-            if (errorFile != null) errorFile.delete();
         }
     }
 
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, StingrayRestClient client, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException {
-        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
+        String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        String errorFileName = ZxtmNameBuilder.generateErrorPageName(virtualServerName);
         Map<StmAdapterUtils.VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
 
         loadBalancer.setUserPages(null);
@@ -709,8 +705,7 @@ public class StmAdapterResources {
             // Update client with new properties
             for (StmAdapterUtils.VSType vsType : vsNames.keySet()) {
                 String vsName = vsNames.get(vsType);
-                String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
-                LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", virtualServerName, errorFileName));
+                LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", vsName, errorFileName));
                 rt = new ResourceTranslator();
 
                 if (vsType == StmAdapterUtils.VSType.REDIRECT_VS) {
@@ -720,15 +715,14 @@ public class StmAdapterResources {
                     rt.translateVirtualServerResource(config, vsName, loadBalancer);
                     updateVirtualServer(client, vsName, rt.getcVServer());
                 }
-
-                // Delete the old error file
-                try {
-                    client.deleteExtraFile(errorFileName);
-                } catch (StingrayRestClientObjectNotFoundException e) {
-                    LOG.warn(String.format("Cannot delete custom error page %s, it does not exist. Ignoring...", errorFileName));
-                }
-                LOG.info(String.format("Successfully deleted a custom error file for %s (%s)", virtualServerName, errorFileName));
             }
+
+            // Delete the old error file
+            client.deleteExtraFile(errorFileName);
+
+            LOG.info(String.format("Successfully deleted a custom error file for %s (%s)", virtualServerName, errorFileName));
+        } catch (StingrayRestClientObjectNotFoundException onf) {
+            LOG.warn(String.format("Cannot delete custom error page as, %s, it does not exist. Ignoring...", errorFileName));
         } catch (StmRollBackException re) {
             LOG.error(String.format("Failed deleting the error file for: %s Exception: %s", virtualServerName, re.getMessage()));
             throw re;
