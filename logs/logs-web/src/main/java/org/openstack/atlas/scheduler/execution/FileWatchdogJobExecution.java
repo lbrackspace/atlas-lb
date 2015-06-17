@@ -160,7 +160,9 @@ public class FileWatchdogJobExecution extends LoggableJobExecution implements Qu
     private void spawnCloudFilesUploadThread(int hourKey, String lzoPath) {
         String fmt = "Spawning new thread for uploading %s LZO hourKey %d to cloudFiles nThreads running=%d totalRuns=%d\n";
         vlog.printf(fmt, lzoPath, hourKey, CloudFilesLzoUploadThread.getNRunning(), CloudFilesLzoUploadThread.getTotalRuns());
-        CloudFilesLzoUploadThread thread = new CloudFilesLzoUploadThread(lzoService, cfUtils, hourKey, lzoPath);
+        String fileRegion = HadoopLogsConfigs.getFileRegion();
+        String cntName = StaticFileUtils.stripDirectoryFromFileName(lzoPath) + "." + fileRegion;
+        CloudFilesLzoUploadThread thread = new CloudFilesLzoUploadThread(lzoService, cfUtils, hourKey, lzoPath, cntName);
         thread.start();
     }
 }
