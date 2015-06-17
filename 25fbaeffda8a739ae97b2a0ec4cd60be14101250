@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_59010437",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/async/ChangeHostListener.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-17T20:56:08Z",
+      "side": 1,
+      "message": "Yes, it\u0027s handled -- see the change here: https://review.gerrithub.io/#/c/236702/1/adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/helpers/ResourceTranslator.java",
+      "parentUuid": "facab960_19d5bcb8",
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_99e0ec97",
         "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/async/ChangeHostListener.java",
         "patchSetId": 4
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_b99770eb",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/async/ChangeHostListener.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-17T20:56:08Z",
+      "side": 1,
+      "message": "I checked, setStatus doesn\u0027t throw any of our exceptions. Even if it did, it would need to be in its OWN try block, but it doesn\u0027t. :)",
+      "parentUuid": "facab960_99e0ec97",
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_596ca435",
         "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
         "patchSetId": 4
@@ -47,6 +83,24 @@
       "writtenOn": "2015-06-17T20:45:31Z",
       "side": 1,
       "message": "We will see if this actually works. Virtual ips are tricky in terms of hibernate. There might be an actual call to get shared vips or something if this doesn\u0027t work. My memory is fuzzy so you might be okay.",
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_b9be9063",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-17T20:56:08Z",
+      "side": 1,
+      "message": "There is -- its the one used below: virtualIpService.isVipAllocatedToMultipleLoadBalancers(virtualIp)\n\nBut, I have tested this with a simple SharedVIP setup, and it works as expected.",
+      "parentUuid": "facab960_596ca435",
       "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -76,6 +130,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_59af442a",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-17T20:56:08Z",
+      "side": 1,
+      "message": "We\u0027ll have to review and fix the LBs manually, then run them through this process again. Whether that means contacting the customer to get the certs updated, or unsuspending them, or deleting the LB completely, it will be up to us to decide when we see which ones fail due to these checks.",
+      "parentUuid": "facab960_3956005d",
+      "range": {
+        "startLine": 100,
+        "startChar": 68,
+        "endLine": 100,
+        "endChar": 71
+      },
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_9949ccb9",
         "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
         "patchSetId": 4
@@ -87,6 +165,24 @@
       "writtenOn": "2015-06-17T20:45:31Z",
       "side": 1,
       "message": "Same with this off case. Why is it hard to move a suspended load balancer? This should actually be the easiest case since the VS is already disabled no?",
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_f96bb8ee",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-17T20:56:08Z",
+      "side": 1,
+      "message": "The existing statuses aren\u0027t passed through currently, so they would end up being activated on the other side. If we REALLY want to fix this, it\u0027s possible, but I\u0027d have to do more research about what else (if anything) is different with a SUSPENDED LB, besides just the status.\n\nThis is currently how the SYNC call operates.",
+      "parentUuid": "facab960_9949ccb9",
       "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
