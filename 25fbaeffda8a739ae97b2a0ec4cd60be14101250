@@ -1,0 +1,95 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "facab960_19d5bcb8",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/async/ChangeHostListener.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2015-06-17T20:45:31Z",
+      "side": 1,
+      "message": "What about the IPv6 vips we have to re-ip? Did Bounds talk to you about that?",
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_99e0ec97",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/async/ChangeHostListener.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2015-06-17T20:45:31Z",
+      "side": 1,
+      "message": "Should probably move this into the try block in case it throws an exception for some reason. No sense in it being out here when you are already capturing \"Exception\", especially given the sensitivity around this migration.",
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_596ca435",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2015-06-17T20:45:31Z",
+      "side": 1,
+      "message": "We will see if this actually works. Virtual ips are tricky in terms of hibernate. There might be an actual call to get shared vips or something if this doesn\u0027t work. My memory is fuzzy so you might be okay.",
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_3956005d",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2015-06-17T20:45:31Z",
+      "side": 1,
+      "message": "What are we going to do in this off case, not to mention the other off cases?",
+      "range": {
+        "startLine": 100,
+        "startChar": 68,
+        "endLine": 100,
+        "endChar": 71
+      },
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_9949ccb9",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1001837
+      },
+      "writtenOn": "2015-06-17T20:45:31Z",
+      "side": 1,
+      "message": "Same with this off case. Why is it hard to move a suspended load balancer? This should actually be the easiest case since the VS is already disabled no?",
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
