@@ -82,6 +82,7 @@
         <property name="usageRepository" ref="usageRepository"/>
         <property name="virtualIpRepository" ref="virtualIpRepository"/>
         <property name="virtualIpv6Repository" ref="virtualIpv6Repository"/>
+        <property name="lzoRepository" ref="lzoRepository"/>
     </bean>
 
     <bean id="baseListener" class="org.openstack.atlas.api.async.BaseListener" abstract="true">
