@@ -186,6 +186,75 @@
       "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_dce422e3",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/LoadBalancerService.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2015-06-18T01:08:56Z",
+      "side": 1,
+      "message": "I guess the Integer based status setter above wasn\u0027t good enough. O.o",
+      "range": {
+        "startLine": 80,
+        "startChar": 4,
+        "endLine": 80,
+        "endChar": 11
+      },
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_fce566dc",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2015-06-18T01:08:56Z",
+      "side": 1,
+      "message": "What a waste. You coulden\u0027t just let the caller get the aid and lid?",
+      "range": {
+        "startLine": 211,
+        "startChar": 14,
+        "endLine": 211,
+        "endChar": 15
+      },
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_3cd34e05",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/VirtualIpServiceImpl.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 494,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2015-06-18T01:08:56Z",
+      "side": 1,
+      "message": "Good job. Now any one can stuff anything in to the data base. \u003e:|\nWay to mix business logic and repository logic.",
+      "range": {
+        "startLine": 494,
+        "startChar": 37,
+        "endLine": 494,
+        "endChar": 39
+      },
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
