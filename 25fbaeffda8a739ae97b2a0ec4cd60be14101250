@@ -235,6 +235,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_3c8b4ec4",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-18T04:10:55Z",
+      "side": 1,
+      "message": "Just making things consistent. About half of these were like this, and half of them weren\u0027t, so I added the missing ones. I don\u0027t even know if I ended up using them... This one I did, the other one probably not.",
+      "parentUuid": "facab960_fce566dc",
+      "range": {
+        "startLine": 211,
+        "startChar": 14,
+        "endLine": 211,
+        "endChar": 15
+      },
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_3cd34e05",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/VirtualIpServiceImpl.java",
         "patchSetId": 4
@@ -246,6 +270,30 @@
       "writtenOn": "2015-06-18T01:08:56Z",
       "side": 1,
       "message": "Good job. Now any one can stuff anything in to the data base. \u003e:|\nWay to mix business logic and repository logic.",
+      "range": {
+        "startLine": 494,
+        "startChar": 37,
+        "endLine": 494,
+        "endChar": 39
+      },
+      "revId": "25fbaeffda8a739ae97b2a0ec4cd60be14101250",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_5c8812c5",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/VirtualIpServiceImpl.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 494,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-18T04:10:55Z",
+      "side": 1,
+      "message": "Well, we have to be able to update a VIP object, and I am not sure how else to do this? merge seems to be the right function, but if you have other suggestions, I\u0027m all ears.",
+      "parentUuid": "facab960_3cd34e05",
       "range": {
         "startLine": 494,
         "startChar": 37,
