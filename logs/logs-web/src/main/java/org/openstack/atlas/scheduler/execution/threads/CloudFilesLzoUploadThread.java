@@ -17,16 +17,18 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 public class CloudFilesLzoUploadThread extends Thread {
 
-    public CloudFilesLzoUploadThread(LzoService lzoService, CloudFilesUtils cfu, int hourKey, String expandedPath) {
+    public CloudFilesLzoUploadThread(LzoService lzoService, CloudFilesUtils cfu, int hourKey, String expandedPath, String cntName) {
         this.lzoService = lzoService;
         this.cfu = cfu;
         this.hourKey = hourKey;
         this.expandedPath = expandedPath;
+        this.cntName = cntName;
     }
     private LzoService lzoService;
     private CloudFilesUtils cfu;
     private int hourKey;
     private String expandedPath;
+    private String cntName;
     private static final Log LOG = LogFactory.getLog(CloudFilesLzoUploadThread.class);
     private static int totalRuns = 0;
     private static int nRunning = 0;
@@ -77,10 +79,10 @@ public class CloudFilesLzoUploadThread extends Thread {
             LOG.info(String.format("md5 completed for %d %s: %s", hourKey, expandedPath, sc.toString()));
             // Start upload
             cfu.getAuthToken();
-            cfu.emptyContainer(lzoName);
-            cfu.deleteContainer(lzoName);
-            cfu.createContainer(lzoName);
-            List<ResponseContainer<Boolean>> uploadResp = cfu.writeSegmentContainer(lzoName, sc);
+            cfu.emptyContainer(cntName);
+            cfu.deleteContainer(cntName);
+            cfu.createContainer(cntName);
+            List<ResponseContainer<Boolean>> uploadResp = cfu.writeSegmentContainer(cntName, sc);
             for (ResponseContainer<Boolean> resp : uploadResp) {
                 System.out.printf("upload resp for %d = %s\n", hourKey, resp.toString());
                 if (resp == null || resp.getEntity() == null || !resp.getEntity()) {
