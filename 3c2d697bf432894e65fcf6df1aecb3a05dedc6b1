@@ -16,6 +16,24 @@
       "revId": "3c2d697bf432894e65fcf6df1aecb3a05dedc6b1",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_af01de06",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/VirtualIpServiceImpl.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 493,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-18T06:08:55Z",
+      "side": 1,
+      "message": "Actually, looking at this again, doing this doesn\u0027t help at all... Someone could just call updateCluster(vip, vip.getCluster()) having made whatever change they want, and it\u0027s essentially the same as just calling merge(vip). Right? I\u0027m not sure how to REALLY limit it...",
+      "parentUuid": "facab960_1c3f6ad7",
+      "revId": "3c2d697bf432894e65fcf6df1aecb3a05dedc6b1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
