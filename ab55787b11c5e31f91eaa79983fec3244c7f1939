@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_1a403f06",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 590,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-19T19:02:56Z",
+      "side": 0,
+      "message": "This was a messier way of deciding which VirtualServers exist -- the new way has all of the accurate vsNames up front, it doesn\u0027t have to do a bunch of comparisons on the fly. The new for-loop will take care of the SSL VS if it exists.",
+      "parentUuid": "facab960_6fdc2b74",
+      "range": {
+        "startLine": 590,
+        "startChar": 0,
+        "endLine": 590,
+        "endChar": 12
+      },
+      "revId": "ab55787b11c5e31f91eaa79983fec3244c7f1939",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_8fbc0f08",
         "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
         "patchSetId": 1
