@@ -37,11 +37,14 @@ public class AddVirtualIpListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.getWithUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(dataContainer.getLoadBalancerId());
             if (dataContainer.getAccountId() == null) dataContainer.setAccountId(dbLoadBalancer.getAccountId());
+            if (dataContainer.getUserName() == null) dataContainer.setUserName(dbLoadBalancer.getUserName());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, enfe);
+            if (dataContainer.getUserName() == null) dataContainer.setUserName("");
+            if (dataContainer.getAccountId() == null) dataContainer.setAccountId(0);
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), enfe, DATABASE_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dataContainer);
             return;

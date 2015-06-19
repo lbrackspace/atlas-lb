@@ -42,8 +42,6 @@ public class AddVirtualIpListenerTest extends STMTestBase {
     @Mock
     private ObjectMessage objectMessage;
     @Mock
-    private MessageDataContainer messageDataContainer;
-    @Mock
     private LoadBalancerService loadBalancerService;
     @Mock
     private NotificationService notificationService;
@@ -78,13 +76,12 @@ public class AddVirtualIpListenerTest extends STMTestBase {
 
     @Test
     public void testAddVirtualIp() throws Exception {
+        MessageDataContainer messageDataContainer = new MessageDataContainer();
+        messageDataContainer.setLoadBalancerId(LOAD_BALANCER_ID);
+        messageDataContainer.setNewVipIds(newVipIds);
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
-        when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
-        when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
-        when(messageDataContainer.getUserName()).thenReturn(USERNAME);
-        when(messageDataContainer.getNewVipIds()).thenReturn(newVipIds);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID)).thenReturn(lb);
 
         addVirtualIpListener.doOnMessage(objectMessage);
 
@@ -99,29 +96,27 @@ public class AddVirtualIpListenerTest extends STMTestBase {
     @Test
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
+        MessageDataContainer messageDataContainer = new MessageDataContainer();
+        messageDataContainer.setLoadBalancerId(LOAD_BALANCER_ID);
+        messageDataContainer.setNewVipIds(newVipIds);
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
-        when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
-        when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
-        when(messageDataContainer.getUserName()).thenReturn(USERNAME);
-        when(messageDataContainer.getNewVipIds()).thenReturn(newVipIds);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID)).thenThrow(entityNotFoundException);
 
         addVirtualIpListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
-        verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(VIP_ID), anyString(), anyString(), eq(EventType.UPDATE_LOADBALANCER), eq(CategoryType.CREATE), eq(EventSeverity.CRITICAL));
+        verify(notificationService).saveAlert(eq(0), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveVirtualIpEvent(eq(""), eq(0), eq(LOAD_BALANCER_ID), eq(VIP_ID), anyString(), anyString(), eq(EventType.UPDATE_LOADBALANCER), eq(CategoryType.CREATE), eq(EventSeverity.CRITICAL));
     }
 
     @Test
     public void testAddInvalidVirtualIp() throws Exception {
         Exception exception = new Exception();
+        MessageDataContainer messageDataContainer = new MessageDataContainer();
+        messageDataContainer.setLoadBalancerId(LOAD_BALANCER_ID);
+        messageDataContainer.setNewVipIds(newVipIds);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
-        when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
-        when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
-        when(messageDataContainer.getUserName()).thenReturn(USERNAME);
-        when(messageDataContainer.getNewVipIds()).thenReturn(newVipIds);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID)).thenReturn(lb);
         doThrow(exception).when(reverseProxyLoadBalancerStmService).addVirtualIps(LOAD_BALANCER_ID, ACCOUNT_ID, lb);
 
         addVirtualIpListener.doOnMessage(objectMessage);

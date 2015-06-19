@@ -52,16 +52,17 @@ public class ResourceTranslator {
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
-        translateLoadBalancerResource(config, vsName, loadBalancer, queLb, true);
+        translateLoadBalancerResource(config, vsName, loadBalancer, queLb, true, true);
     }
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
-                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert) throws InsufficientRequestException {
+                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert, boolean vipsEnabled)
+            throws InsufficientRequestException {
         //Order matters when translating the entire entity.
         if (loadBalancer.getHealthMonitor() != null) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
 
-        translateTrafficIpGroupsResource(config, loadBalancer, true);
+        translateTrafficIpGroupsResource(config, loadBalancer, vipsEnabled);
 
         if (loadBalancer.getSslTermination() != null) translateKeypairResource(loadBalancer, careAboutCert);
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
@@ -255,8 +256,7 @@ public class ResourceTranslator {
         return nameandgroup;
     }
 
-    private TrafficIp translateTrafficIpGroupResource(LoadBalancerEndpointConfiguration config
-            , String ipaddress, boolean isEnabled) {
+    private TrafficIp translateTrafficIpGroupResource(LoadBalancerEndpointConfiguration config, String ipaddress, boolean isEnabled) {
         TrafficIp tig = new TrafficIp();
         TrafficIpProperties properties = new TrafficIpProperties();
         TrafficIpBasic basic = new TrafficIpBasic();

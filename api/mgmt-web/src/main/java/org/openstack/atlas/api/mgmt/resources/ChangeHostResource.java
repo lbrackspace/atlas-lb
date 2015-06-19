@@ -100,8 +100,8 @@ public class ChangeHostResource extends ManagementDependencyProvider {
             // Verify good SSLTerm and not SUSPENDED status for all LBs
             for (LoadBalancer lbToMove : LBsToMove.values()) {
                 SslTermination sslTerm = lbToMove.getSslTermination();
+                // Verify sslTerm won't break the LB during the move attempt
                 if (sslTerm != null) {
-                    // Verify sslTerm won't break the LB during sync attempt
                     String crt = sslTerm.getCertificate();
                     String key = sslTerm.getPrivatekey();
                     String imd = sslTerm.getIntermediateCertificate();
@@ -109,21 +109,28 @@ public class ChangeHostResource extends ManagementDependencyProvider {
                     if (zcf.hasFatalErrors()) {
                         BadRequest sslFault = new BadRequest();
                         sslFault.setValidationErrors(new ValidationErrors());
-                        sslFault.getValidationErrors().getMessages().add(SSLTERMBREAK); // Complain about SSL borkage
+                        sslFault.getValidationErrors().getMessages().add(SSLTERMBREAK);
+                        sslFault.getValidationErrors().getMessages().add("SSL Termination broken for LB #" + lbToMove.getId());
                         sslFault.getValidationErrors().getMessages().addAll(zcf.getFatalErrorList());
                         return Response.status(Response.Status.BAD_REQUEST).entity(sslFault).build();
                     }
                 }
+                // Don't try to move suspended LBs, because the process will activate them (this is fixable...)
                 if (lbToMove.getStatus().equals(LoadBalancerStatus.SUSPENDED)) {
-                    BadRequestException bre = new BadRequestException(NOMOVESUSPENDED);
-                    return ResponseFactory.getErrorResponse(bre, null, null);
+                    BadRequest suspendedFail = new BadRequest();
+                    suspendedFail.setValidationErrors(new ValidationErrors());
+                    suspendedFail.getValidationErrors().getMessages().add(NOMOVESUSPENDED);
+                    suspendedFail.getValidationErrors().getMessages().add("Will not attempt to move Suspended LB #" + lbToMove.getId());
+                    return Response.status(Response.Status.BAD_REQUEST).entity(suspendedFail).build();
                 }
             }
 
             List<LoadBalancer> pendingLBs = new ArrayList<LoadBalancer>();
             List<Integer> lbIds = new ArrayList<Integer>();
             // Try to get PENDING lock for all shared LBs
+            Integer lastLockAttempt = -1;
             for (LoadBalancer lbToMove : LBsToMove.values()) {
+                lastLockAttempt = lbToMove.getId();
                 if (loadBalancerService.testAndSetStatus(lbToMove, PENDING_UPDATE)) {
                     pendingLBs.add(lbToMove);
                     lbIds.add(lbToMove.getId());
@@ -139,8 +146,11 @@ public class ChangeHostResource extends ManagementDependencyProvider {
                 for (LoadBalancer pendingLB : pendingLBs) {
                     loadBalancerService.setStatus(pendingLB, ACTIVE);
                 }
-                BadRequestException bre = new BadRequestException(SHAREDLOCKFAIL);
-                return ResponseFactory.getErrorResponse(bre, null, null);
+                BadRequest lockFail = new BadRequest();
+                lockFail.setValidationErrors(new ValidationErrors());
+                lockFail.getValidationErrors().getMessages().add(SHAREDLOCKFAIL);
+                lockFail.getValidationErrors().getMessages().add("Could not obtain lock for LB #" + lastLockAttempt);
+                return Response.status(Response.Status.BAD_REQUEST).entity(lockFail).build();
             }
 
             mdc.setIds(lbIds);
