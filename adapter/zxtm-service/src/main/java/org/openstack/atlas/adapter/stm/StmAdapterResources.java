@@ -599,7 +599,7 @@ public class StmAdapterResources {
         }
 
         ResourceTranslator rt = new ResourceTranslator();
-        rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
+        rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
         VirtualServer virtualServer = rt.getcVServer();
         VirtualServerProperties properties = virtualServer.getProperties();
         VirtualServerBasic basic = properties.getBasic();

@@ -104,7 +104,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.updateLoadBalancer(config, loadBalancer, loadBalancer);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resourceTranslator, times(1)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+            verify(resourceTranslator, times(1)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, true, true);
             //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
@@ -189,7 +189,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             adapterSpy.deleteVirtualIps(config, loadBalancer, vipsToDelete);
 
             verify(resources).loadSTMRestClient(config);
-            verify(resourceTranslator, times(2)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false);
+            verify(resourceTranslator, times(2)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
             verify(loadBalancer.getLoadBalancerJoinVipSet()).removeAll(anySetOf(LoadBalancerJoinVip.class));
             verify(loadBalancer.getLoadBalancerJoinVipSet()).addAll(anySetOf(LoadBalancerJoinVip.class));
             verify(client).deleteTrafficIp(anyString());
@@ -613,7 +613,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             Assert.assertFalse(virtualServerSecure.getProperties().getBasic().getEnabled());
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(resourceTranslator).translateTrafficIpGroupsResource(config, loadBalancer, false);
-            verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class)); //TODO: Are the VIPs using the SecureName or the normal vsName?
+            verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class)); //TODO: Are the VIPs using the SecureName or the normal vsName?
             verify(client).destroy();
         }
 
@@ -631,7 +631,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             Assert.assertTrue(virtualServerSecure.getProperties().getBasic().getEnabled());
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(resourceTranslator).translateTrafficIpGroupsResource(config, loadBalancer, true);
-            verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class)); //TODO: Are the VIPs using the SecureName or the normal vsName?
+            verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class)); //TODO: Are the VIPs using the SecureName or the normal vsName?
             verify(client).destroy();
         }
     }
