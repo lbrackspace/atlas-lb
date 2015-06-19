@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_9ac60f67",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 250,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-19T19:47:53Z",
+      "side": 1,
+      "message": "Well, from looking at this, it seems it is removing the FIRST node that\u0027s marked for deletion from the cPool, setting the nodes on the LB correctly (based on the calculation above), then re-translating the cPool before updating the ZXTM host. So I believe the two lines below are essentially doing *nothing*. I am going to remove them as part of this CR in my next patchset.",
+      "parentUuid": "facab960_9a6a8f7f",
+      "range": {
+        "startLine": 250,
+        "startChar": 65,
+        "endLine": 250,
+        "endChar": 71
+      },
+      "revId": "94388d85fee580826bea1a9163e7dbea5b899f36",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_1a0e7fe5",
         "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
         "patchSetId": 1
@@ -36,6 +60,30 @@
       "writtenOn": "2015-06-19T19:21:38Z",
       "side": 1,
       "message": "If I remember correctly, when we update other resources the translation of other resources need to happen. This could probably cleaned up by having the translator update everything, but would probably require quite a bit of rework. I would honestly suggest for us to go back through all of this if we do indeed want to go live with it. There is definitely some quarks to this monstrosity i conjured up.",
+      "range": {
+        "startLine": 549,
+        "startChar": 111,
+        "endLine": 549,
+        "endChar": 115
+      },
+      "revId": "94388d85fee580826bea1a9163e7dbea5b899f36",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_fac1db54",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 549,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-19T19:47:53Z",
+      "side": 1,
+      "message": "This is us updating the zxtm box with the current VIPs, except I don\u0027t think anything about the VIPs changes when we enable/update SSL Termination. It is up to the VS to listen on specific TIGs, and they should already exist because SSL Term can only be enabled on an existing LB. TIG objects are very simple, they don\u0027t have any outbound links to the VS.",
+      "parentUuid": "facab960_1a0e7fe5",
       "range": {
         "startLine": 549,
         "startChar": 111,
