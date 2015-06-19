@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "facab960_6fdc2b74",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 590,
+      "author": {
+        "id": 1001831
+      },
+      "writtenOn": "2015-06-19T15:47:20Z",
+      "side": 0,
+      "message": "should this conditional not be taken out?",
+      "range": {
+        "startLine": 590,
+        "startChar": 0,
+        "endLine": 590,
+        "endChar": 12
+      },
+      "revId": "ab55787b11c5e31f91eaa79983fec3244c7f1939",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_8fbc0f08",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 622,
+      "author": {
+        "id": 1001831
+      },
+      "writtenOn": "2015-06-19T15:47:20Z",
+      "side": 0,
+      "message": "same as above; is there something that only needs to happen around lbs that have ssl?",
+      "range": {
+        "startLine": 622,
+        "startChar": 0,
+        "endLine": 622,
+        "endChar": 12
+      },
+      "revId": "ab55787b11c5e31f91eaa79983fec3244c7f1939",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
