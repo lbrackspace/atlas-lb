@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "facab960_9a6a8f7f",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 250,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2015-06-19T19:21:38Z",
+      "side": 1,
+      "message": "I\u0027m thinking this was just incomplete, or possibly something experimental. Because, assuming we map the correct \u0027current\u0027 nodes (not the doomed ones) it should Update as expected. I dont\u0027 see a reason for us to remove the nodes from cpool. Though its been a while and would need to be tested.",
+      "range": {
+        "startLine": 250,
+        "startChar": 65,
+        "endLine": 250,
+        "endChar": 71
+      },
+      "revId": "94388d85fee580826bea1a9163e7dbea5b899f36",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_1a0e7fe5",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 549,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2015-06-19T19:21:38Z",
+      "side": 1,
+      "message": "If I remember correctly, when we update other resources the translation of other resources need to happen. This could probably cleaned up by having the translator update everything, but would probably require quite a bit of rework. I would honestly suggest for us to go back through all of this if we do indeed want to go live with it. There is definitely some quarks to this monstrosity i conjured up.",
+      "range": {
+        "startLine": 549,
+        "startChar": 111,
+        "endLine": 549,
+        "endChar": 115
+      },
+      "revId": "94388d85fee580826bea1a9163e7dbea5b899f36",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
