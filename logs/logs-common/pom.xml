@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.25.3-SNAPSHOT</version>
+        <version>1.25.3</version>
     </parent>
 
     <artifactId>atlas-logs-common</artifactId>
