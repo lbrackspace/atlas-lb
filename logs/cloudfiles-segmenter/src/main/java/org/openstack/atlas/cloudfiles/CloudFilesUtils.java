@@ -66,7 +66,6 @@ import org.openstack.atlas.util.staticutils.StaticStringUtils;
 public class CloudFilesUtils {
 
     public static final Pattern hdfsLzoPatternPre = Pattern.compile("^([0-9]{10})-access_log.aggregated.lzo$");
-    protected static HdfsUtils hu;
     protected final VerboseLogger vlog = new VerboseLogger(CloudFilesUtils.class, VerboseLogger.LogLevel.INFO);
     protected static final Pattern fragPattern = Pattern.compile("^frag\\.([0-9]+)$");
     protected static final boolean DEBUG = false;

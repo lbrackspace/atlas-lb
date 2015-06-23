@@ -35,7 +35,7 @@ public class CloudFilesConfig {
                 + "\ncloud_files_lzo_user=" + user
                 + "\ncloud_files_lzo_key=" + apiKey
                 + "\ncloud_files_lzo_storage_api_endpoint=" + filesEndpoint
-                + "\ncloud_files_lzo_accoun=" + filesAccount
+                + "\ncloud_files_lzo_account=" + filesAccount
                 + "\ncloud_files_lzo_segment_size=" + segmentSize
                 + "\ncloud_files_days_of_lzos_to_keep=" + daysLzo
                 + "\n}";
@@ -56,6 +56,22 @@ public class CloudFilesConfig {
         filesEndpoint = lbLogsConf.getString(LbLogsConfigurationKeys.cloud_files_lzo_storage_api_endpoint);
         daysLzo = getInt(lbLogsConf, LbLogsConfigurationKeys.cloud_files_days_of_lzos_to_keep);
         resetCount++;
+    }
+
+    public static void readJsonConfigs(String filePath) throws UnsupportedEncodingException, FileNotFoundException, IOException, ParseException {
+        if (filePath == null) {
+            filePath = "~/cloudFiles.json";
+        }
+        String jsonStr = new String(StaticFileUtils.readFile(filePath), "utf-8");
+        JSONParser jp = new JSONParser();
+        JSONObject rootConf = (JSONObject) jp.parse(jsonStr);
+        authEndpoint = (String) rootConf.get("cloud_files_lzo_auth_api_endpoint");
+        apiKey = (String) rootConf.get("cloud_files_lzo_key");
+        user = (String) rootConf.get("cloud_files_lzo_user");
+        segmentSize = ((Long)rootConf.get("cloud_files_lzo_segment_size")).intValue();
+        filesAccount = (String)rootConf.get("cloud_files_lzo_account");
+        filesEndpoint = (String)rootConf.get("cloud_files_lzo_storage_api_endpoint");
+        daysLzo = ((Long)rootConf.get("cloud_files_days_of_lzos_to_keep")).intValue();
     }
 
     public static int getResetCount() {

@@ -62,6 +62,7 @@ public class CloudFilesCli {
                 String cmd = args[0];
                 if (cmd.equals("help")) {
                     System.out.printf("segmentsize <size>          #set the segment size\n");
+                    System.out.printf("loadJsonConf [FilePath]   #Load config from json file\n");
                     System.out.printf("ls                          #list ContainerNames\n");
                     System.out.printf("lc <cnt>                    #list container\n");
                     System.out.printf("rmc <cnt>                   #Delete container\n");
@@ -86,6 +87,13 @@ public class CloudFilesCli {
                     for (Integer hourKey : hourKeys) {
                         System.out.printf("%d\n", hourKey);
                     }
+                } else if (cmd.equals("loadJsonConf")) {
+                    String filePath = null;
+                    if (args.length >= 2) {
+                        filePath = args[1];
+                    }
+                    System.out.printf("loading config from file \"%s\"\n", filePath);
+                    CloudFilesConfig.readJsonConfigs(filePath);
                 } else if (cmd.equals("segdown") && args.length >= 2) {
                     String containerName = args[1];
                     String filePath = args[2];
