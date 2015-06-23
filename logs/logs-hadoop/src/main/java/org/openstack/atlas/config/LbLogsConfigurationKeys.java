@@ -14,6 +14,7 @@ public enum LbLogsConfigurationKeys implements ConfigurationKey {
     cloud_files_lzo_key,
     cloud_files_lzo_user,
     cloud_files_lzo_storage_api_endpoint,
+    cloud_files_lzo_file_name_append,
     days_of_lzos_to_keep,
     days_of_zips_to_keep,
     files_region,
