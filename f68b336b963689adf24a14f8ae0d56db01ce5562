@@ -55,6 +55,42 @@
     },
     {
       "key": {
+        "uuid": "9ad9bd40_74d00454",
+        "filename": "logs/cloudfiles-segmenter-asm/src/main/java/org/openstack/atlas/cloudfiles/itest/CloudFilesCli.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2015-06-30T21:08:35Z",
+      "side": 1,
+      "message": "val \u003d default\nif(userSpecified){\n   val \u003d userSpecified\n}\n\nis a pretty common pattern for setting defaults.\n\nI\u0027m suspect this became popular due to it emitting a lower cyclomatic score.",
+      "parentUuid": "9ad9bd40_bc5fd871",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ad9bd40_54b6a03e",
+        "filename": "logs/cloudfiles-segmenter-asm/src/main/java/org/openstack/atlas/cloudfiles/itest/CloudFilesCli.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2015-06-30T21:08:35Z",
+      "side": 1,
+      "message": "yes the readJsonConf will default to cloudFiles.json if null is passed in. Trouble is arg[1] will throw array out of bounds exception if the user does not type a file path. so the check uses either filePath \u003d arg[1] if arg goes up to [1] or null if arg[1] does not exist.",
+      "parentUuid": "9ad9bd40_1465f8e0",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9ad9bd40_dc53bc6a",
         "filename": "logs/cloudfiles-segmenter/src/main/java/org/openstack/atlas/cloudfiles/CloudFilesConfig.java",
         "patchSetId": 3
@@ -102,6 +138,24 @@
       "side": 1,
       "message": "Yeah, my concern was that the Long cast happens on the result of rootConf.get(), before .intValue() is run. I thought rootConf.get() returned a String, and (Long)String doesn\u0027t work. I guess rootConf.get() is smart and returns an Int or Long already?",
       "parentUuid": "9ad9bd40_d40e3034",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ad9bd40_54bb000e",
+        "filename": "logs/cloudfiles-segmenter/src/main/java/org/openstack/atlas/cloudfiles/CloudFilesConfig.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2015-06-30T21:08:35Z",
+      "side": 1,
+      "message": "the get() method returns a Object but in the debugger you can see that its Object with a reference to a Long instance.\n\nyour probably more used to seeing code like\n\nObject obj \u003d rootConf.get()\nif(obj instanceof String){\n    (String)obj.call_some_string_methods()\n}else if(obj instance Long){\n    (Long)obj.call_some_long_methods()\n}\n\nyea I see the confusion. The (Long) cast isn\u0027t triggering a parse string its assuming the return type of rootConf.get() is a Long inst.\n\nI\u0027m guessing its definition is of the form\n\npublic Object get(String key){\n    String val \u003d fetchStringFromJson(key)\n    if(canBeParsedToLong(val){\n        return new Long(parseLongFromString(val);\n    }else{\n        return new String(val);\n    }\n\nthey both get returned as an Object. But that object is pointing to either a String or Long in the JVM heap.",
+      "parentUuid": "9ad9bd40_3462fcd8",
       "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
