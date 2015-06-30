@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "9ad9bd40_1465f8e0",
+        "filename": "logs/cloudfiles-segmenter-asm/src/main/java/org/openstack/atlas/cloudfiles/itest/CloudFilesCli.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-30T20:36:39Z",
+      "side": 1,
+      "message": "I don\u0027t think so? The issue I saw here was what happens if the user runs \"loadJsonConf\" without a second arg, would filePath end up null? Answer: yes, but in CloudFilesConfig.readJsonConfigs(filePath) it does a null-check and sets a default. That\u0027s what I was referring to about the default being specified elsewhere.",
+      "parentUuid": "9ad9bd40_911d9a76",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9ad9bd40_dc53bc6a",
         "filename": "logs/cloudfiles-segmenter/src/main/java/org/openstack/atlas/cloudfiles/CloudFilesConfig.java",
         "patchSetId": 3
@@ -66,6 +84,24 @@
       "side": 1,
       "message": "For some reason google json will actually returns a Long and never an Integer when it sees a number.\n IE if you put 1 it still returns a Long. intValue() will just return the lower 32 bits as an Integer. I would have liked to keep it as a long but when I use this to set the number of bytes to send in an HTTP request I can only use a 32 bit value so 2147483647 is the max it will allow. So I just store it as an int anyways.\n\nin general the get() function in the jsonParser returns an Object reference. When you do a (Long)or any kind of cast in source code your really just doing a \"checkcast\" in the JVM bytecode and telling the compiler that from that point on you want to reference the Long instance methods on that \"Object\" in subsequent calls. The byte code for the line in question is?\n\n   75:\tldc\t#50; //String cloud_files_lzo_segment_size\n   77:\tinvokevirtual\t#47; //Method org/json/simple/JSONObject.get:(Ljava/lang/Object;)Ljava/lang/Object;\n   80:\tcheckcast\t#51; //class java/lang/Long\n   83:\tinvokevirtual\t#52; //Method java/lang/Long.intValue:()I\n   86:\tputstatic\t#17; //Field segmentSize:I\n\nI used to find that odd myself for a while. TypeCasting in java really isn\u0027t converting a type. Its just telling the compiler to use Class code for Long.methods() on this \"Object\" if it survives the checkcast(long) test. Checkcast just verifies that the physical imple for Object in inherted from Long or is a Long reference.",
       "parentUuid": "9ad9bd40_dc53bc6a",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ad9bd40_3462fcd8",
+        "filename": "logs/cloudfiles-segmenter/src/main/java/org/openstack/atlas/cloudfiles/CloudFilesConfig.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-30T20:36:39Z",
+      "side": 1,
+      "message": "Yeah, my concern was that the Long cast happens on the result of rootConf.get(), before .intValue() is run. I thought rootConf.get() returned a String, and (Long)String doesn\u0027t work. I guess rootConf.get() is smart and returns an Int or Long already?",
+      "parentUuid": "9ad9bd40_d40e3034",
       "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
