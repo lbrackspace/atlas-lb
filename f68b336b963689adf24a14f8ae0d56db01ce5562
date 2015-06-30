@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9ad9bd40_bc5fd871",
+        "filename": "logs/cloudfiles-segmenter-asm/src/main/java/org/openstack/atlas/cloudfiles/itest/CloudFilesCli.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-30T04:57:45Z",
+      "side": 1,
+      "message": "I see that the default is defined in another file in the case this is null -- I feel like it\u0027d make more sense and be slightly clearer if the default was the else-clause here, but it\u0027s not a deal breaker.",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ad9bd40_dc53bc6a",
+        "filename": "logs/cloudfiles-segmenter/src/main/java/org/openstack/atlas/cloudfiles/CloudFilesConfig.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-30T04:57:45Z",
+      "side": 1,
+      "message": "Does this cast work properly? I wonder if using Integer.parseInt() from string form would be safer? I guess if you\u0027ve tested it and it works, then this is fine.",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
