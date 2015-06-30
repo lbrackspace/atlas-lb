@@ -159,6 +159,24 @@
       "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ad9bd40_b4260c67",
+        "filename": "logs/cloudfiles-segmenter/src/main/java/org/openstack/atlas/cloudfiles/CloudFilesConfig.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-06-30T21:13:04Z",
+      "side": 1,
+      "message": "Yeah that makes sense.",
+      "parentUuid": "9ad9bd40_54bb000e",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
