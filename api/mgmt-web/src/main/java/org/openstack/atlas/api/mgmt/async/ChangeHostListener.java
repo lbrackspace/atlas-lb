@@ -6,7 +6,6 @@ import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.entities.VirtualIpv6;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -64,9 +63,9 @@ public class ChangeHostListener extends BaseListener {
             reverseProxyLoadBalancerStmService.changeHostForLoadBalancers(dbLoadBalancers, mdc.getMoveHost());
 
             // Update cluster for VIPs
-            Map<Integer, VirtualIp> vipsToUpdate = new HashMap<Integer, VirtualIp>();
-            Map<Integer, VirtualIpv6> vip6sToUpdate = new HashMap<Integer, VirtualIpv6>();
             if (!newCluster.getId().equals(oldCluster.getId())) {
+                Map<Integer, VirtualIp> vipsToUpdate = new HashMap<Integer, VirtualIp>();
+                Map<Integer, VirtualIpv6> vip6sToUpdate = new HashMap<Integer, VirtualIpv6>();
                 for (LoadBalancer dbLoadBalancer : dbLoadBalancers) {
                     Set<LoadBalancerJoinVip> joinVips = dbLoadBalancer.getLoadBalancerJoinVipSet();
                     for (LoadBalancerJoinVip joinVip : joinVips) {

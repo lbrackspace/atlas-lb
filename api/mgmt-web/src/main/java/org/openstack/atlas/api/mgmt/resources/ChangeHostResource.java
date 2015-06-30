@@ -25,10 +25,8 @@ import javax.ws.rs.core.Response;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACTIVE;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.PENDING_UPDATE;
@@ -38,6 +36,7 @@ public class ChangeHostResource extends ManagementDependencyProvider {
     private static final String SSLTERMBREAK = "This operation will result in this Load Balancer (or another LB sharing a VIP)  entering ERROR status, as the sslTermination is invalid. Consider deleting the sslTermination on this LB before attempting to change hosts.";
     private static final String NOMOVESUSPENDED = "This Load Balancer (or another LB sharing VIP) is Suspended, Please Check With Operations For Further Information...";
     private static final String BADHOST = "Invalid newHostId supplied.";
+    private static final String BADCLUSTER = "Invalid newClusterId supplied, or unable to find a valid host for the supplied cluster.";
     private static final String SAMEHOST = "The supplied newHostId is the same as the Load Balancer's existing HostID. No action will be performed.";
     private static final String SHAREDLOCKFAIL = "This Load Balancer uses a shared VIP, and a lock could not be established on all LBs sharing that VIP. No action will be performed.";
     private static final ZeusUtils zeusUtils;
@@ -48,7 +47,7 @@ public class ChangeHostResource extends ManagementDependencyProvider {
     }
 
     @PUT
-    public Response changeHost(@QueryParam("newHostId") Integer newHostId) {
+    public Response changeHost(@QueryParam("newHostId") Integer newHostId, @QueryParam("newClusterId") Integer newClusterId) {
         if (!isUserInRole("ops")) {
             return ResponseFactory.accessDenied();
         }
@@ -59,10 +58,11 @@ public class ChangeHostResource extends ManagementDependencyProvider {
 
             Host newHost;
             try {
-                newHost = hostService.getById(newHostId);
+                // Pick the specified host, or calculate one from a specified cluster
+                newHost = (newHostId != null) ? hostService.getById(newHostId) : hostRepository.getDefaultActiveHost(newClusterId);
                 mdc.setMoveHost(newHost);
             } catch (EntityNotFoundException hnfe) {
-                BadRequestException bre = new BadRequestException(BADHOST);
+                BadRequestException bre = new BadRequestException((newHostId != null) ? BADHOST : BADCLUSTER);
                 return ResponseFactory.getErrorResponse(bre, null, null);
             }
 
