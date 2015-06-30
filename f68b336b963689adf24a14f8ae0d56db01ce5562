@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9ad9bd40_911d9a76",
+        "filename": "logs/cloudfiles-segmenter-asm/src/main/java/org/openstack/atlas/cloudfiles/itest/CloudFilesCli.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2015-06-30T20:03:55Z",
+      "side": 1,
+      "message": "Your thinking of the resetConfig() function which reads from /etc/openstack/blah.conf which is what production uses.\n\nFor the command line we allow the user to overwrite the defaults and load them from a jason file in the home directory of that user. This allows us to test the CloudFiles stuff from differen\u0027t accounts. In short you don\u0027t have to use the loadJsonConf if your ok with using the defaults defined in /etc/openstack/atlas.\n\nBy the way the CLI code never makes it to production. It will need to be assembled and ran via \"java -jar\" from the command line.",
+      "parentUuid": "9ad9bd40_bc5fd871",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9ad9bd40_dc53bc6a",
         "filename": "logs/cloudfiles-segmenter/src/main/java/org/openstack/atlas/cloudfiles/CloudFilesConfig.java",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2015-06-30T04:57:45Z",
       "side": 1,
       "message": "Does this cast work properly? I wonder if using Integer.parseInt() from string form would be safer? I guess if you\u0027ve tested it and it works, then this is fine.",
+      "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ad9bd40_d40e3034",
+        "filename": "logs/cloudfiles-segmenter/src/main/java/org/openstack/atlas/cloudfiles/CloudFilesConfig.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2015-06-30T20:03:55Z",
+      "side": 1,
+      "message": "For some reason google json will actually returns a Long and never an Integer when it sees a number.\n IE if you put 1 it still returns a Long. intValue() will just return the lower 32 bits as an Integer. I would have liked to keep it as a long but when I use this to set the number of bytes to send in an HTTP request I can only use a 32 bit value so 2147483647 is the max it will allow. So I just store it as an int anyways.\n\nin general the get() function in the jsonParser returns an Object reference. When you do a (Long)or any kind of cast in source code your really just doing a \"checkcast\" in the JVM bytecode and telling the compiler that from that point on you want to reference the Long instance methods on that \"Object\" in subsequent calls. The byte code for the line in question is?\n\n   75:\tldc\t#50; //String cloud_files_lzo_segment_size\n   77:\tinvokevirtual\t#47; //Method org/json/simple/JSONObject.get:(Ljava/lang/Object;)Ljava/lang/Object;\n   80:\tcheckcast\t#51; //class java/lang/Long\n   83:\tinvokevirtual\t#52; //Method java/lang/Long.intValue:()I\n   86:\tputstatic\t#17; //Field segmentSize:I\n\nI used to find that odd myself for a while. TypeCasting in java really isn\u0027t converting a type. Its just telling the compiler to use Class code for Long.methods() on this \"Object\" if it survives the checkcast(long) test. Checkcast just verifies that the physical imple for Object in inherted from Long or is a Long reference.",
+      "parentUuid": "9ad9bd40_dc53bc6a",
       "revId": "f68b336b963689adf24a14f8ae0d56db01ce5562",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
