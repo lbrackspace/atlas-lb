@@ -18,6 +18,7 @@
         <module>bouncycastle</module>
         <module>rsa</module>
         <module>chain-builder</module>
+        <module>sniff-cipher</module>
         <module>root-ca-builder</module>
         <module>gui</module>
     </modules>
