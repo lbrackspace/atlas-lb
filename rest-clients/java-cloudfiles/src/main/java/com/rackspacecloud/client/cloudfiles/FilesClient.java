@@ -185,7 +185,7 @@ public class FilesClient
        	            schemeRegistry.register(
        	                    new Scheme("http", 80, PlainSocketFactory.getSocketFactory()));
        	            schemeRegistry.register(
-       	                    new Scheme("https", 443, SSLSocketFactory.getSocketFactory()));
+       	                    new Scheme("https", 443, SSLSocketFactory.getSystemSocketFactory()));
        	            return new ThreadSafeClientConnManager(createHttpParams(), schemeRegistry);
        	        }
     	    }, username, password, authUrl, account, connectionTimeOut);
