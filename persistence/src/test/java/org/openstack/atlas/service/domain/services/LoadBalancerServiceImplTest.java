@@ -184,8 +184,8 @@ public class LoadBalancerServiceImplTest {
             lbService.addDefaultValues(lb);
 
             Assert.assertEquals(NodeStatus.ONLINE, node1.getStatus());
-            Assert.assertEquals(NodeStatus.OFFLINE, node2.getStatus());
-            Assert.assertEquals(NodeStatus.OFFLINE, node3.getStatus());
+            Assert.assertEquals(NodeStatus.ONLINE, node2.getStatus());
+            Assert.assertEquals(NodeStatus.ONLINE, node3.getStatus());
 
             Assert.assertEquals(1, node1.getWeight().intValue());
             Assert.assertEquals(0, node2.getWeight().intValue());
