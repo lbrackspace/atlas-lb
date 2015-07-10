@@ -38,6 +38,7 @@ public class ChangeHostResource extends ManagementDependencyProvider {
     private static final String BADHOST = "Invalid newHostId supplied.";
     private static final String BADCLUSTER = "Invalid newClusterId supplied, or unable to find a valid host for the supplied cluster.";
     private static final String SAMEHOST = "The supplied newHostId is the same as the Load Balancer's existing HostID. No action will be performed.";
+    private static final String LOCKFAIL = "Can't lock LB. No action will be performed.";
     private static final String SHAREDLOCKFAIL = "This Load Balancer uses a shared VIP, and a lock could not be established on all LBs sharing that VIP. No action will be performed.";
     private static final ZeusUtils zeusUtils;
     private int loadBalancerId;
@@ -148,7 +149,11 @@ public class ChangeHostResource extends ManagementDependencyProvider {
                 }
                 BadRequest lockFail = new BadRequest();
                 lockFail.setValidationErrors(new ValidationErrors());
-                lockFail.getValidationErrors().getMessages().add(SHAREDLOCKFAIL);
+                if (LBsToMove.size() > 1) {
+                    lockFail.getValidationErrors().getMessages().add(SHAREDLOCKFAIL);
+                } else {
+                    lockFail.getValidationErrors().getMessages().add(LOCKFAIL);
+                }
                 lockFail.getValidationErrors().getMessages().add("Could not obtain lock for LB #" + lastLockAttempt);
                 return Response.status(Response.Status.BAD_REQUEST).entity(lockFail).build();
             }
