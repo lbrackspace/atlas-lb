@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-common</artifactId>
-        <version>1.25.5</version>
+        <version>1.25.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>crypto-tool</artifactId>
