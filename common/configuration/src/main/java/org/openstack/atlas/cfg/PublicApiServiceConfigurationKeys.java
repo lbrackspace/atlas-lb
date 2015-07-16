@@ -39,5 +39,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     usage_poller_log_all_counters,
     usage_timezone_code,
     usage_deletion_limit,
-    stingray_stats_base_uri
+    stingray_stats_base_uri,
+    usage_ignore_clusters
 }

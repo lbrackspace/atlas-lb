@@ -27,7 +27,8 @@ public class StingrayRestClientManager {
     protected boolean isDebugging;
     protected final String adminUser;
     protected final String adminKey;
-
+    protected Integer read_timeout;
+    protected Integer connect_timeout;
 
 
 
@@ -153,6 +154,19 @@ public class StingrayRestClientManager {
         this.isDebugging = isDebugging;
         this.adminUser = adminUser;
         this.adminKey = adminKey;
+
+        try {
+            this.read_timeout = Integer.parseInt(config.getString(ClientConfigKeys.stingray_read_timeout));
+        } catch (Exception e) {
+            this.read_timeout = 5000;
+        }
+        try {
+            this.connect_timeout = Integer.parseInt(config.getString(ClientConfigKeys.stingray_connect_timeout));
+        } catch (Exception e) {
+            this.connect_timeout = 5000;
+        }
+        client.setConnectTimeout(this.connect_timeout);
+        client.setReadTimeout(this.read_timeout);
 
         this.client.addFilter(new HTTPBasicAuthFilter(this.adminUser, this.adminKey));
     }
