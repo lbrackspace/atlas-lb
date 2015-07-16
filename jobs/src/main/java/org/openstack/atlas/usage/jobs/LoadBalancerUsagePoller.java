@@ -2,6 +2,8 @@ package org.openstack.atlas.usage.jobs;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.jobs.AbstractJob;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -127,13 +129,27 @@ public class LoadBalancerUsagePoller extends AbstractJob {
 
     private List<Host> getAccessibleHosts() {
         LOG.info("Discovering accessible hosts...");
+
+        RestApiConfiguration configuration = new RestApiConfiguration();
+        String ignoreClusterConf = configuration.getString(PublicApiServiceConfigurationKeys.usage_ignore_clusters);
+        ignoreClusterConf = ignoreClusterConf.replaceAll("\\s+", " "); // Normalize whitespace
+
+        List<Integer> ignoreClusters = new ArrayList<Integer>();
+        for (String clusterString : ignoreClusterConf.split(" ")) {
+            ignoreClusters.add(Integer.parseInt(clusterString));
+        }
+
         List<Host> hostList = hostService.getAllOnline();
         List<Host> accessibleHosts = new ArrayList<Host>();
         for (Host host : hostList) {
             try {
                 if (host.isSoapEndpointActive() || host.isRestEndpointActive()) {
-                    LOG.info("Host: " + host.getName() + " is accessible.");
-                    accessibleHosts.add(host);
+                    if (ignoreClusters.contains(host.getCluster().getId())) {
+                        LOG.info("Host: " + host.getName() + " is accessible, but ignored by config.");
+                    } else {
+                        LOG.info("Host: " + host.getName() + " is accessible.");
+                        accessibleHosts.add(host);
+                    }
                 } else {
                     LOG.info("Host: " + host.getName() + " is NOT accessible.");
                 }
