@@ -133,9 +133,15 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         // All LBs should be guaranteed to be on the same host, so get the old config based on the first one
         LoadBalancerEndpointConfiguration configOld = getConfigbyLoadBalancerId(lbs.get(0).getId());
         LoadBalancerEndpointConfiguration configNew = getConfig(newHost);
+        int retryCount;
+        try{
+            retryCount = Integer.parseInt(configuration.getString(PublicApiServiceConfigurationKeys.rest_api_retries));
+        } catch (Exception e) { // NumberFormatException or ConfigurationInitializationException
+            retryCount = 5;
+        }
 
         try {
-            reverseProxyLoadBalancerStmAdapter.changeHostForLoadBalancers(configOld, configNew, lbs);
+            reverseProxyLoadBalancerStmAdapter.changeHostForLoadBalancers(configOld, configNew, lbs, retryCount);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(configOld, af);
             checkAndSetIfRestEndPointBad(configNew, af);

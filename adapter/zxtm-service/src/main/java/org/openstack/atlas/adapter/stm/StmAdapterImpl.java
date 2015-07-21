@@ -21,7 +21,6 @@ import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
@@ -636,29 +635,83 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-    public void changeHostForLoadBalancers(LoadBalancerEndpointConfiguration configOld, LoadBalancerEndpointConfiguration configNew, List<LoadBalancer> loadBalancers)
+    public void changeHostForLoadBalancers(LoadBalancerEndpointConfiguration configOld, LoadBalancerEndpointConfiguration configNew, List<LoadBalancer> loadBalancers, Integer retryCount)
             throws InsufficientRequestException, RollBackException {
         ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
         StingrayRestClient clientNew = getResources().loadSTMRestClient(configNew);
         StingrayRestClient clientOld = getResources().loadSTMRestClient(configOld);
+        int tryCount = retryCount + 1;
 
         // Create the LB on the new host with VIPs disabled
+
         for (LoadBalancer lb : loadBalancers) {
-            updateLoadBalancer(configNew, lb, lb, false);
+            for (int attempt = 1; attempt <= tryCount; attempt++) {
+                try {
+                    updateLoadBalancer(configNew, lb, lb, false);
+                    break;
+                } catch (Exception e) {
+                    LOG.debug(String.format("ChangeHost failed to sync new host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
+                }
+            }
         }
 
         // Disable the VIPs for all LBs on the old host
         for (LoadBalancer lb : loadBalancers) {
-            String vsName = ZxtmNameBuilder.genVSName(lb);
-            rt.translateTrafficIpGroupsResource(configOld, lb, false);
-            getResources().updateVirtualIps(clientOld, vsName, rt.getcTrafficIpGroups());
+            for (int attempt = 1; attempt <= tryCount; attempt++) {
+                try {
+                    String vsName = ZxtmNameBuilder.genVSName(lb);
+                    rt.translateTrafficIpGroupsResource(configOld, lb, false);
+                    getResources().updateVirtualIps(clientOld, vsName, rt.getcTrafficIpGroups());
+                    break;
+                } catch (Exception e) {
+                    LOG.debug(String.format("ChangeHost failed to disable TIGs on old host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
+                }
+            }
+        }
+
+        // Disable the VirtualServers for all LBs on the old host
+        for (LoadBalancer lb : loadBalancers) {
+            Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(lb);
+            for (VSType vsType : vsNames.keySet()) {
+                String vsName = vsNames.get(vsType);
+                for (int attempt = 1; attempt <= tryCount; attempt++) {
+                    try {
+                        switch(vsType) {
+                            case REDIRECT_VS:
+                                rt.translateRedirectVirtualServerResource(configOld, vsName, lb);
+                                rt.getcRedirectVServer().getProperties().getBasic().setEnabled(false);
+                                getResources().updateVirtualServer(clientOld, vsName, rt.getcRedirectVServer());
+                                break;
+                            case SECURE_VS:
+                                rt.translateVirtualServerResource(configOld, vsName, lb);
+                                rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                                getResources().updateVirtualServer(clientOld, vsName, rt.getcVServer());
+                                break;
+                            default:
+                                rt.translateVirtualServerResource(configOld, vsName, lb);
+                                rt.getcVServer().getProperties().getBasic().setEnabled(false);
+                                getResources().updateVirtualServer(clientOld, vsName, rt.getcVServer());
+                        }
+                        break;
+                    } catch (Exception e) {
+                        LOG.debug(String.format("ChangeHost failed to disable VS %s on old host for LB: %s, attempt %d of %d", vsName, lb.getId(), attempt, tryCount));
+                    }
+                }
+            }
         }
 
         // Enable the VIPs for all LBs on the new host
         for (LoadBalancer lb : loadBalancers) {
-            String vsName = ZxtmNameBuilder.genVSName(lb);
-            rt.translateTrafficIpGroupsResource(configNew, lb, true);
-            getResources().updateVirtualIps(clientNew, vsName, rt.getcTrafficIpGroups());
+            for (int attempt = 1; attempt <= tryCount; attempt++) {
+                try {
+                    String vsName = ZxtmNameBuilder.genVSName(lb);
+                    rt.translateTrafficIpGroupsResource(configNew, lb, true);
+                    getResources().updateVirtualIps(clientNew, vsName, rt.getcTrafficIpGroups());
+                    break;
+                } catch (Exception e) {
+                    LOG.debug(String.format("ChangeHost failed to enable TIGs on new host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
+                }
+            }
         }
     }
 

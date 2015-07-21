@@ -6,6 +6,7 @@ import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.entities.VirtualIpv6;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACTIVE;
+import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ERROR;
 
 
 public class ChangeHostListener extends BaseListener {
@@ -35,6 +37,7 @@ public class ChangeHostListener extends BaseListener {
         MessageDataContainer mdc = getDataContainerFromMessage(message);
         Integer lastLbId = -1;
         String lbIdString = "";
+        LoadBalancerStatus finalStatus = ACTIVE;
 
         try {
             for (Integer lbId : mdc.getIds()) {
@@ -93,8 +96,9 @@ public class ChangeHostListener extends BaseListener {
 
             LOG.debug(String.format("Successfully Changed Host for loadbalancer(s): %s in STM...", lbIdString));
         } catch (Exception e) {
-            String msg = String.format("Error moving LB(s): %s in ChangeHostListener(), reverting status to ACTIVE", lbIdString);
+            String msg = String.format("Error moving LB(s): %s in ChangeHostListener(), setting status to ERROR.", lbIdString);
             LOG.error(msg, e);
+            finalStatus = ERROR;
 
             for (LoadBalancer dbLoadBalancer : dbLoadBalancers) {
                 // No idea which one failed, just save an alert for all of them so we can track down the issue
@@ -103,7 +107,7 @@ public class ChangeHostListener extends BaseListener {
         }
 
         for (LoadBalancer dbLoadBalancer : dbLoadBalancers) {
-            loadBalancerService.setStatus(dbLoadBalancer, ACTIVE);
+            loadBalancerService.setStatus(dbLoadBalancer, finalStatus);
         }
         LOG.info(String.format("Move operation complete for loadbalancer(s): %s ", lbIdString));
     }
