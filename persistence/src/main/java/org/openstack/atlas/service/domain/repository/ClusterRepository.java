@@ -587,7 +587,8 @@ public class ClusterRepository {
     }
 
     public Cluster getDefaultActiveCluster() throws ClusterStatusException {
-        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl where cl.clusterStatus = :status")
+        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl WHERE cl.clusterType = :type AND cl.clusterStatus = :status")
+                .setParameter("type", ClusterType.STANDARD)
                 .setParameter("status", ClusterStatus.ACTIVE)
                 .getResultList();
         if (cls != null && cls.size() > 0) {
