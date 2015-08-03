@@ -649,8 +649,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                 try {
                     updateLoadBalancer(configNew, lb, lb, false);
                     break;
-                } catch (Exception e) {
+                } catch (StmRollBackException e) {
                     LOG.debug(String.format("ChangeHost failed to sync new host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
+                    if (attempt == tryCount) throw e;
                 }
             }
         }
@@ -663,8 +664,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     rt.translateTrafficIpGroupsResource(configOld, lb, false);
                     getResources().updateVirtualIps(clientOld, vsName, rt.getcTrafficIpGroups());
                     break;
-                } catch (Exception e) {
+                } catch (StmRollBackException e) {
                     LOG.debug(String.format("ChangeHost failed to disable TIGs on old host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
+                    if (attempt == tryCount) throw e;
                 }
             }
         }
@@ -693,8 +695,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                                 getResources().updateVirtualServer(clientOld, vsName, rt.getcVServer());
                         }
                         break;
-                    } catch (Exception e) {
+                    } catch (StmRollBackException e) {
                         LOG.debug(String.format("ChangeHost failed to disable VS %s on old host for LB: %s, attempt %d of %d", vsName, lb.getId(), attempt, tryCount));
+                        if (attempt == tryCount) throw e;
                     }
                 }
             }
@@ -708,8 +711,9 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     rt.translateTrafficIpGroupsResource(configNew, lb, true);
                     getResources().updateVirtualIps(clientNew, vsName, rt.getcTrafficIpGroups());
                     break;
-                } catch (Exception e) {
+                } catch (StmRollBackException e) {
                     LOG.debug(String.format("ChangeHost failed to enable TIGs on new host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
+                    if (attempt == tryCount) throw e;
                 }
             }
         }
