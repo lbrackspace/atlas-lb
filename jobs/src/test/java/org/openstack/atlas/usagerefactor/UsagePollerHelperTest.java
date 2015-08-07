@@ -961,6 +961,50 @@ public class UsagePollerHelperTest {
                     result.getLbHostUsages().get(1));
         }
 
+        @Test
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/usagepoller/usagepollerhelper/processcurrentusage/case12.xml")
+        public void shouldHandleMigration() throws Exception{
+            snmpMap.get(124).get(1).setHostId(3);
+            SnmpUsage temp1 = snmpMap.get(124).get(1);
+            snmpMap.get(124).remove(1);
+            snmpMap.get(124).put(3, temp1);
+
+            snmpMap.get(124).get(2).setHostId(4);
+            SnmpUsage temp2 = snmpMap.get(124).get(2);
+            snmpMap.get(124).remove(2);
+            snmpMap.get(124).put(4, temp2);
+
+            snmpMap.get(123).get(1).setHostId(3);
+            SnmpUsage temp3 = snmpMap.get(123).get(1);
+            snmpMap.get(123).remove(1);
+            snmpMap.get(123).put(3, temp3);
+
+            snmpMap.get(123).get(2).setHostId(4);
+            SnmpUsage temp4 = snmpMap.get(123).get(2);
+            snmpMap.get(123).remove(2);
+            snmpMap.get(123).put(4, temp4);
+
+            UsageProcessorResult result = usagePollerHelper.processCurrentUsage(lbHostMap, snmpMap, pollTime);
+
+            //new lb_merged_host_usage records assertions
+            Assert.assertEquals(2, result.getMergedUsages().size());
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages().get(1));
+
+            //New lb_host_usage records assertions
+            Assert.assertEquals(4, result.getLbHostUsages().size());
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 3, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(0));
+            AssertLoadBalancerHostUsage.hasValues(1234, 124, 4, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 3, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(2));
+            AssertLoadBalancerHostUsage.hasValues(1234, 123, 4, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages().get(3));
+        }
+
     }
 
     @RunWith(SpringJUnit4ClassRunner.class)

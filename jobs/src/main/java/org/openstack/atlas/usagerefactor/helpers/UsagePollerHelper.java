@@ -227,7 +227,7 @@ public class UsagePollerHelper {
                 SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(hostId);
 
                 if(!existingUsages.get(loadbalancerId).containsKey(hostId)) {
-                    //No previous record exists for this load balancer. Still need to add the current
+                    //No previous record exists for this load balancer on this host. Still need to add the current
                     //counters to the lb_host_usage table. Have to use an existing usage not from
                     //this host to get the correct numVips and tagsBitmask.
                     //There will be issues if there are events that a record for a host got deleted somehow.
@@ -235,6 +235,11 @@ public class UsagePollerHelper {
                     newLBHostUsages.add(convertSnmpUsageToLBHostUsage(currentUsage, existingUsage.getAccountId(),
                             loadbalancerId, existingUsage.getTagsBitmask(),
                             existingUsage.getNumVips(), hostId, pollTime));
+                    if(existingUsages.containsKey(loadbalancerId)){
+                        newMergedRecord = new LoadBalancerMergedHostUsage(
+                                existingUsage.getAccountId(), loadbalancerId, 0L, 0L, 0L, 0L, 0, 0,
+                                existingUsage.getNumVips(), existingUsage.getTagsBitmask(), pollTime, null);
+                    }
                     continue;
                 }
 
@@ -264,7 +269,10 @@ public class UsagePollerHelper {
                          loadbalancerId, usageBaseline.getTagsBitmask(),
                          usageBaseline.getNumVips(), hostId, pollTime));
             }
-            mergedUsages.add(newMergedRecord);
+            //Safeguard against attempting to insert null records
+            if(newMergedRecord != null) {
+                mergedUsages.add(newMergedRecord);
+            }
         }
 
         return new UsageProcessorResult(mergedUsages, newLBHostUsages);
@@ -344,7 +352,10 @@ public class UsagePollerHelper {
 
             //Add all events into list that shall be returned
             for(String timeKey : mergedUsagesMap.keySet()) {
-                newMergedEventRecords.add(mergedUsagesMap.get(timeKey));
+                //Safeguard against inserting null records
+                if(mergedUsagesMap.get(timeKey) != null){
+                    newMergedEventRecords.add(mergedUsagesMap.get(timeKey));
+                }
             }
         }
 
