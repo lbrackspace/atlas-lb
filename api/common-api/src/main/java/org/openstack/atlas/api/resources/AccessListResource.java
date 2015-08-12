@@ -85,8 +85,12 @@ public class AccessListResource extends CommonDependencyProvider {
     @DELETE
     public Response deleteAccessList(@QueryParam("id") List<Integer> networkItemIds) throws EntityNotFoundException {
         LoadBalancer returnLB = new LoadBalancer();
-        Integer size = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
-        boolean isLbEditable;
+        Integer limit = accountLimitService.getLimit(accountId, AccountLimitType.BATCH_DELETE_LIMIT);
+
+        if (networkItemIds.size() > limit) {
+            Exception badRequestException = new BadRequestException(String.format("Currently, the limit of accepted parameters is: %s; please supply a valid parameter list.", limit));
+            return ResponseFactory.getErrorResponse(badRequestException, null, null);
+        }
 
         try {
             returnLB.setId(loadBalancerId);
@@ -94,11 +98,11 @@ public class AccessListResource extends CommonDependencyProvider {
             if (requestHeaders != null) {
                 returnLB.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
             }
-            isLbEditable = loadBalancerService.testAndSetStatusPending(accountId, loadBalancerId);
-            if (!isLbEditable) {
+
+            if (!loadBalancerService.testAndSetStatusPending(accountId, loadBalancerId)) {
                 throw new ImmutableEntityException("LoadBalancer is not ACTIVE");
             }
-            loadBalancerService.setStatus(accountId, loadBalancerId, LoadBalancerStatus.PENDING_UPDATE);
+
             if (networkItemIds.isEmpty()) {
                 returnLB.setAccessLists(new HashSet<org.openstack.atlas.service.domain.entities.AccessList>(
                         accessListService.getAccessListByAccountIdLoadBalancerId(accountId, loadBalancerId)));
@@ -107,50 +111,9 @@ public class AccessListResource extends CommonDependencyProvider {
             }
             asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_ACCESS_LIST, returnLB);
         } catch (Exception badRequestException) {
-            if (!networkItemIds.isEmpty()) {
-                badRequestException = new BadRequestException(String.format("Must supply one or more id's to process this request.", size));
-            } if (networkItemIds.size() <= size) {
-                badRequestException = new BadRequestException(String.format("Currently, the limit of accepted parameters is: %s :please supply a valid parameter list.", size));
-            }
             return ResponseFactory.getErrorResponse(badRequestException, null, null);
         }
         return Response.status(Response.Status.ACCEPTED).build();
-
-//        if (networkItemIds.size() == 0) {
-//            try {
-//                domainLB.setId(loadBalancerId);
-//                domainLB.setAccountId(accountId);
-//                if (requestHeaders != null) {
-//                    domainLB.setUserName(requestHeaders.getRequestHeader("X-PP-User").get(0));
-//                }
-//                loadBalancerService.get(loadBalancerId, accountId);
-//                returnLB.setId(loadBalancerId);
-//                returnLB.setAccountId(accountId);
-//                returnLB = accessListService.markForDeletionAccessList(returnLB);
-//                asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_ACCESS_LIST, returnLB);
-//            } catch (Exception badRequestException) {
-//                badRequestException = new BadRequestException(String.format("Must supply one or more id's to process this request.", size));
-//                return ResponseFactory.getErrorResponse(badRequestException, null, null);
-//            }
-//            return Response.status(Response.Status.ACCEPTED).build();
-//        } else if (networkItemIds.size() <= size) {
-//            try {
-//                Set<org.openstack.atlas.service.domain.entities.AccessList> accessLists = new HashSet<org.openstack.atlas.service.domain.entities.AccessList>();
-//                org.openstack.atlas.service.domain.entities.AccessList aList = new org.openstack.atlas.service.domain.entities.AccessList();
-//                accessLists.add(aList);
-//                returnLB.setId(loadBalancerId);
-//                returnLB.setAccountId(accountId);
-//                returnLB.setAccessLists(accessLists);
-//                returnLB = accessListService.markForDeletionNetworkItems(returnLB, networkItemIds);
-//                asyncService.callAsyncLoadBalancingOperation(Operation.APPEND_TO_ACCESS_LIST, returnLB);
-//                return Response.status(Response.Status.ACCEPTED).build();
-//            } catch (Exception e) {
-//                return ResponseFactory.getErrorResponse(e, null, null);
-//            }
-//        } else {
-//            Exception badRequestException = new BadRequestException(String.format("Currently, the limit of accepted parameters is: %s :please supply a valid parameter list.", size));
-//            return ResponseFactory.getErrorResponse(badRequestException, null, null);
-//        }
     }
 
     @Path("{id: [-+]?[0-9][0-9]*}")
