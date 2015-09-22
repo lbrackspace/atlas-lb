@@ -91,6 +91,7 @@ public class ChangeHostListener extends BaseListener {
 
             for (LoadBalancer dbLoadBalancer : dbLoadBalancers) {
                 dbLoadBalancer.setHost(mdc.getMoveHost());
+                dbLoadBalancer.setUserPages(null);
                 loadBalancerService.update(dbLoadBalancer);
             }
 
