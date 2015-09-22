@@ -145,6 +145,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         final String name = ZxtmNameBuilder.genVSName(loadBalancer);
         final String rollBackMessage = "Sync load balancer request canceled.";
 
+        // Create a HM if it exists first, because the pool needs it in the next step
+        if (loadBalancer.getHealthMonitor() != null) {
+            updateHealthMonitor(config, loadBalancer);
+        }
+
         if (!Arrays.asList(serviceStubs.getPoolBinding().getPoolNames()).contains(name)) {
             LOG.debug(String.format("Adding node pool '%s'...", name));
             createNodePool(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getNodes(), loadBalancer.getAlgorithm());
