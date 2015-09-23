@@ -81,7 +81,7 @@ public class ZeusUtils {
         if (userCrt != null && CertUtils.isCertExpired(userCrt, now)) {
             Date after = userCrt.getNotAfter();
             String errorMsg = invalidDateMessage("User cert expired on", after);
-            errors.add(new ErrorEntry(ErrorType.EXPIRED_CERT, errorMsg, true, null));
+            errors.add(new ErrorEntry(ErrorType.EXPIRED_CERT, errorMsg, false, null));
         }
 
         if (userCrt != null && CertUtils.isCertPremature(userCrt, now)) {
