@@ -1,5 +1,13 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import java.util.Collections;
+import org.openstack.atlas.api.mgmt.helpers.SslTermInfoComparator;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.CertInfo;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.SslTermInfo;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
+import org.joda.time.DateTime;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.SslTermInfos;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.services.helpers.RdnsHelper;
 import org.openstack.atlas.util.config.MossoConfigValues;
@@ -30,6 +38,9 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import org.openstack.atlas.api.mgmt.helpers.CertInfoUtils;
+import org.openstack.atlas.service.domain.pojos.SslTermInfoDb;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
 
 import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
@@ -39,7 +50,14 @@ import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
 public class AuditResource extends ManagementDependencyProvider {
 
+    private static final SslTermInfoComparator sslTermCmp;
     private static Log LOG = LogFactory.getLog(AuditResource.class.getName());
+    private static final ZeusUtils zu;
+
+    static {
+        zu = new ZeusUtils();
+        sslTermCmp = new SslTermInfoComparator();
+    }
 
     @GET
     @Path("lbconfig")
@@ -67,8 +85,6 @@ public class AuditResource extends ManagementDependencyProvider {
         return Response.status(200).entity(jsonResponse).build();
     }
 
-    @GET
-    @Path("status")
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveLoadBalancersByStatus(@QueryParam("status") String status, @QueryParam("changes-since") String changedSince) {
         Calendar changedCal = null;
@@ -122,12 +138,52 @@ public class AuditResource extends ManagementDependencyProvider {
             } catch (Exception ex) {
                 valueStr = "????";
             }
-            if (!keyStr.contains("auth") && !keyStr.contains("pass"))
+            if (!keyStr.contains("auth") && !keyStr.contains("pass")) {
                 resp += String.format("\n\t\"%s\": \"%s\",", keyStr, valueStr);
+            }
         }
-        if (resp.endsWith(","))
-            resp = resp.substring(0, resp.length()-1);
+        if (resp.endsWith(",")) {
+            resp = resp.substring(0, resp.length() - 1);
+        }
         resp += "\n}";
         return resp;
+    }
+
+    @GET
+    @Path("sslexpireaudit")
+    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    public Response runExpiredCertCheck() {
+        DateTime now = StaticDateTimeUtils.nowDateTime(true);
+        SslTermInfos sslTermElement = new SslTermInfos();
+        List<SslTermInfoDb> sslTermsFromDb = loadBalancerRepository.getSslTermInfo();
+        sslTermElement.setReportDate(StaticDateTimeUtils.toCal(now));
+        for (SslTermInfoDb dbSslTermInfo : sslTermsFromDb) {
+            SslTermInfo apiTermInfo = new SslTermInfo();
+            apiTermInfo.setLoadbalancerId(dbSslTermInfo.getAccountId());
+            apiTermInfo.setLoadbalancerId(dbSslTermInfo.getLoadbalancerId());
+            apiTermInfo.setId(dbSslTermInfo.getSslId());
+            String key = dbSslTermInfo.getPrivatekey();
+            String crt = dbSslTermInfo.getCertificate();
+            String imds = dbSslTermInfo.getCertificate();
+            ZeusCrtFile zcf = zu.buildZeusCrtFileLbassValidation(key, crt, imds);
+            CertInfo certInfo = CertInfoUtils.parseCertInfo(crt);
+            apiTermInfo.setCertificate(certInfo);
+            apiTermInfo.setIssuer(certInfo.getIssuerName());
+            apiTermInfo.setSubject(certInfo.getSubjectName());
+            apiTermInfo.setNotBefore(certInfo.getNotBefore());
+            apiTermInfo.setNotAfter(certInfo.getNotAfter());
+            apiTermInfo.setExpiresInDays(certInfo.getDaysTillExpires());
+            if (zcf.hasFatalErrors()) {
+                apiTermInfo.setApiValid(Boolean.FALSE);
+            } else {
+                apiTermInfo.setApiValid(Boolean.TRUE);
+            }
+            for (String imd : CertInfoUtils.splitImds(imds)) {
+                apiTermInfo.getIntermediates().add(CertInfoUtils.parseCertInfo(imd));
+            }
+            sslTermElement.getSslTerms().add(apiTermInfo);
+        }
+        Collections.sort(sslTermElement.getSslTerms(), sslTermCmp);
+        return Response.status(200).entity(sslTermElement).build();
     }
 }

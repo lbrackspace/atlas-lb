@@ -28,7 +28,7 @@ def fprintf(fp,format,*args): fp.write(format%args)
 def getHdfsUtils():
     return HadoopLogsConfigs.getHdfsUtils()
 
-conf_file = "./local.json"
+conf_file = "./stag.json"
 
 def mem():
     print Debug.showMem()

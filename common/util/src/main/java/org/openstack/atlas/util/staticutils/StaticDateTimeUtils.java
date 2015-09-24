@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Locale;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -143,6 +144,12 @@ public class StaticDateTimeUtils {
         } else {
             return new DateTime(year, month, day, hour, 0, 0, 0);
         }
+    }
+
+    public static double secondsBetween(DateTime before, DateTime after){
+        Duration duration = new Duration(before, after);
+        double seconds = duration.getMillis()*0.001;
+        return seconds;
     }
 
     public static int getNextHourKeyInt(int hourKey) {
