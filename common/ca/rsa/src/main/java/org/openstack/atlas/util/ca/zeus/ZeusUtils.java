@@ -94,7 +94,7 @@ public class ZeusUtils {
         if (!imdCrts.isEmpty() && userCrt != null) {
             X509CertificateObject subjectCrt = userCrt;
             X509CertificateObject issuerCrt = imdCrts.get(0);
-            List<ErrorEntry> crtSignErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt, true);
+            List<ErrorEntry> crtSignErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt, false);
             if (ErrorEntry.hasFatal(crtSignErrors)) {
                 if (lineMap.containsKey(issuerCrt)) {
                     int issuerLineNum = lineMap.get(issuerCrt).intValue();
@@ -350,7 +350,7 @@ public class ZeusUtils {
         return msg;
     }
 
-    private static List<X509CertificateObject> decodeImd(Map<X509CertificateObject, Integer> lineMap, String imdStr, ZeusCrtFile zcf) {
+    public static List<X509CertificateObject> decodeImd(Map<X509CertificateObject, Integer> lineMap, String imdStr, ZeusCrtFile zcf) {
         List<ErrorEntry> errors = zcf.getErrors();
         ErrorEntry errorEntry;
         List<X509CertificateObject> imdCrts = new ArrayList<X509CertificateObject>();

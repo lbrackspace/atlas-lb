@@ -34,7 +34,7 @@ public class HibernateUtil {
                     setProperty("hibernate.dialect", dialect).
                     setProperty("hibernate.current_session_context_class", "thread").
                     setProperty("hibernate.cache.provider_class", "org.hibernate.cache.NoCacheProvider").
-                    //setProperty("hibernate.show_sql", "true").
+                    setProperty("hibernate.show_sql", "true").
                     setProperty("hibernate.jdbc.batch_size", "50");
 
             if (packageName != null && !packageName.equals("")) {

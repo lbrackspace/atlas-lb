@@ -895,4 +895,46 @@
         </xsd:sequence>
     </xsd:complexType>
 
+    <xsd:element name="sslTermInfos" type="tns:sslTermInfos" />
+    <xsd:complexType name="sslTermInfos" >
+        <xsd:sequence>
+             <xsd:element name="sslTerms" type="tns:sslTermInfo" minOccurs="0" maxOccurs="unbounded" />
+        </xsd:sequence>
+        <xsd:attribute name="reportDate" type="xsd:dateTime" />
+    </xsd:complexType>
+
+    <xsd:element name="sslTermInfo" type="tns:sslTermInfo" />
+    <xsd:complexType name="sslTermInfo">
+         <xsd:sequence>
+              <xsd:element name="key" type="xsd:string" minOccurs="0" maxOccurs="1" />
+              <xsd:element name="certificate" type="tns:certInfo" minOccurs="0" maxOccurs="1" />
+              <xsd:element name="intermediates" type="tns:certInfo" minOccurs="0" maxOccurs="unbounded" />
+              <xsd:element name="errors" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+               
+         </xsd:sequence>
+         <xsd:attribute name="id" type="xsd:int" />
+         <xsd:attribute name="accountId" type="xsd:int" />
+         <xsd:attribute name="loadbalancerId" type="xsd:int" />
+         <xsd:attribute name="apiValid" type="xsd:boolean" />
+         <xsd:attribute name="expiresInDays" type="xsd:double" />
+         <xsd:attribute name="notBefore" type="xsd:dateTime" />
+         <xsd:attribute name="notAfter" type="xsd:dateTime" />
+         <xsd:attribute name="subject" type="xsd:string" />
+         <xsd:attribute name="issuer" type="xsd:string" />
+    </xsd:complexType>
+
+
+    <xsd:element name="certInfo" type="tns:certInfo" />
+    <xsd:complexType name="certInfo">
+        <xsd:sequence>
+            <xsd:element name="certPem" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="certReadble" type="xsd:boolean" />
+        <xsd:attribute name="subjectName" type="xsd:string" />
+        <xsd:attribute name="issuerName" type="xsd:string" />
+        <xsd:attribute name="notBefore" type="xsd:dateTime" />
+        <xsd:attribute name="notAfter" type="xsd:dateTime" />
+        <xsd:attribute name="daysTillExpires" type="xsd:double" />
+    </xsd:complexType>
+
 </xsd:schema>

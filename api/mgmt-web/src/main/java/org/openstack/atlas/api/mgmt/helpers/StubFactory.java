@@ -14,11 +14,14 @@ import java.text.ParseException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 
 public class StubFactory {
 
     private static Random rnd = new Random();
-
+    private static final double secsPerDay = 24.0*60.0*60.0;
     public static Clusters getClustersDetails() {
         Cluster cluster = new Cluster();
         cluster.setDataCenter(DataCenter.DFW);
@@ -189,8 +192,8 @@ public class StubFactory {
         return new Integer(ri % (hi - lo + 1) + lo);
     }
 
-    public static Long rndLong(int lo,int hi) {
-        return new Long(rndInt(lo,hi));
+    public static Long rndLong(int lo, int hi) {
+        return new Long(rndInt(lo, hi));
     }
 
     public static String rndIp() {
@@ -256,8 +259,7 @@ public class StubFactory {
 //        }
 //        return cl;
 //    }
-
-    public static HostMachineDetails newHostMachineDetails(){
+    public static HostMachineDetails newHostMachineDetails() {
         HostMachineDetails hmd = new HostMachineDetails();
         hmd.setActiveLBConfigurations(new Long(5));
         hmd.setAvailableConcurrentConnections(20);
@@ -406,7 +408,7 @@ public class StubFactory {
         l.getNodes().addAll(StubFactory.rndNodes(10).getNodes());
         l.setPort(rndInt(0, 32000));
         List<String> protocolNames = ProtocolPortBindings.getKeys();
-        l.setProtocol((String)rndChoice(protocolNames));
+        l.setProtocol((String) rndChoice(protocolNames));
         l.setRateLimit(rndRateLimit());
         l.setSessionPersistence(rndSessionPersistance());
         l.setStatus((String) rndChoice(LoadBalancerStatus.values()));
@@ -441,5 +443,16 @@ public class StubFactory {
             iface.getCidrs().add(cidr);
         }
         return iface;
+    }
+
+    public static CertInfo newCertInfo(int i,DateTime notBefore, DateTime notAfter){
+        DateTime now = StaticDateTimeUtils.nowDateTime(true);
+        CertInfo certInfo = new CertInfo();
+        certInfo.setIssuerName(String.format("issuer %d",i));
+        certInfo.setSubjectName(String.format("subject %d", i));
+        certInfo.setCertPem(String.format("cert %d pem", i));
+        double secs = StaticDateTimeUtils.secondsBetween(now, notAfter);
+        certInfo.setDaysTillExpires(secs);
+        return certInfo;
     }
 }

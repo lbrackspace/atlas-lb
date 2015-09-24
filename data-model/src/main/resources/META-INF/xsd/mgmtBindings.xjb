@@ -22,6 +22,15 @@
 
 
         <!--Bindings for classes-->
+        <bindings scd="~tns:sslTermInfos">
+            <class ref="org.openstack.docs.loadbalancers.api.management.v1.SslTermInfos"/>
+        </bindings>
+        <bindings scd="~tns:sslTermInfo">
+            <class ref="org.openstack.docs.loadbalancers.api.management.v1.SslTermInfo"/>
+        </bindings>
+        <bindings scd="~tns:certInfo">
+            <class ref="org.openstack.docs.loadbalancers.api.management.v1.CertInfo"/>
+        </bindings>
         <bindings scd="~tns:accounts">
             <class ref="org.openstack.docs.loadbalancers.api.management.v1.Accounts"/>
         </bindings>
