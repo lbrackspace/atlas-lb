@@ -94,7 +94,7 @@ public class ZeusUtils {
         if (!imdCrts.isEmpty() && userCrt != null) {
             X509CertificateObject subjectCrt = userCrt;
             X509CertificateObject issuerCrt = imdCrts.get(0);
-            List<ErrorEntry> crtSignErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt, true);
+            List<ErrorEntry> crtSignErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt, false);
             if (ErrorEntry.hasFatal(crtSignErrors)) {
                 if (lineMap.containsKey(issuerCrt)) {
                     int issuerLineNum = lineMap.get(issuerCrt).intValue();
