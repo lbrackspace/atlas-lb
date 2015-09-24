@@ -16,6 +16,24 @@
       "revId": "5235087630c8b0de9b1c7f9126ef4a03519be056",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1ae5cdf2_ceabc11c",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/helpers/StubFactory.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2015-09-24T22:04:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1ae5cdf2_2e96e5f0",
+      "revId": "5235087630c8b0de9b1c7f9126ef4a03519be056",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
