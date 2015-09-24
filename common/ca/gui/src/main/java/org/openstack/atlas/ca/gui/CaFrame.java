@@ -2123,6 +2123,8 @@ public class CaFrame extends javax.swing.JFrame {
         String key = keyText.getText();
         String crt = certText.getText();
         String chain = chainText.getText();
+        int nErrors = 0;
+        int nFatalErrors = 0;
         boolean showException = showZcfExceptionsCheckBox.isSelected();
         Set<X509CertificateObject> roots = new HashSet<X509CertificateObject>();
         for (X509Certificate root : rootCAs) {
@@ -2161,6 +2163,23 @@ public class CaFrame extends javax.swing.JFrame {
             String zcrt = zcf.getPublic_cert();
             logDbg("No Errors\nZuesKey:\n%s\n\nZeusCrt:\n%s\n\n", zkey, zcrt);
         }
+        nErrors = zcf.getErrors().size();
+        nFatalErrors = zcf.getFatalErrors().size();
+
+        dbg.greenWrite("Number of errors: ");
+        if (nErrors > 0) {
+            dbg.redWrite("%d\n", nErrors);
+        } else {
+            dbg.greenWrite("%d\n", nErrors);
+        }
+
+        dbg.greenWrite("Number of Fatal Errors: ");
+        if (nErrors > 0) {
+            dbg.redWrite("%d\n", nFatalErrors);
+        } else {
+            dbg.greenWrite("%d\n", nFatalErrors);
+        }
+
     }//GEN-LAST:event_verifyKeyCertChainActionPerformed
 
     private void clearCertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearCertButtonActionPerformed
