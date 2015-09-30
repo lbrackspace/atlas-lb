@@ -184,8 +184,10 @@ public class AuditResource extends ManagementDependencyProvider {
             } else {
                 apiTermInfo.setApiValid(Boolean.TRUE);
             }
-            for (String imd : CertInfoUtils.splitImds(imds)) {
-                apiTermInfo.getIntermediates().add(CertInfoUtils.parseCertInfo(imd));
+            List<String> imdStringList = CertInfoUtils.splitImds(imds);
+            for (String imdString : imdStringList) {
+                CertInfo imdInfo = CertInfoUtils.parseCertInfo(imdString);
+                apiTermInfo.getIntermediates().add(imdInfo);
             }
             sslTermElement.getSslTerms().add(apiTermInfo);
         }

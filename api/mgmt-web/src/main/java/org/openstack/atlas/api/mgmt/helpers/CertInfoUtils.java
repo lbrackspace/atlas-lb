@@ -64,13 +64,10 @@ public class CertInfoUtils {
         List<PemBlock> blocks = PemUtils.parseMultiPem(imdBlob);
         for (PemBlock block : blocks) {
             if (block.getDecodedObject() != null) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(block.getStartLine());
-                sb.append(StringUtils.asciiString(block.getPemData()));
-                sb.append(block.getEndLine());
+                String pemCrt = StringUtils.asciiString(block.getPemData());
+                imds.add(pemCrt);
             }
         }
         return imds;
-
     }
 }
