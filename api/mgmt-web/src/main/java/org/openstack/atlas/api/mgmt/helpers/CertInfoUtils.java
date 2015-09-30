@@ -53,7 +53,7 @@ public class CertInfoUtils {
             DateTime now = StaticDateTimeUtils.nowDateTime(true);
             DateTime naDr = StaticDateTimeUtils.toDateTime(na, true);
             double secs = StaticDateTimeUtils.secondsBetween(now, naDr);
-            certInfo.setDaysTillExpires(secs/(24.0*60.0*60.0));
+            certInfo.setDaysTillExpires(secs / (24.0 * 60.0 * 60.0));
         }
         return certInfo;
     }
@@ -64,13 +64,10 @@ public class CertInfoUtils {
         List<PemBlock> blocks = PemUtils.parseMultiPem(imdBlob);
         for (PemBlock block : blocks) {
             if (block.getDecodedObject() != null) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(block.getStartLine());
-                sb.append(StringUtils.asciiString(block.getPemData()));
-                sb.append(block.getEndLine());
+                String pemCrt = StringUtils.asciiString(block.getPemData());
+                imds.add(pemCrt);
             }
         }
         return imds;
-
     }
 }

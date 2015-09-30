@@ -157,6 +157,9 @@ public class AuditResource extends ManagementDependencyProvider {
     public Response runExpiredCertCheck() {
         DateTime now = StaticDateTimeUtils.nowDateTime(true);
         SslTermInfos sslTermElement = new SslTermInfos();
+        if (!isUserInRole("ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
         List<SslTermInfoDb> sslTermsFromDb = loadBalancerRepository.getSslTermInfo();
         sslTermElement.setReportDate(StaticDateTimeUtils.toCal(now));
         for (SslTermInfoDb dbSslTermInfo : sslTermsFromDb) {
@@ -184,8 +187,10 @@ public class AuditResource extends ManagementDependencyProvider {
             } else {
                 apiTermInfo.setApiValid(Boolean.TRUE);
             }
-            for (String imd : CertInfoUtils.splitImds(imds)) {
-                apiTermInfo.getIntermediates().add(CertInfoUtils.parseCertInfo(imd));
+            List<String> imdStringList = CertInfoUtils.splitImds(imds);
+            for (String imdString : imdStringList) {
+                CertInfo imdInfo = CertInfoUtils.parseCertInfo(imdString);
+                apiTermInfo.getIntermediates().add(imdInfo);
             }
             sslTermElement.getSslTerms().add(apiTermInfo);
         }
