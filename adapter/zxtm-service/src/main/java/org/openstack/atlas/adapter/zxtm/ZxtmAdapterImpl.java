@@ -152,9 +152,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         } else {
             // Create a HM if it exists first, because the pool needs it in the next step
             // We ran into this weird scenario because of CR7 migration using the REST API (possibly?)
-            if (loadBalancer.getHealthMonitor() != null) {
-                updateHealthMonitor(config, loadBalancer);
-            }
+            // Do it in an isolated try/catch though, because there's a chicken/egg issue with this and pool nodes
+            try {
+                if (loadBalancer.getHealthMonitor() != null) {
+                    updateHealthMonitor(config, loadBalancer);
+                }
+            } catch (Exception e) { }
 
             setLoadBalancingAlgorithm(config, loadBalancer.getId(), loadBalancer.getAccountId(), loadBalancer.getAlgorithm());
             setNodes(config, loadBalancer);
