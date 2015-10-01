@@ -107,7 +107,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             rt.translateLoadBalancerResource(config, virtualServerName, loadBalancer, queLb, true, vipsEnabled);
 
-            if (queLb.getHealthMonitor() != null && !loadBalancer.hasSsl()) {
+            if (queLb.getHealthMonitor() != null) {
                 getResources().updateHealthMonitor(client, virtualServerName, rt.getcMonitor());
             }
 
