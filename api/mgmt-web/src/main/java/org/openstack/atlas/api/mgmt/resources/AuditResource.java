@@ -157,6 +157,9 @@ public class AuditResource extends ManagementDependencyProvider {
     public Response runExpiredCertCheck() {
         DateTime now = StaticDateTimeUtils.nowDateTime(true);
         SslTermInfos sslTermElement = new SslTermInfos();
+        if (!isUserInRole("ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
         List<SslTermInfoDb> sslTermsFromDb = loadBalancerRepository.getSslTermInfo();
         sslTermElement.setReportDate(StaticDateTimeUtils.toCal(now));
         for (SslTermInfoDb dbSslTermInfo : sslTermsFromDb) {
