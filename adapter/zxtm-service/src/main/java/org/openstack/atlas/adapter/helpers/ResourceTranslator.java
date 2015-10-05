@@ -9,6 +9,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.ip.IPUtils;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
@@ -331,7 +332,7 @@ public class ResourceTranslator {
                 PoolNodeWeight nw;
                 for (Node n : nodes) {
                     nw = new PoolNodeWeight();
-                    nw.setNode(n.getIpAddress() + ":" + Integer.toString(n.getPort()));
+                    nw.setNode(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
                     nw.setWeight(n.getWeight());
                     weights.add(nw);
                 }

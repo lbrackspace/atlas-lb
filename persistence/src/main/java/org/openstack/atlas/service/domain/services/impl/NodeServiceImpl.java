@@ -259,6 +259,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         IPv6 ip;
         for (Node dbNode : dbLoadBalancer.getNodes()) {
             ip = new IPv6(dbNode.getIpAddress());
+            // Marking this as a possible place for IpHelper.createZeusIpString(node.getIpAddress(), node.getPort())
             try {
                 IPUtils.isValidIpv6String(ip.expand());
                 string = ip.expand() + ":" + dbNode.getPort();
@@ -269,6 +270,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         }
         for (Node queueNode : queueLb.getNodes()) {
             ip = new IPv6(queueNode.getIpAddress());
+            // Marking this as a possible place for IpHelper.createZeusIpString(node.getIpAddress(), node.getPort())
             try {
                 IPUtils.isValidIpv6String(ip.expand());
                 string = (ip.expand() + ":" + queueNode.getPort());

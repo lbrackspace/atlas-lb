@@ -419,6 +419,7 @@ public class FullConfigITest extends STMTestBase {
         List<PoolNodeWeight> pws = pool.getProperties().getLoad_balancing().getNode_weighting();
         for (PoolNodeWeight pnw : pws) {
             Node lbn = lb.getNodes().iterator().next();
+            // Marking this as a possible place for IpHelper.createZeusIpString(node.getIpAddress(), node.getPort())
             if (lbn.getIpAddress().equals(pnw.getNode().split(":")[0])) {
                 Assert.assertEquals(lbn.getIpAddress() + ":" + lbn.getPort(), pnw.getNode());
                 Assert.assertEquals(lbn.getWeight(), pnw.getWeight());

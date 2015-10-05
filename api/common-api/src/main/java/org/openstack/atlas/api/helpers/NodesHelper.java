@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.helpers;
 
+import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeCondition;
@@ -24,11 +25,11 @@ public final class NodesHelper {
         Set<String> ipAddressAndPorts = new HashSet<String>();
 
         for (Node node : lbWithSubsetToChange.getNodes()) {
-            ipAddressAndPorts.add(ipAndPortToString(node.getIpAddress(), node.getPort()));
+            ipAddressAndPorts.add(IpHelper.createZeusIpString(node.getIpAddress(), node.getPort()));
         }
 
         for (Node node : lbWithSuperSet.getNodes()) {
-            String ipAddressAndPort = ipAndPortToString(node.getIpAddress(), node.getPort());
+            String ipAddressAndPort = IpHelper.createZeusIpString(node.getIpAddress(), node.getPort());
 
             if(ipAddressAndPorts.contains(ipAddressAndPort)) {
                 setNodeToStatus(status, node);
@@ -42,9 +43,5 @@ public final class NodesHelper {
         } else {
             node.setStatus(status);
         }
-    }
-
-    private static String ipAndPortToString(String ipAddress, Integer port) {
-        return ipAddress + ":" + port;
     }
 }
