@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fab399f4_431d0c73",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/helpers/ResourceTranslator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 328,
+      "author": {
+        "id": 1001869
+      },
+      "writtenOn": "2015-10-05T19:25:15Z",
+      "side": 1,
+      "message": "better to use a util function that will tell you what IP version.",
+      "revId": "9def5fe06ef9fd51979cbf9a2c40966675a46c57",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
