@@ -325,7 +325,11 @@ public class ResourceTranslator {
                 PoolNodeWeight nw;
                 for (Node n : nodes) {
                     nw = new PoolNodeWeight();
-                    nw.setNode(n.getIpAddress() + ":" + Integer.toString(n.getPort()));
+                    if (n.getIpAddress() != null && n.getIpAddress().contains(":")) {
+                        nw.setNode("[" + n.getIpAddress() + "]:" + Integer.toString(n.getPort()));
+                    } else {
+                        nw.setNode(n.getIpAddress() + ":" + Integer.toString(n.getPort()));
+                    }
                     nw.setWeight(n.getWeight());
                     weights.add(nw);
                 }
