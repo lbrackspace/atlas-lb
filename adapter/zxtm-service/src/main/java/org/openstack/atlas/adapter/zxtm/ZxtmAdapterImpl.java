@@ -153,6 +153,10 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             // Create a HM if it exists first, because the pool needs it in the next step
             // We ran into this weird scenario because of CR7 migration using the REST API (possibly?)
             if (loadBalancer.getHealthMonitor() != null) {
+                // If the Health Monitor is HTTPS Type, remove and recreate it in case it is broken per the REST Create bug
+                if (loadBalancer.getHealthMonitor().getType().equals(HealthMonitorType.HTTPS)) {
+                    removeHealthMonitor(config, loadBalancer);
+                }
                 updateHealthMonitor(config, loadBalancer);
             }
 
