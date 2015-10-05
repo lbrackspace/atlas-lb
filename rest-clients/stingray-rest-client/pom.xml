@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-rest-clients</artifactId>
-        <version>1.25.19-SNAPSHOT</version>
+        <version>1.25.19</version>
     </parent>
 
     <artifactId>stingray-rest-client</artifactId>
-    <version>1.25.19-SNAPSHOT</version>
+    <version>1.25.19</version>
 
     <name>Openstack :: Atlas :: Rest Clients :: Stingray</name>
     <description>
