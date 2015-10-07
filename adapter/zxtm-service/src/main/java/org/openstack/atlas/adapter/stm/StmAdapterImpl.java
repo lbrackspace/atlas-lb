@@ -638,23 +638,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void changeHostForLoadBalancers(LoadBalancerEndpointConfiguration configOld, LoadBalancerEndpointConfiguration configNew, List<LoadBalancer> loadBalancers, Integer retryCount)
             throws InsufficientRequestException, RollBackException {
         ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
-        StingrayRestClient clientNew = getResources().loadSTMRestClient(configNew);
         StingrayRestClient clientOld = getResources().loadSTMRestClient(configOld);
         int tryCount = retryCount + 1;
-
-        // Create the LB on the new host with VIPs disabled
-
-        for (LoadBalancer lb : loadBalancers) {
-            for (int attempt = 1; attempt <= tryCount; attempt++) {
-                try {
-                    updateLoadBalancer(configNew, lb, lb, false);
-                    break;
-                } catch (StmRollBackException e) {
-                    LOG.debug(String.format("ChangeHost failed to sync new host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
-                    if (attempt == tryCount) throw e;
-                }
-            }
-        }
 
         // Disable the VIPs for all LBs on the old host
         for (LoadBalancer lb : loadBalancers) {
@@ -703,16 +688,14 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             }
         }
 
-        // Enable the VIPs for all LBs on the new host
+        // Create the LB on the new host
         for (LoadBalancer lb : loadBalancers) {
             for (int attempt = 1; attempt <= tryCount; attempt++) {
                 try {
-                    String vsName = ZxtmNameBuilder.genVSName(lb);
-                    rt.translateTrafficIpGroupsResource(configNew, lb, true);
-                    getResources().updateVirtualIps(clientNew, vsName, rt.getcTrafficIpGroups());
+                    updateLoadBalancer(configNew, lb, lb);
                     break;
                 } catch (StmRollBackException e) {
-                    LOG.debug(String.format("ChangeHost failed to enable TIGs on new host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
+                    LOG.debug(String.format("ChangeHost failed to sync new host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
                     if (attempt == tryCount) throw e;
                 }
             }
