@@ -142,16 +142,17 @@ public class ResourceTranslator {
         cVServer = new VirtualServer();
         cVServer.setProperties(properties);
 
-        VirtualServerHttp virtualServerHttp = new VirtualServerHttp();
-        virtualServerHttp.setLocation_rewrite("never");
-        properties.setHttp(virtualServerHttp);
-
         //basic virtual server settings
         if (vsName.equals(ZxtmNameBuilder.genSslVSName(loadBalancer))) {
             basic.setPort(loadBalancer.getSslTermination().getSecurePort());
             basic.setSsl_decrypt(true);
-            ssl.setAdd_http_headers(true);
             basic.setEnabled(loadBalancer.isUsingSsl());
+            if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
+                ssl.setAdd_http_headers(true);
+                VirtualServerHttp virtualServerHttp = new VirtualServerHttp();
+                virtualServerHttp.setLocation_rewrite("never");
+                properties.setHttp(virtualServerHttp);
+            }
         } else {
             basic.setPort(loadBalancer.getPort());
             if (loadBalancer.hasSsl()) {
