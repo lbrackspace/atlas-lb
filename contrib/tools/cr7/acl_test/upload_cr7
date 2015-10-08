@@ -1,0 +1,10 @@
+#!/bin/bash
+
+
+pssh -h ./hosts.txt -l cgarza -t 0 -p 50 -O StrictHostKeyChecking=no rm -rf cr7
+pssh -h ./hosts.txt -l cgarza -t 0 -p 50 -O StrictHostKeyChecking=no mkdir cr7
+pscp -h ./hosts.txt -l cgarza -t 0 -p 50 -O StrictHostKeyChecking=no ./ips.json /home/cgarza/cr7/ips.json
+pscp -h ./hosts.txt -l cgarza -t 0 -p 50 -O StrictHostKeyChecking=no ./test_ip.py /home/cgarza/cr7/test_ip.py
+
+#for host in `cat ./hosts.txt`; do scp -C ./ips.json cgarza@${host}:/home/cgarza/cr7/ips.json;done
+#for host in `cat ./hosts.txt`; do scp -C ./test_ip.py cgarza@${host}:/home/cgarza/cr7/test_ip.py;done

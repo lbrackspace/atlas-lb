@@ -1,0 +1,3 @@
+#!/bin/bash
+
+pssh -h ./hosts.txt -l cgarza -t 0 --inline-stdout -p 50 "cat ./cr7/progress.txt | wc"
