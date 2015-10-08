@@ -1,0 +1,5 @@
+#!/bin/bash
+
+rm -rf ./results
+mkdir ./results
+for hi in `cat host_map.txt`;do IFS=","; set $hi; scp cgarza@$2:/home/cgarza/cr7/results.txt ./results/$1 & done

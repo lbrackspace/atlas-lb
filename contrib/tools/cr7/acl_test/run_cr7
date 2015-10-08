@@ -1,0 +1,5 @@
+#!/bin/bash
+
+pssh -h ./hosts.txt -l cgarza -t 0 -p 50 python ./cr7/test_ip.py ./cr7/results.txt
+
+
