@@ -1,5 +1,6 @@
 package org.openstack.atlas.adapter.service;
 
+import org.apache.axis.AxisFault;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
@@ -10,6 +11,7 @@ import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
+import java.rmi.RemoteException;
 import java.util.List;
 
 public interface ReverseProxyLoadBalancerStmAdapter {
@@ -51,7 +53,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
             throws InsufficientRequestException, RollBackException;
 
     public void changeHostForLoadBalancers(LoadBalancerEndpointConfiguration configOld, LoadBalancerEndpointConfiguration configNew, List<LoadBalancer> loadBalancers, Integer retryCount)
-            throws InsufficientRequestException, RollBackException;
+            throws InsufficientRequestException, RollBackException, RemoteException;
 
     public void updateProtection(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, RollBackException;

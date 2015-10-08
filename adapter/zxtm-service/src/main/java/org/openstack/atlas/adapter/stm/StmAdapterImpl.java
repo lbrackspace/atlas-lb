@@ -1,5 +1,13 @@
 package org.openstack.atlas.adapter.stm;
 
+import com.zxtm.service.client.CatalogMonitorType;
+import com.zxtm.service.client.CatalogSSLCertificatesBindingStub;
+import com.zxtm.service.client.CertificateFiles;
+import com.zxtm.service.client.ObjectAlreadyExists;
+import com.zxtm.service.client.VirtualServerBindingStub;
+import com.zxtm.service.client.VirtualServerSSLSite;
+import org.apache.axis.AxisFault;
+import org.apache.axis.types.UnsignedInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
@@ -12,11 +20,15 @@ import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.stm.StmAdapterUtils.VSType;
+import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
+import org.openstack.atlas.util.ca.StringUtils;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -30,6 +42,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.rmi.RemoteException;
 import java.util.*;
 import org.openstack.atlas.util.debug.Debug;
 
@@ -634,12 +647,114 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
     }
 
+    public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
+        return ZxtmServiceStubs.getServiceStubs(config.getEndpointUrl(), config.getUsername(), config.getPassword());
+    }
+
+    private void addMonitorClassSOAP(LoadBalancerEndpointConfiguration config, String monitorName)
+            throws RemoteException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+
+        try {
+            LOG.debug(String.format("Adding monitor class '%s'...", monitorName));
+            serviceStubs.getMonitorBinding().addMonitors(new String[]{monitorName});
+            LOG.info(String.format("Monitor class '%s' successfully added.", monitorName));
+        } catch (ObjectAlreadyExists oae) {
+            LOG.debug(String.format("Monitor class '%s' already exists. Ignoring...", monitorName));
+        }
+    }
+
+    public void createHealthMonitorSOAP(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws RemoteException, InsufficientRequestException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        int lbId = loadBalancer.getId();
+        int accountId = loadBalancer.getAccountId();
+        HealthMonitor healthMonitor = loadBalancer.getHealthMonitor();
+
+        final String poolName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        final String monitorName = poolName;
+
+        LOG.debug(String.format("Creating health monitor for node pool '%s'.", poolName));
+
+        addMonitorClassSOAP(config, monitorName);
+
+        // Set the properties on the monitor class that apply to all configurations.
+        serviceStubs.getMonitorBinding().setDelay(new String[]{monitorName}, new UnsignedInt[]{new UnsignedInt(healthMonitor.getDelay())});
+        serviceStubs.getMonitorBinding().setTimeout(new String[]{monitorName}, new UnsignedInt[]{new UnsignedInt(healthMonitor.getTimeout())});
+        serviceStubs.getMonitorBinding().setFailures(new String[]{monitorName}, new UnsignedInt[]{new UnsignedInt(healthMonitor.getAttemptsBeforeDeactivation())});
+
+        if (healthMonitor.getType().equals(HealthMonitorType.CONNECT)) {
+            serviceStubs.getMonitorBinding().setType(new String[]{monitorName}, new CatalogMonitorType[]{CatalogMonitorType.connect});
+        } else if (healthMonitor.getType().equals(HealthMonitorType.HTTP) || healthMonitor.getType().equals(HealthMonitorType.HTTPS)) {
+            serviceStubs.getMonitorBinding().setType(new String[]{monitorName}, new CatalogMonitorType[]{CatalogMonitorType.http});
+            serviceStubs.getMonitorBinding().setPath(new String[]{monitorName}, new String[]{healthMonitor.getPath()});
+            serviceStubs.getMonitorBinding().setStatusRegex(new String[]{monitorName}, new String[]{healthMonitor.getStatusRegex()});
+            serviceStubs.getMonitorBinding().setBodyRegex(new String[]{monitorName}, new String[]{healthMonitor.getBodyRegex()});
+            serviceStubs.getMonitorBinding().setHostHeader(new String[]{monitorName}, new String[]{healthMonitor.getHostHeader()});
+            if (healthMonitor.getType().equals(HealthMonitorType.HTTPS)) {
+                serviceStubs.getMonitorBinding().setUseSSL(new String[]{monitorName}, new boolean[]{true});
+            }
+        } else {
+            throw new InsufficientRequestException(String.format("Unsupported monitor type: %s", healthMonitor.getType().name()));
+        }
+    }
+
+    protected static final ZeusUtils zeusUtil;
+    static {
+        zeusUtil = new ZeusUtils();
+    }
+
+    public void addCertificateMappingSOAP(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, CertificateMapping certMappingToUpdate) throws RemoteException, InsufficientRequestException, StmRollBackException {
+        final String virtualServerNameSecure = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        final String certificateName = ZxtmNameBuilder.generateCertificateName(lbId, accountId, certMappingToUpdate.getId());
+
+        String userKey = certMappingToUpdate.getPrivateKey();
+        String userCrt = certMappingToUpdate.getCertificate();
+        String imdCrt = certMappingToUpdate.getIntermediateCertificate();
+        ZeusCrtFile zeusCrtFile = zeusUtil.buildZeusCrtFileLbassValidation(userKey, userCrt, imdCrt);
+
+        if (zeusCrtFile.hasFatalErrors()) {
+            String errors = StringUtils.joinString(zeusCrtFile.getFatalErrorList(), ",");
+            String msg = String.format("ZeusCrtFile generation failure: %s", errors);
+            throw new InsufficientRequestException(msg);
+        }
+
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        VirtualServerBindingStub virtualServerService = serviceStubs.getVirtualServerBinding();
+        CatalogSSLCertificatesBindingStub certificateCatalogService = serviceStubs.getZxtmCatalogSSLCertificatesBinding();
+
+        try {
+            LOG.debug(String.format("Importing certificate '%s' for certificate mapping '%d' for load balancer '%d'...", certificateName, certMappingToUpdate.getId(), lbId));
+            CertificateFiles certificateFiles = new CertificateFiles(zeusCrtFile.getPublic_cert(), zeusCrtFile.getPrivate_key());
+            certificateCatalogService.importCertificate(new String[]{certificateName}, new CertificateFiles[]{certificateFiles});
+            LOG.debug(String.format("Successfully imported certificate '%s' for certificate mapping '%d' for load balancer '%d'.", certificateName, certMappingToUpdate.getId(), lbId));
+
+            VirtualServerSSLSite sslSite = new VirtualServerSSLSite(certMappingToUpdate.getHostName(), certificateName);
+
+            LOG.debug(String.format("Attaching certificate mapping '%d' (certificate '%s') to load balancer %d (virtual server '%s')...", certMappingToUpdate.getId(), certificateName, lbId, virtualServerNameSecure));
+            virtualServerService.addSSLSites(new String[]{virtualServerNameSecure}, new VirtualServerSSLSite[][]{new VirtualServerSSLSite[]{sslSite}});
+            LOG.debug(String.format("Successfully attached certificate mapping '%d' (certificate '%s') to load balancer %d (virtual server '%s').", certMappingToUpdate.getId(), certificateName, lbId, virtualServerNameSecure));
+        } catch (AxisFault af) {
+            String message = String.format("Error updating certificate mapping '%d' (certificate '%s') for load balancer %d (virtual server '%s').", certMappingToUpdate.getId(), certificateName, lbId, virtualServerNameSecure);
+            LOG.error(message);
+            throw new StmRollBackException(message, af);
+        }
+    }
+
     @Override
     public void changeHostForLoadBalancers(LoadBalancerEndpointConfiguration configOld, LoadBalancerEndpointConfiguration configNew, List<LoadBalancer> loadBalancers, Integer retryCount)
-            throws InsufficientRequestException, RollBackException {
+            throws InsufficientRequestException, RollBackException, RemoteException {
         ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
         StingrayRestClient clientOld = getResources().loadSTMRestClient(configOld);
+
         int tryCount = retryCount + 1;
+
+        // Create Health Monitors ahead of time with SOAP
+        for (LoadBalancer lb : loadBalancers) {
+            if (lb.getHealthMonitor() != null) {
+                createHealthMonitorSOAP(configNew, lb);
+            }
+        }
 
         // Disable the VIPs for all LBs on the old host
         for (LoadBalancer lb : loadBalancers) {
@@ -698,6 +813,13 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
                     LOG.debug(String.format("ChangeHost failed to sync new host for LB: %s, attempt %d of %d", lb.getId(), attempt, tryCount));
                     if (attempt == tryCount) throw e;
                 }
+            }
+        }
+
+        // Add Certificate Mappings
+        for (LoadBalancer lb : loadBalancers) {
+            for (CertificateMapping certificateMapping : lb.getCertificateMappings()) {
+                addCertificateMappingSOAP(configNew, lb.getId(), lb.getAccountId(), certificateMapping);
             }
         }
     }
