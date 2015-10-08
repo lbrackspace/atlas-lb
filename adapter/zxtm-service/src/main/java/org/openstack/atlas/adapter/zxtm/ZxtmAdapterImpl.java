@@ -291,8 +291,12 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
         LOG.debug(String.format("Adding virtual server '%s'...", secureVsName));
         vsInfo = new VirtualServerBasicInfo(lb.getSslTermination().getSecurePort(), ZxtmConversionUtils.mapProtocol(lb.getProtocol()), poolName);
-        serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{secureVsName}, new VirtualServerBasicInfo[]{vsInfo});
-        LOG.info(String.format("Virtual server '%s' successfully added.", secureVsName));
+        try {
+            serviceStubs.getVirtualServerBinding().addVirtualServer(new String[]{secureVsName}, new VirtualServerBasicInfo[]{vsInfo});
+            LOG.info(String.format("Virtual server '%s' successfully added.", secureVsName));
+        } catch(ObjectAlreadyExists oae) {
+            LOG.info(String.format("Virtual server '%s' already exists, moving on.", secureVsName));
+        }
 
         try {
             addVirtualIps(config, lb, secureVsName);
