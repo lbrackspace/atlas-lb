@@ -129,7 +129,7 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void changeHostForLoadBalancers(List<LoadBalancer> lbs, Host newHost) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void changeHostForLoadBalancers(List<LoadBalancer> lbs, Host newHost) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException, RemoteException {
         // All LBs should be guaranteed to be on the same host, so get the old config based on the first one
         LoadBalancerEndpointConfiguration configOld = getConfigbyLoadBalancerId(lbs.get(0).getId());
         LoadBalancerEndpointConfiguration configNew = getConfig(newHost);
