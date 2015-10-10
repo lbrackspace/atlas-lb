@@ -1047,7 +1047,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String[] failoverTrafficManagers = config.getFailoverTrafficManagerNames().toArray(new String[config.getFailoverTrafficManagerNames().size()]);
         final String rollBackMessage = "Add virtual ips request canceled.";
         String[][] currentTrafficIpGroups;
-        List<String> updatedTrafficIpGroups = new ArrayList<String>();
+        Set<String> updatedTrafficIpGroups = new HashSet<String>();
         List<String> newTrafficIpGroups = new ArrayList<String>();
 
         LOG.debug(String.format("Adding virtual ips for virtual server '%s'...", vsName));
