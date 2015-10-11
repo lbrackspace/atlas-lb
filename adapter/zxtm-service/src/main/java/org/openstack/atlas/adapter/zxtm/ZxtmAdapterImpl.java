@@ -996,8 +996,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     private void suspendUnsuspendVirtualServer(LoadBalancerEndpointConfiguration config, String virtualServerName, boolean isSuspended) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
-        boolean isEnabled = false;
-        isEnabled = !isSuspended;
+        boolean isEnabled = !isSuspended;
 
         try {
             LOG.debug(String.format("Updating suspension to '%s' for virtual server '%s'...", isSuspended, virtualServerName));
@@ -1468,7 +1467,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             enableDisableSslTermination(conf, loadBalancer, zeusSslTermination.getSslTermination().isEnabled());
             LOG.debug(String.format("Successfully enabled:'%s' load balancer: %s ssl termination", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
 
-            boolean isRedirectServer = loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect() == true;
+            boolean isRedirectServer = loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect();
             if (!isRedirectServer) {
                 LOG.info(String.format("Non-secure virtual server will be enabled:'%s' load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
                 suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, zeusSslTermination.getSslTermination().isSecureTrafficOnly());
@@ -1592,12 +1591,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             serviceStubs.getVirtualServerBinding().setSSLDecrypt(new String[]{virtualServerName}, new boolean[]{isSslTermination});
 
-            boolean[] isVSEnabled;
-            if (loadBalancer.getSslTermination() != null) {
-                isVSEnabled = new boolean[]{loadBalancer.getSslTermination().isEnabled()};
-            } else {
-                isVSEnabled = new boolean[]{false};
-            }
+            boolean[] isVSEnabled = new boolean[]{loadBalancer.isUsingSsl()};
             serviceStubs.getVirtualServerBinding().setEnabled(new String[]{virtualServerName}, isVSEnabled);
         } catch (RemoteException af) {
             String msg = String.format("There was a error enabling/disabling ssl termination for loadbalancer: %d", loadBalancer.getId());
@@ -2669,34 +2663,56 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void suspendLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String poolName = ZxtmNameBuilder.genVSName(lb.getId(), lb.getAccountId());
-        final String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
-        String[] poolNames;
+        Integer lbId = lb.getId(), accountId = lb.getAccountId();
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(lbId, accountId);
+        String[] vsNames;
         boolean[] isEnabled;
-        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
-            poolNames = new String[]{poolName, virtualSecureServerName};
+
+        // boolean isSecureServer = lb.isUsingSsl();
+        // boolean isRedirectServer = lb.isHttpsRedirect();
+        // Why was I doing this? >_> The above should work fine... But since I can't remember, I'll stick with the old inefficient way.
+        boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+        boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
+
+        if (isSecureServer && isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualRedirectServerName;
+            vsNames[1] = virtualSecureServerName;
+            isEnabled = new boolean[]{false, false};
+        } else if (isSecureServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualSecureServerName;
+            isEnabled = new boolean[]{false, false};
+        } else if (isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualRedirectServerName;
             isEnabled = new boolean[]{false, false};
         } else {
-            poolNames = new String[]{poolName};
+            vsNames = new String[1];
+            vsNames[0] = virtualServerName;
             isEnabled = new boolean[]{false};
         }
-        // Disable the virtual server
-        serviceStubs.getVirtualServerBinding().setEnabled(poolNames, isEnabled);
+        // Disable the virtual servers
+        serviceStubs.getVirtualServerBinding().setEnabled(vsNames, isEnabled);
 
         // Disable the traffic ip groups
-        LOG.info("grabbing all tigs related to VS..." + poolName);
+        LOG.info(String.format("Grabbing all TIGs related to VS... %s", vsNames));
         for (LoadBalancerJoinVip loadBalancerJoinVip : lb.getLoadBalancerJoinVipSet()) {
             String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip.getVirtualIp());
-            LOG.info("disabling tig " + trafficIpGroupName + " related to vs: " + poolName);
+            LOG.info(String.format("Disabling TIG " + trafficIpGroupName + " related to VS: %s", vsNames));
             serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{trafficIpGroupName}, new boolean[]{false});
-            LOG.info("Succesfully disabled tig " + trafficIpGroupName + " on VS: " + poolName);
+            LOG.info(String.format("Successfully disabled TIG '%s' on VS: %s", trafficIpGroupName, vsNames));
         }
 
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : lb.getLoadBalancerJoinVip6Set()) {
             String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip6.getVirtualIp());
-            LOG.info("disabling tig " + trafficIpGroupName + " related to vs: " + poolName);
+            LOG.info(String.format("Disabling TIG " + trafficIpGroupName + " related to VS: %s", vsNames));
             serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{trafficIpGroupName}, new boolean[]{false});
-            LOG.info("Succesfully disabled tig " + trafficIpGroupName + " on VS: " + poolName);
+            LOG.info(String.format("Successfully disabled TIG '%s' on VS: %s", trafficIpGroupName, vsNames));
         }
     }
 
@@ -2704,37 +2720,58 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws RemoteException, InsufficientRequestException {
         ZxtmServiceStubs serviceStubs = getServiceStubs(config);
-        final String poolName = ZxtmNameBuilder.genVSName(lb.getId(), lb.getAccountId());
-        final String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
-        String[] poolNames;
+        Integer lbId = lb.getId(), accountId = lb.getAccountId();
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(lbId, accountId);
+        String[] vsNames;
         boolean[] isEnabled;
 
-        if (arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName)) {
-            poolNames = new String[]{poolName, ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId())};
+        boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
+        boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
+
+        if (isSecureServer && isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualRedirectServerName;
+            vsNames[1] = virtualSecureServerName;
+            isEnabled = new boolean[]{true, true};
+        } else if (isSecureServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualSecureServerName;
+            isEnabled = new boolean[]{true, true};
+            if (lb.isUsingSsl() && lb.getSslTermination().isSecureTrafficOnly()) {
+                isEnabled[0] = false;
+            }
+        } else if (isRedirectServer) {
+            vsNames = new String[2];
+            vsNames[0] = virtualServerName;
+            vsNames[1] = virtualRedirectServerName;
             isEnabled = new boolean[]{true, true};
         } else {
-            poolNames = new String[]{poolName};
+            vsNames = new String[1];
+            vsNames[0] = virtualServerName;
             isEnabled = new boolean[]{true};
         }
 
         // Disable the traffic ip groups
-        LOG.info("grabbing all tigs related to VS..." + poolName);
+        LOG.info(String.format("Grabbing all TIGs related to VS... %s", vsNames));
         for (LoadBalancerJoinVip loadBalancerJoinVip : lb.getLoadBalancerJoinVipSet()) {
             String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip.getVirtualIp());
-            LOG.info("enabling tig " + trafficIpGroupName + " related to vs: " + poolName);
+            LOG.info(String.format("Enabling TIG " + trafficIpGroupName + " related to VS: %s", vsNames));
             serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{trafficIpGroupName}, new boolean[]{true});
-            LOG.info("Succesfully enabled tig " + trafficIpGroupName + " on VS: " + poolName);
+            LOG.info(String.format("Successfully enabled TIG '%s' on VS: %s", trafficIpGroupName, vsNames));
         }
 
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6 : lb.getLoadBalancerJoinVip6Set()) {
             String trafficIpGroupName = ZxtmNameBuilder.generateTrafficIpGroupName(lb, loadBalancerJoinVip6.getVirtualIp());
-            LOG.info("enabling tig " + trafficIpGroupName + " related to vs: " + poolName);
+            LOG.info(String.format("Enabling TIG " + trafficIpGroupName + " related to VS: %s", vsNames));
             serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{trafficIpGroupName}, new boolean[]{true});
-            LOG.info("Succesfully enabled tig " + trafficIpGroupName + " on VS: " + poolName);
+            LOG.info(String.format("Successfully enabled TIG '%s' on VS: %s", trafficIpGroupName, vsNames));
         }
 
-        // Enable the virtual server
-        serviceStubs.getVirtualServerBinding().setEnabled(poolNames, isEnabled);
+        // Enable the virtual servers
+        serviceStubs.getVirtualServerBinding().setEnabled(vsNames, isEnabled);
     }
 
     @Override
