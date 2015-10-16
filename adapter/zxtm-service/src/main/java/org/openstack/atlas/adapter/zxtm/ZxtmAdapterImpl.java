@@ -396,7 +396,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             removeForceHttpsRedirectRuleFromVirtualServer(serviceStubs, virtualServerName);
             attachXFPORTRuleToVirtualServer(serviceStubs, virtualServerName);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            // e.printStackTrace();
+            LOG.info(String.format("Couldn't restore VS '%s' to '%s' because it doesn't exist, possibly it was already done.", virtualServerRedirectName, virtualServerName));
             //throw rollback?
         }
     }
