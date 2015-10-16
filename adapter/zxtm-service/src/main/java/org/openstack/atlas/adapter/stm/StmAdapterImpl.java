@@ -728,7 +728,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             CertificateFiles certificateFiles = new CertificateFiles(zeusCrtFile.getPublic_cert(), zeusCrtFile.getPrivate_key());
             certificateCatalogService.importCertificate(new String[]{certificateName}, new CertificateFiles[]{certificateFiles});
             LOG.debug(String.format("Successfully imported certificate '%s' for certificate mapping '%d' for load balancer '%d'.", certificateName, certMappingToUpdate.getId(), lbId));
-
+        } catch (ObjectAlreadyExists oae) {
+            LOG.debug(String.format("Certificate '%s' already exists for certificate mapping '%d' for load balancer '%d'. Moving on...", certificateName, certMappingToUpdate.getId(), lbId));
+        }
+        try {
             VirtualServerSSLSite sslSite = new VirtualServerSSLSite(certMappingToUpdate.getHostName(), certificateName);
 
             LOG.debug(String.format("Attaching certificate mapping '%d' (certificate '%s') to load balancer %d (virtual server '%s')...", certMappingToUpdate.getId(), certificateName, lbId, virtualServerNameSecure));
