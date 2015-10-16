@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9ab29df4_002cecaa",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 731,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-10-16T06:41:07Z",
+      "side": 1,
+      "message": "Don\u0027t think so -- OAE means we have nothing to do, the thing is already there.",
+      "parentUuid": "9ab29df4_e080d88d",
+      "revId": "a4285a955b8d944eab6523989efa7e74e0748a37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9ab29df4_a076e0d6",
         "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/zxtm/ZxtmAdapterImpl.java",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2015-10-16T06:28:16Z",
       "side": 1,
       "message": "Failing Cloudcafe test did not enable https redirect, while the change that is made here specifies a HttpsRedirect behavior.",
+      "revId": "a4285a955b8d944eab6523989efa7e74e0748a37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ab29df4_20181084",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/zxtm/ZxtmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 399,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2015-10-16T06:41:07Z",
+      "side": 1,
+      "message": "Yeah, this is really unrelated, i\u0027ll update the commit message to include more info.",
+      "parentUuid": "9ab29df4_a076e0d6",
       "revId": "a4285a955b8d944eab6523989efa7e74e0748a37",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
