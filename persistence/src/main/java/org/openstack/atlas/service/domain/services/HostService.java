@@ -78,7 +78,7 @@ public interface HostService {
 
     public void deleteHost(Host queueHost) throws Exception;
 
-    public Host getDefaultActiveHostAndActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
+    public Host getDefaultActiveHostAndActiveCluster(Integer accountId, boolean public_vip) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
 
     public boolean isActiveHost(Host host) throws EntityNotFoundException;
 
