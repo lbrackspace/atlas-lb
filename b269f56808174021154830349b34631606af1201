@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "fa81d914_2c2c89ab",
+        "filename": "logs/cfuploader/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-01-06T02:42:12Z",
+      "side": 1,
+      "message": "Ah, if you were trying to index by month number, I would have recommended a dict() with numeric indexes... Though slightly more verbose, it is much more clear, but this \"works\".",
+      "parentUuid": "fa81d914_0c58a555",
+      "revId": "b269f56808174021154830349b34631606af1201",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa81d914_ac7239e3",
         "filename": "logs/cfuploader/utils.py",
         "patchSetId": 1
