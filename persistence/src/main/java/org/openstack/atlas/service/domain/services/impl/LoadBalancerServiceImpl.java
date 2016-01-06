@@ -2,8 +2,6 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.StaleObjectStateException;
-import org.hibernate.exception.LockAcquisitionException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
@@ -896,12 +894,20 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         if (!isHost) {
-            loadBalancer.setHost(hostService.getDefaultActiveHostAndActiveCluster(loadBalancer.getAccountId()));
+            loadBalancer.setHost(hostService.getDefaultActiveHostAndActiveCluster(loadBalancer.getAccountId(), loadBalancerHasPublicVip(loadBalancer)));
         } else {
             if (gLb != null) {
                 loadBalancer.setHost(gLb.getHost());
             }
         }
+    }
+
+    private boolean loadBalancerHasPublicVip(LoadBalancer loadBalancer) {
+        for (LoadBalancerJoinVip join_vip : loadBalancer.getLoadBalancerJoinVipSet()) {
+            VirtualIpType vip_type = join_vip.getVirtualIp().getVipType();
+            if (vip_type.equals(VirtualIpType.PUBLIC)) return true;
+        }
+        return false;
     }
 
     private void setVipConfigForLoadBalancer(LoadBalancer lbFromApi) throws OutOfVipsException, AccountMismatchException, UniqueLbPortViolationException, EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
@@ -1131,7 +1137,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 }
                 lb.setHost(specifiedHost);
             } else {
-                lb.setHost(hostService.getDefaultActiveHostAndActiveCluster(lb.getAccountId()));
+                lb.setHost(hostService.getDefaultActiveHostAndActiveCluster(lb.getAccountId(), loadBalancerHasPublicVip(lb)));
             }
         }
     }

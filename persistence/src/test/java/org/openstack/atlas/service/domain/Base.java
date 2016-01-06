@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.repository.ClusterRepository;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.LzoRepository;
+import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.LzoService;
@@ -34,6 +35,8 @@ public class Base {
     @Autowired
     protected HostRepository hostRepository;
     @Autowired
+    protected VirtualIpRepository virtualIpRepository;
+    @Autowired
     protected AccountLimitRepository accountLimitRepository;
     @Autowired
     protected LoadBalancerRepository loadBalancerRepository;
@@ -51,6 +54,7 @@ public class Base {
     public void standUp() throws Exception {
         Cluster testCluster = setupTestCluster();
         Host testHost = setupTestHost(testCluster);
+        setupTestVip(testCluster);
 
         LimitType loadbalancerLimitType = setupLoadBalancerLimit();
         LimitType nodeLimitType = setupNodeLimit();
@@ -141,6 +145,7 @@ public class Base {
         cluster.setPassword("cluster password");
         cluster.setUsername("cluster username");
         cluster.setStatus(org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus.ACTIVE);
+        cluster.setClusterType(ClusterType.STANDARD);
         cluster.setClusterIpv6Cidr("2001:4801:79f1:2::/64");
 
         if (clusterRepository.getAll().isEmpty()) {
@@ -148,5 +153,21 @@ public class Base {
         }
 
         return cluster;
+    }
+
+    private VirtualIp setupTestVip(Cluster cluster) {
+        VirtualIp vip = new VirtualIp();
+        vip.setVipType(VirtualIpType.SERVICENET);
+        vip.setIpAddress("127.0.0.1");
+        vip.setIpVersion(IpVersion.IPV4);
+        vip.setId(1);
+        vip.setCluster(cluster);
+        vip.setAllocated(false);
+
+        if (virtualIpRepository.getAll().isEmpty()) {
+            virtualIpRepository.merge(vip); // This repository has no save() but merge() seems to work?
+        }
+
+        return vip;
     }
 }
