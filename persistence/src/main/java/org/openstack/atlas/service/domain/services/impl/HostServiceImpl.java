@@ -39,8 +39,8 @@ public class HostServiceImpl extends BaseService implements HostService {
     }
 
     @Override
-    public Host getDefaultActiveHostAndActiveCluster(Integer accountId) throws ClusterStatusException, EntityNotFoundException, NoAvailableClusterException {
-        return hostRepository.getDefaultActiveHost(clusterRepository.getActiveCluster(accountId).getId());
+    public Host getDefaultActiveHostAndActiveCluster(Integer accountId, boolean hasPublicVip) throws ClusterStatusException, EntityNotFoundException, NoAvailableClusterException {
+        return hostRepository.getDefaultActiveHost(clusterRepository.getActiveCluster(accountId, hasPublicVip).getId());
     }
 
     @Override
