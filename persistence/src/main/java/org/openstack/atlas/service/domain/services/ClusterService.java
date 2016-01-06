@@ -22,7 +22,7 @@ import java.util.List;
 public interface ClusterService {
     public Cluster get(Integer clusterId) throws EntityNotFoundException;
 
-    public Cluster getActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
+    public Cluster getActiveCluster(Integer accountId, boolean public_vip) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
 
     public List<Cluster> getAll();
 
