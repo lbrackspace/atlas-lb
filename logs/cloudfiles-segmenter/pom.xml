@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.25.25-SNAPSHOT</version>
+        <version>1.25.25</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-logs-cloudfiles-segmenter</artifactId>
     <name>OpenStack :: Atlas :: Logs :: HDFS :: CloudFiles Segmenter</name>
-    <version>1.25.25-SNAPSHOT</version>
+    <version>1.25.25</version>
     <packaging>jar</packaging>
 
     <dependencies>
