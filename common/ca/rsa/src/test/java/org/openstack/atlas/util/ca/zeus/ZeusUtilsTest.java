@@ -275,12 +275,6 @@ public class ZeusUtilsTest {
         assertZCFLbaasErrors(roots, "", null, null, expectFatalErrors, expectErrors);
         assertZCFLbaasErrors(roots, null, null, null, expectFatalErrors, expectErrors);
         assertZCFLbaasErrors(roots, "", "", workingUserChain, expectFatalErrors, expectErrors);
-
-        // Test if zeus failes when chain is reverse
-        List<PemBlock> reverseChain = PemUtils.parseMultiPem(workingUserChain);
-        Collections.reverse(reverseChain);
-        String reverseChainStr = PemUtils.toMultiPemString(reverseChain);
-        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, reverseChainStr, expectNoFatalErrors, expectErrors);
     }
 
     private void assertZCFLbaasErrors(Set<X509CertificateObject> roots, String key, String crt, String imd, boolean expectFatalErrors, boolean expectErrors) {
