@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa81d914_12e7de41",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 905,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-01-06T18:08:20Z",
+      "side": 1,
+      "message": "So the other option is to just pass the LB object through to the getDefaultActiveHostAndActiveCluster() call and do this on the far side -- MIGHT be easier? Not sure how much it matters.",
+      "revId": "ac61339983a5e33359e6fb68c4baaf59b1eebad2",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
