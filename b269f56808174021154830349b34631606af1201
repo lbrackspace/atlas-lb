@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "fa81d914_6c1da173",
+        "filename": "logs/cfuploader/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-01-06T02:44:58Z",
+      "side": 1,
+      "message": "Interestingly, the OFFICIAL implementation does it your way!\nhttps://docs.python.org/2/library/calendar.html#calendar.month_abbr\nThat said, there is an official implementation. :P",
+      "parentUuid": "fa81d914_2c2c89ab",
+      "revId": "b269f56808174021154830349b34631606af1201",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa81d914_ac7239e3",
         "filename": "logs/cfuploader/utils.py",
         "patchSetId": 1
