@@ -90,42 +90,7 @@ public class ZeusUtils {
             errors.add(new ErrorEntry(ErrorType.PREMATURE_CERT, errorMsg, false, null));
         }
 
-        // If their is a chain veify that the top of the chain signs the users crt
-        if (!imdCrts.isEmpty() && userCrt != null) {
-            X509CertificateObject subjectCrt = userCrt;
-            X509CertificateObject issuerCrt = imdCrts.get(0);
-            List<ErrorEntry> crtSignErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt, false);
-            if (ErrorEntry.hasFatal(crtSignErrors)) {
-                if (lineMap.containsKey(issuerCrt)) {
-                    int issuerLineNum = lineMap.get(issuerCrt).intValue();
-                    msg = String.format("Error the cert at line %d of the  Chain file does not sign the main cert", issuerLineNum);
-                    errors.add(new ErrorEntry(ErrorType.SIGNATURE_ERROR, msg, true, null));
-                } else {
-                    msg = String.format("Error the cert at the top of the chain file does not sign the main cert");
-                    errors.add(new ErrorEntry(ErrorType.SIGNATURE_ERROR, msg, true, null));
-                }
-            }
-            errors.addAll(crtSignErrors);
-        }
-
-        ArrayList<ErrorEntry> chainSignErrors = new ArrayList<ErrorEntry>();
-        for (int i = 1; i < imdCrts.size(); i++) {
-            X509CertificateObject subjectCrt = imdCrts.get(i - 1);
-            X509CertificateObject issuerCrt = imdCrts.get(i);
-            List<ErrorEntry> crtSignErrors = CertUtils.verifyIssuerAndSubjectCert(issuerCrt, subjectCrt, false);
-            if (ErrorEntry.hasFatal(crtSignErrors)) {
-                if (lineMap.containsKey(issuerCrt) && lineMap.containsKey(subjectCrt)) {
-                    int issuerLineNum = lineMap.get(issuerCrt).intValue();
-                    int subjectLineNum = lineMap.get(subjectCrt).intValue();
-                    msg = String.format("Error chain out of order Certificate at line %d does not sign crt at line %d", issuerLineNum, subjectLineNum);
-                    errors.add(new ErrorEntry(ErrorType.SIGNATURE_ERROR, msg, true, null));
-                } else {
-                    msg = String.format("Error chain out of order");
-                    errors.add(new ErrorEntry(ErrorType.SIGNATURE_ERROR, msg, true, null));
-                }
-            }
-            errors.addAll(crtSignErrors);
-        }
+        // If their is a chain don't bother validating the chain order.
 
 
         // If there where no errors build the full ZCF object
