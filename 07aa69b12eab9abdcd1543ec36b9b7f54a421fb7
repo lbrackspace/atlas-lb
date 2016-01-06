@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa81d914_d2cd4688",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/HostService.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2016-01-06T19:08:43Z",
+      "side": 1,
+      "message": "nit: Generally, from experience before, or atleast what i\u0027ve been told, is to make bool vars hint at their decision. I dont think it matters too much, but looking at \u0027public_vip\u0027 leads me to think its an actual vip and not a bool arg. Again, just a nit.",
+      "range": {
+        "startLine": 81,
+        "startChar": 80,
+        "endLine": 81,
+        "endChar": 90
+      },
+      "revId": "07aa69b12eab9abdcd1543ec36b9b7f54a421fb7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
