@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa81d914_ccaf6d2a",
+        "filename": "logs/cfuploader/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-01-06T00:28:01Z",
+      "side": 1,
+      "message": "Out of curiosity, why is \u0027\u0027 a month?",
+      "revId": "b269f56808174021154830349b34631606af1201",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa81d914_ac7239e3",
+        "filename": "logs/cfuploader/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-01-06T00:28:01Z",
+      "side": 1,
+      "message": "I still don\u0027t understand your need to avoid the python builtin formatting function, lol",
+      "revId": "b269f56808174021154830349b34631606af1201",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
