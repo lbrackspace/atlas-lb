@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "fa81d914_3255c21d",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/ClusterRepository.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 598,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-01-07T00:08:16Z",
+      "side": 1,
+      "message": "In SQL I actually see it as 0/1, so to me that is the most clear, but I don\u0027t mind changing this if I have another patch.",
+      "parentUuid": "fa81d914_d288e6c8",
+      "revId": "9a8dd6ebb4f990198ad79668a0df1d55971d800f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa81d914_12935efb",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2016-01-07T00:00:02Z",
       "side": 1,
       "message": "I know this is old but it\u0027s weird to have ! followed by a boolean since you already have a conditional. Just confuses people IMHO.\n\nYou can even \u0026\u0026 the other conditional so that this area is much cleaner.\n\nHow about:\n\nif (isHost \u0026\u0026 gLb !\u003d null) {\n    loadBalancer.setHost(gLb.getHost());\n} else {\n    loadBalancer.setHost...\n}",
+      "revId": "9a8dd6ebb4f990198ad79668a0df1d55971d800f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa81d914_5231560a",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 896,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-01-07T00:08:16Z",
+      "side": 1,
+      "message": "I don\u0027t mind fixing this if I have another patch, was trying to keep a small footprint to limit breakage.",
+      "parentUuid": "fa81d914_12935efb",
       "revId": "9a8dd6ebb4f990198ad79668a0df1d55971d800f",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
