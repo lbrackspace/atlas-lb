@@ -12,5 +12,7 @@
     "C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd1 crt", 
     "C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd2 crt", 
     "C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd3 crt" 
+    "C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd4 crt" 
+    "C=US,ST=TX,L=San Antonio,O=Rackspace Hosting,OU=Cloud LoadBalancing,CN=Lbaas Example Imd5 crt" 
   ]
 }

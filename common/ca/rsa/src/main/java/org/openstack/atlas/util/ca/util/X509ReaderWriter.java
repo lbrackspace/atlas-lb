@@ -83,6 +83,20 @@ public class X509ReaderWriter {
         return new ResponseWithExcpetions<String>(exceptions, sb.toString());
     }
 
+    public static List<X509CertificateObject> readList(String certsStrs){
+        List<X509CertificateObject> x509s = new ArrayList<X509CertificateObject>();
+        List<PemBlock> blocks = PemUtils.parseMultiPem(certsStrs);
+        for(PemBlock block : blocks){
+            Object obj =block.getDecodedObject();
+            if(obj == null || !(obj instanceof X509CertificateObject )){
+                continue;
+            }
+            X509CertificateObject x509 = (X509CertificateObject)obj;
+            x509s.add(x509);
+        }
+        return x509s;
+    }
+
     public static ResponseWithExcpetions<Set<X509CertificateObject>> readSet(String pemString) {
         ResponseWithExcpetions<Set<X509CertificateObject>> resp;
         List<Exception> exceptions = new ArrayList<Exception>();

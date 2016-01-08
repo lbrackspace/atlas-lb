@@ -196,7 +196,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="csrSubjectPanel" min="-2" max="-2" attributes="0"/>
+                      <Component id="csrSubjectPanel" min="-2" pref="253" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="csrOptionsPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace pref="164" max="32767" attributes="0"/>
@@ -806,20 +806,12 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="keycertandchainPanel" max="32767" attributes="1"/>
-                              <EmptySpace min="-2" pref="518" max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="verifyKeyCertPanel" min="-2" max="-2" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="verifyKeyCrtPanel" min="-2" max="-2" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
+                      <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                          <Component id="verifyKeyCertPanel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="keycertandchainPanel" alignment="0" max="32767" attributes="1"/>
+                          <Component id="verifyKeyCrtPanel" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -832,7 +824,7 @@
                       <Component id="keycertandchainPanel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Component id="verifyKeyCrtPanel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="48" max="32767" attributes="0"/>
+                      <EmptySpace pref="25" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -859,13 +851,13 @@
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="vkcCertFN" max="32767" attributes="1"/>
-                                      <Component id="vkcKeyFN" alignment="0" pref="459" max="32767" attributes="1"/>
+                                      <Component id="vkcKeyFN" max="32767" attributes="1"/>
+                                      <Component id="vkcCertFN" alignment="0" pref="481" max="32767" attributes="1"/>
                                   </Group>
                               </Group>
                               <Component id="verifyKeyAndCertButton" alignment="0" min="-2" pref="378" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="62" max="32767" attributes="0"/>
+                          <EmptySpace pref="577" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -946,7 +938,7 @@
                               </Group>
                               <Component id="verifyIssuerAndSubjectCertButton" alignment="0" min="-2" pref="368" max="-2" attributes="1"/>
                           </Group>
-                          <EmptySpace pref="115" max="32767" attributes="0"/>
+                          <EmptySpace pref="574" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1016,34 +1008,49 @@
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Group type="102" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="1" attributes="0">
-                                      <Group type="102" attributes="0">
-                                          <Component id="jLabel13" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                                          <Component id="clearKeyButton" min="-2" pref="287" max="-2" attributes="0"/>
-                                      </Group>
-                                      <Component id="jScrollPane2" alignment="1" pref="331" max="32767" attributes="1"/>
-                                  </Group>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" attributes="0">
-                                          <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
-                                          <Component id="jScrollPane4" pref="356" max="32767" attributes="1"/>
-                                      </Group>
-                                      <Group type="102" alignment="0" attributes="0">
-                                          <Component id="jLabel14" min="-2" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="loadKeyVerifyButton" min="-2" pref="113" max="-2" attributes="1"/>
+                                              <Component id="browseKeyButton" alignment="0" pref="116" max="32767" attributes="1"/>
+                                          </Group>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="clearCertButton" pref="318" max="32767" attributes="0"/>
+                                          <Group type="103" groupAlignment="1" attributes="0">
+                                              <Component id="loadKeyVerifyFN" pref="251" max="32767" attributes="0"/>
+                                              <Component id="clearKeyButton" pref="251" max="32767" attributes="0"/>
+                                          </Group>
                                       </Group>
+                                      <Component id="jScrollPane2" min="-2" pref="345" max="-2" attributes="1"/>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="jScrollPane3" pref="357" max="32767" attributes="1"/>
                                       <Group type="102" attributes="0">
-                                          <Component id="jLabel15" min="-2" max="-2" attributes="0"/>
-                                          <EmptySpace type="separate" max="-2" attributes="0"/>
-                                          <Component id="clearChainButton" pref="300" max="32767" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="browseCrtButton" max="32767" attributes="1"/>
+                                              <Component id="loadCrtVerifyButton" alignment="0" pref="111" max="32767" attributes="1"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="1" attributes="0">
+                                              <Component id="loadCrtVerifyFN" pref="286" max="32767" attributes="0"/>
+                                              <Component id="clearCertButton" pref="286" max="32767" attributes="0"/>
+                                          </Group>
                                       </Group>
+                                      <Component id="jScrollPane4" min="-2" pref="366" max="-2" attributes="1"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Group type="102" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="loadImdVerifyButton" min="-2" pref="109" max="-2" attributes="1"/>
+                                              <Component id="browseImdButton" pref="109" max="32767" attributes="1"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="clearChainButton" pref="284" max="32767" attributes="0"/>
+                                              <Component id="loadImdVerifyFN" alignment="0" pref="284" max="32767" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <Component id="jScrollPane3" min="-2" pref="369" max="-2" attributes="1"/>
                                   </Group>
                               </Group>
                               <Group type="102" alignment="0" attributes="0">
@@ -1052,11 +1059,6 @@
                                   <Component id="jLabel21" min="-2" pref="271" max="-2" attributes="0"/>
                                   <EmptySpace type="separate" max="-2" attributes="0"/>
                                   <Component id="showZcfExceptionsCheckBox" min="-2" pref="151" max="-2" attributes="0"/>
-                                  <EmptySpace min="-2" pref="26" max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="1" max="-2" attributes="0">
-                                      <Component id="lbaasValidationRadio" alignment="0" max="32767" attributes="1"/>
-                                      <Component id="PKIXValidationRadio" alignment="0" min="-2" pref="253" max="-2" attributes="1"/>
-                                  </Group>
                               </Group>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -1065,37 +1067,47 @@
                 </DimensionLayout>
                 <DimensionLayout dim="1">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="1" attributes="0">
-                              <Component id="jScrollPane4" alignment="1" min="-2" pref="316" max="-2" attributes="0"/>
-                              <Component id="jScrollPane3" alignment="1" min="-2" pref="316" max="-2" attributes="0"/>
-                              <Group type="102" alignment="1" attributes="0">
+                      <Group type="102" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Group type="102" alignment="0" attributes="0">
                                   <Group type="103" groupAlignment="3" attributes="0">
-                                      <Component id="jLabel13" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="clearKeyButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel14" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="loadKeyVerifyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="loadKeyVerifyFN" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="loadCrtVerifyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="loadCrtVerifyFN" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="loadImdVerifyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="loadImdVerifyFN" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace max="-2" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
+                                      <Component id="browseCrtButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                       <Component id="clearCertButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                                      <Component id="jLabel15" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="browseKeyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="clearKeyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                  </Group>
+                              </Group>
+                              <Group type="102" attributes="0">
+                                  <EmptySpace pref="36" max="32767" attributes="0"/>
+                                  <Group type="103" groupAlignment="3" attributes="0">
                                       <Component id="clearChainButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                                      <Component id="browseImdButton" alignment="3" min="-2" max="-2" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
-                                  <Component id="jScrollPane2" min="-2" pref="316" max="-2" attributes="0"/>
                               </Group>
+                          </Group>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jScrollPane3" pref="303" max="32767" attributes="1"/>
+                              <Component id="jScrollPane2" alignment="0" pref="303" max="32767" attributes="1"/>
+                              <Component id="jScrollPane4" alignment="1" pref="303" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="103" groupAlignment="3" attributes="0">
-                                  <Component id="verifyKeyCertChain" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jLabel21" alignment="3" min="-2" max="-2" attributes="0"/>
-                                  <Component id="showZcfExceptionsCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="PKIXValidationRadio" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="lbaasValidationRadio" min="-2" max="-2" attributes="0"/>
-                              </Group>
+                          <Group type="103" groupAlignment="3" attributes="0">
+                              <Component id="verifyKeyCertChain" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel21" alignment="3" min="-2" max="-2" attributes="0"/>
+                              <Component id="showZcfExceptionsCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <EmptySpace pref="12" max="32767" attributes="0"/>
+                          <EmptySpace min="-2" pref="36" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1123,11 +1135,6 @@
                     </Component>
                   </SubComponents>
                 </Container>
-                <Component class="javax.swing.JLabel" name="jLabel13">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Key"/>
-                  </Properties>
-                </Component>
                 <Component class="javax.swing.JButton" name="clearKeyButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Clear"/>
@@ -1188,11 +1195,6 @@
                     </Component>
                   </SubComponents>
                 </Container>
-                <Component class="javax.swing.JLabel" name="jLabel14">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Cert"/>
-                  </Properties>
-                </Component>
                 <Component class="javax.swing.JButton" name="clearCertButton">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Clear"/>
@@ -1200,11 +1202,6 @@
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="clearCertButtonActionPerformed"/>
                   </Events>
-                </Component>
-                <Component class="javax.swing.JLabel" name="jLabel15">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="Chain"/>
-                  </Properties>
                 </Component>
                 <Component class="javax.swing.JButton" name="clearChainButton">
                   <Properties>
@@ -1219,21 +1216,64 @@
                     <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;small&gt;&lt;span style=&quot;color:blue&quot;&gt;(be sure to add your roots via the &lt;/span&gt;Crt Path&lt;span style=&quot;color:blue&quot;&gt; tab)&lt;/span&gt;&lt;/small&gt;&lt;/html&gt;&#xa;        "/>
                   </Properties>
                 </Component>
-                <Component class="javax.swing.JRadioButton" name="PKIXValidationRadio">
-                  <Properties>
-                    <Property name="selected" type="boolean" value="true"/>
-                    <Property name="text" type="java.lang.String" value="Use PKIX validation"/>
-                  </Properties>
-                </Component>
-                <Component class="javax.swing.JRadioButton" name="lbaasValidationRadio">
-                  <Properties>
-                    <Property name="text" type="java.lang.String" value="USE Lbaas validation"/>
-                  </Properties>
-                </Component>
                 <Component class="javax.swing.JCheckBox" name="showZcfExceptionsCheckBox">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Show Exceptions"/>
                   </Properties>
+                </Component>
+                <Component class="javax.swing.JButton" name="loadKeyVerifyButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Load Key"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadKeyVerifyButtonActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JTextField" name="loadKeyVerifyFN">
+                </Component>
+                <Component class="javax.swing.JButton" name="browseKeyButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Browse Key"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseKeyButtonActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JButton" name="loadCrtVerifyButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Load Crt"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadCrtVerifyButtonActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JTextField" name="loadCrtVerifyFN">
+                </Component>
+                <Component class="javax.swing.JButton" name="loadImdVerifyButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Load Imd"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadImdVerifyButtonActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JTextField" name="loadImdVerifyFN">
+                </Component>
+                <Component class="javax.swing.JButton" name="browseCrtButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Browse Crt"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseCrtButtonActionPerformed"/>
+                  </Events>
+                </Component>
+                <Component class="javax.swing.JButton" name="browseImdButton">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Browse Imd"/>
+                  </Properties>
+                  <Events>
+                    <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseImdButtonActionPerformed"/>
+                  </Events>
                 </Component>
               </SubComponents>
             </Container>
@@ -1329,8 +1369,8 @@
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" attributes="0">
                                           <Group type="103" groupAlignment="0" attributes="0">
-                                              <Component id="loadCrtPathCrtsButton" pref="184" max="32767" attributes="1"/>
-                                              <Component id="loadCrtPathMapButton" alignment="0" pref="184" max="32767" attributes="1"/>
+                                              <Component id="loadCrtPathCrtsButton" pref="185" max="32767" attributes="1"/>
+                                              <Component id="loadCrtPathMapButton" alignment="0" pref="185" max="32767" attributes="1"/>
                                           </Group>
                                           <EmptySpace max="-2" attributes="0"/>
                                           <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -1338,7 +1378,7 @@
                                               <Component id="clearCrtPathMapButton" alignment="0" pref="89" max="32767" attributes="1"/>
                                           </Group>
                                       </Group>
-                                      <Component id="displayCrtHashCodeButton" pref="279" max="32767" attributes="0"/>
+                                      <Component id="displayCrtHashCodeButton" pref="280" max="32767" attributes="0"/>
                                   </Group>
                                   <Group type="103" groupAlignment="0" attributes="0">
                                       <Group type="102" attributes="0">
@@ -1347,7 +1387,7 @@
                                               <Group type="102" attributes="0">
                                                   <Component id="jLabel18" min="-2" pref="168" max="-2" attributes="1"/>
                                                   <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="crtChainerCountTextField" pref="167" max="32767" attributes="1"/>
+                                                  <Component id="crtChainerCountTextField" pref="166" max="32767" attributes="1"/>
                                                   <EmptySpace max="-2" attributes="0"/>
                                                   <Component id="loadChainerButton" pref="195" max="32767" attributes="1"/>
                                                   <EmptySpace max="-2" attributes="0"/>
@@ -1356,7 +1396,7 @@
                                               <Group type="102" attributes="0">
                                                   <Component id="jLabel19" min="-2" pref="168" max="-2" attributes="1"/>
                                                   <EmptySpace max="-2" attributes="0"/>
-                                                  <Component id="crtsInRootCAs" pref="167" max="32767" attributes="1"/>
+                                                  <Component id="crtsInRootCAs" pref="166" max="32767" attributes="1"/>
                                                   <EmptySpace max="-2" attributes="0"/>
                                                   <Component id="loadRootCAsButton" pref="195" max="32767" attributes="1"/>
                                                   <EmptySpace max="-2" attributes="0"/>
@@ -1372,7 +1412,7 @@
                                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                                           <Component id="loadImdsButton" min="-2" pref="194" max="-2" attributes="1"/>
                                           <EmptySpace max="-2" attributes="0"/>
-                                          <Component id="clearImdsButton" pref="196" max="32767" attributes="1"/>
+                                          <Component id="clearImdsButton" pref="195" max="32767" attributes="1"/>
                                       </Group>
                                   </Group>
                               </Group>

@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.junit.*;
@@ -22,10 +24,13 @@ import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
 import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
+import org.openstack.atlas.util.ca.exceptions.X509ReaderDecodeException;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import org.openstack.atlas.util.ca.util.StaticHelpers;
 import org.openstack.atlas.util.ca.util.X509ChainEntry;
+import org.openstack.atlas.util.ca.util.X509Inspector;
 import org.openstack.atlas.util.ca.util.X509PathBuilder;
+import org.openstack.atlas.util.ca.util.X509ReaderWriter;
 
 public class ZeusUtilsTest {
 
@@ -40,6 +45,7 @@ public class ZeusUtilsTest {
     private static final String workingUserKey;
     private static final String workingUserCrt;
     private static final String workingUserChain;
+    private static final String funkyCrts;
 
     static {
         workingRootCa = "-----BEGIN CERTIFICATE-----\n"
@@ -173,6 +179,9 @@ public class ZeusUtilsTest {
                 + "PAearnmXp1M=\n"
                 + "-----END CERTIFICATE-----\n"
                 + "";
+        // place userCrt way at the bottom of the chain and see if ZeusUtils can
+        // find it
+        funkyCrts = workingUserChain + "\n" + workingUserCrt;
     }
 
     public ZeusUtilsTest() {
@@ -240,7 +249,7 @@ public class ZeusUtilsTest {
         }
         String imdsString = sb.toString();
         ZeusUtils zu = new ZeusUtils(roots);
-        ZeusCrtFile zcf = zu.buildZeusCrtFile(userKeyStr, userCrtStr, imdsString, false);
+        ZeusCrtFile zcf = zu.buildZeusCrtFileLbassValidation(userKeyStr, userCrtStr, imdsString);
         for (ErrorEntry errors : zcf.getErrors()) {
             Throwable ex = errors.getException();
             if (ex != null) {
@@ -275,11 +284,43 @@ public class ZeusUtilsTest {
         assertZCFLbaasErrors(roots, "", null, null, expectFatalErrors, expectErrors);
         assertZCFLbaasErrors(roots, null, null, null, expectFatalErrors, expectErrors);
         assertZCFLbaasErrors(roots, "", "", workingUserChain, expectFatalErrors, expectErrors);
+        String funkyCrts = workingUserChain + "\n" + workingUserCrt;
+        assertZCFLbaasErrors(roots, workingUserKey, null, funkyCrts, expectNoFatalErrors, expectNoErrors);
+        assertZCFLbaasErrors(roots, workingUserKey, funkyCrts, null, expectNoFatalErrors, expectNoErrors);
+    }
+
+    @Test
+    public void assertUserCertWasCorrectlyMovedToTheTop() {
+        ZeusUtils zu = new ZeusUtils();
+        // Set the users cert to the very top;
+        ZeusCrtFile zcf = zu.buildZeusCrtFileLbassValidation(workingUserKey, null, workingUserChain + "\n" + workingUserCrt);
+        String expectedCN = null;
+        try {
+            expectedCN = X509Inspector.newX509Inspector(workingUserCrt).getSubjectCN();
+        } catch (X509ReaderDecodeException ex) {
+            Assert.fail("Not sure why the workingUserCrt was undecodable");
+        } catch (NotAnX509CertificateException ex) {
+            Assert.fail("Not sure why the workingUserCrt was undecodable");
+        }
+
+        // Get first X509 which should be our user
+        List<X509CertificateObject> x509s = X509ReaderWriter.readList(zcf.getPublic_cert());
+        if (x509s.isEmpty()) {
+            Assert.fail("No certs found");
+        }
+        X509Inspector xi = null;
+        try {
+            xi = new X509Inspector(x509s.get(0));
+        } catch (NotAnX509CertificateException ex) {
+            Assert.fail("Couldn't decode top x509 for some reason.");
+        }
+        String foundCN = xi.getSubjectCN();
+        assertEquals(expectedCN, foundCN);
     }
 
     private void assertZCFLbaasErrors(Set<X509CertificateObject> roots, String key, String crt, String imd, boolean expectFatalErrors, boolean expectErrors) {
         ZeusUtils zu = new ZeusUtils(roots);
-        ZeusCrtFile zcf = zu.buildZeusCrtFile(key, crt, imd, true);
+        ZeusCrtFile zcf = zu.buildZeusCrtFileLbassValidation(key, crt, imd);
         boolean hasErrors = zcf.hasErrors();
         boolean hasFatalErrors = zcf.hasFatalErrors();
         boolean testFailed = false;

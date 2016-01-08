@@ -18,6 +18,7 @@ import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
+import org.openstack.atlas.util.ca.primitives.UserCrtAndImds;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.util.ResponseWithExcpetions;
@@ -48,26 +49,26 @@ public class ZeusUtils {
         this.roots = roots;
     }
 
-    public ZeusCrtFile buildZeusCrtFile(String keyStr, String userCrtStr, String intermediates, boolean useLbaasValidation) {
-        Date date = new Date(System.currentTimeMillis());
-        if (!useLbaasValidation) {
-            return buildZeusCrtFile(keyStr, userCrtStr, intermediates, date);
-        } else {
-            return buildZeusCrtFileLbassValidation(keyStr, userCrtStr, intermediates);
-        }
-    }
-
     public ZeusCrtFile buildZeusCrtFileLbassValidation(String userKeyStr, String userCrtStr, String intermediates) {
         ZeusCrtFile zcf = new ZeusCrtFile();
         List<ErrorEntry> errors = zcf.getErrors();
-        Map<X509CertificateObject, Integer> lineMap = new HashMap<X509CertificateObject, Integer>();
         String zkey = "";
         String zcrt = "";
         String msg;
-
+        X509CertificateObject userCrt = null;
+        List<X509CertificateObject> imdCrts = new ArrayList<X509CertificateObject>();
         KeyPair userKey = parseKey(userKeyStr, zcf.getErrors());
-        X509CertificateObject userCrt = decodeCrt(userCrtStr, zcf);
-        List<X509CertificateObject> imdCrts = decodeImd(lineMap, intermediates, zcf);
+        if (!zcf.hasFatalErrors()) {
+            UserCrtAndImds certsMatched = findUserCert(userKey, userCrtStr, intermediates, zcf);
+            imdCrts = certsMatched.getImds();
+            userCrt = certsMatched.getUserCert();
+        } else {
+            userCrt = decodeCrt(userCrtStr, zcf);
+        }
+
+        // Make sure the user cert not accidently in the imd field by reordering
+        // if the user cert is not on top
+
 
         // Verify key matches cert if both are Present
         if (!zcf.containsErrorTypes(ErrorType.UNREADABLE_CERT, ErrorType.UNREADABLE_KEY)) {
@@ -111,13 +112,7 @@ public class ZeusUtils {
                     String x509Str = PemUtils.toPemString(x509obj);
                     sb.append(x509Str);
                 } catch (PemException ex) {
-                    if (lineMap.containsKey(x509obj)) {
-                        int x509lineNum = lineMap.get(x509obj).intValue();
-                        msg = String.format("Error encodeing chain crt at line %d", x509lineNum);
-                        errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, msg, true, ex));
-                    } else {
-                        errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Error encodeing chain crt", true, ex));
-                    }
+                    errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Error encodeing chain crt", true, ex));
                 }
             }
 
@@ -138,83 +133,6 @@ public class ZeusUtils {
                 zcrt = sb.toString();
                 zcf.setPrivate_key(zkey);
                 zcf.setPublic_cert(zcrt);
-            }
-        }
-        return zcf;
-    }
-
-    public ZeusCrtFile buildZeusCrtFile(String keyStr, String userCrtStr, String intermediates, Date date) {
-        ZeusCrtFile zcf = new ZeusCrtFile();
-        List<ErrorEntry> errors = zcf.getErrors();
-        List<PemBlock> blocks;
-        KeyPair kp = null;
-        X509CertificateObject userCrt = null;
-        Object obj;
-        // Read Key
-        kp = parseKey(keyStr, errors);
-        userCrt = parseCert(userCrtStr, errors);
-
-        if (userCrt != null) {
-            if (CertUtils.isCertExpired(userCrt, date)) {
-                Date after = userCrt.getNotAfter();
-                String errorMsg = invalidDateMessage("User cert expired on", after);
-                errors.add(new ErrorEntry(ErrorType.EXPIRED_CERT, errorMsg, true, null));
-            }
-
-            if (CertUtils.isCertPremature(userCrt, date)) {
-                Date before = userCrt.getNotBefore();
-                String errorMsg = invalidDateMessage("User cert isn't valid till", before);
-                errors.add(new ErrorEntry(ErrorType.PREMATURE_CERT, errorMsg, false, null));
-            }
-        }
-
-        // Check key and cert match
-        if (kp != null && userCrt != null) {
-            PublicKey userKey = userCrt.getPublicKey();
-            List<ErrorEntry> keyCrtErrors = CertUtils.validateKeyMatchesCert((JCERSAPublicKey) kp.getPublic(), userCrt);
-            if (keyCrtErrors.size() > 0) {
-                errors.addAll(keyCrtErrors);
-                return zcf;
-            }
-        }
-        // Retrieve Intermediates.
-        Set<X509CertificateObject> intermediateCerts = new HashSet<X509CertificateObject>();
-        if (intermediates != null) {
-            intermediateCerts = parseIntermediateCerts(intermediates, errors);
-        }
-
-        if (userCrt != null) {
-            X509PathBuilder<X509CertificateObject> pathBuilder = new X509PathBuilder<X509CertificateObject>(roots, intermediateCerts);
-            X509BuiltPath<X509CertificateObject> builtPath;
-            try {
-                builtPath = pathBuilder.buildPath(userCrt, date);
-            } catch (X509PathBuildException ex) {
-                errors.add(new ErrorEntry(ErrorType.NO_PATH_TO_ROOT, "No Path to root", false, ex));
-                return zcf;
-            }
-            StringBuilder zcrtString = new StringBuilder(RsaConst.PAGESIZE);
-            List<ErrorEntry> certWriteErrors = new ArrayList<ErrorEntry>();
-            for (X509CertificateObject x509obj : builtPath.getPath()) {
-                try {
-                    String x509String = PemUtils.toPemString(x509obj);
-                    zcrtString.append(x509String);
-                } catch (PemException ex) {
-                    certWriteErrors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Coulden't encode intermediate certififacte", true, ex));
-                }
-                if (certWriteErrors.size() > 0) {
-                    errors.addAll(certWriteErrors);
-                    return zcf;
-                }
-            }
-            zcf.setPublic_cert(zcrtString.toString());
-        }
-        if (kp != null) {
-            try {
-                String privKey = PemUtils.toPemString(kp);
-                zcf.setPrivate_key(privKey);
-            } catch (PemException ex) {
-                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_KEY, ex.getMessage(), true, ex));
-                return zcf;
             }
         }
         return zcf;
@@ -373,5 +291,47 @@ public class ZeusUtils {
             return null;
         }
         return clazz.getName();
+    }
+
+    private UserCrtAndImds findUserCert(KeyPair userKey, String userCrtStr, String imdsStr, ZeusCrtFile zcf) {
+        X509CertificateObject userCrt = null;
+        List<X509CertificateObject> imdCrts = new ArrayList<X509CertificateObject>();
+        StringBuilder sb = new StringBuilder();
+        if (userCrtStr == null) {
+            userCrtStr = "";
+        }
+        if (imdsStr == null) {
+            imdsStr = "";
+        }
+        String mashedUpCrts = userCrtStr + "\n" + imdsStr + "\n";
+        List<PemBlock> blocks = PemUtils.parseMultiPem(mashedUpCrts);
+        if (userKey != null) {
+            for (PemBlock block : blocks) {
+                Object obj = block.getDecodedObject();
+                if (obj == null || !(obj instanceof X509CertificateObject)) {
+                    continue;
+                }
+                X509CertificateObject x509 = (X509CertificateObject) obj;
+                List<ErrorEntry> errors = CertUtils.validateKeyMatchesCrt(userKey, x509);
+                if (errors.isEmpty()) {
+                    userCrt = x509;
+                } else {
+                    imdCrts.add(x509);
+                }
+            }
+        } else {
+            // no userKey found can't match
+            String errorMessage = "No private key found can't match against certs";
+            zcf.getErrors().add(new ErrorEntry(ErrorType.KEY_CERT_MISMATCH, errorMessage, true, null));
+        }
+        if (userCrt == null) {
+            String errorMessage = "Unable to locate users certificate";
+            zcf.getErrors().add(new ErrorEntry(ErrorType.KEY_CERT_MISMATCH, errorMessage, true, null));
+        }
+        if (userCrt == null && imdCrts.isEmpty()) {
+            String errorMessage = "No certs could be found";
+            zcf.getErrors().add(new ErrorEntry(ErrorType.UNREADABLE_CERT, errorMessage, true, null));
+        }
+        return new UserCrtAndImds(userCrt, imdCrts);
     }
 }
