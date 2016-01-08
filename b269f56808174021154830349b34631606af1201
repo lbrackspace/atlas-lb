@@ -73,6 +73,42 @@
     },
     {
       "key": {
+        "uuid": "fa81d914_eec97e5b",
+        "filename": "logs/cfuploader/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-01-08T22:40:39Z",
+      "side": 1,
+      "message": "that and you\u0027ve added 12 Kilobytes for the base dictionary hash. I\u0027m guessing if I had done None it would have been clearer.",
+      "parentUuid": "fa81d914_2c2c89ab",
+      "revId": "b269f56808174021154830349b34631606af1201",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa81d914_0ec7b246",
+        "filename": "logs/cfuploader/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-01-08T22:40:39Z",
+      "side": 1,
+      "message": "wow. If I had known this array already existed I woulden\u0027t have bothered to type all that out.",
+      "parentUuid": "fa81d914_6c1da173",
+      "revId": "b269f56808174021154830349b34631606af1201",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa81d914_ac7239e3",
         "filename": "logs/cfuploader/utils.py",
         "patchSetId": 1
