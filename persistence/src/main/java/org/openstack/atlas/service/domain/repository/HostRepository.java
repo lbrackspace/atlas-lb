@@ -417,7 +417,7 @@ public class HostRepository {
                 long count = 0;
                 //fewest number
                 for (Host h : hosts) {
-                    String query = "select count(*) from LoadBalancer lb where lb.host.id = :id";
+                    String query = "select count(*) from LoadBalancer lb where lb.host.id = :id and lb.status != 'DELETED'";
                     List<Long> lst = entityManager.createQuery(query).setParameter("id", h.getId()).getResultList();
                     count = lst.get(0).longValue();
                     if (count == 0) {
