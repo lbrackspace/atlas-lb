@@ -73,7 +73,7 @@ public class ResponseFactory {
         lbaasFault.setCode(code);
 
         if (code == 500) {
-            LOG.debug(String.format("Exception Caught: %s", getExtendedStackTrace(e)));
+            LOG.error(String.format("Exception Caught: %s", getExtendedStackTrace(e)));
         }
 
         if (code == 503){
