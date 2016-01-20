@@ -14,34 +14,34 @@ public class UriClassDiscover {
 
     private static final Log LOG = LogFactory.getLog(UriClassDiscover.class);
 
-    private static final List<REFCN> rList;
+    private static final List<RegExForClassName> rList;
 
     static {
-        rList = new ArrayList<REFCN>();
+        rList = new ArrayList<RegExForClassName>();
 
         // If you don't add new URI's to the following list then customers will get a 500 response on bad JSON.
-        getrList().add(new REFCN(".*\\d+/loadbalancers(\\.json|\\.xml)?/?$", LoadBalancer.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+(\\.json|\\.xml)?/?$", LoadBalancer.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/accesslist(\\.json|\\.xml)?/?$", AccessList.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/accesslist/\\d+(\\.json|\\.xml)?/?$", NetworkItem.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/healthmonitor(\\.json|\\.xml)?/?$", HealthMonitor.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes(\\.json|\\.xml)?/?$", Nodes.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes/\\d+(\\.json|\\.xml)?/?$", Node.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/metadata(\\.json|\\.xml)?/?$", Metadata.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/metadata/\\d+(\\.json|\\.xml)?/?$", Meta.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/sessionpersistence(\\.json|\\.xml)?/?$", SessionPersistence.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination/certificatemappings(\\.json|\\.xml)?/?$", CertificateMapping.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination/certificatemappings/\\d+(\\.json|\\.xml)?/?$", CertificateMapping.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/errorpage(\\.json|\\.xml)?/?$", Errorpage.class));
-
-        getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/virtualip(\\.json|\\.xml)?/?$", VirtualIp.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/loadbalancer(\\.json|\\.xml)?/?$", LoadBalancer.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/updated(\\.json|\\.xml)?/?$", Updated.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
-        getrList().add(new REFCN(".*/management/hosts(\\.json|\\.xml)?/?$", Host.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers(\\.json|\\.xml)?/?$", LoadBalancer.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+(\\.json|\\.xml)?/?$", LoadBalancer.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/accesslist(\\.json|\\.xml)?/?$", AccessList.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/accesslist/\\d+(\\.json|\\.xml)?/?$", NetworkItem.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/healthmonitor(\\.json|\\.xml)?/?$", HealthMonitor.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/nodes(\\.json|\\.xml)?/?$", Nodes.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/nodes/\\d+(\\.json|\\.xml)?/?$", Node.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/metadata(\\.json|\\.xml)?/?$", Metadata.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/metadata/\\d+(\\.json|\\.xml)?/?$", Meta.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/sessionpersistence(\\.json|\\.xml)?/?$", SessionPersistence.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/ssltermination/certificatemappings(\\.json|\\.xml)?/?$", CertificateMapping.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/ssltermination/certificatemappings/\\d+(\\.json|\\.xml)?/?$", CertificateMapping.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/\\d+/errorpage(\\.json|\\.xml)?/?$", Errorpage.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/bounce/certificatemappings(\\.json|\\.xml)?/?&", CertificateMapping.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/bounce/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/bounce/virtualip(\\.json|\\.xml)?/?$", VirtualIp.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/bounce/loadbalancer(\\.json|\\.xml)?/?$", LoadBalancer.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/bounce/updated(\\.json|\\.xml)?/?$", Updated.class));
+        getrList().add(new RegExForClassName(".*\\d+/loadbalancers/bounce/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
+        getrList().add(new RegExForClassName(".*/management/hosts(\\.json|\\.xml)?/?$", Host.class));
     }
 
     public static Class getClassForUri(String uri) {
@@ -50,7 +50,7 @@ public class UriClassDiscover {
         if (uri == null) {
             return classForUri;
         }
-        for (REFCN refcn : getrList()) {
+        for (RegExForClassName refcn : getrList()) {
             Pattern m = refcn.getPattern();
             if (m.matcher(uri).find()) {
                 classForUri = refcn.getSomeClass();
@@ -60,7 +60,7 @@ public class UriClassDiscover {
         return classForUri; // If we don't know how to validate it return null.
     }
 
-    public static List<REFCN> getrList() {
+    public static List<RegExForClassName> getrList() {
         return rList;
     }
 
@@ -88,16 +88,18 @@ public class UriClassDiscover {
         return rootElement;
     }
 
-    public static class REFCN {
-
+    public static class RegExForClassName {
+        // if the request URL matches the regex then this assume "someClass" is
+        // the datamodel object that will be passed into the URI.
+        // this is so json objects that don't have a root element can be
         private String rootElement;
         private Pattern pattern;
         private Class someClass;
 
-        public REFCN() {
+        public RegExForClassName() {
         }
 
-        public REFCN(String regEx, Class someClass) {
+        public RegExForClassName(String regEx, Class someClass) {
             this.pattern = Pattern.compile(regEx, Pattern.CASE_INSENSITIVE);
             this.someClass = someClass;
             this.rootElement = getRootElementNameForClass(someClass);
