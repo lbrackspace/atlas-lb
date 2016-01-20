@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.resources;
 
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMapping;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import java.util.Calendar;
@@ -40,6 +41,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
+import org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMappings;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolName;
@@ -100,6 +102,22 @@ public class StubResource extends CommonDependencyProvider {
         ct.setMinConnections(300);
         ct.setRateInterval(60);
         return Response.status(200).entity(ct).build();
+    }
+
+    @GET
+    @Path("certificatemappings")
+    public Response stubCertificateMappings() {
+        CertificateMappings cms = new CertificateMappings();
+        for (int i = 0; i < 3; i++) {
+            CertificateMapping cm = new CertificateMapping();
+            cm.setId(i);
+            cm.setHostName(String.format("www.host_%d.org", i));
+            cm.setCertificate(String.format("certificate_%d", i));
+            cm.setIntermediateCertificate(String.format("imd_%d", i));
+            cm.setPrivateKey(String.format("private key_%d", i));
+            cms.getCertificateMappings().add(cm);
+        }
+        return Response.status(200).entity(cms).build();
     }
 
     @GET
