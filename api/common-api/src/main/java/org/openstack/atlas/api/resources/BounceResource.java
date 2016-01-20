@@ -3,10 +3,13 @@ package org.openstack.atlas.api.resources;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
+import org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMappings;
+import org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMapping;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
@@ -135,7 +138,7 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("ssltermination")
-    public Response SslTermination(SslTermination sslTerm) {
+    public Response echoSslTermination(SslTermination sslTerm) {
         if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
@@ -159,5 +162,25 @@ public class BounceResource extends CommonDependencyProvider {
             resp = Response.status(200).entity(sslOut).build();
         }
         return resp;
+    }
+
+    @POST
+    @Path("certificatemappings")
+    public Response echoCertificateMappingPost(CertificateMapping cm) {
+        ValidatorResult result = ValidatorRepository.getValidatorFor(CertificateMapping.class).validate(cm, HttpRequestType.POST);
+        if (!result.passedValidation()) {
+            return getValidationFaultResponse(result);
+        }
+        return Response.status(Response.Status.ACCEPTED).entity(cm).build();
+    }
+
+    @PUT
+    @Path("certificatemappings")
+    public Response echoCertificateMappingPut(CertificateMapping cm) {
+        ValidatorResult result = ValidatorRepository.getValidatorFor(CertificateMapping.class).validate(cm, HttpRequestType.PUT);
+        if (!result.passedValidation()) {
+            return getValidationFaultResponse(result);
+        }
+        return Response.status(Response.Status.ACCEPTED).entity(cm).build();
     }
 }

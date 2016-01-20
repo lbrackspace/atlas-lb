@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+import cfuploader.cfuploader
+import cfuploader.utils
+import os
+
+log = cfuploader.utils.log
+
+if __name__ == "__main__":
+    pid = os.getpid()
+    log("pid = %i\n", pid)
+    uploader = cfuploader.cfuploader.Uploader()
+    uploader.main_loop()
