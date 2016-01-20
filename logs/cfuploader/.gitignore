@@ -1,0 +1,5 @@
+*.pyc
+*/*.pyc
+build/*
+cfuploader.egg-info/*
+dist/*
