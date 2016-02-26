@@ -32,10 +32,7 @@ public class ConnectionThrottleValidator implements ResourceValidator<Connection
                 must().adhereTo(new Verifier<ConnectionThrottle>() {
                     @Override
                     public VerifierResult verify(ConnectionThrottle obj) {
-                        return new VerifierResult(obj.getMinConnections() != null ||
-                                obj.getMaxConnections() != null ||
-                                obj.getMaxConnectionRate() != null ||
-                                obj.getRateInterval() != null);
+                        return new VerifierResult(obj.getMaxConnections() != null);
                     }
                 }).forContext(PUT).withMessage("You must provide at least one of the following: minConnections, maxConnections, maxConnectionRate, rateInterval.");
             }

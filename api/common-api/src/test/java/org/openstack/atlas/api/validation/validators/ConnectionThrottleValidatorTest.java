@@ -34,39 +34,15 @@ public class ConnectionThrottleValidatorTest {
         }
 
         @Test
-        public void shouldRejectWhenMissingAllAttributes() {
+        public void shouldRejectWhenMissingMaxConnectionsAttributesBecauseTheOthersAreDeprecated() {
             assertFalse(validator.validate(new ConnectionThrottle(), PUT).passedValidation());
         }
 
         @Test
-        public void shouldAcceptWhenOnlyMinConnectionsIsSet() {
-            connectionLimits.setMaxConnections(null);
-            connectionLimits.setMaxConnectionRate(null);
-            connectionLimits.setRateInterval(null);
-            assertTrue(validator.validate(connectionLimits, PUT).passedValidation());
-        }
-
-        @Test
-        public void shouldAcceptWhenOnlyMaxConnectionsIsSet() {
+        public void shouldAcceptIfMaxConnectionsIsSet() {
             connectionLimits.setMinConnections(null);
             connectionLimits.setMaxConnectionRate(null);
             connectionLimits.setRateInterval(null);
-            assertTrue(validator.validate(connectionLimits, PUT).passedValidation());
-        }
-
-        @Test
-        public void shouldAcceptWhenOnlyMaxConnectionRateIsSet() {
-            connectionLimits.setMinConnections(null);
-            connectionLimits.setMaxConnections(null);
-            connectionLimits.setRateInterval(null);
-            assertTrue(validator.validate(connectionLimits, PUT).passedValidation());
-        }
-
-        @Test
-        public void shouldAcceptWhenOnlyRateIntervalIsSet() {
-            connectionLimits.setMinConnections(null);
-            connectionLimits.setMaxConnections(null);
-            connectionLimits.setMaxConnectionRate(null);
             assertTrue(validator.validate(connectionLimits, PUT).passedValidation());
         }
 
@@ -83,37 +59,37 @@ public class ConnectionThrottleValidatorTest {
         }
 
         @Test
-        public void shouldRejectInvalidMaxConnectionsRangeMin() {
+        public void shouldRejectInvalidMaxConnectionsRangeMinEvenThoughItsDeprecated() {
             connectionLimits.setMaxConnections(-1);
             assertFalse(validator.validate(connectionLimits, PUT).passedValidation());
         }
 
         @Test
-        public void shouldRejectInvalidMaxConnectionsRangeMax() {
+        public void shouldRejectInvalidMaxConnectionsRangeMaxEvenThoughItsDeprecated() {
             connectionLimits.setMaxConnections(100001);
             assertFalse(validator.validate(connectionLimits, PUT).passedValidation());
         }
 
         @Test
-        public void shouldRejectInvalidMaxConnectionRateRangeMin() {
+        public void shouldRejectInvalidMaxConnectionRateRangeMinEvenThoughItsDeprecated() {
             connectionLimits.setMaxConnectionRate(-1);
             assertFalse(validator.validate(connectionLimits, PUT).passedValidation());
         }
 
         @Test
-        public void shouldRejectInvalidMaxConnectionRateRangeMax() {
+        public void shouldRejectInvalidMaxConnectionRateRangeMaxEvenThoughItsDeprecated() {
             connectionLimits.setMaxConnectionRate(100001);
             assertFalse(validator.validate(connectionLimits, PUT).passedValidation());
         }
 
         @Test
-        public void shouldRejectInvalidRateIntervalMin() {
+        public void shouldRejectInvalidRateIntervalMinEvenThoughItsDeprecated() {
             connectionLimits.setRateInterval(0);
             assertFalse(validator.validate(connectionLimits, PUT).passedValidation());
         }
 
         @Test
-        public void shouldRejectInvalidRateIntervalMax() {
+        public void shouldRejectInvalidRateIntervalMaxEvenThoughItsDeprecated() {
             connectionLimits.setRateInterval(3601);
             assertFalse(validator.validate(connectionLimits, PUT).passedValidation());
         }

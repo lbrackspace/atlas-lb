@@ -51,6 +51,13 @@ public class ConnectionThrottleResource extends CommonDependencyProvider {
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response updateConnectionThrottle(ConnectionThrottle throttle) {
+        // WE deprecated these fields but need them to be set in the data base for some reason. So we'll force them to
+        // default values according to CLB-728. If these fields are blank an error is thrown in the persistance layer
+        // Yes its hackish but its less lines of code to change.
+        throttle.setMinConnections(0);
+        throttle.setRateInterval(1);
+        throttle.setMaxConnectionRate(0);
+
         ValidatorResult result = ValidatorRepository.getValidatorFor(ConnectionThrottle.class).validate(throttle, HttpRequestType.PUT);
         if (!result.passedValidation()) {
             return getValidationFaultResponse(result);
