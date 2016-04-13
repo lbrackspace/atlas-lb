@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.openstack.atlas</groupId>
+        <artifactId>atlas-itest</artifactId>
+        <version>1.25.27-SNAPSHOT</version>
+
+
+    </parent>
+    <groupId>org.openstack.atlas</groupId>
+    <artifactId>atlas-itest-snmp-sampler</artifactId>
+    <name>Openstack :: Atlas :: Common :: SNMP Sampler</name>
+    <packaging>jar</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-itest-snmp</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-jobs</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <inherited>true</inherited>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>1.6</source>
+                        <target>1.6</target>
+                        <optimize>false</optimize>
+                        <debug>true</debug>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <mainClass>org.openstack.atlas.util.snmp.SnmpSamplerMain</mainClass>
+                            </manifest>
+                        </archive>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <finalName>${project.artifactId}-${project.version}-assembly</finalName>
+                        <appendAssemblyId>false</appendAssemblyId>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>
