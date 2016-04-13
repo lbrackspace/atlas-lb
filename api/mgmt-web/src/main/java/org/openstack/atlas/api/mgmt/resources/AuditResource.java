@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.service.domain.pojos.NodeStatusReport;
+import org.openstack.atlas.service.domain.pojos.NodeStatusPojo;
 import java.util.Collections;
 import org.openstack.atlas.api.mgmt.helpers.SslTermInfoComparator;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.CertInfo;
@@ -83,6 +85,19 @@ public class AuditResource extends ManagementDependencyProvider {
         }
         String jsonResponse = retrieveConfig(conf, keys);
         return Response.status(200).entity(jsonResponse).build();
+    }
+
+    @GET
+    @Path("node_status")
+    public Response auditNodeStatused() {
+        if (!isUserInRole("ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        ListOfStrings los = new ListOfStrings();
+        los.getStrings().add("buzzoff");
+        NodeStatusReport nsr = nodeService.runNodeStatusAudit();
+        los.getStrings().add(nsr.toString());
+        return Response.status(200).entity(los).build();
     }
 
     @GET

@@ -22,6 +22,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnRSAKeyException;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
@@ -29,6 +30,7 @@ import static org.junit.Assert.*;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
+
 
 public class X509PathBuilderTest {
 
@@ -172,6 +174,8 @@ public class X509PathBuilderTest {
         return (KeyPair) obj;
     }
 
+    // Ignore this test for now. It was fixed in the TLS 1.0 disabler
+    @Ignore
     @Test
     public void testCreateChainBasedOnRootCa() throws NotAnX509CertificateException, RsaException {
         List<String> subjNames = new ArrayList<String>();

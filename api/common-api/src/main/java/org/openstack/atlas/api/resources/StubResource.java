@@ -322,6 +322,16 @@ public class StubResource extends CommonDependencyProvider {
         return n;
     }
 
+    private HealthMonitor newConnectHelathMonitor(){
+        HealthMonitor hm = new HealthMonitor();
+        hm.setType(HealthMonitorType.CONNECT);
+        hm.setDelay(1);
+        hm.setAttemptsBeforeDeactivation(3);
+        hm.setTimeout(30);
+
+        return hm;
+    }
+
     private LoadBalancer newLoadBalancer(Integer id, String name) {
         List<Node> nodes = new ArrayList<Node>();
         List<VirtualIp> vips = new ArrayList<VirtualIp>();
@@ -354,6 +364,7 @@ public class StubResource extends CommonDependencyProvider {
         nodes.add(newNode(1, 443, "127.0.0.20"));
         vips.add(newVip(1, "127.0.0.1"));
         vips.add(newVip(2, "127.0.0.2"));
+        lb.setHealthMonitor(newConnectHelathMonitor());
         lb.setVirtualIps(vips);
         lb.setNodes(nodes);
         SessionPersistence sp = new SessionPersistence();

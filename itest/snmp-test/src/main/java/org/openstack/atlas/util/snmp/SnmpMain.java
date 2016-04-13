@@ -3,8 +3,8 @@ package org.openstack.atlas.util.snmp;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -29,6 +29,8 @@ import org.openstack.atlas.util.snmp.comparators.VsNameComparator;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
 import org.openstack.atlas.util.staticutils.StaticStringUtils;
 import org.openstack.atlas.util.common.SetUtil;
+import org.openstack.atlas.util.ip.IPUtils;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.snmp4j.smi.VariableBinding;
 
 public class SnmpMain {
@@ -57,6 +59,7 @@ public class SnmpMain {
         File jsonFile = new File(StaticFileUtils.expandUser(MainArgs[0]));
         SnmpJsonConfig conf = SnmpJsonConfig.readJsonConfig(jsonFile);
         System.out.printf("useing config = %s\n", conf.toString());
+
         while (true) {
             try {
                 System.out.printf("> ");
@@ -81,7 +84,7 @@ public class SnmpMain {
                     System.out.printf("    non_repeaters <num> #Set the number of non repeaters on the clients\n");
                     System.out.printf("    show_state  #Show the application state and variables\n");
                     System.out.printf("    set_comparator <bi|bo|cc|vs> #Set the comparator for to BandwidthIn BandwidthOut totalConnections or ConcurrentConnections respectivly\n");
-                    System.out.printf("    run_bulk <oid> #Get usage from the default host useing the bulk on the given oid\n");
+                    System.out.printf("    run_bulk <oid> [output_file] #Get usage from the default host useing the bulk on the given oid\n");
                     System.out.printf("    run_default [clientKey]#Get usage from the default host and add it to the current usage list\n");
                     System.out.printf("    clear_usage #Clear the current usageList as well as the jobs usage list\n");
                     System.out.printf("    display_usage #Display the current usage\n");
@@ -101,6 +104,9 @@ public class SnmpMain {
                     System.out.printf("    clear_comparators #Clear the comparators for snmpUsage\n");
                     System.out.printf("    show_threads #Show running thread stack traces\n");
                     System.out.printf("    show_config #Show current Configuration\n");
+                    System.out.printf("    run_rollup #Run a single rollup with all new data\n");
+                    System.out.printf("    wtf <line>  #Test candidates code for brain damage\n");
+                    System.out.printf("    run_node_audit #Run node stats via threading\n");
                     System.out.printf("    exit #Exits\n");
                     System.out.printf("\n");
                 } else if (cmd.equals("show_threads")) {
@@ -233,7 +239,7 @@ public class SnmpMain {
                         if (vsToHostMap.containsKey(vsFilter)) {
                             printVsMap(vsFilter, vsToHostMap);
                         } else {
-                            System.out.printf("pool %s was not in the usage map\n",vsFilter);
+                            System.out.printf("pool %s was not in the usage map\n", vsFilter);
                         }
                     } else {
 
@@ -299,6 +305,17 @@ public class SnmpMain {
                     for (int i = 0; i < snmpUsageList.size(); i++) {
                         System.out.printf("Entry[%d]=%s\n", i, snmpUsageList.get(i).toString());
                     }
+                } else if (cmd.equals("run_rollup")) {
+                    System.out.printf("Running roll_up job,\n");
+                    Map<Integer, SnmpUsage> usageReport = run_rollup(clients, jobClient);
+                    System.out.printf("");
+                    List<Integer> lbIds = new ArrayList<Integer>(usageReport.keySet());
+                    Collections.sort(lbIds);
+                    System.out.printf("found %d loadbalancers\n", lbIds.size());
+                    for (Integer lbId : lbIds) {
+                        System.out.printf("%s\n", usageReport.get(lbId).toString());
+                    }
+
                 } else if (cmd.equals("display_snmp_usage_rollup")) {
                     Map<Integer, SnmpUsage> usageMap = new HashMap<Integer, SnmpUsage>();
                     for (SnmpUsage snmpUsageEntry : snmpUsageList) {
@@ -335,9 +352,7 @@ public class SnmpMain {
                         thread.start();
                     }
 
-                    Thread.sleep(1000);
                     System.out.printf("Threads started\n");
-                    Thread.sleep(1000);
 
                     // Join them all
                     for (SnmpClientThread thread : threads) {
@@ -379,7 +394,7 @@ public class SnmpMain {
                     }
                     System.out.printf("%s for %s = %d\n", oid, vsName, sum);
 
-                }  else if (cmd.equals("set_retrys") && args.length >= 2) {
+                } else if (cmd.equals("set_retrys") && args.length >= 2) {
                     System.out.printf("Setting retries to ");
                     System.out.flush();
                     int maxRetrys = Integer.parseInt(args[1]);
@@ -399,16 +414,130 @@ public class SnmpMain {
                     for (int i = 0; i < rawUsageList.size(); i++) {
                         System.out.printf("entry[%d]=%s\n", i, rawUsageList.get(i).toString());
                     }
+                } else if (cmd.equals("run_node_audit")) {
+                    List<SnmpNodeStatus> ipv4_nodes = new ArrayList<SnmpNodeStatus>();
+                    List<SnmpNodeStatus> ipv6_nodes = new ArrayList<SnmpNodeStatus>();
+                    List<SnmpNodeStatus> host_nodes = new ArrayList<SnmpNodeStatus>();
+                    List<Map<SnmpNodeKey, SnmpNodeStatus>> allHostsStatsMap = new ArrayList<Map<SnmpNodeKey, SnmpNodeStatus>>();
+                    int ipv4_count = 0;
+                    int ipv6_count = 0;
+                    int expected_host_node_count = 0;
+                    int actual_host_node_count = 0;
+                    int wtf = 0;
+                    int mangles = 0;
+                    int identicles = 0;
+                    List<String> clientKeys = new ArrayList<String>(clients.keySet());
+                    List<SnmpNodeStatusThread> threads = new ArrayList<SnmpNodeStatusThread>();
+                    double sum_of_elapsed_time = 0.0;
+                    ;
+                    int nThreads = 0;
+                    double avgElapsed;
+                    for (String clientKey : clientKeys) {
+                        StingraySnmpClient client = clients.get(clientKey);
+                        SnmpNodeStatusThread thread = new SnmpNodeStatusThread();
+                        threads.add(thread);
+                        thread.setClient(client);
+                        System.out.printf("init thread %s\n", clientKey);
+                        nThreads++;
+                    }
+                    double startTime = StaticDateTimeUtils.getEpochSeconds();
+                    for (SnmpNodeStatusThread thread : threads) {
+                        thread.start();
+                    }
+                    System.out.printf("Joining Threads\n");
+                    for (SnmpNodeStatusThread thread : threads) {
+                        thread.join();
+                        String clientKey = thread.getClientKey();
+                        double elapsed = thread.getElapsedTime();
+                        System.out.printf("Thread %s joined in %f seconds\n", clientKey, elapsed);
+                        sum_of_elapsed_time += elapsed;
+                        allHostsStatsMap.add(thread.getStatusMap());
+                    }
+                    double endTime = StaticDateTimeUtils.getEpochSeconds();
+                    double userTime = endTime - startTime;
+                    avgElapsed = sum_of_elapsed_time / nThreads;
+                    System.out.printf("total aggregate from threads was %f seconds", sum_of_elapsed_time);
+                    System.out.printf("Avg time was %f seconds\n", avgElapsed);
+                    System.out.printf("actual time for user was %f seconds\n", userTime);
+                    System.out.printf("speed up was %f", sum_of_elapsed_time / userTime);
+                    Map<SnmpNodeKey, SnmpNodeStatus> cmpMap = new HashMap<SnmpNodeKey, SnmpNodeStatus>();
+                    for (Map<SnmpNodeKey, SnmpNodeStatus> nodeMap : allHostsStatsMap) {
+                        for (Map.Entry<SnmpNodeKey, SnmpNodeStatus> entry : nodeMap.entrySet()) {
+                            if (!cmpMap.containsKey(entry.getKey())) {
+                                cmpMap.put(entry.getKey(), entry.getValue());
+                            } else {
+                                SnmpNodeStatus old = cmpMap.get(entry.getKey());
+                                SnmpNodeStatus curr = entry.getValue();
+                                if (old.equals(curr)) {
+                                    identicles++;
+                                } else {
+                                    mangles++;
+                                }
+                            }
+                            System.out.printf("%s -> %s\n", entry.getKey().toString(), entry.getValue().toString());
+                            if (entry.getValue().getHostName() != null) {
+                                actual_host_node_count++;
+                            }
+                            switch (entry.getValue().getIpType()) {
+                                case IPUtils.IPv4:
+                                    ipv4_nodes.add(entry.getValue());
+                                    ipv4_count++;
+                                    break;
+                                case IPUtils.IPv6:
+                                    ipv6_nodes.add(entry.getValue());
+                                    ipv6_count++;
+                                    break;
+                                case IPUtils.HOST_NAME:
+                                    expected_host_node_count++;
+                                    host_nodes.add(entry.getValue());
+                                    break;
+                                default:
+                                    wtf++;
+                                    break;
+                            }
+                        }
+                    }
+                    String fmt = "expected ipv4[%d], ipv6[%d], host[%d] actualhosts[%d] wtf[%d] identicles[%d] mangles[%d]";
+                    System.out.printf(fmt, ipv4_count, ipv6_count, expected_host_node_count, actual_host_node_count, wtf, identicles, mangles);
+                    nop();
                 } else if (cmd.equals("run_bulk") && args.length >= 2) {
+                    String msg;
+                    PrintWriter fpout = null;
                     String oid = args[1];
-                    System.out.printf("Running bulk on oid %s\n", oid);
-                    StingraySnmpClient client = defaultClient;
-                    List<VariableBinding> bindings = client.getBulkOidBindingList(oid);
-                    for (VariableBinding vb : bindings) {
-                        String vbOid = vb.getOid().toString();
-                        String vsName = StingraySnmpClient.getVirtualServerNameFromOid(oid, vbOid);
-                        long val = vb.getVariable().toLong();
-                        System.out.printf("%s %s=%d\n", vsName, vbOid, val);
+                    if (args.length >= 3) {
+                        fpout = StaticFileUtils.openFilePrintWriter(args[2], false, false);
+                    }
+                    List<String> clientKeys = new ArrayList<String>(clients.keySet());
+                    Collections.sort(clientKeys);
+                    for (String clientKey : clientKeys) {
+                        int count = 0;
+                        msg = String.format("Running bulk on oid %s\n", oid);
+                        System.out.printf(msg);
+                        if (fpout != null) {
+                            fpout.printf(msg);
+                        }
+                        StingraySnmpClient client = clients.get(clientKey);
+                        List<VariableBinding> bindings = client.getBulkOidBindingList(oid);
+                        for (VariableBinding vb : bindings) {
+                            count++;
+                            String vbOid = vb.getOid().toString();
+                            String syntax = vb.getVariable().getSyntaxString();
+                            String val = vb.getVariable().toString();
+                            msg = String.format("%s %s = (%s) %s\n", clientKey, vbOid, syntax, val);
+                            System.out.printf(msg);
+                            if (fpout != null) {
+                                fpout.printf(msg);
+                            }
+                        }
+                        msg = String.format("Total variabls returned = %d\n", count);
+                        System.out.printf(msg);
+                        if (fpout != null) {
+                            fpout.printf(msg);
+                        }
+                    }
+                    if (fpout != null) {
+                        fpout.flush();
+                        fpout.close();
                     }
                 } else if (cmd.equals("run_all")) {
                     System.out.printf("Running stats on all lbs\n");
@@ -462,6 +591,15 @@ public class SnmpMain {
                     System.out.printf("Called Garbage collector\n");
                 } else if (cmd.equals("mem")) {
                     System.out.printf("%s\n", Debug.showMem());
+                } else if (cmd.equals("wtf") && args.length >= 2) {
+                    StringBuilder sb = new StringBuilder();
+                    int i;
+                    for (i = 1; i < args.length - 1; i++) {
+                        sb.append(args[i]).append(" ");
+                    }
+                    sb.append(args[i]);
+                    String inputLine = sb.toString();
+                    wtf(inputLine);
 
                 } else if (cmd.equals("init_clients")) {
                     System.out.printf("initializeing clients\n");
@@ -503,5 +641,223 @@ public class SnmpMain {
             RawSnmpUsage rawUsage = vsToHostMap.get(vsName).get(clientKey);
             System.out.printf("client[%8s]=%s\n", clientKey, rawUsage.toString());
         }
+    }
+
+    public static SnmpUsage newSnmpUsage(int loadbalancerId) {
+        SnmpUsage usage = new SnmpUsage();
+        usage.setLoadbalancerId(loadbalancerId);
+        usage.setHostId(0);
+        usage.setBytesIn(0);
+        usage.setBytesOut(0);
+        usage.setConcurrentConnections(0);
+        usage.setConcurrentConnectionsSsl(0);
+        usage.setBytesInSsl(0);
+        usage.setBytesOutSsl(0);
+        usage.setTotalConnections(0);
+        usage.setTotalConnectionsSsl(0);
+        return usage;
+    }
+
+    public static void accumulateUsage(SnmpUsage accumulator, SnmpUsage operand) {
+        long abi = accumulator.getBytesIn();
+        long abis = accumulator.getBytesInSsl();
+        long abo = accumulator.getBytesOut();
+        long abos = accumulator.getBytesOutSsl();
+        int acc = accumulator.getConcurrentConnections();
+        int accs = accumulator.getConcurrentConnectionsSsl();
+        long atc = accumulator.getTotalConnections();
+        long atcs = accumulator.getTotalConnectionsSsl();
+
+        long obi = operand.getBytesIn();
+        long obis = operand.getBytesInSsl();
+        long obo = operand.getBytesOut();
+        long obos = operand.getBytesOutSsl();
+        int occ = operand.getConcurrentConnections();
+        int occs = operand.getConcurrentConnectionsSsl();
+        long otc = operand.getTotalConnections();
+        long otcs = operand.getConcurrentConnectionsSsl();
+
+        if (obi > 0) {
+            accumulator.setBytesIn(abi + obi);
+        }
+        if (obis > 0) {
+            accumulator.setBytesInSsl(abis + obis);
+        }
+        if (obo > 0) {
+            accumulator.setBytesOut(abo + obo);
+        }
+        if (obos > 0) {
+            accumulator.setBytesOutSsl(abos + obos);
+        }
+        if (occ > 0) {
+            accumulator.setConcurrentConnections(acc + occ);
+        }
+        if (occs > 0) {
+            accumulator.setConcurrentConnectionsSsl(accs + occs);
+        }
+        if (otc > 0) {
+            accumulator.setTotalConnections(atc + otc);
+        }
+        if (otcs > 0) {
+            accumulator.setTotalConnectionsSsl(atcs + otcs);
+        }
+
+    }
+
+    public static Map<Integer, SnmpUsage> run_rollup(Map<String, StingraySnmpClient> clients, StingrayUsageClient jobClient) throws InterruptedException {
+        Map<Integer, SnmpUsage> snmpUsage = new HashMap<Integer, SnmpUsage>();
+        List<String> clientKeys = new ArrayList<String>(clients.keySet());
+        List<Host> zxtmHosts = new ArrayList<Host>();
+        List<SnmpJobThread> threads = new ArrayList<SnmpJobThread>();
+        Collections.sort(clientKeys);
+        int hostId = 0;
+        for (String clientKey : clientKeys) {
+            String zxtmHostIp = clients.get(clientKey).getAddress();
+            Host zxtmHost = new Host();
+            zxtmHost.setManagementIp(zxtmHostIp);
+            zxtmHost.setId(hostId++);
+            zxtmHosts.add(zxtmHost);
+            SnmpJobThread jobThread = new SnmpJobThread();
+            jobThread.setClient(jobClient);
+            jobThread.setHost(zxtmHost);
+            threads.add(jobThread);
+        }
+        // start the threads
+        for (SnmpJobThread thread : threads) {
+            thread.start();
+        }
+
+        // Join the threads
+        for (SnmpJobThread thread : threads) {
+            thread.join();
+        }
+
+        // Gran all the results
+        for (SnmpJobThread thread : threads) {
+            System.out.printf("reading snmpUsage from thread for host %s: in %f(secs)\n", thread.getHost().getManagementIp(), thread.getElapsedTime());
+            Exception ex = thread.getException();
+            if (ex != null) {
+                System.out.printf("%s\n", StaticStringUtils.getExtendedStackTrace(ex));
+            } else {
+                for (Map.Entry<Integer, SnmpUsage> currUsage : thread.getUsage().entrySet()) {
+                    Integer lid = currUsage.getKey();
+                    SnmpUsage usage = currUsage.getValue();
+                    if (!snmpUsage.containsKey(lid)) {
+                        snmpUsage.put(lid, newSnmpUsage(lid));
+                    }
+                    accumulateUsage(snmpUsage.get(lid), usage);
+                }
+            }
+        }
+        return snmpUsage;
+    }
+
+    public static void wtf(String s) {
+
+        boolean failed = false;
+
+        String[] parts = s.split(" ");
+        int maxExpandLength = parts[1].length() - parts[0].length() + 1;
+        if (maxExpandLength <= 0) {
+            System.out.println("No");
+            failed = true;
+        } else {
+
+            // We will stash our set of working codes here
+            List<String> codes = new ArrayList<String>();
+            codes.add("");
+            boolean initialLoop = true;
+
+            // Loop thru all numbers
+            for (int i = 0; i < parts[0].length(); i++) {
+                String number = parts[0].substring(i, i + 1);
+
+                // Add all possible combos to all values in codes list.
+                // Check to see if still valid as we go.  Eliminate those that are not.
+                if ((number.equals("0")) || (number.equals("1"))) {
+                    // Generate all possible codes with existing codes prepended.
+                    // Cull out those that do not work anymore and add those that do.
+                    // Accumulate all new codes in addTheseCodes.  Them move to codes.
+                    List<String> addTheseCodes = new ArrayList<String>();
+                    for (int len = 0; len < maxExpandLength; len++) {
+                        // Generate a set of sequences, A AA, AAA up to maxExpandLength.
+                        StringBuffer sb = new StringBuffer();
+                        for (int cc = 0; cc <= len; cc++) {
+                            sb.append("A");
+                        }
+                        addTheseCodes.add(sb.toString());
+                    }
+                    // Add a list of Bs if we are a 1
+                    if (number.equals("1")) {
+                        for (int len = 0; len < maxExpandLength; len++) {
+                            // Generate a set of sequences, A AA, AAA up to maxExpandLength.
+                            StringBuffer sb = new StringBuffer();
+                            for (int cc = 0; cc <= len; cc++) {
+                                sb.append("B");
+                            }
+                            addTheseCodes.add(sb.toString());
+                        }
+                    }
+                    // For each sequence, prepend prior codes and see of
+                    // each code still works.  If it does, add it to a new list because.
+                    // you can't iterrate thru codes and modify it.
+                    List<String> theseCodesWork = new ArrayList<String>();
+                    for (String prepend : codes) {
+                        for (String newCodes : addTheseCodes) {
+                            String newCode = prepend + newCodes;
+                            int tl = newCode.length();
+                            if (tl <= parts[1].length()) {
+                                if (newCode.equalsIgnoreCase(parts[1].substring(0, tl))) {
+                                    theseCodesWork.add(newCode);
+                                }
+                            }
+                        }
+                    }
+                    // Delete our initial run flag
+                    if ((initialLoop == true) && (codes.size() == 1)) {
+                        String ss = codes.get(0);
+                        if (ss.length() == 0) {
+                            codes.clear();
+                        }
+                        initialLoop = false;
+                    }
+
+                    // Finally, add any working codes back to the codes list
+                    for (String addMe : theseCodesWork) {
+                        codes.add(addMe);
+                    }
+
+                    // Finally, at this point, if codes is ever empty, then
+                    // we know we don't code for the result sting
+                    if (codes.isEmpty()) {
+                        System.out.println("No");
+                        failed = true;
+                    }
+                }
+            } // end numbers loop
+            // Alghout we've colled, some of the codes that remian may be too short
+            // We now need to see if any codes that remain in the marching codes list
+            // match the length of the letter string
+            if (failed == false) {
+                int len = parts[1].length();
+                boolean lemMatches = false;
+                for (String ss : codes) {
+                    if (ss.length() == len) {
+                        lemMatches = true;
+                    }
+                }
+                if (lemMatches == false) {
+                    failed = true;
+                    System.out.println("No");
+                }
+            }
+        }
+        // If we made it this far.
+        if (failed == false) {
+            System.out.println("Yes");
+        }
+    }
+
+    public static void nop() {
     }
 }

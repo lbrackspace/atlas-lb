@@ -1,13 +1,5 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openstack.atlas.util.ip;
 
-/**
- *
- * @author carlos.garza@rackspace.com
- */
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.converters.BitConverters;
 import java.util.regex.Pattern;
@@ -90,7 +82,6 @@ public class IPv4 {
             String err = String.format("Error %s is not a valid IPv4 string", ip);
             throw new IPStringConversionException(err);
         }
-
         return out;
     }
 }

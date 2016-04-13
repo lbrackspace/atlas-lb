@@ -1963,7 +1963,31 @@ public class LoadBalancerRepository {
                 && (lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP || lbBeingShared.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST)) {
             return true;
         }
-
         return false;
+    }
+
+    public List<NodeStatusPojo> getAllActiveLoadBalancerNodeStatuses() {
+        List<NodeStatusPojo> nodeStatuses = new ArrayList<NodeStatusPojo>();
+        String qStr = "select n.loadbalancer.id, n.ipAddress,  n.port, "
+                + "n.id, n.status  "
+                + "    from Node n where n.loadbalancer.status='ACTIVE' and "
+                + "              n.condition='ENABLED' ";
+        List<Object> rows = entityManager.createQuery(qStr).getResultList();
+        for (Object row : rows) {
+            Object[] col = (Object[]) row;
+            Integer lid = (Integer) col[0];
+            String ip = (String) col[1];
+            Integer port = (Integer) col[2];
+            Integer nid = (Integer) col[3];
+            NodeStatus status = (NodeStatus) col[4];
+            if (lid == null || ip == null || port == null || nid == null || status == null) {
+                String fmt = "Not mapping a node with null values lid=%s, nid=%s,ip=%s,port=%s,status=%s\n";
+                LOG.info(String.format(fmt, lid, nid, ip, port, status));
+                continue;
+            }
+            NodeStatusPojo nodeStatpojo = new NodeStatusPojo(lid, ip, port, nid, status);
+            nodeStatuses.add(nodeStatpojo);
+        }
+        return nodeStatuses;
     }
 }

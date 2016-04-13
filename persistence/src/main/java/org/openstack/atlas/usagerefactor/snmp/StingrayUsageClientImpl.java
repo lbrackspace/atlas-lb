@@ -56,6 +56,7 @@ public class StingrayUsageClientImpl implements StingrayUsageClient {
                 usage.get(loadbalancerId).setBytesIn(rawValue.getBytesIn());
                 usage.get(loadbalancerId).setBytesOut(rawValue.getBytesOut());
                 usage.get(loadbalancerId).setConcurrentConnections((int) rawValue.getConcurrentConnections());
+                usage.get(loadbalancerId).setTotalConnections(rawValue.getTotalConnections());
                 if (log_all) {
                     counterLogString.append(String.format("Host_ID: %d, VirtualServer: %s, BytesIn: %d, BytesOut: %d, ConcurrentConnections: %d\n",
                                             host.getId(), vsName, rawValue.getBytesIn(), rawValue.getBytesOut(), rawValue.getConcurrentConnections()));
@@ -73,6 +74,7 @@ public class StingrayUsageClientImpl implements StingrayUsageClient {
                 usage.get(loadbalancerId).setBytesInSsl(rawValue.getBytesIn());
                 usage.get(loadbalancerId).setBytesOutSsl(rawValue.getBytesOut());
                 usage.get(loadbalancerId).setConcurrentConnectionsSsl((int) rawValue.getConcurrentConnections());
+                usage.get(loadbalancerId).setTotalConnectionsSsl(rawValue.getTotalConnections());
                 if (log_all) {
                     counterLogString.append(String.format("Host_ID: %d, VirtualServer: %s, BytesInSsl: %d, BytesOutSsl: %d, ConcurrentConnectionsSsl: %d\n",
                                             host.getId(), vsName, rawValue.getBytesIn(), rawValue.getBytesOut(), rawValue.getConcurrentConnections()));

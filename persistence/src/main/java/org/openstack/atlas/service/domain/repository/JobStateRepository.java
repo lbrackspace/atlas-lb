@@ -24,7 +24,9 @@ public class JobStateRepository {
 
     public JobState getById(Integer id) throws EntityNotFoundException {
         JobState jobState = entityManager.find(JobState.class, id);
-        if (jobState == null) logAndThrowException();
+        if (jobState == null) {
+            logAndThrowException();
+        }
         return jobState;
     }
 
@@ -66,8 +68,8 @@ public class JobStateRepository {
     public List<JobState> getByState(String state, Integer... p) {
         final JobStateVal jobStateVal;
         try {
-             jobStateVal = JobStateVal.valueOf(state);
-        } catch(IllegalArgumentException e) {
+            jobStateVal = JobStateVal.valueOf(state);
+        } catch (IllegalArgumentException e) {
             return new ArrayList<JobState>();
         }
 
@@ -83,8 +85,12 @@ public class JobStateRepository {
         if (p.length >= 2) {
             Integer offset = p[0];
             Integer limit = p[1];
-            if (offset == null) offset = 0;
-            if (limit == null || limit > 100) limit = 100;
+            if (offset == null) {
+                offset = 0;
+            }
+            if (limit == null || limit > 100) {
+                limit = 100;
+            }
             query = query.setFirstResult(offset).setMaxResults(limit);
         }
 
@@ -124,7 +130,7 @@ public class JobStateRepository {
 
         try {
             List<JobState> results = entityManager.createQuery(criteria).getResultList();
-            if (results.isEmpty()){
+            if (results.isEmpty()) {
                 throw new NoResultException();
             }
             return results.get(0);
@@ -165,8 +171,10 @@ public class JobStateRepository {
         return s;
     }
 
-    public void update(JobState jobState) {
-        entityManager.merge(jobState);
+    public JobState update(JobState jobState) {
+        JobState state = entityManager.merge(jobState);
+        entityManager.flush();
+        return state;
     }
 
     public void delete(JobState jobState) {
@@ -177,9 +185,7 @@ public class JobStateRepository {
         Calendar timestamp = Calendar.getInstance();
         timestamp.add(Calendar.DATE, -days);
 
-        Query query = entityManager.createQuery("DELETE JobState s WHERE s.endTime < :timestamp AND s.jobName IN (:jobNames)")
-                .setParameter("timestamp", timestamp, TemporalType.TIMESTAMP)
-                .setParameter("jobNames", jobNames);
+        Query query = entityManager.createQuery("DELETE JobState s WHERE s.endTime < :timestamp AND s.jobName IN (:jobNames)").setParameter("timestamp", timestamp, TemporalType.TIMESTAMP).setParameter("jobNames", jobNames);
         int numRowsDeleted = query.executeUpdate();
         LOG.info(String.format("Deleted %d rows with endTime before %s", numRowsDeleted, timestamp.getTime()));
     }
