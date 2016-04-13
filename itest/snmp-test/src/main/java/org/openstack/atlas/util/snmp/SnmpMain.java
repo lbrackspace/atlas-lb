@@ -57,6 +57,7 @@ public class SnmpMain {
         File jsonFile = new File(StaticFileUtils.expandUser(MainArgs[0]));
         SnmpJsonConfig conf = SnmpJsonConfig.readJsonConfig(jsonFile);
         System.out.printf("useing config = %s\n", conf.toString());
+
         while (true) {
             try {
                 System.out.printf("> ");
@@ -101,6 +102,7 @@ public class SnmpMain {
                     System.out.printf("    clear_comparators #Clear the comparators for snmpUsage\n");
                     System.out.printf("    show_threads #Show running thread stack traces\n");
                     System.out.printf("    show_config #Show current Configuration\n");
+                    System.out.printf("    run_rollup #Run a single rollup with all new data\n");
                     System.out.printf("    exit #Exits\n");
                     System.out.printf("\n");
                 } else if (cmd.equals("show_threads")) {
@@ -233,7 +235,7 @@ public class SnmpMain {
                         if (vsToHostMap.containsKey(vsFilter)) {
                             printVsMap(vsFilter, vsToHostMap);
                         } else {
-                            System.out.printf("pool %s was not in the usage map\n",vsFilter);
+                            System.out.printf("pool %s was not in the usage map\n", vsFilter);
                         }
                     } else {
 
@@ -299,6 +301,17 @@ public class SnmpMain {
                     for (int i = 0; i < snmpUsageList.size(); i++) {
                         System.out.printf("Entry[%d]=%s\n", i, snmpUsageList.get(i).toString());
                     }
+                } else if (cmd.equals("run_rollup")) {
+                    System.out.printf("Running roll_up job,\n");
+                    Map<Integer, SnmpUsage> usageReport = run_rollup(clients, jobClient);
+                    System.out.printf("");
+                    List<Integer> lbIds = new ArrayList<Integer>(usageReport.keySet());
+                    Collections.sort(lbIds);
+                    System.out.printf("found %d loadbalancers\n", lbIds.size());
+                    for (Integer lbId : lbIds) {
+                        System.out.printf("%s\n", usageReport.get(lbId).toString());
+                    }
+
                 } else if (cmd.equals("display_snmp_usage_rollup")) {
                     Map<Integer, SnmpUsage> usageMap = new HashMap<Integer, SnmpUsage>();
                     for (SnmpUsage snmpUsageEntry : snmpUsageList) {
@@ -335,9 +348,7 @@ public class SnmpMain {
                         thread.start();
                     }
 
-                    Thread.sleep(1000);
                     System.out.printf("Threads started\n");
-                    Thread.sleep(1000);
 
                     // Join them all
                     for (SnmpClientThread thread : threads) {
@@ -379,7 +390,7 @@ public class SnmpMain {
                     }
                     System.out.printf("%s for %s = %d\n", oid, vsName, sum);
 
-                }  else if (cmd.equals("set_retrys") && args.length >= 2) {
+                } else if (cmd.equals("set_retrys") && args.length >= 2) {
                     System.out.printf("Setting retries to ");
                     System.out.flush();
                     int maxRetrys = Integer.parseInt(args[1]);
@@ -503,5 +514,114 @@ public class SnmpMain {
             RawSnmpUsage rawUsage = vsToHostMap.get(vsName).get(clientKey);
             System.out.printf("client[%8s]=%s\n", clientKey, rawUsage.toString());
         }
+    }
+
+    public static SnmpUsage newSnmpUsage(int loadbalancerId) {
+        SnmpUsage usage = new SnmpUsage();
+        usage.setLoadbalancerId(loadbalancerId);
+        usage.setHostId(0);
+        usage.setBytesIn(0);
+        usage.setBytesOut(0);
+        usage.setConcurrentConnections(0);
+        usage.setConcurrentConnectionsSsl(0);
+        usage.setBytesInSsl(0);
+        usage.setBytesOutSsl(0);
+        usage.setTotalConnections(0);
+        usage.setTotalConnectionsSsl(0);
+        return usage;
+    }
+
+    public static void accumulateUsage(SnmpUsage accumulator, SnmpUsage operand) {
+        long abi = accumulator.getBytesIn();
+        long abis = accumulator.getBytesInSsl();
+        long abo = accumulator.getBytesOut();
+        long abos = accumulator.getBytesOutSsl();
+        int acc = accumulator.getConcurrentConnections();
+        int accs = accumulator.getConcurrentConnectionsSsl();
+        long atc = accumulator.getTotalConnections();
+        long atcs = accumulator.getTotalConnectionsSsl();
+
+        long obi = operand.getBytesIn();
+        long obis = operand.getBytesInSsl();
+        long obo = operand.getBytesOut();
+        long obos = operand.getBytesOutSsl();
+        int occ = operand.getConcurrentConnections();
+        int occs = operand.getConcurrentConnectionsSsl();
+        long otc = operand.getTotalConnections();
+        long otcs = operand.getConcurrentConnectionsSsl();
+
+        if (obi > 0) {
+            accumulator.setBytesIn(abi + obi);
+        }
+        if (obis > 0) {
+            accumulator.setBytesInSsl(abis + obis);
+        }
+        if (obo > 0) {
+            accumulator.setBytesOut(abo + obo);
+        }
+        if (obos > 0) {
+            accumulator.setBytesOutSsl(abos + obos);
+        }
+        if (occ > 0) {
+            accumulator.setConcurrentConnections(acc + occ);
+        }
+        if (occs > 0) {
+            accumulator.setConcurrentConnectionsSsl(accs + occs);
+        }
+        if (otc > 0) {
+            accumulator.setTotalConnections(atc + otc);
+        }
+        if (otcs > 0) {
+            accumulator.setTotalConnectionsSsl(atcs + otcs);
+        }
+
+    }
+
+    public static Map<Integer, SnmpUsage> run_rollup(Map<String, StingraySnmpClient> clients, StingrayUsageClient jobClient) throws InterruptedException {
+        Map<Integer, SnmpUsage> snmpUsage = new HashMap<Integer, SnmpUsage>();
+        List<String> clientKeys = new ArrayList<String>(clients.keySet());
+        List<Host> zxtmHosts = new ArrayList<Host>();
+        List<SnmpJobThread> threads = new ArrayList<SnmpJobThread>();
+        Collections.sort(clientKeys);
+        int hostId = 0;
+        for (String clientKey : clientKeys) {
+            String zxtmHostIp = clients.get(clientKey).getAddress();
+            Host zxtmHost = new Host();
+            zxtmHost.setManagementIp(zxtmHostIp);
+            zxtmHost.setId(hostId++);
+            zxtmHosts.add(zxtmHost);
+            SnmpJobThread jobThread = new SnmpJobThread();
+            jobThread.setClient(jobClient);
+            jobThread.setHost(zxtmHost);
+            threads.add(jobThread);
+        }
+        // start the threads
+        for (SnmpJobThread thread : threads) {
+            thread.start();
+        }
+
+        // Join the threads
+        for (SnmpJobThread thread : threads) {
+            thread.join();
+        }
+
+        // Gran all the results
+        for (SnmpJobThread thread : threads) {
+            System.out.printf("reading snmpUsage from thread for host %s: in %f(secs)\n", thread.getHost().getManagementIp(), thread.getElapsedTime());
+            Exception ex = thread.getException();
+            if (ex != null) {
+                System.out.printf("%s\n", StaticStringUtils.getExtendedStackTrace(ex));
+            } else {
+                for (Map.Entry<Integer, SnmpUsage> currUsage : thread.getUsage().entrySet()) {
+                    Integer lid = currUsage.getKey();
+                    SnmpUsage usage = currUsage.getValue();
+                    if (!snmpUsage.containsKey(lid)) {
+                        snmpUsage.put(lid, newSnmpUsage(lid));
+                    }
+                    accumulateUsage(snmpUsage.get(lid), usage);
+                }
+            }
+        }
+        return snmpUsage;
     }
 }

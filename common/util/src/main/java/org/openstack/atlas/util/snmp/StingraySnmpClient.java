@@ -119,6 +119,18 @@ public class StingraySnmpClient {
             rawSnmpMap.get(vsName).setConcurrentConnections(vb.getVariable().toLong());
         }
 
+        // Fetch TotalConnections
+        bindings = getBulkOidBindingList(OIDConstants.VS_TOTAL_CONNECTIONS);
+        for (VariableBinding vb : bindings) {
+            String vsName = getVirtualServerNameFromOid(OIDConstants.VS_TOTAL_CONNECTIONS, vb.getOid().toString());
+            if (!rawSnmpMap.containsKey(vsName)) {
+                RawSnmpUsage entry = new RawSnmpUsage();
+                entry.setVsName(vsName);
+                rawSnmpMap.put(vsName, entry);
+            }
+            rawSnmpMap.get(vsName).setTotalConnections(vb.getVariable().toLong());
+        }
+
         // Fetch BytesIn In
         bindings = getBulkOidBindingList(OIDConstants.VS_BYTES_IN);
         for (VariableBinding vb : bindings) {
@@ -155,6 +167,10 @@ public class StingraySnmpClient {
 
     public long getConcurrentConnections(String vsName, boolean zeroOnNotFound, boolean negativeOneOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
         return getLongValueForVirtualServer(vsName, OIDConstants.VS_CURRENT_CONNECTIONS, zeroOnNotFound, negativeOneOnNotFoundException);
+    }
+
+    public long getTotalConnections(String vsName, boolean zeroOnNotFound, boolean negativeOneOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {
+        return getLongValueForVirtualServer(vsName, OIDConstants.VS_TOTAL_CONNECTIONS, zeroOnNotFound, negativeOneOnNotFoundException);
     }
 
     public int getMaxConnections(String vsName, boolean zeroOnNotFound, boolean negativeOneOnNotFoundException) throws StingraySnmpSetupException, StingraySnmpObjectNotFoundException, StingraySnmpGeneralException {

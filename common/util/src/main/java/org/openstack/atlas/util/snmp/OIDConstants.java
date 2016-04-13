@@ -12,4 +12,5 @@ public final class OIDConstants {
     public static final String VS_KEEPALIVE_TIMED_OUT = "1.3.6.1.4.1.7146.1.2.2.2.1.16";
     public static final String VS_CONNECTION_ERRORS = "1.3.6.1.4.1.7146.1.2.2.2.1.29";
     public static final String VS_CONNECTION_FAILURES = "1.3.6.1.4.1.7146.1.2.2.2.1.30";
+    public static final String VS_TOTAL_CONNECTIONS =   "1.3.6.1.4.1.7146.1.2.2.2.1.11";
 }

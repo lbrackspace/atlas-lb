@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openstack.atlas.util.common.VerboseLogger;
+import org.openstack.atlas.util.snmp.StingraySnmpClient;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;

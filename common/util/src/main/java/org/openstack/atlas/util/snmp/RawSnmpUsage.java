@@ -10,6 +10,7 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
     private long bytesIn = -1;
     private long bytesOut = -1;
     private long concurrentConnections = -1;
+    private long totalConnections = -1;
 
     public RawSnmpUsage() {
     }
@@ -21,6 +22,7 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
                 + ", bytesIn=" + bytesIn
                 + ", bytesOut=" + bytesOut
                 + ", concurrentConnections=" + concurrentConnections
+                + ", totalConnections=" + totalConnections
                 + "}";
 
     }
@@ -57,11 +59,20 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         this.concurrentConnections = concurrentConnections;
     }
 
+    public long getTotalConnections() {
+        return totalConnections;
+    }
+
+    public void setTotalConnections(long totalConnections) {
+        this.totalConnections = totalConnections;
+    }
+
     @Override
     public int compareTo(RawSnmpUsage o) {
         long oBytesIn = o.getBytesIn();
         long oBytesOut = o.getBytesOut();
         long oConcurrentConnections = o.getConcurrentConnections();
+        long oTotalConnections = o.getTotalConnections();
         String oVsName = o.getVsName();
 
         if (bytesOut < oBytesOut) {
@@ -78,11 +89,16 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         if (bytesIn > oBytesIn) {
             return 1;
         }
-
         if (concurrentConnections < oConcurrentConnections) {
             return -1;
         }
         if (concurrentConnections > oConcurrentConnections) {
+            return 1;
+        }
+        if (totalConnections < oTotalConnections) {
+            return -1;
+        }
+        if (totalConnections > oTotalConnections) {
             return 1;
         }
         return vsName.compareTo(oVsName);
@@ -109,6 +125,9 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         if (this.concurrentConnections != other.concurrentConnections) {
             return false;
         }
+        if (this.totalConnections != other.totalConnections) {
+            return false;
+        }
         return true;
     }
 
@@ -119,6 +138,7 @@ public class RawSnmpUsage implements Comparable<RawSnmpUsage> {
         hash = 89 * hash + (int) (this.bytesIn ^ (this.bytesIn >>> 32));
         hash = 89 * hash + (int) (this.bytesOut ^ (this.bytesOut >>> 32));
         hash = 89 * hash + (int) (this.concurrentConnections ^ (this.concurrentConnections >>> 32));
+        hash = 89 * hash + (int) (this.totalConnections ^ (this.totalConnections >>> 32));
         return hash;
     }
 }
