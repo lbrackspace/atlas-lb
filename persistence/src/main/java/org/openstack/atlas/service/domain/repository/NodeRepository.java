@@ -25,6 +25,7 @@ public class NodeRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;/**/
 
+
     public Set<Node> addNodes(LoadBalancer loadBalancer, Collection<Node> nodes) {
         Set<Node> newNodes = new HashSet<Node>();
 
@@ -155,7 +156,7 @@ public class NodeRepository {
     public Node getNodeByAccountIdLoadBalancerIdNodeId(Integer accountId, Integer loadbalancerId, Integer nodeId) throws EntityNotFoundException {
         String query = "from Node n where n.loadbalancer.id=:loadbalancerId and n.loadbalancer.accountId=:accountId AND n.id = :nodeId";
         try {
-            return (Node)entityManager.createQuery(query).setParameter("accountId", accountId).setParameter("loadbalancerId",loadbalancerId).setParameter("nodeId", nodeId).getSingleResult();
+            return (Node) entityManager.createQuery(query).setParameter("accountId", accountId).setParameter("loadbalancerId", loadbalancerId).setParameter("nodeId", nodeId).getSingleResult();
         } catch (Exception e) {
             throw new EntityNotFoundException(e);
         }
@@ -167,21 +168,20 @@ public class NodeRepository {
         qStr = "SELECT l.id from LoadBalancer l";
         qStr += "    where l.accountId=:aid and l.id=:lid";
         List<Object> results = entityManager.createQuery(qStr).setParameter("aid", aid).setParameter("lid", lid).getResultList();
-        if(results.size()<=0) {
+        if (results.size() <= 0) {
             return false;
-        }else{
+        } else {
             return true;
         }
     }
 
     // Get all Nodes regardless of weight status etc
     public Set<Node> getAllNodesByAccountIdLoadBalancerId(Integer aid, Integer lid) throws EntityNotFoundException {
-        if(!isLoadBalancerbyAccountIdLoadBalancerId(aid, lid)){
-            throw new EntityNotFoundException(String.format("Loadbalancer %d not found for account %d",lid,aid));
+        if (!isLoadBalancerbyAccountIdLoadBalancerId(aid, lid)) {
+            throw new EntityNotFoundException(String.format("Loadbalancer %d not found for account %d", lid, aid));
         }
         String qStr = "SELECT n FROM Node n where n.loadbalancer.id = :lid";
-        List<Node> nodesList = entityManager.createQuery(qStr).setParameter("lid", lid)
-                .setLockMode(LockModeType.PESSIMISTIC_READ).getResultList();
+        List<Node> nodesList = entityManager.createQuery(qStr).setParameter("lid", lid).setLockMode(LockModeType.PESSIMISTIC_READ).getResultList();
         Set<Node> nodes = new HashSet<Node>(nodesList);
         return nodes;
     }
@@ -235,6 +235,18 @@ public class NodeRepository {
         sql.deleteCharAt(sql.toString().length() - 1);
         sql.append(")");
         entityManager.createQuery(sql.toString()).executeUpdate();
+    }
+
+    public int setNodeStatusBulk(List<Integer> ids, boolean isOnline) {
+        NodeStatus status;
+        if (isOnline) {
+            status = NodeStatus.ONLINE;
+        } else {
+            status = NodeStatus.OFFLINE;
+        }
+        String qStr = "update Node set status = :status where id in (:ids)";
+        int nRows = entityManager.createQuery(qStr).setParameter("status", status).setParameter("ids", ids).executeUpdate();
+        return nRows;
     }
 
     public void setNodeStatus(Node node) {

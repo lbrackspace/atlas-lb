@@ -10,6 +10,8 @@ public class SnmpUsage {
     private long bytesOut = -1;
     private long bytesInSsl = -1;
     private long bytesOutSsl = -1;
+    private long totalConnections = -1;
+    private long totalConnectionsSsl = -1;
 
     @Override
     public String toString() {
@@ -21,6 +23,8 @@ public class SnmpUsage {
                 + ", bytesOut=" + bytesOut
                 + ", bytesInSsl=" + bytesInSsl
                 + ", bytesOutSsl=" + bytesOutSsl
+                + ", totalConnections=" + totalConnections
+                + ", totalConnectionsSsl=" + totalConnectionsSsl
                 + "}";
 
     }
@@ -37,6 +41,8 @@ public class SnmpUsage {
         bytesInSsl = o.getBytesInSsl();
         concurrentConnections = o.getConcurrentConnections();
         concurrentConnectionsSsl = o.getConcurrentConnectionsSsl();
+        totalConnections = o.getTotalConnections();
+        totalConnectionsSsl = o.getTotalConnectionsSsl();
     }
 
     public int getLoadbalancerId() {
@@ -103,6 +109,22 @@ public class SnmpUsage {
         this.bytesOutSsl = bytesOutSsl;
     }
 
+    public long getTotalConnections() {
+        return totalConnections;
+    }
+
+    public void setTotalConnections(long totalConnections) {
+        this.totalConnections = totalConnections;
+    }
+
+    public long getTotalConnectionsSsl() {
+        return totalConnectionsSsl;
+    }
+
+    public void setTotalConnectionsSsl(long totalConnectionsSsl) {
+        this.totalConnectionsSsl = totalConnectionsSsl;
+    }
+
     public static SnmpUsage add(SnmpUsage o1, SnmpUsage o2) {
         SnmpUsage sum = new SnmpUsage();
         sum.setLoadbalancerId(o1.getLoadbalancerId());
@@ -113,6 +135,8 @@ public class SnmpUsage {
         sum.setBytesOutSsl(o1.getBytesOutSsl() + o2.getBytesOutSsl());
         sum.setConcurrentConnections(o1.getConcurrentConnections() + o2.getConcurrentConnections());
         sum.setConcurrentConnectionsSsl(o1.getConcurrentConnectionsSsl() + o2.getConcurrentConnectionsSsl());
+        sum.setTotalConnections(o1.getTotalConnections() + o2.getTotalConnections());
+        sum.setTotalConnectionsSsl(o1.getConcurrentConnectionsSsl() + o2.getTotalConnectionsSsl());
         return sum;
     }
 }

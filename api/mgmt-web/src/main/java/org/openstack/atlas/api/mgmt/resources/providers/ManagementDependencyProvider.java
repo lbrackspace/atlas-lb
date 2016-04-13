@@ -46,12 +46,12 @@ public class ManagementDependencyProvider {
     protected BlacklistRepository blacklistRepository;
     protected AllowedDomainsRepository allowedDomainsRepository;
     protected LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
-
     protected TicketService ticketService;
     protected AccountLimitService accountLimitService;
     protected LoadBalancerService loadBalancerService;
     protected VirtualIpService virtualIpService;
     protected HostService hostService;
+    protected NodeService nodeService;
     protected GroupService groupService;
     protected AlertService alertService;
     protected RateLimitingService rateLimitingService;
@@ -152,7 +152,7 @@ public class ManagementDependencyProvider {
     }
 
     public void setCallbackService(CallbackService callbackService) {
-            this.callbackService = callbackService;
+        this.callbackService = callbackService;
     }
 
     public void setConfiguration(Configuration configuration) {
@@ -412,13 +412,13 @@ public class ManagementDependencyProvider {
         return expanded;
     }
 
-    public Response getValidationFaultResponse(String errorStr){
+    public Response getValidationFaultResponse(String errorStr) {
         List<String> errorStrs = new ArrayList<String>();
         errorStrs.add(errorStr);
         return getValidationFaultResponse(errorStrs);
     }
 
-     public Response getValidationFaultResponse(List<String> errorStrs) {
+    public Response getValidationFaultResponse(List<String> errorStrs) {
         BadRequest badreq;
         int status = 400;
         badreq = HttpResponseBuilder.buildBadRequestResponse(VFAIL, errorStrs);
@@ -427,7 +427,7 @@ public class ManagementDependencyProvider {
     }
 
     // Got tired of always import StringUtils.getExtendedStackTrace so I'm aliasing it
-    public String getExtendedStackTrace(Throwable ti){
+    public String getExtendedStackTrace(Throwable ti) {
         String out;
         out = org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace(ti);
         return out;
@@ -438,5 +438,9 @@ public class ManagementDependencyProvider {
         String ip8Servicenet = expandipv6(host.getIpv6Servicenet());
         host.setIpv6Public(ipv6Public);
         host.setIpv6Servicenet(ip8Servicenet);
+    }
+
+    public void setNodeService(NodeService nodeService) {
+        this.nodeService = nodeService;
     }
 }

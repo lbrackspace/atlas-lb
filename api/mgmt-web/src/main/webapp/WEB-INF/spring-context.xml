@@ -97,6 +97,7 @@
         <property name="managementAsyncService" ref="managementAsyncService"/>
         <property name="esbService" ref="loadBalancingAsyncService"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
+        <property name="nodeService" ref="nodeService"/>
         <property name="virtualIpService" ref="virtualIpService"/>
         <property name="groupService" ref="groupService"/>
         <property name="blackListService" ref="blackListService"/>

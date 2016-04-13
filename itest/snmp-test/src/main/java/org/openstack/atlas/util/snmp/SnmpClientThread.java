@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openstack.atlas.util.common.VerboseLogger;
+import org.openstack.atlas.util.snmp.StingraySnmpClient;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
@@ -17,10 +18,10 @@ public class SnmpClientThread extends Thread {
     public static VerboseLogger getVlog() {
         return vlog;
     }
-    private String clientName;
-    private StingraySnmpClient client;
-    private Map<String, RawSnmpUsage> usage;
-    private Exception exception = null;
+    protected String clientName;
+    protected StingraySnmpClient client;
+    protected Map<String, RawSnmpUsage> usage;
+    protected Exception exception = null;
 
     @Override
     public void run() {

@@ -31,21 +31,21 @@ public class IPUtilsTest {
     public void shouldMapHighestVipOctet() throws IPStringConversionException {
         int expected_vipoctet = 2147483647;
         IPv6 highest = new IPv6("cccc:cccc:cccc:cccc:aaaa:aaaa:7fff:ffff");
-        assertEquals(expected_vipoctet,highest.getVipOctets());
+        assertEquals(expected_vipoctet, highest.getVipOctets());
     }
 
-    @Test(expected=IPStringConversionException.class)
+    @Test(expected = IPStringConversionException.class)
     public void shouldRejectNegativeVipOctets() throws IPStringConversionException {
         int expected_vipOctet = -1;
         IPv6 neg = new IPv6("cccc:cccc:cccc:cccc:aaaa:aaaa:8000:0000");
-        assertEquals(expected_vipOctet,neg.getVipOctets());
+        assertEquals(expected_vipOctet, neg.getVipOctets());
     }
 
     @Test
     public void shouldMapLowestVipOctet() throws IPStringConversionException {
         int expected_vipOctet = 0;
         IPv6 lowest = new IPv6("cccc:cccc:cccc:cccc:aaaa:aaaa:0000:0000");
-        assertEquals(expected_vipOctet,lowest.getVipOctets());
+        assertEquals(expected_vipOctet, lowest.getVipOctets());
     }
 
     @Test
@@ -254,6 +254,35 @@ public class IPUtilsTest {
             compressedBytes = new IPv6(compressed[i]).getBytes();
             assertTrue(IPUtils.bytesEqual(unCompressedBytes, compressedBytes));
         }
+    }
+
+    @Test
+    public void shouldReturnFalseWhenCheckingNullStringAsIPAddress() {
+        assertFalse(IPUtils.isValidIpv4String(null));
+        assertFalse(IPUtils.isValidIpv6String(null));
+    }
+
+    @Test
+    public void shouldMatchHostNamesIPv4andIPv6() {
+        assertEquals(IPUtils.getIPType("192.168.3.48"), IPUtils.IPv4);
+        assertEquals(IPUtils.getIPType("cc::cc"), IPUtils.IPv6);
+        assertEquals(IPUtils.getIPType("some.host.name"), IPUtils.HOST_NAME);
+        assertEquals(IPUtils.getIPType("somenonhost 1234.com"), 0);
+    }
+
+    @Test
+    public void testIPEquals() {
+        assertTrue(IPUtils.ipEquals("192.168.3.48", "192.168.3.48"));
+        assertFalse(IPUtils.ipEquals("192.168.3.48", "192.168.3.49"));
+        assertFalse(IPUtils.ipEquals("", "192.168.3.48"));
+        assertFalse(IPUtils.ipEquals(null, "192.168.3.48"));
+        assertFalse(IPUtils.ipEquals("192.168.3.48", null));
+        assertFalse(IPUtils.ipEquals("::","192.168.3.48"));
+        assertTrue(IPUtils.ipEquals("::","::"));
+        assertFalse(IPUtils.ipEquals("some invalid host","some invalid host"));
+        assertTrue(IPUtils.ipEquals("cc::cc","00cc:0000::00cc"));
+        assertTrue(IPUtils.ipEquals("somehostname.com","somehostname.com"));
+        assertFalse(IPUtils.ipEquals("cc::cb", "cc::cc"));
     }
 
     private void nop() {
