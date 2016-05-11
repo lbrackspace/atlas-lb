@@ -1,5 +1,11 @@
 package org.openstack.atlas.util.snmp;
 
+import org.openstack.atlas.util.debug.Debug;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
+import org.snmp4j.smi.OID;
+import org.openstack.atlas.util.ip.IPUtils;
 import java.lang.reflect.Field;
 import org.junit.Assert;
 import org.apache.log4j.BasicConfigurator;
@@ -8,9 +14,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
-import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
-import org.openstack.atlas.util.snmp.exceptions.StingraySnmpSetupException;
-import org.snmp4j.mp.SnmpConstants;
 import org.snmp4j.smi.VariableBinding;
 
 import java.util.HashMap;
@@ -206,6 +209,30 @@ public class StingraySnmpClientTest {
         requestId = StingraySnmpClient.getRequestId();
         assertTrue(requestId == 5);
         assertTrue(requestId >= 0);
+    }
 
+    @Test
+    public void shouldTranslateSnmpNodeKeyCorrectly() {
+        isOidSnmpNodeKeyMatch("10.178.96.52", 80, "1.3.6.1.4.1.7146.1.2.4.4.1.5.1.4.10.178.96.52.80");
+        isOidSnmpNodeKeyMatch("2001:4800:7812:0514:3093:7862:ff04:db0e", 80, "1.3.6.1.4.1.7146.1.2.4.4.1.4.2.16.32.1.72.0.120.18.5.20.48.147.120.98.255.4.219.14.80");
+    }
+
+    public void isOidSnmpNodeKeyMatch(String ip, int port, String oidStr) {
+        int ipType = IPUtils.getIPType(ip);
+        SnmpNodeKey expNodeKey;
+        try {
+            String cip = IPUtils.canonicalIp(ip);
+            expNodeKey = new SnmpNodeKey(cip, port, ipType);
+            nop();
+        } catch (IPStringConversionException ex) {
+            expNodeKey = null;
+            nop();
+        }
+        OID oid = new OID(oidStr);
+        SnmpNodeKey actNodeKey = StingraySnmpClient.getSnmpNodeKeyFromOid(oid);
+        String msg = String.format("Expected %s to match %s", expNodeKey, actNodeKey);
+        assertTrue(msg, SnmpNodeKey.equals(expNodeKey, actNodeKey));
+    }
+    private void nop(){
     }
 }

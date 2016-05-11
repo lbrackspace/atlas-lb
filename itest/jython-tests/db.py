@@ -45,15 +45,22 @@ def qq(query):
     q = s.createQuery(query)
     return q.list()
 
-def getZxtmCreds(cid):
-    eps = []
+def getZxtmCreds():
+    eps = {}
     begin()
-    c = qq("from Cluster where id=%s"%cid)
+    cs = qq("select c.id, c.username, c.password from Cluster c")
+    q = "select h.id, h.cluster.id, h.endpoint from Host h"
+    q += " where h.hostStatus = 'SOAP_API_ENDPOINT'"
+    hs = qq(q)    
     commit()
-    username = c[0].getUsername()
-    ctext = c[0].getPassword()
+    username = cs[0][1]
+    ctext = cs[0][2]
     ptext = CryptoUtil.decrypt(ctext)
-    return (username,ptext)
+    for h in hs:
+        cid = h[1]
+        soap = h[2]
+        eps[cid] = {"username":username, "passwd":ptext, "endpoint":soap}
+    return eps
 
 def buildClassImportFile(outfile,infile):
     fp = open(utils.fullPath(outfile),"w")

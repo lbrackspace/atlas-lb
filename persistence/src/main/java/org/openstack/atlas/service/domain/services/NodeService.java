@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 import java.util.Set;
+import org.openstack.atlas.service.domain.pojos.NodeStatusReport;
 
 public interface NodeService {
 
@@ -42,4 +43,8 @@ public interface NodeService {
     public void delNode(LoadBalancer lb, int nid) throws EntityNotFoundException;
 
     public List<String> prepareForNodesDeletion(Integer accountId,Integer loadBalancerId,List<Integer> ids) throws EntityNotFoundException;
+
+    public NodeStatusReport runNodeStatusAudit();
+
+    public int setNodeStatus(List<Integer> nodeId, boolean isOnline);
 }

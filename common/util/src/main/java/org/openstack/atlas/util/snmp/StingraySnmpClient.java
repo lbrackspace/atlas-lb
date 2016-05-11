@@ -1,8 +1,11 @@
 package org.openstack.atlas.util.snmp;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.util.common.VerboseLogger;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpObjectNotFoundException;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpRetryExceededException;
@@ -13,7 +16,6 @@ import org.snmp4j.Snmp;
 import org.snmp4j.TransportMapping;
 import org.snmp4j.event.ResponseEvent;
 import org.snmp4j.mp.SnmpConstants;
-import org.snmp4j.smi.*;
 import org.snmp4j.transport.DefaultUdpTransportMapping;
 
 import java.io.IOException;
@@ -23,8 +25,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
+import org.openstack.atlas.util.ip.IPUtils;
+import org.snmp4j.smi.Counter64;
+import org.snmp4j.smi.Integer32;
+import org.snmp4j.smi.Null;
+import org.snmp4j.smi.OID;
+import org.snmp4j.smi.OctetString;
+import org.snmp4j.smi.UdpAddress;
+import org.snmp4j.smi.Variable;
+import org.snmp4j.smi.VariableBinding;
 
 public class StingraySnmpClient {
+
+    private int nonRepeaters = 0;
+    private int maxRepetitions = 1000;
+    private String address;
+    private String port = StingraySnmpConstants.PORT;
+    private String community = StingraySnmpConstants.COMMUNITY;
+    private long reportUdpCountEveryNMilliSeconds = 1000;
+    private int maxRetrys = 13; //13;
+    private int version = SnmpConstants.version2c;
+    private static final Random rnd = new Random();
+    private static final Pattern dotSplitter = Pattern.compile("\\.");
+    private static final VerboseLogger vlog = new VerboseLogger(StingraySnmpClient.class);
+    private static final Log LOG = LogFactory.getLog(StingraySnmpClient.class);
+    private static final int[] nodeTableIntOidsCruft;
+    private static final char[] hexmap;
+    private static final String DEFAULT_SNMP_PORT = "1161";
+    private static int requestId;
+    private static long timeout;
+
+    static {
+        requestId = Math.abs(rnd.nextInt());
+        timeout = 5000;
+        nodeTableIntOidsCruft = new int[]{1, 3, 6, 1, 4, 1, 7146, 1, 2, 4, 4, 1};
+        byte[] bytes = "0123456789abcdef".getBytes();
+        hexmap = new char[16];
+        for (int i = 0; i < 16; i++) {
+            hexmap[i] = (char) bytes[i];
+        }
+    }
 
     public static long getTimeout() {
         return timeout;
@@ -32,24 +72,6 @@ public class StingraySnmpClient {
 
     public static void setTimeout(long aTimeout) {
         timeout = aTimeout;
-    }
-    private int nonRepeaters = 0;
-    private int maxRepetitions = 1000;
-    private String address;
-    private String port = StingraySnmpConstants.PORT;
-    private String community = StingraySnmpConstants.COMMUNITY;
-    private long reportUdpCountEveryNMilliSeconds = 1000;
-    private int maxRetrys = 13;
-    private int version = SnmpConstants.version2c;
-    private static final Random rnd = new Random();
-    private static final Pattern dotSplitter = Pattern.compile("\\.");
-    private static final VerboseLogger vlog = new VerboseLogger(StingraySnmpClient.class);
-    private static final Log LOG = LogFactory.getLog(StingraySnmpClient.class);
-    private static int requestId;
-    private static long timeout = 5000;
-
-    static {
-        requestId = Math.abs(rnd.nextInt());
     }
 
     public static Random getRnd() {
@@ -60,7 +82,7 @@ public class StingraySnmpClient {
     }
 
     public StingraySnmpClient(String address) {
-        this(address, "1161");
+        this(address, DEFAULT_SNMP_PORT);
     }
 
     public StingraySnmpClient(String address, String port) {
@@ -87,7 +109,10 @@ public class StingraySnmpClient {
     }
 
     public synchronized static int incRequestId() {
-        requestId = (requestId + 1) % Integer.MAX_VALUE;
+        requestId++;
+        if (requestId >= Integer.MAX_VALUE) {
+            requestId = 0;
+        }
         return requestId;
     }
 
@@ -281,6 +306,127 @@ public class StingraySnmpClient {
         return vb.getVariable();
     }
 
+    public static SnmpNodeKey getSnmpNodeKeyFromOid(OID oid) {
+        StringBuilder sb;
+        int o;
+        int i;
+        int[] oidInts = oid.toIntArray();
+        SnmpNodeKey nodeKey = new SnmpNodeKey();
+        if (oidInts.length < 14) {
+            return null;
+        }
+        for (i = 0; i < 12; i++) {
+            int oidInt = oidInts[i];
+            int nodeTableInt = nodeTableIntOidsCruft[i];
+            if (oidInt != nodeTableInt) {
+                return null;
+            }
+        }
+        if (oidInts[12] != 4 && oidInts[12] != 5) {
+            return null;
+        }
+        switch (oidInts[13]) { // the 13th byte states the IP version for zeus
+            case 1:
+                if (oidInts.length < 20) {
+                    return null; // address is too short to be an IPv4 addr and port
+                }
+                sb = new StringBuilder(16);
+                sb.append(oidInts[15]).append(".").
+                        append(oidInts[16]).append(".").
+                        append(oidInts[17]).append(".").
+                        append(oidInts[18]);
+                nodeKey.setIpAddress(sb.toString());
+                nodeKey.setIpType(IPUtils.IPv4);
+                nodeKey.setPort(oidInts[19]);
+                return nodeKey;
+            case 2:
+                if (oidInts.length < 32) {
+                    return null; // address to short to be an IPv6 addr and port
+                }
+                sb = new StringBuilder(40);
+                i = 0;
+                o = i + 15;
+                sb.append(hexmap[oidInts[o] >> 4]).append(hexmap[oidInts[o++] & 0x0f]).
+                        append(hexmap[oidInts[o] >> 4]).append(hexmap[oidInts[o++] & 0x0f]);
+                for (i = 2; i < 16; i += 2) {
+                    sb.append(":").append(hexmap[oidInts[o] >> 4]).append(hexmap[oidInts[o++] & 0x0f]).
+                            append(hexmap[oidInts[o] >> 4]).append(hexmap[oidInts[o++] & 0x0f]);
+                }
+                nodeKey.setIpAddress(sb.toString());
+                nodeKey.setPort(oidInts[o]);
+                nodeKey.setIpType(IPUtils.IPv6);
+                return nodeKey;
+            default:
+                return null; // This is not a valid Ipv4 or IPv6 What year is this?
+        }
+    }
+
+    public Map<SnmpNodeKey, SnmpNodeStatus> getSnmpNodeStatusList() throws StingraySnmpSetupException, StingraySnmpGeneralException {
+        Map<SnmpNodeKey, SnmpNodeStatus> nodeMap = new HashMap<SnmpNodeKey, SnmpNodeStatus>();
+        List<VariableBinding> hostBindings = getBulkOidBindingList(OIDConstants.NODE_HOSTS);
+        List<VariableBinding> statsBindings = getBulkOidBindingList(OIDConstants.NODE_STATUS);
+        int vn = hostBindings.size() + statsBindings.size();
+        System.out.printf("Found %d bindings\n", vn);
+
+        // Find node hostnames
+        for (VariableBinding hostBinding : hostBindings) {
+            OID oid = hostBinding.getOid();
+            SnmpNodeKey nodeKey = getSnmpNodeKeyFromOid(oid);
+            if (nodeKey == null) {
+                continue;
+            }
+            if (!nodeMap.containsKey(nodeKey)) {
+                nodeMap.put(nodeKey, new SnmpNodeStatus());
+            }
+            SnmpNodeStatus nodeStat = nodeMap.get(nodeKey);
+            nodeStat.setPort(nodeKey.getPort());
+            nodeStat.setIpType(nodeKey.getIpType());
+            nodeStat.setIpAddress(nodeKey.getIpAddress());
+            nodeStat.setClientKey(String.format("%s:%s\n", address, port));
+            Variable variable = hostBinding.getVariable();
+            String hostName = variable.toString();
+            if (hostName == null) {
+                continue;
+            }
+            try {
+                String canonicalIp = IPUtils.canonicalIp(hostName);
+                if (canonicalIp.equals(nodeKey.getIpAddress())) {
+                    continue;  // This node's host name is really its IpAddress
+                } else {
+                    nodeStat.setHostName(hostName); // This is a host named node
+                    nodeStat.setIpType(IPUtils.HOST_NAME);
+                }
+            } catch (IPStringConversionException ex) {
+                // Coulden't cononicalize this IP. Not considering it as a host named node
+                continue;
+            }
+            nop();
+        }
+        // find actual node Stats
+        for (VariableBinding statBinding : statsBindings) {
+            OID oid = statBinding.getOid();
+            SnmpNodeKey nodeKey = getSnmpNodeKeyFromOid(oid);
+            if (nodeKey == null) {
+                continue;
+            }
+            if (!nodeMap.containsKey(nodeKey)) {
+                nodeMap.put(nodeKey, new SnmpNodeStatus());
+            }
+            SnmpNodeStatus nodeStat = nodeMap.get(nodeKey);
+            nodeStat.setPort(nodeKey.getPort());
+            if (nodeStat.getHostName() == null) {
+                nodeStat.setIpType(nodeKey.getIpType());
+                nodeStat.setIpAddress(nodeKey.getIpAddress());
+            } else {
+                nodeStat.setIpAddress(nodeStat.getHostName());
+            }
+            Variable variable = statBinding.getVariable();
+            nodeStat.setStatus(variable.toInt());
+            nop();
+        }
+        return nodeMap;
+    }
+
     public List<VariableBinding> getBulkOidBindingList(String oid) throws StingraySnmpSetupException, StingraySnmpGeneralException {
         vlog.printf("in call getBulkOidBindingList(%s) for %s", oid, getConnectionName());
         List<VariableBinding> bindings = new ArrayList<VariableBinding>();
@@ -325,7 +471,10 @@ public class StingraySnmpClient {
             } catch (IOException ex) {
                 String msg = String.format("Error listening on local udp port for snmp connection %s/%s", address, port);
                 LOG.error(msg, ex);
-                closeConnection(snmp, transport);
+                closeConnection(
+                        snmp, transport);
+
+
                 throw new StingraySnmpSetupException(msg, ex);
             }
             VariableBinding vb = null;
@@ -344,7 +493,7 @@ public class StingraySnmpClient {
                 currMaxReps *= 0.75;
                 LOG.warn(msg);
                 if (currMaxReps <= 1.0) {
-                    String exMsg = String.format("Error maxRepetitions was shrunk to 1 to snmp server %s", getConnectionName(oid));
+                    String exMsg = String.format("Error maxRepetitions was shrunk to < 1 to snmp server %s", getConnectionName(oid));
                     LOG.error(exMsg);
                     closeConnection(snmp, transport);
                     throw new StingraySnmpRetryExceededException(exMsg);
@@ -353,7 +502,8 @@ public class StingraySnmpClient {
                 continue;
             }
             int respSize = respPdu.size();
-            for (int i = 0; i < respSize; i++) {
+            for (int i = 0; i
+                    < respSize; i++) {
                 totalItems++;
                 vb = respPdu.get(i);
                 String vbOid = vb.getOid().toString();
@@ -377,6 +527,8 @@ public class StingraySnmpClient {
     private void closeConnection(Snmp snmp, TransportMapping transport) {
         try {
             snmp.close();
+
+
         } catch (Exception ex) {
             LOG.warn(String.format("Warning unable to close snmp connection on %s", getConnectionName()));
         }
@@ -402,8 +554,8 @@ public class StingraySnmpClient {
         StringBuilder sb = new StringBuilder();
         String[] baseNums = dotSplitter.split(baseOid);
         String[] nums = dotSplitter.split(oid);
-
-        for (int i = baseNums.length + 1; i < nums.length; i++) {
+        for (int i = baseNums.length + 1; i
+                < nums.length; i++) {
             sb.append((char) Integer.parseInt(nums[i]));
         }
         return sb.toString();
@@ -417,9 +569,7 @@ public class StingraySnmpClient {
         if (!(o instanceof StingraySnmpClient)) {
             return false;
         }
-
         StingraySnmpClient that = (StingraySnmpClient) o;
-
         if (maxRepetitions != that.maxRepetitions) {
             return false;
         }
@@ -444,7 +594,6 @@ public class StingraySnmpClient {
         if (port != null ? !port.equals(that.port) : that.port != null) {
             return false;
         }
-
         return true;
     }
 
@@ -459,6 +608,8 @@ public class StingraySnmpClient {
         result = 31 * result + maxRetrys;
         result = 31 * result + version;
         return result;
+
+
     }
 
     public String getAddress() {
@@ -530,6 +681,8 @@ public class StingraySnmpClient {
 
     public int getMaxRepetitions() {
         return maxRepetitions;
+
+
     }
 
     public void setMaxRepetitions(int maxRepetitions) {

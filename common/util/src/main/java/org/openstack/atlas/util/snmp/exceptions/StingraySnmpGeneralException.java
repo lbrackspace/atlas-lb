@@ -15,6 +15,7 @@ public class StingraySnmpGeneralException extends Exception {
     }
 
     public StingraySnmpGeneralException() {
+        super();
     }
 
 }

@@ -5,8 +5,6 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-itest</artifactId>
         <version>1.25.28-SNAPSHOT</version>
-
-
     </parent>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-itest-snmp</artifactId>

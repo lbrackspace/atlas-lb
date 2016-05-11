@@ -23,6 +23,7 @@
                 <ref bean="alertDeletionJobTrigger"/>
                 <ref bean="hostEndpointPollerJobTrigger"/>
                 <ref bean="atomHopperUsagePusherTrigger"/>
+                <ref bean="nodeStatusAuditorTrigger"/>
             </list>
         </property>
         <!-- Scheduler context key we use this in delegating job bean -->
@@ -155,6 +156,23 @@
     <bean id="hostEndpointPollerJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
         <property name="jobDetail" ref="hostEndpointPollerJob"/>
         <property name="cronExpression" value="${host-endpoint-poller.interval}"/>
+    </bean>
+
+
+    <!-- NODE STATUS AUDITOR JOB -->
+    <bean id="nodeStatusAuditorBean" class="org.openstack.atlas.jobs.NodeStatusAuditorJob"
+          autowire="byName"/>
+    <bean name="nodeStatusAuditorJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="job.bean.name" value="nodeStatusAuditorJobBean"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="nodeStatusUpdaterJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+        <property name="jobDetail" ref="nodeStatusAuditorJob"/>
+        <property name="cronExpression" value="${node-status-auditor.interval}"/>
     </bean>
 
     <!--ALERT DELETION JOB CONFIG-->

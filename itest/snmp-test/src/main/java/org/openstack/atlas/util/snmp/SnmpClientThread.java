@@ -18,10 +18,10 @@ public class SnmpClientThread extends Thread {
     public static VerboseLogger getVlog() {
         return vlog;
     }
-    private String clientName;
-    private StingraySnmpClient client;
-    private Map<String, RawSnmpUsage> usage;
-    private Exception exception = null;
+    protected String clientName;
+    protected StingraySnmpClient client;
+    protected Map<String, RawSnmpUsage> usage;
+    protected Exception exception = null;
 
     @Override
     public void run() {

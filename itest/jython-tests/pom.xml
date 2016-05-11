@@ -19,6 +19,11 @@
     <dependencies>
         <dependency>
             <groupId>org.openstack.atlas</groupId>
+            <artifactId>atlas-jobs</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openstack.atlas</groupId>
             <artifactId>atlas-jyson</artifactId>
             <version>${project.version}</version>
         </dependency>
