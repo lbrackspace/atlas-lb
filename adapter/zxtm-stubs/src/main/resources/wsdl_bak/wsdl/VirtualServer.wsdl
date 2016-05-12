@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -146,6 +146,29 @@
            <xsd:complexContent>
              <xsd:restriction base='SOAP-ENC:Array'>
               <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:VirtualServer.FTPPortRange[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:simpleType name="VirtualServer.HttpChunkOverheadForwarding">
+            <xsd:restriction base="xsd:string">
+               <xsd:enumeration value="lazy">
+                  <xsd:annotation>
+                     <xsd:documentation>lazy</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="eager">
+                  <xsd:annotation>
+                     <xsd:documentation>eager</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+            </xsd:restriction>
+         </xsd:simpleType>
+         
+         <xsd:complexType name="VirtualServer.HttpChunkOverheadForwardingArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns:VirtualServer.HttpChunkOverheadForwarding[]"/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -504,6 +527,161 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:simpleType name="VirtualServer.SSLOCSPCheck">
+           <xsd:annotation>
+             <xsd:documentation>Different modes of OCSP checking for an issuer.</xsd:documentation>
+           </xsd:annotation>
+           <xsd:restriction base="xsd:string">
+         
+             <xsd:enumeration value="none">
+               <xsd:annotation>
+                  <xsd:documentation>Do not perform an OCSP check</xsd:documentation>
+               </xsd:annotation>
+             </xsd:enumeration>
+         
+             <xsd:enumeration value="optional">
+               <xsd:annotation>
+                  <xsd:documentation>If an OCSP URL can be determined, perform an OCSP check.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:enumeration>
+         
+             <xsd:enumeration value="strict">
+               <xsd:annotation>
+                  <xsd:documentation>If an OCSP URL can be determined, perform an OCSP check. If not reject the connection.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:enumeration>
+         
+           </xsd:restriction>
+         </xsd:simpleType>
+         
+         <xsd:complexType name="VirtualServer.SSLOCSPIssuer">
+           <xsd:annotation>
+            <xsd:documentation>This object represents a mapping between a Certificate Authority (this is the name of an item in the Certificate Authorities Catalog) and configuration for an OCSP responder. Certificates issued by the Certificate Authority will use these OCSP responder settings.</xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             
+             <xsd:element name="ca" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The Certificate Authority for which these settings apply. This is the name of an item in the Certificate Authorities Catalog.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>    
+             
+             <xsd:element name="url" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The URL of the OCSP responder that should be used to check the revocation status of certificates issued by the Certificate Authority.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+         
+             <xsd:element name="required" type="zeusns:VirtualServer.SSLOCSPCheck">
+               <xsd:annotation>
+                 <xsd:documentation>Is OCSP required for certificates signed by this CA?</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+         
+             <xsd:element name="aia" type="xsd:boolean">
+               <xsd:annotation>
+                 <xsd:documentation>If set to true the Authority Information Access X509 extension will be used to determine the OCSP server's URL</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             
+             <xsd:element name="nonce" type="zeusns:VirtualServer.SSLOCSPNonce">
+               <xsd:annotation>
+                 <xsd:documentation>Should an OCSP nonce be added to each request to protect against replay attacks. Not all OCSP servers support nonces.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+         
+             <xsd:element name="sign_mode" type="zeusns:VirtualServer.SSLOCSPSignMode">
+               <xsd:annotation>
+                 <xsd:documentation>Should we sign OCSP requests?</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+         
+         
+             <xsd:element name="signer" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The key pair used to sign OCSP requests. If not set OCSP requests will not be signed. Must be an entry in the SSL Certificates Catalog.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+         
+             <xsd:element name="responder_cert" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The expected certificate that the OCSP responder should provide. Must be in the Certificate Authority catalog, or be empty (meaning the issuer certificate), or be exactly "_SIGNED_BY_ISSUER_" (which will accept either the issuer or one that is signed by it and has id-kp-OCSPSigning in extendedKeyUsage and has id-pkix-ocsp-nocheck).</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+         
+           </xsd:all>
+         </xsd:complexType>
+         
+         <xsd:complexType name="VirtualServer.SSLOCSPIssuerArray">
+           <xsd:complexContent>
+             <xsd:restriction base='SOAP-ENC:Array'>
+              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:VirtualServer.SSLOCSPIssuer[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="VirtualServer.SSLOCSPIssuerArrayArray">
+           <xsd:complexContent>
+             <xsd:restriction base='SOAP-ENC:Array'>
+              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:VirtualServer.SSLOCSPIssuerArray[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:simpleType name="VirtualServer.SSLOCSPNonce">
+           <xsd:annotation>
+             <xsd:documentation>Should we include nonces in requests and how strict should we be when validating the response</xsd:documentation>
+           </xsd:annotation>
+           <xsd:restriction base="xsd:string">
+         
+             <xsd:enumeration value="off">
+               <xsd:annotation>
+                  <xsd:documentation>Do not use the nonce extension in OCSP requests, ignore any nonces in the response.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:enumeration>
+         
+             <xsd:enumeration value="on">
+               <xsd:annotation>
+                  <xsd:documentation>Use the nonce extension in requests. If the response contains a nonce validate it is correct.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:enumeration>
+         
+             <xsd:enumeration value="strict">
+               <xsd:annotation>
+                  <xsd:documentation>Use the nonce extension in requests. The response must contain the correct nonce, otherwise it is rejected.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:enumeration>
+         
+           </xsd:restriction>
+         </xsd:simpleType>
+         
+         <xsd:simpleType name="VirtualServer.SSLOCSPSignMode">
+           <xsd:annotation>
+             <xsd:documentation>The diferent modes for OCSP request signing</xsd:documentation>
+           </xsd:annotation>
+           <xsd:restriction base="xsd:string">
+         
+             <xsd:enumeration value="none">
+               <xsd:annotation>
+                  <xsd:documentation>Do not sign OCSP requests</xsd:documentation>
+               </xsd:annotation>
+             </xsd:enumeration>
+         
+             <xsd:enumeration value="use_default">
+               <xsd:annotation>
+                  <xsd:documentation>Use default OCSP settings for signing requests</xsd:documentation>
+               </xsd:annotation>
+             </xsd:enumeration>
+         
+             <xsd:enumeration value="sign">
+               <xsd:annotation>
+                  <xsd:documentation>Use a specific catalog certificate to sign requests</xsd:documentation>
+               </xsd:annotation>
+             </xsd:enumeration>
+         
+           </xsd:restriction>
+         </xsd:simpleType>
+         
          <xsd:simpleType name="VirtualServer.SSLRequestClientCertMode">
             <xsd:restriction base="xsd:string">
                <xsd:enumeration value="dont_request">
@@ -602,10 +780,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -765,6 +959,34 @@
            </xsd:all>
          </xsd:complexType>
          
+         <xsd:complexType name="LicenseError">
+           <xsd:annotation>
+            <xsd:documentation>
+              The LicenseError fault is emitted when attempting to use functionality
+              that is disabled by the license key.
+         
+              You will need to contact your support provider to get a new license
+              key with the required functionality. There may be a charge for this.
+            </xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             <xsd:element name="errmsg" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A human readable string describing the error
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="feature" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The license key feature that was missing
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+           </xsd:all>
+         </xsd:complexType>
+         
          <xsd:complexType name="ObjectAlreadyExists">
            <xsd:annotation>
             <xsd:documentation>
@@ -898,6 +1120,21 @@
    
    <message name="addSSLNeverExpiringClientCertificateAuthoritiesByLocationResponse"></message>
    
+   <message name="addSSLOCSPIssuersRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="ssl_ocsp_issuers" type="zeusns:VirtualServer.SSLOCSPIssuerArrayArray" />
+   </message>
+   
+   <message name="addSSLOCSPIssuersResponse"></message>
+   
+   <message name="addSSLOCSPIssuersByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="ssl_ocsp_issuers" type="zeusns:VirtualServer.SSLOCSPIssuerArrayArray" />
+   </message>
+   
+   <message name="addSSLOCSPIssuersByLocationResponse"></message>
+   
    <message name="addSSLSitesRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="ssl_sites" type="zeusns:VirtualServer.SSLSiteArrayArray" />
@@ -979,6 +1216,57 @@
    </message>
    
    <message name="getAddClusterClientIPHeaderByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getAddXForwardedForHeaderRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAddXForwardedForHeaderResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getAddXForwardedForHeaderByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAddXForwardedForHeaderByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getAddXForwardedProtoHeaderRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAddXForwardedProtoHeaderResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getAddXForwardedProtoHeaderByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAddXForwardedProtoHeaderByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getAptimizerEnabledRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAptimizerEnabledResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getAptimizerEnabledByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAptimizerEnabledByLocationResponse">
       <part name="values" type="zeusns:booleanArray" />
    </message>
    
@@ -1337,6 +1625,23 @@
    
    <message name="getFTPSSLDataByLocationResponse">
       <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getHttpChunkOverheadForwardingRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getHttpChunkOverheadForwardingResponse">
+      <part name="values" type="zeusns:VirtualServer.HttpChunkOverheadForwardingArray" />
+   </message>
+   
+   <message name="getHttpChunkOverheadForwardingByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getHttpChunkOverheadForwardingByLocationResponse">
+      <part name="values" type="zeusns:VirtualServer.HttpChunkOverheadForwardingArray" />
    </message>
    
    <message name="getKeepaliveRequest">
@@ -1712,6 +2017,23 @@
       <part name="range" type="zeusns:VirtualServer.PortRangeArray" />
    </message>
    
+   <message name="getRTSPStreamingTimeoutRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getRTSPStreamingTimeoutResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getRTSPStreamingTimeoutByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getRTSPStreamingTimeoutByLocationResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
    <message name="getRequestSyslogEnabledRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -1761,6 +2083,23 @@
    
    <message name="getRequestSyslogIPEndpointByLocationResponse">
       <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getRequestSyslogMessageLenLimitRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getRequestSyslogMessageLenLimitResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getRequestSyslogMessageLenLimitByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getRequestSyslogMessageLenLimitByLocationResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
    </message>
    
    <message name="getRequestTracingEnabledRequest">
@@ -2094,6 +2433,108 @@
       <part name="values" type="zeusns:StringArrayArray" />
    </message>
    
+   <message name="getSSLOCSPDefaultsRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPDefaultsResponse">
+      <part name="ssl_defaults" type="zeusns:VirtualServer.SSLOCSPIssuerArray" />
+   </message>
+   
+   <message name="getSSLOCSPDefaultsByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPDefaultsByLocationResponse">
+      <part name="ssl_defaults" type="zeusns:VirtualServer.SSLOCSPIssuerArray" />
+   </message>
+   
+   <message name="getSSLOCSPIssuersRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPIssuersResponse">
+      <part name="ssl_issuers" type="zeusns:VirtualServer.SSLOCSPIssuerArrayArray" />
+   </message>
+   
+   <message name="getSSLOCSPIssuersByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPIssuersByLocationResponse">
+      <part name="ssl_issuers" type="zeusns:VirtualServer.SSLOCSPIssuerArrayArray" />
+   </message>
+   
+   <message name="getSSLOCSPMaxResponseAgeRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPMaxResponseAgeResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getSSLOCSPMaxResponseAgeByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPMaxResponseAgeByLocationResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getSSLOCSPStaplingRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPStaplingResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getSSLOCSPStaplingByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPStaplingByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getSSLOCSPTimeToleranceRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPTimeToleranceResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getSSLOCSPTimeToleranceByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPTimeToleranceByLocationResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getSSLOCSPTimeoutRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPTimeoutResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getSSLOCSPTimeoutByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLOCSPTimeoutByLocationResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
    <message name="getSSLPreferSSLv3Request">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -2179,6 +2620,23 @@
       <part name="values" type="zeusns:booleanArray" />
    </message>
    
+   <message name="getSSLUseOCSPRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLUseOCSPResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getSSLUseOCSPByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getSSLUseOCSPByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
    <message name="getServerfirstBannerRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -2245,6 +2703,23 @@
    
    <message name="getTimeoutByLocationResponse">
       <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getUDPEndpointPersistenceRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getUDPEndpointPersistenceResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getUDPEndpointPersistenceByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getUDPEndpointPersistenceByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
    </message>
    
    <message name="getUDPResponseDatagramsExpectedRequest">
@@ -2503,6 +2978,21 @@
    
    <message name="removeSSLNeverExpiringClientCertificateAuthoritiesByLocationResponse"></message>
    
+   <message name="removeSSLOCSPIssuersRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="cas" type="zeusns:StringArrayArray" />
+   </message>
+   
+   <message name="removeSSLOCSPIssuersResponse"></message>
+   
+   <message name="removeSSLOCSPIssuersByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="cas" type="zeusns:StringArrayArray" />
+   </message>
+   
+   <message name="removeSSLOCSPIssuersByLocationResponse"></message>
+   
    <message name="renameVirtualServerRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="new_names" type="zeusns:StringArray" />
@@ -2525,6 +3015,36 @@
    
    <message name="setAddClusterClientIPHeaderByLocationResponse"></message>
    
+   <message name="setAddXForwardedForHeaderRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setAddXForwardedForHeaderResponse"></message>
+   
+   <message name="setAddXForwardedForHeaderByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setAddXForwardedForHeaderByLocationResponse"></message>
+   
+   <message name="setAddXForwardedProtoHeaderRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setAddXForwardedProtoHeaderResponse"></message>
+   
+   <message name="setAddXForwardedProtoHeaderByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setAddXForwardedProtoHeaderByLocationResponse"></message>
+   
    <message name="setApplicationFirewallEnabledRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:booleanArray" />
@@ -2539,6 +3059,21 @@
    </message>
    
    <message name="setApplicationFirewallEnabledByLocationResponse"></message>
+   
+   <message name="setAptimizerEnabledRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setAptimizerEnabledResponse"></message>
+   
+   <message name="setAptimizerEnabledByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setAptimizerEnabledByLocationResponse"></message>
    
    <message name="setBandwidthClassRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -2839,6 +3374,21 @@
    </message>
    
    <message name="setFTPSSLDataByLocationResponse"></message>
+   
+   <message name="setHttpChunkOverheadForwardingRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:VirtualServer.HttpChunkOverheadForwardingArray" />
+   </message>
+   
+   <message name="setHttpChunkOverheadForwardingResponse"></message>
+   
+   <message name="setHttpChunkOverheadForwardingByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:VirtualServer.HttpChunkOverheadForwardingArray" />
+   </message>
+   
+   <message name="setHttpChunkOverheadForwardingByLocationResponse"></message>
    
    <message name="setKeepaliveRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -3167,6 +3717,21 @@
    
    <message name="setRTSPPortRangeByLocationResponse"></message>
    
+   <message name="setRTSPStreamingTimeoutRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setRTSPStreamingTimeoutResponse"></message>
+   
+   <message name="setRTSPStreamingTimeoutByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setRTSPStreamingTimeoutByLocationResponse"></message>
+   
    <message name="setRequestSyslogEnabledRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:booleanArray" />
@@ -3211,6 +3776,21 @@
    </message>
    
    <message name="setRequestSyslogIPEndpointByLocationResponse"></message>
+   
+   <message name="setRequestSyslogMessageLenLimitRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setRequestSyslogMessageLenLimitResponse"></message>
+   
+   <message name="setRequestSyslogMessageLenLimitByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setRequestSyslogMessageLenLimitByLocationResponse"></message>
    
    <message name="setRequestTracingEnabledRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -3504,6 +4084,96 @@
    
    <message name="setSSLNeverExpiringClientCertificateAuthoritiesByLocationResponse"></message>
    
+   <message name="setSSLOCSPDefaultsRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="ssl_ocsp_issuers" type="zeusns:VirtualServer.SSLOCSPIssuerArray" />
+   </message>
+   
+   <message name="setSSLOCSPDefaultsResponse"></message>
+   
+   <message name="setSSLOCSPDefaultsByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="ssl_ocsp_issuers" type="zeusns:VirtualServer.SSLOCSPIssuerArray" />
+   </message>
+   
+   <message name="setSSLOCSPDefaultsByLocationResponse"></message>
+   
+   <message name="setSSLOCSPIssuersRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="ssl_ocsp_issuers" type="zeusns:VirtualServer.SSLOCSPIssuerArrayArray" />
+   </message>
+   
+   <message name="setSSLOCSPIssuersResponse"></message>
+   
+   <message name="setSSLOCSPIssuersByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="ssl_ocsp_issuers" type="zeusns:VirtualServer.SSLOCSPIssuerArrayArray" />
+   </message>
+   
+   <message name="setSSLOCSPIssuersByLocationResponse"></message>
+   
+   <message name="setSSLOCSPMaxResponseAgeRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setSSLOCSPMaxResponseAgeResponse"></message>
+   
+   <message name="setSSLOCSPMaxResponseAgeByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setSSLOCSPMaxResponseAgeByLocationResponse"></message>
+   
+   <message name="setSSLOCSPStaplingRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSSLOCSPStaplingResponse"></message>
+   
+   <message name="setSSLOCSPStaplingByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSSLOCSPStaplingByLocationResponse"></message>
+   
+   <message name="setSSLOCSPTimeToleranceRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setSSLOCSPTimeToleranceResponse"></message>
+   
+   <message name="setSSLOCSPTimeToleranceByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setSSLOCSPTimeToleranceByLocationResponse"></message>
+   
+   <message name="setSSLOCSPTimeoutRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setSSLOCSPTimeoutResponse"></message>
+   
+   <message name="setSSLOCSPTimeoutByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setSSLOCSPTimeoutByLocationResponse"></message>
+   
    <message name="setSSLPreferSSLv3Request">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:booleanArray" />
@@ -3564,6 +4234,21 @@
    
    <message name="setSSLTrustMagicByLocationResponse"></message>
    
+   <message name="setSSLUseOCSPRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSSLUseOCSPResponse"></message>
+   
+   <message name="setSSLUseOCSPByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setSSLUseOCSPByLocationResponse"></message>
+   
    <message name="setServerfirstBannerRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:StringArray" />
@@ -3623,6 +4308,21 @@
    </message>
    
    <message name="setTimeoutByLocationResponse"></message>
+   
+   <message name="setUDPEndpointPersistenceRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setUDPEndpointPersistenceResponse"></message>
+   
+   <message name="setUDPEndpointPersistenceByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setUDPEndpointPersistenceByLocationResponse"></message>
    
    <message name="setUDPResponseDatagramsExpectedRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -3760,6 +4460,10 @@
       <part name="parameters" type="zeusns:InvalidOperation" />
    </message>
    
+   <message name="LicenseError">
+      <part name="parameters" type="zeusns:LicenseError" />
+   </message>
+   
    <message name="ObjectAlreadyExists">
       <part name="parameters" type="zeusns:ObjectAlreadyExists" />
    </message>
@@ -3889,6 +4593,30 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
       </operation>
       
+      <operation name="addSSLOCSPIssuers">
+         <documentation>
+            Adds mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings.
+         </documentation>
+         
+         <input message="zeusns:addSSLOCSPIssuersRequest"/>
+         <output message="zeusns:addSSLOCSPIssuersResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
+      <operation name="addSSLOCSPIssuersByLocation">
+         <documentation>
+            Adds mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:addSSLOCSPIssuersByLocationRequest"/>
+         <output message="zeusns:addSSLOCSPIssuersByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
       <operation name="addSSLSites">
          <documentation>
             Adds the specified SSLSite objects to the named virtual servers. These objects are mappings between destination addresses and the certificate used for SSL decryption those addresses. Each certificate is the name of an item in the SSL Certificates Catalog.
@@ -4004,7 +4732,7 @@
       
       <operation name="getAddClusterClientIPHeader">
          <documentation>
-            Get whether a 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address.
+            Get whether an 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address.
          </documentation>
          
          <input message="zeusns:getAddClusterClientIPHeaderRequest"/>
@@ -4014,11 +4742,71 @@
       
       <operation name="getAddClusterClientIPHeaderByLocation">
          <documentation>
-            Get whether a 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+            Get whether an 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:getAddClusterClientIPHeaderByLocationRequest"/>
          <output message="zeusns:getAddClusterClientIPHeaderByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAddXForwardedForHeader">
+         <documentation>
+            Get whether the remote client's IP address should be appended to the X-Forwarded-For header. The 'X-Forwarded-For' header contains the client's IP address.
+         </documentation>
+         
+         <input message="zeusns:getAddXForwardedForHeaderRequest"/>
+         <output message="zeusns:getAddXForwardedForHeaderResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAddXForwardedForHeaderByLocation">
+         <documentation>
+            Get whether the remote client's IP address should be appended to the X-Forwarded-For header. The 'X-Forwarded-For' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getAddXForwardedForHeaderByLocationRequest"/>
+         <output message="zeusns:getAddXForwardedForHeaderByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAddXForwardedProtoHeader">
+         <documentation>
+            Get whether an 'X-Forwarded-Proto' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Forwarded-Proto' header contains the protocol the client used to connect to the traffic manager
+         </documentation>
+         
+         <input message="zeusns:getAddXForwardedProtoHeaderRequest"/>
+         <output message="zeusns:getAddXForwardedProtoHeaderResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAddXForwardedProtoHeaderByLocation">
+         <documentation>
+            Get whether an 'X-Forwarded-Proto' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Forwarded-Proto' header contains the protocol the client used to connect to the traffic manager This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getAddXForwardedProtoHeaderByLocationRequest"/>
+         <output message="zeusns:getAddXForwardedProtoHeaderByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAptimizerEnabled">
+         <documentation>
+            Get whether each of the named virtual servers should aptimize web content.
+         </documentation>
+         
+         <input message="zeusns:getAptimizerEnabledRequest"/>
+         <output message="zeusns:getAptimizerEnabledResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getAptimizerEnabledByLocation">
+         <documentation>
+            Get whether each of the named virtual servers should aptimize web content. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getAptimizerEnabledByLocationRequest"/>
+         <output message="zeusns:getAptimizerEnabledByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -4439,6 +5227,26 @@
          
          <input message="zeusns:getFTPSSLDataByLocationRequest"/>
          <output message="zeusns:getFTPSSLDataByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getHttpChunkOverheadForwarding">
+         <documentation>
+            Get how to handle forwarding of data that is pure HTTP chunking overhead.
+         </documentation>
+         
+         <input message="zeusns:getHttpChunkOverheadForwardingRequest"/>
+         <output message="zeusns:getHttpChunkOverheadForwardingResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getHttpChunkOverheadForwardingByLocation">
+         <documentation>
+            Get how to handle forwarding of data that is pure HTTP chunking overhead. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getHttpChunkOverheadForwardingByLocationRequest"/>
+         <output message="zeusns:getHttpChunkOverheadForwardingByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -4882,6 +5690,26 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getRTSPStreamingTimeout">
+         <documentation>
+            Get the time, in seconds, after which data-streams associated with RTSP connections timeout if no data is transmitted.
+         </documentation>
+         
+         <input message="zeusns:getRTSPStreamingTimeoutRequest"/>
+         <output message="zeusns:getRTSPStreamingTimeoutResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getRTSPStreamingTimeoutByLocation">
+         <documentation>
+            Get the time, in seconds, after which data-streams associated with RTSP connections timeout if no data is transmitted. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getRTSPStreamingTimeoutByLocationRequest"/>
+         <output message="zeusns:getRTSPStreamingTimeoutByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="getRequestSyslogEnabled">
          <documentation>
             Get whether each of the named virtual servers should log each connection to a remote syslog server.
@@ -4939,6 +5767,26 @@
          
          <input message="zeusns:getRequestSyslogIPEndpointByLocationRequest"/>
          <output message="zeusns:getRequestSyslogIPEndpointByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getRequestSyslogMessageLenLimit">
+         <documentation>
+            Get syslog message length limit.
+         </documentation>
+         
+         <input message="zeusns:getRequestSyslogMessageLenLimitRequest"/>
+         <output message="zeusns:getRequestSyslogMessageLenLimitResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getRequestSyslogMessageLenLimitByLocation">
+         <documentation>
+            Get syslog message length limit. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getRequestSyslogMessageLenLimitByLocationRequest"/>
+         <output message="zeusns:getRequestSyslogMessageLenLimitByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -5332,6 +6180,126 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getSSLOCSPDefaults">
+         <documentation>
+            Get the default OCSP responder settings for all client certificates.
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPDefaultsRequest"/>
+         <output message="zeusns:getSSLOCSPDefaultsResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPDefaultsByLocation">
+         <documentation>
+            Get the default OCSP responder settings for all client certificates. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPDefaultsByLocationRequest"/>
+         <output message="zeusns:getSSLOCSPDefaultsByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPIssuers">
+         <documentation>
+            Gets a list of mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings.
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPIssuersRequest"/>
+         <output message="zeusns:getSSLOCSPIssuersResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPIssuersByLocation">
+         <documentation>
+            Gets a list of mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPIssuersByLocationRequest"/>
+         <output message="zeusns:getSSLOCSPIssuersByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPMaxResponseAge">
+         <documentation>
+            Get the number of seconds for which an OCSP response is considered valid if it has not yet exceeded the time specified in the 'nextUpdate' field
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPMaxResponseAgeRequest"/>
+         <output message="zeusns:getSSLOCSPMaxResponseAgeResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPMaxResponseAgeByLocation">
+         <documentation>
+            Get the number of seconds for which an OCSP response is considered valid if it has not yet exceeded the time specified in the 'nextUpdate' field This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPMaxResponseAgeByLocationRequest"/>
+         <output message="zeusns:getSSLOCSPMaxResponseAgeByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPStapling">
+         <documentation>
+            Get whether the traffic manager is allowed to provide OCSP responses for certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello, and OCSP URIs are present in certificates used by this virtual server.
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPStaplingRequest"/>
+         <output message="zeusns:getSSLOCSPStaplingResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPStaplingByLocation">
+         <documentation>
+            Get whether the traffic manager is allowed to provide OCSP responses for certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello, and OCSP URIs are present in certificates used by this virtual server. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPStaplingByLocationRequest"/>
+         <output message="zeusns:getSSLOCSPStaplingByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPTimeTolerance">
+         <documentation>
+            Get the number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPTimeToleranceRequest"/>
+         <output message="zeusns:getSSLOCSPTimeToleranceResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPTimeToleranceByLocation">
+         <documentation>
+            Get the number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPTimeToleranceByLocationRequest"/>
+         <output message="zeusns:getSSLOCSPTimeToleranceByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPTimeout">
+         <documentation>
+            Get the number of seconds after which OCSP requests will be timed out
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPTimeoutRequest"/>
+         <output message="zeusns:getSSLOCSPTimeoutResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLOCSPTimeoutByLocation">
+         <documentation>
+            Get the number of seconds after which OCSP requests will be timed out This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLOCSPTimeoutByLocationRequest"/>
+         <output message="zeusns:getSSLOCSPTimeoutByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="getSSLPreferSSLv3">
          <documentation>
             Get whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records.
@@ -5432,6 +6400,26 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getSSLUseOCSP">
+         <documentation>
+            Get whether or not the traffic manager should use OCSP to check the revocation status of client certificates
+         </documentation>
+         
+         <input message="zeusns:getSSLUseOCSPRequest"/>
+         <output message="zeusns:getSSLUseOCSPResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getSSLUseOCSPByLocation">
+         <documentation>
+            Get whether or not the traffic manager should use OCSP to check the revocation status of client certificates This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getSSLUseOCSPByLocationRequest"/>
+         <output message="zeusns:getSSLUseOCSPByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="getServerfirstBanner">
          <documentation>
             Get the banner that each of the named virtual servers sends to clients for server-first protocols such as POP, SMTP and IMAP.
@@ -5509,6 +6497,26 @@
          
          <input message="zeusns:getTimeoutByLocationRequest"/>
          <output message="zeusns:getTimeoutByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getUDPEndpointPersistence">
+         <documentation>
+            Get whether each of the named virtual servers should send the UDP datagrams from the same IP and port to the same node in the pool if there's an existing UDP transaction. Although it's not always guaranteed as while making a decision to reuse same node, traffic manager can also apply other protocol specific filtering e.g CallID matching for SIP packets in addition to IP and port matching.
+         </documentation>
+         
+         <input message="zeusns:getUDPEndpointPersistenceRequest"/>
+         <output message="zeusns:getUDPEndpointPersistenceResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getUDPEndpointPersistenceByLocation">
+         <documentation>
+            Get whether each of the named virtual servers should send the UDP datagrams from the same IP and port to the same node in the pool if there's an existing UDP transaction. Although it's not always guaranteed as while making a decision to reuse same node, traffic manager can also apply other protocol specific filtering e.g CallID matching for SIP packets in addition to IP and port matching. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getUDPEndpointPersistenceByLocationRequest"/>
+         <output message="zeusns:getUDPEndpointPersistenceByLocationResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -5861,6 +6869,28 @@
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
+      <operation name="removeSSLOCSPIssuers">
+         <documentation>
+            Removes mappings between OCSP responder settings for the specified Certificate authorities
+         </documentation>
+         
+         <input message="zeusns:removeSSLOCSPIssuersRequest"/>
+         <output message="zeusns:removeSSLOCSPIssuersResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="removeSSLOCSPIssuersByLocation">
+         <documentation>
+            Removes mappings between OCSP responder settings for the specified Certificate authorities This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:removeSSLOCSPIssuersByLocationRequest"/>
+         <output message="zeusns:removeSSLOCSPIssuersByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="renameVirtualServer">
          <documentation>
             Rename each of the named virtual servers.
@@ -5876,7 +6906,7 @@
       
       <operation name="setAddClusterClientIPHeader">
          <documentation>
-            Set whether a 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address.
+            Set whether an 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address.
          </documentation>
          
          <input message="zeusns:setAddClusterClientIPHeaderRequest"/>
@@ -5888,7 +6918,7 @@
       
       <operation name="setAddClusterClientIPHeaderByLocation">
          <documentation>
-            Set whether a 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+            Set whether an 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:setAddClusterClientIPHeaderByLocationRequest"/>
@@ -5898,9 +6928,57 @@
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
+      <operation name="setAddXForwardedForHeader">
+         <documentation>
+            Set whether the remote client's IP address should be appended to the X-Forwarded-For header. The 'X-Forwarded-For' header contains the client's IP address.
+         </documentation>
+         
+         <input message="zeusns:setAddXForwardedForHeaderRequest"/>
+         <output message="zeusns:setAddXForwardedForHeaderResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAddXForwardedForHeaderByLocation">
+         <documentation>
+            Set whether the remote client's IP address should be appended to the X-Forwarded-For header. The 'X-Forwarded-For' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setAddXForwardedForHeaderByLocationRequest"/>
+         <output message="zeusns:setAddXForwardedForHeaderByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAddXForwardedProtoHeader">
+         <documentation>
+            Set whether an 'X-Forwarded-Proto' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Forwarded-Proto' header contains the protocol the client used to connect to the traffic manager
+         </documentation>
+         
+         <input message="zeusns:setAddXForwardedProtoHeaderRequest"/>
+         <output message="zeusns:setAddXForwardedProtoHeaderResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAddXForwardedProtoHeaderByLocation">
+         <documentation>
+            Set whether an 'X-Forwarded-Proto' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Forwarded-Proto' header contains the protocol the client used to connect to the traffic manager This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setAddXForwardedProtoHeaderByLocationRequest"/>
+         <output message="zeusns:setAddXForwardedProtoHeaderByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setApplicationFirewallEnabled">
          <documentation>
-            For each of the named virtual servers, enable or disable the Zeus Application Firewall Module.
+            For each of the named virtual servers, enable or disable the Stingray Application Firewall.
          </documentation>
          
          <input message="zeusns:setApplicationFirewallEnabledRequest"/>
@@ -5908,11 +6986,12 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
       <operation name="setApplicationFirewallEnabledByLocation">
          <documentation>
-            For each of the named virtual servers, enable or disable the Zeus Application Firewall Module. This is a location specific function, any action will operate on the specified location.
+            For each of the named virtual servers, enable or disable the Stingray Application Firewall. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:setApplicationFirewallEnabledByLocationRequest"/>
@@ -5920,6 +6999,31 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
+      <operation name="setAptimizerEnabled">
+         <documentation>
+            Set whether each of the named virtual servers should aptimize web content.
+         </documentation>
+         
+         <input message="zeusns:setAptimizerEnabledRequest"/>
+         <output message="zeusns:setAptimizerEnabledResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setAptimizerEnabledByLocation">
+         <documentation>
+            Set whether each of the named virtual servers should aptimize web content. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setAptimizerEnabledByLocationRequest"/>
+         <output message="zeusns:setAptimizerEnabledByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
       <operation name="setBandwidthClass">
@@ -6397,6 +7501,30 @@
          
          <input message="zeusns:setFTPSSLDataByLocationRequest"/>
          <output message="zeusns:setFTPSSLDataByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setHttpChunkOverheadForwarding">
+         <documentation>
+            Set how to handle forwarding of data that is pure HTTP chunking overhead.
+         </documentation>
+         
+         <input message="zeusns:setHttpChunkOverheadForwardingRequest"/>
+         <output message="zeusns:setHttpChunkOverheadForwardingResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setHttpChunkOverheadForwardingByLocation">
+         <documentation>
+            Set how to handle forwarding of data that is pure HTTP chunking overhead. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setHttpChunkOverheadForwardingByLocationRequest"/>
+         <output message="zeusns:setHttpChunkOverheadForwardingByLocationResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -6930,6 +8058,30 @@
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
+      <operation name="setRTSPStreamingTimeout">
+         <documentation>
+            Set the time, in seconds, after which data-streams associated with RTSP connections timeout if no data is transmitted.
+         </documentation>
+         
+         <input message="zeusns:setRTSPStreamingTimeoutRequest"/>
+         <output message="zeusns:setRTSPStreamingTimeoutResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setRTSPStreamingTimeoutByLocation">
+         <documentation>
+            Set the time, in seconds, after which data-streams associated with RTSP connections timeout if no data is transmitted. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setRTSPStreamingTimeoutByLocationRequest"/>
+         <output message="zeusns:setRTSPStreamingTimeoutByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setRequestSyslogEnabled">
          <documentation>
             Set whether each of the named virtual servers should log each connection to a remote syslog server.
@@ -6997,6 +8149,30 @@
          
          <input message="zeusns:setRequestSyslogIPEndpointByLocationRequest"/>
          <output message="zeusns:setRequestSyslogIPEndpointByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setRequestSyslogMessageLenLimit">
+         <documentation>
+            Set syslog message length limit.
+         </documentation>
+         
+         <input message="zeusns:setRequestSyslogMessageLenLimitRequest"/>
+         <output message="zeusns:setRequestSyslogMessageLenLimitResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setRequestSyslogMessageLenLimitByLocation">
+         <documentation>
+            Set syslog message length limit. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setRequestSyslogMessageLenLimitByLocationRequest"/>
+         <output message="zeusns:setRequestSyslogMessageLenLimitByLocationResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -7297,9 +8473,10 @@
          
          <input message="zeusns:setSSLCertificateRequest"/>
          <output message="zeusns:setSSLCertificateResponse"/>
-         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
       <operation name="setSSLCertificateByLocation">
@@ -7309,9 +8486,10 @@
          
          <input message="zeusns:setSSLCertificateByLocationRequest"/>
          <output message="zeusns:setSSLCertificateByLocationResponse"/>
-         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
       <operation name="setSSLClientCertificateAuthorities">
@@ -7470,6 +8648,150 @@
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
+      <operation name="setSSLOCSPDefaults">
+         <documentation>
+            Set the default OCSP responder settings for all client certificates.
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPDefaultsRequest"/>
+         <output message="zeusns:setSSLOCSPDefaultsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPDefaultsByLocation">
+         <documentation>
+            Set the default OCSP responder settings for all client certificates. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPDefaultsByLocationRequest"/>
+         <output message="zeusns:setSSLOCSPDefaultsByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPIssuers">
+         <documentation>
+            Sets a list of mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings.
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPIssuersRequest"/>
+         <output message="zeusns:setSSLOCSPIssuersResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPIssuersByLocation">
+         <documentation>
+            Sets a list of mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPIssuersByLocationRequest"/>
+         <output message="zeusns:setSSLOCSPIssuersByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPMaxResponseAge">
+         <documentation>
+            Set the number of seconds for which an OCSP response is considered valid if it has not yet exceeded the time specified in the 'nextUpdate' field
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPMaxResponseAgeRequest"/>
+         <output message="zeusns:setSSLOCSPMaxResponseAgeResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPMaxResponseAgeByLocation">
+         <documentation>
+            Set the number of seconds for which an OCSP response is considered valid if it has not yet exceeded the time specified in the 'nextUpdate' field This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPMaxResponseAgeByLocationRequest"/>
+         <output message="zeusns:setSSLOCSPMaxResponseAgeByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPStapling">
+         <documentation>
+            Set whether the traffic manager is allowed to provide OCSP responses for certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello, and OCSP URIs are present in certificates used by this virtual server.
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPStaplingRequest"/>
+         <output message="zeusns:setSSLOCSPStaplingResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPStaplingByLocation">
+         <documentation>
+            Set whether the traffic manager is allowed to provide OCSP responses for certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello, and OCSP URIs are present in certificates used by this virtual server. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPStaplingByLocationRequest"/>
+         <output message="zeusns:setSSLOCSPStaplingByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPTimeTolerance">
+         <documentation>
+            Set the number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPTimeToleranceRequest"/>
+         <output message="zeusns:setSSLOCSPTimeToleranceResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPTimeToleranceByLocation">
+         <documentation>
+            Set the number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPTimeToleranceByLocationRequest"/>
+         <output message="zeusns:setSSLOCSPTimeToleranceByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPTimeout">
+         <documentation>
+            Set the number of seconds after which OCSP requests will be timed out
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPTimeoutRequest"/>
+         <output message="zeusns:setSSLOCSPTimeoutResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLOCSPTimeoutByLocation">
+         <documentation>
+            Set the number of seconds after which OCSP requests will be timed out This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLOCSPTimeoutByLocationRequest"/>
+         <output message="zeusns:setSSLOCSPTimeoutByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setSSLPreferSSLv3">
          <documentation>
             Set whether to prefer SSLv3 over TLS when the client appears to support both. SSLv3 is slightly faster, but some clients don't allow SSLv3 but still send the ClientHello inside SSLv2 or SSLv3 records.
@@ -7566,6 +8888,30 @@
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
+      <operation name="setSSLUseOCSP">
+         <documentation>
+            Set whether or not the traffic manager should use OCSP to check the revocation status of client certificates
+         </documentation>
+         
+         <input message="zeusns:setSSLUseOCSPRequest"/>
+         <output message="zeusns:setSSLUseOCSPResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setSSLUseOCSPByLocation">
+         <documentation>
+            Set whether or not the traffic manager should use OCSP to check the revocation status of client certificates This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setSSLUseOCSPByLocationRequest"/>
+         <output message="zeusns:setSSLUseOCSPByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setServerfirstBanner">
          <documentation>
             Set the banner that each of the named virtual servers sends to clients for server-first protocols such as POP, SMTP and IMAP.
@@ -7657,6 +9003,30 @@
          
          <input message="zeusns:setTimeoutByLocationRequest"/>
          <output message="zeusns:setTimeoutByLocationResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setUDPEndpointPersistence">
+         <documentation>
+            Set whether each of the named virtual servers should send the UDP datagrams from the same IP and port to the same node in the pool if there's an existing UDP transaction. Although it's not always guaranteed as while making a decision to reuse same node, traffic manager can also apply other protocol specific filtering e.g CallID matching for SIP packets in addition to IP and port matching.
+         </documentation>
+         
+         <input message="zeusns:setUDPEndpointPersistenceRequest"/>
+         <output message="zeusns:setUDPEndpointPersistenceResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setUDPEndpointPersistenceByLocation">
+         <documentation>
+            Set whether each of the named virtual servers should send the UDP datagrams from the same IP and port to the same node in the pool if there's an existing UDP transaction. Although it's not always guaranteed as while making a decision to reuse same node, traffic manager can also apply other protocol specific filtering e.g CallID matching for SIP packets in addition to IP and port matching. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setUDPEndpointPersistenceByLocationRequest"/>
+         <output message="zeusns:setUDPEndpointPersistenceByLocationResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -8087,6 +9457,52 @@
          </fault>
       </operation>
       
+      <operation name="addSSLOCSPIssuers">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/addSSLOCSPIssuers"/>
+         <documentation>
+            Adds mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="addSSLOCSPIssuersByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/addSSLOCSPIssuersByLocation"/>
+         <documentation>
+            Adds mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="addSSLSites">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/addSSLSites"/>
          <documentation>
@@ -8312,7 +9728,7 @@
       <operation name="getAddClusterClientIPHeader">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getAddClusterClientIPHeader"/>
          <documentation>
-            Get whether a 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address.
+            Get whether an 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address.
          </documentation>
          
          <input>
@@ -8329,7 +9745,109 @@
       <operation name="getAddClusterClientIPHeaderByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getAddClusterClientIPHeaderByLocation"/>
          <documentation>
-            Get whether a 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+            Get whether an 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAddXForwardedForHeader">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getAddXForwardedForHeader"/>
+         <documentation>
+            Get whether the remote client's IP address should be appended to the X-Forwarded-For header. The 'X-Forwarded-For' header contains the client's IP address.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAddXForwardedForHeaderByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getAddXForwardedForHeaderByLocation"/>
+         <documentation>
+            Get whether the remote client's IP address should be appended to the X-Forwarded-For header. The 'X-Forwarded-For' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAddXForwardedProtoHeader">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getAddXForwardedProtoHeader"/>
+         <documentation>
+            Get whether an 'X-Forwarded-Proto' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Forwarded-Proto' header contains the protocol the client used to connect to the traffic manager
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAddXForwardedProtoHeaderByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getAddXForwardedProtoHeaderByLocation"/>
+         <documentation>
+            Get whether an 'X-Forwarded-Proto' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Forwarded-Proto' header contains the protocol the client used to connect to the traffic manager This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAptimizerEnabled">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getAptimizerEnabled"/>
+         <documentation>
+            Get whether each of the named virtual servers should aptimize web content.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getAptimizerEnabledByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getAptimizerEnabledByLocation"/>
+         <documentation>
+            Get whether each of the named virtual servers should aptimize web content. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -9044,6 +10562,40 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getFTPSSLDataByLocation"/>
          <documentation>
             Get whether each of the named virtual servers should use SSL on the data connection as well as the control connection This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getHttpChunkOverheadForwarding">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getHttpChunkOverheadForwarding"/>
+         <documentation>
+            Get how to handle forwarding of data that is pure HTTP chunking overhead.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getHttpChunkOverheadForwardingByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getHttpChunkOverheadForwardingByLocation"/>
+         <documentation>
+            Get how to handle forwarding of data that is pure HTTP chunking overhead. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -9805,6 +11357,40 @@
          </fault>
       </operation>
       
+      <operation name="getRTSPStreamingTimeout">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getRTSPStreamingTimeout"/>
+         <documentation>
+            Get the time, in seconds, after which data-streams associated with RTSP connections timeout if no data is transmitted.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getRTSPStreamingTimeoutByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getRTSPStreamingTimeoutByLocation"/>
+         <documentation>
+            Get the time, in seconds, after which data-streams associated with RTSP connections timeout if no data is transmitted. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getRequestSyslogEnabled">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getRequestSyslogEnabled"/>
          <documentation>
@@ -9894,6 +11480,40 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getRequestSyslogIPEndpointByLocation"/>
          <documentation>
             Get the remote syslog endpoint for each of the named virtual servers This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getRequestSyslogMessageLenLimit">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getRequestSyslogMessageLenLimit"/>
+         <documentation>
+            Get syslog message length limit.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getRequestSyslogMessageLenLimitByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getRequestSyslogMessageLenLimitByLocation"/>
+         <documentation>
+            Get syslog message length limit. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -10570,6 +12190,210 @@
          </fault>
       </operation>
       
+      <operation name="getSSLOCSPDefaults">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPDefaults"/>
+         <documentation>
+            Get the default OCSP responder settings for all client certificates.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPDefaultsByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPDefaultsByLocation"/>
+         <documentation>
+            Get the default OCSP responder settings for all client certificates. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPIssuers">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPIssuers"/>
+         <documentation>
+            Gets a list of mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPIssuersByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPIssuersByLocation"/>
+         <documentation>
+            Gets a list of mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPMaxResponseAge">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPMaxResponseAge"/>
+         <documentation>
+            Get the number of seconds for which an OCSP response is considered valid if it has not yet exceeded the time specified in the 'nextUpdate' field
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPMaxResponseAgeByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPMaxResponseAgeByLocation"/>
+         <documentation>
+            Get the number of seconds for which an OCSP response is considered valid if it has not yet exceeded the time specified in the 'nextUpdate' field This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPStapling">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPStapling"/>
+         <documentation>
+            Get whether the traffic manager is allowed to provide OCSP responses for certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello, and OCSP URIs are present in certificates used by this virtual server.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPStaplingByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPStaplingByLocation"/>
+         <documentation>
+            Get whether the traffic manager is allowed to provide OCSP responses for certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello, and OCSP URIs are present in certificates used by this virtual server. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPTimeTolerance">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPTimeTolerance"/>
+         <documentation>
+            Get the number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPTimeToleranceByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPTimeToleranceByLocation"/>
+         <documentation>
+            Get the number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPTimeout">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPTimeout"/>
+         <documentation>
+            Get the number of seconds after which OCSP requests will be timed out
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLOCSPTimeoutByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLOCSPTimeoutByLocation"/>
+         <documentation>
+            Get the number of seconds after which OCSP requests will be timed out This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getSSLPreferSSLv3">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLPreferSSLv3"/>
          <documentation>
@@ -10740,6 +12564,40 @@
          </fault>
       </operation>
       
+      <operation name="getSSLUseOCSP">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLUseOCSP"/>
+         <documentation>
+            Get whether or not the traffic manager should use OCSP to check the revocation status of client certificates
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getSSLUseOCSPByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getSSLUseOCSPByLocation"/>
+         <documentation>
+            Get whether or not the traffic manager should use OCSP to check the revocation status of client certificates This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getServerfirstBanner">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getServerfirstBanner"/>
          <documentation>
@@ -10863,6 +12721,40 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getTimeoutByLocation"/>
          <documentation>
             Get the time to wait for data on an already established connection, in seconds, for each of the named virtual servers. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getUDPEndpointPersistence">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getUDPEndpointPersistence"/>
+         <documentation>
+            Get whether each of the named virtual servers should send the UDP datagrams from the same IP and port to the same node in the pool if there's an existing UDP transaction. Although it's not always guaranteed as while making a decision to reuse same node, traffic manager can also apply other protocol specific filtering e.g CallID matching for SIP packets in addition to IP and port matching.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getUDPEndpointPersistenceByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/getUDPEndpointPersistenceByLocation"/>
+         <documentation>
+            Get whether each of the named virtual servers should send the UDP datagrams from the same IP and port to the same node in the pool if there's an existing UDP transaction. Although it's not always guaranteed as while making a decision to reuse same node, traffic manager can also apply other protocol specific filtering e.g CallID matching for SIP packets in addition to IP and port matching. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -11494,6 +13386,46 @@
          </fault>
       </operation>
       
+      <operation name="removeSSLOCSPIssuers">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/removeSSLOCSPIssuers"/>
+         <documentation>
+            Removes mappings between OCSP responder settings for the specified Certificate authorities
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="removeSSLOCSPIssuersByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/removeSSLOCSPIssuersByLocation"/>
+         <documentation>
+            Removes mappings between OCSP responder settings for the specified Certificate authorities This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="renameVirtualServer">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/renameVirtualServer"/>
          <documentation>
@@ -11523,7 +13455,7 @@
       <operation name="setAddClusterClientIPHeader">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setAddClusterClientIPHeader"/>
          <documentation>
-            Set whether a 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address.
+            Set whether an 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address.
          </documentation>
          
          <input>
@@ -11546,7 +13478,99 @@
       <operation name="setAddClusterClientIPHeaderByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setAddClusterClientIPHeaderByLocation"/>
          <documentation>
-            Set whether a 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+            Set whether an 'X-Cluster-Client-Ip' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Cluster-Client-Ip' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAddXForwardedForHeader">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setAddXForwardedForHeader"/>
+         <documentation>
+            Set whether the remote client's IP address should be appended to the X-Forwarded-For header. The 'X-Forwarded-For' header contains the client's IP address.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAddXForwardedForHeaderByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setAddXForwardedForHeaderByLocation"/>
+         <documentation>
+            Set whether the remote client's IP address should be appended to the X-Forwarded-For header. The 'X-Forwarded-For' header contains the client's IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAddXForwardedProtoHeader">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setAddXForwardedProtoHeader"/>
+         <documentation>
+            Set whether an 'X-Forwarded-Proto' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Forwarded-Proto' header contains the protocol the client used to connect to the traffic manager
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAddXForwardedProtoHeaderByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setAddXForwardedProtoHeaderByLocation"/>
+         <documentation>
+            Set whether an 'X-Forwarded-Proto' header should be added to each HTTP request, for each of the named virtual servers. The 'X-Forwarded-Proto' header contains the protocol the client used to connect to the traffic manager This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -11569,7 +13593,7 @@
       <operation name="setApplicationFirewallEnabled">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setApplicationFirewallEnabled"/>
          <documentation>
-            For each of the named virtual servers, enable or disable the Zeus Application Firewall Module.
+            For each of the named virtual servers, enable or disable the Stingray Application Firewall.
          </documentation>
          
          <input>
@@ -11586,13 +13610,16 @@
          </fault>
          <fault name="InvalidOperation">
             <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
       <operation name="setApplicationFirewallEnabledByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setApplicationFirewallEnabledByLocation"/>
          <documentation>
-            For each of the named virtual servers, enable or disable the Zeus Application Firewall Module. This is a location specific function, any action will operate on the specified location.
+            For each of the named virtual servers, enable or disable the Stingray Application Firewall. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -11609,6 +13636,55 @@
          </fault>
          <fault name="InvalidOperation">
             <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAptimizerEnabled">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setAptimizerEnabled"/>
+         <documentation>
+            Set whether each of the named virtual servers should aptimize web content.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setAptimizerEnabledByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setAptimizerEnabledByLocation"/>
+         <documentation>
+            Set whether each of the named virtual servers should aptimize web content. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -12513,6 +14589,52 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setFTPSSLDataByLocation"/>
          <documentation>
             Set whether each of the named virtual servers should use SSL on the data connection as well as the control connection This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setHttpChunkOverheadForwarding">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setHttpChunkOverheadForwarding"/>
+         <documentation>
+            Set how to handle forwarding of data that is pure HTTP chunking overhead.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setHttpChunkOverheadForwardingByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setHttpChunkOverheadForwardingByLocation"/>
+         <documentation>
+            Set how to handle forwarding of data that is pure HTTP chunking overhead. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -13544,6 +15666,52 @@
          </fault>
       </operation>
       
+      <operation name="setRTSPStreamingTimeout">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setRTSPStreamingTimeout"/>
+         <documentation>
+            Set the time, in seconds, after which data-streams associated with RTSP connections timeout if no data is transmitted.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setRTSPStreamingTimeoutByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setRTSPStreamingTimeoutByLocation"/>
+         <documentation>
+            Set the time, in seconds, after which data-streams associated with RTSP connections timeout if no data is transmitted. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setRequestSyslogEnabled">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setRequestSyslogEnabled"/>
          <documentation>
@@ -13663,6 +15831,52 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setRequestSyslogIPEndpointByLocation"/>
          <documentation>
             Set the remote syslog endpoint for each of the named virtual servers This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setRequestSyslogMessageLenLimit">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setRequestSyslogMessageLenLimit"/>
+         <documentation>
+            Set syslog message length limit.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setRequestSyslogMessageLenLimitByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setRequestSyslogMessageLenLimitByLocation"/>
+         <documentation>
+            Set syslog message length limit. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -14246,14 +16460,17 @@
          <output>
             <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
-         <fault name="InvalidInput">
-            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="DeploymentError">
             <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -14269,14 +16486,17 @@
          <output>
             <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
-         <fault name="InvalidInput">
-            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="DeploymentError">
             <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -14579,6 +16799,282 @@
          </fault>
       </operation>
       
+      <operation name="setSSLOCSPDefaults">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPDefaults"/>
+         <documentation>
+            Set the default OCSP responder settings for all client certificates.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPDefaultsByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPDefaultsByLocation"/>
+         <documentation>
+            Set the default OCSP responder settings for all client certificates. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPIssuers">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPIssuers"/>
+         <documentation>
+            Sets a list of mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPIssuersByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPIssuersByLocation"/>
+         <documentation>
+            Sets a list of mappings between Certificate Authorities and OCSP responder settings. Certificates issued by these authorities will be verified with OCSP using these settings. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPMaxResponseAge">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPMaxResponseAge"/>
+         <documentation>
+            Set the number of seconds for which an OCSP response is considered valid if it has not yet exceeded the time specified in the 'nextUpdate' field
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPMaxResponseAgeByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPMaxResponseAgeByLocation"/>
+         <documentation>
+            Set the number of seconds for which an OCSP response is considered valid if it has not yet exceeded the time specified in the 'nextUpdate' field This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPStapling">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPStapling"/>
+         <documentation>
+            Set whether the traffic manager is allowed to provide OCSP responses for certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello, and OCSP URIs are present in certificates used by this virtual server.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPStaplingByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPStaplingByLocation"/>
+         <documentation>
+            Set whether the traffic manager is allowed to provide OCSP responses for certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello, and OCSP URIs are present in certificates used by this virtual server. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPTimeTolerance">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPTimeTolerance"/>
+         <documentation>
+            Set the number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPTimeToleranceByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPTimeToleranceByLocation"/>
+         <documentation>
+            Set the number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPTimeout">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPTimeout"/>
+         <documentation>
+            Set the number of seconds after which OCSP requests will be timed out
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLOCSPTimeoutByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLOCSPTimeoutByLocation"/>
+         <documentation>
+            Set the number of seconds after which OCSP requests will be timed out This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setSSLPreferSSLv3">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLPreferSSLv3"/>
          <documentation>
@@ -14763,6 +17259,52 @@
          </fault>
       </operation>
       
+      <operation name="setSSLUseOCSP">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLUseOCSP"/>
+         <documentation>
+            Set whether or not the traffic manager should use OCSP to check the revocation status of client certificates
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setSSLUseOCSPByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setSSLUseOCSPByLocation"/>
+         <documentation>
+            Set whether or not the traffic manager should use OCSP to check the revocation status of client certificates This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setServerfirstBanner">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setServerfirstBanner"/>
          <documentation>
@@ -14928,6 +17470,52 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setTimeoutByLocation"/>
          <documentation>
             Set the time to wait for data on an already established connection, in seconds, for each of the named virtual servers. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setUDPEndpointPersistence">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setUDPEndpointPersistence"/>
+         <documentation>
+            Set whether each of the named virtual servers should send the UDP datagrams from the same IP and port to the same node in the pool if there's an existing UDP transaction. Although it's not always guaranteed as while making a decision to reuse same node, traffic manager can also apply other protocol specific filtering e.g CallID matching for SIP packets in addition to IP and port matching.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/VirtualServer/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setUDPEndpointPersistenceByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/VirtualServer/setUDPEndpointPersistenceByLocation"/>
+         <documentation>
+            Set whether each of the named virtual servers should send the UDP datagrams from the same IP and port to the same node in the pool if there's an existing UDP transaction. Although it's not always guaranteed as while making a decision to reuse same node, traffic manager can also apply other protocol specific filtering e.g CallID matching for SIP packets in addition to IP and port matching. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>

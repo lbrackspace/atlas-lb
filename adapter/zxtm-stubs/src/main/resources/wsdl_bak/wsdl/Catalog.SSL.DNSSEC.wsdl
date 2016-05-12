@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -77,10 +77,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -254,6 +270,32 @@
              </xsd:element>
            </xsd:all>
          </xsd:complexType>
+         
+         <xsd:complexType name="ObjectInUse">
+           <xsd:annotation>
+            <xsd:documentation>
+             The ObjectInUse fault is raised when attempting to delete an object
+             that is referenced by another object, for example deleting a Pool
+             that is in use by a Virtual Server.
+            </xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             <xsd:element name="errmsg" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A human readable string describing the error
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="object" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The name of the object that caused the fault
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+           </xsd:all>
+         </xsd:complexType>
       </xsd:schema>
    </types>
    
@@ -319,6 +361,10 @@
       <part name="parameters" type="zeusns:ObjectDoesNotExist" />
    </message>
    
+   <message name="ObjectInUse">
+      <part name="parameters" type="zeusns:ObjectInUse" />
+   </message>
+   
    <portType name="Catalog.SSL.DNSSECPort">
       <operation name="addKeysWithManualIDs">
          <documentation>
@@ -351,6 +397,7 @@
          
          <input message="zeusns:deleteKeysRequest"/>
          <output message="zeusns:deleteKeysResponse"/>
+         <fault name="ObjectInUse" message="zeusns:ObjectInUse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
@@ -449,6 +496,9 @@
          <output>
             <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/SSL/DNSSEC/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
+         <fault name="ObjectInUse">
+            <soap:fault use="encoded" name="ObjectInUse" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/SSL/DNSSEC/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
          <fault name="ObjectDoesNotExist">
             <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/SSL/DNSSEC/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>

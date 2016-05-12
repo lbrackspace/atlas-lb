@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2015 Zeus Technology. All rights reserved.
 
 -->
 
@@ -389,25 +389,25 @@
    <message name="getAdminInternalRESTPortRequest"></message>
    
    <message name="getAdminInternalRESTPortResponse">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="getAdminMasterPortRequest"></message>
    
    <message name="getAdminMasterPortResponse">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="getAdminServerPortRequest"></message>
    
    <message name="getAdminServerPortResponse">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="getAdminSlavePortRequest"></message>
    
    <message name="getAdminSlavePortResponse">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="getClusterStateRequest"></message>
@@ -422,34 +422,40 @@
       <part name="value" type="xsd:unsignedInt" />
    </message>
    
+   <message name="getDeciderServerBasePortRequest"></message>
+   
+   <message name="getDeciderServerBasePortResponse">
+      <part name="port" type="xsd:int" />
+   </message>
+   
    <message name="getInternalDeciderBasePortRequest"></message>
    
    <message name="getInternalDeciderBasePortResponse">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="getNumberOfDecidersRequest"></message>
    
    <message name="getNumberOfDecidersResponse">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="deciders" type="xsd:int" />
    </message>
    
    <message name="getUpdateExternControlCenterPortRequest"></message>
    
    <message name="getUpdateExternControlCenterPortResponse">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="getUpdateGUIBackendPortRequest"></message>
    
    <message name="getUpdateGUIBackendPortResponse">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="getUpdateGUIServerPortRequest"></message>
    
    <message name="getUpdateGUIServerPortResponse">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="getUpdaterPortRequest"></message>
@@ -465,25 +471,25 @@
    </message>
    
    <message name="setAdminInternalRESTPortRequest">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="setAdminInternalRESTPortResponse"></message>
    
    <message name="setAdminMasterPortRequest">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="setAdminMasterPortResponse"></message>
    
    <message name="setAdminServerPortRequest">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="setAdminServerPortResponse"></message>
    
    <message name="setAdminSlavePortRequest">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="setAdminSlavePortResponse"></message>
@@ -494,32 +500,38 @@
    
    <message name="setDeciderBasePortResponse"></message>
    
+   <message name="setDeciderServerBasePortRequest">
+      <part name="port" type="xsd:int" />
+   </message>
+   
+   <message name="setDeciderServerBasePortResponse"></message>
+   
    <message name="setInternalDeciderBasePortRequest">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="setInternalDeciderBasePortResponse"></message>
    
    <message name="setNumberOfDecidersRequest">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="deciders" type="xsd:int" />
    </message>
    
    <message name="setNumberOfDecidersResponse"></message>
    
    <message name="setUpdateExternControlCenterPortRequest">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="setUpdateExternControlCenterPortResponse"></message>
    
    <message name="setUpdateGUIBackendPortRequest">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="setUpdateGUIBackendPortResponse"></message>
    
    <message name="setUpdateGUIServerPortRequest">
-      <part name="value" type="xsd:unsignedInt" />
+      <part name="port" type="xsd:int" />
    </message>
    
    <message name="setUpdateGUIServerPortResponse"></message>
@@ -591,7 +603,7 @@
       
       <operation name="getAdminServerPort">
          <documentation>
-            Get the Application Firewall Administration server port, this port is only open on localhost.  For a change to this setting to take effect the Stingray administration server must be restarted on all cluster members.
+            Get the Application Firewall Administration Server port, this port is open only on localhost.
          </documentation>
          
          <input message="zeusns:getAdminServerPortRequest"/>
@@ -620,7 +632,7 @@
       
       <operation name="getDeciderBasePort">
          <documentation>
-            Get the Application Firewall base decider port.  This port, plus one port per decider process above this port, will be used for the Application Firewall deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
+            Get the port to which the Enforcer rule should send traffic so it can be distributed between the decider processes.
          </documentation>
          
          <input message="zeusns:getDeciderBasePortRequest"/>
@@ -628,9 +640,19 @@
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
+      <operation name="getDeciderServerBasePort">
+         <documentation>
+            Get the base port from which the Application Firewall decider processes should run. Ports will be used sequentially above this for each additional decider process that runs.
+         </documentation>
+         
+         <input message="zeusns:getDeciderServerBasePortRequest"/>
+         <output message="zeusns:getDeciderServerBasePortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
       <operation name="getInternalDeciderBasePort">
          <documentation>
-            Get the Application Firewall internal decider communication base port. The Application Firewall requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when the Application Firewall is started it will start at this port and work its way up taking available ports until it has enough ports.
+            Get the Application Firewall internal decider communication base port. The Application Firewall will use ports sequentially above this for internal communication. These ports are bound only to localhost.
          </documentation>
          
          <input message="zeusns:getInternalDeciderBasePortRequest"/>
@@ -640,7 +662,7 @@
       
       <operation name="getNumberOfDeciders">
          <documentation>
-            Get the number of Application Firewall decider processes to run.
+            Get the number of decider processes
          </documentation>
          
          <input message="zeusns:getNumberOfDecidersRequest"/>
@@ -721,7 +743,7 @@
       
       <operation name="setAdminServerPort">
          <documentation>
-            Set the Application Firewall Administration server port, this port is only open on localhost.  For a change to this setting to take effect the Stingray administration server must be restarted on all cluster members.
+            Set the Application Firewall Administration Server port, this port is open only on localhost.
          </documentation>
          
          <input message="zeusns:setAdminServerPortRequest"/>
@@ -743,7 +765,7 @@
       
       <operation name="setDeciderBasePort">
          <documentation>
-            Set the Application Firewall base decider port.  This port, plus one port per decider process above this port, will be used for the Application Firewall deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
+            Set the port to which the Enforcer rule should send traffic so it can be distributed between the decider processes.
          </documentation>
          
          <input message="zeusns:setDeciderBasePortRequest"/>
@@ -752,9 +774,20 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
       </operation>
       
+      <operation name="setDeciderServerBasePort">
+         <documentation>
+            Set the base port from which the Application Firewall decider processes should run. Ports will be used sequentially above this for each additional decider process that runs.
+         </documentation>
+         
+         <input message="zeusns:setDeciderServerBasePortRequest"/>
+         <output message="zeusns:setDeciderServerBasePortResponse"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
       <operation name="setInternalDeciderBasePort">
          <documentation>
-            Set the Application Firewall internal decider communication base port. The Application Firewall requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when the Application Firewall is started it will start at this port and work its way up taking available ports until it has enough ports.
+            Set the Application Firewall internal decider communication base port. The Application Firewall will use ports sequentially above this for internal communication. These ports are bound only to localhost.
          </documentation>
          
          <input message="zeusns:setInternalDeciderBasePortRequest"/>
@@ -765,7 +798,7 @@
       
       <operation name="setNumberOfDeciders">
          <documentation>
-            Set the number of Application Firewall decider processes to run.
+            Set the number of decider processes
          </documentation>
          
          <input message="zeusns:setNumberOfDecidersRequest"/>
@@ -908,7 +941,7 @@
       <operation name="getAdminServerPort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getAdminServerPort"/>
          <documentation>
-            Get the Application Firewall Administration server port, this port is only open on localhost.  For a change to this setting to take effect the Stingray administration server must be restarted on all cluster members.
+            Get the Application Firewall Administration Server port, this port is open only on localhost.
          </documentation>
          
          <input>
@@ -956,7 +989,24 @@
       <operation name="getDeciderBasePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getDeciderBasePort"/>
          <documentation>
-            Get the Application Firewall base decider port.  This port, plus one port per decider process above this port, will be used for the Application Firewall deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
+            Get the port to which the Enforcer rule should send traffic so it can be distributed between the decider processes.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getDeciderServerBasePort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getDeciderServerBasePort"/>
+         <documentation>
+            Get the base port from which the Application Firewall decider processes should run. Ports will be used sequentially above this for each additional decider process that runs.
          </documentation>
          
          <input>
@@ -973,7 +1023,7 @@
       <operation name="getInternalDeciderBasePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getInternalDeciderBasePort"/>
          <documentation>
-            Get the Application Firewall internal decider communication base port. The Application Firewall requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when the Application Firewall is started it will start at this port and work its way up taking available ports until it has enough ports.
+            Get the Application Firewall internal decider communication base port. The Application Firewall will use ports sequentially above this for internal communication. These ports are bound only to localhost.
          </documentation>
          
          <input>
@@ -990,7 +1040,7 @@
       <operation name="getNumberOfDeciders">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/getNumberOfDeciders"/>
          <documentation>
-            Get the number of Application Firewall decider processes to run.
+            Get the number of decider processes
          </documentation>
          
          <input>
@@ -1129,7 +1179,7 @@
       <operation name="setAdminServerPort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setAdminServerPort"/>
          <documentation>
-            Set the Application Firewall Administration server port, this port is only open on localhost.  For a change to this setting to take effect the Stingray administration server must be restarted on all cluster members.
+            Set the Application Firewall Administration Server port, this port is open only on localhost.
          </documentation>
          
          <input>
@@ -1169,7 +1219,27 @@
       <operation name="setDeciderBasePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setDeciderBasePort"/>
          <documentation>
-            Set the Application Firewall base decider port.  This port, plus one port per decider process above this port, will be used for the Application Firewall deciders. For example, if set to 8100 then ports 8100, 8101, and 8102 will be used.
+            Set the port to which the Enforcer rule should send traffic so it can be distributed between the decider processes.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/AFM/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setDeciderServerBasePort">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setDeciderServerBasePort"/>
+         <documentation>
+            Set the base port from which the Application Firewall decider processes should run. Ports will be used sequentially above this for each additional decider process that runs.
          </documentation>
          
          <input>
@@ -1189,7 +1259,7 @@
       <operation name="setInternalDeciderBasePort">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setInternalDeciderBasePort"/>
          <documentation>
-            Set the Application Firewall internal decider communication base port. The Application Firewall requires ports for internal communication, these ports are bound to localhost (127.0.0.1) only.  This sets the base for these communication ports, when the Application Firewall is started it will start at this port and work its way up taking available ports until it has enough ports.
+            Set the Application Firewall internal decider communication base port. The Application Firewall will use ports sequentially above this for internal communication. These ports are bound only to localhost.
          </documentation>
          
          <input>
@@ -1209,7 +1279,7 @@
       <operation name="setNumberOfDeciders">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/AFM/setNumberOfDeciders"/>
          <documentation>
-            Set the number of Application Firewall decider processes to run.
+            Set the number of decider processes
          </documentation>
          
          <input>
