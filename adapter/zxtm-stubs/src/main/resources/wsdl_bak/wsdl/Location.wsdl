@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -121,10 +121,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -237,6 +253,47 @@
               <xsd:annotation>
                 <xsd:documentation>
                   The name of the object that caused the fault
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+           </xsd:all>
+         </xsd:complexType>
+         
+         <xsd:complexType name="InvalidOperation">
+           <xsd:annotation>
+            <xsd:documentation>
+              The InvalidOperation fault is emitted when attempting an operation
+              that doesn't make sense or is prohibited, for example deleting
+              a built-in monitor, or attempting to rename an object twice in
+              the same call. 
+            </xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             <xsd:element name="errmsg" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A human readable string describing the error
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="object" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The name of the object that caused the fault (if appropriate)
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="key" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The configuration key that caused the fault (if appropriate)
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="value" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The value that caused the fault (if appropriate)
                 </xsd:documentation>
               </xsd:annotation>
              </xsd:element>
@@ -368,6 +425,16 @@
    
    <message name="deleteLocationResponse"></message>
    
+   <message name="disableRequest">
+      <part name="location" type="xsd:string" />
+   </message>
+   
+   <message name="disableResponse"></message>
+   
+   <message name="enableRequest"></message>
+   
+   <message name="enableResponse"></message>
+   
    <message name="getCoordinatesRequest">
       <part name="locations" type="zeusns:StringArray" />
    </message>
@@ -453,6 +520,10 @@
       <part name="parameters" type="zeusns:InvalidObjectName" />
    </message>
    
+   <message name="InvalidOperation">
+      <part name="parameters" type="zeusns:InvalidOperation" />
+   </message>
+   
    <message name="LicenseError">
       <part name="parameters" type="zeusns:LicenseError" />
    </message>
@@ -472,7 +543,7 @@
    <portType name="LocationPort">
       <operation name="addLocation">
          <documentation>
-            Adds a Locations. Configuration for the new location will be based on the 
+            Adds locations. Configuration for the new locations will be based on the specified locations
          </documentation>
          
          <input message="zeusns:addLocationRequest"/>
@@ -483,6 +554,7 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
          <fault name="LicenseError" message="zeusns:LicenseError"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
       <operation name="deleteLocation">
@@ -498,6 +570,29 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="disable">
+         <documentation>
+            Disable support for configuration locations, setting all configuration values to those for the specified location.
+         </documentation>
+         
+         <input message="zeusns:disableRequest"/>
+         <output message="zeusns:disableResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
+      <operation name="enable">
+         <documentation>
+            Enable support for configuration locations.
+         </documentation>
+         
+         <input message="zeusns:enableRequest"/>
+         <output message="zeusns:enableResponse"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
       <operation name="getCoordinates">
          <documentation>
             Get the coordinates for the named locations.
@@ -507,6 +602,7 @@
          <output message="zeusns:getCoordinatesResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="LicenseError" message="zeusns:LicenseError"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
       <operation name="getLocations">
@@ -527,6 +623,7 @@
          <output message="zeusns:getNoteResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="LicenseError" message="zeusns:LicenseError"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
       <operation name="getTrafficManagerLocation">
@@ -549,6 +646,7 @@
          <output message="zeusns:getTypeResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="LicenseError" message="zeusns:LicenseError"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
       <operation name="renameLocation">
@@ -575,6 +673,7 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
          <fault name="LicenseError" message="zeusns:LicenseError"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
       <operation name="setNote">
@@ -587,6 +686,7 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
          <fault name="LicenseError" message="zeusns:LicenseError"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
       <operation name="setTrafficManagerLocation">
@@ -599,6 +699,7 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="LicenseError" message="zeusns:LicenseError"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
       <operation name="setType">
@@ -612,6 +713,7 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="LicenseError" message="zeusns:LicenseError"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
    </portType>
    
@@ -620,7 +722,7 @@
       <operation name="addLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Location/addLocation"/>
          <documentation>
-            Adds a Locations. Configuration for the new location will be based on the 
+            Adds locations. Configuration for the new locations will be based on the specified locations
          </documentation>
          
          <input>
@@ -646,6 +748,9 @@
          </fault>
          <fault name="LicenseError">
             <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -675,6 +780,49 @@
          </fault>
       </operation>
       
+      <operation name="disable">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Location/disable"/>
+         <documentation>
+            Disable support for configuration locations, setting all configuration values to those for the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="enable">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Location/enable"/>
+         <documentation>
+            Enable support for configuration locations.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getCoordinates">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Location/getCoordinates"/>
          <documentation>
@@ -692,6 +840,9 @@
          </fault>
          <fault name="LicenseError">
             <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -726,6 +877,9 @@
          </fault>
          <fault name="LicenseError">
             <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -766,6 +920,9 @@
          </fault>
          <fault name="LicenseError">
             <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -819,6 +976,9 @@
          <fault name="LicenseError">
             <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
       </operation>
       
       <operation name="setNote">
@@ -842,6 +1002,9 @@
          <fault name="LicenseError">
             <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
       </operation>
       
       <operation name="setTrafficManagerLocation">
@@ -864,6 +1027,9 @@
          </fault>
          <fault name="DeploymentError">
             <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
@@ -890,6 +1056,9 @@
          </fault>
          <fault name="InvalidInput">
             <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Location/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
    </binding>

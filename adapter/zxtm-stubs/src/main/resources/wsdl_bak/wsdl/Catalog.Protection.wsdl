@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -69,10 +69,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -645,6 +661,23 @@
       <part name="values" type="zeusns:StringArray" />
    </message>
    
+   <message name="getPerProcessConnectionCountRequest">
+      <part name="class_names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getPerProcessConnectionCountResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="getPerProcessConnectionCountByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="class_names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getPerProcessConnectionCountByLocationResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
    <message name="getProtectionNamesRequest"></message>
    
    <message name="getProtectionNamesResponse">
@@ -985,6 +1018,21 @@
    </message>
    
    <message name="setNoteResponse"></message>
+   
+   <message name="setPerProcessConnectionCountRequest">
+      <part name="class_names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setPerProcessConnectionCountResponse"></message>
+   
+   <message name="setPerProcessConnectionCountByLocationRequest">
+      <part name="location" type="xsd:string" />
+      <part name="class_names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setPerProcessConnectionCountByLocationResponse"></message>
    
    <message name="setRateTimerRequest">
       <part name="class_names" type="zeusns:StringArray" />
@@ -1327,7 +1375,7 @@
       
       <operation name="getMax1Connections">
          <documentation>
-            Get the maximum number of simultaneous connections allowed from an individual IP address.
+            Get the maximum number of simultaneous connections allowed from an individual IP address (0 means unlimited).
          </documentation>
          
          <input message="zeusns:getMax1ConnectionsRequest"/>
@@ -1337,7 +1385,7 @@
       
       <operation name="getMax1ConnectionsByLocation">
          <documentation>
-            Get the maximum number of simultaneous connections allowed from an individual IP address. This is a location specific function, any action will operate on the specified location.
+            Get the maximum number of simultaneous connections allowed from an individual IP address (0 means unlimited). This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:getMax1ConnectionsByLocationRequest"/>
@@ -1475,6 +1523,26 @@
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
+      <operation name="getPerProcessConnectionCount">
+         <documentation>
+            Get whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address.
+         </documentation>
+         
+         <input message="zeusns:getPerProcessConnectionCountRequest"/>
+         <output message="zeusns:getPerProcessConnectionCountResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getPerProcessConnectionCountByLocation">
+         <documentation>
+            Get whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:getPerProcessConnectionCountByLocationRequest"/>
+         <output message="zeusns:getPerProcessConnectionCountByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
       <operation name="getProtectionNames">
          <documentation>
             Get the names of all the configured Protection classes.
@@ -1486,7 +1554,7 @@
       
       <operation name="getRateTimer">
          <documentation>
-            Get how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated.
+            Get how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. The valid range is 1-99999 seconds.
          </documentation>
          
          <input message="zeusns:getRateTimerRequest"/>
@@ -1496,7 +1564,7 @@
       
       <operation name="getRateTimerByLocation">
          <documentation>
-            Get how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. This is a location specific function, any action will operate on the specified location.
+            Get how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. The valid range is 1-99999 seconds. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:getRateTimerByLocationRequest"/>
@@ -1824,7 +1892,7 @@
       
       <operation name="setMax1Connections">
          <documentation>
-            Set the maximum number of simultaneous connections allowed from an individual IP address.
+            Set the maximum number of simultaneous connections allowed from an individual IP address (0 means unlimited).
          </documentation>
          
          <input message="zeusns:setMax1ConnectionsRequest"/>
@@ -1836,7 +1904,7 @@
       
       <operation name="setMax1ConnectionsByLocation">
          <documentation>
-            Set the maximum number of simultaneous connections allowed from an individual IP address. This is a location specific function, any action will operate on the specified location.
+            Set the maximum number of simultaneous connections allowed from an individual IP address (0 means unlimited). This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:setMax1ConnectionsByLocationRequest"/>
@@ -2002,9 +2070,33 @@
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
       </operation>
       
+      <operation name="setPerProcessConnectionCount">
+         <documentation>
+            Set whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address.
+         </documentation>
+         
+         <input message="zeusns:setPerProcessConnectionCountRequest"/>
+         <output message="zeusns:setPerProcessConnectionCountResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
+      <operation name="setPerProcessConnectionCountByLocation">
+         <documentation>
+            Set whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input message="zeusns:setPerProcessConnectionCountByLocationRequest"/>
+         <output message="zeusns:setPerProcessConnectionCountByLocationResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+      </operation>
+      
       <operation name="setRateTimer">
          <documentation>
-            Set how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated.
+            Set how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. The valid range is 1-99999 seconds.
          </documentation>
          
          <input message="zeusns:setRateTimerRequest"/>
@@ -2016,7 +2108,7 @@
       
       <operation name="setRateTimerByLocation">
          <documentation>
-            Set how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. This is a location specific function, any action will operate on the specified location.
+            Set how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. The valid range is 1-99999 seconds. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:setRateTimerByLocationRequest"/>
@@ -2550,7 +2642,7 @@
       <operation name="getMax1Connections">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/getMax1Connections"/>
          <documentation>
-            Get the maximum number of simultaneous connections allowed from an individual IP address.
+            Get the maximum number of simultaneous connections allowed from an individual IP address (0 means unlimited).
          </documentation>
          
          <input>
@@ -2567,7 +2659,7 @@
       <operation name="getMax1ConnectionsByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/getMax1ConnectionsByLocation"/>
          <documentation>
-            Get the maximum number of simultaneous connections allowed from an individual IP address. This is a location specific function, any action will operate on the specified location.
+            Get the maximum number of simultaneous connections allowed from an individual IP address (0 means unlimited). This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -2802,6 +2894,40 @@
          </fault>
       </operation>
       
+      <operation name="getPerProcessConnectionCount">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/getPerProcessConnectionCount"/>
+         <documentation>
+            Get whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getPerProcessConnectionCountByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/getPerProcessConnectionCountByLocation"/>
+         <documentation>
+            Get whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getProtectionNames">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/getProtectionNames"/>
          <documentation>
@@ -2819,7 +2945,7 @@
       <operation name="getRateTimer">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/getRateTimer"/>
          <documentation>
-            Get how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated.
+            Get how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. The valid range is 1-99999 seconds.
          </documentation>
          
          <input>
@@ -2836,7 +2962,7 @@
       <operation name="getRateTimerByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/getRateTimerByLocation"/>
          <documentation>
-            Get how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. This is a location specific function, any action will operate on the specified location.
+            Get how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. The valid range is 1-99999 seconds. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -3456,7 +3582,7 @@
       <operation name="setMax1Connections">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/setMax1Connections"/>
          <documentation>
-            Set the maximum number of simultaneous connections allowed from an individual IP address.
+            Set the maximum number of simultaneous connections allowed from an individual IP address (0 means unlimited).
          </documentation>
          
          <input>
@@ -3479,7 +3605,7 @@
       <operation name="setMax1ConnectionsByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/setMax1ConnectionsByLocation"/>
          <documentation>
-            Set the maximum number of simultaneous connections allowed from an individual IP address. This is a location specific function, any action will operate on the specified location.
+            Set the maximum number of simultaneous connections allowed from an individual IP address (0 means unlimited). This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -3798,10 +3924,56 @@
          </fault>
       </operation>
       
+      <operation name="setPerProcessConnectionCount">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/setPerProcessConnectionCount"/>
+         <documentation>
+            Set whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setPerProcessConnectionCountByLocation">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/setPerProcessConnectionCountByLocation"/>
+         <documentation>
+            Set whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setRateTimer">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/setRateTimer"/>
          <documentation>
-            Set how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated.
+            Set how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. The valid range is 1-99999 seconds.
          </documentation>
          
          <input>
@@ -3824,7 +3996,7 @@
       <operation name="setRateTimerByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Protection/setRateTimerByLocation"/>
          <documentation>
-            Set how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. This is a location specific function, any action will operate on the specified location.
+            Set how frequently the max_connection_rate is assessed.  For example, a value of 1 second will impose a limit of max connections/second; a value of 60 will impose a limit of max connections/minute controlling how our connection rates are calculated. The valid range is 1-99999 seconds. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>

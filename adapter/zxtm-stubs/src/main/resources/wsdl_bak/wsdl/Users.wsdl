@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2011 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
 
 -->
 
@@ -69,10 +69,26 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="longArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:long[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:complexType name="unsignedIntArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedInt[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="unsignedLongArray">
+           <xsd:complexContent>
+            <xsd:restriction base='SOAP-ENC:Array'>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='xsd:unsignedLong[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -275,7 +291,7 @@
    <portType name="UsersPort">
       <operation name="addUser">
          <documentation>
-            Add a new local user to Zeus Traffic Manager.
+            Add a new local user to Stingray Traffic Manager.
          </documentation>
          
          <input message="zeusns:addUserRequest"/>
@@ -298,7 +314,7 @@
       
       <operation name="deleteUser">
          <documentation>
-            Delete a local user from Zeus Traffic Manager.
+            Delete a local user from Stingray Traffic Manager.
          </documentation>
          
          <input message="zeusns:deleteUserRequest"/>
@@ -309,7 +325,7 @@
       
       <operation name="listGroups">
          <documentation>
-            List all groups of Zeus Traffic Manager.
+            List all groups of Stingray Traffic Manager.
          </documentation>
          
          <input message="zeusns:listGroupsRequest"/>
@@ -318,7 +334,7 @@
       
       <operation name="listUsers">
          <documentation>
-            List all users of Zeus Traffic Manager.
+            List all users of Stingray Traffic Manager.
          </documentation>
          
          <input message="zeusns:listUsersRequest"/>
@@ -331,7 +347,7 @@
       <operation name="addUser">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Users/addUser"/>
          <documentation>
-            Add a new local user to Zeus Traffic Manager.
+            Add a new local user to Stingray Traffic Manager.
          </documentation>
          
          <input>
@@ -374,7 +390,7 @@
       <operation name="deleteUser">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Users/deleteUser"/>
          <documentation>
-            Delete a local user from Zeus Traffic Manager.
+            Delete a local user from Stingray Traffic Manager.
          </documentation>
          
          <input>
@@ -394,7 +410,7 @@
       <operation name="listGroups">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Users/listGroups"/>
          <documentation>
-            List all groups of Zeus Traffic Manager.
+            List all groups of Stingray Traffic Manager.
          </documentation>
          
          <input>
@@ -408,7 +424,7 @@
       <operation name="listUsers">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Users/listUsers"/>
          <documentation>
-            List all users of Zeus Traffic Manager.
+            List all users of Stingray Traffic Manager.
          </documentation>
          
          <input>
@@ -422,7 +438,7 @@
    
    <service name="Users">
       <documentation>
-         The Users interface allows management of users of Zeus Traffic Manager. Using this interface, you can create and delete users, assign them to permission groups and manage their configuration.
+         The Users interface allows management of users of Stingray Traffic Manager. Using this interface, you can create and delete users, assign them to permission groups and manage their configuration.
       </documentation>
       
       <port name="UsersPort" binding="zeusns:UsersBinding">

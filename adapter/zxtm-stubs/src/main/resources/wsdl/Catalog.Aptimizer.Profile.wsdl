@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2015 Zeus Technology. All rights reserved.
 
 -->
 
@@ -531,7 +531,7 @@
       
       <operation name="getBackgroundOnAdditionalResources">
          <documentation>
-            Get whether or not Aptimizer should fetch and optimize additional resources in the background and send the original server content to clients until the optimized page is ready.
+            Get whether or not Aptimizer should fetch and optimize additional resources in the background and send partially optimized content to clients until all resources are ready.
          </documentation>
          
          <input message="zeusns:getBackgroundOnAdditionalResourcesRequest"/>
@@ -542,7 +542,7 @@
       
       <operation name="getBackgroundOnAdditionalResourcesByLocation">
          <documentation>
-            Get whether or not Aptimizer should fetch and optimize additional resources in the background and send the original server content to clients until the optimized page is ready. This is a location specific function, any action will operate on the specified location.
+            Get whether or not Aptimizer should fetch and optimize additional resources in the background and send partially optimized content to clients until all resources are ready. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:getBackgroundOnAdditionalResourcesByLocationRequest"/>
@@ -647,7 +647,7 @@
       
       <operation name="setBackgroundOnAdditionalResources">
          <documentation>
-            Set whether or not Aptimizer should fetch and optimize additional resources in the background and send the original server content to clients until the optimized page is ready.
+            Set whether or not Aptimizer should fetch and optimize additional resources in the background and send partially optimized content to clients until all resources are ready.
          </documentation>
          
          <input message="zeusns:setBackgroundOnAdditionalResourcesRequest"/>
@@ -661,7 +661,7 @@
       
       <operation name="setBackgroundOnAdditionalResourcesByLocation">
          <documentation>
-            Set whether or not Aptimizer should fetch and optimize additional resources in the background and send the original server content to clients until the optimized page is ready. This is a location specific function, any action will operate on the specified location.
+            Set whether or not Aptimizer should fetch and optimize additional resources in the background and send partially optimized content to clients until all resources are ready. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input message="zeusns:setBackgroundOnAdditionalResourcesByLocationRequest"/>
@@ -820,7 +820,7 @@
       <operation name="getBackgroundOnAdditionalResources">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Aptimizer/Profile/getBackgroundOnAdditionalResources"/>
          <documentation>
-            Get whether or not Aptimizer should fetch and optimize additional resources in the background and send the original server content to clients until the optimized page is ready.
+            Get whether or not Aptimizer should fetch and optimize additional resources in the background and send partially optimized content to clients until all resources are ready.
          </documentation>
          
          <input>
@@ -840,7 +840,7 @@
       <operation name="getBackgroundOnAdditionalResourcesByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Aptimizer/Profile/getBackgroundOnAdditionalResourcesByLocation"/>
          <documentation>
-            Get whether or not Aptimizer should fetch and optimize additional resources in the background and send the original server content to clients until the optimized page is ready. This is a location specific function, any action will operate on the specified location.
+            Get whether or not Aptimizer should fetch and optimize additional resources in the background and send partially optimized content to clients until all resources are ready. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -1038,7 +1038,7 @@
       <operation name="setBackgroundOnAdditionalResources">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Aptimizer/Profile/setBackgroundOnAdditionalResources"/>
          <documentation>
-            Set whether or not Aptimizer should fetch and optimize additional resources in the background and send the original server content to clients until the optimized page is ready.
+            Set whether or not Aptimizer should fetch and optimize additional resources in the background and send partially optimized content to clients until all resources are ready.
          </documentation>
          
          <input>
@@ -1067,7 +1067,7 @@
       <operation name="setBackgroundOnAdditionalResourcesByLocation">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Aptimizer/Profile/setBackgroundOnAdditionalResourcesByLocation"/>
          <documentation>
-            Set whether or not Aptimizer should fetch and optimize additional resources in the background and send the original server content to clients until the optimized page is ready. This is a location specific function, any action will operate on the specified location.
+            Set whether or not Aptimizer should fetch and optimize additional resources in the background and send partially optimized content to clients until all resources are ready. This is a location specific function, any action will operate on the specified location.
          </documentation>
          
          <input>
@@ -1270,7 +1270,7 @@
    
    <service name="Catalog.Aptimizer.Profile">
       <documentation>
-         The Catalog.AptimizerAptimizerProfile interface allows management of Aptimizer profiles. Using this interface, you can create, delete and rename Aptimizer profiles, and manage their configuration.
+         The Catalog.Aptimizer.Profile interface allows management of Aptimizer profiles. Using this interface, you can create, delete and rename Aptimizer profiles, and manage their configuration.
       </documentation>
       
       <port name="Catalog.Aptimizer.ProfilePort" binding="zeusns:Catalog.Aptimizer.ProfileBinding">
