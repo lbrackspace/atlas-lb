@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2015 Zeus Technology. All rights reserved.
 
 -->
 
@@ -1720,6 +1720,14 @@
       <part name="value" type="zeusns:intArray" />
    </message>
    
+   <message name="getRuleExecutionTimeWarningsRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getRuleExecutionTimeWarningsResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
    <message name="getRuleExecutionsRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -1990,6 +1998,18 @@
       <part name="value" type="xsd:int" />
    </message>
    
+   <message name="getSslCipherAESGCMDecryptsRequest"></message>
+   
+   <message name="getSslCipherAESGCMDecryptsResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslCipherAESGCMEncryptsRequest"></message>
+   
+   <message name="getSslCipherAESGCMEncryptsResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
    <message name="getSslCipherDESDecryptsRequest"></message>
    
    <message name="getSslCipherDESDecryptsResponse">
@@ -2002,9 +2022,45 @@
       <part name="value" type="xsd:int" />
    </message>
    
+   <message name="getSslCipherDHAgreementsRequest"></message>
+   
+   <message name="getSslCipherDHAgreementsResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslCipherDHGeneratesRequest"></message>
+   
+   <message name="getSslCipherDHGeneratesResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslCipherDSASignsRequest"></message>
+   
+   <message name="getSslCipherDSASignsResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslCipherDSAVerifiesRequest"></message>
+   
+   <message name="getSslCipherDSAVerifiesResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
    <message name="getSslCipherDecryptsRequest"></message>
    
    <message name="getSslCipherDecryptsResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslCipherECDHAgreementsRequest"></message>
+   
+   <message name="getSslCipherECDHAgreementsResponse">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslCipherECDHGeneratesRequest"></message>
+   
+   <message name="getSslCipherECDHGeneratesResponse">
       <part name="value" type="xsd:int" />
    </message>
    
@@ -2101,6 +2157,12 @@
    <message name="getSslHandshakeTLSv11Request"></message>
    
    <message name="getSslHandshakeTLSv11Response">
+      <part name="value" type="xsd:int" />
+   </message>
+   
+   <message name="getSslHandshakeTLSv12Request"></message>
+   
+   <message name="getSslHandshakeTLSv12Response">
       <part name="value" type="xsd:int" />
    </message>
    
@@ -2670,6 +2732,14 @@
       <part name="value" type="zeusns:intArray" />
    </message>
    
+   <message name="getVirtualserverMaxDurationTimedOutRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getVirtualserverMaxDurationTimedOutResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
    <message name="getVirtualserverNumberRequest"></message>
    
    <message name="getVirtualserverNumberResponse">
@@ -2681,6 +2751,14 @@
    </message>
    
    <message name="getVirtualserverPortResponse">
+      <part name="value" type="zeusns:intArray" />
+   </message>
+   
+   <message name="getVirtualserverProcessingTimedOutRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getVirtualserverProcessingTimedOutResponse">
       <part name="value" type="zeusns:intArray" />
    </message>
    
@@ -2792,6 +2870,42 @@
       <part name="value" type="xsd:int" />
    </message>
    
+   <message name="getWebCacheURLStoreAllocatedRequest"></message>
+   
+   <message name="getWebCacheURLStoreAllocatedResponse">
+      <part name="value" type="xsd:long" />
+   </message>
+   
+   <message name="getWebCacheURLStoreFreeRequest"></message>
+   
+   <message name="getWebCacheURLStoreFreeResponse">
+      <part name="value" type="xsd:long" />
+   </message>
+   
+   <message name="getWebCacheURLStoreSizeRequest"></message>
+   
+   <message name="getWebCacheURLStoreSizeResponse">
+      <part name="value" type="xsd:long" />
+   </message>
+   
+   <message name="getWebCacheURLStoreTotalAllocationsRequest"></message>
+   
+   <message name="getWebCacheURLStoreTotalAllocationsResponse">
+      <part name="value" type="xsd:long" />
+   </message>
+   
+   <message name="getWebCacheURLStoreTotalFailuresRequest"></message>
+   
+   <message name="getWebCacheURLStoreTotalFailuresResponse">
+      <part name="value" type="xsd:long" />
+   </message>
+   
+   <message name="getWebCacheURLStoreTotalFreesRequest"></message>
+   
+   <message name="getWebCacheURLStoreTotalFreesResponse">
+      <part name="value" type="xsd:long" />
+   </message>
+   
    <message name="getZxtmNumberRequest"></message>
    
    <message name="getZxtmNumberResponse">
@@ -2901,7 +3015,7 @@
       
       <operation name="getAuthenticatorErrors">
          <documentation>
-            Number of connection errors that have occured when trying to connect to an authentication server, for each of the named Authenticators.
+            Number of connection errors that have occurred when trying to connect to an authentication server, for each of the named Authenticators.
          </documentation>
          
          <input message="zeusns:getAuthenticatorErrorsRequest"/>
@@ -4412,6 +4526,17 @@
          <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
       </operation>
       
+      <operation name="getRuleExecutionTimeWarnings">
+         <documentation>
+            Number of times this TrafficScript rule has exceeded the execution time warning threshold, for each of the named Rules.
+         </documentation>
+         
+         <input message="zeusns:getRuleExecutionTimeWarningsRequest"/>
+         <output message="zeusns:getRuleExecutionTimeWarningsResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
       <operation name="getRuleExecutions">
          <documentation>
             Number of times this TrafficScript rule has been executed, for each of the named Rules.
@@ -4796,6 +4921,24 @@
          <output message="zeusns:getSslCipherAESEncryptsResponse"/>
       </operation>
       
+      <operation name="getSslCipherAESGCMDecrypts">
+         <documentation>
+            Bytes decrypted with AES-GCM.
+         </documentation>
+         
+         <input message="zeusns:getSslCipherAESGCMDecryptsRequest"/>
+         <output message="zeusns:getSslCipherAESGCMDecryptsResponse"/>
+      </operation>
+      
+      <operation name="getSslCipherAESGCMEncrypts">
+         <documentation>
+            Bytes encrypted with AES-GCM.
+         </documentation>
+         
+         <input message="zeusns:getSslCipherAESGCMEncryptsRequest"/>
+         <output message="zeusns:getSslCipherAESGCMEncryptsResponse"/>
+      </operation>
+      
       <operation name="getSslCipherDESDecrypts">
          <documentation>
             Bytes decrypted with DES.
@@ -4814,6 +4957,42 @@
          <output message="zeusns:getSslCipherDESEncryptsResponse"/>
       </operation>
       
+      <operation name="getSslCipherDHAgreements">
+         <documentation>
+            Number of Diffie Hellman key agreements.
+         </documentation>
+         
+         <input message="zeusns:getSslCipherDHAgreementsRequest"/>
+         <output message="zeusns:getSslCipherDHAgreementsResponse"/>
+      </operation>
+      
+      <operation name="getSslCipherDHGenerates">
+         <documentation>
+            Number of Diffie Hellman keys generated.
+         </documentation>
+         
+         <input message="zeusns:getSslCipherDHGeneratesRequest"/>
+         <output message="zeusns:getSslCipherDHGeneratesResponse"/>
+      </operation>
+      
+      <operation name="getSslCipherDSASigns">
+         <documentation>
+            Number of DSA signing operations.
+         </documentation>
+         
+         <input message="zeusns:getSslCipherDSASignsRequest"/>
+         <output message="zeusns:getSslCipherDSASignsResponse"/>
+      </operation>
+      
+      <operation name="getSslCipherDSAVerifies">
+         <documentation>
+            Number of DSA verifications.
+         </documentation>
+         
+         <input message="zeusns:getSslCipherDSAVerifiesRequest"/>
+         <output message="zeusns:getSslCipherDSAVerifiesResponse"/>
+      </operation>
+      
       <operation name="getSslCipherDecrypts">
          <documentation>
             Bytes decrypted with a symmetric cipher.
@@ -4821,6 +5000,24 @@
          
          <input message="zeusns:getSslCipherDecryptsRequest"/>
          <output message="zeusns:getSslCipherDecryptsResponse"/>
+      </operation>
+      
+      <operation name="getSslCipherECDHAgreements">
+         <documentation>
+            Number of Elliptic Curve Diffie Hellman key agreements.
+         </documentation>
+         
+         <input message="zeusns:getSslCipherECDHAgreementsRequest"/>
+         <output message="zeusns:getSslCipherECDHAgreementsResponse"/>
+      </operation>
+      
+      <operation name="getSslCipherECDHGenerates">
+         <documentation>
+            Number of Elliptic Curve Diffie Hellman keys generated.
+         </documentation>
+         
+         <input message="zeusns:getSslCipherECDHGeneratesRequest"/>
+         <output message="zeusns:getSslCipherECDHGeneratesResponse"/>
       </operation>
       
       <operation name="getSslCipherEncrypts">
@@ -4965,6 +5162,15 @@
          
          <input message="zeusns:getSslHandshakeTLSv11Request"/>
          <output message="zeusns:getSslHandshakeTLSv11Response"/>
+      </operation>
+      
+      <operation name="getSslHandshakeTLSv12">
+         <documentation>
+            Number of TLSv1.2 handshakes.
+         </documentation>
+         
+         <input message="zeusns:getSslHandshakeTLSv12Request"/>
+         <output message="zeusns:getSslHandshakeTLSv12Response"/>
       </operation>
       
       <operation name="getSslOcspStaplingCacheCount">
@@ -5331,7 +5537,7 @@
       
       <operation name="getTotalRequests">
          <documentation>
-            Total number of TCP requests recieved.
+            Total number of TCP requests received.
          </documentation>
          
          <input message="zeusns:getTotalRequestsRequest"/>
@@ -5783,6 +5989,17 @@
          <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
       </operation>
       
+      <operation name="getVirtualserverMaxDurationTimedOut">
+         <documentation>
+            Connections closed by this virtual server because the 'max_transaction_duration' interval was exceeded, for each of the named Virtualservers.
+         </documentation>
+         
+         <input message="zeusns:getVirtualserverMaxDurationTimedOutRequest"/>
+         <output message="zeusns:getVirtualserverMaxDurationTimedOutResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
       <operation name="getVirtualserverNumber">
          <documentation>
             The number of virtual servers.
@@ -5799,6 +6016,17 @@
          
          <input message="zeusns:getVirtualserverPortRequest"/>
          <output message="zeusns:getVirtualserverPortResponse"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+      </operation>
+      
+      <operation name="getVirtualserverProcessingTimedOut">
+         <documentation>
+            Connections closed by this virtual server because the 'timeout' interval was exceeded while waiting for rules or external processing, for each of the named Virtualservers.
+         </documentation>
+         
+         <input message="zeusns:getVirtualserverProcessingTimedOutRequest"/>
+         <output message="zeusns:getVirtualserverProcessingTimedOutResponse"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
       </operation>
@@ -5957,6 +6185,60 @@
          
          <input message="zeusns:getWebCacheOldestRequest"/>
          <output message="zeusns:getWebCacheOldestResponse"/>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreAllocated">
+         <documentation>
+            Amount of allocated space in the web cache URL store.
+         </documentation>
+         
+         <input message="zeusns:getWebCacheURLStoreAllocatedRequest"/>
+         <output message="zeusns:getWebCacheURLStoreAllocatedResponse"/>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreFree">
+         <documentation>
+            Amount of free space in the web cache URL store.
+         </documentation>
+         
+         <input message="zeusns:getWebCacheURLStoreFreeRequest"/>
+         <output message="zeusns:getWebCacheURLStoreFreeResponse"/>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreSize">
+         <documentation>
+            Total amount of space in the web cache URL store.
+         </documentation>
+         
+         <input message="zeusns:getWebCacheURLStoreSizeRequest"/>
+         <output message="zeusns:getWebCacheURLStoreSizeResponse"/>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreTotalAllocations">
+         <documentation>
+            Total number of allocations for the web cache URL store.
+         </documentation>
+         
+         <input message="zeusns:getWebCacheURLStoreTotalAllocationsRequest"/>
+         <output message="zeusns:getWebCacheURLStoreTotalAllocationsResponse"/>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreTotalFailures">
+         <documentation>
+            Total number of allocation failures for the web cache URL store.
+         </documentation>
+         
+         <input message="zeusns:getWebCacheURLStoreTotalFailuresRequest"/>
+         <output message="zeusns:getWebCacheURLStoreTotalFailuresResponse"/>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreTotalFrees">
+         <documentation>
+            Total number of blocks freed in the web cache URL store.
+         </documentation>
+         
+         <input message="zeusns:getWebCacheURLStoreTotalFreesRequest"/>
+         <output message="zeusns:getWebCacheURLStoreTotalFreesResponse"/>
       </operation>
       
       <operation name="getZxtmNumber">
@@ -6120,7 +6402,7 @@
       <operation name="getAuthenticatorErrors">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getAuthenticatorErrors"/>
          <documentation>
-            Number of connection errors that have occured when trying to connect to an authentication server, for each of the named Authenticators.
+            Number of connection errors that have occurred when trying to connect to an authentication server, for each of the named Authenticators.
          </documentation>
          
          <input>
@@ -8719,6 +9001,26 @@
          </fault>
       </operation>
       
+      <operation name="getRuleExecutionTimeWarnings">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getRuleExecutionTimeWarnings"/>
+         <documentation>
+            Number of times this TrafficScript rule has exceeded the execution time warning threshold, for each of the named Rules.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getRuleExecutions">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getRuleExecutions"/>
          <documentation>
@@ -9377,6 +9679,34 @@
          </output>
       </operation>
       
+      <operation name="getSslCipherAESGCMDecrypts">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherAESGCMDecrypts"/>
+         <documentation>
+            Bytes decrypted with AES-GCM.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslCipherAESGCMEncrypts">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherAESGCMEncrypts"/>
+         <documentation>
+            Bytes encrypted with AES-GCM.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
       <operation name="getSslCipherDESDecrypts">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherDESDecrypts"/>
          <documentation>
@@ -9405,10 +9735,94 @@
          </output>
       </operation>
       
+      <operation name="getSslCipherDHAgreements">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherDHAgreements"/>
+         <documentation>
+            Number of Diffie Hellman key agreements.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslCipherDHGenerates">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherDHGenerates"/>
+         <documentation>
+            Number of Diffie Hellman keys generated.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslCipherDSASigns">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherDSASigns"/>
+         <documentation>
+            Number of DSA signing operations.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslCipherDSAVerifies">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherDSAVerifies"/>
+         <documentation>
+            Number of DSA verifications.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
       <operation name="getSslCipherDecrypts">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherDecrypts"/>
          <documentation>
             Bytes decrypted with a symmetric cipher.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslCipherECDHAgreements">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherECDHAgreements"/>
+         <documentation>
+            Number of Elliptic Curve Diffie Hellman key agreements.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslCipherECDHGenerates">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslCipherECDHGenerates"/>
+         <documentation>
+            Number of Elliptic Curve Diffie Hellman keys generated.
          </documentation>
          
          <input>
@@ -9633,6 +10047,20 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslHandshakeTLSv11"/>
          <documentation>
             Number of TLSv1.1 handshakes.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getSslHandshakeTLSv12">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getSslHandshakeTLSv12"/>
+         <documentation>
+            Number of TLSv1.2 handshakes.
          </documentation>
          
          <input>
@@ -10212,7 +10640,7 @@
       <operation name="getTotalRequests">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getTotalRequests"/>
          <documentation>
-            Total number of TCP requests recieved.
+            Total number of TCP requests received.
          </documentation>
          
          <input>
@@ -10973,6 +11401,26 @@
          </fault>
       </operation>
       
+      <operation name="getVirtualserverMaxDurationTimedOut">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getVirtualserverMaxDurationTimedOut"/>
+         <documentation>
+            Connections closed by this virtual server because the 'max_transaction_duration' interval was exceeded, for each of the named Virtualservers.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getVirtualserverNumber">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getVirtualserverNumber"/>
          <documentation>
@@ -10991,6 +11439,26 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getVirtualserverPort"/>
          <documentation>
             The port the virtual server listens on, for each of the named Virtualservers.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getVirtualserverProcessingTimedOut">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getVirtualserverProcessingTimedOut"/>
+         <documentation>
+            Connections closed by this virtual server because the 'timeout' interval was exceeded while waiting for rules or external processing, for each of the named Virtualservers.
          </documentation>
          
          <input>
@@ -11257,6 +11725,90 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getWebCacheOldest"/>
          <documentation>
             The age of the oldest item in the web cache (in seconds).
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreAllocated">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getWebCacheURLStoreAllocated"/>
+         <documentation>
+            Amount of allocated space in the web cache URL store.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreFree">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getWebCacheURLStoreFree"/>
+         <documentation>
+            Amount of free space in the web cache URL store.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreSize">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getWebCacheURLStoreSize"/>
+         <documentation>
+            Total amount of space in the web cache URL store.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreTotalAllocations">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getWebCacheURLStoreTotalAllocations"/>
+         <documentation>
+            Total number of allocations for the web cache URL store.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreTotalFailures">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getWebCacheURLStoreTotalFailures"/>
+         <documentation>
+            Total number of allocation failures for the web cache URL store.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/System/Stats/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+      </operation>
+      
+      <operation name="getWebCacheURLStoreTotalFrees">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/System/Stats/getWebCacheURLStoreTotalFrees"/>
+         <documentation>
+            Total number of blocks freed in the web cache URL store.
          </documentation>
          
          <input>

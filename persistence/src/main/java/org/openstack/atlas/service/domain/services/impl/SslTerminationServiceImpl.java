@@ -83,6 +83,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         //we wont make it here if no dbTermination and no cert/key values.
+        // If dbTermination is null on input to verifyAttributes then
+        // verifyAttributes creates a new dbTermination instance
         dbTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
 
         if (dbTermination != null) {

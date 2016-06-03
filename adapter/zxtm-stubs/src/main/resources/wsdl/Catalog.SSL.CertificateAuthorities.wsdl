@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2015 Zeus Technology. All rights reserved.
 
 -->
 
@@ -70,6 +70,37 @@
            <xsd:complexContent>
              <xsd:restriction base='SOAP-ENC:Array'>
               <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:Catalog.SSL.CertificateAuthorities.Details[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="Catalog.SSL.CertificateAuthorities.DetailsEx">
+           <xsd:annotation>
+             <xsd:documentation>This structure contains information about a Certificate Authority, with extended public key information. It contains both the Certificate and the list of revoked Certificates contained in the associated CRL.</xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             <xsd:element name="certificate" type="zeusns:CertificateEx">
+              <xsd:annotation>
+               <xsd:documentation>The Certificate Authority certificate</xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="have_crl" type="xsd:boolean">
+              <xsd:annotation>
+               <xsd:documentation>If set to 'true' then there is an associated CRL, otherwise the CRL structure contains no useful information</xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="crl" type="zeusns:Catalog.SSL.CertificateAuthorities.CRL">
+              <xsd:annotation>
+               <xsd:documentation>The associated CRL.</xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+           </xsd:all>
+         </xsd:complexType>
+         
+         <xsd:complexType name="Catalog.SSL.CertificateAuthorities.DetailsExArray">
+           <xsd:complexContent>
+             <xsd:restriction base='SOAP-ENC:Array'>
+              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:Catalog.SSL.CertificateAuthorities.DetailsEx[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -160,6 +191,81 @@
            <xsd:complexContent>
              <xsd:restriction base='SOAP-ENC:Array'>
               <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns:Certificate[]"/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
+         <xsd:complexType name="CertificateEx">
+           <xsd:annotation>
+            <xsd:documentation>
+             This structure contains information (such as the subject and issuer)
+             about a certificate.  It contains more information about the public key than the 
+             Certificate structure does, in particular for non-RSA public keys.
+            </xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             <xsd:element name="version" type="xsd:int">
+               <xsd:annotation>
+                 <xsd:documentation>The version of the X509 Certificate</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="serial" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The serial number of the Certificate</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="issuer" type="zeusns:X509Name">
+               <xsd:annotation>
+                 <xsd:documentation>The issuer (i.e. who signed it) of the Certificate</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="subject" type="zeusns:X509Name">
+               <xsd:annotation>
+                 <xsd:documentation>The subject (i.e. who it is for) of the Certificate</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="valid_from" type="xsd:dateTime">
+               <xsd:annotation>
+                 <xsd:documentation>The time the certificate is valid from.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="valid_to" type="xsd:dateTime">
+               <xsd:annotation>
+                 <xsd:documentation>The time the certificate is valid to.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="key_type" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The type of key used in the certificate.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="y" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The DSA public key 'y' used in the certificate.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="modulus" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The RSA modulus of the certificate.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="exponent" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The RSA exponent of the certificate.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="self_signed" type="xsd:boolean">
+               <xsd:annotation>
+                 <xsd:documentation>Whether the certificate is self-signed (i.e. the issuer is the same as the subject)</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+           </xsd:all>
+         </xsd:complexType>
+         
+         <xsd:complexType name="CertificateExArray">
+           <xsd:complexContent>
+             <xsd:restriction base='SOAP-ENC:Array'>
+              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns:CertificateEx[]"/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -506,6 +612,14 @@
       <part name="details" type="zeusns:Catalog.SSL.CertificateAuthorities.DetailsArray" />
    </message>
    
+   <message name="getCertificateAuthorityInfoExRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getCertificateAuthorityInfoExResponse">
+      <part name="details" type="zeusns:Catalog.SSL.CertificateAuthorities.DetailsExArray" />
+   </message>
+   
    <message name="getCertificateAuthorityNamesRequest"></message>
    
    <message name="getCertificateAuthorityNamesResponse">
@@ -578,6 +692,16 @@
          
          <input message="zeusns:getCertificateAuthorityInfoRequest"/>
          <output message="zeusns:getCertificateAuthorityInfoResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getCertificateAuthorityInfoEx">
+         <documentation>
+            Get the Certificate Information, and the revoked certificates, with extended public key information.
+         </documentation>
+         
+         <input message="zeusns:getCertificateAuthorityInfoExRequest"/>
+         <output message="zeusns:getCertificateAuthorityInfoExResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -660,6 +784,23 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/SSL/CertificateAuthorities/getCertificateAuthorityInfo"/>
          <documentation>
             Get the Certificate Information, and the revoked certificates.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/SSL/CertificateAuthorities/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/SSL/CertificateAuthorities/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/SSL/CertificateAuthorities/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getCertificateAuthorityInfoEx">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/SSL/CertificateAuthorities/getCertificateAuthorityInfoEx"/>
+         <documentation>
+            Get the Certificate Information, and the revoked certificates, with extended public key information.
          </documentation>
          
          <input>

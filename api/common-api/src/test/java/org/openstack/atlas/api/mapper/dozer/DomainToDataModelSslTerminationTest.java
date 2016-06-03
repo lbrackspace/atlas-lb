@@ -44,5 +44,14 @@ public class DomainToDataModelSslTerminationTest {
             Assert.assertEquals(true, dataModelSslTermination.isEnabled());
             Assert.assertEquals(false, dataModelSslTermination.isSecureTrafficOnly());
         }
+
+        @Test
+        public void shouldAcceptSecurityProtocols(){
+            org.openstack.atlas.service.domain.entities.SslTermination dbSsl;
+            org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination apiSsl;
+            dbSsl = new org.openstack.atlas.service.domain.entities.SslTermination();
+            dbSsl.setTls10Enabled(false);
+            apiSsl = mapper.map(dbSsl,org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination.class);
+        }
     }
 }

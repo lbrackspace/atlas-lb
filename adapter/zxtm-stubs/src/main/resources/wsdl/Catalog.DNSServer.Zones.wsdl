@@ -5,7 +5,7 @@
 
 -->
 
-<definitions name="Catalog.Rule"
+<definitions name="Catalog.DNSServer.Zones"
  targetNamespace="http://soap.zeus.com/zxtm/1.0/"
  xmlns:zeusns="http://soap.zeus.com/zxtm/1.0/"
  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
@@ -20,59 +20,28 @@
        xmlns:SOAP-ENC='http://schemas.xmlsoap.org/soap/encoding/'
        xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'>
          
-         <xsd:complexType name="Catalog.Rule.RuleInfo">
+         <xsd:complexType name="Catalog.DNSServer.Zones.DNSZoneParameter">
            <xsd:annotation>
-            <xsd:documentation>This structure contains basic information for a rule in the catalog.</xsd:documentation>             
-           </xsd:annotation>
-           <xsd:all>     
-             <xsd:element name="rule_text" type="xsd:string">
-               <xsd:annotation>
-                 <xsd:documentation>The rule text</xsd:documentation>
-               </xsd:annotation>       
-             </xsd:element>             
-             <xsd:element name="rule_notes" type="xsd:string">
-               <xsd:annotation>        
-                 <xsd:documentation>The descriptive notes for the rule.</xsd:documentation>
-               </xsd:annotation>     
-             </xsd:element>
-           </xsd:all>
-         </xsd:complexType>     
-         
-         <xsd:complexType name="Catalog.Rule.RuleInfoArray">
-           <xsd:complexContent>       
-             <xsd:restriction base='SOAP-ENC:Array'>
-              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:Catalog.Rule.RuleInfo[]'/>
-            </xsd:restriction>
-           </xsd:complexContent>       
-         </xsd:complexType>             
-         
-         <xsd:complexType name="Catalog.Rule.SyntaxCheck">
-           <xsd:annotation>
-            <xsd:documentation>This structure contains the results of a rule syntax check against a rule in the catalog.</xsd:documentation>
+             <xsd:documentation>This structure contains the required configuration values for a DNS zone.</xsd:documentation>
            </xsd:annotation>
            <xsd:all>
-             <xsd:element name="valid" type="xsd:boolean">
+             <xsd:element name="origin" type="xsd:string">
                <xsd:annotation>
-                 <xsd:documentation>Whether the rule text is valid or not.</xsd:documentation>
+                 <xsd:documentation>The zone origin.</xsd:documentation>
                </xsd:annotation>
              </xsd:element>
-             <xsd:element name="warnings" type="xsd:string">
+             <xsd:element name="zonefile" type="xsd:string">
                <xsd:annotation>
-                 <xsd:documentation>Any warnings (such as deprecated functions) associated with the rule text.</xsd:documentation>
-               </xsd:annotation>
-             </xsd:element>
-             <xsd:element name="errors" type="xsd:string">
-               <xsd:annotation>
-                 <xsd:documentation>Any errors (such as syntax errors) associated with the rule text.</xsd:documentation>
+                 <xsd:documentation>The name of the DNS zone file catalog item.</xsd:documentation>
                </xsd:annotation>
              </xsd:element>
            </xsd:all>
-         </xsd:complexType>     
+         </xsd:complexType>
          
-         <xsd:complexType name="Catalog.Rule.SyntaxCheckArray">
+         <xsd:complexType name="Catalog.DNSServer.Zones.DNSZoneParameterArray">
            <xsd:complexContent>
              <xsd:restriction base='SOAP-ENC:Array'>
-              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:Catalog.Rule.SyntaxCheck[]'/>
+              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:Catalog.DNSServer.Zones.DNSZoneParameter[]'/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -159,6 +128,51 @@
          
               It would be raised in cases such as failing to bind to
               a port when enabling a Virtual Server.
+            </xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             <xsd:element name="errmsg" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A human readable string describing the error
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="object" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The name of the object that caused the fault (if appropriate)
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="key" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The configuration key that caused the fault (if appropriate)
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="value" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The value that caused the fault (if appropriate)
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+           </xsd:all>
+         </xsd:complexType>
+         
+         <xsd:complexType name="InvalidInput">
+           <xsd:annotation>
+            <xsd:documentation>
+              The InvalidInput fault is raised when the input to a function is
+              invalid, for example a number was out of range. This fault is also
+              raised in cases such as VirtualServer.setPool() where the Pool
+              doesn't exist
+         
+              The details in the fault contain the object, key and value
+              that caused the fault. These might be blank if they are not relevant
+              to the fault.
             </xsd:documentation>
            </xsd:annotation>
            <xsd:all>
@@ -344,71 +358,75 @@
       </xsd:schema>
    </types>
    
-   <message name="addRuleRequest">
-      <part name="names" type="zeusns:StringArray" />
-      <part name="texts" type="zeusns:StringArray" />
+   <message name="addZoneRequest">
+      <part name="zone_names" type="zeusns:StringArray" />
+      <part name="zone_parameters" type="zeusns:Catalog.DNSServer.Zones.DNSZoneParameterArray" />
    </message>
    
-   <message name="addRuleResponse"></message>
+   <message name="addZoneResponse"></message>
    
-   <message name="checkSyntaxRequest">
-      <part name="rule_text" type="zeusns:StringArray" />
-   </message>
-   
-   <message name="checkSyntaxResponse">
-      <part name="results" type="zeusns:Catalog.Rule.SyntaxCheckArray" />
-   </message>
-   
-   <message name="copyRuleRequest">
-      <part name="names" type="zeusns:StringArray" />
+   <message name="copyZoneRequest">
+      <part name="zone_names" type="zeusns:StringArray" />
       <part name="new_names" type="zeusns:StringArray" />
    </message>
    
-   <message name="copyRuleResponse"></message>
+   <message name="copyZoneResponse"></message>
    
-   <message name="deleteRuleRequest">
-      <part name="names" type="zeusns:StringArray" />
+   <message name="deleteZoneRequest">
+      <part name="zone_names" type="zeusns:StringArray" />
    </message>
    
-   <message name="deleteRuleResponse"></message>
+   <message name="deleteZoneResponse"></message>
    
-   <message name="getRuleDetailsRequest">
-      <part name="names" type="zeusns:StringArray" />
+   <message name="getOriginRequest">
+      <part name="zone_names" type="zeusns:StringArray" />
    </message>
    
-   <message name="getRuleDetailsResponse">
-      <part name="info" type="zeusns:Catalog.Rule.RuleInfoArray" />
+   <message name="getOriginResponse">
+      <part name="values" type="zeusns:StringArray" />
    </message>
    
-   <message name="getRuleNamesRequest"></message>
+   <message name="getZoneNamesRequest"></message>
    
-   <message name="getRuleNamesResponse">
-      <part name="names" type="zeusns:StringArray" />
+   <message name="getZoneNamesResponse">
+      <part name="zone_names" type="zeusns:StringArray" />
    </message>
    
-   <message name="renameRuleRequest">
-      <part name="names" type="zeusns:StringArray" />
+   <message name="getZonefileRequest">
+      <part name="zone_names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getZonefileResponse">
+      <part name="values" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="renameZoneRequest">
+      <part name="zone_names" type="zeusns:StringArray" />
       <part name="new_names" type="zeusns:StringArray" />
    </message>
    
-   <message name="renameRuleResponse"></message>
+   <message name="renameZoneResponse"></message>
    
-   <message name="setRuleNotesRequest">
-      <part name="names" type="zeusns:StringArray" />
-      <part name="notes" type="zeusns:StringArray" />
+   <message name="setOriginRequest">
+      <part name="zone_names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
    </message>
    
-   <message name="setRuleNotesResponse"></message>
+   <message name="setOriginResponse"></message>
    
-   <message name="setRuleTextRequest">
-      <part name="names" type="zeusns:StringArray" />
-      <part name="text" type="zeusns:StringArray" />
+   <message name="setZonefileRequest">
+      <part name="zone_names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArray" />
    </message>
    
-   <message name="setRuleTextResponse"></message>
+   <message name="setZonefileResponse"></message>
    
    <message name="DeploymentError">
       <part name="parameters" type="zeusns:DeploymentError" />
+   </message>
+   
+   <message name="InvalidInput">
+      <part name="parameters" type="zeusns:InvalidInput" />
    </message>
    
    <message name="InvalidObjectName">
@@ -431,312 +449,320 @@
       <part name="parameters" type="zeusns:ObjectInUse" />
    </message>
    
-   <portType name="Catalog.RulePort">
-      <operation name="addRule">
+   <portType name="Catalog.DNSServer.ZonesPort">
+      <operation name="addZone">
          <documentation>
-            Add new rules to the catalog.
+            Add new DNS zone.
          </documentation>
          
-         <input message="zeusns:addRuleRequest"/>
-         <output message="zeusns:addRuleResponse"/>
+         <input message="zeusns:addZoneRequest"/>
+         <output message="zeusns:addZoneResponse"/>
          <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="ObjectAlreadyExists" message="zeusns:ObjectAlreadyExists"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
-      <operation name="checkSyntax">
+      <operation name="copyZone">
          <documentation>
-            Check the syntax of each of the supplied TrafficScript rule texts.  This method does not modify any configuration.
+            Copy the named DNS zones.
          </documentation>
          
-         <input message="zeusns:checkSyntaxRequest"/>
-         <output message="zeusns:checkSyntaxResponse"/>
-      </operation>
-      
-      <operation name="copyRule">
-         <documentation>
-            Copy the named rules in the catalog.
-         </documentation>
-         
-         <input message="zeusns:copyRuleRequest"/>
-         <output message="zeusns:copyRuleResponse"/>
-         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+         <input message="zeusns:copyZoneRequest"/>
+         <output message="zeusns:copyZoneResponse"/>
          <fault name="ObjectAlreadyExists" message="zeusns:ObjectAlreadyExists"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
-      <operation name="deleteRule">
+      <operation name="deleteZone">
          <documentation>
-            Delete the named rules from the catalog.
+            Delete the named DNS zone.
          </documentation>
          
-         <input message="zeusns:deleteRuleRequest"/>
-         <output message="zeusns:deleteRuleResponse"/>
+         <input message="zeusns:deleteZoneRequest"/>
+         <output message="zeusns:deleteZoneResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="ObjectInUse" message="zeusns:ObjectInUse"/>
-         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
-         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
-         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
-      </operation>
-      
-      <operation name="getRuleDetails">
-         <documentation>
-            Get the rule text and notes (if any), for each of the named rules.
-         </documentation>
-         
-         <input message="zeusns:getRuleDetailsRequest"/>
-         <output message="zeusns:getRuleDetailsResponse"/>
-         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
-      <operation name="getRuleNames">
+      <operation name="getOrigin">
          <documentation>
-            Get the names of all rules in the catalog.
+            Get Zone origin
          </documentation>
          
-         <input message="zeusns:getRuleNamesRequest"/>
-         <output message="zeusns:getRuleNamesResponse"/>
+         <input message="zeusns:getOriginRequest"/>
+         <output message="zeusns:getOriginResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
-      <operation name="renameRule">
+      <operation name="getZoneNames">
          <documentation>
-            Rename the named rules in the catalog.
+            Get the names of all the configured DNS zones
          </documentation>
          
-         <input message="zeusns:renameRuleRequest"/>
-         <output message="zeusns:renameRuleResponse"/>
-         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+         <input message="zeusns:getZoneNamesRequest"/>
+         <output message="zeusns:getZoneNamesResponse"/>
+      </operation>
+      
+      <operation name="getZonefile">
+         <documentation>
+            Get Zone file
+         </documentation>
+         
+         <input message="zeusns:getZonefileRequest"/>
+         <output message="zeusns:getZonefileResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="renameZone">
+         <documentation>
+            Rename the named DNS zones.
+         </documentation>
+         
+         <input message="zeusns:renameZoneRequest"/>
+         <output message="zeusns:renameZoneResponse"/>
          <fault name="ObjectAlreadyExists" message="zeusns:ObjectAlreadyExists"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
-         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
-      </operation>
-      
-      <operation name="setRuleNotes">
-         <documentation>
-            Sets the descriptive notes for each of the named rules in the catalog.
-         </documentation>
-         
-         <input message="zeusns:setRuleNotesRequest"/>
-         <output message="zeusns:setRuleNotesResponse"/>
-         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
       
-      <operation name="setRuleText">
+      <operation name="setOrigin">
          <documentation>
-            Set the TrafficScript text for each of the named rules in the catalog.
+            Set Zone origin
          </documentation>
          
-         <input message="zeusns:setRuleTextRequest"/>
-         <output message="zeusns:setRuleTextResponse"/>
+         <input message="zeusns:setOriginRequest"/>
+         <output message="zeusns:setOriginResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setZonefile">
+         <documentation>
+            Set Zone file
+         </documentation>
+         
+         <input message="zeusns:setZonefileRequest"/>
+         <output message="zeusns:setZonefileResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
       </operation>
    </portType>
    
-   <binding name="Catalog.RuleBinding" type="zeusns:Catalog.RulePort">
+   <binding name="Catalog.DNSServer.ZonesBinding" type="zeusns:Catalog.DNSServer.ZonesPort">
       <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
-      <operation name="addRule">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/addRule"/>
+      <operation name="addZone">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/addZone"/>
          <documentation>
-            Add new rules to the catalog.
+            Add new DNS zone.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
          <fault name="InvalidObjectName">
-            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="ObjectAlreadyExists">
-            <soap:fault use="encoded" name="ObjectAlreadyExists" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectAlreadyExists" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="DeploymentError">
-            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
-      <operation name="checkSyntax">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/checkSyntax"/>
+      <operation name="copyZone">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/copyZone"/>
          <documentation>
-            Check the syntax of each of the supplied TrafficScript rule texts.  This method does not modify any configuration.
+            Copy the named DNS zones.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
-      </operation>
-      
-      <operation name="copyRule">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/copyRule"/>
-         <documentation>
-            Copy the named rules in the catalog.
-         </documentation>
-         
-         <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </input>
-         <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </output>
-         <fault name="InvalidObjectName">
-            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
          <fault name="ObjectAlreadyExists">
-            <soap:fault use="encoded" name="ObjectAlreadyExists" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectAlreadyExists" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="DeploymentError">
-            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
-      <operation name="deleteRule">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/deleteRule"/>
+      <operation name="deleteZone">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/deleteZone"/>
          <documentation>
-            Delete the named rules from the catalog.
+            Delete the named DNS zone.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
          <fault name="ObjectInUse">
-            <soap:fault use="encoded" name="ObjectInUse" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
-         <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectInUse" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="DeploymentError">
-            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
-         <fault name="InvalidOperation">
-            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
-      <operation name="getRuleDetails">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/getRuleDetails"/>
+      <operation name="getOrigin">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/getOrigin"/>
          <documentation>
-            Get the rule text and notes (if any), for each of the named rules.
+            Get Zone origin
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
          <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </fault>
-         <fault name="DeploymentError">
-            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
-      <operation name="getRuleNames">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/getRuleNames"/>
+      <operation name="getZoneNames">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/getZoneNames"/>
          <documentation>
-            Get the names of all rules in the catalog.
+            Get the names of all the configured DNS zones
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
       </operation>
       
-      <operation name="renameRule">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/renameRule"/>
+      <operation name="getZonefile">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/getZonefile"/>
          <documentation>
-            Rename the named rules in the catalog.
+            Get Zone file
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
-         <fault name="InvalidObjectName">
-            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
+      </operation>
+      
+      <operation name="renameZone">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/renameZone"/>
+         <documentation>
+            Rename the named DNS zones.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
          <fault name="ObjectAlreadyExists">
-            <soap:fault use="encoded" name="ObjectAlreadyExists" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectAlreadyExists" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
-         <fault name="DeploymentError">
-            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="InvalidOperation">
-            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
-      <operation name="setRuleNotes">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/setRuleNotes"/>
+      <operation name="setOrigin">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/setOrigin"/>
          <documentation>
-            Sets the descriptive notes for each of the named rules in the catalog.
+            Set Zone origin
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
          <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="DeploymentError">
-            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
-      <operation name="setRuleText">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/setRuleText"/>
+      <operation name="setZonefile">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/setZonefile"/>
          <documentation>
-            Set the TrafficScript text for each of the named rules in the catalog.
+            Set Zone file
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
          <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
          <fault name="DeploymentError">
-            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Rule/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/DNSServer/Zones/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
    </binding>
    
-   <service name="Catalog.Rule">
+   <service name="Catalog.DNSServer.Zones">
       <documentation>
-         The Catalog.Rule interface allows management of TrafficScript Rules. Using this interface, you can create, delete and rename rules, and manage their configuration.  You can also syntax-check rule fragments.
+         The Catalog.DNSServer.Zones interface allows management of DNS zones. Using this interface, you can create, delete and rename DNS zones, and manage their configuration.
       </documentation>
       
-      <port name="Catalog.RulePort" binding="zeusns:Catalog.RuleBinding">
+      <port name="Catalog.DNSServer.ZonesPort" binding="zeusns:Catalog.DNSServer.ZonesBinding">
          <soap:address location="https://admin_server:9090/soap"/>
       </port>
    </service>
