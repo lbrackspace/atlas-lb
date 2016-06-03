@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2015 Zeus Technology. All rights reserved.
 
 -->
 
@@ -62,6 +62,47 @@
            </xsd:complexContent>
          </xsd:complexType>
          
+         <xsd:complexType name="TrafficIPGroups.DetailsV2">
+           <xsd:annotation>
+             <xsd:documentation>This structure contains the basic details of a Traffic IP Group: the nodes, and the traffic managers that the Traffic IP group spans. It is used when creating a new Traffic IP Group.</xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             <xsd:element name="ipaddresses" type="zeusns:StringArray">
+               <xsd:annotation>
+                 <xsd:documentation>The IP addresses in the Traffic IP Group.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="mode" type="zeusns:TrafficIPGroups.IPDistributionMode">
+               <xsd:annotation>
+                 <xsd:documentation>The IP distribution mode of the traffic IP group.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="multicast" type="xsd:string">
+               <xsd:annotation>
+                 <xsd:documentation>The multicast IP address of a multihosted traffic IP group.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="machines" type="zeusns:StringArray">
+               <xsd:annotation>
+                 <xsd:documentation>The names of the traffic managers that will manage the IP Addresses.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="passive_machines" type="zeusns:StringArray">
+               <xsd:annotation>
+                 <xsd:documentation>The names of the traffic managers that will be passive / standby members of the group.</xsd:documentation>
+               </xsd:annotation>
+             </xsd:element>
+           </xsd:all>
+         </xsd:complexType>
+         
+         <xsd:complexType name="TrafficIPGroups.DetailsV2Array">
+           <xsd:complexContent>
+             <xsd:restriction base='SOAP-ENC:Array'>
+              <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType='zeusns:TrafficIPGroups.DetailsV2[]'/>
+            </xsd:restriction>
+           </xsd:complexContent>
+         </xsd:complexType>
+         
          <xsd:simpleType name="TrafficIPGroups.IPDistributionMode">
             <xsd:restriction base="xsd:string">
                <xsd:enumeration value="singlehosted">
@@ -74,6 +115,11 @@
                      <xsd:documentation>Raise each address on every machine in the group (Multi-Hosted mode) - IPv4 only</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
+               <xsd:enumeration value="rhi">
+                  <xsd:annotation>
+                     <xsd:documentation>Use route health injection to route traffic to the active machine - IPv4 only</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
                <xsd:enumeration value="ec2elastic">
                   <xsd:annotation>
                      <xsd:documentation>Use an EC2-Classic Elastic IP address.</xsd:documentation>
@@ -82,6 +128,11 @@
                <xsd:enumeration value="ec2vpcelastic">
                   <xsd:annotation>
                      <xsd:documentation>Use an EC2-VPC Elastic IP address.</xsd:documentation>
+                  </xsd:annotation>
+               </xsd:enumeration>
+               <xsd:enumeration value="ec2vpcprivate">
+                  <xsd:annotation>
+                     <xsd:documentation>Use an EC2-VPC Private IP address.</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
             </xsd:restriction>
@@ -493,6 +544,13 @@
    
    <message name="addTrafficIPGroupResponse"></message>
    
+   <message name="addTrafficIPGroupWithModeRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="details" type="zeusns:TrafficIPGroups.DetailsV2Array" />
+   </message>
+   
+   <message name="addTrafficIPGroupWithModeResponse"></message>
+   
    <message name="addTrafficManagerRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:StringArrayArray" />
@@ -582,6 +640,22 @@
    
    <message name="getPassiveMachineResponse">
       <part name="values" type="zeusns:StringArrayArray" />
+   </message>
+   
+   <message name="getRhiOspfv2MetricBaseRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getRhiOspfv2MetricBaseResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getRhiOspfv2PassiveMetricOffsetRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getRhiOspfv2PassiveMetricOffsetResponse">
+      <part name="values" type="zeusns:unsignedIntArray" />
    </message>
    
    <message name="getSubnetMappingsRequest">
@@ -691,6 +765,20 @@
    
    <message name="setPassiveMachineResponse"></message>
    
+   <message name="setRhiOspfv2MetricBaseRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setRhiOspfv2MetricBaseResponse"></message>
+   
+   <message name="setRhiOspfv2PassiveMetricOffsetRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="setRhiOspfv2PassiveMetricOffsetResponse"></message>
+   
    <message name="setSubnetMappingsRequest">
       <part name="mappings" type="zeusns:TrafficIPGroups.SubnetMappingPerHostArray" />
    </message>
@@ -773,6 +861,20 @@
          
          <input message="zeusns:addTrafficIPGroupRequest"/>
          <output message="zeusns:addTrafficIPGroupResponse"/>
+         <fault name="ObjectAlreadyExists" message="zeusns:ObjectAlreadyExists"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
+      </operation>
+      
+      <operation name="addTrafficIPGroupWithMode">
+         <documentation>
+            Add the new named Traffic IP Groups, using the provided details.
+         </documentation>
+         
+         <input message="zeusns:addTrafficIPGroupWithModeRequest"/>
+         <output message="zeusns:addTrafficIPGroupWithModeResponse"/>
          <fault name="ObjectAlreadyExists" message="zeusns:ObjectAlreadyExists"/>
          <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -909,6 +1011,26 @@
          
          <input message="zeusns:getPassiveMachineRequest"/>
          <output message="zeusns:getPassiveMachineResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getRhiOspfv2MetricBase">
+         <documentation>
+            Get the base routing metric for this Traffic IP group.
+         </documentation>
+         
+         <input message="zeusns:getRhiOspfv2MetricBaseRequest"/>
+         <output message="zeusns:getRhiOspfv2MetricBaseResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+      </operation>
+      
+      <operation name="getRhiOspfv2PassiveMetricOffset">
+         <documentation>
+            Get the routing metric offset between active and passive traffic managers in this Traffic IP group.
+         </documentation>
+         
+         <input message="zeusns:getRhiOspfv2PassiveMetricOffsetRequest"/>
+         <output message="zeusns:getRhiOspfv2PassiveMetricOffsetResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
       </operation>
       
@@ -1088,9 +1210,33 @@
          <fault name="InvalidOperation" message="zeusns:InvalidOperation"/>
       </operation>
       
+      <operation name="setRhiOspfv2MetricBase">
+         <documentation>
+            Set the base routing metric for this Traffic IP group.
+         </documentation>
+         
+         <input message="zeusns:setRhiOspfv2MetricBaseRequest"/>
+         <output message="zeusns:setRhiOspfv2MetricBaseResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
+      <operation name="setRhiOspfv2PassiveMetricOffset">
+         <documentation>
+            Set the routing metric offset between active and passive traffic managers in this Traffic IP group.
+         </documentation>
+         
+         <input message="zeusns:setRhiOspfv2PassiveMetricOffsetRequest"/>
+         <output message="zeusns:setRhiOspfv2PassiveMetricOffsetResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+      </operation>
+      
       <operation name="setSubnetMappings">
          <documentation>
-            Update interface to CIDR subnet mappings.
+            Update interface to CIDR subnet mappings. Note: this function replaces your existing TrafficIP network mappings rather than adding to them. To avoid deleting any existing entries, you must include them in the specified update list.
          </documentation>
          
          <input message="zeusns:setSubnetMappingsRequest"/>
@@ -1182,6 +1328,35 @@
       
       <operation name="addTrafficIPGroup">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/addTrafficIPGroup"/>
+         <documentation>
+            Add the new named Traffic IP Groups, using the provided details.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectAlreadyExists">
+            <soap:fault use="encoded" name="ObjectAlreadyExists" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidObjectName">
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidOperation">
+            <soap:fault use="encoded" name="InvalidOperation" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="addTrafficIPGroupWithMode">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/addTrafficIPGroupWithMode"/>
          <documentation>
             Add the new named Traffic IP Groups, using the provided details.
          </documentation>
@@ -1423,6 +1598,40 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/getPassiveMachine"/>
          <documentation>
             Get the lists of passive machines in each of the named traffic IP groups.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getRhiOspfv2MetricBase">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/getRhiOspfv2MetricBase"/>
+         <documentation>
+            Get the base routing metric for this Traffic IP group.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getRhiOspfv2PassiveMetricOffset">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/getRhiOspfv2PassiveMetricOffset"/>
+         <documentation>
+            Get the routing metric offset between active and passive traffic managers in this Traffic IP group.
          </documentation>
          
          <input>
@@ -1769,10 +1978,56 @@
          </fault>
       </operation>
       
+      <operation name="setRhiOspfv2MetricBase">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/setRhiOspfv2MetricBase"/>
+         <documentation>
+            Set the base routing metric for this Traffic IP group.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setRhiOspfv2PassiveMetricOffset">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/setRhiOspfv2PassiveMetricOffset"/>
+         <documentation>
+            Set the routing metric offset between active and passive traffic managers in this Traffic IP group.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setSubnetMappings">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/TrafficIPGroups/setSubnetMappings"/>
          <documentation>
-            Update interface to CIDR subnet mappings.
+            Update interface to CIDR subnet mappings. Note: this function replaces your existing TrafficIP network mappings rather than adding to them. To avoid deleting any existing entries, you must include them in the specified update list.
          </documentation>
          
          <input>
