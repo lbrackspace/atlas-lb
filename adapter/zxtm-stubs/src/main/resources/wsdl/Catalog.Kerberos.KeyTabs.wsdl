@@ -5,9 +5,9 @@
 
 -->
 
-<definitions name="Conf.Extra"
- targetNamespace="http://soap.zeus.com/zxtm/1.1/"
- xmlns:zeusns_1_1="http://soap.zeus.com/zxtm/1.1/"
+<definitions name="Catalog.Kerberos.KeyTabs"
+ targetNamespace="http://soap.zeus.com/zxtm/1.0/"
+ xmlns:zeusns="http://soap.zeus.com/zxtm/1.0/"
  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
  xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
@@ -15,7 +15,7 @@
  xmlns="http://schemas.xmlsoap.org/wsdl/">
    
    <types>
-      <xsd:schema targetNamespace='http://soap.zeus.com/zxtm/1.1/'
+      <xsd:schema targetNamespace='http://soap.zeus.com/zxtm/1.0/'
        xmlns='http://www.w3.org/2001/XMLSchema'
        xmlns:SOAP-ENC='http://schemas.xmlsoap.org/soap/encoding/'
        xmlns:wsdl='http://schemas.xmlsoap.org/wsdl/'>
@@ -31,7 +31,7 @@
          <xsd:complexType name="StringArrayArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
-             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns_1_1:StringArray[]"/>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns:StringArray[]"/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -47,7 +47,7 @@
          <xsd:complexType name="booleanArrayArray">
            <xsd:complexContent>
             <xsd:restriction base='SOAP-ENC:Array'>
-             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns_1_1:booleanArray[]"/>
+             <xsd:attribute ref='SOAP-ENC:arrayType' wsdl:arrayType="zeusns:booleanArray[]"/>
             </xsd:restriction>
            </xsd:complexContent>
          </xsd:complexType>
@@ -119,6 +119,34 @@
            </xsd:all>
          </xsd:complexType>
          
+         <xsd:complexType name="LicenseError">
+           <xsd:annotation>
+            <xsd:documentation>
+              The LicenseError fault is emitted when attempting to use functionality
+              that is disabled by the license key.
+         
+              You will need to contact your support provider to get a new license
+              key with the required functionality. There may be a charge for this.
+            </xsd:documentation>
+           </xsd:annotation>
+           <xsd:all>
+             <xsd:element name="errmsg" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  A human readable string describing the error
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+             <xsd:element name="feature" type="xsd:string">
+              <xsd:annotation>
+                <xsd:documentation>
+                  The license key feature that was missing
+                </xsd:documentation>
+              </xsd:annotation>
+             </xsd:element>
+           </xsd:all>
+         </xsd:complexType>
+         
          <xsd:complexType name="ObjectDoesNotExist">
            <xsd:annotation>
             <xsd:documentation>
@@ -152,23 +180,15 @@
    </types>
    
    <message name="deleteFileRequest">
-      <part name="names" type="zeusns_1_1:StringArray" />
+      <part name="names" type="zeusns:StringArray" />
    </message>
    
    <message name="deleteFileResponse"></message>
    
-   <message name="downloadFileRequest">
-      <part name="name" type="xsd:string" />
-   </message>
-   
-   <message name="downloadFileResponse">
-      <part name="contents" type="xsd:base64Binary" />
-   </message>
-   
    <message name="getFileNamesRequest"></message>
    
    <message name="getFileNamesResponse">
-      <part name="names" type="zeusns_1_1:StringArray" />
+      <part name="names" type="zeusns:StringArray" />
    </message>
    
    <message name="uploadFileRequest">
@@ -179,128 +199,113 @@
    <message name="uploadFileResponse"></message>
    
    <message name="InvalidObjectName">
-      <part name="parameters" type="zeusns_1_1:InvalidObjectName" />
+      <part name="parameters" type="zeusns:InvalidObjectName" />
+   </message>
+   
+   <message name="LicenseError">
+      <part name="parameters" type="zeusns:LicenseError" />
    </message>
    
    <message name="ObjectDoesNotExist">
-      <part name="parameters" type="zeusns_1_1:ObjectDoesNotExist" />
+      <part name="parameters" type="zeusns:ObjectDoesNotExist" />
    </message>
    
-   <portType name="Conf.ExtraPort">
+   <portType name="Catalog.Kerberos.KeyTabsPort">
       <operation name="deleteFile">
          <documentation>
-            Delete the named files from the conf/extra directory.
+            Delete the named Kerberos keytabs from the conf/kerberos/keytabs directory.
          </documentation>
          
-         <input message="zeusns_1_1:deleteFileRequest"/>
-         <output message="zeusns_1_1:deleteFileResponse"/>
-         <fault name="ObjectDoesNotExist" message="zeusns_1_1:ObjectDoesNotExist"/>
-      </operation>
-      
-      <operation name="downloadFile">
-         <documentation>
-            Download the named file from the conf/extra directory
-         </documentation>
-         
-         <input message="zeusns_1_1:downloadFileRequest"/>
-         <output message="zeusns_1_1:downloadFileResponse"/>
-         <fault name="ObjectDoesNotExist" message="zeusns_1_1:ObjectDoesNotExist"/>
+         <input message="zeusns:deleteFileRequest"/>
+         <output message="zeusns:deleteFileResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
       <operation name="getFileNames">
          <documentation>
-            Get the names of all the files stored in the conf/extra directory.
+            Get the names of all the Kerberos keytabs stored in the conf/kerberos/keytabs directory.
          </documentation>
          
-         <input message="zeusns_1_1:getFileNamesRequest"/>
-         <output message="zeusns_1_1:getFileNamesResponse"/>
+         <input message="zeusns:getFileNamesRequest"/>
+         <output message="zeusns:getFileNamesResponse"/>
       </operation>
       
       <operation name="uploadFile">
          <documentation>
-            Uploads a new file into the conf/extra directory, overwriting the file if it already exists.
+            Uploads a new Kerberos keytab into the conf/kerberos/keytabs, overwriting the keytab if it already exists.
          </documentation>
          
-         <input message="zeusns_1_1:uploadFileRequest"/>
-         <output message="zeusns_1_1:uploadFileResponse"/>
-         <fault name="InvalidObjectName" message="zeusns_1_1:InvalidObjectName"/>
+         <input message="zeusns:uploadFileRequest"/>
+         <output message="zeusns:uploadFileResponse"/>
+         <fault name="InvalidObjectName" message="zeusns:InvalidObjectName"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
    </portType>
    
-   <binding name="Conf.ExtraBinding" type="zeusns_1_1:Conf.ExtraPort">
+   <binding name="Catalog.Kerberos.KeyTabsBinding" type="zeusns:Catalog.Kerberos.KeyTabsPort">
       <soap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
       <operation name="deleteFile">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/deleteFile"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/deleteFile"/>
          <documentation>
-            Delete the named files from the conf/extra directory.
+            Delete the named Kerberos keytabs from the conf/kerberos/keytabs directory.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
          <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
-      </operation>
-      
-      <operation name="downloadFile">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/downloadFile"/>
-         <documentation>
-            Download the named file from the conf/extra directory
-         </documentation>
-         
-         <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </input>
-         <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
-         </output>
-         <fault name="ObjectDoesNotExist">
-            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
       
       <operation name="getFileNames">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/getFileNames"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/getFileNames"/>
          <documentation>
-            Get the names of all the files stored in the conf/extra directory.
+            Get the names of all the Kerberos keytabs stored in the conf/kerberos/keytabs directory.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
       </operation>
       
       <operation name="uploadFile">
-         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/uploadFile"/>
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/uploadFile"/>
          <documentation>
-            Uploads a new file into the conf/extra directory, overwriting the file if it already exists.
+            Uploads a new Kerberos keytab into the conf/kerberos/keytabs, overwriting the keytab if it already exists.
          </documentation>
          
          <input>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </input>
          <output>
-            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </output>
          <fault name="InvalidObjectName">
-            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.1/Conf/Extra/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+            <soap:fault use="encoded" name="InvalidObjectName" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/Catalog/Kerberos/KeyTabs/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
          </fault>
       </operation>
    </binding>
    
-   <service name="Conf.Extra">
+   <service name="Catalog.Kerberos.KeyTabs">
       <documentation>
-         The Conf.Extra interface allows management of the files stored in the conf/extra directory. These files can be read in by rules, and used as error pages to be sent to clients. This interface allows creating, deleting and retrieving the files.
+         The Catalog.Kerberos.KeyTabs interface allows management of the Kerberos keytabs stored in the conf/kerberos/keytabs directory. Kerberos keytabs contain credentials for any number of Kerberos principals.
       </documentation>
       
-      <port name="Conf.ExtraPort" binding="zeusns_1_1:Conf.ExtraBinding">
+      <port name="Catalog.Kerberos.KeyTabsPort" binding="zeusns:Catalog.Kerberos.KeyTabsBinding">
          <soap:address location="https://admin_server:9090/soap"/>
       </port>
    </service>

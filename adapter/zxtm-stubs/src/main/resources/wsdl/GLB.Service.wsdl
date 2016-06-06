@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2015 Zeus Technology. All rights reserved.
 
 -->
 
@@ -49,7 +49,7 @@
                </xsd:enumeration>
                <xsd:enumeration value="chained">
                   <xsd:annotation>
-                     <xsd:documentation>Active/Passive</xsd:documentation>
+                     <xsd:documentation>Primary/Backup</xsd:documentation>
                   </xsd:annotation>
                </xsd:enumeration>
             </xsd:restriction>
@@ -534,6 +534,13 @@
    
    <message name="addGLBServiceResponse"></message>
    
+   <message name="addLastResortResponseRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArrayArray" />
+   </message>
+   
+   <message name="addLastResortResponseResponse"></message>
+   
    <message name="addLocalIPAddressesRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="localips" type="zeusns:GLB.Service.LocalIPListArrayArray" />
@@ -578,6 +585,13 @@
    
    <message name="addRulesByLocationResponse"></message>
    
+   <message name="addServiceIPAddressesRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="localips" type="zeusns:GLB.Service.LocalIPListArrayArray" />
+   </message>
+   
+   <message name="addServiceIPAddressesResponse"></message>
+   
    <message name="deleteGLBServiceRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -608,12 +622,28 @@
       <part name="values" type="zeusns:booleanArray" />
    </message>
    
+   <message name="getAutoRecoveryRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getAutoRecoveryResponse">
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
    <message name="getDNSSECMappingsRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
    
    <message name="getDNSSECMappingsResponse">
       <part name="mappings" type="zeusns:GLB.Service.DNSSECMappingArrayArray" />
+   </message>
+   
+   <message name="getDisableOnFailureRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getDisableOnFailureResponse">
+      <part name="values" type="zeusns:booleanArray" />
    </message>
    
    <message name="getDomainsRequest">
@@ -652,6 +682,14 @@
    
    <message name="getGeoEffectResponse">
       <part name="values" type="zeusns:unsignedIntArray" />
+   </message>
+   
+   <message name="getLastResortResponseRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getLastResortResponseResponse">
+      <part name="values" type="zeusns:StringArrayArray" />
    </message>
    
    <message name="getLoadRequest">
@@ -771,6 +809,14 @@
       <part name="rules" type="zeusns:GLB.Service.RuleArrayArray" />
    </message>
    
+   <message name="getServiceIPAddressesRequest">
+      <part name="names" type="zeusns:StringArray" />
+   </message>
+   
+   <message name="getServiceIPAddressesResponse">
+      <part name="localips" type="zeusns:GLB.Service.LocalIPListArrayArray" />
+   </message>
+   
    <message name="getTTLRequest">
       <part name="names" type="zeusns:StringArray" />
    </message>
@@ -799,6 +845,13 @@
    </message>
    
    <message name="removeDrainingResponse"></message>
+   
+   <message name="removeLastResortResponseRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArrayArray" />
+   </message>
+   
+   <message name="removeLastResortResponseResponse"></message>
    
    <message name="removeLocalIPAddressesRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -844,6 +897,13 @@
    
    <message name="removeRulesByLocationResponse"></message>
    
+   <message name="removeServiceIPAddressesRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="localips" type="zeusns:GLB.Service.LocalIPListArrayArray" />
+   </message>
+   
+   <message name="removeServiceIPAddressesResponse"></message>
+   
    <message name="renameGLBServiceRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="new_names" type="zeusns:StringArray" />
@@ -872,12 +932,26 @@
    
    <message name="setAutoFailbackResponse"></message>
    
+   <message name="setAutoRecoveryRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setAutoRecoveryResponse"></message>
+   
    <message name="setDNSSECMappingsRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="mappings" type="zeusns:GLB.Service.DNSSECMappingArrayArray" />
    </message>
    
    <message name="setDNSSECMappingsResponse"></message>
+   
+   <message name="setDisableOnFailureRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:booleanArray" />
+   </message>
+   
+   <message name="setDisableOnFailureResponse"></message>
    
    <message name="setDomainsRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -906,6 +980,13 @@
    </message>
    
    <message name="setGeoEffectResponse"></message>
+   
+   <message name="setLastResortResponseRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="values" type="zeusns:StringArrayArray" />
+   </message>
+   
+   <message name="setLastResortResponseResponse"></message>
    
    <message name="setLoadRequest">
       <part name="names" type="zeusns:StringArray" />
@@ -1010,6 +1091,13 @@
    
    <message name="setRulesByLocationResponse"></message>
    
+   <message name="setServiceIPAddressesRequest">
+      <part name="names" type="zeusns:StringArray" />
+      <part name="localips" type="zeusns:GLB.Service.LocalIPListArrayArray" />
+   </message>
+   
+   <message name="setServiceIPAddressesResponse"></message>
+   
    <message name="setTTLRequest">
       <part name="names" type="zeusns:StringArray" />
       <part name="values" type="zeusns:intArray" />
@@ -1095,9 +1183,22 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="addLastResortResponse">
+         <documentation>
+            Add Last Resort Response.
+         </documentation>
+         
+         <input message="zeusns:addLastResortResponseRequest"/>
+         <output message="zeusns:addLastResortResponseResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="addLocalIPAddresses">
          <documentation>
-            Add Local IPs to the named GLB Services
+            This method is now deprecated and is replaced by addServiceIPAddresses
          </documentation>
          
          <input message="zeusns:addLocalIPAddressesRequest"/>
@@ -1173,6 +1274,19 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="addServiceIPAddresses">
+         <documentation>
+            Add Service IP addresses to the named GLB Services
+         </documentation>
+         
+         <input message="zeusns:addServiceIPAddressesRequest"/>
+         <output message="zeusns:addServiceIPAddressesResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="deleteGLBService">
          <documentation>
             Delete each of the named GLB Services.
@@ -1217,6 +1331,17 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="getAutoRecovery">
+         <documentation>
+            Get whether automatic recovery of the last location to fail is enabled.
+         </documentation>
+         
+         <input message="zeusns:getAutoRecoveryRequest"/>
+         <output message="zeusns:getAutoRecoveryResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="getDNSSECMappings">
          <documentation>
             Get the load for the named GLB Services
@@ -1224,6 +1349,17 @@
          
          <input message="zeusns:getDNSSECMappingsRequest"/>
          <output message="zeusns:getDNSSECMappingsResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
+      <operation name="getDisableOnFailure">
+         <documentation>
+            Get whether "Disable on Failure" mode is enabled.
+         </documentation>
+         
+         <input message="zeusns:getDisableOnFailureRequest"/>
+         <output message="zeusns:getDisableOnFailureResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
@@ -1281,6 +1417,17 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="getLastResortResponse">
+         <documentation>
+            Get Last Resort Response.
+         </documentation>
+         
+         <input message="zeusns:getLastResortResponseRequest"/>
+         <output message="zeusns:getLastResortResponseResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="getLoad">
          <documentation>
             Get the load for the named GLB Services
@@ -1296,7 +1443,7 @@
       
       <operation name="getLocalIPAddresses">
          <documentation>
-            Get the Local IPs configured for the named GLB Services
+            This method is now deprecated and is replaced by getServiceIPAddresses
          </documentation>
          
          <input message="zeusns:getLocalIPAddressesRequest"/>
@@ -1437,6 +1584,17 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="getServiceIPAddresses">
+         <documentation>
+            Get the Service IP addresses configured for the named GLB Services
+         </documentation>
+         
+         <input message="zeusns:getServiceIPAddressesRequest"/>
+         <output message="zeusns:getServiceIPAddressesResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="getTTL">
          <documentation>
             Get the TTL used for domains handled by this config
@@ -1487,9 +1645,22 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="removeLastResortResponse">
+         <documentation>
+            Remove Last Resort Response.
+         </documentation>
+         
+         <input message="zeusns:removeLastResortResponseRequest"/>
+         <output message="zeusns:removeLastResortResponseResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="removeLocalIPAddresses">
          <documentation>
-            Remove Local IPs from the named GLB Services
+            This method is now deprecated and is replaced by removeServiceIPAddresses
          </documentation>
          
          <input message="zeusns:removeLocalIPAddressesRequest"/>
@@ -1565,6 +1736,19 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="removeServiceIPAddresses">
+         <documentation>
+            Remove Service IP addresses from the named GLB Services
+         </documentation>
+         
+         <input message="zeusns:removeServiceIPAddressesRequest"/>
+         <output message="zeusns:removeServiceIPAddressesResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="renameGLBService">
          <documentation>
             Rename each of the named GLB Services.
@@ -1618,6 +1802,19 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="setAutoRecovery">
+         <documentation>
+            Set whether automatic recovery of the last location to fail is enabled.
+         </documentation>
+         
+         <input message="zeusns:setAutoRecoveryRequest"/>
+         <output message="zeusns:setAutoRecoveryResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="setDNSSECMappings">
          <documentation>
             Set the DNSSEC domain to key mappings to the GLB services specified. All previous mappings for this service will be removed.
@@ -1625,6 +1822,19 @@
          
          <input message="zeusns:setDNSSECMappingsRequest"/>
          <output message="zeusns:setDNSSECMappingsResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
+      <operation name="setDisableOnFailure">
+         <documentation>
+            Set whether "Disable on Failure" mode is enabled.
+         </documentation>
+         
+         <input message="zeusns:setDisableOnFailureRequest"/>
+         <output message="zeusns:setDisableOnFailureResponse"/>
          <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
          <fault name="InvalidInput" message="zeusns:InvalidInput"/>
          <fault name="DeploymentError" message="zeusns:DeploymentError"/>
@@ -1683,6 +1893,19 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="setLastResortResponse">
+         <documentation>
+            Set Last Resort Response.
+         </documentation>
+         
+         <input message="zeusns:setLastResortResponseRequest"/>
+         <output message="zeusns:setLastResortResponseResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="setLoad">
          <documentation>
             Set the load for the named GLB Services
@@ -1698,7 +1921,7 @@
       
       <operation name="setLocalIPAddresses">
          <documentation>
-            Set the Local IPs configured for the named GLB Services
+            This method is now deprecated and is replaced by setServiceIPAddresses
          </documentation>
          
          <input message="zeusns:setLocalIPAddressesRequest"/>
@@ -1865,6 +2088,19 @@
          <fault name="LicenseError" message="zeusns:LicenseError"/>
       </operation>
       
+      <operation name="setServiceIPAddresses">
+         <documentation>
+            Set the Service IP addresses configured for the named GLB Services
+         </documentation>
+         
+         <input message="zeusns:setServiceIPAddressesRequest"/>
+         <output message="zeusns:setServiceIPAddressesResponse"/>
+         <fault name="ObjectDoesNotExist" message="zeusns:ObjectDoesNotExist"/>
+         <fault name="InvalidInput" message="zeusns:InvalidInput"/>
+         <fault name="DeploymentError" message="zeusns:DeploymentError"/>
+         <fault name="LicenseError" message="zeusns:LicenseError"/>
+      </operation>
+      
       <operation name="setTTL">
          <documentation>
             Set the TTL used for domains handled by this config
@@ -1988,10 +2224,36 @@
          </fault>
       </operation>
       
+      <operation name="addLastResortResponse">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/addLastResortResponse"/>
+         <documentation>
+            Add Last Resort Response.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="addLocalIPAddresses">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/addLocalIPAddresses"/>
          <documentation>
-            Add Local IPs to the named GLB Services
+            This method is now deprecated and is replaced by addServiceIPAddresses
          </documentation>
          
          <input>
@@ -2144,6 +2406,32 @@
          </fault>
       </operation>
       
+      <operation name="addServiceIPAddresses">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/addServiceIPAddresses"/>
+         <documentation>
+            Add Service IP addresses to the named GLB Services
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="deleteGLBService">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/deleteGLBService"/>
          <documentation>
@@ -2224,10 +2512,50 @@
          </fault>
       </operation>
       
+      <operation name="getAutoRecovery">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/getAutoRecovery"/>
+         <documentation>
+            Get whether automatic recovery of the last location to fail is enabled.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getDNSSECMappings">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/getDNSSECMappings"/>
          <documentation>
             Get the load for the named GLB Services
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="getDisableOnFailure">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/getDisableOnFailure"/>
+         <documentation>
+            Get whether "Disable on Failure" mode is enabled.
          </documentation>
          
          <input>
@@ -2338,6 +2666,26 @@
          </fault>
       </operation>
       
+      <operation name="getLastResortResponse">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/getLastResortResponse"/>
+         <documentation>
+            Get Last Resort Response.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getLoad">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/getLoad"/>
          <documentation>
@@ -2367,7 +2715,7 @@
       <operation name="getLocalIPAddresses">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/getLocalIPAddresses"/>
          <documentation>
-            Get the Local IPs configured for the named GLB Services
+            This method is now deprecated and is replaced by getServiceIPAddresses
          </documentation>
          
          <input>
@@ -2624,6 +2972,26 @@
          </fault>
       </operation>
       
+      <operation name="getServiceIPAddresses">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/getServiceIPAddresses"/>
+         <documentation>
+            Get the Service IP addresses configured for the named GLB Services
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="getTTL">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/getTTL"/>
          <documentation>
@@ -2722,10 +3090,36 @@
          </fault>
       </operation>
       
+      <operation name="removeLastResortResponse">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/removeLastResortResponse"/>
+         <documentation>
+            Remove Last Resort Response.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="removeLocalIPAddresses">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/removeLocalIPAddresses"/>
          <documentation>
-            Remove Local IPs from the named GLB Services
+            This method is now deprecated and is replaced by removeServiceIPAddresses
          </documentation>
          
          <input>
@@ -2878,6 +3272,32 @@
          </fault>
       </operation>
       
+      <operation name="removeServiceIPAddresses">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/removeServiceIPAddresses"/>
+         <documentation>
+            Remove Service IP addresses from the named GLB Services
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="renameGLBService">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/renameGLBService"/>
          <documentation>
@@ -2985,10 +3405,62 @@
          </fault>
       </operation>
       
+      <operation name="setAutoRecovery">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/setAutoRecovery"/>
+         <documentation>
+            Set whether automatic recovery of the last location to fail is enabled.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setDNSSECMappings">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/setDNSSECMappings"/>
          <documentation>
             Set the DNSSEC domain to key mappings to the GLB services specified. All previous mappings for this service will be removed.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setDisableOnFailure">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/setDisableOnFailure"/>
+         <documentation>
+            Set whether "Disable on Failure" mode is enabled.
          </documentation>
          
          <input>
@@ -3115,6 +3587,32 @@
          </fault>
       </operation>
       
+      <operation name="setLastResortResponse">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/setLastResortResponse"/>
+         <documentation>
+            Set Last Resort Response.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
       <operation name="setLoad">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/setLoad"/>
          <documentation>
@@ -3144,7 +3642,7 @@
       <operation name="setLocalIPAddresses">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/setLocalIPAddresses"/>
          <documentation>
-            Set the Local IPs configured for the named GLB Services
+            This method is now deprecated and is replaced by setServiceIPAddresses
          </documentation>
          
          <input>
@@ -3457,6 +3955,32 @@
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/setRulesByLocation"/>
          <documentation>
             Set the rules that are run on DNS packets for each of the named GLB services. This is a location specific function, any action will operate on the specified location.
+         </documentation>
+         
+         <input>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </input>
+         <output>
+            <soap:body use="encoded" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </output>
+         <fault name="ObjectDoesNotExist">
+            <soap:fault use="encoded" name="ObjectDoesNotExist" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="InvalidInput">
+            <soap:fault use="encoded" name="InvalidInput" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="DeploymentError">
+            <soap:fault use="encoded" name="DeploymentError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+         <fault name="LicenseError">
+            <soap:fault use="encoded" name="LicenseError" namespace="http://soap.zeus.com/zxtm/1.0/GLB/Service/" encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"/>
+         </fault>
+      </operation>
+      
+      <operation name="setServiceIPAddresses">
+         <soap:operation soapAction="http://soap.zeus.com/zxtm/1.0/GLB/Service/setServiceIPAddresses"/>
+         <documentation>
+            Set the Service IP addresses configured for the named GLB Services
          </documentation>
          
          <input>
