@@ -219,4 +219,7 @@ public interface ReverseProxyLoadBalancerAdapter {
 
     void deleteCertificateMapping(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, CertificateMapping certMappingToDelete)
             throws RemoteException, InsufficientRequestException, RollBackException;
+
+    public void enableDisableTLS_10(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isEnabled)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 }

@@ -19,6 +19,10 @@
                 <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType</class-a>
                 <class-b>org.openstack.atlas.service.domain.entities.SessionPersistence</class-b>
             </converter>
+            <converter type="org.openstack.atlas.api.mapper.dozer.converter.SslTerminationConverter">
+                <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-a>
+                <class-b>org.openstack.atlas.service.domain.entities.SslTermination</class-b>
+            </converter>
         </custom-converters>
     </configuration>
 
@@ -191,11 +195,9 @@
             <a-hint>org.openstack.atlas.service.domain.pojos.SourceAddresses</a-hint>
             <b-hint>org.openstack.atlas.service.domain.entities.Host</b-hint>
         </field>
-        <field map-id="DISPLAY_SSL">
+        <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SslTerminationDisplayConverter">
             <a>sslTermination</a>
             <b>sslTermination</b>
-            <a-hint>org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</a-hint>
-            <b-hint>org.openstack.atlas.service.domain.entities.SslTermination</b-hint>
         </field>
         <field>
             <a>cluster</a>
@@ -442,74 +444,6 @@
             <a>id</a>
             <b>id</b>
         </field-exclude>
-    </mapping>
-
-    <mapping map-null="false" type="one-way">
-        <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-a>
-        <class-b>org.openstack.atlas.service.domain.entities.SslTermination</class-b>
-        <field-exclude>
-            <a>id</a>
-            <b>id</b>
-        </field-exclude>
-        <field>
-            <a get-method="isEnabled">enabled</a>
-            <b get-method="isEnabled">enabled</b>
-        </field>
-        <field>
-            <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
-            <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
-        </field>
-    </mapping>
-
-    <mapping map-null="false" type="one-way">
-        <class-a>org.openstack.atlas.service.domain.entities.SslTermination</class-a>
-        <class-b>org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-b>
-        <field-exclude>
-            <a>id</a>
-            <b>id</b>
-        </field-exclude>
-        <field-exclude>
-            <a>privatekey</a>
-            <b>privatekey</b>
-        </field-exclude>
-        <field>
-            <a get-method="isEnabled">enabled</a>
-            <b get-method="isEnabled">enabled</b>
-        </field>
-        <field>
-            <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
-            <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
-        </field>
-    </mapping>
-
-    <mapping map-id="DISPLAY_SSL">
-       <class-a>
-            org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination</class-a>
-        <class-b>org.openstack.atlas.service.domain.entities.SslTermination</class-b>
-        <field-exclude>
-            <a>id</a>
-            <b>id</b>
-        </field-exclude>
-        <field-exclude>
-            <a>privatekey</a>
-            <b>privatekey</b>
-        </field-exclude>
-        <field-exclude>
-            <a>certificate</a>
-            <b>certificate</b>
-        </field-exclude>
-        <field-exclude>
-            <a>intermediateCertificate</a>
-            <b>intermediateCertificate</b>
-        </field-exclude>
-        <field>
-        <a get-method="isEnabled">enabled</a>
-        <b get-method="isEnabled">enabled</b>
-        </field>
-        <field>
-        <a get-method="isSecureTrafficOnly">secureTrafficOnly</a>
-        <b get-method="isSecureTrafficOnly">secureTrafficOnly</b>
-        </field>
     </mapping>
 
     <mapping map-null="false">

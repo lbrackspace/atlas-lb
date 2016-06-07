@@ -26,6 +26,9 @@ import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolName;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolStatus;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
@@ -158,6 +161,25 @@ public class BounceResource extends CommonDependencyProvider {
 
             resp = Response.status(200).entity(sslOut).build();
         }
+        return resp;
+    }
+
+    @POST
+    @Path("sslterminationvalidation")
+    public Response SslTerminationValidation(SslTermination sslTerm) {
+        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
+        ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(sslTerm, HttpRequestType.PUT);
+        if (!result.passedValidation()) {
+            return getValidationFaultResponse(result);
+        }
+        SecurityProtocol sp = new SecurityProtocol();
+        org.openstack.atlas.service.domain.entities.SslTermination dbSslTerm;
+        SslTermination apiSslTerm;
+        dbSslTerm = dozerMapper.map(sslTerm, org.openstack.atlas.service.domain.entities.SslTermination.class);
+        apiSslTerm = dozerMapper.map(dbSslTerm, SslTermination.class);
+        Response resp = Response.status(200).entity(apiSslTerm).build();
         return resp;
     }
 }
