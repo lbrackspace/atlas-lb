@@ -41,6 +41,9 @@ import javax.ws.rs.core.Response;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolName;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolStatus;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.w3.atom.Link;
 
@@ -281,6 +284,10 @@ public class StubResource extends CommonDependencyProvider {
         sslTermination.setEnabled(true);
         sslTermination.setSecurePort(443);
         sslTermination.setSecureTrafficOnly(false);
+        SecurityProtocol protocol = new SecurityProtocol();
+        protocol.setSecurityProtocolName(SecurityProtocolName.TLS_10);
+        protocol.setSecurityProtocolStatus(SecurityProtocolStatus.DISABLED);
+        sslTermination.getSecurityProtocols().add(protocol);
         return Response.status(Response.Status.OK).entity(sslTermination).build();
     }
 
