@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.*;
+import org.apache.commons.lang.NotImplementedException;
 import org.openstack.atlas.util.debug.Debug;
 
 @Component
@@ -918,6 +919,14 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         Stats stats = CustomMappings.mapVirtualServerStatsLists(virtualServerList, sslVirtualServerList);
         return stats;
     }
+
+    @Override
+        public void disableEnabledTLS_10(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
+            throws InsufficientRequestException, RollBackException{
+        throw new NotImplementedException("Hey you forgot to implement disabling TLS_10 for the Zxtm Rest adaptor");
+    }
+
+
 
     /**
      * Deprecating these(SubnetMapping calls) as per ops. Unused call that is difficult to test, may support in future if needed... *
