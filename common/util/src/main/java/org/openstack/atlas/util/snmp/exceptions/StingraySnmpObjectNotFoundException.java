@@ -3,6 +3,7 @@ package org.openstack.atlas.util.snmp.exceptions;
 public class StingraySnmpObjectNotFoundException extends StingraySnmpGeneralException{
 
     public StingraySnmpObjectNotFoundException() {
+        super();
     }
 
     public StingraySnmpObjectNotFoundException(String message) {

@@ -205,6 +205,25 @@ public class StaticStringUtils {
 
     }
 
+    public static String listOfIntsToString(List<Integer> intList) {
+        int i = 0;
+        StringBuilder sb = new StringBuilder();
+        if (intList == null) {
+            return "";
+        }
+        if (intList.size() <= 0) {
+            return "";
+        }
+        for (i = 0; i < intList.size() - 1; i++) {
+            if (intList.get(i) == null) {
+                continue;
+            }
+            sb.append(intList.get(i)).append(", ");
+        }
+        sb.append(intList.get(i));
+        return sb.toString();
+    }
+
     public static String showDiff(String a, String b) {
         StringBuilder sb = new StringBuilder();
         int i;

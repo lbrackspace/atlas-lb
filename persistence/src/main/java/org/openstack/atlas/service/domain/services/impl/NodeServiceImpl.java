@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
@@ -25,11 +27,18 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import org.openstack.atlas.service.domain.pojos.NodeStatusPojo;
+import org.openstack.atlas.service.domain.pojos.NodeStatusReport;
+import org.openstack.atlas.util.debug.Debug;
+import org.openstack.atlas.util.snmp.SnmpNodeKey;
+import org.openstack.atlas.util.snmp.SnmpNodeStatus;
+import org.openstack.atlas.util.snmp.SnmpNodeStatusThread;
+import org.openstack.atlas.util.snmp.StingraySnmpClient;
 
 @Service
 public class NodeServiceImpl extends BaseService implements NodeService {
-    private final Log LOG = LogFactory.getLog(NodeServiceImpl.class);
 
+    private final Log LOG = LogFactory.getLog(NodeServiceImpl.class);
     @Autowired
     private AccountLimitService accountLimitService;
     @Autowired
@@ -70,14 +79,14 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     @DeadLockRetry
     @Override
     public LoadBalancer delNodes(LoadBalancer lb, Collection<Node> nodes) throws EntityNotFoundException {
-           return nodeRepository.delNodes(loadBalancerRepository.getById(lb.getId()), nodes);
+        return nodeRepository.delNodes(loadBalancerRepository.getById(lb.getId()), nodes);
     }
 
     @Transactional
     @DeadLockRetry
     @Override
     public void delNode(LoadBalancer lb, int nid) throws EntityNotFoundException {
-           nodeRepository.delNode(loadBalancerRepository.getById(lb.getId()), nid);
+        nodeRepository.delNode(loadBalancerRepository.getById(lb.getId()), nid);
     }
 
     @Transactional
@@ -387,5 +396,115 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         }
 
         return validationErrors;
+    }
+
+    @Override
+    public NodeStatusReport runNodeStatusAudit() {
+        int nRows = 0;
+        NodeStatusReport nsr = new NodeStatusReport();
+        Map<SnmpNodeKey, List<NodeStatusPojo>> dbStatusMap = new HashMap<SnmpNodeKey, List<NodeStatusPojo>>();
+        Map<SnmpNodeKey, SnmpNodeStatus> snmpStatusMap = new HashMap<SnmpNodeKey, SnmpNodeStatus>();
+        List<NodeStatusPojo> nspl = loadBalancerRepository.getAllActiveLoadBalancerNodeStatuses();
+        List<String> managementIps = hostRepository.getHostManagementIpsForSnmp();
+        List<StingraySnmpClient> clients = new ArrayList<StingraySnmpClient>();
+        List<SnmpNodeStatusThread> threads = new ArrayList<SnmpNodeStatusThread>();
+        List<Integer> turnOnline = new ArrayList<Integer>();  // Tracks nodes that need to be flipped online
+        List<Integer> turnOffline = new ArrayList<Integer>(); // Tracks nodes that need to be flipped offline
+        Map<Integer, NodeStatus> stateDelts = new HashMap<Integer, NodeStatus>();
+        for (String ip : managementIps) {
+            StingraySnmpClient client = new StingraySnmpClient(ip);
+            SnmpNodeStatusThread thread = new SnmpNodeStatusThread();
+            thread.setClient(client);
+            threads.add(thread);
+            clients.add(client);
+        }
+        for (SnmpNodeStatusThread thread : threads) {
+            thread.start();
+        }
+        for (SnmpNodeStatusThread thread : threads) {
+            try {
+                thread.join();
+                for (Map.Entry<SnmpNodeKey, SnmpNodeStatus> entry : thread.getStatusMap().entrySet()) {
+                    SnmpNodeKey snmpNodeKey = entry.getKey();
+                    SnmpNodeStatus snmpNodeMap = entry.getValue();
+                    snmpStatusMap.put(snmpNodeKey, snmpNodeMap);
+                }
+            } catch (InterruptedException ex) {
+                String fmt = "Error lanuching SNMP node status thread to SNMP host %s: %s\n";
+                String msg = String.format(fmt, thread.getClientKey(), Debug.getExtendedStackTrace(ex));
+                LOG.warn(msg, ex);
+                nsr.incThreadErrors();
+            }
+        }
+
+        for (NodeStatusPojo nsp : nspl) {
+            String ipAddress = nsp.getIpAddress();
+            int port = nsp.getPort();
+            int ipType = IPUtils.getIPType(ipAddress);
+            if (ipType <= 0) {
+                String fmt = "Not sure what kind of ip address node %s:%d is skipping during node status audit\n";
+                String msg = String.format(fmt, ipAddress, port);
+                LOG.warn(msg);
+                nsr.incIpTypeError();
+                continue;
+            }
+            try {
+                String canonicalIp = IPUtils.canonicalIp(ipAddress);
+                SnmpNodeKey snmpNodeKey = new SnmpNodeKey();
+                snmpNodeKey.setIpAddress(canonicalIp);
+                snmpNodeKey.setIpType(ipType);
+                snmpNodeKey.setPort(port);
+                if (!dbStatusMap.containsKey(snmpNodeKey)) {
+                    dbStatusMap.put(snmpNodeKey, new ArrayList<NodeStatusPojo>());
+                }
+                dbStatusMap.get(snmpNodeKey).add(nsp);
+            } catch (IPStringConversionException ex) {
+                String fmt = "Could not canonicalize IP address %s wonder  IP is was";
+                String msg = String.format(fmt, ipAddress);
+                LOG.warn(msg, ex);
+                nsr.incCanonicalIpErrors();
+            }
+        }
+        for (SnmpNodeKey snmpNodeKey : snmpStatusMap.keySet()) {
+            SnmpNodeStatus snmpStat = snmpStatusMap.get(snmpNodeKey);
+            if (!dbStatusMap.containsKey(snmpNodeKey)) {
+                nsr.incNotInDB();
+                continue;
+            }
+            List<NodeStatusPojo> dbStatusList = dbStatusMap.get(snmpNodeKey);
+            for (NodeStatusPojo statsPojo : dbStatusList) {
+                if (statsPojo.getIpAddress().equals(snmpStat.getIpAddress()) && statsPojo.getPort() == snmpStat.getPort()) {
+                    // if zues says unknown just skip it but count it.
+                    if (snmpStat.getStatus() == SnmpNodeStatus.UNKNOWN) {
+                        nsr.incUnknownStatus();
+                    } else if (snmpStat.getStatus() == SnmpNodeStatus.DEAD && statsPojo.getStatus() == NodeStatus.ONLINE) {
+                        // If zxtm says offlne but database says online flip to offline
+                        turnOffline.add(statsPojo.getNodeId());
+                        nsr.incTurnedOffline();
+                    } else if (snmpStat.getStatus() == SnmpNodeStatus.ALIVE && statsPojo.getStatus() == NodeStatus.OFFLINE) {
+                        turnOnline.add(statsPojo.getNodeId());
+                        nsr.incTurnedOnline();
+                    } else {
+                        nsr.incNoDeltas();
+                    }
+                } else {
+                    nsr.incSnmpKeyMissMatch();
+                }
+            }
+        }
+        
+
+        // An outside proccess will deside when to update the actual
+        // DB node statuses via the contents of nsr
+        nsr.getTurnOnline().addAll(turnOnline);
+        nsr.getTurnOffline().addAll(turnOffline);
+        return nsr;
+    }
+
+    @Override
+    @Transactional
+    public int setNodeStatus(List<Integer> nodeId, boolean isOnline){
+        int nRows = nodeRepository.setNodeStatusBulk(nodeId, isOnline);
+        return nRows;
     }
 }

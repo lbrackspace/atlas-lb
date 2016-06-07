@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface JobStateService {
 
+    JobState saveJobeStateEntry(JobState jobState);
+
     JobState getById(Integer id) throws EntityNotFoundException;
 
     JobState getByName(JobName jobName);

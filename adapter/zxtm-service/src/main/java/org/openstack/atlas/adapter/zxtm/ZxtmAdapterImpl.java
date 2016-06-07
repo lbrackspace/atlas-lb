@@ -1423,6 +1423,8 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             LOG.info(String.format("Creating ssl termination load balancer %s in zeus... ", sslVirtualServerName));
             createSecureVirtualServer(conf, loadBalancer);
+            // disable tls v1.0 if they disabled it
+            enableDisableTLS_10(conf, loadBalancer, zeusSslTermination.getSslTermination().isTls10Enabled());
         } catch (Exception af) {
             if (af instanceof ObjectAlreadyExists) {
                 LOG.warn(String.format("Secure virtual server '%s' already exists, ignoring....", sslVirtualServerName));

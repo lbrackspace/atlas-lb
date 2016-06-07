@@ -3,8 +3,9 @@
 from threading import Thread
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ForkingMixIn, ThreadingMixIn
-import copy
+import socket
 import thread
+import copy
 import time
 import json
 import sys
@@ -29,6 +30,8 @@ class TestHandler(BaseHTTPRequestHandler):
         obj["headers"]=[]
         obj["local_ip"]=self.request.getsockname()[0]
         obj["remote_ip"]=self.request.getpeername()[0]
+        obj["epoch"] = time.time()
+        obj["hostname"] = socket.gethostname()
         for hdr in self.headers.headers:
             obj["headers"].append(hdr)
         jsonData = json.dumps(obj,indent=2)

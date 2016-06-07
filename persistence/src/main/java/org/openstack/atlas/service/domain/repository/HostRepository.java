@@ -15,6 +15,7 @@ import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import org.openstack.atlas.util.snmp.StingraySnmpClient;
 
 @Repository
 @Transactional
@@ -197,7 +198,7 @@ public class HostRepository {
         return results.get(0);
     }
 
-     public Host getRestEndPointHost(Integer clusterId) {
+    public Host getRestEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.restEndpointActive  = 1 "
                 + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER', 'SOAP_API_ENDPOINT') "
                 + "and h.cluster.id = :clusterId "
@@ -438,5 +439,19 @@ public class HostRepository {
             }
         }
         throw new EntityNotFoundException("ACTIVE_TARGET host not found");
+    }
+
+    public List<String> getHostManagementIpsForSnmp() {
+        // If there are hosts that shoulden't be used for SNMP here is the query to filter it on
+        List<String> managementIps = new ArrayList<String>();
+        List<Object> rows = entityManager.createQuery("select h.managementIp from Host h").getResultList();
+        for (Object row : rows) {
+            String managementIp = (String) row;
+            if (managementIp == null) {
+                continue;
+            }
+            managementIps.add(managementIp);
+        }
+        return managementIps;
     }
 }

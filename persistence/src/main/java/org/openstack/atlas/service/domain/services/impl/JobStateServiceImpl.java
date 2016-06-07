@@ -41,6 +41,13 @@ public class JobStateServiceImpl extends BaseService implements JobStateService 
         return jobStateRepository.getByState(state, p);
     }
 
+
+    // Save the actual JobState entry for episodic jobState tavke ebtrues
+    @Override
+    public JobState saveJobeStateEntry(JobState jobState){
+        return jobStateRepository.update(jobState);
+    }
+
     @Override
     /* Creates an entry in the database if it doesn't exist */
     public JobState updateJobState(JobName jobName, JobStateVal jobStateVal) {
