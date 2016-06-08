@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_51db057c",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/repository/ValidatorRepository.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-08T02:31:16Z",
+      "side": 1,
+      "message": "During debuggin I noticed that all validators were being reconstructed on ever getValidator() pass but only one is returned. I set this to construct the new validator based on the instance of the class being requested cause it was slowing me down during debugging and its save a tone of instruction execution. See how the map is being rebuilt on the left during every execution. A new Validator is needed to be thread safe but we don\u0027t need to rebuild all of them.",
+      "range": {
+        "startLine": 8,
+        "startChar": 1,
+        "endLine": 43,
+        "endChar": 5
+      },
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_31e64144",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/BounceResource.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-08T02:31:16Z",
+      "side": 1,
+      "message": "The bounce resource is so we can quickly test how xml and json would look like during conversions. IE the user posts json and sets their headers to decode XML so they can see the difference. or vice versa.",
+      "range": {
+        "startLine": 167,
+        "startChar": 1,
+        "endLine": 184,
+        "endChar": 5
+      },
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
