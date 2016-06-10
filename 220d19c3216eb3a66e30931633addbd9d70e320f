@@ -107,6 +107,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_9b1cfc14",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/zxtm/ZxtmAdapterImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1427,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-06-10T21:02:53Z",
+      "side": 1,
+      "message": "Interesting... And sad.",
+      "parentUuid": "baa041b7_9b6e3c95",
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_9babdcd6",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/mapper/dozer/converter/SslTerminationConverter.java",
         "patchSetId": 2
@@ -216,6 +234,23 @@
       "side": 1,
       "message": "Its instance level. Not class level.\n\nhad it said \"private static string errMessage\" then yes you\u0027d have reason for convern.\n\nAnd yes we needed object instance access to it. Its the only way to dynamicly build an ErrorString. This DSL validator langguage sucks in that it doesn\u0027t give you the tools to properly create the message dynamicly based on the error. The way its written you can only build precanned messages like \"IP is not an IPv4\" but not something like \"IP %s is not an IPv4 address\" which requires the string be built inside the \"validate()\" method. But some builder pattern ideologue rigged it so that \"withMessage()\" is how you send a message back to the user. leaving the validator to say true or false but no real way to tell withMessage why it failed.\n\nexample \nvalidate IPv6Validator.validate().withMessage(\"uh hmm.... I guess it wasn\u0027t an IPv6 address.\")\n\n    The only concern I had was that this be thread safe and it is since the original validator repository was litterally creating new validator instances for every single request that came in. Thats pretty thread safe right.\n\n   I trimmed the fat in the Validator repository so that it doesn\u0027t spin up 16 hulking validators per request. You\u0027d think one would be enough right?",
       "parentUuid": "baa041b7_3b81704e",
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_bb1fc008",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-06-10T21:02:53Z",
+      "side": 1,
+      "message": "I don\u0027t really care where you define errMessage, I\u0027m just confused. This is the only place I see it used, why couldn\u0027t it be defined on line 115 or so?",
       "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
