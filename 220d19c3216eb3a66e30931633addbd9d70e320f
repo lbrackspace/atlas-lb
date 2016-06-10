@@ -257,6 +257,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_fbdb084e",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-10T21:10:58Z",
+      "side": 1,
+      "message": "I actually tried that but the errorMsg was still out of scope for the verify method. I\u0027m guessing its because errorMsg would be in the class constructor and the verify method while being defined in the constructor would not have access to constructor stack variables since the constructor terminates. leaving the verify method to be called later. Java doesn\u0027t really have anonymouse methods or \"lambdas\" if you will. Those lambda methods and classes are created into files like\nouterClass.class\nouterClass$innerVerifier.class\nJava is crufty on anon methods.",
+      "parentUuid": "baa041b7_bb1fc008",
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_5b8c347f",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/helpers/SslTerminationHelper.java",
         "patchSetId": 2
