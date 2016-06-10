@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_fbc8a8aa",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/service/ReverseProxyLoadBalancerAdapter.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 223,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-10T20:54:28Z",
+      "side": 1,
+      "message": "The ZxtmStubs are auto generated. This code is all ours.\nIn general methods listed in interfaces are implicitly public but a montra I always liked is explicit is better then implicit when given a choice. The code looks odd to me without the public accesser but whatevr. But as they say the first retard across the finish line sets the trend so we must all follow.",
+      "parentUuid": "baa041b7_9b0f5c2e",
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_fb1e685e",
         "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
         "patchSetId": 2
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_dbcde4b8",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/stm/StmAdapterImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 924,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-10T20:54:28Z",
+      "side": 1,
+      "message": "I\u0027m not ready to work on the REST stuff yet. And felt that since I haven\u0027t been interduced to this yet I wasn\u0027t going to mangle code for it. I left this here to remind me to implement it in rest.",
+      "parentUuid": "baa041b7_fb1e685e",
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_bb3900db",
         "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/zxtm/ZxtmAdapterImpl.java",
         "patchSetId": 2
@@ -47,6 +83,24 @@
       "writtenOn": "2016-06-10T18:48:59Z",
       "side": 1,
       "message": "If this is the only place you put this, it\u0027s not going to be executed on updates, only on creates -- this TRY block will bail during the line above this if the SSLVS already exists. You should probably just move this down a little bit?",
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_9b6e3c95",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/zxtm/ZxtmAdapterImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1427,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-10T20:54:28Z",
+      "side": 1,
+      "message": "Look at the code again. From the outside that certainlky looks like what you said was the intention but inside the code you can see that it swallows the exception if it already exists then just adds ips to it (see lines 307 - 312). later on for some reason there is an \"isinstanceof check to see if ObjectAlreadyExists then rethrows it. If you switch out the code to see if ObjectAlreadyExists exceptionm is actually thrown you\u0027ll see its not possible to catch that exception there.\n\n    Long story short some one fixed the code so that it actually updates the virtualserver if a create fails but noticed that the caller still wants to catch the exception and rather then removing the exception handler they jerry rigged the method to look like it can still throw ObjectNotFound. :/\n\n   I\u0027ll move my code out so just cause it looks bad. But suprisingly the code still works.\n\nCome to think of it. The code is ignoring all axis faults and has been for a while which is another can of worms. :/",
+      "parentUuid": "baa041b7_bb3900db",
       "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -150,6 +204,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_7b6b7886",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-10T20:54:28Z",
+      "side": 1,
+      "message": "Its instance level. Not class level.\n\nhad it said \"private static string errMessage\" then yes you\u0027d have reason for convern.\n\nAnd yes we needed object instance access to it. Its the only way to dynamicly build an ErrorString. This DSL validator langguage sucks in that it doesn\u0027t give you the tools to properly create the message dynamicly based on the error. The way its written you can only build precanned messages like \"IP is not an IPv4\" but not something like \"IP %s is not an IPv4 address\" which requires the string be built inside the \"validate()\" method. But some builder pattern ideologue rigged it so that \"withMessage()\" is how you send a message back to the user. leaving the validator to say true or false but no real way to tell withMessage why it failed.\n\nexample \nvalidate IPv6Validator.validate().withMessage(\"uh hmm.... I guess it wasn\u0027t an IPv6 address.\")\n\n    The only concern I had was that this be thread safe and it is since the original validator repository was litterally creating new validator instances for every single request that came in. Thats pretty thread safe right.\n\n   I trimmed the fat in the Validator repository so that it doesn\u0027t spin up 16 hulking validators per request. You\u0027d think one would be enough right?",
+      "parentUuid": "baa041b7_3b81704e",
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_5b8c347f",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/helpers/SslTerminationHelper.java",
         "patchSetId": 2
@@ -161,6 +233,24 @@
       "writtenOn": "2016-06-10T18:48:59Z",
       "side": 1,
       "message": "Is this misspelled? convertApiSslTermTobTlsProtocols",
+      "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_1b090cde",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/helpers/SslTerminationHelper.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-10T20:54:28Z",
+      "side": 1,
+      "message": "Yea it is. Good thing its not backed by XML. That\u0027d be hard to fix.",
+      "parentUuid": "baa041b7_5b8c347f",
       "revId": "220d19c3216eb3a66e30931633addbd9d70e320f",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
