@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-ca-parent</artifactId>
-        <version>1.25.29-SNAPSHOT</version>
+        <version>1.25.29</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-crtbuilder</artifactId>
     <name>Openstack :: Atlas :: CA :: Chainbuilder</name>
-    <version>1.25.29-SNAPSHOT</version>
+    <version>1.25.29</version>
     <packaging>jar</packaging>
 
     <dependencies>
