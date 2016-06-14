@@ -37,6 +37,9 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws InsufficientRequestException, RollBackException;
 
+    public void disableEnabledTLS_10(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
+            throws InsufficientRequestException, RollBackException;
+
     public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws InsufficientRequestException, RollBackException;
 

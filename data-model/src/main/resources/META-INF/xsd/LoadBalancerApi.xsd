@@ -409,12 +409,32 @@
         </xsd:sequence>
     </xsd:complexType>
 
+    <xsd:simpleType name="securityProtocolStatus">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ENABLED" />
+            <xsd:enumeration value="DISABLED" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="securityProtocolName">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="TLS_10" />
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:element name="securityProtocol" type="tns:securityProtocol" />
+    <xsd:complexType name="securityProtocol" >
+    <xsd:attribute name="securityProtocolName" type="tns:securityProtocolName" />
+    <xsd:attribute name="securityProtocolStatus" type="tns:securityProtocolStatus" />
+    </xsd:complexType>
+
     <xsd:element name="sslTermination" type="tns:sslTermination"/>
     <xsd:complexType name="sslTermination">
         <xsd:sequence>
             <xsd:element name="privatekey" type="xsd:string" minOccurs="0"/>
             <xsd:element name="certificate" type="xsd:string" minOccurs="0"/>
             <xsd:element name="intermediateCertificate" type="xsd:string" minOccurs="0"/>
+            <xsd:element name="securityProtocols" type="tns:securityProtocol" minOccurs="0" maxOccurs="unbounded" />
         </xsd:sequence>
         <xsd:attribute name="id" type="xsd:int"/>
         <xsd:attribute name="enabled" type="xsd:boolean"/>

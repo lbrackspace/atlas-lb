@@ -12,8 +12,10 @@ import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
 import java.util.List;
 import java.util.Map;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
 
 public final class SslTerminationHelper {
+
     protected static final Log LOG = LogFactory.getLog(SslTerminationHelper.class);
 
     public static boolean modificationStatus(SslTermination sslTermination, LoadBalancer dbLoadBalancer) throws BadRequestException {
@@ -75,43 +77,49 @@ public final class SslTerminationHelper {
         }
     }
 
-    public static org.openstack.atlas.service.domain.entities.SslTermination verifyAttributes(SslTermination queTermination, org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
+    public static org.openstack.atlas.service.domain.entities.SslTermination verifyAttributes(SslTermination apiSslTermination, org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
+        boolean isNewDbSslTerm = false;
         if (dbTermination == null) {
             dbTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
+            isNewDbSslTerm = true;
         }
+
+        // set the allowed TLS protocols for the database
+        convertApiSslTermToDbTlsProtocols(apiSslTermination, dbTermination, isNewDbSslTerm);
 
         //Set fields to updated values
-        if (queTermination.isEnabled() != null) {
-            dbTermination.setEnabled(queTermination.isEnabled());
+        if (apiSslTermination.isEnabled() != null) {
+            dbTermination.setEnabled(apiSslTermination.isEnabled());
         }
 
-        if (queTermination.isSecureTrafficOnly() != null) {
-            if ((queTermination.isEnabled() != null && !queTermination.isEnabled()) || (!dbTermination.isEnabled()) && (queTermination.isSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
+
+        if (apiSslTermination.isSecureTrafficOnly() != null) {
+            if ((apiSslTermination.isEnabled() != null && !apiSslTermination.isEnabled()) || (!dbTermination.isEnabled()) && (apiSslTermination.isSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
                 dbTermination.setSecureTrafficOnly(false);
             } else {
-                dbTermination.setSecureTrafficOnly(queTermination.isSecureTrafficOnly());
+                dbTermination.setSecureTrafficOnly(apiSslTermination.isSecureTrafficOnly());
             }
         }
 
-        if (queTermination.getSecurePort() != null) {
-            dbTermination.setSecurePort(queTermination.getSecurePort());
+        if (apiSslTermination.getSecurePort() != null) {
+            dbTermination.setSecurePort(apiSslTermination.getSecurePort());
         }
 
         //The certificates are either null or populated, no updating.
-        if (queTermination.getCertificate() != null) {
-            dbTermination.setCertificate(queTermination.getCertificate());
+        if (apiSslTermination.getCertificate() != null) {
+            dbTermination.setCertificate(apiSslTermination.getCertificate());
         }
 
-        if (queTermination.getIntermediateCertificate() != null) {
-            dbTermination.setIntermediateCertificate(queTermination.getIntermediateCertificate());
+        if (apiSslTermination.getIntermediateCertificate() != null) {
+            dbTermination.setIntermediateCertificate(apiSslTermination.getIntermediateCertificate());
         } else {
-            if (queTermination.getCertificate() != null && queTermination.getCertificate() != null) {
+            if (apiSslTermination.getCertificate() != null && apiSslTermination.getCertificate() != null) {
                 dbTermination.setIntermediateCertificate(null);
             }
         }
 
-        if (queTermination.getPrivatekey() != null) {
-            dbTermination.setPrivatekey(queTermination.getPrivatekey());
+        if (apiSslTermination.getPrivatekey() != null) {
+            dbTermination.setPrivatekey(apiSslTermination.getPrivatekey());
         }
 
         return dbTermination;
@@ -124,5 +132,37 @@ public final class SslTerminationHelper {
         sslTermination.setPrivatekey(sslDetails.getPrivateKey());
         sslTermination.setCertificate(sslDetails.getCertificate());
         sslTermination.setIntermediateCertificate(sslDetails.getIntermediateCertificate());
+    }
+
+    // I'm almost tempted into bringing the dozer dependency down here in
+    // the persistance layer. 
+    public static void convertApiSslTermToDbTlsProtocols(org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination apiSslTerm, org.openstack.atlas.service.domain.entities.SslTermination dbSslTerm, boolean newDbSslTerm) {
+        if (newDbSslTerm) {
+            dbSslTerm.setTls10Enabled(true); // if this is a new db instance then set TLS1.0 to enabled by defaukt
+        }
+        for (SecurityProtocol sp : apiSslTerm.getSecurityProtocols()) {
+            switch (sp.getSecurityProtocolName()) {
+                case TLS_10:
+                    switch (sp.getSecurityProtocolStatus()) {
+                        case DISABLED:
+                            dbSslTerm.setTls10Enabled(false);
+                            break;
+                        case ENABLED:
+                            dbSslTerm.setTls10Enabled(true);
+                            break;
+                        default:
+                            dbSslTerm.setTls10Enabled(true);
+                            // This should really be an error as this
+                            // would mean the app some how allowed the user
+                            // to specify neither Enabled or disabled even
+                            // though its an XSD restriction. So lets play it
+                            // safe and assume they wanted to enabled TLS 1.0
+                            break;
+                    }
+                    break; // Looks like a rouge protocol name. Just ignore it
+                default:
+                    break;
+            }
+        }
     }
 }
