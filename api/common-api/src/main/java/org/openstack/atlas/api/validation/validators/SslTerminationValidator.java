@@ -36,7 +36,7 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
                 result(validationTarget().getId()).must().not().exist().withMessage("Id field cannot be modified.");
 
                 // PUT EXPECTATIONS
-                //If user supplies nothing, cert key and port must exist as bare minimum
+                //If user supplies nothing, cert key and port or security protocols must exist as bare minimum
                 must().adhereTo(new Verifier<SslTermination>() {
 
                     @Override
@@ -53,7 +53,7 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
 
                     @Override
                     public VerifierResult verify(SslTermination ssl) {
-                        if ((ssl.getCertificate() == null && ssl.getPrivatekey() == null && ssl.getIntermediateCertificate() == null) && (ssl.isEnabled() == null && (ssl.isSecureTrafficOnly() == null) && ssl.getIntermediateCertificate() == null && ssl.getSecurePort() == null)) {
+                        if ((ssl.getCertificate() == null && ssl.getPrivatekey() == null && ssl.getIntermediateCertificate() == null) && (ssl.isEnabled() == null && (ssl.isSecureTrafficOnly() == null) && !hasSecurityProtocols(ssl) && ssl.getIntermediateCertificate() == null && ssl.getSecurePort() == null)) {
                             return new VerifierResult(false);
                         }
                         return new VerifierResult(true);
@@ -65,14 +65,14 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
 
                     @Override
                     public VerifierResult verify(SslTermination ssl) {
-                        if ((ssl.getCertificate() == null || ssl.getPrivatekey() == null && ssl.getIntermediateCertificate() == null) && (ssl.isEnabled() == null && (ssl.isSecureTrafficOnly() == null) && ssl.getSecurePort() == null)) {
+                        if ((ssl.getCertificate() == null || ssl.getPrivatekey() == null && ssl.getIntermediateCertificate() == null) && (ssl.isEnabled() == null && (ssl.isSecureTrafficOnly() == null) && ssl.getSecurePort() == null && !hasSecurityProtocols(ssl))) {
                             return new VerifierResult(false);
                         }
                         return new VerifierResult(true);
                     }
                 }).withMessage("Must supply certificates(s), key and secure port for updating ssl termination.");
 
-                //If cert or key is null, and  other attrs are present
+                //If cert is present then a key must be present as well and vice versa XOR
                 must().adhereTo(new Verifier<SslTermination>() {
 
                     @Override
@@ -157,5 +157,10 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
     @Override
     public Validator<SslTermination> getValidator() {
         return validator;
+    }
+
+    private boolean hasSecurityProtocols(SslTermination ssl) {
+        boolean out = ssl.getSecurityProtocols().size() > 0;
+        return out;
     }
 }
