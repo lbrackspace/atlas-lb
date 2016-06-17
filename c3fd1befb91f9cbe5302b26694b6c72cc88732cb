@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_1fce8383",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-17T01:22:52Z",
+      "side": 1,
+      "message": "No. The code was booby trapped in several places. The validator seems to be going all over the place and even repeats it self in some cases. It looks to me like it was written such that some one kept mangling the rules untill they got the results they wanted with out actual verify the logic.",
+      "parentUuid": "baa041b7_ff1cff14",
+      "revId": "c3fd1befb91f9cbe5302b26694b6c72cc88732cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_bf1677ef",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2016-06-17T00:56:54Z",
       "side": 1,
       "message": "Have you verified that this works? The logic addition SEEMS backwards, but this is incredibly difficult to read, so it\u0027s hard to tell for sure.",
+      "revId": "c3fd1befb91f9cbe5302b26694b6c72cc88732cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_ffcabf6d",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-17T01:22:52Z",
+      "side": 1,
+      "message": "The logic isn\u0027t mine. I verified that it will accept security protocols as a modification of an existing Loadbalancer.",
+      "parentUuid": "baa041b7_bf1677ef",
       "revId": "c3fd1befb91f9cbe5302b26694b6c72cc88732cb",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_dfc7fb62",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-17T01:22:52Z",
+      "side": 1,
+      "message": "yes I had a nasty headache after this. I verified it with unit tests.",
+      "parentUuid": "baa041b7_9fd29333",
+      "revId": "c3fd1befb91f9cbe5302b26694b6c72cc88732cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_df193b24",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
         "patchSetId": 1
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_1f95633f",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-17T01:22:52Z",
+      "side": 1,
+      "message": "yes. I pretty much had to figure out what the logic was doing then I updated the comment so I woulden\u0027t forget. This was difficult to parse so I updated the comments.",
+      "parentUuid": "baa041b7_df193b24",
+      "revId": "c3fd1befb91f9cbe5302b26694b6c72cc88732cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_3fe147ff",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
         "patchSetId": 1
@@ -81,6 +153,24 @@
       "writtenOn": "2016-06-17T00:56:54Z",
       "side": 1,
       "message": "Can getSecurityProtocols() return null, or does it guarantee at least an empty list?",
+      "revId": "c3fd1befb91f9cbe5302b26694b6c72cc88732cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_bfc4375f",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/SslTerminationValidator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-17T01:22:52Z",
+      "side": 1,
+      "message": "the accessor is like\npublic List\u003cSecurityProtocol\u003e(){\n    if(secutiryProtocol \u003d\u003d null){\n        securityProtocol \u003d new ArrayList\u003cSecurityProtocol\u003e()\n    }\n    return securityProtocol\n}",
+      "parentUuid": "baa041b7_3fe147ff",
       "revId": "c3fd1befb91f9cbe5302b26694b6c72cc88732cb",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
