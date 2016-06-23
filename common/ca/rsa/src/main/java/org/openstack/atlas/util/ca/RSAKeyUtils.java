@@ -1,6 +1,7 @@
 package org.openstack.atlas.util.ca;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
@@ -236,8 +237,24 @@ public class RSAKeyUtils {
         return "";
     }
 
-    public static String KeyPairToString(KeyPair kp) {
-        return "Implement Me";
+    public static String KeyPairToString(KeyPair kp) throws PemException {
+        return PemUtils.toPemString(kp);
+    }
+
+    public static KeyPair getKeyPairFromBytes(byte[] pemBytes) throws PemException, InvalidKeySpecException {
+        Object pemObj = PemUtils.fromPem(pemBytes);
+        // Incase the object is returned as a JCERSAPrivateCrtKey instead of KeyPair
+        if (pemObj instanceof JCERSAPrivateCrtKey) {
+            pemObj = HackedProviderAccessor.newKeyPair((JCERSAPrivateCrtKey) pemObj);
+        }
+        KeyPair kp = (KeyPair) pemObj;
+        return kp;
+    }
+
+    public static KeyPair getKeyPairFromString(String key) throws InvalidKeySpecException, PemException, UnsupportedEncodingException{
+        byte[] bytes = key.getBytes(RsaConst.USASCII);
+        KeyPair kp = getKeyPairFromBytes(bytes);
+        return kp;
     }
 
     public static PemObject toPKCS8(KeyPair kp) throws java.security.NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException, IOException {
