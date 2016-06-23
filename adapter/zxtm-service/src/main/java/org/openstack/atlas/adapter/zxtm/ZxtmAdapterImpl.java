@@ -19,6 +19,7 @@ import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.springframework.stereotype.Component;
 import com.zxtm.service.client.VirtualServerSSLSupportTLS1;
+import org.openstack.atlas.util.debug.Debug;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -358,6 +359,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             if (e instanceof ObjectAlreadyExists) {
                 throw new ObjectAlreadyExists();
             } else {
+                String msg = String.format("Exception: %s caught while trying to add virtualips for SSL virtual server %s delete vs and remove SslTermination triggered", Debug.getExtendedStackTrace(e), secureVsName);
+                LOG.error(msg, e);
+                // TODO: I really think the code below is supposed to only run if the VirtualServer was created by this request but should not be run on updates.
                 deleteVirtualServer(serviceStubs, secureVsName);
                 removeSslTermination(config, lb);
                 throw new ZxtmRollBackException(rollBackMessage, e);
@@ -1426,6 +1430,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         } catch (Exception af) {
             if (af instanceof ObjectAlreadyExists) {
                 LOG.warn(String.format("Secure virtual server '%s' already exists, ignoring....", sslVirtualServerName));
+            } else {
+                String msg = String.format("Exception %s caught in call to createSecureVirtualServer for loadbalancer %d", Debug.getExtendedStackTrace(af), loadBalancer.getId());
+                LOG.error(msg, af);
             }
         }
         // disable tls v1.0 if they disabled it
@@ -1599,9 +1606,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         try {
             VirtualServerBindingStub vsBinding = getServiceStubs(conf).getVirtualServerBinding();
             vsBinding.setSSLSupportTLS1(virtualServerNameArry, tlsValue);
+            String msg = String.format("setting TLS 1.0 protool to %s for loadbalancer %d", isEnabled, loadBalancer.getId());
+            LOG.info(msg);
         } catch (RemoteException af) {
-            String msg = String.format("There was a error setting TLS 1.0 support to %s for loadbalancer %d", isEnabled, loadBalancer.getId());
-            LOG.error(msg);
+            String msg = String.format("exception caught %s while setting TLS 1.0 support to %s for loadbalancer %d", Debug.getExtendedStackTrace(af), isEnabled, loadBalancer.getId());
+            LOG.error(msg, af);
             throw new ZxtmRollBackException(msg, af);
         }
     }
