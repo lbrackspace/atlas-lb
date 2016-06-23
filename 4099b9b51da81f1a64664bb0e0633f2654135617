@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_f8ff60a8",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/StubResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 791,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-06-23T00:32:44Z",
+      "side": 1,
+      "message": "moving this synchronized block up to avoid double rsakey generation in the rarest case.",
+      "range": {
+        "startLine": 791,
+        "startChar": 16,
+        "endLine": 791,
+        "endChar": 28
+      },
+      "revId": "4099b9b51da81f1a64664bb0e0633f2654135617",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
