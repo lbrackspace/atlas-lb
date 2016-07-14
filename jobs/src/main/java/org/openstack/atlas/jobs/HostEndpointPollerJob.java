@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.util.List;
+import org.openstack.atlas.service.domain.entities.HostStatus;
 
 @Component
 public class HostEndpointPollerJob extends AbstractJob {
@@ -56,6 +57,9 @@ public class HostEndpointPollerJob extends AbstractJob {
             boolean restEndpointWorks;
             List<Host> hosts = hostRepository.getAll();
             for (Host host : hosts) {
+                if(host.getHostStatus() == HostStatus.OFFLINE){
+                    continue; // Stop pestering hosts marked as offline by engineers
+                }
                 endpointWorks = reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host));
                 if (endpointWorks) {
                     host.setSoapEndpointActive(Boolean.TRUE);
