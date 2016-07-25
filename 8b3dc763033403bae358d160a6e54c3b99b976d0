@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_05069f1b",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/StubResource.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 711,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-07-25T19:03:32Z",
+      "side": 1,
+      "message": "newConnectHelathMonitor -\u003e newConnectHealthMonitor",
+      "revId": "8b3dc763033403bae358d160a6e54c3b99b976d0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
