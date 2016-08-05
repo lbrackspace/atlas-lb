@@ -38,10 +38,6 @@ public final class NodesHelper {
     }
 
     private static void setNodeToStatus(NodeStatus status, Node node) {
-        if (node.getCondition() == NodeCondition.DISABLED || node.getCondition() == NodeCondition.DRAINING) {
-            node.setStatus(NodeStatus.OFFLINE);
-        } else {
-            node.setStatus(status);
-        }
+        node.setStatus(status);
     }
 }
