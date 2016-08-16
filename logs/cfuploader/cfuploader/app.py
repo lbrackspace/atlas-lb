@@ -37,7 +37,7 @@ def worker_process(zip_container, exp_md5):
 
 
 def worker_thread(zip_container):
-    (aid,lid, hl, src_file, cnt, dst_file) = zip_container
+    (aid, lid, hl, src_file, cnt, dst_file) = zip_container
     utils.log("worker thread %s\n", zip_container)
     try:
         (md5, fsize) = utils.md5sum_and_size(src_file, block_size=1024*1024)
@@ -46,7 +46,7 @@ def worker_thread(zip_container):
         p.start()
         p.join()
         utils.log("finished sending %i %7i %7i log file.\n", hl, aid, lid)
-    except:
+    except Exception:
         utils.log("error sending log file %i %7i %7i: %s\n", hl, aid, lid,
                   utils.excuse())
     l.acquire()
@@ -56,6 +56,7 @@ def worker_thread(zip_container):
 
 class Uploader(object):
     n_workers = cfg.conf['n_workers']
+
     def __init__(self):
         self.timestamp = time.time() - 120.00
 
@@ -77,7 +78,7 @@ class Uploader(object):
                               len(zip_containers))
                     l.acquire()
                     for zc in zip_containers:
-                        (aid, lid, hl, src_file, cnt, remote_file) = zc
+                        assert len(zc) == 6
                         if zc not in upload_files:
                             all_files.add(zc)
                     l.release()
@@ -88,7 +89,7 @@ class Uploader(object):
                         l.release()
                     except:
                         utils.log("Warning lock was already released. ")
-                        pass #If the locks not even being held ignore it
+                        pass  # If the locks not even being held ignore it
                 self.timestamp = time.time()
             #Drain Queue
             l.acquire()
@@ -99,8 +100,11 @@ class Uploader(object):
                 utils.log("removing %s from upload status\n", zc[3])
             nready = self.n_workers - len(upload_files)
             sendable_files = list(all_files - upload_files)
-            utils.log("%i files are currently sendable. Scheduling for send",
-                      len(sendable_files))
+            nfiles = len(sendable_files)
+            if nfiles > 0:
+                utils.log(
+                    "%i files are currently sendable. Scheduling for send\n",
+                    len(sendable_files))
             utils.sort_container_zips(sendable_files)
             while len(sendable_files) > 0 and nready > 0:
                 zc = sendable_files.pop(0) # Grab the file at the front
@@ -110,14 +114,3 @@ class Uploader(object):
                 upload_files.add(zc)
                 self.start_worker(zc)
             l.release()
-
-
-
-
-
-
-
-
-
-
-
