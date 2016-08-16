@@ -11,7 +11,7 @@ import re
 
 zip_re = re.compile(".*/(access_log_([0-9]+)_([0-9]+)_([0-9]{10})\.log.zip)")
 
-lp = open("/var/log/cfuploader.log","a")
+lp = None
 
 incoming = "/var/log/zxtm/processed"
 archive = "/var/log/zxtm/archive"
@@ -36,7 +36,7 @@ def mkdirs_p(file_path):
 
 def set_local_file(aid,lid,dt):
     hl = datetime_to_hourlong(dt)
-    tail = "%i/access_log_%i_%i.log.zip"%(aid,lid,hl)
+    tail = "access_log_%i_%i_%i.log.zip"%(aid,lid,hl)
     return os.path.join(incoming, tail)
 
 
@@ -149,6 +149,7 @@ def md5sum_and_size(file_name,block_size = 64*1024):
 
 
 def log(format, *args):
+    global lp
     lp.write("[%s] " % datetime_to_formatted_time())
     lp.write(format % args)
     lp.flush()
@@ -156,18 +157,23 @@ def log(format, *args):
 
 class Config(object):
     def __init__(self, conf_file="/etc/cfuploader/cfuploader.json"):
+        global lp
         conf = self.load_json(conf_file)
         self.auth_url = conf['auth_url']
         self.auth_user = conf['auth_user']
+        self.log_file = conf['log_file']
         if self.auth_url[-1] == "/":
             self.auth_url = self.auth_url[:-1]
         self.auth_passwd = conf['auth_passwd']
         self.db = conf['db']
         self.conf = conf
+        if lp is None:
+            lp = open(self.log_file, "a")
+            log("Log file %s opened", self.log_file)
 
     def load_json(self, pathIn):
         full_path = os.path.expanduser(pathIn)
-        return json.loads(open(full_path,"r").read())
+        return json.loads(open(full_path, "r").read())
 
     def save_json(self, pathOut, obj):
         full_path = os.path.expanduser(pathOut)

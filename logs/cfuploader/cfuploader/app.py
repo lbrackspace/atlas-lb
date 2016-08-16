@@ -98,8 +98,11 @@ class Uploader(object):
                 utils.log("removing %s from upload status\n", zc[3])
             nready = self.n_workers - len(upload_files)
             sendable_files = list(all_files - upload_files)
-            utils.log("%i files are currently sendable. Scheduling for send",
-                      len(sendable_files))
+            nfiles = len(sendable_files)
+            if nfiles > 0:
+                utils.log(
+                    "%i files are currently sendable. Scheduling for send\n",
+                    len(sendable_files))
             utils.sort_container_zips(sendable_files)
             while len(sendable_files) > 0 and nready > 0:
                 zc = sendable_files.pop(0) # Grab the file at the front
@@ -109,14 +112,3 @@ class Uploader(object):
                 upload_files.add(zc)
                 self.start_worker(zc)
             l.release()
-
-
-
-
-
-
-
-
-
-
-

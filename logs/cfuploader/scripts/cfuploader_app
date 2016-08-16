@@ -8,6 +8,7 @@ log = utils.log
 
 if __name__ == "__main__":
     pid = os.getpid()
+    utils.Config() #Make sure the log file is loaded
     log("pid = %i\n", pid)
     uploader = app.Uploader()
     uploader.main_loop()
