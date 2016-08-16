@@ -54,6 +54,12 @@ class Auth(object):
         region = resp['users'][0]['RAX-AUTH:defaultRegion']
         return {'user': username, 'region': region}
 
+    def get_endpoints_by_token(self, token):
+        uri = self.auth_url + "/v2.0/tokens/%s/endpoints"%(token)
+        r = requests.get(uri, headers=self.prep_headers())
+        resp = json.loads(r.text)
+        return resp
+
     def impersonate_user(self, username):
         uri = self.auth_url + "/v2.0/RAX-AUTH/impersonation-tokens"
         imp  = {'user': {'username': username}, 'expire-in-seconds': 3600}
@@ -66,7 +72,8 @@ class Auth(object):
     def get_token_and_endpoint(self, domain_id):
         pu = self.get_primary_user(domain_id)
         token = self.impersonate_user(pu['user'])
-        eps = self.get_endpoints(domain_id)
+        # eps = self.get_endpoints(domain_id)
+        eps = self.get_endpoints_by_token(token)
         cf_eps = [e for e in eps['endpoints'] if e['type'] == 'object-store']
         found_endpoints = []
         cf_endpoint = None
