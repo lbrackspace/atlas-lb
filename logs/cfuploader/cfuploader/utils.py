@@ -36,7 +36,7 @@ def mkdirs_p(file_path):
 
 def set_local_file(aid,lid,dt):
     hl = datetime_to_hourlong(dt)
-    tail = "%i/access_log_%i_%i.log.zip"%(aid,lid,hl)
+    tail = "access_log_%i_%i_%i.log.zip"%(aid,lid,hl)
     return os.path.join(incoming, tail)
 
 
