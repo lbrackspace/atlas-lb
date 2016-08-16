@@ -57,12 +57,10 @@ class Auth(object):
     def impersonate_user(self, username):
         uri = self.auth_url + "/v2.0/RAX-AUTH/impersonation-tokens"
         imp  = {'user': {'username': username}, 'expire-in-seconds': 3600}
-        obj = {'RAX-AUTH: impersonation': imp}
-        print "impersonating %s", obj
+        obj = {'RAX-AUTH:impersonation': imp}
         json_data = json.dumps(obj)
-        r = requests.post(uri,headers=self.prep_headers(), data=json_data)
+        r = requests.post(uri, headers=self.prep_headers(), data=json_data)
         obj = json.loads(r.text)
-        print obj
         return obj['access']['token']['id']
 
     def get_token_and_endpoint(self, domain_id):
@@ -80,10 +78,11 @@ class Auth(object):
         out = {'token': token, 'cf_endpoint': cf_endpoint}
         if cf_endpoint is None:
             msg = ''.join([
-                "Error coulden't get endpoint for aid %s pu=%s ",
-                "token%s %eps\n"]) % (domain_id,pu,token,eps)
+                "Error coulden't get endpoint for aid=%s pu=%s ",
+                "token=%s eps=%s\n"]) % (domain_id, pu, token, eps)
             raise Exception(msg)
         return out
+
 
 class CloudFiles(object):
     def __init__(self, tok_endpoint):
