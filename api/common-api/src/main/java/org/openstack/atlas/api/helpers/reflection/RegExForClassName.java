@@ -55,11 +55,4 @@ public class RegExForClassName {
     public void setRootElement(String rootElement) {
         this.rootElement = rootElement;
     }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        return "{ regEx=\"" + regExString + "\", className=\""
-                + someClass.getCanonicalName() + "}";
-    }
 }
