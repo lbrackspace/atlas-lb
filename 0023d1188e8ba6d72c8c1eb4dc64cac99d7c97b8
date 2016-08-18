@@ -1,0 +1,412 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_d5a8168f",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/helpers/reflection/RegExForClassName.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "can be what? :P\nI get it though, it\u0027s fine.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_b5ad929d",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/helpers/reflection/RegExForClassName.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "This could maybe be done more cleanly with a stringformatter, but this is probably fine too.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_75902a4f",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/BounceResource.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Random extra linebreak, I don\u0027t think this is a problem though, just whitespace.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_d5adb685",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Should this be logging? print will probably be lost?",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_75ccaa61",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Same, do you have log-levels? Maybe this is DEBUG, or maybe it is *ok* if this is lost, as it looks like debug stuff.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_95f60e8f",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Since this is wrapping a connection/put it might be a good idea to use a context-manager to open this file.\n\nwith open(os.path.expanduser(src_name), \"r\") as fp:",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_d5093686",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "I see you\u0027re instantiating DbHelper a lot below -- do you actually need more than one of these? It seems like this could be a singleton, or else you could just instantiate one globally and use that, since it doesn\u0027t appear to store anything at the instance-level.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_35ed02b8",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 132,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Do you know if there are context-managers for MySQLdb connections/cursors? Might be a good idea to use them for safety.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_1529def2",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Same as above, if that is possible.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_f52d5afe",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Defining lbs here is unnecessary because it is redefined on line 160.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_953dee2e",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 171,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "ZipFile supports context-manager syntax.\n\nwith zipfile.ZipFile(file_name, mode\u003d\"w\", compression\u003dzipfile.ZIP_DEFLATED) as zf:",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_753a6a36",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 212,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "You don\u0027t actually use this here?",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_9524ce0e",
+        "filename": "logs/cfuploader/cfuploader/setup.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Did you just copy/paste this and not update any of the fields besides author?\n\nFrom looking at later files in this change, there is another setup.py that appears to be configured correctly, is this one even used?",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_754f0abf",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Logging is a solved problem -- there\u0027s a really nice python logging library built in for this purpose. Doing it this way (and defining all your own logging functions) is ... sketchy.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_15779e09",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Just use calendar.month_abbr it is literally this list. :P",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_b58592d0",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "I THINK what you\u0027re trying to do here is get a month and a year from an epoch timestamp? maybe? If so, there\u0027s built-in functions for that, but I am actually not 100% clear on what this does. From reading below, \"hl\" is an \"hourlong\"? I don\u0027t know what that is. I *feel* like there must be a better way to do this though...",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_75682a22",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "What is an hourlong? Is this a custom format from zeus logs? There\u0027s no built-in parser for it anywhere?",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_557526f8",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "If this was node.js this would be a separate library. ^_^\n\nBut actually, this is: n.zfill(digits)",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_f562fa3c",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "I feel like this should be doable with the built-in time formatters.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_b55c727e",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "I don\u0027t see a close()? You should use a context-manager anyway.\n\nwith open(full_path,\"rb\", block_size) as fp:",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_554c06c8",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "See my comment above about python\u0027s built in logging library.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_354982b8",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Does this auto-close? You might want to use a context-manager here? Also, this is what json.load() is for, you don\u0027t need to .read() here.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_15c55e09",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Same as above. Alternatively, you could use ConfigParser and not have to use your own file handling and parsing code...",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_b5d352d5",
+        "filename": "logs/cfuploader/readme.txt",
+        "patchSetId": 11
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:49:37Z",
+      "side": 1,
+      "message": "Trailing spaces here, though it doesn\u0027t matter a whole lot, just annoying on diffs.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
