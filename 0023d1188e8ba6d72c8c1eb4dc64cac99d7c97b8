@@ -70,6 +70,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_75fdca3a",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:51:17Z",
+      "side": 1,
+      "message": "I see you removed this in your next commit. So, ignore this comment.",
+      "parentUuid": "baa041b7_d5adb685",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_75ccaa61",
         "filename": "logs/cfuploader/cfuploader/clients.py",
         "patchSetId": 11
@@ -81,6 +99,24 @@
       "writtenOn": "2016-08-18T15:49:37Z",
       "side": 1,
       "message": "Same, do you have log-levels? Maybe this is DEBUG, or maybe it is *ok* if this is lost, as it looks like debug stuff.",
+      "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_55fac644",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:51:17Z",
+      "side": 1,
+      "message": "Same, removed in next commit.",
+      "parentUuid": "baa041b7_75ccaa61",
       "revId": "0023d1188e8ba6d72c8c1eb4dc64cac99d7c97b8",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
