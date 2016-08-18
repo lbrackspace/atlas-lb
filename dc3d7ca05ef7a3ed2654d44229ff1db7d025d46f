@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_a7a1e997",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/helpers/reflection/RegExForClassName.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T19:17:19Z",
+      "side": 1,
+      "message": "That\u0027s not what I meant by stringformatter... But if this works, then I guess that\u0027s ok. You aren\u0027t using StringBuilder now though, so you could remove it.",
+      "revId": "dc3d7ca05ef7a3ed2654d44229ff1db7d025d46f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_67abe176",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T19:17:19Z",
+      "side": 1,
+      "message": "Didn\u0027t address my comment from the last patch here -- this should probably also use a context-manager I think? I\u0027m not sure how intelligent the python GC is.\nAnd again, that is what json.load(fp) is for, it accepts a fp directly without having to read()",
+      "revId": "dc3d7ca05ef7a3ed2654d44229ff1db7d025d46f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_47a8dd77",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 168,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T19:17:19Z",
+      "side": 1,
+      "message": "as above.",
+      "revId": "dc3d7ca05ef7a3ed2654d44229ff1db7d025d46f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
