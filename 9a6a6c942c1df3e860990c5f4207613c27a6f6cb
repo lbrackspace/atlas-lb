@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_95872eb6",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:56:26Z",
+      "side": 1,
+      "message": "FYI the parens around token are not required -- python actually just removes them as redundant if you make a tuple with a single element. If you want to actually use a tuple, it\u0027d be (token,) to keep python from eating them. Fortunately, % substitution works with a tuple or a single element so it doesn\u0027t matter. Just useful information for the future. :P",
+      "revId": "9a6a6c942c1df3e860990c5f4207613c27a6f6cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_7584aab0",
+        "filename": "logs/cfuploader/cfuploader/clients.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:56:26Z",
+      "side": 1,
+      "message": "Leaving comments in code is ugly, though I don\u0027t really care, just sayin\u0027.",
+      "revId": "9a6a6c942c1df3e860990c5f4207613c27a6f6cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_358e22d1",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-18T15:56:26Z",
+      "side": 1,
+      "message": "Again, I would prefer to use the real logging lib than do things like this... It avoids some of the cruft you\u0027re having to do, and buys some really nice functionality to boot.",
+      "revId": "9a6a6c942c1df3e860990c5f4207613c27a6f6cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
