@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_a011cf55",
+        "filename": "logs/cfuploader/cfuploader/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 170,
+      "author": {
+        "id": 1001830
+      },
+      "writtenOn": "2016-08-19T20:20:57Z",
+      "side": 1,
+      "message": "I guess this doesn\u0027t matter with regard to loads/load and .read() here, but again, don\u0027t you need to close this?\nI think you didn\u0027t actually POST your comments from earlier.",
+      "revId": "a52be2b01c68c1e044ae30cc0513c94122e3324f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
