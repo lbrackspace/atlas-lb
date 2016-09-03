@@ -26,6 +26,7 @@ def worker_process(zip_container, exp_md5):
     cf = clients.CloudFiles(t)
     utils.log("using token '%s' for aid '%d' for cloud files client\n", t, aid)
     utils.log("creating container '%s'\n", cnt)
+    utils.log("sending file %s -> %s: %s\n", local_file, cnt, remote_file)
     cf.create_container(cnt)
     act_md5 = cf.upload_file(local_file, cnt, remote_file)
     if act_md5 == exp_md5:
@@ -87,7 +88,7 @@ class Uploader(object):
                               utils.excuse())
                     try:
                         l.release()
-                    except:
+                    except Exception:
                         utils.log("Warning lock was already released. ")
                         pass  # If the locks not even being held ignore it
                 self.timestamp = time.time()

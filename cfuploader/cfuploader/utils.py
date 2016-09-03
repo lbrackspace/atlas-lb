@@ -10,11 +10,11 @@ import json
 import os
 import re
 
-zip_re = re.compile(".*/(access_log_([0-9]+)_([0-9]+)_([0-9]{10})\.log.zip)")
+zip_re = re.compile(".*/([0-9]+)/(access_log_([0-9]+)_([0-9]{10})\.log.zip)")
 
 lp = None
 
-incoming = "/var/log/zxtm/processed"
+incoming = "/var/log/zxtm/current"
 archive = "/var/log/zxtm/archive"
 
 
@@ -36,7 +36,7 @@ def mkdirs_p(file_path):
 
 def set_local_file(aid,lid,dt):
     hl = datetime_to_hourlong(dt)
-    tail = "access_log_%i_%i_%i.log.zip" % (aid, lid, hl)
+    tail = "%i/access_log_%i_%i.log.zip" % (aid, lid, hl)
     return os.path.join(incoming, tail)
 
 
@@ -57,7 +57,7 @@ def test_re(pattern, text):
 def get_archive_file_path(zip_container):
     (aid, lid, hl, local_file, cnt, remote_file) = zip_container
     file_name = os.path.split(local_file)[1]
-    dir_name = os.path.join(archive, str(hl), str(aid))
+    dir_name = os.path.join(archive, str(hl)[:8], str(aid))
     return dir_name, file_name
 
 
