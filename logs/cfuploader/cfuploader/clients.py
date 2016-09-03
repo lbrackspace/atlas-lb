@@ -173,10 +173,10 @@ def create_fake_zips(account_id, n_hours):
             (aid, lid, name) = lb
             utils.log("writing %s %s %s\n",
                       aid, lid, name)
-            file_name = utils.set_local_file(aid, lid, dt)
-            dir_name = os.path.split(file_name)[0]
+            full_path = utils.set_local_file(aid, lid, dt)
+            dir_name = os.path.dirname(full_path)
             utils.mkdirs_p(dir_name)
-            with zipfile.ZipFile(file_name, mode="w",
+            with zipfile.ZipFile(full_path, mode="w",
                                  compression=zipfile.ZIP_DEFLATED) as zf:
                 str_list = []
                 for j in xrange(0, 4096):
@@ -209,19 +209,18 @@ def scan_zip_files(file_path):
             full_path = os.path.join(root, file_name)
             pzn = parse_zip_name(full_path)
             if pzn:
-                (zip_file, aid, lid, hl, zip_path) = pzn
+                (aid, zip_file, lid, hl, zip_path) = pzn
                 zpath = os.path.expanduser(file_path)
-                full_path = os.path.join(zpath, zip_file)
-                zip_files.append((aid, lid, hl, full_path))
+                zip_files.append((aid, lid, hl, zip_path))
     return zip_files
 
 
 def parse_zip_name(zip_path):
     m = utils.zip_re.match(zip_path)
     if m:
-        zip_file = m.group(1)
-        aid = int(m.group(2))
+        aid = int(m.group(1))
+        zip_file = m.group(2)
         lid = int(m.group(3))
         hl = int(m.group(4))
-        return zip_file, aid, lid, hl, zip_path
+        return aid, zip_file, lid, hl, zip_path
     return None
