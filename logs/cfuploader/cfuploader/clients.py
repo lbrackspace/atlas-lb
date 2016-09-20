@@ -9,10 +9,13 @@ import os
 
 from cfuploader import utils
 
+
 account_lb_query = """
 select account_id, id, name from loadbalancer
 where account_id = %s and status = 'ACTIVE'
 """
+
+cfg = utils.cfg
 
 class Auth(object):
     def __init__(self, conf=None):
@@ -108,6 +111,22 @@ class CloudFiles(object):
         resp = self.con.get_account(full_listing=True)
         return resp[1]
 
+    def list_container(self, name):
+        resp = self.con.get_container(name, full_listing=True)
+        return resp
+
+    def delete_object(self, cnt, obj):
+        resp = self.con.delete_object(cnt, obj)
+        return resp
+
+    #Only for cleaning up testing directories. Code should not be used
+    #in production script
+    def empty_container(self, cnt):
+        (info, objs) = self.con.get_container(cnt, full_listing=True)
+        for obj in objs:
+            self.con.delete_object(cnt, obj['name'])
+            yield (cnt, obj['name'])
+
     def create_container(self, name):
         self.con.put_container(name, {})
 
@@ -189,15 +208,16 @@ def get_container_zips():
     db = DbHelper()
     czs = []
     lb_map = db.get_lb_map()
-    zfiles = scan_zip_files(utils.incoming)
-    for (aid, lid, hl, zip_file) in zfiles:
-        if lid not in lb_map:
-            utils.log("lid %i not found in database skipping\n", lid)
+    zfiles = scan_zip_files(utils.cfg.incoming)
+    for zf in zfiles:
+        if zf['lid'] not in lb_map:
+            utils.log("lid %i not found in database skipping\n", zf['lid'])
             continue
-        (j1, j2, name) = lb_map[lid]  # Throw away j1 and j2
-        cnt = utils.get_container_name(lid, name, hl)
-        zfn = utils.get_remote_file_name(lid, name, hl)
-        czs.append((aid, lid, hl, zip_file, cnt, zfn))
+        (zf['aid'], j2, zf['name']) = lb_map[zf['lid']]
+        zf['cnt'] = utils.get_container_name(zf['lid'], zf['name'], zf['hl'])
+        zf['remote_zf'] = utils.get_remote_file_name(zf['lid'],
+                                                     zf['name'], zf['hl'])
+        czs.append(zf)
         utils.sort_container_zips(czs)
     return czs
 
@@ -207,20 +227,11 @@ def scan_zip_files(file_path):
     for (root, dirnames, file_names) in os.walk(file_path):
         for file_name in file_names:
             full_path = os.path.join(root, file_name)
-            pzn = parse_zip_name(full_path)
+            pzn = utils.parse_zip_name(full_path)
             if pzn:
-                (aid, zip_file, lid, hl, zip_path) = pzn
-                zpath = os.path.expanduser(file_path)
-                zip_files.append((aid, lid, hl, zip_path))
+                zip_files.append(pzn)
     return zip_files
 
 
-def parse_zip_name(zip_path):
-    m = utils.zip_re.match(zip_path)
-    if m:
-        aid = int(m.group(1))
-        zip_file = m.group(2)
-        lid = int(m.group(3))
-        hl = int(m.group(4))
-        return aid, zip_file, lid, hl, zip_path
-    return None
+
+
