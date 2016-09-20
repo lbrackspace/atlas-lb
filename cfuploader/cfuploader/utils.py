@@ -10,13 +10,8 @@ import json
 import os
 import re
 
-zip_re = re.compile(".*/([0-9]+)/(access_log_([0-9]+)_([0-9]{10})\.log.zip)")
-
+zip_re = re.compile(".*/(access_log_([0-9]+)_([0-9]{10})\.zip)")
 lp = None
-
-incoming = "/var/log/zxtm/current"
-archive = "/var/log/zxtm/archive"
-
 
 def excuse():
     except_message = traceback.format_exc()
@@ -34,10 +29,10 @@ def mkdirs_p(file_path):
             raise
 
 
-def set_local_file(aid,lid,dt):
+def set_local_file(aid, lid, dt):
     hl = datetime_to_hourlong(dt)
-    tail = "%i/access_log_%i_%i.log.zip" % (aid, lid, hl)
-    return os.path.join(incoming, tail)
+    tail = "access_log_%i_%i.zip" % (lid, hl)
+    return os.path.join(cfg.incoming, tail)
 
 
 def datetime_to_hourlong(dt):
@@ -52,14 +47,6 @@ def test_re(pattern, text):
         return m.groups()
     else:
         return False
-
-
-def get_archive_file_path(zip_container):
-    (aid, lid, hl, local_file, cnt, remote_file) = zip_container
-    file_name = os.path.split(local_file)[1]
-    dir_name = os.path.join(archive, str(hl)[:8], str(aid))
-    return dir_name, file_name
-
 
 def get_formatted_file_date(hl):
     hs = str(hl)
@@ -87,7 +74,7 @@ def get_container_zip(db, obj):
 
 
 def sort_container_zips(czs):
-    czs.sort(key=operator.itemgetter(2, 0, 1))
+    czs.sort(key=operator.itemgetter('hl', 'aid', 'lid'))
 
 
 def get_remote_file_name(lid, name, hl):
@@ -127,7 +114,7 @@ def datetime_to_formatted_time(dt=None):
     return "%s-%s-%s %s:%s:%s.%s" % (year, month, day, hour, mnt, sec, ms)
 
 
-def md5sum_and_size(file_name,block_size = 64*1024):
+def md5sum_and_size(file_name, block_size=64*1024):
     md5 = hashlib.md5()
     full_path = os.path.expanduser(file_name)
     with open(full_path, "rb", block_size) as fp:
@@ -156,18 +143,20 @@ class Config(object):
         self.auth_url = conf['auth_url']
         self.auth_user = conf['auth_user']
         self.log_file = conf['log_file']
+        self.incoming = conf['incoming']
+        self.archive = conf['archive']
         if self.auth_url[-1] == "/":
             self.auth_url = self.auth_url[:-1]
         self.auth_passwd = conf['auth_passwd']
         self.db = conf['db']
-        self.conf = conf
+        self.n_workers = conf['n_workers']
         if lp is None:
             lp = open(self.log_file, "a")
             log("Log file %s opened", self.log_file)
 
     def load_json(self, pathIn):
         full_path = os.path.expanduser(pathIn)
-        with open(full_path,"r") as fp:
+        with open(full_path, "r") as fp:
             data = json.loads(fp.read())
         return data
 
@@ -175,3 +164,35 @@ class Config(object):
         full_path = os.path.expanduser(pathOut)
         with open(full_path,"w") as fp:
             fp.write(json.dumps(obj, indent=2))
+
+
+def parse_zip_name(zip_path):
+    m = zip_re.match(zip_path)
+    if m:
+        zip_file = m.group(1)
+        lid = int(m.group(2))
+        hl = int(m.group(3))
+        pzn = {"zip_file": zip_file, "lid": lid, "hl": hl,
+               "zip_path": zip_path}
+        return pzn
+    return None
+
+
+#Can't put dicts in a set so we have to canonicalize a dict to a tuple
+#This makes the dictionary hashable at that point
+def dict2tup(some_dict):
+    return tuple(sorted([(k, v) for (k, v) in some_dict.iteritems()]))
+
+
+def tup2dict(some_tup):
+    return {k: v for (k,v) in some_tup}
+
+
+def settups2listdicts(set_of_tups):
+    list_of_dicts = []
+    for tup in set_of_tups:
+        d = {k: v for (k,v) in tup}
+        list_of_dicts.append(d)
+    return list_of_dicts
+
+cfg = Config()
