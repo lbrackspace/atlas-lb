@@ -3,6 +3,8 @@
 from multiprocessing import Process
 from cfuploader import utils
 from cfuploader import clients
+import random
+import logging
 import threading
 import thread
 import Queue
@@ -36,15 +38,20 @@ def worker_process(zip_container, expected_md5, fsize):
     t = auth.get_token_and_endpoint(aid)
     cf = clients.CloudFiles(t)
     utils.log("using token '%s' for aid '%d' for cloud files client\n", t, aid)
-    utils.log("sending file %s -> %s: %s\n", local_file, cnt, remote_file)
+    utils.log("try sending file %s -> %s: %s\n", local_file, cnt, remote_file)
     utils.log("creating container '%s'\n", cnt)
     cf.create_container(cnt)
     act_md5 = cf.upload_file(local_file, cnt, remote_file)
+    utils.log("SUCCESS sending %s-> %s: %s\n", local_file, cnt, remote_file)
     if act_md5 == expected_md5:
         dir_path = os.path.join(cfg.archive, str(hl)[:8], str(aid))
         utils.mkdirs_p(dir_path)
         archive_path = os.path.join(dir_path, zip_file)
+        utils.log("moved %s to %s\n", local_file, archive_path)
         os.rename(local_file, archive_path)
+        utils.log("moved %s to %s\n", local_file, archive_path)
+    else:
+        utils.log("checksome failed for file %s\n", local_file, cnt)
 
 
 def worker_thread(zip_container):
@@ -74,6 +81,7 @@ class Uploader(object):
 
     def __init__(self):
         self.timestamp = time.time() - 60.0
+        logging.basicConfig(level=logging.DEBUG)
 
     def start_worker(self, zip_container):
         th = threading.Thread(target=worker_thread, args=(zip_container,))
@@ -121,7 +129,8 @@ class Uploader(object):
                 utils.log(
                     "%i files are currently sendable. Scheduling for send\n",
                     len(sendable_files))
-            utils.sort_container_zips(sendable_files)
+            #utils.sort_container_zips(sendable_files)
+            random.shuffle(sendable_files)
             while len(sendable_files) > 0 and nready > 0:
                 zcd = sendable_files.pop()
                 utils.log("spawning thread to send %s nread = %i\n",
