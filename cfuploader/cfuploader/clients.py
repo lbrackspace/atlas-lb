@@ -218,7 +218,7 @@ def get_container_zips():
         zf['remote_zf'] = utils.get_remote_file_name(zf['lid'],
                                                      zf['name'], zf['hl'])
         czs.append(zf)
-        utils.sort_container_zips(czs)
+    utils.sort_container_zips(czs)
     return czs
 
 
