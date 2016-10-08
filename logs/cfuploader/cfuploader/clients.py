@@ -17,6 +17,8 @@ where account_id = %s and status = 'ACTIVE'
 
 cfg = utils.cfg
 
+printf = utils.printf
+
 class Auth(object):
     def __init__(self, conf=None):
         if conf is None:
@@ -27,11 +29,37 @@ class Auth(object):
         self.auth_passwd = conf.auth_passwd
         self.token = None
         self.expires = None
+        self.last_impersonation_token = None
 
     def prep_headers(self):
         return {'content-type': 'application/json',
                 'accept': 'application/json',
                 'x-auth-token': self.token}
+
+
+    def get_endpoints_by_token(self, token):
+        uri = self.auth_url + "/v2.0/tokens/{0}/endpoints".format(
+            token)
+        r = requests.get(uri, headers=self.prep_headers())
+        resp = json.loads(r.text)
+        return resp
+
+
+    def get_admin_by_user(self, uid):
+        hdr = self.prep_headers()
+        uri = self.auth_url + "/v2.0/users/{0}/RAX-AUTH/admins".format(uid)
+        r = requests.get(uri, headers=hdr)
+        obj = json.loads(r.text)
+        try:
+            #Verify we have 1 user with a name and id and a region
+            user_id = obj['users'][0]['id']
+            user_name = obj['users'][0]['username']
+            region = obj['users'][0]['RAX-AUTH:defaultRegion']
+        except:
+            f = "ERROR getting admin user for uid %s %s\n"
+            utils.log(f, uid, r.text)
+            raise
+        return obj
 
     def get_admin_token(self):
         up = {'username': self.auth_user, 'password': self.auth_passwd}
@@ -51,21 +79,29 @@ class Auth(object):
         r = requests.get(uri, headers=hdr)
         return json.loads(r.text)
 
-    def get_primary_user(self, domain_id):
+    def get_all_users(self, domain_id):
         uri = self.auth_url + "/v2.0/RAX-AUTH/domains/{0}/users".format(
             domain_id)
         r = requests.get(uri, headers=self.prep_headers())
-        resp = json.loads(r.text)
-        username = resp['users'][0]['username']
-        region = resp['users'][0]['RAX-AUTH:defaultRegion']
-        return {'user': username, 'region': region}
+        try:
+            obj = json.loads(r.text)
+            user = obj['users'][0]['id'] #Does this have at least 1 user
+            return obj
+        except:
+            f = "ERROR getting no users found for aid %d %s\n"
+            utils.log(f, domain_id, r.text)
+            raise 
 
-    def get_endpoints_by_token(self, token):
-        uri = self.auth_url + "/v2.0/tokens/{0}/endpoints".format(
-            token)
-        r = requests.get(uri, headers=self.prep_headers())
-        resp = json.loads(r.text)
-        return resp
+    def get_username_and_region(self, user):
+        try:
+            username = user['username']
+            region = user['RAX-AUTH:defaultRegion']
+        except:
+            f= """ERROR looking up user %i resp was "%s" headers were "%s"\n"""
+            utils.log(f, domain_id, r.text, r.headers)
+            printf(f, domain_id, r.text, r.headers)
+            raise
+        return {'user': username, 'region': region}
 
     def impersonate_user(self, username):
         uri = self.auth_url + "/v2.0/RAX-AUTH/impersonation-tokens"
@@ -74,17 +110,30 @@ class Auth(object):
         json_data = json.dumps(obj)
         r = requests.post(uri, headers=self.prep_headers(), data=json_data)
         obj = json.loads(r.text)
-        return obj['access']['token']['id']
+        try:
+            token_id = obj['access']['token']['id']
+        except:
+            f= """ERROR impersonating %s resp was "%s" headers were "%s"\n"""
+            utils.log(f, username, r.text, r.headers)
+            printf(f, username, r.text, r.headers)
+            raise
+        return token_id
 
     def get_token_and_endpoint(self, domain_id):
-        pu = self.get_primary_user(domain_id)
-        token = self.impersonate_user(pu['user'])
+        #Grab all users for this ddi
+        domain_users  = self.get_all_users(domain_id)
+        #Figure out who the admin is by looking up the first users admin
+        first_user_id = domain_users['users'][0]['id']
+        admin_users = self.get_admin_by_user(first_user_id)
+        admin_user_name = admin_users['users'][0]['username']
+        admin_region = admin_users['users'][0]['RAX-AUTH:defaultRegion']
+        token = self.impersonate_user(admin_user_name)
         # eps = self.get_endpoints(domain_id)
         eps = self.get_endpoints_by_token(token)
         cf_eps = [e for e in eps['endpoints'] if e['type'] == 'object-store']
         cf_endpoint = None
         for ep in cf_eps:
-            if ep['region'] == pu['region']:
+            if ep['region'] == admin_region:
                 cf_endpoint = ep['publicURL']
                 break
 
@@ -92,7 +141,8 @@ class Auth(object):
         if cf_endpoint is None:
             msg = ''.join([
                 "Error coulden't get endpoint for aid={0} pu={1} " +
-                "token={2} eps={3}\n"]).format(domain_id, pu, token, eps)
+                "token={2} eps={3}\n"]).format(domain_id, admin_user_name,
+                                               token, eps)
             raise Exception(msg)
         return out
 
