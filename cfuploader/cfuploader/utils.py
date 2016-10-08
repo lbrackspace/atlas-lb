@@ -7,11 +7,17 @@ import datetime
 import string
 import errno
 import json
+import sys
 import os
 import re
 
+
 zip_re = re.compile(".*/(access_log_([0-9]+)_([0-9]{10})\.zip)")
 lp = None
+
+def printf(format,*args): 
+    sys.stdout.write(format%args)
+
 
 def excuse():
     except_message = traceback.format_exc()
@@ -134,6 +140,7 @@ def log(fmt, *args):
     lp.write("[%s] " % datetime_to_formatted_time())
     lp.write(fmt % args)
     lp.flush()
+    printf(fmt, *args)
 
 
 class Config(object):

@@ -22,6 +22,7 @@ upload_files = set()
 
 cfg = utils.cfg
 
+printf = utils.printf
 
 def worker_process(zip_container, expected_md5, fsize):
     aid = zip_container['aid']
@@ -35,12 +36,21 @@ def worker_process(zip_container, expected_md5, fsize):
     auth = clients.Auth()
     auth.get_admin_token()  #Todo: Need to try to avoid regrabbing token repeatedly
     utils.log("fetching token for anf client for %d:%d\n", aid, lid)
-    t = auth.get_token_and_endpoint(aid)
+    try:
+        t = auth.get_token_and_endpoint(aid)
+    except:
+        f = "ERROR getting token and endpoint for aid %i for zip %s\n"
+        utils.log(f, aid, zip_container)
     cf = clients.CloudFiles(t)
     utils.log("using token '%s' for aid '%d' for cloud files client\n", t, aid)
     utils.log("try sending file %s -> %s: %s\n", local_file, cnt, remote_file)
     utils.log("creating container '%s'\n", cnt)
-    cf.create_container(cnt)
+    try:
+         cf.create_container(cnt)
+    except:
+         f = "ERROR creating container %s for %s with endpoint & token %s\n"
+         utils.log(f, cnt, zip_container, t)
+         raise
     act_md5 = cf.upload_file(local_file, cnt, remote_file)
     utils.log("SUCCESS sending %s-> %s: %s\n", local_file, cnt, remote_file)
     if act_md5 == expected_md5:
@@ -81,7 +91,7 @@ class Uploader(object):
 
     def __init__(self):
         self.timestamp = time.time() - 60.0
-        logging.basicConfig(level=logging.DEBUG)
+        #logging.basicConfig(level=logging.DEBUG)
 
     def start_worker(self, zip_container):
         th = threading.Thread(target=worker_thread, args=(zip_container,))
