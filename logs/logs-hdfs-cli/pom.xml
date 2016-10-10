@@ -4,13 +4,13 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-logs</artifactId>
-        <version>1.25.34-SNAPSHOT</version>
+        <version>1.25.34</version>
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-exp-hdfs-cli</artifactId>
     <name>OpenStack :: Atlas :: Logs :: HDFS :: CommandLine for testing</name>
-    <version>1.25.34-SNAPSHOT</version>
+    <version>1.25.34</version>
     <packaging>jar</packaging>
 
     <dependencies>
