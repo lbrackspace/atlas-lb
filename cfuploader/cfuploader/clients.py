@@ -1,3 +1,4 @@
+import threading
 import swiftclient
 import datetime
 import requests
@@ -27,25 +28,50 @@ class Auth(object):
         self.auth_url = conf.auth_url
         self.auth_user = conf.auth_user
         self.auth_passwd = conf.auth_passwd
-        self.token = None
-        self.expires = None
-        self.last_impersonation_token = None
+        self.req_count = 0
+        self.cache_count = 0
+        self.auth_lock = threading.Lock()
+        #Cache objects
+        self.god_token = None
+        self.god_expires = None
+        self.all_users = {}
+        self.admin_users = {}
+        self.user_tokens = {}
+        self.endpoints = {}
+        self.token_and_endpoints = {}
+        #Cache counters
+        self.req_count = 0
+        self.cache_count = 0
+
 
     def prep_headers(self):
-        return {'content-type': 'application/json',
-                'accept': 'application/json',
-                'x-auth-token': self.token}
+        with self.auth_lock:
+            return {'content-type': 'application/json',
+                    'accept': 'application/json',
+                    'x-auth-token': self.god_token}
 
 
     def get_endpoints_by_token(self, token):
+        with self.auth_lock:
+            if token in self.endpoints:
+                self.cache_count += 1
+                return self.endpoints[token]
+
         uri = self.auth_url + "/v2.0/tokens/{0}/endpoints".format(
             token)
         r = requests.get(uri, headers=self.prep_headers())
         resp = json.loads(r.text)
+        with self.auth_lock:
+            self.req_count += 1
+            self.endpoints[token] = resp
         return resp
 
 
     def get_admin_by_user(self, uid):
+        with self.auth_lock:
+            if uid in self.admin_users:
+                self.cache_count += 1
+                return self.admin_users[uid]
         hdr = self.prep_headers()
         uri = self.auth_url + "/v2.0/users/{0}/RAX-AUTH/admins".format(uid)
         r = requests.get(uri, headers=hdr)
@@ -59,19 +85,53 @@ class Auth(object):
             f = "ERROR getting admin user for uid %s %s\n"
             utils.log(f, uid, r.text)
             raise
-        return obj
+        with self.auth_lock:
+            self.req_count += 1
+            self.all_users[uid] = obj
+            return obj
 
     def get_admin_token(self):
+        with self.auth_lock:
+            if self.god_token:
+                self.cache_count += 1
+                return {"token": self.god_token, "expires":self.god_expires}
+               
         up = {'username': self.auth_user, 'password': self.auth_passwd}
         payload = {'auth': {'passwordCredentials': up}}
         hdr = self.prep_headers()
         uri = self.auth_url + "/v2.0/tokens"
         r = requests.post(uri, headers=hdr, data=json.dumps(payload))
         obj = json.loads(r.text)
-        self.token = obj["access"]["token"]["id"]
-        self.expires = obj["access"]["token"]["expires"]
-        return {"token": self.token, "expires": self.expires}
+        token = obj["access"]["token"]["id"]
+        expires = obj["access"]["token"]["expires"]
+        with self.auth_lock:
+            self.god_token = token
+            self.god_expires = expires
+            self.req_count += 1        
+            return {"token": token, "expires": expires}
 
+    def get_all_users(self, domain_id):
+        with self.auth_lock:
+            if domain_id in self.all_users:
+                self.cache_count += 1
+                return self.all_users[domain_id]
+            
+        uri = self.auth_url + "/v2.0/RAX-AUTH/domains/{0}/users".format(
+            domain_id)
+        r = requests.get(uri, headers=self.prep_headers())
+        try:
+            obj = json.loads(r.text)
+            user = obj['users'][0]['id'] #Does this have at least 1 user
+            with self.auth_lock:
+                self.req_count += 1
+                self.all_users[domain_id] = obj
+            return obj
+        except:
+            f = "ERROR getting no users found for aid %d %s\n"
+            utils.log(f, domain_id, r.text)
+            raise 
+
+    #Not used but leave it for debugging
     def get_endpoints(self, domain_id):
         uri = self.auth_url + "/v2.0/RAX-AUTH/domains/{0}/endpoints".format(
                               domain_id)
@@ -79,19 +139,7 @@ class Auth(object):
         r = requests.get(uri, headers=hdr)
         return json.loads(r.text)
 
-    def get_all_users(self, domain_id):
-        uri = self.auth_url + "/v2.0/RAX-AUTH/domains/{0}/users".format(
-            domain_id)
-        r = requests.get(uri, headers=self.prep_headers())
-        try:
-            obj = json.loads(r.text)
-            user = obj['users'][0]['id'] #Does this have at least 1 user
-            return obj
-        except:
-            f = "ERROR getting no users found for aid %d %s\n"
-            utils.log(f, domain_id, r.text)
-            raise 
-
+    #not used but leave it for debugging
     def get_username_and_region(self, user):
         try:
             username = user['username']
@@ -104,6 +152,10 @@ class Auth(object):
         return {'user': username, 'region': region}
 
     def impersonate_user(self, username):
+        with self.auth_lock:
+            if username in self.user_tokens:
+                self.cache_count += 1
+                return self.user_token[username]
         uri = self.auth_url + "/v2.0/RAX-AUTH/impersonation-tokens"
         imp = {'user': {'username': username}, 'expire-in-seconds': 3600}
         obj = {'RAX-AUTH:impersonation': imp}
@@ -117,9 +169,16 @@ class Auth(object):
             utils.log(f, username, r.text, r.headers)
             printf(f, username, r.text, r.headers)
             raise
-        return token_id
+        with self.auth_lock:
+            self.req_count += 1
+            self.user_tokens[username] = token_id
+            return token_id
 
     def get_token_and_endpoint(self, domain_id):
+        with self.auth_lock:
+            if domain_id in self.token_and_endpoints:
+                self.cache_count += 1
+                return self.token_and_endpoints[domain_id]
         #Grab all users for this ddi
         domain_users  = self.get_all_users(domain_id)
         #Figure out who the admin is by looking up the first users admin
@@ -128,7 +187,6 @@ class Auth(object):
         admin_user_name = admin_users['users'][0]['username']
         admin_region = admin_users['users'][0]['RAX-AUTH:defaultRegion']
         token = self.impersonate_user(admin_user_name)
-        # eps = self.get_endpoints(domain_id)
         eps = self.get_endpoints_by_token(token)
         cf_eps = [e for e in eps['endpoints'] if e['type'] == 'object-store']
         cf_endpoint = None
@@ -144,7 +202,26 @@ class Auth(object):
                 "token={2} eps={3}\n"]).format(domain_id, admin_user_name,
                                                token, eps)
             raise Exception(msg)
-        return out
+        with self.auth_lock:
+            self.cache_count += 1
+            self.token_and_endpoints[domain_id] = out
+            return out
+
+    def get_counts(self):
+        with self.auth_lock:
+            return {"cache": self.cache_count, "reqs": self.req_count,
+                    "total": self.cache_count + self.req_count}
+
+    def clear_cache(self):
+        with auth_lock:
+            self.god_token = None
+            self.god_expires = None
+            self.all_users = {}
+            self.user_tokens = {}
+            self.user_tokens = {}
+            self.endpoints = {}
+            self.token_and_endpoints = {}
+
 
 
 class CloudFiles(object):
