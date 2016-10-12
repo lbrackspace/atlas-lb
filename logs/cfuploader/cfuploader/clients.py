@@ -1,3 +1,4 @@
+import threading
 import swiftclient
 import datetime
 import requests
@@ -9,10 +10,15 @@ import os
 
 from cfuploader import utils
 
+
 account_lb_query = """
 select account_id, id, name from loadbalancer
 where account_id = %s and status = 'ACTIVE'
 """
+
+cfg = utils.cfg
+
+printf = utils.printf
 
 class Auth(object):
     def __init__(self, conf=None):
@@ -22,25 +28,110 @@ class Auth(object):
         self.auth_url = conf.auth_url
         self.auth_user = conf.auth_user
         self.auth_passwd = conf.auth_passwd
-        self.token = None
-        self.expires = None
+        self.req_count = 0
+        self.cache_count = 0
+        self.auth_lock = threading.Lock()
+        #Cache objects
+        self.god_token = None
+        self.god_expires = None
+        self.all_users = {}
+        self.admin_users = {}
+        self.user_tokens = {}
+        self.endpoints = {}
+        self.token_and_endpoints = {}
+        #Cache counters
+        self.req_count = 0
+        self.cache_count = 0
+
 
     def prep_headers(self):
-        return {'content-type': 'application/json',
-                'accept': 'application/json',
-                'x-auth-token': self.token}
+        with self.auth_lock:
+            return {'content-type': 'application/json',
+                    'accept': 'application/json',
+                    'x-auth-token': self.god_token}
+
+
+    def get_endpoints_by_token(self, token):
+        with self.auth_lock:
+            if token in self.endpoints:
+                self.cache_count += 1
+                return self.endpoints[token]
+
+        uri = self.auth_url + "/v2.0/tokens/{0}/endpoints".format(
+            token)
+        r = requests.get(uri, headers=self.prep_headers())
+        resp = json.loads(r.text)
+        with self.auth_lock:
+            self.req_count += 1
+            self.endpoints[token] = resp
+        return resp
+
+
+    def get_admin_by_user(self, uid):
+        with self.auth_lock:
+            if uid in self.admin_users:
+                self.cache_count += 1
+                return self.admin_users[uid]
+        hdr = self.prep_headers()
+        uri = self.auth_url + "/v2.0/users/{0}/RAX-AUTH/admins".format(uid)
+        r = requests.get(uri, headers=hdr)
+        obj = json.loads(r.text)
+        try:
+            #Verify we have 1 user with a name and id and a region
+            user_id = obj['users'][0]['id']
+            user_name = obj['users'][0]['username']
+            region = obj['users'][0]['RAX-AUTH:defaultRegion']
+        except:
+            f = "ERROR getting admin user for uid %s %s\n"
+            utils.log(f, uid, r.text)
+            raise
+        with self.auth_lock:
+            self.req_count += 1
+            self.all_users[uid] = obj
+            return obj
 
     def get_admin_token(self):
+        with self.auth_lock:
+            if self.god_token:
+                self.cache_count += 1
+                return {"token": self.god_token, "expires":self.god_expires}
+               
         up = {'username': self.auth_user, 'password': self.auth_passwd}
         payload = {'auth': {'passwordCredentials': up}}
         hdr = self.prep_headers()
         uri = self.auth_url + "/v2.0/tokens"
         r = requests.post(uri, headers=hdr, data=json.dumps(payload))
         obj = json.loads(r.text)
-        self.token = obj["access"]["token"]["id"]
-        self.expires = obj["access"]["token"]["expires"]
-        return {"token": self.token, "expires": self.expires}
+        token = obj["access"]["token"]["id"]
+        expires = obj["access"]["token"]["expires"]
+        with self.auth_lock:
+            self.god_token = token
+            self.god_expires = expires
+            self.req_count += 1        
+            return {"token": token, "expires": expires}
 
+    def get_all_users(self, domain_id):
+        with self.auth_lock:
+            if domain_id in self.all_users:
+                self.cache_count += 1
+                return self.all_users[domain_id]
+            
+        uri = self.auth_url + "/v2.0/RAX-AUTH/domains/{0}/users".format(
+            domain_id)
+        r = requests.get(uri, headers=self.prep_headers())
+        try:
+            obj = json.loads(r.text)
+            user = obj['users'][0]['id'] #Does this have at least 1 user
+            with self.auth_lock:
+                self.req_count += 1
+                self.all_users[domain_id] = obj
+            return obj
+        except:
+            f = "ERROR getting no users found for aid %d %s\n"
+            utils.log(f, domain_id, r.text)
+            raise 
+
+    #Not used but leave it for debugging
     def get_endpoints(self, domain_id):
         uri = self.auth_url + "/v2.0/RAX-AUTH/domains/{0}/endpoints".format(
                               domain_id)
@@ -48,40 +139,59 @@ class Auth(object):
         r = requests.get(uri, headers=hdr)
         return json.loads(r.text)
 
-    def get_primary_user(self, domain_id):
-        uri = self.auth_url + "/v2.0/RAX-AUTH/domains/{0}/users".format(
-            domain_id)
-        r = requests.get(uri, headers=self.prep_headers())
-        resp = json.loads(r.text)
-        username = resp['users'][0]['username']
-        region = resp['users'][0]['RAX-AUTH:defaultRegion']
+    #not used but leave it for debugging
+    def get_username_and_region(self, user):
+        try:
+            username = user['username']
+            region = user['RAX-AUTH:defaultRegion']
+        except:
+            f= """ERROR looking up user %i resp was "%s" headers were "%s"\n"""
+            utils.log(f, domain_id, r.text, r.headers)
+            printf(f, domain_id, r.text, r.headers)
+            raise
         return {'user': username, 'region': region}
 
-    def get_endpoints_by_token(self, token):
-        uri = self.auth_url + "/v2.0/tokens/{0}/endpoints".format(
-            token)
-        r = requests.get(uri, headers=self.prep_headers())
-        resp = json.loads(r.text)
-        return resp
-
     def impersonate_user(self, username):
+        with self.auth_lock:
+            if username in self.user_tokens:
+                self.cache_count += 1
+                return self.user_tokens[username]
         uri = self.auth_url + "/v2.0/RAX-AUTH/impersonation-tokens"
         imp = {'user': {'username': username}, 'expire-in-seconds': 3600}
         obj = {'RAX-AUTH:impersonation': imp}
         json_data = json.dumps(obj)
         r = requests.post(uri, headers=self.prep_headers(), data=json_data)
         obj = json.loads(r.text)
-        return obj['access']['token']['id']
+        try:
+            token_id = obj['access']['token']['id']
+        except:
+            f= """ERROR impersonating %s resp was "%s" headers were "%s"\n"""
+            utils.log(f, username, r.text, r.headers)
+            printf(f, username, r.text, r.headers)
+            raise
+        with self.auth_lock:
+            self.req_count += 1
+            self.user_tokens[username] = token_id
+            return token_id
 
     def get_token_and_endpoint(self, domain_id):
-        pu = self.get_primary_user(domain_id)
-        token = self.impersonate_user(pu['user'])
-        # eps = self.get_endpoints(domain_id)
+        with self.auth_lock:
+            if domain_id in self.token_and_endpoints:
+                self.cache_count += 1
+                return self.token_and_endpoints[domain_id]
+        #Grab all users for this ddi
+        domain_users  = self.get_all_users(domain_id)
+        #Figure out who the admin is by looking up the first users admin
+        first_user_id = domain_users['users'][0]['id']
+        admin_users = self.get_admin_by_user(first_user_id)
+        admin_user_name = admin_users['users'][0]['username']
+        admin_region = admin_users['users'][0]['RAX-AUTH:defaultRegion']
+        token = self.impersonate_user(admin_user_name)
         eps = self.get_endpoints_by_token(token)
         cf_eps = [e for e in eps['endpoints'] if e['type'] == 'object-store']
         cf_endpoint = None
         for ep in cf_eps:
-            if ep['region'] == pu['region']:
+            if ep['region'] == admin_region:
                 cf_endpoint = ep['publicURL']
                 break
 
@@ -89,9 +199,29 @@ class Auth(object):
         if cf_endpoint is None:
             msg = ''.join([
                 "Error coulden't get endpoint for aid={0} pu={1} " +
-                "token={2} eps={3}\n"]).format(domain_id, pu, token, eps)
+                "token={2} eps={3}\n"]).format(domain_id, admin_user_name,
+                                               token, eps)
             raise Exception(msg)
-        return out
+        with self.auth_lock:
+            self.cache_count += 1
+            self.token_and_endpoints[domain_id] = out
+            return out
+
+    def get_counts(self):
+        with self.auth_lock:
+            return {"cache": self.cache_count, "reqs": self.req_count,
+                    "total": self.cache_count + self.req_count}
+
+    def clear_cache(self):
+        with self.auth_lock:
+            self.god_token = None
+            self.god_expires = None
+            self.all_users = {}
+            self.user_tokens = {}
+            self.user_tokens = {}
+            self.endpoints = {}
+            self.token_and_endpoints = {}
+
 
 
 class CloudFiles(object):
@@ -107,6 +237,22 @@ class CloudFiles(object):
     def list_containers(self):
         resp = self.con.get_account(full_listing=True)
         return resp[1]
+
+    def list_container(self, name):
+        resp = self.con.get_container(name, full_listing=True)
+        return resp
+
+    def delete_object(self, cnt, obj):
+        resp = self.con.delete_object(cnt, obj)
+        return resp
+
+    #Only for cleaning up testing directories. Code should not be used
+    #in production script
+    def empty_container(self, cnt):
+        (info, objs) = self.con.get_container(cnt, full_listing=True)
+        for obj in objs:
+            self.con.delete_object(cnt, obj['name'])
+            yield (cnt, obj['name'])
 
     def create_container(self, name):
         self.con.put_container(name, {})
@@ -173,10 +319,10 @@ def create_fake_zips(account_id, n_hours):
             (aid, lid, name) = lb
             utils.log("writing %s %s %s\n",
                       aid, lid, name)
-            file_name = utils.set_local_file(aid, lid, dt)
-            dir_name = os.path.split(file_name)[0]
+            full_path = utils.set_local_file(aid, lid, dt)
+            dir_name = os.path.dirname(full_path)
             utils.mkdirs_p(dir_name)
-            with zipfile.ZipFile(file_name, mode="w",
+            with zipfile.ZipFile(full_path, mode="w",
                                  compression=zipfile.ZIP_DEFLATED) as zf:
                 str_list = []
                 for j in xrange(0, 4096):
@@ -189,16 +335,17 @@ def get_container_zips():
     db = DbHelper()
     czs = []
     lb_map = db.get_lb_map()
-    zfiles = scan_zip_files(utils.incoming)
-    for (aid, lid, hl, zip_file) in zfiles:
-        if lid not in lb_map:
-            utils.log("lid %i not found in database skipping\n", lid)
+    zfiles = scan_zip_files(utils.cfg.incoming)
+    for zf in zfiles:
+        if zf['lid'] not in lb_map:
+            utils.log("lid %i not found in database skipping\n", zf['lid'])
             continue
-        (j1, j2, name) = lb_map[lid]  # Throw away j1 and j2
-        cnt = utils.get_container_name(lid, name, hl)
-        zfn = utils.get_remote_file_name(lid, name, hl)
-        czs.append((aid, lid, hl, zip_file, cnt, zfn))
-        utils.sort_container_zips(czs)
+        (zf['aid'], j2, zf['name']) = lb_map[zf['lid']]
+        zf['cnt'] = utils.get_container_name(zf['lid'], zf['name'], zf['hl'])
+        zf['remote_zf'] = utils.get_remote_file_name(zf['lid'],
+                                                     zf['name'], zf['hl'])
+        czs.append(zf)
+    utils.sort_container_zips(czs)
     return czs
 
 
@@ -207,21 +354,11 @@ def scan_zip_files(file_path):
     for (root, dirnames, file_names) in os.walk(file_path):
         for file_name in file_names:
             full_path = os.path.join(root, file_name)
-            pzn = parse_zip_name(full_path)
+            pzn = utils.parse_zip_name(full_path)
             if pzn:
-                (zip_file, aid, lid, hl, zip_path) = pzn
-                zpath = os.path.expanduser(file_path)
-                full_path = os.path.join(zpath, zip_file)
-                zip_files.append((aid, lid, hl, full_path))
+                zip_files.append(pzn)
     return zip_files
 
 
-def parse_zip_name(zip_path):
-    m = utils.zip_re.match(zip_path)
-    if m:
-        zip_file = m.group(1)
-        aid = int(m.group(2))
-        lid = int(m.group(3))
-        hl = int(m.group(4))
-        return zip_file, aid, lid, hl, zip_path
-    return None
+
+
