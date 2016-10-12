@@ -140,7 +140,6 @@ def log(fmt, *args):
     lp.write("[%s] " % datetime_to_formatted_time())
     lp.write(fmt % args)
     lp.flush()
-    printf(fmt, *args)
 
 
 class Config(object):
