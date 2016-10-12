@@ -155,7 +155,7 @@ class Auth(object):
         with self.auth_lock:
             if username in self.user_tokens:
                 self.cache_count += 1
-                return self.user_token[username]
+                return self.user_tokens[username]
         uri = self.auth_url + "/v2.0/RAX-AUTH/impersonation-tokens"
         imp = {'user': {'username': username}, 'expire-in-seconds': 3600}
         obj = {'RAX-AUTH:impersonation': imp}
@@ -213,7 +213,7 @@ class Auth(object):
                     "total": self.cache_count + self.req_count}
 
     def clear_cache(self):
-        with auth_lock:
+        with self.auth_lock:
             self.god_token = None
             self.god_expires = None
             self.all_users = {}

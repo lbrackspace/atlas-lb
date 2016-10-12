@@ -202,4 +202,10 @@ def settups2listdicts(set_of_tups):
         list_of_dicts.append(d)
     return list_of_dicts
 
+def excuse():
+    except_message = traceback.format_exc()
+    stack_message  = string.join(traceback.format_exc(),sep="")
+    return "Exception:\n" + except_message + "Stack Frame:\n" + stack_message
+
+
 cfg = Config()
