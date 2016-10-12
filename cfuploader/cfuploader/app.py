@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from multiprocessing import Process
+from multiprocessing.dummy import Pool #This is a ThreadPool not Process Pool
 from cfuploader import utils
 from cfuploader import clients
+import threading
 import random
 import logging
 import threading
@@ -15,7 +16,6 @@ import os
 import pdb
 
 l = thread.allocate_lock()
-q = Queue.Queue()
 
 all_files = set()
 upload_files = set()
@@ -24,7 +24,8 @@ cfg = utils.cfg
 
 printf = utils.printf
 
-def worker_process(zip_container, expected_md5, fsize):
+def thread_worker(zip_container, expected_md5, fsize, auth):
+    #Pool.map can only handle 1 arg so pfft
     aid = zip_container['aid']
     lid = zip_container['lid']
     hl = zip_container['hl']
@@ -33,7 +34,6 @@ def worker_process(zip_container, expected_md5, fsize):
     local_file = zip_container['zip_path']
     cnt = zip_container['cnt']
     remote_file = zip_container['remote_zf']
-    auth = clients.Auth()
     auth.get_admin_token()  #Todo: Need to try to avoid regrabbing token repeatedly
     utils.log("fetching token for anf client for %d:%d\n", aid, lid)
     try:
@@ -41,6 +41,7 @@ def worker_process(zip_container, expected_md5, fsize):
     except:
         f = "ERROR getting token and endpoint for aid %i for zip %s\n"
         utils.log(f, aid, zip_container)
+        raise
     cf = clients.CloudFiles(t)
     utils.log("using token '%s' for aid '%d' for cloud files client\n", t, aid)
     utils.log("try sending file %s -> %s: %s\n", local_file, cnt, remote_file)
@@ -63,89 +64,52 @@ def worker_process(zip_container, expected_md5, fsize):
     else:
         utils.log("checksome failed for file %s\n", local_file, cnt)
 
-
-def worker_thread(zip_container):
-    #(aid, lid, hl, src_file, cnt, dst_file) = zip_container
-    aid = zip_container['aid']
-    lid = zip_container['lid']
-    hl = zip_container['hl']
-    src_file = zip_container['zip_path']
-    utils.log("worker thread %s\n", zip_container)
-    try:
-        (md5, fsize) = utils.md5sum_and_size(src_file, block_size=1024*1024)
-        utils.log("%s: %s %i uploading now\n", src_file, md5, fsize)
-        p = Process(target=worker_process, args=(zip_container, md5, fsize))
-        p.start()
-        p.join()
-        utils.log("finished sending %i %7i %7i log file.\n", hl, aid, lid)
-    except Exception:
-        utils.log("error sending log file %i %7i %7i: %s\n", hl, aid, lid,
-                  utils.excuse())
-    l.acquire()
-    q.put(zip_container)
-    l.release()
-
+#This is just to wrap the child thread in an exception handler
+#This way if a child throws an exception it won't bubble up and
+#kill the parent
+def upload_worker(q):
+    while True:
+        (zip_container, expected_md5, fsize, auth) = q.get()
+        try:
+            thread_worker(zip_container, expected_md5, fsize, auth)
+        except:
+            utils.log("Exception caught sending zip file %s excuse is %s\n",
+                       zip_container, utils.excuse())
+        finally:
+            q.task_done()
 
 class Uploader(object):
-    n_workers = cfg.n_workers
-
     def __init__(self):
-        self.timestamp = time.time() - 60.0
+        self.q = Queue.Queue()
+        self.auth = clients.Auth()
+        self.n_workers = cfg.n_workers
         #logging.basicConfig(level=logging.DEBUG)
 
-    def start_worker(self, zip_container):
-        th = threading.Thread(target=worker_thread, args=(zip_container,))
-        th.setDaemon(True)
-        utils.log("starting thread %s\n", zip_container)
-        th.start()
-
     def main_loop(self):
-        while True:
-            time.sleep(1.0)
-            now = time.time() #Run the queue drainer every second
-            if self.timestamp + 60.0 < now: # but only run the scanner each minute
-                utils.log("scanning zips\n")
-                try:
-                    zip_containers = clients.get_container_zips()
-                    utils.log("zips scanner found %d zips\n",
-                              len(zip_containers))
-                    l.acquire()
-                    for zc in zip_containers:
-                        if utils.dict2tup(zc) not in upload_files:
-                            all_files.add(utils.dict2tup(zc))
-                    l.release()
-                except Exception:
-                    utils.log("Error scanning zip directory: %s\n",
-                              utils.excuse())
-                    try:
-                        l.release()
-                    except Exception:
-                        utils.log("Warning lock was already released. ")
-                        pass  # If the locks not even being held ignore it
-                self.timestamp = time.time()
-            #Drain Queue
+        #spawn off self.n_worker threads
+        for i in xrange(self.n_workers):
+            t = threading.Thread(target=upload_worker,args=(self.q,))
+            t.setDaemon(True)
+            t.start()
 
-            l.acquire()
-            while not q.empty():
-                zc = q.get()
-                zc_tup = utils.dict2tup(zc)
-                all_files.discard(zc_tup)
-                upload_files.discard(zc_tup)
-                utils.log("removing %s from upload status\n", zc['zip_path'])
-            nready = self.n_workers - len(upload_files)
-            sendable_files = utils.settups2listdicts(all_files - upload_files)
-            nfiles = len(sendable_files)
-            if nfiles > 0:
-                utils.log(
-                    "%i files are currently sendable. Scheduling for send\n",
-                    len(sendable_files))
-            #utils.sort_container_zips(sendable_files)
-            random.shuffle(sendable_files)
-            while len(sendable_files) > 0 and nready > 0:
-                zcd = sendable_files.pop()
-                utils.log("spawning thread to send %s nread = %i\n",
-                          zcd, nready)
-                nready -= 1
-                upload_files.add(utils.dict2tup(zcd))
-                self.start_worker(zcd)
-            l.release()
+        while True:
+            self.auth.clear_cache() #Lets go ahead and clear cache every batch
+            #Grab all the files that are in /processed
+            zip_container_list = clients.get_container_zips()
+            utils.log("FOUND %i zips to upload\n", len(zip_container_list))
+            #Build the arguments for the ThreadPool mapper            
+            for zcl in zip_container_list:
+                try:
+                    (md5, fsize) = utils.md5sum_and_size(zcl['zip_path'])
+                    #Schedule file for upload in Queue
+                    self.q.put([zcl, md5, fsize, self.auth])
+                except:
+                    utils.log("Error grabbing md5sum and size for %s\n", zcl)
+                    utils.log("Excuse is %s\n", utils.excuse())
+                    continue
+            self.q.join()
+            utils.log("==================================================\n")
+            utils.log("FINISHED batch cache performance was is %s\n",
+                      self.auth.get_counts())
+            time.sleep(60.0) #Don't blink or you'll miss the message :P
+
