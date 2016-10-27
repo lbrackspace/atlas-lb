@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.repository;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.hibernate.Session;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerIdAndName;
 import org.openstack.atlas.service.domain.entities.*;
@@ -305,22 +307,25 @@ public class LoadBalancerRepository {
             throw new BadRequestException(
                     "Bad Request: The requirements were not met for this request, please verify with spec and try again.");
         }
-
         return lb;
     }
 
+
+    // Attempts to atomicly set the lb status to PENDING_UPDATE returns true if this thread is the thread that set PENDING_UPDATE
+    // other threads that landed here when PENDING_UPDATE was already set the method will return false which will become a 422
     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
+
         String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
         List<LoadBalancer> lbList;
-        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_READ).
+        Query q = entityManager.createQuery(qStr).setLockMode(LockModeType.PESSIMISTIC_WRITE).
                 setParameter("aid", accountId).
                 setParameter("lid", loadbalancerId);
-        lbList = q.getResultList();
+        lbList = q.getResultList(); // With a pessimistic_write on the lb only one thread can proceed through here. any other thread will block
         if (lbList.size() < 1) {
             throw new EntityNotFoundException();
         }
 
-        LoadBalancer lb = lbList.get(0);
+         LoadBalancer lb = lbList.get(0);
         if (lb.getStatus().equals(DELETED)) {
             throw new UnprocessableEntityException(Constants.LoadBalancerDeleted);
         }
@@ -328,19 +333,13 @@ public class LoadBalancerRepository {
         final boolean isPendingOrActive = lb.getStatus().equals(LoadBalancerStatus.PENDING_UPDATE) || isActive;
 
         if (allowConcurrentModifications ? isPendingOrActive : isActive) {
-//            SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-//            Date now = new Date();
-//            String strDate = sdfDate.format(now);
-//            LOG.debug("SET STATUS: " + strDate);
             lb.setStatus(statusToChangeTo);
             lb.setUpdated(Calendar.getInstance());
             entityManager.merge(lb);
             entityManager.flush();
-
-            return true;
+            return true; // The lb has been set to pending by this request so this request should proceed
         }
-
-        return false;
+        return false; // The lb was already locked pending by another request so this request should bail out
     }
 
     public List<Usage> getUsageByAccountIdandLbId(Integer accountId, Integer loadBalancerId, Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException {

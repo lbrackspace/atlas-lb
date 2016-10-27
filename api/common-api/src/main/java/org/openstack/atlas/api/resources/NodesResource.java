@@ -119,6 +119,7 @@ public class NodesResource extends CommonDependencyProvider {
             newNodesLb.setUserName(getUserName(requestHeaders));
 
             Nodes returnNodes = new Nodes();
+            // Don't let multiple requests attempt to create new nodes concurrently
             Set<Node> dbnodes = nodeService.createNodes(newNodesLb);
             for (Node node : dbnodes) {
                 returnNodes.getNodes().add(dozerMapper.map(node, org.openstack.atlas.docs.loadbalancers.api.v1.Node.class));

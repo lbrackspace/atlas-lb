@@ -2,6 +2,7 @@ package org.openstack.atlas.api.mgmt.resources;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
@@ -123,7 +124,8 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
             }
             return resp;
         } catch (Exception ex) {
-            resp = ResponseFactory.getErrorResponse(ex, null, null);
+            String error = Debug.getExtendedStackTrace(ex);
+            resp = ResponseFactory.getErrorResponse(ex, "Exception", error);
             return resp;
         }
     }

@@ -28,8 +28,8 @@ import java.util.*;
 
 @Service
 public class NodeServiceImpl extends BaseService implements NodeService {
-    private final Log LOG = LogFactory.getLog(NodeServiceImpl.class);
 
+    private final Log LOG = LogFactory.getLog(NodeServiceImpl.class);
     @Autowired
     private AccountLimitService accountLimitService;
     @Autowired
@@ -70,14 +70,14 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     @DeadLockRetry
     @Override
     public LoadBalancer delNodes(LoadBalancer lb, Collection<Node> nodes) throws EntityNotFoundException {
-           return nodeRepository.delNodes(loadBalancerRepository.getById(lb.getId()), nodes);
+        return nodeRepository.delNodes(loadBalancerRepository.getById(lb.getId()), nodes);
     }
 
     @Transactional
     @DeadLockRetry
     @Override
     public void delNode(LoadBalancer lb, int nid) throws EntityNotFoundException {
-           nodeRepository.delNode(loadBalancerRepository.getById(lb.getId()), nid);
+        nodeRepository.delNode(loadBalancerRepository.getById(lb.getId()), nid);
     }
 
     @Transactional
@@ -91,52 +91,61 @@ public class NodeServiceImpl extends BaseService implements NodeService {
     @Transactional
     public Set<Node> createNodes(LoadBalancer newNodesLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException, LimitReachedException {
         LoadBalancer oldNodesLb = loadBalancerRepository.getByIdAndAccountId(newNodesLb.getId(), newNodesLb.getAccountId());
-        isLbActive(oldNodesLb);
-
+        LoadBalancerStatus active = LoadBalancerStatus.ACTIVE;
+        boolean isLbEditible = loadBalancerRepository.testAndSetStatus(oldNodesLb.getAccountId(), oldNodesLb.getId(),
+                LoadBalancerStatus.PENDING_UPDATE, false);
+        if (!isLbEditible) {
+            throw new ImmutableEntityException("LoadBalancer is not ACTIVE");
+        }
         Integer potentialTotalNumNodes = oldNodesLb.getNodes().size() + newNodesLb.getNodes().size();
         Integer nodeLimit = accountLimitService.getLimit(oldNodesLb.getAccountId(), AccountLimitType.NODE_LIMIT);
 
         if (potentialTotalNumNodes > nodeLimit) {
+            loadBalancerRepository.setStatus(oldNodesLb, active);
             throw new LimitReachedException(String.format("Nodes must not exceed %d per load balancer.", nodeLimit));
         }
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldNodesLb.getNodes(), newNodesLb.getNodes());
 
         // You are not allowed to add secondary nodes with out Some form of monitoring. B-16407
         if (npc.hasSecondary() && !loadBalancerRepository.loadBalancerHasHealthMonitor(oldNodesLb.getId())) {
+            loadBalancerRepository.setStatus(oldNodesLb, active);
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
 
         // No secondary nodes unless there are primary nodes
         if (npc.hasSecondary() && !npc.hasPrimary()) {
+            loadBalancerRepository.setStatus(oldNodesLb, active);
             throw new BadRequestException(Constants.NoPrimaryNodeError);
         }
 
         LOG.debug("Verifying that there are no duplicate nodes...");
         if (detectDuplicateNodes(oldNodesLb, newNodesLb)) {
             LOG.warn("Duplicate nodes found! Sending failure response back to client...");
+            loadBalancerRepository.setStatus(oldNodesLb, active);
             throw new UnprocessableEntityException("Duplicate nodes detected. One or more nodes already configured on load balancer.");
         }
 
         if (!areAddressesValidForUse(newNodesLb.getNodes(), oldNodesLb)) {
             LOG.warn("Internal Ips found! Sending failure response back to client...");
+            loadBalancerRepository.setStatus(oldNodesLb, active);
             throw new BadRequestException("Invalid node address. The load balancer's virtual ip or host end point address cannot be used as a node address.");
         }
 
         try {
             Node badNode = blackListedItemNode(newNodesLb.getNodes());
             if (badNode != null) {
+                loadBalancerRepository.setStatus(oldNodesLb, active);
                 throw new BadRequestException(String.format("Invalid node address. The address '%s' is currently not accepted for this request.", badNode.getIpAddress()));
             }
         } catch (IPStringConversionException ipe) {
             LOG.warn("IPStringConversionException thrown. Sending error response to client...");
+            loadBalancerRepository.setStatus(oldNodesLb, active);
             throw new BadRequestException("IP address was not converted properly, we are unable to process this request.");
         } catch (IpTypeMissMatchException ipte) {
             LOG.warn("EntityNotFoundException thrown. Sending error response to client...");
+            loadBalancerRepository.setStatus(oldNodesLb, active);
             throw new BadRequestException("IP addresses type are mismatched, we are unable to process this request.");
         }
-
-        LOG.debug("Updating the lb status to pending_update");
-        oldNodesLb.setStatus(LoadBalancerStatus.PENDING_UPDATE);
 
         //Set status record
         loadBalancerStatusHistoryService.save(oldNodesLb.getAccountId(), oldNodesLb.getId(), LoadBalancerStatus.PENDING_UPDATE);
@@ -168,7 +177,11 @@ public class NodeServiceImpl extends BaseService implements NodeService {
                     msgLb.getId()));
         }
 
-        isLbActive(oldLbNodes);
+        LoadBalancerStatus active = LoadBalancerStatus.ACTIVE;
+        boolean isLbEditable = loadBalancerService.testAndSetStatus(oldLbNodes, LoadBalancerStatus.PENDING_UPDATE);
+        if (!isLbEditable) {
+                throw new ImmutableEntityException("LoadBalancer is not ACTIVE");
+            }
 
         LOG.debug("Nodes on dbLoadbalancer: " + oldLbNodes.getNodes().size());
         for (Node n : oldLbNodes.getNodes()) {
@@ -203,11 +216,13 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         // Won't delete secondary nodes untill you also delete Health Monitor
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
         if (npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null) {
+            loadBalancerRepository.setStatus(oldLbNodes, active);
             throw new BadRequestException(Constants.NoMonitorForSecNodes);
         }
 
         // No secondary nodes unless there are primary nodes
         if (npc.hasSecondary() && !npc.hasPrimary()) {
+            loadBalancerRepository.setStatus(oldLbNodes, active);
             throw new BadRequestException(Constants.NoPrimaryNodeError);
         }
 
