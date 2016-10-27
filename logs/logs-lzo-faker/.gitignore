@@ -1,3 +1,0 @@
-target/*
-*.json
-!local.json
