@@ -1,9 +1,24 @@
 #!/bin/bash
-set -x 
+#set -x 
 
 REPO=rs-repo
-TOPDIR=/var/lib/jenkins/repo/ubuntu-repo
-RELEASES="lucid"
+TOPDIR=""
+
+if [ "$1" == "qa" ]; then
+	TOPDIR=/var/lib/jenkins/repo/ubuntu-repo
+elif [ "$1" == "prod" ]; then
+	TOPDIR=/var/www/prod_repo/ubuntu
+elif [ ! "$1" ]; then
+	echo "Need to know where to deploy! i.e. qa or prod" 
+	exit 1
+fi
+
+if [ ! "$TOPDIR" ]; then
+	echo "Specify either qa or prod. i.e repo_builder.sh qa"
+	exit 1
+fi
+
+RELEASES="lucid precise"
 CATEGORIES="main"
 ARCHES="amd64"
 
@@ -35,11 +50,11 @@ for release in ${RELEASES}; do
      apt-ftparchive packages --db cache/packages_all.db pool/${CATEGORIES} > Packages
      rm dists/${release}/${CATEGORIES}/binary-${ARCHES}/Packages.gz
      rm dists/${release}/${CATEGORIES}/binary-${ARCHES}/Packages.bz2
-     cp Packages dists/${release} dists/${release}/${CATEGORIES}/binary-${ARCHES}
+     cp -a Packages dists/${release} dists/${release}/${CATEGORIES}/binary-${ARCHES}
      gzip -9 dists/${release}/${CATEGORIES}/binary-${ARCHES}/Packages
-     cp Packages dists/${release} dists/${release}/${CATEGORIES}/binary-${ARCHES}
+     cp -a Packages dists/${release} dists/${release}/${CATEGORIES}/binary-${ARCHES}
      bzip2 -9 dists/${release}/${CATEGORIES}/binary-${ARCHES}/Packages
-     cp Packages dists/${release} dists/${release}/${CATEGORIES}/binary-${ARCHES}
+     cp -a Packages dists/${release} dists/${release}/${CATEGORIES}/binary-${ARCHES}
      rm Packages
 
      pushd dists/${release}
