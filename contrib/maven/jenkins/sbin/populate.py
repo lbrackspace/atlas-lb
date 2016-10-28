@@ -100,7 +100,7 @@ def fdir():
     pid = os.fork()
     if pid == -1:
         printf("Fork error\n")
-        yeild
+        yield
     elif pid == 0:
         fr.close()
         listdir(fp=fw)
@@ -185,7 +185,7 @@ def pool_name(basedir,dst):
     deb = os.path.basename(dst)
     m = package_re.match(deb)
     if not m:
-        printf("Coulden't mangle %s to a proper package name\n",deb)
+        printf("Couldn't mangle %s to a proper package name from %s\n",deb,dst)
         package_name="unknown"
     else:
         package_name = m.group(1)
