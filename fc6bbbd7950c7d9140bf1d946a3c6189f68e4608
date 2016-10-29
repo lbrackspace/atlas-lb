@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_c77d0d6f",
+        "filename": "contrib/maven/jenkins/ubunto-repo/repo_builder.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-10-29T22:23:47Z",
+      "side": 1,
+      "message": "These commands appear to be recursivly copying the Packages files deeper and deeper into the repo on each run. Thist needs to be fixed.",
+      "range": {
+        "startLine": 53,
+        "startChar": 11,
+        "endLine": 53,
+        "endChar": 19
+      },
+      "revId": "fc6bbbd7950c7d9140bf1d946a3c6189f68e4608",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
