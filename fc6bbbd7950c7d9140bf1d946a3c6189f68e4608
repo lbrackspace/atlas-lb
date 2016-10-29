@@ -22,6 +22,30 @@
       "revId": "fc6bbbd7950c7d9140bf1d946a3c6189f68e4608",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_678d217c",
+        "filename": "contrib/maven/jenkins/ubunto-repo/repo_builder.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2016-10-29T22:42:03Z",
+      "side": 1,
+      "message": "there should be two copy commands instead of using one copy command with 2 args going to the 3rd target. Since the second arg is a subset of the 3rd arg that entire directory gets recursively copied down one more directory.\nSeperating by hand.\n\nAlso not this file is substantially different than the ron pedde script which used to call \n\ndpkg-scansources \nand dpkg-scanpapckages\n\nr----",
+      "parentUuid": "baa041b7_c77d0d6f",
+      "range": {
+        "startLine": 53,
+        "startChar": 11,
+        "endLine": 53,
+        "endChar": 19
+      },
+      "revId": "fc6bbbd7950c7d9140bf1d946a3c6189f68e4608",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
