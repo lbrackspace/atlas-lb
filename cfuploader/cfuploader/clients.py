@@ -5,6 +5,7 @@ import MySQLdb
 import zipfile
 import string
 import json
+import sys
 import os
 
 from cfuploader import utils
@@ -14,6 +15,8 @@ select account_id, id, name from loadbalancer
 where account_id = %s and status = 'ACTIVE'
 """
 
+def printf(format,*args): sys.stdout.write(format%args)
+
 class Auth(object):
     def __init__(self, conf=None):
         if conf is None:
@@ -22,6 +25,7 @@ class Auth(object):
         self.auth_url = conf.auth_url
         self.auth_user = conf.auth_user
         self.auth_passwd = conf.auth_passwd
+        self.lb_region = conf.lb_region
         self.token = None
         self.expires = None
 
@@ -79,25 +83,31 @@ class Auth(object):
         # eps = self.get_endpoints(domain_id)
         eps = self.get_endpoints_by_token(token)
         cf_eps = [e for e in eps['endpoints'] if e['type'] == 'object-store']
-        cf_endpoint = None
-        for ep in cf_eps:
-            if ep['region'] == pu['region']:
-                cf_endpoint = ep['publicURL']
-                break
+        default_region = pu['region']
+        lb_region_ep = None
+        default_region_ep = None
+        for e in cf_eps:
+            if e['region'] == default_region:
+                default_region_ep = e['publicURL']
+            if e['region'] == self.conf.lb_region:
+                lb_region_ep = e['publicURL']
 
-        out = {'token': token, 'cf_endpoint': cf_endpoint}
-        if cf_endpoint is None:
-            msg = ''.join([
-                "Error coulden't get endpoint for aid={0} pu={1} " +
-                "token={2} eps={3}\n"]).format(domain_id, pu, token, eps)
-            raise Exception(msg)
+        out = {'token': token, 'default_region_ep': default_region_ep,
+               'lb_region_ep': lb_region_ep,
+               'domain_id': domain_id}
         return out
 
 
 class CloudFiles(object):
     def __init__(self, tok_endpoint):
         self.token = tok_endpoint['token']
-        self.end_point = tok_endpoint['cf_endpoint']
+        if tok_endpoint['lb_region_ep'] is not None:
+            self.end_point = tok_endpoint['lb_region_ep']
+        elif tok_endpoint['default_region_ep'] is not None:
+            self.end_point = tok_endpoint['default_region_ep']
+        else:
+            msg = "no endpoint for ddi %d found" % tok_endpoint['domain_id']
+            raise Exception(msg)
         self.con = swiftclient.client.Connection(retries=0,
                                                  preauthurl=self.end_point,
                                                  preauthtoken=self.token,
@@ -166,12 +176,14 @@ class DbHelper(object):
 def create_fake_zips(account_id, n_hours):
     db = DbHelper()
     lbs = db.get_lb_ids(account_id).values()
+    printf("found %d loadbalancers\n", len(lbs))
     now = datetime.datetime.now()
+    printf("simulating %d hours\n", n_hours)
     for i in xrange(0, n_hours):
         dt = now + datetime.timedelta(hours=-i)
         for lb in lbs:
             (aid, lid, name) = lb
-            utils.log("writing %s %s %s\n",
+            printf("writing %s %s %s\n",
                       aid, lid, name)
             file_name = utils.set_local_file(aid, lid, dt)
             dir_name = os.path.split(file_name)[0]

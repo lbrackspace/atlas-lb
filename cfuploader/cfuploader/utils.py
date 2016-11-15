@@ -156,6 +156,7 @@ class Config(object):
         self.auth_url = conf['auth_url']
         self.auth_user = conf['auth_user']
         self.log_file = conf['log_file']
+        self.lb_region = conf['lb_region']
         if self.auth_url[-1] == "/":
             self.auth_url = self.auth_url[:-1]
         self.auth_passwd = conf['auth_passwd']
