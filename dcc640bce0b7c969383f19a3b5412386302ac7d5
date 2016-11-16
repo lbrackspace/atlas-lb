@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_674cafc8",
+        "filename": "cfuploader/cfuploader/app.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1001831
+      },
+      "writtenOn": "2016-11-16T22:19:27Z",
+      "side": 1,
+      "message": "should a specific exception be better to catch?  or at least do an \"Exception as e\" and print out the exception in the logging.",
+      "revId": "dcc640bce0b7c969383f19a3b5412386302ac7d5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_a7007736",
+        "filename": "cfuploader/cfuploader/clients.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 1001831
+      },
+      "writtenOn": "2016-11-16T22:19:27Z",
+      "side": 1,
+      "message": "should there be a condition if None is returned?  i.e., some sort of logging or raising if an exception?",
+      "revId": "dcc640bce0b7c969383f19a3b5412386302ac7d5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
