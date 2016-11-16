@@ -25,7 +25,6 @@ cfg = utils.cfg
 printf = utils.printf
 
 def thread_worker(zip_container, expected_md5, fsize, auth):
-    #Pool.map can only handle 1 arg so pfft
     aid = zip_container['aid']
     lid = zip_container['lid']
     hl = zip_container['hl']
@@ -34,7 +33,7 @@ def thread_worker(zip_container, expected_md5, fsize, auth):
     local_file = zip_container['zip_path']
     cnt = zip_container['cnt']
     remote_file = zip_container['remote_zf']
-    auth.get_admin_token()  #Todo: Need to try to avoid regrabbing token repeatedly
+    auth.get_admin_token()
     utils.log("fetching token for anf client for %d:%d\n", aid, lid)
     try:
         t = auth.get_token_and_endpoint(aid)
@@ -64,9 +63,10 @@ def thread_worker(zip_container, expected_md5, fsize, auth):
     else:
         utils.log("checksome failed for file %s\n", local_file, cnt)
 
-#This is just to wrap the child thread in an exception handler
-#This way if a child throws an exception it won't bubble up and
-#kill the parent
+
+# This is just to wrap the child thread in an exception handler
+# This way if a child throws an exception it won't bubble up and
+# kill the parent
 def upload_worker(q):
     while True:
         (zip_container, expected_md5, fsize, auth) = q.get()
@@ -78,15 +78,16 @@ def upload_worker(q):
         finally:
             q.task_done()
 
+
 class Uploader(object):
     def __init__(self):
         self.q = Queue.Queue()
         self.auth = clients.Auth()
         self.n_workers = cfg.n_workers
-        #logging.basicConfig(level=logging.DEBUG)
+        # logging.basicConfig(level=logging.DEBUG)
 
     def main_loop(self):
-        #spawn off self.n_worker threads
+        # spawn off self.n_worker threads
         for i in xrange(self.n_workers):
             t = threading.Thread(target=upload_worker,args=(self.q,))
             t.setDaemon(True)
@@ -94,14 +95,14 @@ class Uploader(object):
 
         while True:
             self.auth.clear_cache() #Lets go ahead and clear cache every batch
-            #Grab all the files that are in /processed
+            # Grab all the files that are in /processed
             zip_container_list = clients.get_container_zips()
             utils.log("FOUND %i zips to upload\n", len(zip_container_list))
-            #Build the arguments for the ThreadPool mapper            
+            # Build the arguments for the ThreadPool mapper
             for zcl in zip_container_list:
                 try:
                     (md5, fsize) = utils.md5sum_and_size(zcl['zip_path'])
-                    #Schedule file for upload in Queue
+                    # Schedule file for upload in Queue
                     self.q.put([zcl, md5, fsize, self.auth])
                 except:
                     utils.log("Error grabbing md5sum and size for %s\n", zcl)
@@ -111,5 +112,5 @@ class Uploader(object):
             utils.log("==================================================\n")
             utils.log("FINISHED batch cache performance was is %s\n",
                       self.auth.get_counts())
-            time.sleep(60.0) #Don't blink or you'll miss the message :P
+            time.sleep(60.0)
 
