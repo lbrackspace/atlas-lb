@@ -6,10 +6,11 @@ import MySQLdb
 import zipfile
 import string
 import json
+import sys
 import os
 
 from cfuploader import utils
-
+from cfuploader.utils import printf
 
 account_lb_query = """
 select account_id, id, name from loadbalancer
@@ -28,6 +29,7 @@ class Auth(object):
         self.auth_url = conf.auth_url
         self.auth_user = conf.auth_user
         self.auth_passwd = conf.auth_passwd
+        self.lb_region = conf.lb_region
         self.req_count = 0
         self.cache_count = 0
         self.auth_lock = threading.Lock()
@@ -131,25 +133,13 @@ class Auth(object):
             utils.log(f, domain_id, r.text)
             raise 
 
-    #Not used but leave it for debugging
+    # Not used but leave it for debugging
     def get_endpoints(self, domain_id):
         uri = self.auth_url + "/v2.0/RAX-AUTH/domains/{0}/endpoints".format(
                               domain_id)
         hdr = self.prep_headers()
         r = requests.get(uri, headers=hdr)
         return json.loads(r.text)
-
-    #not used but leave it for debugging
-    def get_username_and_region(self, user):
-        try:
-            username = user['username']
-            region = user['RAX-AUTH:defaultRegion']
-        except:
-            f= """ERROR looking up user %i resp was "%s" headers were "%s"\n"""
-            utils.log(f, domain_id, r.text, r.headers)
-            printf(f, domain_id, r.text, r.headers)
-            raise
-        return {'user': username, 'region': region}
 
     def impersonate_user(self, username):
         with self.auth_lock:
@@ -179,9 +169,9 @@ class Auth(object):
             if domain_id in self.token_and_endpoints:
                 self.cache_count += 1
                 return self.token_and_endpoints[domain_id]
-        #Grab all users for this ddi
+        # Grab all users for this ddi
         domain_users  = self.get_all_users(domain_id)
-        #Figure out who the admin is by looking up the first users admin
+        # Figure out who the admin is by looking up the first users admin
         first_user_id = domain_users['users'][0]['id']
         admin_users = self.get_admin_by_user(first_user_id)
         admin_user_name = admin_users['users'][0]['username']
@@ -189,19 +179,17 @@ class Auth(object):
         token = self.impersonate_user(admin_user_name)
         eps = self.get_endpoints_by_token(token)
         cf_eps = [e for e in eps['endpoints'] if e['type'] == 'object-store']
-        cf_endpoint = None
-        for ep in cf_eps:
-            if ep['region'] == admin_region:
-                cf_endpoint = ep['publicURL']
-                break
 
-        out = {'token': token, 'cf_endpoint': cf_endpoint}
-        if cf_endpoint is None:
-            msg = ''.join([
-                "Error coulden't get endpoint for aid={0} pu={1} " +
-                "token={2} eps={3}\n"]).format(domain_id, admin_user_name,
-                                               token, eps)
-            raise Exception(msg)
+        default_region = admin_region
+        lb_region_ep = None
+        for e in cf_eps:
+            if e['region'] == default_region:
+                default_region_ep = e['publicURL']
+            if e['region'] == self.conf.lb_region:
+                lb_region_ep = e['publicURL']
+        out = {'token': token, 'default_region_ep': default_region_ep,
+               'lb_region_ep': lb_region_ep,
+               'domain_id': domain_id}
         with self.auth_lock:
             self.cache_count += 1
             self.token_and_endpoints[domain_id] = out
@@ -227,7 +215,14 @@ class Auth(object):
 class CloudFiles(object):
     def __init__(self, tok_endpoint):
         self.token = tok_endpoint['token']
-        self.end_point = tok_endpoint['cf_endpoint']
+        if cfg.lb_region is not None and tok_endpoint['lb_region_ep'] is not None:
+            self.end_point = tok_endpoint['lb_region_ep']
+        elif tok_endpoint['default_region_ep'] is not None:
+            self.end_point = tok_endpoint['default_region_ep']
+        else:
+            msg = "no endpoint for ddi %d found" % tok_endpoint['domain_id']
+            raise Exception(msg)
+
         self.con = swiftclient.client.Connection(retries=0,
                                                  preauthurl=self.end_point,
                                                  preauthtoken=self.token,
@@ -312,13 +307,14 @@ class DbHelper(object):
 def create_fake_zips(account_id, n_hours):
     db = DbHelper()
     lbs = db.get_lb_ids(account_id).values()
+    printf("Found %d loadbalancers in database\n", len(lbs))
     now = datetime.datetime.now()
+    printf("simulating %d hours of zips\n", n_hours)
     for i in xrange(0, n_hours):
         dt = now + datetime.timedelta(hours=-i)
         for lb in lbs:
             (aid, lid, name) = lb
-            utils.log("writing %s %s %s\n",
-                      aid, lid, name)
+            printf("writing %s %s %s\n", aid, lid, name)
             full_path = utils.set_local_file(aid, lid, dt)
             dir_name = os.path.dirname(full_path)
             utils.mkdirs_p(dir_name)

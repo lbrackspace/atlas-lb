@@ -151,6 +151,7 @@ class Config(object):
         self.log_file = conf['log_file']
         self.incoming = conf['incoming']
         self.archive = conf['archive']
+        self.lb_region = conf.get('lb_region', None)
         if self.auth_url[-1] == "/":
             self.auth_url = self.auth_url[:-1]
         self.auth_passwd = conf['auth_passwd']
