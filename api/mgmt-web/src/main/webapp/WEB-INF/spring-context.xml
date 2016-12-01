@@ -113,7 +113,6 @@
         <property name="clusterRepository" ref="clusterRepository"/>
         <property name="hostRepository" ref="hostRepository"/>
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
-        <property name="sslTerminationRepository" ref="sslTerminationRepository"/>
         <property name="alertRepository" ref="alertRepository"/>
         <property name="vipRepository" ref="virtualIpRepository"/>
         <property name="ticketService" ref="ticketService"/>

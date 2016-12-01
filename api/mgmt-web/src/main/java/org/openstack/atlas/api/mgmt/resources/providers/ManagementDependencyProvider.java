@@ -46,7 +46,7 @@ public class ManagementDependencyProvider {
     protected BlacklistRepository blacklistRepository;
     protected AllowedDomainsRepository allowedDomainsRepository;
     protected LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
-    protected SslTerminationRepository sslTerminationRepository;
+
     protected TicketService ticketService;
     protected AccountLimitService accountLimitService;
     protected LoadBalancerService loadBalancerService;
@@ -152,7 +152,7 @@ public class ManagementDependencyProvider {
     }
 
     public void setCallbackService(CallbackService callbackService) {
-        this.callbackService = callbackService;
+            this.callbackService = callbackService;
     }
 
     public void setConfiguration(Configuration configuration) {
@@ -287,10 +287,6 @@ public class ManagementDependencyProvider {
         this.loadBalancerStatusHistoryRepository = loadBalancerStatusHistoryRepository;
     }
 
-    public void setSslTerminationRepository(SslTerminationRepository sslTerminationRepository) {
-        this.sslTerminationRepository = sslTerminationRepository;
-    }
-
     public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
         this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
@@ -416,13 +412,13 @@ public class ManagementDependencyProvider {
         return expanded;
     }
 
-    public Response getValidationFaultResponse(String errorStr) {
+    public Response getValidationFaultResponse(String errorStr){
         List<String> errorStrs = new ArrayList<String>();
         errorStrs.add(errorStr);
         return getValidationFaultResponse(errorStrs);
     }
 
-    public Response getValidationFaultResponse(List<String> errorStrs) {
+     public Response getValidationFaultResponse(List<String> errorStrs) {
         BadRequest badreq;
         int status = 400;
         badreq = HttpResponseBuilder.buildBadRequestResponse(VFAIL, errorStrs);
@@ -431,7 +427,7 @@ public class ManagementDependencyProvider {
     }
 
     // Got tired of always import StringUtils.getExtendedStackTrace so I'm aliasing it
-    public String getExtendedStackTrace(Throwable ti) {
+    public String getExtendedStackTrace(Throwable ti){
         String out;
         out = org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace(ti);
         return out;

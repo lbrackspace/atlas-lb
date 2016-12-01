@@ -1,8 +1,5 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
@@ -10,11 +7,11 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Ticket;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mapper.UsageMapper;
+import org.openstack.atlas.util.debug.Debug;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -22,7 +19,6 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 
 public class LoadBalancerResource extends ManagementDependencyProvider {
 
@@ -282,20 +278,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
         return changeHostResource;
     }
 
-    @GET
-    @Path("sslTermination")
-    public Response getSslTerminationWithPrivateKey() {
-        if (!isUserInRole("cp,ops,support")) {
-            return ResponseFactory.accessDenied();
-        }
-        try {
-            org.openstack.atlas.service.domain.entities.SslTermination sslTermDb = sslTerminationRepository.getSslTerminationByLbId(id);
-            SslTermination sslTermApi = dozerMapper.map(sslTermDb, SslTermination.class);
-            return Response.status(Response.Status.OK).entity(sslTermApi).build();
-        } catch (Exception ex) {
-            return ResponseFactory.getErrorResponse(ex, null, null);
-        }
-    }
+
 
     public void setSyncResource(SyncResource syncResource) {
         this.syncResource = syncResource;
