@@ -1,0 +1,67 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_c0f2a006",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/LoadBalancerResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2016-12-01T19:52:39Z",
+      "side": 1,
+      "message": "I may be overlooking where it\u0027s used, but did you want to keep this here?",
+      "range": {
+        "startLine": 14,
+        "startChar": 38,
+        "endLine": 14,
+        "endChar": 43
+      },
+      "revId": "7dfad8e1a041014ded2f0bdb9639f84d3ebf8d9d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_a0f794f4",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/providers/ManagementDependencyProvider.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2016-12-01T19:52:39Z",
+      "side": 1,
+      "message": "unneeded spacing.",
+      "range": {
+        "startLine": 155,
+        "startChar": 0,
+        "endLine": 155,
+        "endChar": 12
+      },
+      "revId": "7dfad8e1a041014ded2f0bdb9639f84d3ebf8d9d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_80ddb872",
+        "filename": "api/mgmt-web/src/main/java/org/openstack/atlas/api/mgmt/resources/providers/ManagementDependencyProvider.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2016-12-01T19:52:39Z",
+      "side": 1,
+      "message": "unneeded spacing",
+      "revId": "7dfad8e1a041014ded2f0bdb9639f84d3ebf8d9d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
