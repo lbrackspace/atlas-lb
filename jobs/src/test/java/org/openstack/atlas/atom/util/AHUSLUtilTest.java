@@ -59,11 +59,13 @@ public class AHUSLUtilTest {
         }
 
         @Test
-        public void shouldMapSuspend() throws NoSuchAlgorithmException, DatatypeConfigurationException {
+        public void shouldNeverMapSuspend() throws NoSuchAlgorithmException, DatatypeConfigurationException {
             baseUsage = new Usage();
             baseUsage.setEventType(UsageEvent.SUSPEND_LOADBALANCER.name());
             EventType eventType = UsageEntryFactoryImpl.mapEventType(baseUsage);
-            Assert.assertEquals(EventType.SUSPEND, eventType);
+            Assert.assertNotSame(EventType.SUSPEND, eventType);
+            Assert.assertEquals(null, eventType);
+
         }
 
         @Test
