@@ -181,14 +181,15 @@ public class LbaasUsageDataMapperTest {
         }
 
         @Test
-        public void shouldMapStatusSuspendedIfLBSuspended() throws AtomHopperMappingException {
+        public void shouldMapActiveIfLBSuspended() throws AtomHopperMappingException {
             usageRecord1.setEventType("SUSPEND_LOADBALANCER");
             Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
             UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
 
             JAXBElement<CloudLoadBalancersType> lbaasEntry = (JAXBElement<CloudLoadBalancersType>) entry.getContent().getEvent().getAny().get(0);
 
-            Assert.assertEquals(StatusEnum.SUSPENDED, lbaasEntry.getValue().getStatus());
+            Assert.assertEquals(StatusEnum.ACTIVE, lbaasEntry.getValue().getStatus());
+            Assert.assertNotSame(StatusEnum.SUSPENDED, lbaasEntry.getValue().getStatus());
         }
 
         @Test
