@@ -182,6 +182,8 @@ public class LbaasUsageDataMapperTest {
 
         @Test
         public void shouldMapActiveIfLBSuspended() throws AtomHopperMappingException {
+            // We used to send suspend events but do to a persistent bug on the billing side
+            // we now just send ACTIVE records now to work around the bug. :(
             usageRecord1.setEventType("SUSPEND_LOADBALANCER");
             Map<Object, Object> entryMap = usageEntryFactory.createEntry(usageRecord1);
             UsageEntry entry = (UsageEntry) entryMap.get("entryobject");
