@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fabf19d9_d27ce1ed",
+        "filename": "jobs/src/main/java/org/openstack/atlas/atomhopper/factory/UsageEntryFactoryImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 206,
+      "author": {
+        "id": 1001831
+      },
+      "writtenOn": "2017-02-10T23:18:50Z",
+      "side": 1,
+      "message": "replace semi colon with apostrophe;  probably reference CLB-188",
+      "revId": "588dbb8bdd62b30c6268a9fe5b96997fc22b6f36",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
