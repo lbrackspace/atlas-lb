@@ -120,8 +120,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
             }
             return resp;
         } catch (Exception ex) {
-            String error = Debug.getExtendedStackTrace(ex);
-            resp = ResponseFactory.getErrorResponse(ex, "Exception", error);
+            resp = ResponseFactory.getErrorResponse(ex, null, null);
             return resp;
         }
     }
