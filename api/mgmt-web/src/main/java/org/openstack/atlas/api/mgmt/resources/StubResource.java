@@ -14,6 +14,8 @@ import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent;
 import org.openstack.atlas.util.debug.Debug;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -71,6 +73,16 @@ public class StubResource extends ManagementDependencyProvider {
         host.setIpv4Public("64.23.33.44");
         host.setIpv4Public("ffff::ffff");
         return Response.status(200).entity(host).build();
+    }
+
+    @GET
+    @Path("zeusevent")
+    public Response zeusEvent(){
+        ZeusEvent zev = new ZeusEvent();
+        zev.setCallbackHost("callback.host.com");
+        zev.setEventType("someevent");
+        zev.setParamLine("some param line");
+        return Response.status(200).entity(zev).build();
     }
 
     @GET
