@@ -20,9 +20,6 @@ public class CallbackResource extends ManagementDependencyProvider {
     @POST
     public Response receiveCallbackMessage(ZeusEvent event) {
         try {
-            String callbackHost = event.getCallbackHost();
-            String callbackEventType = event.getEventType();
-            String callbackParamLine = event.getParamLine();
             LOG.info(logZeusEvent(event));
 
             ValidatorResult result = ValidatorRepository.getValidatorFor(ZeusEvent.class).validate(event, HttpRequestType.POST);
@@ -47,9 +44,11 @@ public class CallbackResource extends ManagementDependencyProvider {
             sb.append("null");
             return sb.toString();
         }
-        sb = sb.append(" host=").append(ze.getCallbackHost())
-               .append(" eventType=").append(ze.getEventType())
-               .append(" paramLine=").append(ze.getParamLine());
+        sb = sb.append("{").
+                append(" host=\"").append(ze.getCallbackHost()).append("\"").
+                append(" eventType=\"").append(ze.getEventType()).append("\"").
+                append(" paramLine=\"").append(ze.getParamLine()).append("\"").
+                append("}");
         return sb.toString();
     }
 }
