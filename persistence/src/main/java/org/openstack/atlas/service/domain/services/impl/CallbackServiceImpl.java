@@ -75,6 +75,7 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
             nodeService.updateNodeStatus(dbNode);
 
             // Add atom entry
+            LOG.info(String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId));
             String atomTitle = "Node Status Updated";
             String atomSummary = String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId);
             String detailedMessage = "";
@@ -83,7 +84,6 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
 
             notificationService.saveNodeServiceEvent("Rackspace Cloud", dbNode.getLoadbalancer().getAccountId(), loadBalancerId, dbNode.getId(), atomTitle, atomSummary, UPDATE_NODE, UPDATE, INFO, detailedMessage, callbackHost);
 
-            LOG.info(String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId));
         } catch (Exception e) {
             String message;
             if (e instanceof EntityNotFoundException) {
