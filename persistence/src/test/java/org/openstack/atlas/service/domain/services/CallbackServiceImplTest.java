@@ -23,6 +23,7 @@ import static org.mockito.Mockito.when;
 public class CallbackServiceImplTest {
 
     public static class handleZeusEvent {
+        final String zeusEventId = "some_uuid";
         CallbackServiceImpl callbackService;
         NodeServiceImpl nodeService;
         NotificationServiceImpl notificationService;
@@ -48,7 +49,7 @@ public class CallbackServiceImplTest {
         public void shouldFailWithBadParamLine() throws EntityNotFoundException, BadRequestException {
             String mFail = "Bad paramLine";
             zEvent.setParamLine(mFail);
-            callbackService.handleZeusEvent(zEvent);
+            callbackService.handleZeusEvent(zEvent, zeusEventId);
         }
 
         @Test
@@ -62,7 +63,7 @@ public class CallbackServiceImplTest {
             node.setLoadbalancer(lb);
 
             when(nodeService.getNodeByLoadBalancerIdIpAddressAndPort(Matchers.<Integer>any(), Matchers.<String>any(), Matchers.<Integer>any())).thenReturn(node);
-            callbackService.handleZeusEvent(zEvent);
+            callbackService.handleZeusEvent(zEvent, zeusEventId);
 
             Assert.assertEquals(NodeStatus.ONLINE, node.getStatus());
         }
@@ -78,7 +79,7 @@ public class CallbackServiceImplTest {
             node.setLoadbalancer(lb);
 
             when(nodeService.getNodeByLoadBalancerIdIpAddressAndPort(Matchers.<Integer>any(), Matchers.<String>any(), Matchers.<Integer>any())).thenReturn(node);
-            callbackService.handleZeusEvent(zEvent);
+            callbackService.handleZeusEvent(zEvent, zeusEventId);
 
             Assert.assertEquals(NodeStatus.OFFLINE, node.getStatus());
         }
