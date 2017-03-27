@@ -52,7 +52,7 @@ public class CallbackResource extends ManagementDependencyProvider {
                 append(" host=\"").append(ze.getCallbackHost()).append("\"").
                 append(" eventType=\"").append(ze.getEventType()).append("\"").
                 append(" paramLine=\"").append(ze.getParamLine()).append("\"").
-                append(" zeusEvent_ID\"").append(event_uuid).append("\"").
+                append(" zeusEvent_ID=\"").append(event_uuid).append("\"").
                 append(" }");
         return sb.toString();
     }
