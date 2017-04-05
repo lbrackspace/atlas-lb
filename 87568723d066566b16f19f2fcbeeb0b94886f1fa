@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4d83f3e9_4d3713c4",
+        "filename": "common/util/src/main/java/org/openstack/atlas/util/constants/ConnectionThrottleDefaultContants.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1010883
+      },
+      "writtenOn": "2017-04-05T08:37:46Z",
+      "side": 1,
+      "message": "Looks like this is a typo error as the name of the class should be ConnectionThrottleDefaultConstants in place of \nConnectionThrottleDefaultContants",
+      "range": {
+        "startLine": 3,
+        "startChar": 13,
+        "endLine": 3,
+        "endChar": 46
+      },
+      "revId": "87568723d066566b16f19f2fcbeeb0b94886f1fa",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
