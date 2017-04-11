@@ -1,6 +1,6 @@
 package org.openstack.atlas.util.constants;
 
-public class ConnectionThrottleDefaultContants {
+public class ConnectionThrottleDefaultConstants {
 
     private static final Integer minConnections;
     private static final Integer maxConnectionRate;

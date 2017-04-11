@@ -8,7 +8,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
-import org.openstack.atlas.util.constants.ConnectionThrottleDefaultContants;
+import org.openstack.atlas.util.constants.ConnectionThrottleDefaultConstants;
 
 
 @RunWith(Enclosed.class)
@@ -85,21 +85,21 @@ public class DataModelToThrottleDomainTest {
             // be expected on null
             if (apiCt.getMaxConnectionRate() == null) {
                 // Default value should be 0
-                Assert.assertEquals(dbCl.getMaxConnectionRate(), ConnectionThrottleDefaultContants.getMaxConnectionRate());
+                Assert.assertEquals(dbCl.getMaxConnectionRate(), ConnectionThrottleDefaultConstants.getMaxConnectionRate());
             } else {
                 Assert.assertEquals(dbCl.getMaxConnectionRate(), apiCt.getMaxConnectionRate());
             }
 
             if (apiCt.getMinConnections() == null) {
                 // Should default to 0
-                Assert.assertEquals(dbCl.getMinConnections(), ConnectionThrottleDefaultContants.getMinConnections());
+                Assert.assertEquals(dbCl.getMinConnections(), ConnectionThrottleDefaultConstants.getMinConnections());
             } else {
                 Assert.assertEquals(dbCl.getMinConnections(), apiCt.getMinConnections());
             }
 
             if (apiCt.getRateInterval() == null) {
                 // Should Default to 1
-                Assert.assertEquals(dbCl.getRateInterval(), ConnectionThrottleDefaultContants.getRateInterval());
+                Assert.assertEquals(dbCl.getRateInterval(), ConnectionThrottleDefaultConstants.getRateInterval());
             } else {
                 Assert.assertEquals(dbCl.getRateInterval(), apiCt.getRateInterval());
             }
