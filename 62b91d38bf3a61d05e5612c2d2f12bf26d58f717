@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "37b18537_9f473552",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/LoadBalancerRepository.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-05-11T10:27:55Z",
+      "side": 1,
+      "message": "Good work thanks for the fix.",
+      "range": {
+        "startLine": 229,
+        "startChar": 17,
+        "endLine": 229,
+        "endChar": 18
+      },
+      "revId": "62b91d38bf3a61d05e5612c2d2f12bf26d58f717",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
