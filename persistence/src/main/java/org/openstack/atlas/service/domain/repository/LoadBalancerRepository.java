@@ -226,7 +226,7 @@ public class LoadBalancerRepository {
         q.setMaxResults(1);
         al = q.getResultList();
         if (al.size() != 1) {
-            throw new EntityNotFoundException("Node not nound");
+            throw new EntityNotFoundException("Network item not found");
         }
         return al.get(0);
     }
