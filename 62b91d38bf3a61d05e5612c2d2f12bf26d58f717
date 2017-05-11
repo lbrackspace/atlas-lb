@@ -22,6 +22,29 @@
       "revId": "62b91d38bf3a61d05e5612c2d2f12bf26d58f717",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f54c99dd_4df8cbc1",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/LoadBalancerRepository.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2017-05-11T10:32:29Z",
+      "side": 1,
+      "message": "Looks good to me too.",
+      "range": {
+        "startLine": 229,
+        "startChar": 54,
+        "endLine": 229,
+        "endChar": 55
+      },
+      "revId": "62b91d38bf3a61d05e5612c2d2f12bf26d58f717",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
