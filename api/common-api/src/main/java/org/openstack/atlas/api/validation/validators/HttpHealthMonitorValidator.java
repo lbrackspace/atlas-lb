@@ -29,7 +29,7 @@ public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonit
                 result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a status regex for the health monitor.");
                 result(validationTarget().getBodyRegex()).if_().exist().then().must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a body regex for the health monitor.");
                 result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("path" + maxStrMsg);
-                result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new HealthMonitorPathVerifier()).withMessage("Must provide a foward slash(/) as the begining of the path.");                                                                                                                         
+                result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new HealthMonitorPathVerifier()).withMessage("Must provide a forward slash(/) as the beginning of the path.");
                 result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("statusRegex" + maxStrMsg);
                 result(validationTarget().getBodyRegex()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("bodyRegex" + maxStrMsg);
                 result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new RegexValidatorVerifier()).withMessage("Must provide a valid status regex");
