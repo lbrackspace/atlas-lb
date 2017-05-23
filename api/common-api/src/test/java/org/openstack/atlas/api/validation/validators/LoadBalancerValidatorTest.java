@@ -152,7 +152,7 @@ public class LoadBalancerValidatorTest {
 
         }
 
-		@Test
+		@Test//Should fail when tried to update Virtual IP or Nodes or Health Monitor
 		public void shouldFailWhenGivenAnInvalidHTTPHealthMonitor() {
 			HealthMonitor monitor = new HealthMonitor();
 			monitor.setType(HealthMonitorType.HTTP);
@@ -173,6 +173,80 @@ public class LoadBalancerValidatorTest {
 
 			ValidatorResult result = validator.validate(lb, PUT);
 			assertFalse(result.passedValidation());
+		}
+
+		@Test
+		public void shouldFailWhenGivenAllInvalidConnectHealthMonitorPost() {
+			HealthMonitor monitor = new HealthMonitor();
+			monitor.setType(HealthMonitorType.CONNECT);
+			monitor.setDelay(0);
+			monitor.setTimeout(0);
+			monitor.setAttemptsBeforeDeactivation(0);
+			lb.setHealthMonitor(monitor);
+
+			ValidatorResult result = validator.validate(lb, POST);
+			assertFalse(result.passedValidation());
+			assertTrue(result.getValidationResults().size() >= 3);
+		}
+
+		@Test
+		public void shouldAcceptWhenGivenValidConnectHealthMonitorPost() {
+			HealthMonitor monitor = new HealthMonitor();
+			monitor.setType(HealthMonitorType.CONNECT);
+			monitor.setDelay(10);
+			monitor.setTimeout(60);
+			monitor.setAttemptsBeforeDeactivation(3);
+			lb.setHealthMonitor(monitor);
+
+			ValidatorResult result = validator.validate(lb, POST);
+			assertTrue(result.passedValidation());
+		}
+
+		@Test
+		public void shouldFailWhenGivenAnInvalidHTTPHealthMonitorPost() {
+			HealthMonitor monitor = new HealthMonitor();
+			monitor.setType(HealthMonitorType.HTTP);
+			monitor.setDelay(10);
+			monitor.setTimeout(60);
+			monitor.setAttemptsBeforeDeactivation(3);
+			monitor.setPath("noSlash");
+			lb.setHealthMonitor(monitor);
+
+			ValidatorResult result = validator.validate(lb, POST);
+			assertFalse(result.passedValidation());
+		}
+
+		@Test
+		public void shouldFailWhenGivenAllInvalidHTTPHealthMonitorPost() {
+			HealthMonitor monitor = new HealthMonitor();
+			monitor.setType(HealthMonitorType.HTTP);
+			monitor.setDelay(0);
+			monitor.setTimeout(0);
+			monitor.setAttemptsBeforeDeactivation(0);
+			monitor.setPath("noSlash");
+			monitor.setBodyRegex("^*****[234][0-9][0-9]$");
+			monitor.setStatusRegex("^*****[234][0-9][0-9]$");
+			lb.setHealthMonitor(monitor);
+
+			ValidatorResult result = validator.validate(lb, POST);
+			assertFalse(result.passedValidation());
+			assertTrue(result.getValidationResults().size() >= 6);
+		}
+
+		@Test
+		public void shouldAcceptWhenGivenAllValidHttpHealthMonitorPost() {
+			HealthMonitor monitor = new HealthMonitor();
+			monitor.setType(HealthMonitorType.HTTP);
+			monitor.setDelay(10);
+			monitor.setTimeout(60);
+			monitor.setAttemptsBeforeDeactivation(3);
+			monitor.setPath("/validPath/here");
+			monitor.setBodyRegex("^.*yah.*$");
+			monitor.setStatusRegex("^[234][0-9][0-9]$");
+			lb.setHealthMonitor(monitor);
+
+			ValidatorResult result = validator.validate(lb, POST);
+			assertTrue(result.passedValidation());
 		}
 
 		@Test
