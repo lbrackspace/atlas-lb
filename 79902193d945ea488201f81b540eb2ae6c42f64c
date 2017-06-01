@@ -39,6 +39,30 @@
       "revId": "79902193d945ea488201f81b540eb2ae6c42f64c",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d9baec54_9ab34239",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/HealthMonitorValidator.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2017-06-01T14:34:14Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0b7f56db_2062257c",
+      "range": {
+        "startLine": 54,
+        "startChar": 17,
+        "endLine": 54,
+        "endChar": 26
+      },
+      "revId": "79902193d945ea488201f81b540eb2ae6c42f64c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
