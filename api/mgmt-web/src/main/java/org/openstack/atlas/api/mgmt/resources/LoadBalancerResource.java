@@ -147,7 +147,16 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
         }
         try {
             org.openstack.atlas.service.domain.entities.LoadBalancer dLb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
-            loadBalancerService.get(id);
+            dLb = loadBalancerService.get(id);
+//          NOTE: Suspension should be removed prior to making this call as it was intended for load balancers
+//            in ERROR status. A suspended load balancer needs to have it usage and event records updated
+//            correctly, thus, removing suspension is the right way to go.
+            if (dLb.getStatus() == LoadBalancerStatus.SUSPENDED) {
+                BadRequestException e = new BadRequestException();
+                format = "Invalid LoadBalancer Status '%s', Please remove suspension prior to updating status";
+                msg = String.format(format, statusStr);
+                return ResponseFactory.getErrorResponse(e, msg, null);
+            }
             dLb.setId(id);
             dLb.setStatus(status);
             loadBalancerService.setLoadBalancerAttrs(dLb);
