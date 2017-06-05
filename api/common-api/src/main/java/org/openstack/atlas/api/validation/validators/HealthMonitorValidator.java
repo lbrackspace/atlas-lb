@@ -30,9 +30,9 @@ public class HealthMonitorValidator implements ResourceValidator<HealthMonitor> 
                 // SHARED EXPECTATIONS
                 must().exist().withMessage("Must provide a health monitor.");
                 result(validationTarget().getType()).must().exist().withMessage("Must provide a type for the health monitor.");
-                result(validationTarget().getDelay()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MAX_DELAY_RANGE[0], MAX_DELAY_RANGE[1])).withMessage("Must specify valid delay range.");
-                result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MAX_TIMEOUT_RANGE[0], MAX_TIMEOUT_RANGE[1])).withMessage("Must specify valid timeout range.");
-                result(validationTarget().getAttemptsBeforeDeactivation()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MAX_ATTEMPTS_BEFORE_DEACTIVATION[0], MAX_ATTEMPTS_BEFORE_DEACTIVATION[1])).withMessage("Must specify valid attempts before deactivation range.");
+                result(validationTarget().getDelay()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MAX_DELAY_RANGE[0], MAX_DELAY_RANGE[1])).withMessage("Must specify valid delay range between "+MAX_DELAY_RANGE[0]+" and "+MAX_DELAY_RANGE[1]);
+                result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MAX_TIMEOUT_RANGE[0], MAX_TIMEOUT_RANGE[1])).withMessage("Must specify valid timeout range between "+MAX_TIMEOUT_RANGE[0]+" and "+MAX_TIMEOUT_RANGE[1]);
+                result(validationTarget().getAttemptsBeforeDeactivation()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MAX_ATTEMPTS_BEFORE_DEACTIVATION[0], MAX_ATTEMPTS_BEFORE_DEACTIVATION[1])).withMessage("Must specify valid attempts before deactivation range between "+MAX_ATTEMPTS_BEFORE_DEACTIVATION[0]+" and "+MAX_ATTEMPTS_BEFORE_DEACTIVATION[1]);
 
                 // PUT EXPECTATIONS
                 if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.CONNECT)).then().must().delegateTo(new ConnectHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
