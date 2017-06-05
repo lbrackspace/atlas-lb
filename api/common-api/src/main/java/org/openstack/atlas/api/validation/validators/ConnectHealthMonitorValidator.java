@@ -35,9 +35,6 @@ public class ConnectHealthMonitorValidator implements ResourceValidator<HealthMo
                 result(validationTarget().getPath()).must().not().exist().withMessage("A connect health monitor may not have a path. Use HTTP/HTTPS health monitor instead.");
                 result(validationTarget().getBodyRegex()).must().not().exist().withMessage("A connect health monitor may not have a body regex. Use HTTP/HTTPS health monitor instead.");
                 result(validationTarget().getStatusRegex()).must().not().exist().withMessage("A connect health monitor may not have a status regex. Use HTTP/HTTPS health monitor instead.");
-                result(validationTarget().getDelay()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Delay for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Timeout for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getAttemptsBeforeDeactivation()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Attempts before deactivation for the health monitor must be between %d and %d.", FLOOR, CEILING));
                 result(validationTarget().getHostHeader()).must().not().exist().withMessage("Host Header is not supported for CONNECT based health monitors.");
             }
         });

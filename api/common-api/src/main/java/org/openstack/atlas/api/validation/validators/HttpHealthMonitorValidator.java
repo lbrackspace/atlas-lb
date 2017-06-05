@@ -22,9 +22,6 @@ public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonit
                 // SHARED EXPECTATIONS
                 result(validationTarget().getType()).must().exist().withMessage("Must provide a type for the health monitor.");
                 result(validationTarget().getId()).must().not().exist().withMessage("Health monitor id field cannot be modified.");
-                result(validationTarget().getDelay()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Delay for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Timeout for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getAttemptsBeforeDeactivation()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Attempts before deactivation for the health monitor must be between %d and %d.", FLOOR, CEILING));
                 result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a valid path for the health monitor.");
                 result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a status regex for the health monitor.");
                 result(validationTarget().getBodyRegex()).if_().exist().then().must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a body regex for the health monitor.");
