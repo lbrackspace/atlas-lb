@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8ea66d65_c3092d3e",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/validation/validators/HealthMonitorValidator.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2017-06-05T10:45:01Z",
+      "side": 1,
+      "message": "Please add \u0027.\u0027 end of the message as all other validation messages follow the same.",
+      "range": {
+        "startLine": 33,
+        "startChar": 116,
+        "endLine": 33,
+        "endChar": 131
+      },
+      "revId": "3446e2b9deaef5a9ab79fcf26eb3239849f1d920",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
