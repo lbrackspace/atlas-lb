@@ -18,6 +18,13 @@ import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
 
 public class EventResource extends ManagementDependencyProvider {
 
+    /**
+     * Method for returning load balancer service events
+     * @param accountId
+     * @param startDate
+     * @param endDate
+     * @return
+     */
     @GET
     @Path("account/{id: [1-9][0-9]*}/loadbalancer")
     public Response getRecentLoadBalancerEvents(@PathParam("id") int accountId, @QueryParam("startDate") String startDate, @QueryParam("endDate") String endDate) {
@@ -36,10 +43,6 @@ public class EventResource extends ManagementDependencyProvider {
         }
         return Response.status(200).entity(rEvents).build();
     }
-
-
-
-
 
     @GET
     @Path("loadbalancers/{id: [1-9][0-9]*}/ptr")
