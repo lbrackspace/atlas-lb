@@ -1,10 +1,9 @@
 package org.openstack.atlas.api.validation.validators;
 
+import org.openstack.atlas.api.validation.verifiers.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
 import org.openstack.atlas.api.validation.verifiers.HealthMonitorTypeVerifier;
-import org.openstack.atlas.api.validation.verifiers.HealthMonitorTypeVerifier;
-import org.openstack.atlas.api.validation.verifiers.MustBeIntegerInRange;
 import org.openstack.atlas.api.validation.Validator;
 import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
@@ -44,7 +43,10 @@ public class HealthMonitorValidator implements ResourceValidator<HealthMonitor> 
                 if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.CONNECT)).then().must().delegateTo(new ConnectHealthMonitorValidator().getValidator(), POST).forContext(POST);
                 if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTP)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), POST).forContext(POST);
                 if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTPS)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), POST).forContext(POST);
-
+                //CLB-279 Creating a Load Balancer with empty Health Monitor - creates the Load Balancer in Error state.
+                result(validationTarget().getDelay()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide delay for the health monitor.");
+                result(validationTarget().getTimeout()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide timeout for the health monitor.");
+                result(validationTarget().getAttemptsBeforeDeactivation()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide attempts before deactivation for the health monitor.");
             }
         });
     }

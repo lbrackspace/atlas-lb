@@ -176,6 +176,16 @@ public class LoadBalancerValidatorTest {
 		}
 
 		@Test
+		public void shouldFailWhenGivenAllEmptyConnectHealthMonitorPost() {
+			HealthMonitor monitor = new HealthMonitor();
+			monitor.setType(HealthMonitorType.CONNECT);
+			lb.setHealthMonitor(monitor);
+
+			ValidatorResult result = validator.validate(lb, POST);
+			assertFalse(result.passedValidation());
+		}
+
+		@Test
 		public void shouldFailWhenGivenAllInvalidConnectHealthMonitorPost() {
 			HealthMonitor monitor = new HealthMonitor();
 			monitor.setType(HealthMonitorType.CONNECT);
@@ -231,6 +241,16 @@ public class LoadBalancerValidatorTest {
 			ValidatorResult result = validator.validate(lb, POST);
 			assertFalse(result.passedValidation());
 			assertTrue(result.getValidationResults().size() >= 6);
+		}
+
+		@Test
+		public void shouldFailWhenGivenAllEmptyHTTPHealthMonitorPost() {
+			HealthMonitor monitor = new HealthMonitor();
+			monitor.setType(HealthMonitorType.HTTP);
+			lb.setHealthMonitor(monitor);
+
+			ValidatorResult result = validator.validate(lb, POST);
+			assertFalse(result.passedValidation());
 		}
 
 		@Test
