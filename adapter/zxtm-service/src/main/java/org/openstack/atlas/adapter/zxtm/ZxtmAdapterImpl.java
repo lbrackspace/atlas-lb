@@ -25,7 +25,7 @@ import java.net.URI;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.*;
-
+import org.openstack.atlas.util.constants.ConnectionThrottleDefaultConstants;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
 
 @Component
@@ -2355,19 +2355,19 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
                 if (throttle.getMinConnections() != null) {
                     // Set the minimum connections that will be allowed from any single IP before beginning to apply restrictions.
-                    serviceStubs.getProtectionBinding().setMinConnections(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(0)});
+                    serviceStubs.getProtectionBinding().setMinConnections(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(ConnectionThrottleDefaultConstants.getMinConnections())});
                 }
 
                 if (throttle.getRateInterval() != null) {
                     // Set the rate interval for the rates
-                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(1)});
+                    serviceStubs.getProtectionBinding().setRateTimer(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(ConnectionThrottleDefaultConstants.getRateInterval())});
                 }
 
                 //Odd issue in 9.5 where rateInterval must be set before max rate...
 
                 if (throttle.getMaxConnectionRate() != null) {
                     // Set the maximum connection rate + rate interval
-                    serviceStubs.getProtectionBinding().setMaxConnectionRate(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(0)});
+                    serviceStubs.getProtectionBinding().setMaxConnectionRate(new String[]{protectionClassName}, new UnsignedInt[]{new UnsignedInt(ConnectionThrottleDefaultConstants.getMaxConnectionRate())});
                 }
 
 
