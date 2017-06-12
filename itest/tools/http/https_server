@@ -5,12 +5,23 @@ from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from SocketServer import ForkingMixIn, ThreadingMixIn
 import socket
 import thread
+import threading
 import json
 import copy
 import time
 import ssl
 import sys
 import os
+
+counter = 0
+lock = threading.Lock()
+
+def inc_counter(n):
+    global counter, lock
+    with lock:
+        counter += n
+        return counter
+
 
 def usage(prog):
     printf("usage is %s <host> <port> <msg> <keyfile> <crtfile>\n",prog)
@@ -41,6 +52,7 @@ def TestHandlerClassFactory(*args, **kw):
         def headers2json(self):
             obj = {}
             obj["headers"]=[]
+            obj["request_counter"] = inc_counter(1)
             obj["local_ip"]=self.request.getsockname()[0]
             obj["remote_ip"]=self.request.getpeername()[0]
             obj["msg"] = self.msg
@@ -50,6 +62,7 @@ def TestHandlerClassFactory(*args, **kw):
             return jsonData
 
         def do_GET(self):
+            printf("count = %i\n", inc_counter(0))
             data = self.headers2json()
             self.send_response(200)
             self.send_header("content-length",len(data))
