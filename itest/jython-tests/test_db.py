@@ -1,3 +1,4 @@
+#!/usr/bin/env jython
 
 from db import *
 from db_classes import *

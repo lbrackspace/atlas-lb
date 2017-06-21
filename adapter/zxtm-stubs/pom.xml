@@ -83,6 +83,7 @@
                     <packageSpace>com.zxtm.service.client</packageSpace>
                     <sourceDirectory>src/main/resources/wsdl</sourceDirectory>
                     <outputDirectory>target/generated-sources/wsdl2java</outputDirectory>
+                    <debug>true</debug>
                 </configuration>
 
                 <executions>

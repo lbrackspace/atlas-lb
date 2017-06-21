@@ -11,12 +11,10 @@ import org.openstack.atlas.service.domain.entities.BlacklistItem as BlacklistIte
 import org.openstack.atlas.service.domain.entities.BlacklistType as BlacklistType
 import org.openstack.atlas.service.domain.entities.CertificateMapping as CertificateMapping
 import org.openstack.atlas.service.domain.entities.Cluster as Cluster
-import org.openstack.atlas.service.domain.entities.CloudFilesLzo as CloudFilesLzo
 import org.openstack.atlas.service.domain.entities.ConnectionLimit as ConnectionLimit
 import org.openstack.atlas.service.domain.entities.Defaults as Defaults
 import org.openstack.atlas.service.domain.entities.Entity as Entity
 import org.openstack.atlas.service.domain.entities.GroupRateLimit as GroupRateLimit
-import org.openstack.atlas.service.domain.entities.HdfsLzo as HdfsLzo
 import org.openstack.atlas.service.domain.entities.HealthMonitor as HealthMonitor
 import org.openstack.atlas.service.domain.entities.HealthMonitorType as HealthMonitorType
 import org.openstack.atlas.service.domain.entities.Host as Host

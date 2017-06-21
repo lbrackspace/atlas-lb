@@ -6,7 +6,6 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils as StaticFileUtils
 import org.openstack.atlas.util.staticutils.StaticStringUtils as StaticStringUtils
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils as StaticDateTimeUtils
 import org.openstack.atlas.util.debug.Debug as Debug
-import org.openstack.atlas.config.HadoopLogsConfigs as HadoopLogsConfigs
 import com.xhaus.jyson.JysonCodec as json
 
 import java.util.List as List
@@ -24,9 +23,6 @@ import os
 def printf(format,*args): sys.stdout.write(format%args)
 
 def fprintf(fp,format,*args): fp.write(format%args)
-
-def getHdfsUtils():
-    return HadoopLogsConfigs.getHdfsUtils()
 
 conf_file = "./local.json"
 
