@@ -30,6 +30,13 @@ public class SslTermination extends Entity implements Serializable {
 
     @Column(name = "tls10_enabled", nullable = true)
     private boolean isTls10Enabled = true;
+
+    @ManyToOne
+    @JoinColumn(name = "cipher_profile",nullable = false)
+    private SslCipherProfile sslCipherProfile;
+
+    @Column(name = "cipher_list", nullable = false, length = 1024)
+    private String cipher_list;
     
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
@@ -93,5 +100,21 @@ public class SslTermination extends Entity implements Serializable {
 
     public void setTls10Enabled(boolean isTls10Enabled) {
         this.isTls10Enabled = isTls10Enabled;
+    }
+
+    public SslCipherProfile getSslCipherProfile() {
+        return sslCipherProfile;
+    }
+
+    public void setSslCipherProfile(SslCipherProfile sslCipherProfile) {
+        this.sslCipherProfile = sslCipherProfile;
+    }
+
+    public String getCipher_list() {
+        return cipher_list;
+    }
+
+    public void setCipher_list(String cipher_list) {
+        this.cipher_list = cipher_list;
     }
 }
