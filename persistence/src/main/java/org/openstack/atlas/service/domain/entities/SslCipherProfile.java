@@ -14,12 +14,12 @@ public class SslCipherProfile extends Entity implements Serializable {
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }
-    @OneToMany(mappedBy = "sslCipherProfile" , cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cipherProfile" , cascade = CascadeType.ALL)
     List<SslTermination> sslTerminations = new ArrayList<SslTermination>();
 
-    @Column(name = "name", nullable = false,unique = true)
+    @Column(name = "name", nullable = false,unique = true,length = 128)
     private String name;
-    @Column(name = "ciphers", nullable = false, length = 1024)
+    @Column(name = "ciphers", nullable = true, length = 1024)
     private String ciphers;
     @Column(name = "comments", nullable = true, length = 256)
     private String comments;
