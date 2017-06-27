@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.entities;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -32,10 +34,11 @@ public class SslTermination extends Entity implements Serializable {
     private boolean isTls10Enabled = true;
 
     @ManyToOne
-    @JoinColumn(name = "cipher_profile",nullable = false,referencedColumnName = "name")
-    private SslCipherProfile sslCipherProfile;
+    @JoinColumn(name = "cipher_profile",nullable = true,referencedColumnName = "name")
+    private SslCipherProfile cipherProfile;
 
-    @Column(name = "cipher_list", nullable = false, length = 1024)
+    @Column(name = "cipher_list", nullable = true, length = 65535)
+    @Type(type="text")
     private String cipherList;
     
     public LoadBalancer getLoadbalancer() {
@@ -102,12 +105,12 @@ public class SslTermination extends Entity implements Serializable {
         this.isTls10Enabled = isTls10Enabled;
     }
 
-    public SslCipherProfile getSslCipherProfile() {
-        return sslCipherProfile;
+    public SslCipherProfile getCipherProfile() {
+        return cipherProfile;
     }
 
-    public void setSslCipherProfile(SslCipherProfile sslCipherProfile) {
-        this.sslCipherProfile = sslCipherProfile;
+    public void setCipherProfile(SslCipherProfile cipherProfile) {
+        this.cipherProfile = cipherProfile;
     }
 
     public String getCipherList() {
