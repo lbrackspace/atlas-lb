@@ -443,6 +443,11 @@
         <xsd:attribute name="cipherProfile" type="xsd:string"/>
     </xsd:complexType>
 
+    <xsd:element name="ciphers" type="tns:ciphers"/>
+    <xsd:complexType name="ciphers">
+        <xsd:attribute name="cipherList" type="xsd:string"/>
+    </xsd:complexType>
+
     <xsd:element name="certificateMappings" type="tns:certificateMappings"/>
     <xsd:complexType name="certificateMappings">
         <xsd:sequence>
