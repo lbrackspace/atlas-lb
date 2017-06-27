@@ -7,22 +7,27 @@ app = getDb()
 
 
 begin()
-t=qq("select s from SslTermination s")
-t[0].setTls10Enabled(True)
-app.save(t[0])
+p = SslCipherProfile()
+p.setName("test")
+p.setComments("Field is not null for some reason")
+p.setCiphers("a,b,c")
+app.save(p)
 commit()
 
 begin()
-query = """select s.loadbalancer.id, 
-           s.loadbalancer.accountId,
-           s.id,
-           s.privatekey,
-           s.certificate,
-           s.intermediateCertificate
-           from SslTermination s
-"""
+p = qq("from SslCipherProfile where name='test'")[0]
+s1 = SslTermination()
+s1.setCipherList("a,d,h")
+s1.setSslCipherProfile(p)
+app.save(s1)
+commit()
 
-rows = qq(query)
-r = rows[0]
-for n in r: print n
+
+begin()
+p = qq("from SslCipherProfile where name='test'")[0]
+s1 = SslTermination()
+s1.setCipherList("test,test,test,test")
+s1.setSslCipherProfile(p)
+app.save(s1)
+commit()
 
