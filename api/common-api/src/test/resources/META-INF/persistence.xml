@@ -58,6 +58,7 @@
         <class>org.openstack.atlas.service.domain.entities.JobState</class>
         <class>org.openstack.atlas.service.domain.entities.UserPages</class>
         <class>org.openstack.atlas.service.domain.entities.SslTermination</class>
+        <class>org.openstack.atlas.service.domain.entities.SslCipherProfile</class>
         <class>org.openstack.atlas.service.domain.entities.Defaults</class>
         <class>org.openstack.atlas.service.domain.entities.AllowedDomain</class>
         <class>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</class>
