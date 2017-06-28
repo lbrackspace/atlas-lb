@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "4d793eb7_9d628793",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/SslCipherProfile.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-06-28T02:35:57Z",
+      "side": 1,
+      "message": "we don\u0027t need this to be a non nullable field.",
+      "range": {
+        "startLine": 24,
+        "startChar": 20,
+        "endLine": 24,
+        "endChar": 28
+      },
+      "revId": "90eaca17122d314dcd4dd19225ab17c97c3044cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e25bd9b7_a9a3ace9",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/SslTermination.java",
         "patchSetId": 1
@@ -13,6 +36,29 @@
       "writtenOn": "2017-06-28T02:00:57Z",
       "side": 1,
       "message": "lets call this cipherList to keep \nin form with bean variable naming conventions.",
+      "revId": "90eaca17122d314dcd4dd19225ab17c97c3044cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5d8b2153_ef950417",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/SslTermination.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-06-28T02:35:57Z",
+      "side": 1,
+      "message": "Don\u0027t forget to rename these accessor methods after you rename the cipher_list variable to CipherList.",
+      "range": {
+        "startLine": 113,
+        "startChar": 18,
+        "endLine": 113,
+        "endChar": 32
+      },
       "revId": "90eaca17122d314dcd4dd19225ab17c97c3044cb",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
