@@ -25,6 +25,29 @@
     },
     {
       "key": {
+        "uuid": "d923035f_5d65ccff",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/SslTermination.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-06-28T02:47:54Z",
+      "side": 1,
+      "message": "we will probably need to add \nreferencedColumnName\u003d\"name\"  and see if this fixes it for us. For some reason hibernate thaought the join was between lb_ssl.cipher_profile -\u003e ssl_cipher_profile.id\nIE it was trying to assign the integer primary key id of the profile on the lb_ssl object.\n\nsee this article.\nhttps://stackoverflow.com/questions/28918699/hibernate-manytoone-using-a-foreignkey-to-a-non-primarykey-target-column",
+      "range": {
+        "startLine": 35,
+        "startChar": 24,
+        "endLine": 35,
+        "endChar": 38
+      },
+      "revId": "90eaca17122d314dcd4dd19225ab17c97c3044cb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e25bd9b7_a9a3ace9",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/entities/SslTermination.java",
         "patchSetId": 1
