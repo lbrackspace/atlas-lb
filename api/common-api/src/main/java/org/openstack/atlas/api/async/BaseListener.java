@@ -38,6 +38,7 @@ public abstract class BaseListener implements MessageListener {
     protected RateLimitingService rateLimitingService;
     protected NodeService nodeService;
     protected SslTerminationService sslTerminationService;
+    protected SslCipherProfileService sslCipherProfileService;
     protected CertificateMappingService certificateMappingService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
@@ -109,6 +110,10 @@ public abstract class BaseListener implements MessageListener {
 
     public void setSslTerminationService(SslTerminationService sslTerminationService) {
         this.sslTerminationService = sslTerminationService;
+    }
+
+    public void setSslCipherProfileService(SslCipherProfileService sslCipherProfileService) {
+        this.sslCipherProfileService = sslCipherProfileService;
     }
 
     public void setCertificateMappingService(CertificateMappingService certificateMappingService) {

@@ -46,6 +46,7 @@
     <bean id="rateLimitRepository" class="org.openstack.atlas.service.domain.repository.RateLimitRepository" depends-on="entityManagerFactory1" />
     <bean id="jobStateRepository" class="org.openstack.atlas.service.domain.repository.JobStateRepository" depends-on="entityManagerFactory1" />
     <bean id="sslTerminationRepository" class="org.openstack.atlas.service.domain.repository.SslTerminationRepository" depends-on="entityManagerFactory1" />
+    <bean id="sslCipherProfileRepository" class="org.openstack.atlas.service.domain.repository.SslCipherProfileRepository" depends-on="entityManagerFactory1" />
     <bean id="usageRepository" class="org.openstack.atlas.service.domain.repository.UsageRepository" depends-on="entityManagerFactory1" />
     <bean id="allowedDomainsRepository" class="org.openstack.atlas.service.domain.repository.AllowedDomainsRepository" depends-on="entityManagerFactory1" />
     <bean id="loadBalancerStatusHistoryRepository" class="org.openstack.atlas.service.domain.repository.LoadBalancerStatusHistoryRepository" depends-on="entityManagerFactory1" />
