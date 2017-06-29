@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
@@ -11,6 +12,7 @@ import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
+import org.openstack.atlas.service.domain.services.SslCipherProfileService;
 import org.openstack.atlas.service.domain.services.SslTerminationService;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
@@ -34,7 +36,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     @Autowired
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-
+    @Autowired
+    private SslCipherProfileService sslCipherProfileService;
 
     @Override
     @Transactional
@@ -63,6 +66,15 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                     " Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 
+        //Validate that a cipher profile exists with the given name, if not throw an error.
+        String cipherProfileName = sslTermination.getCipherProfile();
+        if(StringUtils.isNotBlank(cipherProfileName)){
+            cipherProfileName = cipherProfileName.trim();
+            if (!sslCipherProfileService.isCipherProfileExists(cipherProfileName)) {
+                throw new BadRequestException(String.format("No Cipher Profile found with the name: '%s'",cipherProfileName));
+            }
+        }
+
         if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
             //Must be secure-only
             if (sslTermination.isSecureTrafficOnly() != null && !sslTermination.isSecureTrafficOnly()) {
@@ -86,6 +98,11 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         // If dbTermination is null on input to verifyAttributes then
         // verifyAttributes creates a new dbTermination instance
         dbTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
+        if(StringUtils.isNotBlank(cipherProfileName)) {
+            sslCipherProfileService.setCipherProfileToSslTermination(dbTermination, cipherProfileName);
+        } else {
+            //TODO this will be a remove cipher profile case? How to handle this? sslCipherProfile in SslTermination is a not null field.
+        }
 
         if (dbTermination != null) {
             if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {

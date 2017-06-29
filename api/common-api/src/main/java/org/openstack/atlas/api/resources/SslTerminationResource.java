@@ -33,6 +33,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
     private HttpHeaders requestHeaders;
 
     private CertificateMappingsResource certificateMappingsResource;
+    private SslCipherProfileResource sslCipherProfileResource;
 
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
@@ -113,6 +114,30 @@ public class SslTerminationResource extends CommonDependencyProvider {
         certificateMappingsResource.setLoadBalancerId(loadBalancerId);
         certificateMappingsResource.setRequestHeaders(requestHeaders);
         return certificateMappingsResource;
+    }
+
+    @GET
+    @Path("ciphers")
+    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    public Response retrieveSupportedCiphers() {
+        try {
+            org.openstack.atlas.service.domain.entities.SslTermination dbSslTermination = sslTerminationService.getSslTermination(loadBalancerId, accountId);
+            String cipherList = null;
+            if(dbSslTermination != null) {
+                cipherList = dbSslTermination.getCipherList();
+            }
+            return Response.status(Response.Status.OK).entity(cipherList).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @Path("cipherprofiles")
+    public SslCipherProfileResource retrieveSslCipherProfileResource() {
+        sslCipherProfileResource.setAccountId(accountId);
+        sslCipherProfileResource.setLoadBalancerId(loadBalancerId);
+        sslCipherProfileResource.setRequestHeaders(requestHeaders);
+        return sslCipherProfileResource;
     }
 
     private Response getFeedResponse(Integer page) {

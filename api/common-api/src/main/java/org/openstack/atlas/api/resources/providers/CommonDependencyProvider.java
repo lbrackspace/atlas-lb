@@ -58,6 +58,7 @@ public class CommonDependencyProvider {
     protected UsageService usageService;
     protected ProtocolsService protocolsService;
     protected SslTerminationService sslTerminationService;
+    protected SslCipherProfileService sslCipherProfileService;
     protected CertificateMappingService certificateMappingService;
     protected AllowedDomainsService allowedDomainsService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
