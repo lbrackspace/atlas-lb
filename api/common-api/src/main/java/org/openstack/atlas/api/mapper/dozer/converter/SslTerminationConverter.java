@@ -1,13 +1,14 @@
 package org.openstack.atlas.api.mapper.dozer.converter;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.dozer.CustomConverter;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolName;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolStatus;
+import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 import org.openstack.atlas.service.domain.exceptions.NoMappableConstantException;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
+import org.openstack.atlas.service.domain.util.Constants;
 
 public class SslTerminationConverter implements CustomConverter {
 
@@ -76,6 +77,14 @@ public class SslTerminationConverter implements CustomConverter {
             apiSslTerm.setEnabled(isEnabled);
             apiSslTerm.setSecurePort(securePort);
             apiSslTerm.setSecureTrafficOnly(isSecureTrafficOnly);
+
+            SslCipherProfile cipherProfile = dbSslTerm.getCipherProfile();
+            if(cipherProfile == null || org.apache.commons.lang.StringUtils.isEmpty(cipherProfile.getName())) {
+                apiSslTerm.setCipherProfile(Constants.DEFAUlT_CIPHER_PROFILE_NAME);
+            } else {
+                apiSslTerm.setCipherProfile(cipherProfile.getName());
+            }
+
             SecurityProtocol sp = new SecurityProtocol();
             sp.setSecurityProtocolName(SecurityProtocolName.TLS_10);
 
