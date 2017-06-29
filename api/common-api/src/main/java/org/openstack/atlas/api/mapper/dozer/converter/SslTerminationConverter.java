@@ -6,8 +6,10 @@ import org.dozer.CustomConverter;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolName;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolStatus;
+import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 import org.openstack.atlas.service.domain.exceptions.NoMappableConstantException;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
+import org.openstack.atlas.util.ca.StringUtils;
 
 public class SslTerminationConverter implements CustomConverter {
 
@@ -32,6 +34,7 @@ public class SslTerminationConverter implements CustomConverter {
             return null;
         }
         if (srcValue.getClass() == apiSslTermClass && dstClass == dbSslTermClass) {
+
             // Mapping from API to Database entitiy.
             apiSslTerm = (org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination) srcValue;
             dbSslTerm = new org.openstack.atlas.service.domain.entities.SslTermination();
@@ -59,6 +62,7 @@ public class SslTerminationConverter implements CustomConverter {
             dbSslTerm.setPrivatekey(key);
             dbSslTerm.setIntermediateCertificate(imd);
             SslTerminationHelper.convertApiSslTermToDbTlsProtocols(apiSslTerm, dbSslTerm, true);
+
             return dbSslTerm;
         } else if (srcValue.getClass() == dbSslTermClass && dstClass == apiSslTermClass) {
             apiSslTerm = new org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination();
@@ -76,6 +80,14 @@ public class SslTerminationConverter implements CustomConverter {
             apiSslTerm.setEnabled(isEnabled);
             apiSslTerm.setSecurePort(securePort);
             apiSslTerm.setSecureTrafficOnly(isSecureTrafficOnly);
+
+            SslCipherProfile cipherProfile = dbSslTerm.getCipherProfile();
+            if(cipherProfile == null || org.apache.commons.lang.StringUtils.isEmpty(cipherProfile.getName())) {
+                apiSslTerm.setCipherProfile("default");
+            } else {
+                apiSslTerm.setCipherProfile(cipherProfile.getName());
+            }
+
             SecurityProtocol sp = new SecurityProtocol();
             sp.setSecurityProtocolName(SecurityProtocolName.TLS_10);
 
