@@ -54,6 +54,7 @@
     <bean id="rateLimitingService" class="org.openstack.atlas.service.domain.services.impl.RateLimitingServiceImpl" parent="baseService"/>
     <bean id="sessionPersistenceService" class="org.openstack.atlas.service.domain.services.impl.SessionPersistenceServiceImpl" parent="baseService"/>
     <bean id="sslTerminationService" class="org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl" parent="baseService"/>
+    <bean id="sslCipherProfileService" class="org.openstack.atlas.service.domain.services.impl.SslCipherProfileServiceImpl" parent="baseService"/>
     <bean id="suspensionService" class="org.openstack.atlas.service.domain.services.impl.SuspensionServiceImpl" parent="baseService"/>
     <bean id="ticketService" class="org.openstack.atlas.service.domain.services.impl.TicketServiceImpl" parent="baseService"/>
     <bean id="usageService" class="org.openstack.atlas.service.domain.services.impl.UsageServiceImpl" parent="baseService"/>
@@ -103,6 +104,7 @@
         <property name="rateLimitingService" ref="rateLimitingService"/>
         <property name="hostService" ref="hostService"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
+        <property name="sslCipherProfileService" ref="sslCipherProfileService"/>
         <property name="certificateMappingService" ref="certificateMappingService"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
         <property name="usageEventCollection" ref="usageEventCollection"/>

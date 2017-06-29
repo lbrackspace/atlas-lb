@@ -9,6 +9,7 @@ import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Ciphers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.MethodNotAllowedException;
@@ -113,6 +114,28 @@ public class SslTerminationResource extends CommonDependencyProvider {
         certificateMappingsResource.setLoadBalancerId(loadBalancerId);
         certificateMappingsResource.setRequestHeaders(requestHeaders);
         return certificateMappingsResource;
+    }
+
+    @GET
+    @Path("ciphers")
+    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    /**
+     * End point url to fetch the list of ciphers enabled for the load balancer.
+     */
+    public Response retrieveSupportedCiphers() {
+        try {
+            org.openstack.atlas.service.domain.entities.SslTermination dbSslTermination = sslTerminationService.getSslTermination(loadBalancerId, accountId);
+            String cipherList = null;
+            if(dbSslTermination != null) {
+                cipherList = dbSslTermination.getCipherList();
+            }
+            //Convert the list into JAXB pojo Ciphers.java
+            Ciphers supportedCiphers = new Ciphers();
+            supportedCiphers.setCipherList(cipherList);
+            return Response.status(Response.Status.OK).entity(supportedCiphers).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
     }
 
     private Response getFeedResponse(Integer page) {

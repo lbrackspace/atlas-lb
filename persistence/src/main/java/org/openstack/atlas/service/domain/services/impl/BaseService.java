@@ -67,6 +67,8 @@ public class BaseService {
     @Autowired
     protected SslTerminationRepository sslTerminationRepository;
     @Autowired
+    protected SslCipherProfileRepository sslCipherProfileRepository;
+    @Autowired
     protected UsageRepository usageRepository;
     @Autowired
     protected HostUsageRepository hostUsageRepository;
