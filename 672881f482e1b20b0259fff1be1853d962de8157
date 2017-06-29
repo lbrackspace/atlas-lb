@@ -1,0 +1,124 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f6345b37_74c1c44b",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/SslCipherProfileResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-06-29T11:14:13Z",
+      "side": 1,
+      "message": "this should go in the atlas-lb/api/mgmt-web. And the good news is we won\u0027t need to send to active MQ since management API calls can be synchrounous.",
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ad643b7d_9d2dc817",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/SslTerminationResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-06-29T11:14:13Z",
+      "side": 1,
+      "message": "annotate that this is an\n@GET method",
+      "range": {
+        "startLine": 119,
+        "startChar": 5,
+        "endLine": 119,
+        "endChar": 9
+      },
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6af47c86_fb229ef8",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/SslTerminationResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-06-29T11:14:13Z",
+      "side": 1,
+      "message": "Will ask cody if we should move this out of the loadbalancer/\u003clid\u003e field so that users that don\u0027t have ssl termination have a way too look up avaliable ciphers.",
+      "range": {
+        "startLine": 134,
+        "startChar": 11,
+        "endLine": 134,
+        "endChar": 25
+      },
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d1bbb3d9_80cdb2ad",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepository.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-06-29T11:14:13Z",
+      "side": 1,
+      "message": "We should add one to get the SslCipherProfile by name since thats apparently the key we search on.",
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fc38c2b2_5db337a4",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/SslCipherProfileService.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-06-29T11:14:13Z",
+      "side": 1,
+      "message": "we might consider making this apart of the SslTerminationService. I\u0027ll ask the team what they feel about this.",
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "02450324_2ecedb60",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/SslCipherProfileServiceImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2017-06-29T11:14:13Z",
+      "side": 1,
+      "message": "we might consider moving this into the SslTermination service.",
+      "range": {
+        "startLine": 1,
+        "startChar": 12,
+        "endLine": 1,
+        "endChar": 21
+      },
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
