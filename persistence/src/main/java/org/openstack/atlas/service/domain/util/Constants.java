@@ -25,4 +25,5 @@ public final class Constants {
     public static final String WontDeleteMonitorCauseSecNodes = "Can not delete HealthMonitor since this lb contains Secondary nodes that depend on it. Please remove secondary nodes first.";
     public static final String AH_USAGE_EVENT_FAILURE = "FailedAtomHopperUsageEvent";
     public static final String AH_USAGE_EVENT_AUTHOR = "AtomHopperUsageAuthor";
+    public static final String DEFAUlT_CIPHER_PROFILE_NAME = "default";
 }
