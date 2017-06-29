@@ -440,6 +440,7 @@
         <xsd:attribute name="enabled" type="xsd:boolean"/>
         <xsd:attribute name="securePort" type="xsd:int"/>
         <xsd:attribute name="secureTrafficOnly" type="xsd:boolean"/>
+        <xsd:attribute name="cipherProfile" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:element name="certificateMappings" type="tns:certificateMappings"/>
