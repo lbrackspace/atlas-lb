@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.entities;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.io.Serializable;
 
@@ -35,9 +37,10 @@ public class SslTermination extends Entity implements Serializable {
     @JoinColumn(name = "cipher_profile",nullable = true,referencedColumnName = "name")
     private SslCipherProfile cipherProfile;
 
-    @Column(name = "cipher_list", nullable = true, length = 1024)
+    @Column(name = "cipher_list", nullable = true, length = 65535)
+    @Type(type="text")
     private String cipherList;
-    
+
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
     }

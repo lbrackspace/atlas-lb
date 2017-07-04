@@ -19,6 +19,7 @@ import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 public interface ReverseProxyLoadBalancerAdapter {
 
@@ -222,4 +223,12 @@ public interface ReverseProxyLoadBalancerAdapter {
 
     void enableDisableTLS_10(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isEnabled)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+
+    String getSslCiphersByVhost(LoadBalancerEndpointConfiguration conf, Integer accountId, Integer loadbalancerId)
+            throws RemoteException, EntityNotFoundException;
+
+    public String getSsl3Ciphers(LoadBalancerEndpointConfiguration config) throws RemoteException;
+
+    public void setSslCiphersByVhost(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadbalancerId, String ciphers)
+            throws RemoteException, EntityNotFoundException;
 }
