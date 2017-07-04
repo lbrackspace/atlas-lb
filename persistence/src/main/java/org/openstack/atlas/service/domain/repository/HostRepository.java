@@ -183,6 +183,20 @@ public class HostRepository {
         return host;
     }
 
+    public Host getFirstAvailableSoapEndPointHost() throws EntityNotFoundException {
+        String hqlStr = "from Host h where h.soapEndpointActive = 1 "
+                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','SOAP_API_ENDPOINT') "
+                + "order by h.hostStatus desc, h.id asc";
+        Query q = entityManager.createQuery(hqlStr);
+        List<Host> hosts = q.getResultList();
+        if (hosts.size() < 1) {
+            String errMsg = "Error no soap endpoints found";
+            LOG.error(errMsg);
+            throw new EntityNotFoundException(errMsg);
+        }
+        return hosts.get(0);
+    }
+
     public Host getEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.soapEndpointActive = 1 "
                 + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','SOAP_API_ENDPOINT') "
@@ -197,7 +211,7 @@ public class HostRepository {
         return results.get(0);
     }
 
-     public Host getRestEndPointHost(Integer clusterId) {
+    public Host getRestEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.restEndpointActive  = 1 "
                 + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER', 'SOAP_API_ENDPOINT') "
                 + "and h.cluster.id = :clusterId "

@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.entities;
 
+import org.hibernate.annotations.Type;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,8 +21,11 @@ public class SslCipherProfile extends Entity implements Serializable {
 
     @Column(name = "name", nullable = false,unique = true)
     private String name;
-    @Column(name = "ciphers", nullable = false, length = 1024)
+
+    @Column(name = "ciphers", nullable = true, length = 65535)
+    @Type(type="text")
     private String ciphers;
+
     @Column(name = "comments", nullable = true, length = 256)
     private String comments;
 
