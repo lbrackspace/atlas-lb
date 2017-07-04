@@ -1,5 +1,9 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import java.net.MalformedURLException;
+import java.rmi.RemoteException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
@@ -7,10 +11,12 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Ticket;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mapper.UsageMapper;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.openstack.atlas.util.debug.Debug;
 
 import javax.ws.rs.*;
@@ -19,6 +25,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfStrings;
 
 public class LoadBalancerResource extends ManagementDependencyProvider {
 
@@ -50,6 +57,32 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+
+    @GET
+    @Path("ciphers")
+    public Response getCiphers() {
+        ListOfStrings cipherList = new ListOfStrings();
+        String ciphers;
+        int lid = id;
+        org.openstack.atlas.service.domain.entities.LoadBalancer lb = null;
+        try {
+            lb = loadBalancerRepository.getLoadBalancerIdAccountAndName(lid);
+        } catch (EntityNotFoundException ex) {
+            String errorMsg = String.format("loadbalancer %d not found", lid);
+            return ResponseFactory.getErrorResponse(ex, errorMsg, null);
+        }
+        try {
+            ciphers = reverseProxyLoadBalancerService.getSslCiphers(lb.getAccountId(), lb.getId());
+        } catch (EntityNotFoundException ex) {
+            return ResponseFactory.getResponseWithStatus(404, String.format("Loadbalancer with id %d not found", lid), VFAIL);
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
+        for(String cipher : ciphers.split(",")){
+            cipherList.getStrings().add(cipher);
+        }
+        return Response.status(200).entity(cipherList).build();
     }
 
     @DELETE
@@ -285,8 +318,6 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
         changeHostResource.setLoadBalancerId(id);
         return changeHostResource;
     }
-
-
 
     public void setSyncResource(SyncResource syncResource) {
         this.syncResource = syncResource;

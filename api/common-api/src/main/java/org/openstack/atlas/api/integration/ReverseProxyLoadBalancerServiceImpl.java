@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.integration;
 
-
 import com.zxtm.service.client.ObjectDoesNotExist;
 import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
@@ -386,7 +385,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
     @Override
     public void createHostBackup(Host host,
-                                 String backupName) throws RemoteException, MalformedURLException, DecryptException {
+            String backupName) throws RemoteException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         try {
             reverseProxyLoadBalancerAdapter.createHostBackup(config, backupName);
@@ -513,6 +512,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
 
             try {
                 snmpStatsList = ThreadExecutorService.call(new Callable<List<SnmpStats>>() {
+
                     public List<SnmpStats> call() throws Exception {
                         return statsCollection.getStatsForHosts(loadBalancer, hostToGatherStatsFrom);
                     }
@@ -853,6 +853,19 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
             checkAndSetIfSoapEndPointBad(config, af);
             throw af;
         }
+    }
+
+    @Override
+    public String getSslCiphers(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, RemoteException, MalformedURLException, DecryptException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
+        String ciphers = null;
+        try {
+            ciphers = reverseProxyLoadBalancerAdapter.getSslCiphersByVhost(config, accountId, loadbalancerId);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+        return ciphers;
     }
 
     @Override
