@@ -10,6 +10,7 @@ import org.openstack.atlas.adapter.exceptions.*;
 import org.openstack.atlas.adapter.helpers.*;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ca.StringUtils;
@@ -3378,5 +3379,25 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
         }
         return false;
+    }
+
+    @Override
+    public String getSslCiphersByVhost(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadbalancerId) throws RemoteException, EntityNotFoundException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String vsName = String.format("%d_%d_S", accountId, loadbalancerId);
+        String[] soapVSNames = new String[]{vsName};
+        String[] ciphers = serviceStubs.getVirtualServerBinding().getSSLCiphers(soapVSNames);
+        if(ciphers == null || ciphers.length < 1){
+            String errorMsg = String.format("no ciphers found for virtual server  %d_%d_s", accountId, loadbalancerId);
+            throw new EntityNotFoundException(errorMsg);
+        }
+        return ciphers[0];
+    }
+
+    @Override
+    public String getSsl3Ciphers(LoadBalancerEndpointConfiguration config) throws RemoteException {
+        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
+        String ciphers = serviceStubs.getGlobalSettingsBinding().getSSL3Ciphers();
+        return ciphers;
     }
 }
