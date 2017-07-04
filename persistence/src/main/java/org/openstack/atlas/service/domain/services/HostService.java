@@ -46,6 +46,8 @@ public interface HostService {
 
     public List<Host> getFailoverHosts(Integer clusterId);
 
+    public Host getFirstAvailableSoapEndPointHost() throws EntityNotFoundException;
+
     public String getEndPoint(Integer clusterId);
 
     public Host getHostsByLoadBalancerId(Integer loadBalancerId);
