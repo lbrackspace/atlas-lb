@@ -351,4 +351,10 @@ public class HostServiceImpl extends BaseService implements HostService {
     public Cluster getClusterById(Integer id) throws EntityNotFoundException {
         return hostRepository.getClusterById(id);
     }
+
+    @Override
+    public Host getFirstAvailableSoapEndPointHost() throws EntityNotFoundException {
+        Host host = hostRepository.getFirstAvailableSoapEndPointHost();
+        return host;
+    }
 }
