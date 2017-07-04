@@ -1,5 +1,9 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import java.net.MalformedURLException;
+import java.rmi.RemoteException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
@@ -7,10 +11,12 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Ticket;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mapper.UsageMapper;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.openstack.atlas.util.debug.Debug;
 
 import javax.ws.rs.*;
@@ -19,6 +25,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfStrings;
 
 public class LoadBalancerResource extends ManagementDependencyProvider {
 
@@ -31,6 +38,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
     private TicketsResource ticketsResource;
     private int id;
     private ErrorpageResource errorPageResource;
+    private CiphersResource ciphersResource;
 
     @GET
     @Path("host")
@@ -51,6 +59,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
+
 
     @DELETE
     @Path("suspended")
@@ -171,6 +180,12 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
 
     }
 
+    @Path("ciphers")
+    public CiphersResource retrieveCiphersResource(){
+        ciphersResource.setLoadBalancerId(id);
+        return ciphersResource;
+    }
+
     @Path("sync")
     public SyncResource retrieveSyncResource() {
         syncResource.setLoadBalancerId(id);
@@ -286,8 +301,6 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
         return changeHostResource;
     }
 
-
-
     public void setSyncResource(SyncResource syncResource) {
         this.syncResource = syncResource;
     }
@@ -330,5 +343,12 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
 
     public ErrorpageResource getErrorPageResource() {
         return errorPageResource;
+    }
+
+    /**
+     * @param ciphersResource the ciphersResource to set
+     */
+    public void setCiphersResource(CiphersResource ciphersResource) {
+        this.ciphersResource = ciphersResource;
     }
 }

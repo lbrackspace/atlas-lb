@@ -1729,6 +1729,24 @@ public class LoadBalancerRepository {
         return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
     }
 
+    public LoadBalancer getLoadBalancerIdAccountAndName(Integer lid) throws EntityNotFoundException {
+        List<LoadBalancer> loadBalancers = new ArrayList<LoadBalancer>();
+        String qStr = "SELECT l.id, l.accountId, l.name FROM LoadBalancer l where id = :lid";
+        Query q = entityManager.createQuery(qStr).setParameter("lid", lid);
+        List<Object[]> resultList = q.getResultList();
+        if (resultList == null || resultList.size() <= 0) {
+            throw new EntityNotFoundException();
+        }
+        for (Object[] row : resultList) {
+            LoadBalancer lb = new LoadBalancer();
+            lb.setId((Integer) row[0]);
+            lb.setAccountId((Integer) row[1]);
+            lb.setName((String) row[2]);
+            loadBalancers.add(lb);
+        }
+        return loadBalancers.get(0);
+    }
+
     public Set<LbIdAccountId> getLoadBalancersActiveDuringPeriod(Calendar startTime, Calendar endTime) {
         Set<LbIdAccountId> lbIds = new HashSet<LbIdAccountId>();
 

@@ -6,6 +6,7 @@ import org.apache.axis.AxisFault;
 import java.net.URL;
 
 public class ZxtmServiceStubs {
+
     private PoolBindingStub zxtmPoolService;
     private SystemBackupsBindingStub zxtmSystemBackupsService;
     private SystemMachineInfoBindingStub zxtmSystemMachineInfoService;
@@ -18,15 +19,17 @@ public class ZxtmServiceStubs {
     private CatalogRuleBindingStub zxtmRuleCatalogService;
     private SystemStatsBindingStub zxtmSystemStatsService;
     private ConfExtraBindingStub zxtmConfExtraService;
-    private CatalogSSLCertificatesBindingStub  zxtmCatalogSSLCertificatesService;
+    private CatalogSSLCertificatesBindingStub zxtmCatalogSSLCertificatesService;
+    private GlobalSettingsBindingStub zxtmGlobalSettingsService;
 
     public ZxtmServiceStubs(PoolBindingStub zxtmPoolService,
-                            SystemBackupsBindingStub zxtmSystemBackupsService, SystemMachineInfoBindingStub zxtmSystemMachineInfoService,
-                            TrafficIPGroupsBindingStub zxtmTrafficIpGroupService, VirtualServerBindingStub zxtmVirtualServerService,
-                            CatalogMonitorBindingStub zxtmMonitorCatalogService, CatalogPersistenceBindingStub zxtmPersistenceService,
-                            CatalogProtectionBindingStub zxtmProtectionService, CatalogRuleBindingStub zxtmRuleCatalogService,
-                            SystemStatsBindingStub zxtmSystemStatsService, CatalogRateBindingStub zxtmRateCatalogService,
-                            ConfExtraBindingStub zxtmConfExtraService, CatalogSSLCertificatesBindingStub zxtmCatalogSSLCertificatesService) {
+            SystemBackupsBindingStub zxtmSystemBackupsService, SystemMachineInfoBindingStub zxtmSystemMachineInfoService,
+            TrafficIPGroupsBindingStub zxtmTrafficIpGroupService, VirtualServerBindingStub zxtmVirtualServerService,
+            CatalogMonitorBindingStub zxtmMonitorCatalogService, CatalogPersistenceBindingStub zxtmPersistenceService,
+            CatalogProtectionBindingStub zxtmProtectionService, CatalogRuleBindingStub zxtmRuleCatalogService,
+            SystemStatsBindingStub zxtmSystemStatsService, CatalogRateBindingStub zxtmRateCatalogService,
+            ConfExtraBindingStub zxtmConfExtraService, CatalogSSLCertificatesBindingStub zxtmCatalogSSLCertificatesService,
+            GlobalSettingsBindingStub zxtmGlobalSettingsService) {
         this.zxtmPoolService = zxtmPoolService;
         this.zxtmSystemBackupsService = zxtmSystemBackupsService;
         this.zxtmSystemMachineInfoService = zxtmSystemMachineInfoService;
@@ -40,6 +43,7 @@ public class ZxtmServiceStubs {
         this.zxtmRateCatalogService = zxtmRateCatalogService;
         this.zxtmConfExtraService = zxtmConfExtraService;
         this.zxtmCatalogSSLCertificatesService = zxtmCatalogSSLCertificatesService;
+        this.zxtmGlobalSettingsService = zxtmGlobalSettingsService;
     }
 
     public static ZxtmServiceStubs getServiceStubs(URL endpoint, String username, String password) throws AxisFault {
@@ -87,22 +91,25 @@ public class ZxtmServiceStubs {
         zxtmSystemStatsService.setUsername(username);
         zxtmSystemStatsService.setPassword(password);
 
-        ConfExtraBindingStub zxtmConfExtraService = new ConfExtraBindingStub(endpoint,null);
+        ConfExtraBindingStub zxtmConfExtraService = new ConfExtraBindingStub(endpoint, null);
         zxtmConfExtraService.setUsername(username);
         zxtmConfExtraService.setPassword(password);
 
-        CatalogSSLCertificatesBindingStub zxtmCatalogSSLCertificatesService = new CatalogSSLCertificatesBindingStub(endpoint,null);
+        CatalogSSLCertificatesBindingStub zxtmCatalogSSLCertificatesService = new CatalogSSLCertificatesBindingStub(endpoint, null);
         zxtmCatalogSSLCertificatesService.setUsername(username);
         zxtmCatalogSSLCertificatesService.setPassword(password);
 
+        GlobalSettingsBindingStub zxtmGlobalSettingsService = new GlobalSettingsBindingStub(endpoint, null);
+        zxtmGlobalSettingsService.setUsername(username);
+        zxtmGlobalSettingsService.setPassword(password);
 
         return new ZxtmServiceStubs(zxtmPoolService,
                 zxtmSystemBackupsService, zxtmSystemMachineInfoService,
                 zxtmTrafficIpGroupService, zxtmVirtualServerService,
                 zxtmMonitorCatalogService, zxtmMonitorPersistenceService,
                 zxtmMonitorProtectionService, zxtmRuleCatalogService,
-                zxtmSystemStatsService, zxtmRateCatalogService,zxtmConfExtraService,
-                zxtmCatalogSSLCertificatesService);
+                zxtmSystemStatsService, zxtmRateCatalogService, zxtmConfExtraService,
+                zxtmCatalogSSLCertificatesService, zxtmGlobalSettingsService);
     }
 
     public PoolBindingStub getPoolBinding() {
@@ -157,4 +164,7 @@ public class ZxtmServiceStubs {
         return zxtmCatalogSSLCertificatesService;
     }
 
+    public GlobalSettingsBindingStub getGlobalSettingsBinding() {
+        return zxtmGlobalSettingsService;
+    }
 }
