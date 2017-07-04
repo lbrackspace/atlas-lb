@@ -39,8 +39,9 @@ public class SslTermination extends Entity implements Serializable {
 
     @Column(name = "cipher_list", nullable = true, length = 65535)
     @Type(type="text")
+
     private String cipherList;
-    
+
     public LoadBalancer getLoadbalancer() {
         return loadbalancer;
     }

@@ -23,6 +23,7 @@ public class SslCipherProfile extends Entity implements Serializable {
     private String name;
     @Column(name = "ciphers", nullable = true, length = 65535)
     @Type(type="text")
+
     private String ciphers;
     @Column(name = "comments", nullable = true, length = 256)
     private String comments;
