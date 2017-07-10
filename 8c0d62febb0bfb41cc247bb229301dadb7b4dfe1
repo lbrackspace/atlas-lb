@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c2c4fdac_f8a0b7b1",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/SslCipherProfileServiceImpl.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2017-07-10T17:02:41Z",
+      "side": 1,
+      "message": "I don\u0027t have a better name for it, but this doesn\u0027t really sound right. Just a nit.",
+      "revId": "8c0d62febb0bfb41cc247bb229301dadb7b4dfe1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ce034da8_5fc22def",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/util/Constants.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2017-07-10T17:02:41Z",
+      "side": 1,
+      "message": "We could maybe do this later, but I wonder if we should make this something that can be configured by ops. For example, maybe they find issue in the \u0027default\u0027 list and want to select \u0027default2\u0027 until \u0027default\u0027 is resolved. Just a thought, i\u0027m sure we can update later if that\u0027s something we want to do.",
+      "revId": "8c0d62febb0bfb41cc247bb229301dadb7b4dfe1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
