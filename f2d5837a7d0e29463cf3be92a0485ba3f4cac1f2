@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4207a096_e7427f7e",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/SslTerminationServiceImpl.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2017-07-10T15:53:43Z",
+      "side": 1,
+      "message": "Would we want to set it to the \u0027default\u0027 or empty here?",
+      "revId": "f2d5837a7d0e29463cf3be92a0485ba3f4cac1f2",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
