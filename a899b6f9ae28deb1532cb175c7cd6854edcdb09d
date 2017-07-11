@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "51efa83d_7bc7e25f",
+        "filename": "api/mgmt-web/src/main/webapp/WEB-INF/spring-context.xml",
+        "patchSetId": 7
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2017-07-11T13:32:37Z",
+      "side": 1,
+      "message": "The class should change here to CiphersResource?",
+      "revId": "a899b6f9ae28deb1532cb175c7cd6854edcdb09d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
