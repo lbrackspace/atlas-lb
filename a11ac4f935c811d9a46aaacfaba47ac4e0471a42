@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "340f9a43_fa29441d",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepository.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2017-07-12T22:38:34Z",
+      "side": 1,
+      "message": "The unused imports can probably be cleaned up.",
+      "revId": "a11ac4f935c811d9a46aaacfaba47ac4e0471a42",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4c267b85_acffb739",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepository.java",
         "patchSetId": 12
