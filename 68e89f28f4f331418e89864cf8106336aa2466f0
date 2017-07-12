@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8f8f9687_0b7636c8",
+        "filename": "api/mgmt-web/src/main/webapp/WEB-INF/spring-context.xml",
+        "patchSetId": 8
+      },
+      "lineNbr": 336,
+      "author": {
+        "id": 1010883
+      },
+      "writtenOn": "2017-07-12T09:52:06Z",
+      "side": 1,
+      "message": "Line 336 has an extra closing bracket.It needs to be removed.Also the resource class needs to org.openstack.atlas.api.mgmt.resources.CiphersResource in place of org.openstack.atlas.api.mgmt.resources.LoadBalancerSuspensionResource",
+      "range": {
+        "startLine": 336,
+        "startChar": 55,
+        "endLine": 336,
+        "endChar": 57
+      },
+      "revId": "68e89f28f4f331418e89864cf8106336aa2466f0",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
