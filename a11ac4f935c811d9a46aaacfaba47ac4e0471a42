@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4c267b85_acffb739",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepository.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 1010883
+      },
+      "writtenOn": "2017-07-12T10:37:32Z",
+      "side": 1,
+      "message": "SslCipherProfileRepository needs to be added in jms-queues-public.xml ?",
+      "range": {
+        "startLine": 26,
+        "startChar": 13,
+        "endLine": 26,
+        "endChar": 39
+      },
+      "revId": "a11ac4f935c811d9a46aaacfaba47ac4e0471a42",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5bced7ee_daa5911f",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/SslCipherProfileService.java",
+        "patchSetId": 12
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 1010883
+      },
+      "writtenOn": "2017-07-12T10:37:32Z",
+      "side": 1,
+      "message": "SslCipherProfileService needs to be added in spring-context-public.xml ?",
+      "range": {
+        "startLine": 7,
+        "startChar": 17,
+        "endLine": 7,
+        "endChar": 40
+      },
+      "revId": "a11ac4f935c811d9a46aaacfaba47ac4e0471a42",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
