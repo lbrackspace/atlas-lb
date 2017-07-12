@@ -332,8 +332,8 @@
                   scope="request"/>
         </property>
         <property name="ciphersResource">
-            <bean class="org.openstack.atlas.api.mgmt.resources.LoadBalancerSuspensionResource"
-                  parent="managementDependencyProvider"/>
+            <bean class="org.openstack.atlas.api.mgmt.resources.CiphersResource"
+                  parent="managementDependencyProvider"
                   scope="request"/>
         </property>
         <property name="syncResource">

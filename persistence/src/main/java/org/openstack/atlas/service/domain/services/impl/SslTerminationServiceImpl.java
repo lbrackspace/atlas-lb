@@ -101,10 +101,12 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         dbTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
 
         //Update the cipher profile. If cipherProfileName is empty, the profile to be set is the 'default' profile.
-        if(StringUtils.isBlank(cipherProfileName)) {
-            cipherProfileName = Constants.DEFAUlT_CIPHER_PROFILE_NAME;
+        if(cipherProfileName != null) {
+            if(StringUtils.isBlank(cipherProfileName)) {//check for only empty string
+                cipherProfileName = Constants.DEFAUlT_CIPHER_PROFILE_NAME;
+            }
+            sslCipherProfileService.setCipherProfileOnSslTermination(dbTermination, cipherProfileName);
         }
-        sslCipherProfileService.setCipherProfileOnSslTermination(dbTermination, cipherProfileName);
 
         if (dbTermination != null) {
             if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {
