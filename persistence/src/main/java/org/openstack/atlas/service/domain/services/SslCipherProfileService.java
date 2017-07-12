@@ -12,6 +12,6 @@ public interface SslCipherProfileService {
 
     void setCipherProfileOnSslTermination(SslTermination sslTermination, String profileName);
 
-    boolean isCipherProfileExists(String profileName);
+    boolean isCipherProfileAvailable(String profileName);
 
 }

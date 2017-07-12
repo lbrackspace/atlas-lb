@@ -80,6 +80,7 @@
         <property name="nodeRepository" ref="nodeRepository"/>
         <property name="rateLimitRepository" ref="rateLimitRepository"/>
         <property name="sslTerminationRepository" ref="sslTerminationRepository"/>
+        <property name="sslCipherProfileRepository" ref="sslCipherProfileRepository"/>
         <property name="usageRepository" ref="usageRepository"/>
         <property name="virtualIpRepository" ref="virtualIpRepository"/>
         <property name="virtualIpv6Repository" ref="virtualIpv6Repository"/>

@@ -6,7 +6,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.util.Constants;
 
 @RunWith(Enclosed.class)
 public class DomainToDataModelSslTerminationTest {
@@ -43,6 +45,41 @@ public class DomainToDataModelSslTerminationTest {
             Assert.assertEquals(sslTermination.getSecurePort(), (long) dataModelSslTermination.getSecurePort());
             Assert.assertEquals(true, dataModelSslTermination.isEnabled());
             Assert.assertEquals(false, dataModelSslTermination.isSecureTrafficOnly());
+        }
+
+        @Test
+        public void shouldMapCipherProfileNameToDefaultWhenNoProfileAttached() {
+            sslTermination = new SslTermination();
+            sslTermination.setPrivatekey("AKey");
+            sslTermination.setCertificate("aCert");
+            sslTermination.setIntermediateCertificate("anIntermediateCert");
+            sslTermination.setSecurePort(443);
+            try {
+                dataModelSslTermination = mapper.map(sslTermination, org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination.class);
+            } catch (Exception e) {
+                Assert.fail("Exception caused by ssl termination types being null");
+            }
+
+            Assert.assertEquals(Constants.DEFAUlT_CIPHER_PROFILE_NAME, dataModelSslTermination.getCipherProfile());
+        }
+        @Test
+        public void shouldMapCipherProfileName() {
+            final String cipherProfileName = "HIGH SECURE";
+            sslTermination = new SslTermination();
+            sslTermination.setPrivatekey("AKey");
+            sslTermination.setCertificate("aCert");
+            sslTermination.setIntermediateCertificate("anIntermediateCert");
+            sslTermination.setSecurePort(443);
+            SslCipherProfile cipherProfile = new SslCipherProfile();
+            cipherProfile.setName(cipherProfileName);
+            sslTermination.setCipherProfile(cipherProfile);
+            try {
+                dataModelSslTermination = mapper.map(sslTermination, org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination.class);
+            } catch (Exception e) {
+                Assert.fail("Exception caused by ssl termination types being null");
+            }
+
+            Assert.assertEquals(cipherProfileName, dataModelSslTermination.getCipherProfile());
         }
 
         @Test

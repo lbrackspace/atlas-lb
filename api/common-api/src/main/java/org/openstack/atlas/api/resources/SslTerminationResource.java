@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.resources;
 
 import org.apache.abdera.model.Feed;
+import org.apache.commons.lang.StringUtils;
 import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
@@ -126,8 +127,13 @@ public class SslTerminationResource extends CommonDependencyProvider {
         try {
             org.openstack.atlas.service.domain.entities.SslTermination dbSslTermination = sslTerminationService.getSslTermination(loadBalancerId, accountId);
             String cipherList = null;
-            if(dbSslTermination != null) {
-                cipherList = dbSslTermination.getCipherList();
+            if (dbSslTermination != null) {
+                if (StringUtils.isNotBlank(dbSslTermination.getCipherList())) {
+                    cipherList = dbSslTermination.getCipherList();
+                } else {
+                    //TODO need to confirm if we need to get this from the cache or some configuration.
+                    cipherList = reverseProxyLoadBalancerService.getSsl3Ciphers();
+                }
             }
             //Convert the list into JAXB pojo Ciphers.java
             Ciphers supportedCiphers = new Ciphers();

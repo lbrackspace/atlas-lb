@@ -9,9 +9,10 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.repository.*;
-import org.openstack.atlas.service.domain.repository.UsageRepository;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
-import org.openstack.atlas.service.domain.usage.repository.*;
+import org.openstack.atlas.service.domain.usage.repository.HostUsageRefactorRepository;
+import org.openstack.atlas.service.domain.usage.repository.HostUsageRepository;
+import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHostUsageRepository;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ip.IPv4Cidr;
 import org.openstack.atlas.util.ip.IPv4Cidrs;
@@ -21,8 +22,6 @@ import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.openstack.atlas.util.ip.exception.IpTypeMissMatchException;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -149,6 +148,10 @@ public class BaseService {
 
     public void setSslTerminationRepository(SslTerminationRepository sslTerminationRepository) {
         this.sslTerminationRepository = sslTerminationRepository;
+    }
+
+    public void setSslCipherProfileRepository(SslCipherProfileRepository sslCipherProfileRepository) {
+        this.sslCipherProfileRepository = sslCipherProfileRepository;
     }
 
     public void setUsageRepository(UsageRepository usageRepository) {
