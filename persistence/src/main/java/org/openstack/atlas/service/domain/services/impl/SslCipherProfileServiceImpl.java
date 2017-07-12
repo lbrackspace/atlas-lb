@@ -1,17 +1,14 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.*;
-import org.openstack.atlas.service.domain.repository.SslCipherProfileRepository;
-import org.openstack.atlas.service.domain.repository.SslTerminationRepository;
-import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.SslCipherProfile;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.SslCipherProfileService;
-import org.openstack.atlas.util.ca.zeus.ZeusUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SslCipherProfileServiceImpl extends BaseService implements SslCipherProfileService {
@@ -38,10 +35,15 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
     public void setCipherProfileOnSslTermination(SslTermination sslTermination, String profileName) {
         SslCipherProfile profile = sslCipherProfileRepository.getByName(profileName);
         sslTermination.setCipherProfile(profile);
+        if(profile != null) {
+            sslTermination.setCipherList(profile.getCiphers());
+        } else {
+            sslTermination.setCipherList(StringUtils.EMPTY);
+        }
     }
 
     @Override
-    public boolean isCipherProfileExists(String profileName) {
+    public boolean isCipherProfileAvailable(String profileName) {
         SslCipherProfile profile = sslCipherProfileRepository.getByName(profileName);
         if(profile != null){
             return true;

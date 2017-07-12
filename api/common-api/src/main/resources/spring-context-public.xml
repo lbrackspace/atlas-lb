@@ -114,6 +114,7 @@
         <property name="reverseProxyLoadBalancerStmService" ref="reverseProxyLoadBalancerStmService"/>
         <property name="restApiConfiguration" ref="configuration"/>
         <property name="sslTerminationService" ref="sslTerminationService"/>
+        <property name="sslCipherProfileService" ref="sslCipherProfileService"/>
         <property name="certificateMappingService" ref="certificateMappingService"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
     </bean>
