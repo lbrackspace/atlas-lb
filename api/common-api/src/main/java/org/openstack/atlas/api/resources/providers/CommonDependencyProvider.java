@@ -158,6 +158,10 @@ public class CommonDependencyProvider {
         this.sslTerminationService = sslTerminationService;
     }
 
+    public void setSslCipherProfileService(SslCipherProfileService sslCipherProfileService) {
+        this.sslCipherProfileService = sslCipherProfileService;
+    }
+
     public void setCertificateMappingService(CertificateMappingService certificateMappingService) {
         this.certificateMappingService = certificateMappingService;
     }

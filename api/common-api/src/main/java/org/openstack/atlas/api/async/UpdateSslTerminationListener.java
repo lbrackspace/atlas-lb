@@ -1,11 +1,13 @@
 package org.openstack.atlas.api.async;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.helpers.SslTerminationUsage;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -71,6 +73,13 @@ public class UpdateSslTerminationListener extends BaseListener {
             } else {
                 LOG.info("Updating load balancer ssl termination in ZXTM...");
                 reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, queTermination);
+                String cipherString = StringUtils.EMPTY;
+                SslCipherProfile cipherProfile = queTermination.getSslTermination().getCipherProfile();
+                if(cipherProfile != null) {
+                    cipherString = cipherProfile.getCiphers();
+                }
+                LOG.debug(String.format("ciphers to be updated in Zeus: %s",cipherString));
+                reverseProxyLoadBalancerService.setSslCiphers(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), cipherString);
                 LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
             }
         } catch (Exception e) {
