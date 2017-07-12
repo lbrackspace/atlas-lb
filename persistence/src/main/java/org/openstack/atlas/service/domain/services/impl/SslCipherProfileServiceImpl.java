@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.*;
@@ -38,6 +39,11 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
     public void setCipherProfileOnSslTermination(SslTermination sslTermination, String profileName) {
         SslCipherProfile profile = sslCipherProfileRepository.getByName(profileName);
         sslTermination.setCipherProfile(profile);
+        if(profile != null) {
+            sslTermination.setCipherList(profile.getCiphers());
+        } else {
+            sslTermination.setCipherList(StringUtils.EMPTY);
+        }
     }
 
     @Override
