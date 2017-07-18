@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "640e884e_3359376c",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/SslCipherProfileServiceImpl.java",
+        "patchSetId": 11
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2017-07-18T05:07:58Z",
+      "side": 1,
+      "message": "Renamed to isCipherProfileAvailable",
+      "parentUuid": "c2c4fdac_f8a0b7b1",
+      "revId": "8c0d62febb0bfb41cc247bb229301dadb7b4dfe1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ce034da8_5fc22def",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/util/Constants.java",
         "patchSetId": 11
