@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "c8ba8fa1_3dae21ae",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/SslCipherProfileResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2017-07-18T05:07:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f6345b37_74c1c44b",
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ad643b7d_9d2dc817",
         "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/SslTerminationResource.java",
         "patchSetId": 1
@@ -30,6 +48,30 @@
       "writtenOn": "2017-06-29T11:14:13Z",
       "side": 1,
       "message": "annotate that this is an\n@GET method",
+      "range": {
+        "startLine": 119,
+        "startChar": 5,
+        "endLine": 119,
+        "endChar": 9
+      },
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "17de6e73_a02fcbff",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/SslTerminationResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2017-07-18T05:07:58Z",
+      "side": 1,
+      "message": "Done, thought GET is the default method if none is specified.",
+      "parentUuid": "ad643b7d_9d2dc817",
       "range": {
         "startLine": 119,
         "startChar": 5,
@@ -65,6 +107,30 @@
     },
     {
       "key": {
+        "uuid": "66f2d22d_e4f15e75",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/SslTerminationResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2017-07-18T05:07:58Z",
+      "side": 1,
+      "message": "sure.",
+      "parentUuid": "6af47c86_fb229ef8",
+      "range": {
+        "startLine": 134,
+        "startChar": 11,
+        "endLine": 134,
+        "endChar": 25
+      },
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d1bbb3d9_80cdb2ad",
         "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepository.java",
         "patchSetId": 1
@@ -76,6 +142,24 @@
       "writtenOn": "2017-06-29T11:14:13Z",
       "side": 1,
       "message": "We should add one to get the SslCipherProfile by name since thats apparently the key we search on.",
+      "revId": "672881f482e1b20b0259fff1be1853d962de8157",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ed8e4238_48806bb8",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepository.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2017-07-18T05:07:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d1bbb3d9_80cdb2ad",
       "revId": "672881f482e1b20b0259fff1be1853d962de8157",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
