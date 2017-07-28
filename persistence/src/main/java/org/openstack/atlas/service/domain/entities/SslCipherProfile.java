@@ -19,7 +19,7 @@ public class SslCipherProfile extends Entity implements Serializable {
     @OneToMany(mappedBy = "cipherProfile" , cascade = CascadeType.ALL)
     List<SslTermination> sslTerminations = new ArrayList<SslTermination>();
 
-    @Column(name = "name", nullable = false,unique = true,length = 256)
+    @Column(name = "name", nullable = false,unique = true,length = 255)
     private String name;
 
     @Column(name = "ciphers", nullable = true, length = 65535)
