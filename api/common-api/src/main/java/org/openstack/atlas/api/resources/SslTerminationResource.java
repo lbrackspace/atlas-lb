@@ -126,7 +126,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
     public Response retrieveSupportedCiphers() {
         try {
             org.openstack.atlas.service.domain.entities.SslTermination dbSslTermination = sslTerminationService.getSslTermination(loadBalancerId, accountId);
-            String cipherList = null;
+            String cipherList = StringUtils.EMPTY;
             if (dbSslTermination != null) {
                 if (StringUtils.isNotBlank(dbSslTermination.getCipherList())) {
                     cipherList = dbSslTermination.getCipherList();

@@ -69,10 +69,10 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
         //Validate that a cipher profile exists with the given name, if not throw an error.
         String cipherProfileName = sslTermination.getCipherProfile();
-        if(StringUtils.isNotBlank(cipherProfileName) && !cipherProfileName.equalsIgnoreCase(Constants.DEFAUlT_CIPHER_PROFILE_NAME)){
+        if (StringUtils.isNotBlank(cipherProfileName) && !cipherProfileName.equalsIgnoreCase(Constants.DEFAUlT_CIPHER_PROFILE_NAME)) {
             cipherProfileName = cipherProfileName.trim();
             if (!sslCipherProfileService.isCipherProfileAvailable(cipherProfileName)) {
-                throw new BadRequestException(String.format("No Cipher Profile found with the name: '%s'",cipherProfileName));
+                throw new BadRequestException(String.format("No Cipher Profile found with the name: '%s'", cipherProfileName));
             }
         }
 
@@ -100,11 +100,17 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         // verifyAttributes creates a new dbTermination instance
         dbTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
 
-        //Update the cipher profile. If cipherProfileName is empty, the profile to be set is the 'default' profile.
-        if(cipherProfileName != null) {
-            if(StringUtils.isBlank(cipherProfileName)) {//check for only empty string
+        //Update the cipher profile. While creating SslTermination if cipherProfileName is empty, the profile to be set is the 'default' profile.
+        if (dbTermination.getId() == null){
+            if (StringUtils.isBlank(cipherProfileName) || Constants.DEFAUlT_CIPHER_PROFILE_NAME.equalsIgnoreCase(cipherProfileName)) {
                 cipherProfileName = Constants.DEFAUlT_CIPHER_PROFILE_NAME;
             }
+        } else {//Updating SslTermination, if the profile to be set is the 'default' profile then this is a remove profile case.
+            if (cipherProfileName != null && Constants.DEFAUlT_CIPHER_PROFILE_NAME.equalsIgnoreCase(cipherProfileName)) {
+                cipherProfileName = Constants.DEFAUlT_CIPHER_PROFILE_NAME;
+            }
+        }
+        if (StringUtils.isNotEmpty(cipherProfileName)) {
             sslCipherProfileService.setCipherProfileOnSslTermination(dbTermination, cipherProfileName);
         }
 
