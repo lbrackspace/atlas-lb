@@ -1484,6 +1484,17 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             //TODO: handle errors better...
             throw new ZxtmRollBackException("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId(), af);
         }
+
+        // SSLTermination VS is configured, update the ciphers.
+        // String cipherString = StringUtils.EMPTY;
+        String cipherString = "";
+        SslCipherProfile cipherProfile = zeusSslTermination.getSslTermination().getCipherProfile();
+        if(cipherProfile != null) {
+            cipherString = cipherProfile.getCiphers();
+        }
+        LOG.debug(String.format("ciphers to be updated in Zeus: %s",cipherString));
+        setSslCiphers(loadBalancer.getAccountId(), loadBalancer.getId(), cipherString);
+        LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
     }
 
     @Override
