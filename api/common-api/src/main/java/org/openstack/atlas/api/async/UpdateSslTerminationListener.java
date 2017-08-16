@@ -73,14 +73,6 @@ public class UpdateSslTerminationListener extends BaseListener {
             } else {
                 LOG.info("Updating load balancer ssl termination in ZXTM...");
                 reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, queTermination);
-                String cipherString = StringUtils.EMPTY;
-                SslCipherProfile cipherProfile = queTermination.getSslTermination().getCipherProfile();
-                if(cipherProfile != null) {
-                    cipherString = cipherProfile.getCiphers();
-                }
-                LOG.debug(String.format("ciphers to be updated in Zeus: %s",cipherString));
-                reverseProxyLoadBalancerService.setSslCiphers(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), cipherString);
-                LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
             }
         } catch (Exception e) {
             dbLoadBalancer.setStatus(LoadBalancerStatus.ERROR);

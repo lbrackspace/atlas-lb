@@ -3,6 +3,7 @@ package org.openstack.atlas.adapter.zxtm;
 import com.zxtm.service.client.*;
 import org.apache.axis.AxisFault;
 import org.apache.axis.types.UnsignedInt;
+import org.apache.commons.lang.StringUtils.EMPTY;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
@@ -1484,6 +1485,16 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             //TODO: handle errors better...
             throw new ZxtmRollBackException("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId(), af);
         }
+
+        // SSLTermination VS is configured, update the ciphers.
+        String cipherString = EMPTY;
+        SslCipherProfile cipherProfile = zeusSslTermination.getSslTermination().getCipherProfile();
+        if(cipherProfile != null) {
+            cipherString = cipherProfile.getCiphers();
+        }
+        LOG.debug(String.format("ciphers to be updated in Zeus: %s",cipherString));
+        setSslCiphersByVhost(loadBalancer.getAccountId(), loadBalancer.getId(), cipherString);
+        LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
     }
 
     @Override
