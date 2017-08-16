@@ -29,6 +29,9 @@ import java.util.*;
 import org.openstack.atlas.util.constants.ConnectionThrottleDefaultConstants;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
 
+import static org.apache.commons.lang.StringUtils.EMPTY;
+
+
 @Component
 public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
@@ -1483,6 +1486,24 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
             //TODO: handle errors better...
             throw new ZxtmRollBackException("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId(), af);
+        }
+
+        // SSLTermination VS is configured, update the ciphers.
+        String cipherString = EMPTY;
+        SslCipherProfile cipherProfile = zeusSslTermination.getSslTermination().getCipherProfile();
+        if(cipherProfile != null) {
+            cipherString = cipherProfile.getCiphers();
+        }
+
+        try {
+            LOG.debug(String.format("ciphers to be updated in Zeus: %s",cipherString));
+            setSslCiphersByVhost(conf, loadBalancer.getAccountId(), loadBalancer.getId(), cipherString);
+            LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
+        } catch (EntityNotFoundException e) {
+            LOG.error("there was a error setting ssl termination ciphers in zxtm adapter for load balancer " + loadBalancer.getId());
+
+            //TODO: handle errors better...
+            throw new ZxtmRollBackException("there was a error setting ssl termination ciphers in zxtm adapter for load balancer " + loadBalancer.getId(), e);
         }
     }
 
