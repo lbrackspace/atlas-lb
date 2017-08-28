@@ -111,8 +111,7 @@ public class ManagementResource extends ManagementDependencyProvider {
 
     @GET
     @Path("ciphers")
-    public Response getGlobalCiphers() {
-        Ciphers ciphers = new Ciphers();
+    public Response getGlobalCiphers() {       
         String cipherList;
         try {
             cipherList = reverseProxyLoadBalancerService.getSsl3Ciphers();
@@ -121,7 +120,7 @@ public class ManagementResource extends ManagementDependencyProvider {
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, "", "");
         }
-        ciphers.setCipherList(cipherList);
+        Ciphers ciphers = dozerMapper.map(cipherList, Ciphers.class);
         Response wtf = Response.status(200).entity(ciphers).build();
         return wtf;
     }

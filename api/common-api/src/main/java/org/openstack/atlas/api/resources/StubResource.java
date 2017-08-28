@@ -40,6 +40,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Cipher;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Ciphers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolName;
@@ -65,6 +67,13 @@ public class StubResource extends CommonDependencyProvider {
         link.setRel("someOtherRel");
         links.add(link);
         return Response.status(200).entity(loadbalancers).build();
+    }
+
+    @GET
+    @Path("ciphers")
+    public Response stubCiphersList(){
+        Ciphers ciphers = dozerMapper.map("NES,AES,ZES,DES",Ciphers.class);
+        return Response.status(200).entity(ciphers).build();
     }
 
     @GET

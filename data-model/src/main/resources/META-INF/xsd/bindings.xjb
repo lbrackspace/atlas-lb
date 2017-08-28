@@ -124,6 +124,12 @@
         <bindings scd="~tns:certificateMapping">
             <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMapping"/>
         </bindings>
+        <bindings scd="~tns:ciphers">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Ciphers"/>
+        </bindings>
+        <bindings scd="~tns:cipher">
+            <class ref="org.openstack.atlas.docs.loadbalancers.api.v1.Cipher"/>
+        </bindings>
     </bindings>
 </bindings>
 

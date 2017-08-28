@@ -136,8 +136,8 @@ public class SslTerminationResource extends CommonDependencyProvider {
                 }
             }
             //Convert the list into JAXB pojo Ciphers.java
-            Ciphers supportedCiphers = new Ciphers();
-            supportedCiphers.setCipherList(cipherList);
+            Ciphers supportedCiphers = dozerMapper.map(cipherList, Ciphers.class);
+            //supportedCiphers.setCipherList(cipherList);
             return Response.status(Response.Status.OK).entity(supportedCiphers).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
