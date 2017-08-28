@@ -445,7 +445,14 @@
 
     <xsd:element name="ciphers" type="tns:ciphers"/>
     <xsd:complexType name="ciphers">
-        <xsd:attribute name="cipherList" type="xsd:string"/>
+        <xsd:sequence>
+            <xsd:element name="cipher" type="tns:cipher" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="cipher" type="tns:cipher"/>
+    <xsd:complexType name="cipher">
+        <xsd:attribute name="name" type="xsd:string"/>
     </xsd:complexType>
 
     <xsd:element name="certificateMappings" type="tns:certificateMappings"/>
