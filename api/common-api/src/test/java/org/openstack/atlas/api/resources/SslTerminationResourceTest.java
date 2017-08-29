@@ -1,48 +1,114 @@
 package org.openstack.atlas.api.resources;
 
-import junit.framework.Assert;
+import org.dozer.DozerBeanMapper;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.Matchers;
 import org.openstack.atlas.api.integration.AsyncService;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
-import org.openstack.atlas.service.domain.operations.OperationResponse;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
+import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.services.SslTerminationService;
 
 import javax.ws.rs.core.Response;
 
-import static org.mockito.Mockito.mock;
+import java.rmi.RemoteException;
 
-@Ignore
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.*;
+
 @RunWith(Enclosed.class)
 public class SslTerminationResourceTest {
 
     public static class createSsl {
 
-        private AsyncService esbService;
+        private AsyncService asyncService;
+        private DozerBeanMapper dozerBeanMapper;
+        private Response response;
+        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private SslTerminationResource sslTermResource;
-        private OperationResponse operationResponse;
-        private SslTermination sslTermination;
+        private SslTerminationService sslTerminationService;
 
         @Before
-        public void setUp() {
+        public void standUp() {
+            dozerBeanMapper = mock(DozerBeanMapper.class);
+            sslTerminationService = mock(SslTerminationService.class);
+            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
+            asyncService = mock(AsyncService.class);
             sslTermResource = new SslTerminationResource();
-            esbService = mock(AsyncService.class);
-            sslTermResource.setAsyncService(esbService);
-            sslTermResource.setId(12);
-            sslTermResource.setAccountId(31337);
-            sslTermResource.setLoadBalancerId(32);
-            operationResponse = new OperationResponse();
-            operationResponse.setExecutedOkay(true);
+            sslTermResource.setId(1);
+            sslTermResource.setAccountId(1234);
+            sslTermResource.setSslTerminationService(sslTerminationService);
+            sslTermResource.setAsyncService(asyncService);
+            sslTermResource.setDozerMapper(dozerBeanMapper);
+            sslTermResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
+
         }
 
         @Test
-        public void shouldReturn500WhenExecutedOkayisFalse() throws Exception {
-            operationResponse.setExecutedOkay(false);
-            Response resp = sslTermResource.createSsl(null);
-            Assert.assertEquals(500, resp.getStatus());
+        public void shouldReturnA200OnSuccess() throws Exception {
+            when(sslTerminationService.getSslTermination(anyInt(), anyInt())).thenReturn(null);
+            response = sslTermResource.getSsl();
+            org.junit.Assert.assertEquals((String) response.getEntity(), 200, response.getStatus());
         }
+
+        @Test
+        public void shouldReturnA404WhenEntityNotFoundIsThrown() throws Exception {
+            when(sslTerminationService.getSslTermination(anyInt(), anyInt())).thenReturn(null);
+            doThrow(new EntityNotFoundException("Exception")).when(sslTerminationService).getSslTermination(anyInt(), anyInt());
+            response = sslTermResource.getSsl();
+            org.junit.Assert.assertEquals(404, response.getStatus());
+        }
+
+        // Ciphers Tests
+
+        @Test
+        public void shouldReturnA200WhenReturningEmptyCiphersList() throws Exception {
+            when(sslTerminationService.getSslTermination(anyInt(), anyInt())).thenReturn(null);
+            response = sslTermResource.retrieveSupportedCiphers();
+            org.junit.Assert.assertEquals(200, response.getStatus());
+        }
+
+        @Test
+        public void shouldReturnA200WhenReturningDefaultCiphersList() throws Exception {
+            SslTermination sslTerm = new SslTermination();
+            when(sslTerminationService.getSslTermination(anyInt(), anyInt())).thenReturn(sslTerm);
+            doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerService).getSsl3Ciphers();
+            response = sslTermResource.retrieveSupportedCiphers();
+            org.junit.Assert.assertEquals(200, response.getStatus());
+        }
+
+        @Test
+        public void shouldReturnA200WhenReturningDefinedCiphersList() throws Exception {
+            SslTermination sslTerm = new SslTermination();
+            sslTerm.setCipherList("a,b,c,d,3des");
+            when(sslTerminationService.getSslTermination(anyInt(), anyInt())).thenReturn(sslTerm);
+            response = sslTermResource.retrieveSupportedCiphers();
+            org.junit.Assert.assertEquals(200, response.getStatus());
+        }
+
+        @Test
+        public void shouldReturnA500WhenReturningDefaultCiphersListFails() throws Exception {
+            SslTermination sslTerm = new SslTermination();
+            when(sslTerminationService.getSslTermination(anyInt(), anyInt())).thenReturn(sslTerm);
+            doThrow(new RemoteException("Exception")).when(reverseProxyLoadBalancerService).getSsl3Ciphers();
+            response = sslTermResource.retrieveSupportedCiphers();
+            org.junit.Assert.assertEquals(500, response.getStatus());
+        }
+
+        @Test
+        public void shouldReturnA404WhenReturningDefaultCiphersListFails() throws Exception {
+            SslTermination sslTerm = new SslTermination();
+            when(sslTerminationService.getSslTermination(anyInt(), anyInt())).thenReturn(sslTerm);
+            doThrow(new EntityNotFoundException("Exception")).when(sslTerminationService).getSslTermination(anyInt(), anyInt());
+            response = sslTermResource.retrieveSupportedCiphers();
+            org.junit.Assert.assertEquals(404, response.getStatus());
+        }
+
+        //TODO: Moar Tests
     }
 }
 

@@ -31,7 +31,7 @@ public class DomainToDataModelSslTerminationTest {
 
         @Test
         public void shouldMapCipherStringNamesToCiphersType() {
-            String cipherNames = "ZES,DES,AES,NES";
+            String cipherNames = "ZES ,  DES  ,  AES   ,      NES";
             Ciphers ciphers = mapper.map(cipherNames, Ciphers.class);
             Assert.assertEquals(ciphers.getCiphers().get(0).getName(), "AES");
             Assert.assertEquals(ciphers.getCiphers().get(1).getName(), "DES");

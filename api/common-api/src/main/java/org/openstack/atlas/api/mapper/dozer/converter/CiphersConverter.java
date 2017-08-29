@@ -55,7 +55,7 @@ public class CiphersConverter implements CustomConverter {
         Collections.sort(cipherNames);
         n = cipherNames.size();
         for (i = 0; i < n - 1; i++) {
-            sb.append(cipherNames.get(i)).append(",");
+            sb.append(cipherNames.get(i).trim()).append(",");
         }
         sb.append(cipherNames.get(n - 1));
         out = sb.toString();
@@ -65,7 +65,7 @@ public class CiphersConverter implements CustomConverter {
     List<String> convertCommaSeperatedList2ListOfStrings(String cos) {
         List<String> out = new ArrayList<String>();
         for (String value : cos.split(",")) {
-            out.add(value);
+            out.add(value.trim());
         }
         Collections.sort(out);
         return out;
