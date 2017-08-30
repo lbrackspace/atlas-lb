@@ -37,6 +37,10 @@
                 <class-a>java.lang.Integer</class-a>
                 <class-b>org.openstack.atlas.docs.loadbalancers.api.management.v1.Account</class-b>
             </converter>
+            <converter type="org.openstack.atlas.api.mapper.dozer.converter.CiphersConverter">
+                <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.Ciphers</class-a>
+                <class-b>java.lang.String</class-b>
+            </converter>
         </custom-converters>
     </configuration>
 
