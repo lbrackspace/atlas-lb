@@ -41,7 +41,7 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
 
                     @Override
                     public VerifierResult verify(SslTermination ssl) {
-                        if ((ssl.getCertificate() == null || ssl.getPrivatekey() == null || ssl.getIntermediateCertificate() == null) && ((ssl.isEnabled() != null && (ssl.isSecureTrafficOnly() != null) && ssl.getIntermediateCertificate() != null && ssl.getSecurePort() != null))) {
+                        if ((ssl.getCertificate() == null || ssl.getPrivatekey() == null || ssl.getIntermediateCertificate() == null) && ((ssl.isEnabled() != null && (ssl.isSecureTrafficOnly() != null) && ssl.getIntermediateCertificate() != null && ssl.getSecurePort() != null && ssl.getCipherProfile() !=null))) {
                             return new VerifierResult(false);
                         }
                         return new VerifierResult(true);
@@ -53,7 +53,7 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
 
                     @Override
                     public VerifierResult verify(SslTermination ssl) {
-                        if ((ssl.getCertificate() == null && ssl.getPrivatekey() == null && ssl.getIntermediateCertificate() == null) && (ssl.isEnabled() == null && (ssl.isSecureTrafficOnly() == null) && !hasSecurityProtocols(ssl) && ssl.getIntermediateCertificate() == null && ssl.getSecurePort() == null)) {
+                        if ((ssl.getCertificate() == null && ssl.getPrivatekey() == null && ssl.getIntermediateCertificate() == null) && (ssl.isEnabled() == null && (ssl.isSecureTrafficOnly() == null) && !hasSecurityProtocols(ssl) && ssl.getIntermediateCertificate() == null && ssl.getSecurePort() == null && ssl.getCipherProfile() ==null)) {
                             return new VerifierResult(false);
                         }
                         return new VerifierResult(true);
@@ -65,7 +65,7 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
 
                     @Override
                     public VerifierResult verify(SslTermination ssl) {
-                        if ((ssl.getCertificate() == null || ssl.getPrivatekey() == null && ssl.getIntermediateCertificate() == null) && (ssl.isEnabled() == null && (ssl.isSecureTrafficOnly() == null) && ssl.getSecurePort() == null && !hasSecurityProtocols(ssl))) {
+                        if ((ssl.getCertificate() == null || ssl.getPrivatekey() == null && ssl.getIntermediateCertificate() == null) && (ssl.isEnabled() == null && (ssl.isSecureTrafficOnly() == null) && ssl.getSecurePort() == null && !hasSecurityProtocols(ssl) && ssl.getCipherProfile() ==null)) {
                             return new VerifierResult(false);
                         }
                         return new VerifierResult(true);
