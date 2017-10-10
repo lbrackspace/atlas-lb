@@ -13,17 +13,22 @@ import java.util.Set;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERGeneralizedTime;
+import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AttributeCertificate;
 import org.bouncycastle.asn1.x509.AttributeCertificateInfo;
+import org.bouncycastle.asn1.x509.Certificate;
 import org.bouncycastle.asn1.x509.CertificateList;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.TBSCertList;
-import org.bouncycastle.asn1.x509.TBSCertificateStructure;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.TBSCertificate;
 import org.bouncycastle.operator.ContentSigner;
 
 class CertUtils
@@ -31,7 +36,19 @@ class CertUtils
     private static Set EMPTY_SET = Collections.unmodifiableSet(new HashSet());
     private static List EMPTY_LIST = Collections.unmodifiableList(new ArrayList());
 
-    static X509CertificateHolder generateFullCert(ContentSigner signer, TBSCertificateStructure tbsCert)
+    static ASN1Primitive parseNonEmptyASN1(byte[] encoding)
+        throws IOException
+    {
+        ASN1Primitive p = ASN1Primitive.fromByteArray(encoding);
+
+        if (p == null)
+        {
+            throw new IOException("no content found");
+        }
+        return p;
+    }
+
+    static X509CertificateHolder generateFullCert(ContentSigner signer, TBSCertificate tbsCert)
     {
         try
         {
@@ -71,15 +88,16 @@ class CertUtils
         throws IOException
     {
         OutputStream sOut = signer.getOutputStream();
+        DEROutputStream dOut = new DEROutputStream(sOut);
 
-        sOut.write(tbsObj.getDEREncoded());
+        dOut.writeObject(tbsObj);
 
         sOut.close();
 
         return signer.getSignature();
     }
 
-    private static X509CertificateStructure generateStructure(TBSCertificateStructure tbsCert, AlgorithmIdentifier sigAlgId, byte[] signature)
+    private static Certificate generateStructure(TBSCertificate tbsCert, AlgorithmIdentifier sigAlgId, byte[] signature)
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 
@@ -87,7 +105,7 @@ class CertUtils
         v.add(sigAlgId);
         v.add(new DERBitString(signature));
 
-        return X509CertificateStructure.getInstance(new DERSequence(v));
+        return Certificate.getInstance(new DERSequence(v));
     }
 
     private static AttributeCertificate generateAttrStructure(AttributeCertificateInfo attrInfo, AlgorithmIdentifier sigAlgId, byte[] signature)
@@ -112,7 +130,7 @@ class CertUtils
         return CertificateList.getInstance(new DERSequence(v));
     }
 
-    static Set getCriticalExtensionOIDs(X509Extensions extensions)
+    static Set getCriticalExtensionOIDs(Extensions extensions)
     {
         if (extensions == null)
         {
@@ -122,7 +140,7 @@ class CertUtils
         return Collections.unmodifiableSet(new HashSet(Arrays.asList(extensions.getCriticalExtensionOIDs())));
     }
 
-    static Set getNonCriticalExtensionOIDs(X509Extensions extensions)
+    static Set getNonCriticalExtensionOIDs(Extensions extensions)
     {
         if (extensions == null)
         {
@@ -133,7 +151,7 @@ class CertUtils
         return Collections.unmodifiableSet(new HashSet(Arrays.asList(extensions.getNonCriticalExtensionOIDs())));
     }
 
-    static List getExtensionOIDs(X509Extensions extensions)
+    static List getExtensionOIDs(Extensions extensions)
     {
         if (extensions == null)
         {
@@ -141,6 +159,19 @@ class CertUtils
         }
 
         return Collections.unmodifiableList(Arrays.asList(extensions.getExtensionOIDs()));
+    }
+
+    static void addExtension(ExtensionsGenerator extGenerator, ASN1ObjectIdentifier oid, boolean isCritical, ASN1Encodable value)
+        throws CertIOException
+    {
+        try
+        {
+            extGenerator.addExtension(oid, isCritical, value);
+        }
+        catch (IOException e)
+        {
+            throw new CertIOException("cannot encode extension: " + e.getMessage(), e);
+        }
     }
 
     static DERBitString booleanToBitString(boolean[] id)
@@ -182,7 +213,7 @@ class CertUtils
         return null;
     }
 
-    static Date recoverDate(DERGeneralizedTime time)
+    static Date recoverDate(ASN1GeneralizedTime time)
     {
         try
         {
@@ -192,5 +223,35 @@ class CertUtils
         {
             throw new IllegalStateException("unable to recover date: " + e.getMessage());
         }
+    }
+
+    static boolean isAlgIdEqual(AlgorithmIdentifier id1, AlgorithmIdentifier id2)
+    {
+        if (!id1.getAlgorithm().equals(id2.getAlgorithm()))
+        {
+            return false;
+        }
+
+        if (id1.getParameters() == null)
+        {
+            if (id2.getParameters() != null && !id2.getParameters().equals(DERNull.INSTANCE))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        if (id2.getParameters() == null)
+        {
+            if (id1.getParameters() != null && !id1.getParameters().equals(DERNull.INSTANCE))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        return id1.getParameters().equals(id2.getParameters());
     }
 }

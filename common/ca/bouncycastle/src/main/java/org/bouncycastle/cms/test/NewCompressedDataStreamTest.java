@@ -8,7 +8,6 @@ import java.util.Random;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import org.bouncycastle.cms.CMSCompressedDataParser;
 import org.bouncycastle.cms.CMSCompressedDataStreamGenerator;
 import org.bouncycastle.cms.jcajce.ZlibCompressor;

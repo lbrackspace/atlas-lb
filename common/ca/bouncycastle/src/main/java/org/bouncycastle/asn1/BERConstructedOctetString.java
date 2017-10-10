@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Vector;
 
+/**
+ * @deprecated use BEROctetString
+ */
 public class BERConstructedOctetString
-    extends DEROctetString
+    extends BEROctetString
 {
     private static final int MAX_LENGTH = 1000;
 
@@ -59,15 +62,27 @@ public class BERConstructedOctetString
     }
 
     public BERConstructedOctetString(
-        DERObject  obj)
+        ASN1Primitive  obj)
     {
-        super(obj);
+        super(toByteArray(obj));
+    }
+
+    private static byte[] toByteArray(ASN1Primitive obj)
+    {
+        try
+        {
+            return obj.getEncoded();
+        }
+        catch (IOException e)
+        {
+            throw new IllegalArgumentException("Unable to encode object");
+        }
     }
 
     public BERConstructedOctetString(
-        DEREncodable  obj)
+        ASN1Encodable  obj)
     {
-        super(obj.getDERObject());
+        this(obj.toASN1Primitive());
     }
 
     public byte[] getOctets()
@@ -114,35 +129,7 @@ public class BERConstructedOctetString
          return vec; 
     }
 
-    public void encode(
-        DEROutputStream out)
-        throws IOException
-    {
-        if (out instanceof ASN1OutputStream || out instanceof BEROutputStream)
-        {
-            out.write(CONSTRUCTED | OCTET_STRING);
-
-            out.write(0x80);
-
-            //
-            // write out the octet array
-            //
-            Enumeration e = getObjects();
-            while (e.hasMoreElements())
-            {
-                out.writeObject(e.nextElement());
-            }
-
-            out.write(0x00);
-            out.write(0x00);
-        }
-        else
-        {
-            super.encode(out);
-        }
-    }
-
-    public static BERConstructedOctetString fromSequence(ASN1Sequence seq)
+    public static BEROctetString fromSequence(ASN1Sequence seq)
     {
         Vector      v = new Vector();
         Enumeration e = seq.getObjects();

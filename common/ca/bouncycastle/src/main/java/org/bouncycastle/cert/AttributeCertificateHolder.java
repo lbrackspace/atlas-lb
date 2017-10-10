@@ -5,10 +5,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -54,20 +53,36 @@ public class AttributeCertificateHolder
         holder = Holder.getInstance(seq);
     }
 
+    /**
+     * Create a holder using the baseCertificateID element.
+     *
+     * @param issuerName name of associated certificate's issuer.
+     * @param serialNumber serial number of associated certificate.
+     */
     public AttributeCertificateHolder(X500Name issuerName,
         BigInteger serialNumber)
     {
         holder = new Holder(new IssuerSerial(
-            new GeneralNames(new DERSequence(new GeneralName(issuerName))),
-            new DERInteger(serialNumber)));
+            generateGeneralNames(issuerName),
+            new ASN1Integer(serialNumber)));
     }
 
+    /**
+     * Create a holder using the baseCertificateID option based on the passed in associated certificate,
+     *
+     * @param cert the certificate to be associated with this holder.
+     */
     public AttributeCertificateHolder(X509CertificateHolder cert)
     {
         holder = new Holder(new IssuerSerial(generateGeneralNames(cert.getIssuer()),
-            new DERInteger(cert.getSerialNumber())));
+            new ASN1Integer(cert.getSerialNumber())));
     }
 
+    /**
+     * Create a holder using the entityName option based on the passed in principal.
+     *
+     * @param principal the entityName to be associated with the attribute certificate.
+     */
     public AttributeCertificateHolder(X500Name principal)
     {
         holder = new Holder(generateGeneralNames(principal));
@@ -97,7 +112,7 @@ public class AttributeCertificateHolder
      * @param objectDigest The hash value.
      */
     public AttributeCertificateHolder(int digestedObjectType,
-        String digestAlgorithm, String otherObjectTypeID, byte[] objectDigest)
+        ASN1ObjectIdentifier digestAlgorithm, ASN1ObjectIdentifier otherObjectTypeID, byte[] objectDigest)
     {
         holder = new Holder(new ObjectDigestInfo(digestedObjectType,
             otherObjectTypeID, new AlgorithmIdentifier(digestAlgorithm), Arrays
@@ -173,7 +188,7 @@ public class AttributeCertificateHolder
 
     private GeneralNames generateGeneralNames(X500Name principal)
     {
-        return new GeneralNames(new DERSequence(new GeneralName(principal)));
+        return new GeneralNames(new GeneralName(principal));
     }
 
     private boolean matchesDN(X500Name subject, GeneralNames targets)
@@ -262,7 +277,7 @@ public class AttributeCertificateHolder
 
     public Object clone()
     {
-        return new AttributeCertificateHolder((ASN1Sequence)holder.toASN1Object());
+        return new AttributeCertificateHolder((ASN1Sequence)holder.toASN1Primitive());
     }
 
     public boolean match(Object obj)

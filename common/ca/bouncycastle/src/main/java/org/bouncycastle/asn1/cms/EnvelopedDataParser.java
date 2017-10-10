@@ -1,15 +1,17 @@
 package org.bouncycastle.asn1.cms;
 
+import java.io.IOException;
+
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1SequenceParser;
 import org.bouncycastle.asn1.ASN1SetParser;
 import org.bouncycastle.asn1.ASN1TaggedObjectParser;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERTags;
-
-import java.io.IOException;
+import org.bouncycastle.asn1.BERTags;
 
 /** 
+ * Parser of <a href="http://tools.ietf.org/html/rfc5652#section-6.1">RFC 5652</a> {@link EnvelopedData} object.
+ * <p>
  * <pre>
  * EnvelopedData ::= SEQUENCE {
  *     version CMSVersion,
@@ -23,8 +25,8 @@ import java.io.IOException;
 public class EnvelopedDataParser
 {
     private ASN1SequenceParser _seq;
-    private DERInteger         _version;
-    private DEREncodable       _nextObject;
+    private ASN1Integer        _version;
+    private ASN1Encodable      _nextObject;
     private boolean            _originatorInfoCalled;
     
     public EnvelopedDataParser(
@@ -32,10 +34,10 @@ public class EnvelopedDataParser
         throws IOException
     {
         this._seq = seq;
-        this._version = (DERInteger)seq.readObject();
+        this._version = ASN1Integer.getInstance(seq.readObject());
     }
 
-    public DERInteger getVersion()
+    public ASN1Integer getVersion()
     {
         return _version;
     }
@@ -52,9 +54,9 @@ public class EnvelopedDataParser
         
         if (_nextObject instanceof ASN1TaggedObjectParser && ((ASN1TaggedObjectParser)_nextObject).getTagNo() == 0)
         {
-            ASN1SequenceParser originatorInfo = (ASN1SequenceParser) ((ASN1TaggedObjectParser)_nextObject).getObjectParser(DERTags.SEQUENCE, false);
+            ASN1SequenceParser originatorInfo = (ASN1SequenceParser) ((ASN1TaggedObjectParser)_nextObject).getObjectParser(BERTags.SEQUENCE, false);
             _nextObject = null;
-            return OriginatorInfo.getInstance(originatorInfo.getDERObject());
+            return OriginatorInfo.getInstance(originatorInfo.toASN1Primitive());
         }
         
         return null;
@@ -108,9 +110,9 @@ public class EnvelopedDataParser
         
         if (_nextObject != null)
         {
-            DEREncodable o = _nextObject;
+            ASN1Encodable o = _nextObject;
             _nextObject = null;
-            return (ASN1SetParser)((ASN1TaggedObjectParser)o).getObjectParser(DERTags.SET, false);
+            return (ASN1SetParser)((ASN1TaggedObjectParser)o).getObjectParser(BERTags.SET, false);
         }
         
         return null;

@@ -1,24 +1,17 @@
 package org.bouncycastle.tsp;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
@@ -27,21 +20,23 @@ import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.rosstandart.RosstandartObjectIdentifiers;
 import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.operator.DigestCalculator;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.Integers;
 
 public class TSPUtil
 {
-    private static Set EMPTY_SET = Collections.unmodifiableSet(new HashSet());
     private static List EMPTY_LIST = Collections.unmodifiableList(new ArrayList());
 
     private static final Map digestLengths = new HashMap();
@@ -49,16 +44,18 @@ public class TSPUtil
 
     static
     {
-        digestLengths.put(PKCSObjectIdentifiers.md5.getId(), new Integer(16));
-        digestLengths.put(OIWObjectIdentifiers.idSHA1.getId(), new Integer(20));
-        digestLengths.put(NISTObjectIdentifiers.id_sha224.getId(), new Integer(28));
-        digestLengths.put(NISTObjectIdentifiers.id_sha256.getId(), new Integer(32));
-        digestLengths.put(NISTObjectIdentifiers.id_sha384.getId(), new Integer(48));
-        digestLengths.put(NISTObjectIdentifiers.id_sha512.getId(), new Integer(64));
-        digestLengths.put(TeleTrusTObjectIdentifiers.ripemd128.getId(), new Integer(16));
-        digestLengths.put(TeleTrusTObjectIdentifiers.ripemd160.getId(), new Integer(20));
-        digestLengths.put(TeleTrusTObjectIdentifiers.ripemd256.getId(), new Integer(32));
-        digestLengths.put(CryptoProObjectIdentifiers.gostR3411.getId(), new Integer(32));
+        digestLengths.put(PKCSObjectIdentifiers.md5.getId(), Integers.valueOf(16));
+        digestLengths.put(OIWObjectIdentifiers.idSHA1.getId(), Integers.valueOf(20));
+        digestLengths.put(NISTObjectIdentifiers.id_sha224.getId(), Integers.valueOf(28));
+        digestLengths.put(NISTObjectIdentifiers.id_sha256.getId(), Integers.valueOf(32));
+        digestLengths.put(NISTObjectIdentifiers.id_sha384.getId(), Integers.valueOf(48));
+        digestLengths.put(NISTObjectIdentifiers.id_sha512.getId(), Integers.valueOf(64));
+        digestLengths.put(TeleTrusTObjectIdentifiers.ripemd128.getId(), Integers.valueOf(16));
+        digestLengths.put(TeleTrusTObjectIdentifiers.ripemd160.getId(), Integers.valueOf(20));
+        digestLengths.put(TeleTrusTObjectIdentifiers.ripemd256.getId(), Integers.valueOf(32));
+        digestLengths.put(CryptoProObjectIdentifiers.gostR3411.getId(), Integers.valueOf(32));
+        digestLengths.put(RosstandartObjectIdentifiers.id_tc26_gost_3411_12_256.getId(), Integers.valueOf(32));
+        digestLengths.put(RosstandartObjectIdentifiers.id_tc26_gost_3411_12_512.getId(), Integers.valueOf(64));
 
         digestNames.put(PKCSObjectIdentifiers.md5.getId(), "MD5");
         digestNames.put(OIWObjectIdentifiers.idSHA1.getId(), "SHA1");
@@ -75,64 +72,8 @@ public class TSPUtil
         digestNames.put(TeleTrusTObjectIdentifiers.ripemd160.getId(), "RIPEMD160");
         digestNames.put(TeleTrusTObjectIdentifiers.ripemd256.getId(), "RIPEMD256");
         digestNames.put(CryptoProObjectIdentifiers.gostR3411.getId(), "GOST3411");
-    }
-
-    /**
-     * Fetches the signature time-stamp attributes from a SignerInformation object.
-     * Checks that the MessageImprint for each time-stamp matches the signature field.
-     * (see RFC 3161 Appendix A).
-     * 
-     * @param signerInfo a SignerInformation to search for time-stamps
-     * @param provider an optional provider to use to create MessageDigest instances
-     * @return a collection of TimeStampToken objects
-     * @throws TSPValidationException
-     * @deprecated use getSignatureTimestamps(SignerInformation, DigestCalculatorProvider)
-     */
-    public static Collection getSignatureTimestamps(SignerInformation signerInfo, Provider provider)
-        throws TSPValidationException
-    {
-        List timestamps = new ArrayList();
-
-        AttributeTable unsignedAttrs = signerInfo.getUnsignedAttributes();
-        if (unsignedAttrs != null)
-        {
-            ASN1EncodableVector allTSAttrs = unsignedAttrs.getAll(
-                PKCSObjectIdentifiers.id_aa_signatureTimeStampToken);
-            for (int i = 0; i < allTSAttrs.size(); ++i)
-            {
-                Attribute tsAttr = (Attribute)allTSAttrs.get(i);            
-                ASN1Set tsAttrValues = tsAttr.getAttrValues();
-                for (int j = 0; j < tsAttrValues.size(); ++j)
-                {
-                    try
-                    {
-                        ContentInfo contentInfo = ContentInfo.getInstance(tsAttrValues.getObjectAt(j).getDERObject());
-                        TimeStampToken timeStampToken = new TimeStampToken(contentInfo);
-                        TimeStampTokenInfo tstInfo = timeStampToken.getTimeStampInfo();
-
-                        MessageDigest digest = createDigestInstance(tstInfo.getMessageImprintAlgOID(), provider);
-                        byte[] expectedDigest = digest.digest(signerInfo.getSignature());
-
-                        if (!Arrays.constantTimeAreEqual(expectedDigest, tstInfo.getMessageImprintDigest()))
-                        {
-                            throw new TSPValidationException("Incorrect digest in message imprint");
-                        }
-
-                        timestamps.add(timeStampToken);
-                    }
-                    catch (NoSuchAlgorithmException e)
-                    {
-                        throw new TSPValidationException("Unknown hash algorithm specified in timestamp");
-                    }
-                    catch (Exception e)
-                    {
-                        throw new TSPValidationException("Timestamp could not be parsed");
-                    }
-                }
-            }
-        }
-
-        return timestamps;
+        digestNames.put(RosstandartObjectIdentifiers.id_tc26_gost_3411_12_256.getId(), "GOST3411-2012-256");
+        digestNames.put(RosstandartObjectIdentifiers.id_tc26_gost_3411_12_512.getId(), "GOST3411-2012-512");
     }
 
      /**
@@ -163,7 +104,7 @@ public class TSPUtil
                 {
                     try
                     {
-                        ContentInfo contentInfo = ContentInfo.getInstance(tsAttrValues.getObjectAt(j).getDERObject());
+                        ContentInfo contentInfo = ContentInfo.getInstance(tsAttrValues.getObjectAt(j));
                         TimeStampToken timeStampToken = new TimeStampToken(contentInfo);
                         TimeStampTokenInfo tstInfo = timeStampToken.getTimeStampInfo();
 
@@ -202,67 +143,20 @@ public class TSPUtil
      * Validate the passed in certificate as being of the correct type to be used
      * for time stamping. To be valid it must have an ExtendedKeyUsage extension
      * which has a key purpose identifier of id-kp-timeStamping.
-     * 
-     * @param cert the certificate of interest.
-     * @throws TSPValidationException if the certicate fails on one of the check points.
-     */
-    public static void validateCertificate(
-        X509Certificate cert)
-        throws TSPValidationException
-    {
-        if (cert.getVersion() != 3)
-        {
-            throw new IllegalArgumentException("Certificate must have an ExtendedKeyUsage extension.");
-        }
-        
-        byte[]  ext = cert.getExtensionValue(X509Extensions.ExtendedKeyUsage.getId());
-        if (ext == null)
-        {
-            throw new TSPValidationException("Certificate must have an ExtendedKeyUsage extension.");
-        }
-        
-        if (!cert.getCriticalExtensionOIDs().contains(X509Extensions.ExtendedKeyUsage.getId()))
-        {
-            throw new TSPValidationException("Certificate must have an ExtendedKeyUsage extension marked as critical.");
-        }
-
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(ext));
-
-        try
-        {
-            aIn = new ASN1InputStream(new ByteArrayInputStream(((ASN1OctetString)aIn.readObject()).getOctets()));
-            
-            ExtendedKeyUsage    extKey = ExtendedKeyUsage.getInstance(aIn.readObject());
-            
-            if (!extKey.hasKeyPurposeId(KeyPurposeId.id_kp_timeStamping) || extKey.size() != 1)
-            {
-                throw new TSPValidationException("ExtendedKeyUsage not solely time stamping.");
-            }
-        }
-        catch (IOException e)
-        {
-            throw new TSPValidationException("cannot process ExtendedKeyUsage extension");
-        }
-    }
-
-    /**
-     * Validate the passed in certificate as being of the correct type to be used
-     * for time stamping. To be valid it must have an ExtendedKeyUsage extension
-     * which has a key purpose identifier of id-kp-timeStamping.
      *
      * @param cert the certificate of interest.
-     * @throws TSPValidationException if the certicate fails on one of the check points.
+     * @throws TSPValidationException if the certificate fails on one of the check points.
      */
     public static void validateCertificate(
         X509CertificateHolder cert)
         throws TSPValidationException
     {
-        if (cert.toASN1Structure().getVersion() != 3)
+        if (cert.toASN1Structure().getVersionNumber() != 3)
         {
             throw new IllegalArgumentException("Certificate must have an ExtendedKeyUsage extension.");
         }
 
-        X509Extension  ext = cert.getExtension(X509Extension.extendedKeyUsage);
+        Extension ext = cert.getExtension(Extension.extendedKeyUsage);
         if (ext == null)
         {
             throw new TSPValidationException("Certificate must have an ExtendedKeyUsage extension.");
@@ -273,29 +167,12 @@ public class TSPUtil
             throw new TSPValidationException("Certificate must have an ExtendedKeyUsage extension marked as critical.");
         }
 
-        ExtendedKeyUsage    extKey = ExtendedKeyUsage.getInstance(X509Extension.convertValueToObject(ext));
+        ExtendedKeyUsage    extKey = ExtendedKeyUsage.getInstance(ext.getParsedValue());
 
         if (!extKey.hasKeyPurposeId(KeyPurposeId.id_kp_timeStamping) || extKey.size() != 1)
         {
             throw new TSPValidationException("ExtendedKeyUsage not solely time stamping.");
         }
-    }
-
-    /*
-     * Return the digest algorithm using one of the standard JCA string
-     * representations rather than the algorithm identifier (if possible).
-     */
-    static String getDigestAlgName(
-        String digestAlgOID)
-    {
-        String digestName = (String)digestNames.get(digestAlgOID);
-
-        if (digestName != null)
-        {
-            return digestName;
-        }
-
-        return digestAlgOID;
     }
 
     static int getDigestLength(
@@ -312,48 +189,7 @@ public class TSPUtil
         throw new TSPException("digest algorithm cannot be found.");
     }
 
-    static MessageDigest createDigestInstance(String digestAlgOID, Provider provider)
-        throws NoSuchAlgorithmException
-    {
-        String digestName = TSPUtil.getDigestAlgName(digestAlgOID);
-
-        if (provider != null)
-        {
-            try
-            {
-                return MessageDigest.getInstance(digestName, provider);
-            }
-            catch (NoSuchAlgorithmException e)
-            {
-                // Ignore
-            }
-        }
-
-        return MessageDigest.getInstance(digestName);
-    }
-
-        static Set getCriticalExtensionOIDs(X509Extensions extensions)
-    {
-        if (extensions == null)
-        {
-            return EMPTY_SET;
-        }
-
-        return Collections.unmodifiableSet(new HashSet(java.util.Arrays.asList(extensions.getCriticalExtensionOIDs())));
-    }
-
-    static Set getNonCriticalExtensionOIDs(X509Extensions extensions)
-    {
-        if (extensions == null)
-        {
-            return EMPTY_SET;
-        }
-
-        // TODO: should probably produce a set that imposes correct ordering
-        return Collections.unmodifiableSet(new HashSet(java.util.Arrays.asList(extensions.getNonCriticalExtensionOIDs())));
-    }
-
-    static List getExtensionOIDs(X509Extensions extensions)
+    static List getExtensionOIDs(Extensions extensions)
     {
         if (extensions == null)
         {
@@ -361,5 +197,18 @@ public class TSPUtil
         }
 
         return Collections.unmodifiableList(java.util.Arrays.asList(extensions.getExtensionOIDs()));
+    }
+
+    static void addExtension(ExtensionsGenerator extGenerator, ASN1ObjectIdentifier oid, boolean isCritical, ASN1Encodable value)
+        throws TSPIOException
+    {
+        try
+        {
+            extGenerator.addExtension(oid, isCritical, value);
+        }
+        catch (IOException e)
+        {
+            throw new TSPIOException("cannot encode extension: " + e.getMessage(), e);
+        }
     }
 }

@@ -1,10 +1,15 @@
 package org.bouncycastle.jce;
 
-import java.io.*;
-import java.security.cert.*;
+import java.io.IOException;
+import java.security.cert.CRLException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
 
-import org.bouncycastle.asn1.*;
-import org.bouncycastle.asn1.x509.*;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.x509.TBSCertList;
+import org.bouncycastle.asn1.x509.TBSCertificateStructure;
+import org.bouncycastle.asn1.x509.X509Name;
 
 /**
  * a utility class that will extract X509Principal objects from X.509 certificates.
@@ -25,9 +30,9 @@ public class PrincipalUtil
         try
         {
             TBSCertificateStructure tbsCert = TBSCertificateStructure.getInstance(
-                    ASN1Object.fromByteArray(cert.getTBSCertificate()));
+                    ASN1Primitive.fromByteArray(cert.getTBSCertificate()));
 
-            return new X509Principal(tbsCert.getIssuer());
+            return new X509Principal(X509Name.getInstance(tbsCert.getIssuer()));
         }
         catch (IOException e)
         {
@@ -45,8 +50,8 @@ public class PrincipalUtil
         try
         {
             TBSCertificateStructure tbsCert = TBSCertificateStructure.getInstance(
-                    ASN1Object.fromByteArray(cert.getTBSCertificate()));
-            return new X509Principal(tbsCert.getSubject());
+                    ASN1Primitive.fromByteArray(cert.getTBSCertificate()));
+            return new X509Principal(X509Name.getInstance(tbsCert.getSubject()));
         }
         catch (IOException e)
         {
@@ -64,9 +69,9 @@ public class PrincipalUtil
         try
         {
             TBSCertList tbsCertList = TBSCertList.getInstance(
-                ASN1Object.fromByteArray(crl.getTBSCertList()));
+                ASN1Primitive.fromByteArray(crl.getTBSCertList()));
 
-            return new X509Principal(tbsCertList.getIssuer());
+            return new X509Principal(X509Name.getInstance(tbsCertList.getIssuer()));
         }
         catch (IOException e)
         {

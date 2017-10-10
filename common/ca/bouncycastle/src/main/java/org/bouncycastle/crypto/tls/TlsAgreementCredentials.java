@@ -4,7 +4,9 @@ import java.io.IOException;
 
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 
-public interface TlsAgreementCredentials extends TlsCredentials
+public interface TlsAgreementCredentials
+    extends TlsCredentials
 {
-    byte[] generateAgreement(AsymmetricKeyParameter serverPublicKey) throws IOException;
+    byte[] generateAgreement(AsymmetricKeyParameter peerPublicKey)
+        throws IOException;
 }

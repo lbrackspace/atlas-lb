@@ -1,17 +1,17 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 public class AttCertValidityPeriod
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    DERGeneralizedTime  notBeforeTime;
-    DERGeneralizedTime  notAfterTime;
+    ASN1GeneralizedTime  notBeforeTime;
+    ASN1GeneralizedTime  notAfterTime;
 
     public static AttCertValidityPeriod getInstance(
             Object  obj)
@@ -20,15 +20,15 @@ public class AttCertValidityPeriod
         {
             return (AttCertValidityPeriod)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new AttCertValidityPeriod((ASN1Sequence)obj);
+            return new AttCertValidityPeriod(ASN1Sequence.getInstance(obj));
         }
         
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
     
-    public AttCertValidityPeriod(
+    private AttCertValidityPeriod(
         ASN1Sequence    seq)
     {
         if (seq.size() != 2)
@@ -37,8 +37,8 @@ public class AttCertValidityPeriod
                     + seq.size());
         }
 
-        notBeforeTime = DERGeneralizedTime.getInstance(seq.getObjectAt(0));
-        notAfterTime = DERGeneralizedTime.getInstance(seq.getObjectAt(1));
+        notBeforeTime = ASN1GeneralizedTime.getInstance(seq.getObjectAt(0));
+        notAfterTime = ASN1GeneralizedTime.getInstance(seq.getObjectAt(1));
     }
 
     /**
@@ -46,19 +46,19 @@ public class AttCertValidityPeriod
      * @param notAfterTime
      */
     public AttCertValidityPeriod(
-        DERGeneralizedTime notBeforeTime,
-        DERGeneralizedTime notAfterTime)
+        ASN1GeneralizedTime notBeforeTime,
+        ASN1GeneralizedTime notAfterTime)
     {
         this.notBeforeTime = notBeforeTime;
         this.notAfterTime = notAfterTime;
     }
 
-    public DERGeneralizedTime getNotBeforeTime()
+    public ASN1GeneralizedTime getNotBeforeTime()
     {
         return notBeforeTime;
     }
 
-    public DERGeneralizedTime getNotAfterTime()
+    public ASN1GeneralizedTime getNotAfterTime()
     {
         return notAfterTime;
     }
@@ -72,7 +72,7 @@ public class AttCertValidityPeriod
      *  } 
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

@@ -1,16 +1,22 @@
 package org.bouncycastle.openpgp.test;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.SecureRandom;
 import java.security.Security;
 import java.util.Date;
 import java.util.Iterator;
 
 import javax.crypto.Cipher;
 
+import org.bouncycastle.bcpg.BCPGInputStream;
+import org.bouncycastle.bcpg.HashAlgorithmTags;
+import org.bouncycastle.bcpg.Packet;
+import org.bouncycastle.bcpg.SecretKeyPacket;
+import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
+import org.bouncycastle.bcpg.TrustPacket;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ElGamalParameterSpec;
 import org.bouncycastle.openpgp.PGPEncryptedData;
@@ -23,8 +29,22 @@ import org.bouncycastle.openpgp.PGPPublicKeyRing;
 import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
 import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
-import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
 import org.bouncycastle.openpgp.PGPSignature;
+import org.bouncycastle.openpgp.jcajce.JcaPGPPublicKeyRing;
+import org.bouncycastle.openpgp.jcajce.JcaPGPPublicKeyRingCollection;
+import org.bouncycastle.openpgp.jcajce.JcaPGPSecretKeyRingCollection;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculatorProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPPrivateKey;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyEncryptorBuilder;
+import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.test.SimpleTest;
@@ -663,37 +683,58 @@ public class PGPKeyRingTest
     byte[] pub6check = Base64.decode("62O9");
 
     //
-    // revoked sub key
+    // revoked master key
     //
     byte[] pub7 = Base64.decode(
-        "mQGiBEFOsIwRBADcjRx7nAs4RaWsQU6p8/ECLZD9sSeYc6CN6UDI96RKj0/hCzMs"
-      + "qlA0+9fzGZ7ZEJ34nuvDKlhKGC7co5eOiE0a9EijxgcrZU/LClZWa4YfyNg/ri6I"
-      + "yTyfOfrPQ33GNQt2iImDf3FKp7XKuY9nIxicGQEaW0kkuAmbV3oh0+9q8QCg/+fS"
-      + "epDEqEE/+nKONULGizKUjMED/RtL6RThRftZ9DOSdBytGYd48z35pca/qZ6HA36K"
-      + "PVQwi7V77VKQyKFLTOXPLnVyO85hyYB/Nv4DFHN+vcC7/49lfoyYMZlN+LarckHi"
-      + "NL154wmmzygB/KKysvWBLgkErEBCD0xBDd89iTQNlDtVQAWGORVffl6WWjOAkliG"
-      + "3dL6A/9A288HfFRnywqi3xddriV6wCPmStC3dkCS4vHk2ofS8uw4ZNoRlp1iEPna"
-      + "ai2Xa9DX1tkhaGk2k96MqqbBdGpbW8sMA9otJ9xdMjWEm/CgJUFUFQf3zaVy3mkM"
-      + "S2Lvb6P4Wc2l/diEEIyK8+PqJItSh0OVU3K9oM7ngHwVcalKILQVUkV2b2tlZCA8"
-      + "UmV2b2tlZEB0ZWQ+iQBOBBARAgAOBQJBTrCMBAsDAgECGQEACgkQvglkcFA/c63+"
-      + "QgCguh8rsJbPTtbhZcrqBi5Mo1bntLEAoPZQ0Kjmu2knRUpHBeUemHDB6zQeuQIN"
-      + "BEFOsIwQCAD2Qle3CH8IF3KiutapQvMF6PlTETlPtvFuuUs4INoBp1ajFOmPQFXz"
-      + "0AfGy0OplK33TGSGSfgMg71l6RfUodNQ+PVZX9x2Uk89PY3bzpnhV5JZzf24rnRP"
-      + "xfx2vIPFRzBhznzJZv8V+bv9kV7HAarTW56NoKVyOtQa8L9GAFgr5fSI/VhOSdvN"
-      + "ILSd5JEHNmszbDgNRR0PfIizHHxbLY7288kjwEPwpVsYjY67VYy4XTjTNP18F1dD"
-      + "ox0YbN4zISy1Kv884bEpQBgRjXyEpwpy1obEAxnIByl6ypUM2Zafq9AKUJsCRtMI"
-      + "PWakXUGfnHy9iUsiGSa6q6Jew1XpMgs7AAICB/93zriSvSHqsi1FeEmUBo431Jkh"
-      + "VerIzb6Plb1j6FIq+s3vyvx9K+dMvjotZqylWZj4GXpH+2xLJTjWkrGSfUZVI2Nk"
-      + "nyOFxUCKLLqaqVBFAQIjULfvQfGEWiGQKk9aRLkdG+D+8Y2N9zYoBXoQ9arvvS/t"
-      + "4mlOsiuaTe+BZ4x+BXTpF4b9sKZl7V8QP/TkoJWUdydkvxciHdWp7ssqyiKOFRhG"
-      + "818knDfFQ3cn2w/RnOb+7AF9wDncXDPYLfpPv9b2qZoLrXcyvlLffGDUdWs553ut"
-      + "1F5AprMURs8BGmY9BnjggfVubHdhTUoA4gVvrdaf+D9NwZAl0xK/5Y/oPuMZiQBG"
-      + "BBgRAgAGBQJBTrCMAAoJEL4JZHBQP3Ot09gAoMmLKloVDP+WhDXnsM5VikxysZ4+"
-      + "AKCrJAUO+lYAyPYwEwgK+bKmUGeKrIkARgQoEQIABgUCQU6wpQAKCRC+CWRwUD9z"
-      + "rQK4AJ98kKFxGU6yhHPr6jYBJPWemTNOXgCfeGB3ox4PXeS4DJDuLy9yllytOjo=");
+        "mQGiBFKQDEMRBACtcEzu15gGDrZKLuO2zgDJ9qFkweOxKyeO45LKIfUGBful"
+      + "lheoFHbsJIeNGjWbSOfWWtphTaSu9//BJt4xxg2pqVLYqzR+hEPpDy9kXxnZ"
+      + "LwwxjAP2TcOvuZKWe+JzoYQxDunOH4Zu9CPJhZhF3RNPw+tbv0jHfTV/chtb"
+      + "23Dj5wCg7eoM8bL9NYXacsAfkS//m+AB1MkD/jEZJqJSQHW8WVP7wKRrAZse"
+      + "N4l9b8+yY4RwLIodhD8wGsMYjkCF4yb/SQ5QlmLlvrHDLBofRzG+8oxldX4o"
+      + "GLZWvqPmW+BlS4QNSr+ZBu+OwnpClXG2pR+ExumXNoeArREyylrmOgD+0cUa"
+      + "8K2UbOxbJ8EioyOKxa7wjUVxmHmhBACAGQGLT/lpHA5zcU0g8AlSk8fsd+bB"
+      + "nwa/+9xdLqVsCTZdOWULtPOw9hbAdjjAy0L4M/MDAJYYtCEl9rB7aOc9PVdT"
+      + "h7CT9Ma6ltiSMKDlqWbDmogNEGx9Gz3GjiSGxAy/SN6JR1On4c60TAiTv6eE"
+      + "uEHszE6CH4qceK5W8HLLB4hJBCARAgAJBQJSkA0OAh0CAAoJEBCIvJhXZzdI"
+      + "X8wAn0qUP/jqAuPEX9g2XCr5jN3RKvKjAKDpx4NP7P1/yLN2ycFIgxKZ1plK"
+      + "CLACAAO0J3Jldm9rZSAoUmV2b2tlIFRlc3QpIDxyZXZva2VAdGVzdC50ZXN0"
+      + "PohiBBMRAgAiBQJSkAxDAhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAK"
+      + "CRAQiLyYV2c3SKw0AJ9kufxvnorVOv6a+WM+I/bNP+mjLQCgtPKuwTyeZU2k"
+      + "Sec1fJZUssDL1hGwAgADuQENBFKQDEMQBACruJ54GuhUaXgqGzu/HsCrgGQA"
+      + "n86PZW1qPCX28E9sayEmVOgzSDA/OT5c05P0PVLhMNEguSnUGC249MpZfPK/"
+      + "9LVKMXATZLzEB6lFX1YJdfrrb9KrQ5kdDhOcFXm1GIGBwLzjUmXYRVPH+TsT"
+      + "4QFvDpfIANQZfKK4UV5BJzJV5wADBQP/ew75dy1x58KWpPqfeH1OVln/Ui6e"
+      + "EDyyISic147+FIfVDuLtWoxMFE0ZPg47+rEQrhWC96izaSKPW97y5bkWz5PG"
+      + "CMChnLcg+3M91x/QCGzNhzVMiVpY5VhBDFP+7iiOaKYRiN/x7oasf2482Ny8"
+      + "1oiykOZUm8FCUQnRmJzIlbiISQQYEQIACQUCUpAMQwIbDAAKCRAQiLyYV2c3"
+      + "SL04AJ9VceD1DtcEDaWPDzFPgpe3ZfiXiQCfe5azYl26JpHSJvNKZRLi0I8H"
+      + "shCwAgAD");
 
-    byte[] pub7check = Base64.decode("f/YQ");
-    
+    byte[] pub7sub = Base64.decode(
+        "mQGiBFKQFFURBAD7CTE4RYPD7O+ki7pl/vXSZsSR0kQhCD9BR4lwE/Iffzmr"
+      + "vK8tmr2yLKWoXyoc3VF0Gdg/VATDcawBnKSjuCIsFZ58Edacb7uVRl4+ACiu"
+      + "OsvCKl9JuZ54SQ/tbD+NFS+HWNyVlWn7vDv8l+37DWNxuQRIYtQR+drAnIwQ"
+      + "g0O4owCg5a9cGAaN0zNVssUo6GFEoAI8nE0EAJMxQMcHTlLQQN1c549Ub0+E"
+      + "LV4dRIxjO7O6yi6Bg5udwS9Un1XeHF4GM7fj95WHi7o9sgErr2evhuGWl337"
+      + "ySytE1npk2F/jqevhAJazQTuilEuyjMbCShV39qJlEKtU9uHQYxN8oqGT9Ot"
+      + "lOoXXtrgfHbsrouCVwm4Jk14kzCaA/4okwrQwGkPlXRpVFyLn4GwrGivG7eh"
+      + "enRbAd2SQBiNVKmMsKLxHT1avZ11qcx6OU3ixdw5wYmq7TNR+5FXiz/e2MIq"
+      + "m7VhKONN21F7WC7siHxXfqqI/uz2tTPrFoLbnr/j/RZZRUMh6qUQrWpv58ci"
+      + "Bh+xkWCRantLCL9khuvRSrQncmV2b2tlIChSZXZva2UgVGVzdCkgPHJldm9r"
+      + "ZUB0ZXN0LnRlc3Q+iGIEExECACIFAlKQFFUCGwMGCwkIBwMCBhUIAgkKCwQW"
+      + "AgMBAh4BAheAAAoJEDKzvtpHqpp2DN4AoNS9M634KdvZT25DclGpb2bCFjv0"
+      + "AKDYXl5fIRGi583vFJ9C/q8hNGyNc7ACAAO5AQ0EUpAUVRAEALusV5UIL4gB"
+      + "6qQk++h+czV9KS0yxwgZyR+dJza+duEG88aNv28Wmjpfr3ZkvIiUaOcxFoct"
+      + "LgVGtPJM1HhWJtoA94CRBFTGzLfUIfXHcyXSdAw8Qh96svRl2w2KM+/pJl1r"
+      + "A3CWIy48jQei0mLwElRELLG7HJKYJxjCbg4+ihYTAAMGA/42PgHTV5VpF7YC"
+      + "XodlLOyGDVOoRjsvu0Gu/P88QnVP2jN57MJcla224aN3pGprtcbTwyjt+dtf"
+      + "5IJlB+3RZLczyqvT5hw7j9h81mr3RDbg3cn57xdYwQNP+6b6Wf9QRmaE813s"
+      + "g3kF0IJ0oFvwZdHnjndQ0JCrKaPflGSO6msjIYhTBCgRAgATBQJSkBXdDB0B"
+      + "U3VwZXJzZWRlZAAKCRAys77aR6qadmZPAJ0eJzmgBLTWK9RIbVtRUFzm736I"
+      + "hACgsPGHdZmLUFhV80fvYnUtB7TYGeKwAgADiEkEGBECAAkFAlKQFFUCGwwA"
+      + "CgkQMrO+2keqmnZGIACfRTkdqi6b7fjqkWxx7DysKBedgS8An1TJrhhkeJVd"
+      + "smkOCYLILgjrBHq4sAIAAw==");
+
     byte[] pub8 = Base64.decode(
               "mQGiBEEcraYRBADFYj+uFOhHz5SdECvJ3Z03P47gzmWLQ5HH8fPYC9rrv7AgqFFX"
             + "aWlJJVMLua9e6xoCiDWJs/n4BbZ/weL/11ELg6XqUnzFhYyz0H2KFsPgQ/b9lWLY"
@@ -1076,10 +1117,316 @@ public class PGPKeyRingTest
             + "n3pjONa4PKrePkEsCUhRbIySqXIHuNwZumDOlKzZHDpCUw72LaC6S6zwuoEf"
             + "ucOcxTeGIUViANWXyTIKkHfo7HfigixJIL8nsAFn");
 
+    private static final byte[] umlautKeySig = Base64.decode(
+        "mI0ETdvOgQEEALoI2a39TRk1HReEB6DP9Bu3ShZUce+/Oeg9RIL9aUFuCsNdhu02" +
+        "REEHjO29Jz8daPgrnJDfFepNLD6iKKru2m9P30qnhsHMIAshO2Ozfh6wKwuHRqR3" +
+        "L4gBDu7cCB6SLwPoD8AYG0yQSM+Do10Td87RlStxCgxpMK6R3TsRkxcFABEBAAG0" +
+        "OlVNTEFVVFNUQVJUOsOEw6TDlsO2w5zDvMOfOlVNTEFURU5ERSA8YXNkbGFrc2Rs" +
+        "QGFrc2RqLmNvbT6IuAQTAQIAIgUCTdvOgQIbAwYLCQgHAwIGFQgCCQoLBBYCAwEC" +
+        "HgECF4AACgkQP8kDwm8AOFiArAP/ZXrlZJB1jFEjyBb04ckpE6F/aJuSYIXf0Yx5" +
+        "T2eS+lA69vYuqKRC1qNROBrAn/WGNOQBFNEgGoy3F3gV5NgpIphnyIEZdZWGY2rv" +
+        "yjunKWlioZjWc/xbSbvpvJ3Q8RyfDXBOkDEB6uF1ksimw2eJSOUTkF9AQfS5f4rT" +
+        "5gs013G4jQRN286BAQQApVbjd8UhsQLB4TpeKn9+dDXAfikGgxDOb19XisjRiWxA" +
+        "+bKFxu5tRt6fxXl6BGSGT7DhoVbNkcJGVQFYcbR31UGKCVYcWSL3yfz+PiVuf1UB" +
+        "Rp44cXxxqxrLqKp1rk3dGvV4Ayy8lkk3ncDGPez6lIKvj3832yVtAzUOX1QOg9EA" +
+        "EQEAAYifBBgBAgAJBQJN286BAhsMAAoJED/JA8JvADhYQ80D/R3TX0FBMHs/xqEh" +
+        "tiS86XP/8pW6eMm2eaAYINxoDY3jmDMv2HFQ+YgrYXgqGr6eVGqDMNPj4W8VBoOt" +
+        "iYW7+SWY76AAl+gmWIMm2jbN8bZXFk4jmIxpycHCrtoXX8rUk/0+se8NvbmAdMGK" +
+        "POOoD7oxdRmJSU5hSspOCHrCwCa3");
+
+
+    // Key from http://www.angelfire.com/pr/pgpf/pgpoddities.html
+    private static final char[] v3KeyPass = "test@key.test".toCharArray();
+
+    private static final byte[] pubv3 = Base64.decode(
+        "mQENAzroPPgAAAEIANnTx/gHfag7qRMG6cVUnYZJjLcsdF6JSaVs+PUDCZ8l2+Z2" +
+        "V9tgxByp26bymIlq5qFFeoA5vCiKc8qzYiEVLJVVIIDjw/id2gq/TgmxoLAwiDQM" +
+        "TUKdCFa6pmR/uaxyrnJxfUA7+Qh0R0OjoCxNlrmyO3eiKstsJGqSUFIQq7GhcHc4" +
+        "nbV59zHhEWnH7DX7sDa9CgF11WxM3sjWp15iOoP1nixhmchDtQ7foUxLsCF36G/4" +
+        "ijcbN2NjiCDYMFburN8fXgrQzYHAIIiVFE0J+fbXNfPRmnbhQdaC8rIdiQ3tExBb" +
+        "N0qWhGPT9M4JOZd1yPdFMb9gbntd8VZkiPd6/3sABRG0FHRlc3QgPHRlc3RAa2V5" +
+        "LnRlc3Q+iQEVAwUQOug8+PFWZIj3ev97AQH7NQgAo3sH+KcsPtAbyp5U02J9h3Ro" +
+        "aiKpAYxg3rfUVo/RH6hmCWT/AlPHLPZZC/tKiPkuIm2V3Xqyum530N0sBYxNzgNp" +
+        "us8mK9QurYj2omKzf1ltN+uNHR8vjB8s7jEd/CDCARu81PqNoVq2b9JRFGpGbAde" +
+        "7kQ/a0r2/IsJ8fz0iSpCH0geoHt3sBk9MyEem4uG0e2NzlH2wBz4H8l8BNHRHBq0" +
+        "6tGH4h11ZhH3FiNzJWibT2AvzLCqar2qK+6pohKSvIp8zEP7Y/iQzCvkuOfHsUOH" +
+        "4Utgg85k09hRDZ3pRRL/4R+Z+/1uXb+n6yKbOmpmi7U7wc9IwZxtTlGXsNIf+Q=="
+    );
+
+    private static final byte[] privv3 = Base64.decode(
+        "lQOgAzroPPgAAAEIANnTx/gHfag7qRMG6cVUnYZJjLcsdF6JSaVs+PUDCZ8l2+Z2" +
+        "V9tgxByp26bymIlq5qFFeoA5vCiKc8qzYiEVLJVVIIDjw/id2gq/TgmxoLAwiDQM" +
+        "TUKdCFa6pmR/uaxyrnJxfUA7+Qh0R0OjoCxNlrmyO3eiKstsJGqSUFIQq7GhcHc4" +
+        "nbV59zHhEWnH7DX7sDa9CgF11WxM3sjWp15iOoP1nixhmchDtQ7foUxLsCF36G/4" +
+        "ijcbN2NjiCDYMFburN8fXgrQzYHAIIiVFE0J+fbXNfPRmnbhQdaC8rIdiQ3tExBb" +
+        "N0qWhGPT9M4JOZd1yPdFMb9gbntd8VZkiPd6/3sABREDXB5zk3GNdSkH/+/447Kq" +
+        "hR9uM+UnZz7wDkzmt+7xbNg9F2pr/tghVCM7D0PO1YjH4DBpU1ZRO+v1t/eBB/Jd" +
+        "3lJYdlWYHOefJkBi44gNAafZ8ysPOJk6OGOjas/sr+JRFiX9Mgzrs2IDiejmuA98" +
+        "DLuSuNtzFKbE2/DDdOBEizYUjqPLlCdn5sVEt+0WKWJiAv7YonCGguWS3RKfTaYk" +
+        "9IE9SbI+qph9JsuyTD22GLv+gTMvwCkC1DVaHIVgzURpdnlyYyz4DBh3pAgg0nh6" +
+        "gpUTsjnUmrvdh+r8qj3oXH7WBMhs6qKYvU1Go5iV3S1Cu4H/Z/+s6XUFgQShevVe" +
+        "VCy0QtmWSFeySekEACHLJIdBDa8K4dcM2wvccz587D4PtKvMG5j71raOcgVY+r1k" +
+        "e6au/fa0ACqLNvn6+vFHG+Rurn8RSKV31YmTpx7J5ixTOsB+wVcwTYbrw8uNlBWc" +
+        "+IkqPwHrtdK95GIYQykfPW95PRudsOBdxwQW4Ax/WCst3fbjo0SZww0Os+3WBADJ" +
+        "/Nv0mjikXRmqJIzfuI2yxxX4Wm6vqXJkPF7LGtSMB3VEJ3qPsysoai5TYboxA8C1" +
+        "4rQjIoQjA+87gxZ44PUVxrxBonITCLXJ3GsvDQ2PNhS6WQ9Cf89vtYW1vLW65Nex" +
+        "+7AuVRepKhx6Heqdf7S03m6UYliIglrEzgEWM1XrOwP/gLMsme4h0LjLgKfd0LBk" +
+        "qSMdu21VSl60TMTjxav149AdutzuCVa/yPBM/zLQdlvQoGYg2IbN4+7gDHKURcSx" +
+        "DgOAzCcEZxdMvRk2kaOI5RRf5gV9e+ErvEMzJ/xT8xWsi+aLOhaDMbwq2LLiK2L+" +
+        "tXV/Z3H/Ot4u3E7H+6fHPElFYbQUdGVzdCA8dGVzdEBrZXkudGVzdD4="
+    );
+
+    private static final byte[] problemUserID = Base64.decode(
+        "mQGiBDfzC2IRBADjnqYxAM1LPqFZCpF9ULb4G7L88E/p4sNo4k1LkzGtNOiroEHcacEAcTeP" +
+        "ljhgTA06l9jpnwx/dE0MEAiEtYexvkBv3LR2qXvuF67TKKlvanB32g0AmxNijHDdN2d+79ZA" +
+        "heZ4rY702W6DZh6FuKMAsTBfAFW5jLCWyJ4FwsLILwCg/3mjYePND5l0UcxaV0RKRBGnhqsE" +
+        "AIb9PJyWxSa8uzYQ+/APMg16Rrbti21zEQorFoc6yrC2hWbS7ro5yEVJxJa14s7VKlR+IAhg" +
+        "vR2+Q6jF6uvE1NZXzX6bvGaK3IpWMZdYcUY63EsHnutV+xON6Xd9C06xjAssvRQnxSuLXCg4" +
+        "md1Cr2kiKWaBExzxniKeql5lrqXKBACPcHbwZ8Efgt1TLG4yUf8nIQZwDeAhUPqJVWXurpWx" +
+        "r36ET4oQWb5HhO9GEe+2dttyJgV+stZJbZrPVmxmY1hUTZxIZ1ygGcMvrsVZZO0C9QsvMCyy" +
+        "xx4RzmTqomkC6Gtl3KtrZ4X28FQFDZi7MQaSXKEu2yS/NKJu2iT2BNKnE7QjTGFzc2UgTb5y" +
+        "a2VkYWhsIExhcnNlbiA8bG1sQGdyMy5kaz6ISwQQEQIACwUCN/MLYgQLAwIBAAoJEKg2SsWJ" +
+        "xEiGFbcAnA/ka/KE0Mnli7ybUhSrbESR/fZlAJ9SxU2foiRHMF8pF7I8KIJ9AQKSZLkCDQQ3" +
+        "8wtiEAgA9kJXtwh/CBdyorrWqULzBej5UxE5T7bxbrlLOCDaAadWoxTpj0BV89AHxstDqZSt" +
+        "90xkhkn4DIO9ZekX1KHTUPj1WV/cdlJPPT2N286Z4VeSWc39uK50T8X8dryDxUcwYc58yWb/" +
+        "Ffm7/ZFexwGq01uejaClcjrUGvC/RgBYK+X0iP1YTknbzSC0neSRBzZrM2w4DUUdD3yIsxx8" +
+        "Wy2O9vPJI8BD8KVbGI2Ou1WMuF040zT9fBdXQ6MdGGzeMyEstSr/POGxKUAYEY18hKcKctaG" +
+        "xAMZyAcpesqVDNmWn6vQClCbAkbTCD1mpF1Bn5x8vYlLIhkmuquiXsNV6TILOwACAgf/cugy" +
+        "0nyWpA6GxoNqpdky1oCEbgII/lFKkGfQb/sHLgHURjmiaDXSuRJDRXC6YVC0HWqA+bfknR5m" +
+        "o1cvohu4GL/oul1eD85UfU29vg5Hr6f601o6xWVCiHF14B24JvO7jhYMd1MQRl7PVzH0a1Gp" +
+        "4hSoEvsUjU1HhGUhmMpUxwGJyIFt4RTkqKWK15omuJf4TLT47T58n9uClTNyxpx+oJGaiD0O" +
+        "SiEn9d4w5XFewhyXFQhisr99979dLq+buvH1QueMkVDExF4D8LN5gid8JPy/RqFxnHE8AcSF" +
+        "XHz9ou8m936pkyKYIMQkCwdw7/Wv7MK64ZED2zOnXnSb/JWY2YhGBBgRAgAGBQI38wtiAAoJ" +
+        "EKg2SsWJxEiGJdcAoIQOLuHGGS01Gz5WUpiQZYRtRMIYAKDuYx6bfQngRMs3/gEG0zoSGohY" +
+        "lQ=="
+    );
+
+    private static final byte[] probExpPubKey = Base64.decode(
+        "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");
+
     public void test1()
         throws Exception
     {
-        PGPPublicKeyRingCollection    pubRings = new PGPPublicKeyRingCollection(pub1);
+        JcaPGPPublicKeyRingCollection    pubRings = new JcaPGPPublicKeyRingCollection(pub1);
 
         int                                        count = 0;
 
@@ -1095,7 +1442,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpPub.getEncoded();
             
-            pgpPub = new PGPPublicKeyRing(bytes);
+            pgpPub = new PGPPublicKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpPub.getPublicKeys();
             while (it.hasNext())
@@ -1186,7 +1533,7 @@ public class PGPKeyRingTest
             fail("wrong number of public keyrings on case-insensitive partial match");
         }
         
-        PGPSecretKeyRingCollection    secretRings = new PGPSecretKeyRingCollection(sec1);
+        JcaPGPSecretKeyRingCollection    secretRings = new JcaPGPSecretKeyRingCollection(sec1);
 
         rIt = secretRings.getKeyRings();
         count = 0;
@@ -1201,7 +1548,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpSec.getEncoded();
             
-            pgpSec = new PGPSecretKeyRing(bytes);
+            pgpSec = new PGPSecretKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpSec.getSecretKeys();
             while (it.hasNext())
@@ -1215,7 +1562,7 @@ public class PGPKeyRingTest
                 
                 byte[] pkBytes = pk.getEncoded();
                 
-                PGPPublicKeyRing  pkR = new PGPPublicKeyRing(pkBytes);
+                PGPPublicKeyRing  pkR = new PGPPublicKeyRing(pkBytes, new JcaKeyFingerprintCalculator());
             }
             
             if (keyCount != 2)
@@ -1297,13 +1644,13 @@ public class PGPKeyRingTest
     public void test2()
         throws Exception
     {
-        PGPPublicKeyRingCollection    pubRings = new PGPPublicKeyRingCollection(pub2);
+        JcaPGPPublicKeyRingCollection    pubRings = new JcaPGPPublicKeyRingCollection(pub2);
 
         int                            count = 0;
 
         byte[]    encRing = pubRings.getEncoded();
 
-        pubRings = new PGPPublicKeyRingCollection(encRing);
+        pubRings = new JcaPGPPublicKeyRingCollection(encRing);
         
         Iterator    rIt = pubRings.getKeyRings();
         
@@ -1317,7 +1664,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpPub.getEncoded();
             
-            pgpPub = new PGPPublicKeyRing(bytes);
+            pgpPub = new PGPPublicKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpPub.getPublicKeys();
             while (it.hasNext())
@@ -1326,7 +1673,7 @@ public class PGPKeyRingTest
                 
                 byte[] pkBytes = pk.getEncoded();
                 
-                PGPPublicKeyRing  pkR = new PGPPublicKeyRing(pkBytes);
+                PGPPublicKeyRing  pkR = new PGPPublicKeyRing(pkBytes, new JcaKeyFingerprintCalculator());
                 
                 keyCount++;
             }
@@ -1342,14 +1689,14 @@ public class PGPKeyRingTest
             fail("wrong number of public keyrings");
         }
         
-        PGPSecretKeyRingCollection    secretRings = new PGPSecretKeyRingCollection(sec2);
+        JcaPGPSecretKeyRingCollection    secretRings = new JcaPGPSecretKeyRingCollection(sec2);
 
         rIt = secretRings.getKeyRings();
         count = 0;
         
         encRing = secretRings.getEncoded();
         
-        secretRings = new PGPSecretKeyRingCollection(encRing);
+        secretRings = new JcaPGPSecretKeyRingCollection(encRing);
         
         while (rIt.hasNext())
         {
@@ -1361,7 +1708,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpSec.getEncoded();
             
-            pgpSec = new PGPSecretKeyRing(bytes);
+            pgpSec = new PGPSecretKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpSec.getSecretKeys();
             while (it.hasNext())
@@ -1396,12 +1743,12 @@ public class PGPKeyRingTest
                 if (k.getKeyID() == -4049084404703773049L
                      || k.getKeyID() == -1413891222336124627L)
                 {
-                    k.extractPrivateKey(sec2pass1, "BC");
+                    k.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(sec2pass1));
                 }
                 else if (k.getKeyID() == -6498553574938125416L
                     || k.getKeyID() == 59034765524361024L)
                 {
-                    k.extractPrivateKey(sec2pass2, "BC");
+                    k.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(sec2pass2));
                 }
             }
             
@@ -1416,17 +1763,57 @@ public class PGPKeyRingTest
             fail("wrong number of secret keyrings");
         }
     }
-    
+
+    public void shouldStripPreserveTrustPackets()
+        throws Exception
+    {
+        JcaPGPPublicKeyRingCollection pubRings = new JcaPGPPublicKeyRingCollection(pub2);
+
+        for (Iterator it = pubRings.getKeyRings(); it.hasNext();)
+        {
+            PGPPublicKeyRing pubRing = (PGPPublicKeyRing)it.next();
+
+            byte[] enc = pubRing.getEncoded(true);
+
+            if (trustPackets(enc) != 0)
+            {
+                fail("trust packet found");
+            }
+        }
+
+        byte[] ring = pubRings.getEncoded();
+
+        isTrue("trust packets missing", trustPackets(ring) == 10);
+    }
+
+    private int trustPackets(byte[] enc)
+        throws IOException
+    {
+        BCPGInputStream bIn = new BCPGInputStream(new ByteArrayInputStream(enc));
+
+        Packet packet;
+        int count = 0;
+        while ((packet = bIn.readPacket()) != null)
+        {
+            if (packet instanceof TrustPacket)
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
     public void test3()
         throws Exception
     {
-        PGPPublicKeyRingCollection    pubRings = new PGPPublicKeyRingCollection(pub3);
+        JcaPGPPublicKeyRingCollection    pubRings = new JcaPGPPublicKeyRingCollection(pub3);
 
         int                                        count = 0;
 
         byte[]    encRing = pubRings.getEncoded();
 
-        pubRings = new PGPPublicKeyRingCollection(encRing);
+        pubRings = new JcaPGPPublicKeyRingCollection(encRing);
         
         Iterator    rIt = pubRings.getKeyRings();
         
@@ -1440,7 +1827,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpPub.getEncoded();
             
-            pgpPub = new PGPPublicKeyRing(bytes);
+            pgpPub = new PGPPublicKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpPub.getPublicKeys();
             while (it.hasNext())
@@ -1463,14 +1850,14 @@ public class PGPKeyRingTest
             fail("wrong number of public keyrings");
         }
         
-        PGPSecretKeyRingCollection    secretRings = new PGPSecretKeyRingCollection(sec3);
+        JcaPGPSecretKeyRingCollection    secretRings = new JcaPGPSecretKeyRingCollection(sec3);
 
         rIt = secretRings.getKeyRings();
         count = 0;
         
         encRing = secretRings.getEncoded();
         
-        secretRings = new PGPSecretKeyRingCollection(encRing);
+        secretRings = new JcaPGPSecretKeyRingCollection(encRing);
         
         while (rIt.hasNext())
         {
@@ -1482,7 +1869,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpSec.getEncoded();
             
-            pgpSec = new PGPSecretKeyRing(bytes);
+            pgpSec = new PGPSecretKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpSec.getSecretKeys();
             while (it.hasNext())
@@ -1491,7 +1878,7 @@ public class PGPKeyRingTest
 
                 PGPSecretKey    k = (PGPSecretKey)it.next();
 
-                k.extractPrivateKey(sec3pass1, "BC");
+                k.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build(sec3pass1));
             }
             
             if (keyCount != 2)
@@ -1509,14 +1896,14 @@ public class PGPKeyRingTest
     public void test4()
         throws Exception
     {
-        PGPSecretKeyRingCollection    secretRings = new PGPSecretKeyRingCollection(sec4);
+        JcaPGPSecretKeyRingCollection    secretRings = new JcaPGPSecretKeyRingCollection(sec4);
 
         Iterator    rIt = secretRings.getKeyRings();
         int            count = 0;
         
         byte[]    encRing = secretRings.getEncoded();
         
-        secretRings = new PGPSecretKeyRingCollection(encRing);
+        secretRings = new JcaPGPSecretKeyRingCollection(encRing);
         
         while (rIt.hasNext())
         {
@@ -1528,7 +1915,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpSec.getEncoded();
             
-            pgpSec = new PGPSecretKeyRing(bytes);
+            pgpSec = new PGPSecretKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpSec.getSecretKeys();
             while (it.hasNext())
@@ -1537,12 +1924,26 @@ public class PGPKeyRingTest
 
                 PGPSecretKey    k = (PGPSecretKey)it.next();
 
-                k.extractPrivateKey(sec3pass1, "BC");
+                k.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build(sec3pass1));
             }
-            
+
             if (keyCount != 2)
             {
-                fail("wrong number of secret keys");
+                fail("test4 - wrong number of secret keys");
+            }
+
+            keyCount = 0;
+            it = pgpSec.getPublicKeys();
+            while (it.hasNext())
+            {
+                keyCount++;
+
+                PGPPublicKey    k = (PGPPublicKey)it.next(); // make sure it's what we think it is!
+            }
+
+            if (keyCount != 2)
+            {
+                fail("test4 - wrong number of public keys");
             }
         }
         
@@ -1555,13 +1956,13 @@ public class PGPKeyRingTest
     public void test5()
         throws Exception
     {
-        PGPPublicKeyRingCollection    pubRings = new PGPPublicKeyRingCollection(pub5);
+        JcaPGPPublicKeyRingCollection    pubRings = new JcaPGPPublicKeyRingCollection(pub5);
 
         int                           count = 0;
 
         byte[]    encRing = pubRings.getEncoded();
 
-        pubRings = new PGPPublicKeyRingCollection(encRing);
+        pubRings = new JcaPGPPublicKeyRingCollection(encRing);
         
         Iterator    rIt = pubRings.getKeyRings();
         
@@ -1575,7 +1976,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpPub.getEncoded();
             
-            pgpPub = new PGPPublicKeyRing(bytes);
+            pgpPub = new PGPPublicKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpPub.getPublicKeys();
             while (it.hasNext())
@@ -1601,14 +2002,14 @@ public class PGPKeyRingTest
             return;
         }
 
-        PGPSecretKeyRingCollection    secretRings = new PGPSecretKeyRingCollection(sec5);
+        JcaPGPSecretKeyRingCollection    secretRings = new JcaPGPSecretKeyRingCollection(sec5);
 
         rIt = secretRings.getKeyRings();
         count = 0;
         
         encRing = secretRings.getEncoded();
         
-        secretRings = new PGPSecretKeyRingCollection(encRing);
+        secretRings = new JcaPGPSecretKeyRingCollection(encRing);
         
         while (rIt.hasNext())
         {
@@ -1620,7 +2021,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpSec.getEncoded();
             
-            pgpSec = new PGPSecretKeyRing(bytes);
+            pgpSec = new PGPSecretKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpSec.getSecretKeys();
             while (it.hasNext())
@@ -1629,7 +2030,7 @@ public class PGPKeyRingTest
 
                 PGPSecretKey    k = (PGPSecretKey)it.next();
 
-                k.extractPrivateKey(sec5pass1, "BC");
+                k.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(sec5pass1));
             }
             
             if (keyCount != 2)
@@ -1661,7 +2062,7 @@ public class PGPKeyRingTest
     public void test6()
         throws Exception
     {
-        PGPPublicKeyRingCollection  pubRings = new PGPPublicKeyRingCollection(pub6);
+        JcaPGPPublicKeyRingCollection  pubRings = new JcaPGPPublicKeyRingCollection(pub6);
         Iterator                    rIt = pubRings.getKeyRings();
 
         while (rIt.hasNext())
@@ -1693,10 +2094,10 @@ public class PGPKeyRingTest
         byte[]    encRing = pubRings.getEncoded();
     }
 
-    public void test7()
+    public void revocationTest()
         throws Exception
     {
-        PGPPublicKeyRing    pgpPub = new PGPPublicKeyRing(pub7);
+        PGPPublicKeyRing    pgpPub = new PGPPublicKeyRing(pub7, new JcaKeyFingerprintCalculator());
         Iterator            it = pgpPub.getPublicKeys();
         PGPPublicKey        masterKey = null;
 
@@ -1709,27 +2110,69 @@ public class PGPKeyRingTest
                 masterKey = k;
                 continue;
             }
-            
-            int             count = 0;
-            PGPSignature    sig = null;
-            Iterator        sIt = k.getSignaturesOfType(PGPSignature.SUBKEY_REVOCATION);
+        }
+
+        int             count = 0;
+        PGPSignature    sig = null;
+        Iterator        sIt = masterKey.getSignaturesOfType(PGPSignature.KEY_REVOCATION);
+
+        while (sIt.hasNext())
+        {
+            sig = (PGPSignature)sIt.next();
+            count++;
+        }
+
+        if (count != 1)
+        {
+            fail("wrong number of revocations in test7.");
+        }
+
+        sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), masterKey);
+
+        if (!sig.verifyCertification(masterKey))
+        {
+            fail("failed to verify revocation certification");
+        }
+
+        pgpPub = new PGPPublicKeyRing(pub7sub, new JcaKeyFingerprintCalculator());
+        it = pgpPub.getPublicKeys();
+        masterKey = null;
+
+        while (it.hasNext())
+        {
+            PGPPublicKey    k = (PGPPublicKey)it.next();
+
+            if (k.isMasterKey())
+            {
+                masterKey = k;
+                continue;
+            }
+
+            count = 0;
+            sig = null;
+            sIt = k.getSignaturesOfType(PGPSignature.SUBKEY_REVOCATION);
 
             while (sIt.hasNext())
             {
                 sig = (PGPSignature)sIt.next();
                 count++;
             }
-                
+
             if (count != 1)
             {
-                fail("wrong number of revocations in test7.");
+                fail("wrong number of revocations in test7 subkey.");
             }
 
-            sig.initVerify(masterKey, "BC");
-                                                                            
-            if (!sig.verifyCertification(k))
+            if (sig.getSignatureType() != PGPSignature.SUBKEY_REVOCATION)
             {
-                fail("failed to verify revocation certification");
+                fail("wrong signature found");
+            }
+
+            sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), masterKey);
+
+            if (!sig.verifyCertification(masterKey, k))
+            {
+                fail("failed to verify revocation certification of subkey");
             }
         }
     }
@@ -1737,13 +2180,13 @@ public class PGPKeyRingTest
     public void test8()
         throws Exception
     {
-        PGPPublicKeyRingCollection    pubRings = new PGPPublicKeyRingCollection(pub8);
+        JcaPGPPublicKeyRingCollection    pubRings = new JcaPGPPublicKeyRingCollection(pub8);
 
         int                           count = 0;
 
         byte[]    encRing = pubRings.getEncoded();
 
-        pubRings = new PGPPublicKeyRingCollection(encRing);
+        pubRings = new JcaPGPPublicKeyRingCollection(encRing);
         
         Iterator    rIt = pubRings.getKeyRings();
         
@@ -1757,7 +2200,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpPub.getEncoded();
             
-            pgpPub = new PGPPublicKeyRing(bytes);
+            pgpPub = new PGPPublicKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpPub.getPublicKeys();
             while (it.hasNext())
@@ -1778,14 +2221,14 @@ public class PGPKeyRingTest
             fail("wrong number of public keyrings");
         }
         
-        PGPSecretKeyRingCollection    secretRings = new PGPSecretKeyRingCollection(sec8);
+        JcaPGPSecretKeyRingCollection    secretRings = new JcaPGPSecretKeyRingCollection(sec8);
 
         rIt = secretRings.getKeyRings();
         count = 0;
         
         encRing = secretRings.getEncoded();
         
-        secretRings = new PGPSecretKeyRingCollection(encRing);
+        secretRings = new JcaPGPSecretKeyRingCollection(encRing);
         
         while (rIt.hasNext())
         {
@@ -1797,7 +2240,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpSec.getEncoded();
             
-            pgpSec = new PGPSecretKeyRing(bytes);
+            pgpSec = new PGPSecretKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpSec.getSecretKeys();
             while (it.hasNext())
@@ -1806,7 +2249,7 @@ public class PGPKeyRingTest
 
                 PGPSecretKey    k = (PGPSecretKey)it.next();
 
-                k.extractPrivateKey(sec8pass, "BC");
+                k.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(sec8pass));
             }
             
             if (keyCount != 2)
@@ -1824,14 +2267,14 @@ public class PGPKeyRingTest
     public void test9()
         throws Exception
     { 
-        PGPSecretKeyRingCollection    secretRings = new PGPSecretKeyRingCollection(sec9);
+        JcaPGPSecretKeyRingCollection    secretRings = new JcaPGPSecretKeyRingCollection(sec9);
 
         Iterator    rIt = secretRings.getKeyRings();
         int         count = 0;
         
         byte[] encRing = secretRings.getEncoded();
         
-        secretRings = new PGPSecretKeyRingCollection(encRing);
+        secretRings = new JcaPGPSecretKeyRingCollection(encRing);
         
         while (rIt.hasNext())
         {
@@ -1843,7 +2286,7 @@ public class PGPKeyRingTest
             
             byte[]    bytes = pgpSec.getEncoded();
             
-            pgpSec = new PGPSecretKeyRing(bytes);
+            pgpSec = new PGPSecretKeyRing(bytes, new JcaKeyFingerprintCalculator());
             
             Iterator    it = pgpSec.getSecretKeys();
             while (it.hasNext())
@@ -1852,7 +2295,7 @@ public class PGPKeyRingTest
 
                 PGPSecretKey    k = (PGPSecretKey)it.next();
 
-                PGPPrivateKey   pKey = k.extractPrivateKey(sec9pass, "BC");
+                PGPPrivateKey   pKey = k.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(sec9pass));
                 if (keyCount == 1 && pKey != null)
                 {
                     fail("primary secret key found, null expected");
@@ -1874,7 +2317,7 @@ public class PGPKeyRingTest
     public void test10()
         throws Exception
     { 
-        PGPSecretKeyRing    secretRing = new PGPSecretKeyRing(sec10);
+        PGPSecretKeyRing    secretRing = new PGPSecretKeyRing(sec10, new JcaKeyFingerprintCalculator());
         Iterator            secretKeys = secretRing.getSecretKeys();
         
         while (secretKeys.hasNext())
@@ -1892,7 +2335,7 @@ public class PGPKeyRingTest
             }
         }
         
-        PGPPublicKeyRing    publicRing = new PGPPublicKeyRing(pub10);
+        PGPPublicKeyRing    publicRing = new PGPPublicKeyRing(pub10, new JcaKeyFingerprintCalculator());
         Iterator            publicKeys = publicRing.getPublicKeys();
         
         while (publicKeys.hasNext())
@@ -1937,17 +2380,18 @@ public class PGPKeyRingTest
         // this is quicker because we are using pregenerated parameters.
         //
         KeyPair                    elgKp = elgKpg.generateKeyPair();
-        PGPKeyPair        dsaKeyPair = new PGPKeyPair(PGPPublicKey.DSA, dsaKp, new Date());
-        PGPKeyPair        elgKeyPair = new PGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, elgKp, new Date());
-    
+        PGPKeyPair        dsaKeyPair = new JcaPGPKeyPair(PGPPublicKey.DSA, dsaKp, new Date());
+        PGPKeyPair        elgKeyPair = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, elgKp, new Date());
+        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator    keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, dsaKeyPair,
-                "test", PGPEncryptedData.AES_256, passPhrase, null, null, new SecureRandom(), "BC");
+                "test", sha1Calc, null, null, new JcaPGPContentSignerBuilder(PGPPublicKey.DSA, HashAlgorithmTags.SHA1), new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256).setProvider("BC").build(passPhrase));
+
     
         keyRingGen.addSubKey(elgKeyPair);
     
         PGPSecretKeyRing       keyRing = keyRingGen.generateSecretKeyRing();
         
-        keyRing.getSecretKey().extractPrivateKey(passPhrase, "BC");
+        keyRing.getSecretKey().extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(passPhrase));
         
         PGPPublicKeyRing        pubRing = keyRingGen.generatePublicKeyRing();
         
@@ -1976,13 +2420,62 @@ public class PGPKeyRingTest
             if (sig.getKeyID() == vKey.getKeyID()
                 && sig.getSignatureType() == PGPSignature.SUBKEY_BINDING)
             {
-                sig.initVerify(vKey, "BC");
+                sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), vKey);
 
                 if (!sig.verifyCertification(vKey, sKey))
                 {
                     fail("failed to verify sub-key signature.");
                 }
             }
+        }
+
+        PGPSignature masterSig = null;
+        Iterator kIt = pubRing.getKeysWithSignaturesBy(vKey.getKeyID());
+        if (kIt.hasNext())
+        {
+            while (kIt.hasNext())
+            {
+                PGPPublicKey pub = (PGPPublicKey)kIt.next();
+
+                if (pub.isMasterKey())
+                {
+                    Iterator sigIt = pub.getSignaturesForKeyID(vKey.getKeyID());
+
+                    PGPSignature sig = (PGPSignature)sigIt.next();
+
+                    if (sig.getSignatureType() != PGPSignature.POSITIVE_CERTIFICATION || sigIt.hasNext())
+                    {
+                        fail("master sig check failed");
+                    }
+                    masterSig = sig;
+                }
+                else
+                {
+                    Iterator sigIt = pub.getSignaturesForKeyID(vKey.getKeyID());
+
+                    PGPSignature sig = (PGPSignature)sigIt.next();
+
+                    if (sig.getSignatureType() != PGPSignature.SUBKEY_BINDING || sigIt.hasNext())
+                    {
+                        fail("sub sig check failed");
+                    }
+                }
+            }
+        }
+        else
+        {
+            fail("no keys found in iterator");
+        }
+
+        // try remove certification by sig.
+        PGPPublicKey editedKey = PGPPublicKey.removeCertification(vKey, masterSig);
+
+        for (it = editedKey.getSignatures(); it.hasNext();)
+        {
+              if (masterSig.equals(it.next()))
+              {
+                  fail("signature found");
+              }
         }
     }
 
@@ -1998,16 +2491,16 @@ public class PGPKeyRingTest
         // this is quicker because we are using pregenerated parameters.
         //
         KeyPair           rsaKp = rsaKpg.generateKeyPair();
-        PGPKeyPair        rsaKeyPair1 = new PGPKeyPair(PGPPublicKey.RSA_GENERAL, rsaKp, new Date());
+        PGPKeyPair        rsaKeyPair1 = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, rsaKp, new Date());
                           rsaKp = rsaKpg.generateKeyPair();
-        PGPKeyPair        rsaKeyPair2 = new PGPKeyPair(PGPPublicKey.RSA_GENERAL, rsaKp, new Date());
-
+        PGPKeyPair        rsaKeyPair2 = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, rsaKp, new Date());
+        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator    keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, rsaKeyPair1,
-                "test", PGPEncryptedData.AES_256, passPhrase, null, null, new SecureRandom(), "BC");
+                            "test", sha1Calc, null, null, new JcaPGPContentSignerBuilder(PGPPublicKey.RSA_SIGN, HashAlgorithmTags.SHA1), new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256).setProvider("BC").build(passPhrase));
         PGPSecretKeyRing       secRing1 = keyRingGen.generateSecretKeyRing();
         PGPPublicKeyRing       pubRing1 = keyRingGen.generatePublicKeyRing();
         keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, rsaKeyPair2,
-                "test", PGPEncryptedData.AES_256, passPhrase, null, null, new SecureRandom(), "BC");
+                            "test", sha1Calc, null, null, new JcaPGPContentSignerBuilder(PGPPublicKey.RSA_SIGN, HashAlgorithmTags.SHA1), new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256).setProvider("BC").build(passPhrase));
         PGPSecretKeyRing       secRing2 = keyRingGen.generateSecretKeyRing();
         PGPPublicKeyRing       pubRing2 = keyRingGen.generatePublicKeyRing();
 
@@ -2064,18 +2557,24 @@ public class PGPKeyRingTest
         // this is quicker because we are using pregenerated parameters.
         //
         KeyPair                    elgKp = elgKpg.generateKeyPair();
-        PGPKeyPair        dsaKeyPair = new PGPKeyPair(PGPPublicKey.DSA, dsaKp, new Date());
-        PGPKeyPair        elgKeyPair = new PGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, elgKp, new Date());
-    
+        PGPKeyPair        dsaKeyPair = new JcaPGPKeyPair(PGPPublicKey.DSA, dsaKp, new Date());
+        PGPKeyPair        elgKeyPair = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_ENCRYPT, elgKp, new Date());
+        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
         PGPKeyRingGenerator    keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, dsaKeyPair,
-                "test", PGPEncryptedData.AES_256, passPhrase, true, null, null, new SecureRandom(), "BC");
+                   "test", sha1Calc, null, null, new JcaPGPContentSignerBuilder(PGPPublicKey.DSA, HashAlgorithmTags.SHA1), new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256).setProvider("BC").build(passPhrase));
+
     
         keyRingGen.addSubKey(elgKeyPair);
     
         PGPSecretKeyRing       keyRing = keyRingGen.generateSecretKeyRing();
         
-        keyRing.getSecretKey().extractPrivateKey(passPhrase, "BC");
-        
+        keyRing.getSecretKey().extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(passPhrase));
+
+        if (!keyRing.getSecretKey().getPublicKey().equals(keyRing.getPublicKey()))
+        {
+            fail("secret key public key mismatch");
+        }
+
         PGPPublicKeyRing        pubRing = keyRingGen.generatePublicKeyRing();
         
         PGPPublicKey            vKey = null;
@@ -2094,7 +2593,18 @@ public class PGPKeyRingTest
                 sKey = pk;
             }
         }
-        
+
+        // check key id fetch
+        if (keyRing.getPublicKey(vKey.getKeyID()).getKeyID() != vKey.getKeyID())
+        {
+            fail("secret key public key mismatch - vKey");
+        }
+
+        if (keyRing.getPublicKey(sKey.getKeyID()).getKeyID() != sKey.getKeyID())
+        {
+            fail("secret key public key mismatch - sKey");
+        }
+
         Iterator    sIt = sKey.getSignatures();
         while (sIt.hasNext())
         {
@@ -2103,7 +2613,7 @@ public class PGPKeyRingTest
             if (sig.getKeyID() == vKey.getKeyID()
                 && sig.getSignatureType() == PGPSignature.SUBKEY_BINDING)
             {
-                sig.initVerify(vKey, "BC");
+                sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), vKey);
     
                 if (!sig.verifyCertification(vKey, sKey))
                 {
@@ -2116,7 +2626,7 @@ public class PGPKeyRingTest
     private void test11()
         throws Exception
     {
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(subKeyBindingKey);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(subKeyBindingKey, new JcaKeyFingerprintCalculator());
         Iterator         it = pubRing.getPublicKeys();
         
         while (it.hasNext())
@@ -2133,11 +2643,74 @@ public class PGPKeyRingTest
     private void rewrapTest()
         throws Exception
     {
-        SecureRandom rand = new SecureRandom();
-
         // Read the secret key rings
-        PGPSecretKeyRingCollection privRings = new PGPSecretKeyRingCollection(
+        JcaPGPSecretKeyRingCollection privRings = new JcaPGPSecretKeyRingCollection(
                                                          new ByteArrayInputStream(rewrapKey)); 
+        char[] newPass = "fred".toCharArray();
+
+        Iterator rIt = privRings.getKeyRings();
+
+        if (rIt.hasNext())
+        {
+            PGPSecretKeyRing pgpPriv= (PGPSecretKeyRing)rIt.next();
+
+            Iterator it = pgpPriv.getSecretKeys();
+
+            while (it.hasNext())
+            {
+                PGPSecretKey pgpKey = (PGPSecretKey)it.next();
+                long oldKeyID = pgpKey.getKeyID();
+
+                // re-encrypt the key with an empty password
+                pgpPriv = PGPSecretKeyRing.removeSecretKey(pgpPriv, pgpKey);
+                pgpKey = PGPSecretKey.copyWithNewPassword(
+                                    pgpKey,
+                                    new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build(rewrapPass),
+                                    null);
+                pgpPriv = PGPSecretKeyRing.insertSecretKey(pgpPriv, pgpKey);
+            
+                // this should succeed
+                PGPPrivateKey privTmp = pgpKey.extractPrivateKey(null);
+
+                if (pgpKey.getKeyID() != oldKeyID || pgpKey.getS2KUsage() != SecretKeyPacket.USAGE_NONE)
+                {
+                    fail("usage/key ID mismatch");
+                }
+            }
+
+            it = pgpPriv.getSecretKeys();
+
+            while (it.hasNext())
+            {
+                PGPSecretKey pgpKey = (PGPSecretKey)it.next();
+                long oldKeyID = pgpKey.getKeyID();
+
+                // re-encrypt the key with an empty password
+                pgpPriv = PGPSecretKeyRing.removeSecretKey(pgpPriv, pgpKey);
+                pgpKey = PGPSecretKey.copyWithNewPassword(
+                                    pgpKey,
+                                    null,
+                                    new JcePBESecretKeyEncryptorBuilder(SymmetricKeyAlgorithmTags.CAST5).setProvider("BC").build(newPass));
+                pgpPriv = PGPSecretKeyRing.insertSecretKey(pgpPriv, pgpKey);
+
+                // this should succeed
+                PGPPrivateKey privTmp = pgpKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build(newPass));
+
+                if (pgpKey.getKeyID() != oldKeyID || pgpKey.getS2KUsage() != SecretKeyPacket.USAGE_CHECKSUM)
+                {
+                    fail("usage/key ID mismatch");
+                }
+            }
+        }
+    }
+
+    private void rewrapTestV3()
+        throws Exception
+    {
+        // Read the secret key rings
+        JcaPGPSecretKeyRingCollection privRings = new JcaPGPSecretKeyRingCollection(
+                                                         new ByteArrayInputStream(privv3));
+        char[] newPass = "fred".toCharArray();
 
         Iterator rIt = privRings.getKeyRings();
 
@@ -2150,19 +2723,114 @@ public class PGPKeyRingTest
             while (it.hasNext())
             {
                 PGPSecretKey pgpKey = (PGPSecretKey)it.next();
+                long oldKeyID = pgpKey.getKeyID();
 
                 // re-encrypt the key with an empty password
                 pgpPriv = PGPSecretKeyRing.removeSecretKey(pgpPriv, pgpKey);
-                pgpKey = PGPSecretKey.copyWithNewPassword(pgpKey,
-                                    rewrapPass,
-                                    null,
-                                    PGPEncryptedData.NULL,
-                                    rand,
-                                    "BC");
+
+                pgpKey = PGPSecretKey.copyWithNewPassword(
+                    pgpKey,
+                    new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build(v3KeyPass),
+                    null);
                 pgpPriv = PGPSecretKeyRing.insertSecretKey(pgpPriv, pgpKey);
-            
+
                 // this should succeed
-                PGPPrivateKey privTmp = pgpKey.extractPrivateKey(null, "BC");
+                PGPPrivateKey privTmp = pgpKey.extractPrivateKey(null);
+
+                if (pgpKey.getKeyID() != oldKeyID)
+                {
+                    fail("key ID mismatch");
+                }
+            }
+
+            it = pgpPriv.getSecretKeys();
+
+            while (it.hasNext())
+            {
+                PGPSecretKey pgpKey = (PGPSecretKey)it.next();
+                long oldKeyID = pgpKey.getKeyID();
+
+                // re-encrypt the key with an empty password
+                pgpPriv = PGPSecretKeyRing.removeSecretKey(pgpPriv, pgpKey);
+                pgpKey = PGPSecretKey.copyWithNewPassword(
+                                    pgpKey,
+                                    null,
+                                    new JcePBESecretKeyEncryptorBuilder(SymmetricKeyAlgorithmTags.CAST5, new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build().get(HashAlgorithmTags.MD5)).setProvider("BC").build(newPass));
+                pgpPriv = PGPSecretKeyRing.insertSecretKey(pgpPriv, pgpKey);
+
+                // this should succeed
+                PGPPrivateKey privTmp = pgpKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build(newPass));
+
+                if (pgpKey.getKeyID() != oldKeyID)
+                {
+                    fail("key ID mismatch");
+                }
+            }
+        }
+    }
+
+    private void rewrapTestMD5()
+        throws Exception
+    {
+        // Read the secret key rings
+        JcaPGPSecretKeyRingCollection privRings = new JcaPGPSecretKeyRingCollection(
+                                                         new ByteArrayInputStream(rewrapKey));
+        char[] newPass = "fred".toCharArray();
+
+        Iterator rIt = privRings.getKeyRings();
+
+        if (rIt.hasNext())
+        {
+            PGPSecretKeyRing pgpPriv= (PGPSecretKeyRing)rIt.next();
+
+            Iterator it = pgpPriv.getSecretKeys();
+
+            PGPDigestCalculatorProvider calcProvider = new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build();
+
+            while (it.hasNext())
+            {
+                PGPSecretKey pgpKey = (PGPSecretKey)it.next();
+                long oldKeyID = pgpKey.getKeyID();
+
+                // re-encrypt the key with an empty password
+                pgpPriv = PGPSecretKeyRing.removeSecretKey(pgpPriv, pgpKey);
+                pgpKey = PGPSecretKey.copyWithNewPassword(
+                                    pgpKey,
+                                    new JcePBESecretKeyDecryptorBuilder(calcProvider).setProvider("BC").build(rewrapPass),
+                                    null);
+                pgpPriv = PGPSecretKeyRing.insertSecretKey(pgpPriv, pgpKey);
+
+                // this should succeed
+                PGPPrivateKey privTmp = pgpKey.extractPrivateKey(null);
+
+                if (pgpKey.getKeyID() != oldKeyID)
+                {
+                    fail("key ID mismatch");
+                }
+            }
+
+            it = pgpPriv.getSecretKeys();
+
+            while (it.hasNext())
+            {
+                PGPSecretKey pgpKey = (PGPSecretKey)it.next();
+                long oldKeyID = pgpKey.getKeyID();
+
+                // re-encrypt the key with an empty password
+                pgpPriv = PGPSecretKeyRing.removeSecretKey(pgpPriv, pgpKey);
+                pgpKey = PGPSecretKey.copyWithNewPassword(
+                                    pgpKey,
+                                    null,
+                                    new JcePBESecretKeyEncryptorBuilder(SymmetricKeyAlgorithmTags.CAST5, calcProvider.get(HashAlgorithmTags.MD5)).setProvider("BC").build(newPass));
+                pgpPriv = PGPSecretKeyRing.insertSecretKey(pgpPriv, pgpKey);
+
+                // this should succeed
+                PGPPrivateKey privTmp = pgpKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder(calcProvider).setProvider("BC").build(newPass));
+
+                if (pgpKey.getKeyID() != oldKeyID)
+                {
+                    fail("key ID mismatch");
+                }
             }
         }
     }
@@ -2172,7 +2840,7 @@ public class PGPKeyRingTest
     {
         checkPublicKeyRingWithX509(pubWithX509);
 
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(pubWithX509);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(pubWithX509, new JcaKeyFingerprintCalculator());
 
         checkPublicKeyRingWithX509(pubRing.getEncoded());
     }
@@ -2181,14 +2849,71 @@ public class PGPKeyRingTest
         throws Exception
     {
         checkSecretKeyRingWithPersonalCertificate(secWithPersonalCertificate);
-        PGPSecretKeyRingCollection secRing = new PGPSecretKeyRingCollection(secWithPersonalCertificate);
+        JcaPGPSecretKeyRingCollection secRing = new JcaPGPSecretKeyRingCollection(secWithPersonalCertificate);
         checkSecretKeyRingWithPersonalCertificate(secRing.getEncoded());
+    }
+
+    private void testUmlaut()
+        throws Exception
+    {
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(umlautKeySig, new JcaKeyFingerprintCalculator());
+
+        PGPPublicKey pub = pubRing.getPublicKey();
+        String       userID = (String)pub.getUserIDs().next();
+
+        for (Iterator it = pub.getSignatures(); it.hasNext();)
+        {
+            PGPSignature sig = (PGPSignature)it.next();
+
+            if (sig.getSignatureType() == PGPSignature.POSITIVE_CERTIFICATION)
+            {
+                sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), pub);
+
+                if (!sig.verifyCertification(userID, pub))
+                {
+                    fail("failed UTF8 userID test");
+                }
+            }
+        }
+
+        //
+        // this is quicker because we are using pregenerated parameters.
+        //
+        KeyPairGenerator  rsaKpg = KeyPairGenerator.getInstance("RSA", "BC");
+        KeyPair           rsaKp = rsaKpg.generateKeyPair();
+        PGPKeyPair        rsaKeyPair1 = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, rsaKp, new Date());
+                          rsaKp = rsaKpg.generateKeyPair();
+        PGPKeyPair        rsaKeyPair2 = new JcaPGPKeyPair(PGPPublicKey.RSA_GENERAL, rsaKp, new Date());
+        char[]            passPhrase = "passwd".toCharArray();
+        PGPDigestCalculator sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
+        PGPKeyRingGenerator keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, rsaKeyPair1,
+                           userID, sha1Calc, null, null, new JcaPGPContentSignerBuilder(PGPPublicKey.RSA_SIGN, HashAlgorithmTags.SHA1), new JcePBESecretKeyEncryptorBuilder(PGPEncryptedData.AES_256).setProvider("BC").build(passPhrase));
+
+
+        PGPPublicKeyRing       pubRing1 = keyRingGen.generatePublicKeyRing();
+
+        pub = pubRing1.getPublicKey();
+
+        for (Iterator it = pub.getSignatures(); it.hasNext();)
+        {
+            PGPSignature sig = (PGPSignature)it.next();
+
+            if (sig.getSignatureType() == PGPSignature.POSITIVE_CERTIFICATION)
+            {
+                sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), pub);
+
+                if (!sig.verifyCertification(userID, pub))
+                {
+                    fail("failed UTF8 userID creation test");
+                }
+            }
+        }
     }
 
     private void checkSecretKeyRingWithPersonalCertificate(byte[] keyRing)
         throws Exception
     {
-        PGPSecretKeyRingCollection secCol = new PGPSecretKeyRingCollection(keyRing);
+        JcaPGPSecretKeyRingCollection secCol = new JcaPGPSecretKeyRingCollection(keyRing);
 
 
         int count = 0;
@@ -2213,7 +2938,7 @@ public class PGPKeyRingTest
     private void checkPublicKeyRingWithX509(byte[] keyRing)
         throws Exception
     {
-        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(keyRing);
+        PGPPublicKeyRing pubRing = new PGPPublicKeyRing(keyRing, new JcaKeyFingerprintCalculator());
         Iterator         it = pubRing.getPublicKeys();
 
         if (it.hasNext())
@@ -2245,18 +2970,126 @@ public class PGPKeyRingTest
         }
     }
 
+    // test for key ring with non-UTF8 User ID.
+    private void testBadUserID()
+        throws Exception
+    {
+        PGPPublicKeyRing pgpRing = new JcaPGPPublicKeyRing(problemUserID);
+
+        byte[] enc = pgpRing.getEncoded();
+
+        if (!Arrays.areEqual(problemUserID, enc))
+        {
+            fail("encoded key does not match original");
+        }
+
+        PGPPublicKey pubKey = pgpRing.getPublicKey();
+
+        Iterator it = pubKey.getRawUserIDs();
+
+        byte[] rawID = (byte[])it.next();
+
+        it = pubKey.getSignaturesForID(rawID);
+
+        PGPSignature sig = (PGPSignature)it.next();
+
+        sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), pubKey);
+
+        if (!sig.verifyCertification(rawID, pubKey))
+        {
+            fail("Certification not validated for rawID");
+        }
+    }
+
+    private void testExpiryDate()
+        throws Exception
+    {
+        PGPPublicKeyRingCollection pgpRingCollection = new JcaPGPPublicKeyRingCollection(probExpPubKey);
+
+        for (Iterator it = pgpRingCollection.getKeyRings(); it.hasNext();)
+        {
+            PGPPublicKeyRing pgpRing = (PGPPublicKeyRing)it.next();
+
+            for (Iterator rit = pgpRing.getPublicKeys(); rit.hasNext(); )
+            {
+                PGPPublicKey pubKey = (PGPPublicKey)rit.next();
+
+                // this key has 2 self signatures on it - the most recent key validity is for 432495 seconds.
+                if (0x5afd53a9dbb2c40dL == pubKey.getKeyID())
+                {
+                    isTrue("wrong validity date", pubKey.getValidSeconds() == 432495);
+                }
+                // this key has 3 self signatures on it - the most recent key validity is for 4320173 seconds.
+                else if (0x89FCFA4B23363333L == pubKey.getKeyID())
+                {
+                    isTrue("wrong validity date", pubKey.getValidSeconds() == 4320173);
+                }
+            }
+        }
+    }
+
+    public void testNoExportPrivateKey()
+        throws Exception
+    {
+        KeyPairGenerator kpGen = KeyPairGenerator.getInstance("RSA", "BC");
+
+        kpGen.initialize(1024);
+
+        KeyPair kp = kpGen.generateKeyPair();
+
+        JcaPGPKeyConverter converter = new JcaPGPKeyConverter();
+        PGPPublicKey       pubKey = converter.getPGPPublicKey(PGPPublicKey.RSA_GENERAL, kp.getPublic(), new Date());
+        PGPPrivateKey      privKey = new JcaPGPPrivateKey(pubKey, kp.getPrivate());
+
+        doTestNoExportPrivateKey(new PGPKeyPair(pubKey, privKey));
+    }
+
+    private void doTestNoExportPrivateKey(PGPKeyPair keyPair)
+        throws Exception
+    {
+        PGPDigestCalculator    sha1Calc = new JcaPGPDigestCalculatorProviderBuilder().build().get(HashAlgorithmTags.SHA1);
+        PGPKeyRingGenerator    keyRingGen = new PGPKeyRingGenerator(PGPSignature.POSITIVE_CERTIFICATION, keyPair,
+                       "test", sha1Calc, null, null, new JcaPGPContentSignerBuilder(PGPPublicKey.RSA_SIGN, HashAlgorithmTags.SHA1), null);
+
+        PGPPublicKey pubKey = keyPair.getPublicKey();
+        PGPPublicKeyRing pubRing = keyRingGen.generatePublicKeyRing();
+        if (pubRing.getPublicKey(pubKey.getKeyID()) == null)
+        {
+            fail("no public key found");
+        }
+
+        for (Iterator it = pubRing.getPublicKey().getSignatures(); it.hasNext();)
+        {
+            PGPSignature sig = (PGPSignature)it.next();
+
+            sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), pubKey);
+
+            if (!sig.verifyCertification("test", pubKey))
+            {
+                fail("certification failed");
+            }
+        }
+
+        pubRing.getEncoded();
+
+        PGPSecretKeyRing secRing = keyRingGen.generateSecretKeyRing();
+
+        secRing.getEncoded();
+    }
+
     public void performTest()
         throws Exception
     {
         try
         {
+            testExpiryDate();
             test1();
             test2();
             test3();
             test4();
             test5();
             test6();
-    //      test7();
+            revocationTest();
             test8();
             test9();
             test10();
@@ -2264,9 +3097,15 @@ public class PGPKeyRingTest
             generateTest();
             generateSha1Test();
             rewrapTest();
+            rewrapTestV3();
+            rewrapTestMD5();
             testPublicKeyRingWithX509();
             testSecretKeyRingWithPersonalCertificate();
             insertMasterTest();
+            testUmlaut();
+            testBadUserID();
+            testNoExportPrivateKey();
+            shouldStripPreserveTrustPackets();
         }
         catch (PGPException e)
         {

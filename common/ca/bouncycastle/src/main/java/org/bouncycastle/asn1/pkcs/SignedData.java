@@ -2,23 +2,24 @@ package org.bouncycastle.asn1.pkcs;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.BERSequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERTaggedObject;
 
 /**
  * a PKCS#7 signed data object.
  */
 public class SignedData
-    extends ASN1Encodable
+    extends ASN1Object
     implements PKCSObjectIdentifiers
 {
-    private DERInteger              version;
+    private ASN1Integer              version;
     private ASN1Set                 digestAlgorithms;
     private ContentInfo             contentInfo;
     private ASN1Set                 certificates;
@@ -32,16 +33,16 @@ public class SignedData
         {
             return (SignedData)o;
         }
-        else if (o instanceof ASN1Sequence)
+        else if (o != null)
         {
-            return new SignedData((ASN1Sequence)o);
+            return new SignedData(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + o);
+        return null;
     }
 
     public SignedData(
-        DERInteger        _version,
+        ASN1Integer        _version,
         ASN1Set           _digestAlgorithms,
         ContentInfo       _contentInfo,
         ASN1Set           _certificates,
@@ -61,21 +62,21 @@ public class SignedData
     {
         Enumeration     e = seq.getObjects();
 
-        version = (DERInteger)e.nextElement();
+        version = (ASN1Integer)e.nextElement();
         digestAlgorithms = ((ASN1Set)e.nextElement());
         contentInfo = ContentInfo.getInstance(e.nextElement());
 
         while (e.hasMoreElements())
         {
-            DERObject o = (DERObject)e.nextElement();
+            ASN1Primitive o = (ASN1Primitive)e.nextElement();
 
             //
             // an interesting feature of SignedData is that there appear to be varying implementations...
             // for the moment we ignore anything which doesn't fit.
             //
-            if (o instanceof DERTaggedObject)
+            if (o instanceof ASN1TaggedObject)
             {
-                DERTaggedObject tagged = (DERTaggedObject)o;
+                ASN1TaggedObject tagged = (ASN1TaggedObject)o;
 
                 switch (tagged.getTagNo())
                 {
@@ -96,7 +97,7 @@ public class SignedData
         }
     }
 
-    public DERInteger getVersion()
+    public ASN1Integer getVersion()
     {
         return version;
     }
@@ -141,7 +142,7 @@ public class SignedData
      *      signerInfos SignerInfos }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

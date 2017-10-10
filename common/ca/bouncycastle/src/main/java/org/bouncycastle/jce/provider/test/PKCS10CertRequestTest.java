@@ -14,7 +14,7 @@ import java.security.spec.RSAPublicKeySpec;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
@@ -23,10 +23,13 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
+import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -41,7 +44,6 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.test.SimpleTest;
-import org.bouncycastle.x509.extension.SubjectKeyIdentifierStructure;
 
 /**
  **/
@@ -145,7 +147,7 @@ public class PKCS10CertRequestTest
     /*
      * we generate a self signed certificate for the sake of testing - SHA224withECDSA
      */
-    private void createECRequest(String algorithm, DERObjectIdentifier algOid, DERObjectIdentifier curveOid)
+    private void createECRequest(String algorithm, ASN1ObjectIdentifier algOid, ASN1ObjectIdentifier curveOid)
         throws Exception
     {
         ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec(curveOid.getId());
@@ -195,7 +197,7 @@ public class PKCS10CertRequestTest
             fail("Failed verify check EC uncompressed encoded.");
         }
         
-        if (!req.getSignatureAlgorithm().getObjectId().equals(algOid))
+        if (!req.getSignatureAlgorithm().getAlgorithm().equals(algOid))
         {
             fail("ECDSA oid incorrect.");
         }
@@ -217,7 +219,7 @@ public class PKCS10CertRequestTest
         }
     }
 
-    private void createECRequest(String algorithm, DERObjectIdentifier algOid)
+    private void createECRequest(String algorithm, ASN1ObjectIdentifier algOid)
         throws Exception
     {
         ECCurve.Fp curve = new ECCurve.Fp(
@@ -227,7 +229,7 @@ public class PKCS10CertRequestTest
 
         ECParameterSpec spec = new ECParameterSpec(
             curve,
-            curve.decodePoint(Hex.decode("02C6858E06B70404E9CD9E3ECB662395B4429C648139053FB521F828AF606B4D3DBAA14B5E77EFE75928FE1DC127A2FFA8DE3348B3C1856A429BF97E7E31C2E5BD66")), // G
+            curve.decodePoint(Hex.decode("0200C6858E06B70404E9CD9E3ECB662395B4429C648139053FB521F828AF606B4D3DBAA14B5E77EFE75928FE1DC127A2FFA8DE3348B3C1856A429BF97E7E31C2E5BD66")), // G
             new BigInteger("01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA51868783BF2F966B7FCC0148F709A5D03BB5C9B8899C47AEBB6FB71E91386409", 16)); // n
 
         ECPrivateKeySpec privKeySpec = new ECPrivateKeySpec(
@@ -235,7 +237,7 @@ public class PKCS10CertRequestTest
             spec);
 
         ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(
-            curve.decodePoint(Hex.decode("026BFDD2C9278B63C92D6624F151C9D7A822CC75BD983B17D25D74C26740380022D3D8FAF304781E416175EADF4ED6E2B47142D2454A7AC7801DD803CF44A4D1F0AC")), // Q
+            curve.decodePoint(Hex.decode("02006BFDD2C9278B63C92D6624F151C9D7A822CC75BD983B17D25D74C26740380022D3D8FAF304781E416175EADF4ED6E2B47142D2454A7AC7801DD803CF44A4D1F0AC")), // Q
             spec);
 
         //
@@ -280,7 +282,7 @@ public class PKCS10CertRequestTest
             fail("Failed verify check EC uncompressed encoded.");
         }
 
-        if (!req.getSignatureAlgorithm().getObjectId().equals(algOid))
+        if (!req.getSignatureAlgorithm().getAlgorithm().equals(algOid))
         {
             fail("ECDSA oid incorrect.");
         }
@@ -330,7 +332,7 @@ public class PKCS10CertRequestTest
             fail("Failed verify check EC encoded.");
         }
 
-        if (!req.getSignatureAlgorithm().getObjectId().equals(CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001))
+        if (!req.getSignatureAlgorithm().getAlgorithm().equals(CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001))
         {
             fail("ECGOST oid incorrect.");
         }
@@ -387,7 +389,7 @@ public class PKCS10CertRequestTest
             fail("Failed verify check PSS encoded.");
         }
 
-        if (!req.getSignatureAlgorithm().getObjectId().equals(PKCSObjectIdentifiers.id_RSASSA_PSS))
+        if (!req.getSignatureAlgorithm().getAlgorithm().equals(PKCSObjectIdentifiers.id_RSASSA_PSS))
         {
             fail("PSS oid incorrect.");
         }
@@ -424,7 +426,7 @@ public class PKCS10CertRequestTest
         oids.add(X509Extensions.KeyUsage);
         values.add(new X509Extension(true, new DEROctetString(
             new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign))));
-        SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifierStructure(pair.getPublic());
+        SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifier(getDigest(SubjectPublicKeyInfo.getInstance(pair.getPublic().getEncoded())));
         X509Extension ski = new X509Extension(false, new DEROctetString(subjectKeyIdentifier));
         oids.add(X509Extensions.SubjectKeyIdentifier);
         values.add(ski);
@@ -521,7 +523,7 @@ public class PKCS10CertRequestTest
         createECRequest("SHA384withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA384);
         createECRequest("SHA512withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA512);
 
-        createECRequest("SHA1withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA1, new DERObjectIdentifier("1.3.132.0.34"));
+        createECRequest("SHA1withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA1, new ASN1ObjectIdentifier("1.3.132.0.34"));
 
         createECGOSTRequest();
 
@@ -531,6 +533,17 @@ public class PKCS10CertRequestTest
         createPSSTest("SHA384withRSAandMGF1");
 
         nullPointerTest();
+    }
+
+    private static byte[] getDigest(SubjectPublicKeyInfo spki)
+    {
+        Digest digest = new SHA1Digest();
+        byte[]  resBuf = new byte[digest.getDigestSize()];
+
+        byte[] bytes = spki.getPublicKeyData().getBytes();
+        digest.update(bytes, 0, bytes.length);
+        digest.doFinal(resBuf, 0);
+        return resBuf;
     }
 
     public static void main(

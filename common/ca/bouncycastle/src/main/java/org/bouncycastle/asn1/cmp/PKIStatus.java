@@ -2,12 +2,12 @@ package org.bouncycastle.asn1.cmp;
 
 import java.math.BigInteger;
 
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 
 public class PKIStatus
-    extends ASN1Encodable
+    extends ASN1Object
 {
     public static final int GRANTED                 = 0;
     public static final int GRANTED_WITH_MODS       = 1;
@@ -25,14 +25,14 @@ public class PKIStatus
     public static final PKIStatus revocationNotification = new PKIStatus(REVOCATION_NOTIFICATION);
     public static final PKIStatus keyUpdateWaiting = new PKIStatus(KEY_UPDATE_WARNING);
 
-    private DERInteger value;
+    private ASN1Integer value;
 
     private PKIStatus(int value)
     {
-        this(new DERInteger(value));
+        this(new ASN1Integer(value));
     }
 
-    private PKIStatus(DERInteger value)
+    private PKIStatus(ASN1Integer value)
     {
         this.value = value;
     }
@@ -44,12 +44,12 @@ public class PKIStatus
             return (PKIStatus)o;
         }
 
-        if (o instanceof DERInteger)
+        if (o != null)
         {
-            return new PKIStatus((DERInteger)o);
+            return new PKIStatus(ASN1Integer.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
     }
 
     public BigInteger getValue()
@@ -57,7 +57,7 @@ public class PKIStatus
         return value.getValue();
     }
     
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return value;
     }

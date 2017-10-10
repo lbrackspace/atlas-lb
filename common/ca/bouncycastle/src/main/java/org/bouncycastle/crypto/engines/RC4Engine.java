@@ -2,6 +2,7 @@ package org.bouncycastle.crypto.engines;
 
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.OutputLengthException;
 import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 
@@ -67,7 +68,7 @@ public class RC4Engine implements StreamCipher
         return (byte)(in ^ engineState[(engineState[x] + engineState[y]) & 0xff]);
     }
 
-    public void processBytes(
+    public int processBytes(
         byte[]     in, 
         int     inOff, 
         int     len, 
@@ -81,7 +82,7 @@ public class RC4Engine implements StreamCipher
 
         if ((outOff + len) > out.length)
         {
-            throw new DataLengthException("output buffer too short");
+            throw new OutputLengthException("output buffer too short");
         }
 
         for (int i = 0; i < len ; i++)
@@ -98,6 +99,8 @@ public class RC4Engine implements StreamCipher
             out[i+outOff] = (byte)(in[i + inOff]
                     ^ engineState[(engineState[x] + engineState[y]) & 0xff]);
         }
+
+        return len;
     }
 
     public void reset()

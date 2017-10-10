@@ -1,14 +1,17 @@
 package org.bouncycastle.cms;
 
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Map;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.cms.CMSAlgorithmProtection;
 import org.bouncycastle.asn1.cms.CMSAttributes;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 /**
  * Default authenticated attributes generator.
@@ -57,12 +60,19 @@ public class DefaultAuthenticatedAttributeTableGenerator
     protected Hashtable createStandardAttributeTable(
         Map parameters)
     {
-        Hashtable std = (Hashtable)table.clone();
+        Hashtable std = new Hashtable();
+
+        for (Enumeration en = table.keys(); en.hasMoreElements();)
+        {
+            Object key = en.nextElement();
+
+            std.put(key, table.get(key));
+        }
 
         if (!std.containsKey(CMSAttributes.contentType))
         {
-            DERObjectIdentifier contentType = (DERObjectIdentifier)
-                parameters.get(CMSAttributeTableGenerator.CONTENT_TYPE);
+            ASN1ObjectIdentifier contentType = ASN1ObjectIdentifier.getInstance(
+                parameters.get(CMSAttributeTableGenerator.CONTENT_TYPE));
             Attribute attr = new Attribute(CMSAttributes.contentType,
                 new DERSet(contentType));
             std.put(attr.getAttrType(), attr);
@@ -74,6 +84,14 @@ public class DefaultAuthenticatedAttributeTableGenerator
                 CMSAttributeTableGenerator.DIGEST);
             Attribute attr = new Attribute(CMSAttributes.messageDigest,
                 new DERSet(new DEROctetString(messageDigest)));
+            std.put(attr.getAttrType(), attr);
+        }
+
+        if (!std.contains(CMSAttributes.cmsAlgorithmProtect))
+        {
+            Attribute attr = new Attribute(CMSAttributes.cmsAlgorithmProtect, new DERSet(new CMSAlgorithmProtection(
+                (AlgorithmIdentifier)parameters.get(CMSAttributeTableGenerator.DIGEST_ALGORITHM_IDENTIFIER),
+                CMSAlgorithmProtection.MAC, (AlgorithmIdentifier)parameters.get(CMSAttributeTableGenerator.MAC_ALGORITHM_IDENTIFIER))));
             std.put(attr.getAttrType(), attr);
         }
 

@@ -5,6 +5,7 @@ import org.bouncycastle.crypto.BufferedBlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.InvalidCipherTextException;
+import org.bouncycastle.crypto.OutputLengthException;
 import org.bouncycastle.crypto.params.ParametersWithRandom;
 
 /**
@@ -124,7 +125,7 @@ public class PaddedBufferedBlockCipher
 
         if (leftOver == 0)
         {
-            return total - buf.length;
+            return Math.max(0, total - buf.length);
         }
 
         return total - leftOver;
@@ -191,7 +192,7 @@ public class PaddedBufferedBlockCipher
         {
             if ((outOff + length) > out.length)
             {
-                throw new DataLengthException("output buffer too short");
+                throw new OutputLengthException("output buffer too short");
             }
         }
 
@@ -254,7 +255,7 @@ public class PaddedBufferedBlockCipher
                 {
                     reset();
 
-                    throw new DataLengthException("output buffer too short");
+                    throw new OutputLengthException("output buffer too short");
                 }
 
                 resultLen = cipher.processBlock(buf, 0, out, outOff);

@@ -1,14 +1,9 @@
 package org.bouncycastle.crypto.tls;
 
-import java.security.SecureRandom;
-
+/**
+ * Marker interface to distinguish a TLS client context.
+ */
 public interface TlsClientContext
+    extends TlsContext
 {
-    SecureRandom getSecureRandom();
-
-    SecurityParameters getSecurityParameters();
-
-    Object getUserObject();
-
-    void setUserObject(Object userObject);
 }

@@ -1,25 +1,37 @@
 package org.bouncycastle.asn1.cms;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 
+/**
+ * <a href="http://tools.ietf.org/html/rfc5652#section-6.2.3">RFC 5652</a>:
+ * Content encryption key delivery mechanisms.
+ * <p>
+ * <pre>
+ * KEKIdentifier ::= SEQUENCE {
+ *     keyIdentifier OCTET STRING,
+ *     date GeneralizedTime OPTIONAL,
+ *     other OtherKeyAttribute OPTIONAL 
+ * }
+ * </pre>
+ */
 public class KEKIdentifier
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private ASN1OctetString    keyIdentifier;
-    private DERGeneralizedTime date;
+    private ASN1GeneralizedTime date;
     private OtherKeyAttribute  other;
     
     public KEKIdentifier(
         byte[]              keyIdentifier,
-        DERGeneralizedTime  date,
+        ASN1GeneralizedTime  date,
         OtherKeyAttribute   other)
     {
         this.keyIdentifier = new DEROctetString(keyIdentifier);
@@ -27,7 +39,7 @@ public class KEKIdentifier
         this.other = other;
     }
     
-    public KEKIdentifier(
+    private KEKIdentifier(
         ASN1Sequence seq)
     {
         keyIdentifier = (ASN1OctetString)seq.getObjectAt(0);
@@ -37,9 +49,9 @@ public class KEKIdentifier
         case 1:
             break;
         case 2:
-            if (seq.getObjectAt(1) instanceof DERGeneralizedTime)
+            if (seq.getObjectAt(1) instanceof ASN1GeneralizedTime)
             {
-                date = (DERGeneralizedTime)seq.getObjectAt(1); 
+                date = (ASN1GeneralizedTime)seq.getObjectAt(1); 
             }
             else
             {
@@ -47,7 +59,7 @@ public class KEKIdentifier
             }
             break;
         case 3:
-            date  = (DERGeneralizedTime)seq.getObjectAt(1);
+            date  = (ASN1GeneralizedTime)seq.getObjectAt(1);
             other = OtherKeyAttribute.getInstance(seq.getObjectAt(2));
             break;
         default:
@@ -56,7 +68,7 @@ public class KEKIdentifier
     }
 
     /**
-     * return a KEKIdentifier object from a tagged object.
+     * Return a KEKIdentifier object from a tagged object.
      *
      * @param obj the tagged object holding the object we want.
      * @param explicit true if the object is meant to be explicitly
@@ -72,7 +84,14 @@ public class KEKIdentifier
     }
     
     /**
-     * return a KEKIdentifier object from the given object.
+     * Return a KEKIdentifier object from the given object.
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> null &rarr; null
+     * <li> {@link KEKIdentifier} object
+     * <li> {@link org.bouncycastle.asn1.ASN1Sequence#getInstance(java.lang.Object) ASN1Sequence} input formats with KEKIdentifier structure inside
+     * </ul>
      *
      * @param obj the object we want converted.
      * @exception IllegalArgumentException if the object cannot be converted.
@@ -98,7 +117,7 @@ public class KEKIdentifier
         return keyIdentifier;
     }
 
-    public DERGeneralizedTime getDate()
+    public ASN1GeneralizedTime getDate()
     {
         return date;
     }
@@ -110,15 +129,8 @@ public class KEKIdentifier
 
     /** 
      * Produce an object suitable for an ASN1OutputStream.
-     * <pre>
-     * KEKIdentifier ::= SEQUENCE {
-     *     keyIdentifier OCTET STRING,
-     *     date GeneralizedTime OPTIONAL,
-     *     other OtherKeyAttribute OPTIONAL 
-     * }
-     * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

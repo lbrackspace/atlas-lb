@@ -1,27 +1,29 @@
 package org.bouncycastle.jce.provider;
 
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.oiw.ElGamalParameter;
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.crypto.params.ElGamalPrivateKeyParameters;
-import org.bouncycastle.jce.interfaces.ElGamalPrivateKey;
-import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
-import org.bouncycastle.jce.spec.ElGamalParameterSpec;
-import org.bouncycastle.jce.spec.ElGamalPrivateKeySpec;
-
-import javax.crypto.interfaces.DHPrivateKey;
-import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.spec.DHPrivateKeySpec;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.util.Enumeration;
+
+import javax.crypto.interfaces.DHPrivateKey;
+import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.DHPrivateKeySpec;
+
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.oiw.ElGamalParameter;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.crypto.params.ElGamalPrivateKeyParameters;
+import org.bouncycastle.jcajce.provider.asymmetric.util.KeyUtil;
+import org.bouncycastle.jcajce.provider.asymmetric.util.PKCS12BagAttributeCarrierImpl;
+import org.bouncycastle.jce.interfaces.ElGamalPrivateKey;
+import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
+import org.bouncycastle.jce.spec.ElGamalParameterSpec;
+import org.bouncycastle.jce.spec.ElGamalPrivateKeySpec;
 
 public class JCEElGamalPrivateKey
     implements ElGamalPrivateKey, DHPrivateKey, PKCS12BagAttributeCarrier
@@ -32,7 +34,7 @@ public class JCEElGamalPrivateKey
 
     ElGamalParameterSpec   elSpec;
 
-    private PKCS12BagAttributeCarrierImpl   attrCarrier = new PKCS12BagAttributeCarrierImpl();
+    private PKCS12BagAttributeCarrierImpl attrCarrier = new PKCS12BagAttributeCarrierImpl();
 
     protected JCEElGamalPrivateKey()
     {
@@ -68,9 +70,10 @@ public class JCEElGamalPrivateKey
     
     JCEElGamalPrivateKey(
         PrivateKeyInfo  info)
+        throws IOException
     {
-        ElGamalParameter     params = new ElGamalParameter((ASN1Sequence)info.getAlgorithmId().getParameters());
-        DERInteger      derX = (DERInteger)info.getPrivateKey();
+        ElGamalParameter     params = ElGamalParameter.getInstance(info.getPrivateKeyAlgorithm().getParameters());
+        ASN1Integer      derX = ASN1Integer.getInstance(info.parsePrivateKey());
 
         this.x = derX.getValue();
         this.elSpec = new ElGamalParameterSpec(params.getP(), params.getG());
@@ -106,9 +109,7 @@ public class JCEElGamalPrivateKey
      */
     public byte[] getEncoded()
     {
-        PrivateKeyInfo          info = new PrivateKeyInfo(new AlgorithmIdentifier(OIWObjectIdentifiers.elGamalAlgorithm, new ElGamalParameter(elSpec.getP(), elSpec.getG()).getDERObject()), new DERInteger(getX()));
-
-        return info.getDEREncoded();
+        return KeyUtil.getEncodedPrivateKeyInfo(new AlgorithmIdentifier(OIWObjectIdentifiers.elGamalAlgorithm, new ElGamalParameter(elSpec.getP(), elSpec.getG())), new ASN1Integer(getX()));
     }
 
     public ElGamalParameterSpec getParameters()
@@ -145,14 +146,14 @@ public class JCEElGamalPrivateKey
     }
 
     public void setBagAttribute(
-        DERObjectIdentifier oid,
-        DEREncodable        attribute)
+        ASN1ObjectIdentifier oid,
+        ASN1Encodable attribute)
     {
         attrCarrier.setBagAttribute(oid, attribute);
     }
 
-    public DEREncodable getBagAttribute(
-        DERObjectIdentifier oid)
+    public ASN1Encodable getBagAttribute(
+        ASN1ObjectIdentifier oid)
     {
         return attrCarrier.getBagAttribute(oid);
     }

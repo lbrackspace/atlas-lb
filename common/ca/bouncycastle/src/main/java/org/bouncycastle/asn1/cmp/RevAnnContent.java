@@ -1,33 +1,33 @@
 package org.bouncycastle.asn1.cmp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.crmf.CertId;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extensions;
 
 public class RevAnnContent
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private PKIStatus status;
     private CertId certId;
-    private DERGeneralizedTime willBeRevokedAt;
-    private DERGeneralizedTime badSinceDate;
-    private X509Extensions crlDetails;
+    private ASN1GeneralizedTime willBeRevokedAt;
+    private ASN1GeneralizedTime badSinceDate;
+    private Extensions crlDetails;
     
     private RevAnnContent(ASN1Sequence seq)
     {
         status = PKIStatus.getInstance(seq.getObjectAt(0));
         certId = CertId.getInstance(seq.getObjectAt(1));
-        willBeRevokedAt = DERGeneralizedTime.getInstance(seq.getObjectAt(2));
-        badSinceDate = DERGeneralizedTime.getInstance(seq.getObjectAt(3));
+        willBeRevokedAt = ASN1GeneralizedTime.getInstance(seq.getObjectAt(2));
+        badSinceDate = ASN1GeneralizedTime.getInstance(seq.getObjectAt(3));
 
         if (seq.size() > 4)
         {
-            crlDetails = X509Extensions.getInstance(seq.getObjectAt(4));
+            crlDetails = Extensions.getInstance(seq.getObjectAt(4));
         }
     }
 
@@ -38,12 +38,12 @@ public class RevAnnContent
             return (RevAnnContent)o;
         }
 
-        if (o instanceof ASN1Sequence)
+        if (o != null)
         {
-            return new RevAnnContent((ASN1Sequence)o);
+            return new RevAnnContent(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
     }
 
     public PKIStatus getStatus()
@@ -56,17 +56,17 @@ public class RevAnnContent
         return certId;
     }
 
-    public DERGeneralizedTime getWillBeRevokedAt()
+    public ASN1GeneralizedTime getWillBeRevokedAt()
     {
         return willBeRevokedAt;
     }
 
-    public DERGeneralizedTime getBadSinceDate()
+    public ASN1GeneralizedTime getBadSinceDate()
     {
         return badSinceDate;
     }
 
-    public X509Extensions getCrlDetails()
+    public Extensions getCrlDetails()
     {
         return crlDetails;
     }
@@ -84,7 +84,7 @@ public class RevAnnContent
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

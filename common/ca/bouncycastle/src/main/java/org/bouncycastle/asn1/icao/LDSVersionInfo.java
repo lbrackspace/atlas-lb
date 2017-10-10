@@ -1,14 +1,14 @@
 package org.bouncycastle.asn1.icao;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 
 public class LDSVersionInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private DERPrintableString ldsVersion;
     private DERPrintableString unicodeVersion;
@@ -57,13 +57,13 @@ public class LDSVersionInfo
     /**
      * <pre>
      * LDSVersionInfo ::= SEQUENCE {
-	 *    ldsVersion PRINTABLE STRING
-	 *    unicodeVersion PRINTABLE STRING
+     *    ldsVersion PRINTABLE STRING
+     *    unicodeVersion PRINTABLE STRING
      *  }
      * </pre>
-     * @return
+     * @return  an ASN.1 primitive composition of this LDSVersionInfo.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

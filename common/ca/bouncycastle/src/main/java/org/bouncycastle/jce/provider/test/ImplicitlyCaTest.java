@@ -1,22 +1,5 @@
 package org.bouncycastle.jce.provider.test;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.jce.ECPointUtil;
-import org.bouncycastle.jce.interfaces.ConfigurableProvider;
-import org.bouncycastle.jce.interfaces.ECPrivateKey;
-import org.bouncycastle.jce.interfaces.ECPublicKey;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPrivateKeySpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.math.ec.ECCurve;
-import org.bouncycastle.util.encoders.Hex;
-import org.bouncycastle.util.test.FixedSecureRandom;
-import org.bouncycastle.util.test.SimpleTest;
-
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -30,13 +13,31 @@ import java.security.spec.EllipticCurve;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jcajce.provider.config.ConfigurableProvider;
+import org.bouncycastle.jce.ECPointUtil;
+import org.bouncycastle.jce.interfaces.ECPrivateKey;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.util.test.FixedSecureRandom;
+import org.bouncycastle.util.test.SimpleTest;
+
 public class ImplicitlyCaTest
     extends SimpleTest
 {
     byte[] k1 = Hex.decode("d5014e4b60ef2ba8b6211b4062ba3224e0427dd3");
     byte[] k2 = Hex.decode("345e8d05c075c3a508df729a1685690e68fcfb8c8117847e89063bca1f85d968fd281540b6e13bd1af989a1fbf17e06462bf511f9d0b140fb48ac1b1baa5bded");
 
-    SecureRandom random = new FixedSecureRandom(new byte[][] { k1, k2 });
+    SecureRandom random = new FixedSecureRandom(
+        new FixedSecureRandom.Source[] { new FixedSecureRandom.Data(k1), new FixedSecureRandom.Data(k2) });
 
     public void performTest()
         throws Exception
@@ -122,12 +123,12 @@ public class ImplicitlyCaTest
 
         testEncoding(sKey, vKey);
 
-        ECPublicKey vKey2 = (ECPublicKey)fact.generatePublic(new ECPublicKeySpec(vKey.getQ(), ecSpec));
-        ECPrivateKey sKey2 = (ECPrivateKey)fact.generatePrivate(new ECPrivateKeySpec(sKey.getD(), ecSpec));
+        ECPublicKey vKey2 = (ECPublicKey)fact.generatePublic(new ECPublicKeySpec(vKey.getQ(), null));
+        ECPrivateKey sKey2 = (ECPrivateKey)fact.generatePrivate(new ECPrivateKeySpec(sKey.getD(), null));
 
         if (!vKey.equals(vKey2) || vKey.hashCode() != vKey2.hashCode())
         {
-            fail("private equals/hashCode failed");
+            fail("public equals/hashCode failed");
         }
 
         if (!sKey.equals(sKey2) || sKey.hashCode() != sKey2.hashCode())
@@ -250,7 +251,7 @@ public class ImplicitlyCaTest
 
         PrivateKeyInfo sInfo = PrivateKeyInfo.getInstance(new ASN1InputStream(bytes).readObject());
         
-        if (!sInfo.getAlgorithmId().getParameters().equals(DERNull.INSTANCE))
+        if (!sInfo.getPrivateKeyAlgorithm().getParameters().equals(DERNull.INSTANCE))
         {
             fail("private key parameters wrong");
         }
@@ -271,7 +272,7 @@ public class ImplicitlyCaTest
 
         SubjectPublicKeyInfo vInfo = SubjectPublicKeyInfo.getInstance(new ASN1InputStream(bytes).readObject());
 
-        if (!vInfo.getAlgorithmId().getParameters().equals(DERNull.INSTANCE))
+        if (!vInfo.getAlgorithm().getParameters().equals(DERNull.INSTANCE))
         {
             fail("public key parameters wrong");
         }

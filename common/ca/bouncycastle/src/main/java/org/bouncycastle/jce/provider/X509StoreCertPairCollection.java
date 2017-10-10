@@ -1,12 +1,12 @@
 package org.bouncycastle.jce.provider;
 
+import java.util.Collection;
+
 import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.Selector;
 import org.bouncycastle.x509.X509CollectionStoreParameters;
 import org.bouncycastle.x509.X509StoreParameters;
 import org.bouncycastle.x509.X509StoreSpi;
-
-import java.util.Collection;
 
 /**
  * This class is a collection based Bouncy Castle
@@ -49,12 +49,12 @@ public class X509StoreCertPairCollection extends X509StoreSpi
     /**
      * Returns a colelction of certificate pairs which match the given
      * <code>selector</code>.
-     * <p/>
+     * <p>
      * The returned collection contains
      * {@link org.bouncycastle.x509.X509CertificatePair}s. The selector must be
      * a {@link org.bouncycastle.x509.X509CertPairStoreSelector} to select
      * certificate pairs.
-     *
+     * </p>
      * @return A collection with matching certificate pairs.
      */
     public Collection engineGetMatches(Selector selector)

@@ -2,18 +2,31 @@ package org.bouncycastle.asn1.cms;
 
 import org.bouncycastle.asn1.ASN1Choice;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERTaggedObject;
 
+/**
+ * <a href="http://tools.ietf.org/html/rfc5652#section-6.2">RFC 5652</a>:
+ * Content encryption key delivery mechanisms.
+ * <p>
+ * <pre>
+ * RecipientInfo ::= CHOICE {
+ *     ktri      KeyTransRecipientInfo,
+ *     kari  [1] KeyAgreeRecipientInfo,
+ *     kekri [2] KEKRecipientInfo,
+ *     pwri  [3] PasswordRecipientInfo,
+ *     ori   [4] OtherRecipientInfo }
+ * </pre>
+ */
 public class RecipientInfo
-    extends ASN1Encodable
+    extends ASN1Object
     implements ASN1Choice
 {
-    DEREncodable    info;
+    ASN1Encodable    info;
 
     public RecipientInfo(
         KeyTransRecipientInfo info)
@@ -46,11 +59,25 @@ public class RecipientInfo
     }
 
     public RecipientInfo(
-        DERObject   info)
+        ASN1Primitive   info)
     {
         this.info = info;
     }
 
+    /**
+     * Return a RecipientInfo object from the given object.
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> null &rarr; null
+     * <li> {@link RecipientInfo} object
+     * <li> {@link org.bouncycastle.asn1.ASN1Sequence#getInstance(java.lang.Object) ASN1Sequence} input formats with RecipientInfo structure inside
+     * <li> {@link org.bouncycastle.asn1.ASN1TaggedObject#getInstance(java.lang.Object) ASN1TaggedObject} input formats with RecipientInfo structure inside
+     * </ul>
+     *
+     * @param o the object we want converted.
+     * @exception IllegalArgumentException if the object cannot be converted.
+     */
     public static RecipientInfo getInstance(
         Object  o)
     {
@@ -71,7 +98,7 @@ public class RecipientInfo
                                                     + o.getClass().getName());
     }
 
-    public DERInteger getVersion()
+    public ASN1Integer getVersion()
     {
         if (info instanceof ASN1TaggedObject)
         {
@@ -86,7 +113,7 @@ public class RecipientInfo
             case 3:
                 return PasswordRecipientInfo.getInstance(o, false).getVersion();
             case 4:
-                return new DERInteger(0);    // no syntax version for OtherRecipientInfo
+                return new ASN1Integer(0);    // no syntax version for OtherRecipientInfo
             default:
                 throw new IllegalStateException("unknown tag");
             }
@@ -100,7 +127,7 @@ public class RecipientInfo
         return (info instanceof ASN1TaggedObject);
     }
 
-    public DEREncodable getInfo()
+    public ASN1Encodable getInfo()
     {
         if (info instanceof ASN1TaggedObject)
         {
@@ -138,17 +165,9 @@ public class RecipientInfo
 
     /**
      * Produce an object suitable for an ASN1OutputStream.
-     * <pre>
-     * RecipientInfo ::= CHOICE {
-     *     ktri KeyTransRecipientInfo,
-     *     kari [1] KeyAgreeRecipientInfo,
-     *     kekri [2] KEKRecipientInfo,
-     *     pwri [3] PasswordRecipientInfo,
-     *     ori [4] OtherRecipientInfo }
-     * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
-        return info.getDERObject();
+        return info.toASN1Primitive();
     }
 }

@@ -1,14 +1,14 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 public class AttributeCertificate
-    extends ASN1Encodable
+    extends ASN1Object
 {
     AttributeCertificateInfo    acinfo;
     AlgorithmIdentifier         signatureAlgorithm;
@@ -41,7 +41,10 @@ public class AttributeCertificate
         this.signatureAlgorithm = signatureAlgorithm;
         this.signatureValue = signatureValue;
     }
-    
+
+    /**
+     * @deprecated use getInstance() method.
+     */
     public AttributeCertificate(
         ASN1Sequence    seq)
     {
@@ -81,7 +84,7 @@ public class AttributeCertificate
      *  }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

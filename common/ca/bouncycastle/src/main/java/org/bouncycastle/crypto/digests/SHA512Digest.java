@@ -1,6 +1,7 @@
 package org.bouncycastle.crypto.digests;
 
-import org.bouncycastle.crypto.util.Pack;
+import org.bouncycastle.util.Memoable;
+import org.bouncycastle.util.Pack;
 
 
 /**
@@ -33,6 +34,16 @@ public class SHA512Digest
     public SHA512Digest(SHA512Digest t)
     {
         super(t);
+    }
+
+    /**
+     * State constructor - create a digest initialised with the state of a previous one.
+     *
+     * @param encodedState the encoded state from the originating digest.
+     */
+    public SHA512Digest(byte[] encodedState)
+    {
+        restoreState(encodedState);
     }
 
     public String getAlgorithmName()
@@ -84,6 +95,25 @@ public class SHA512Digest
         H6 = 0x9b05688c2b3e6c1fL;
         H7 = 0x1f83d9abfb41bd6bL;
         H8 = 0x5be0cd19137e2179L;
+    }
+
+    public Memoable copy()
+    {
+        return new SHA512Digest(this);
+    }
+
+    public void reset(Memoable other)
+    {
+        SHA512Digest d = (SHA512Digest)other;
+
+        copyIn(d);
+    }
+
+    public byte[] getEncodedState()
+    {
+        byte[] encoded = new byte[getEncodedStateSize()];
+        super.populateState(encoded);
+        return encoded;
     }
 }
 

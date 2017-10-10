@@ -1,25 +1,5 @@
 package org.bouncycastle.openpgp.test;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import org.bouncycastle.bcpg.BCPGOutputStream;
-import org.bouncycastle.bcpg.PublicKeyAlgorithmTags;
-import org.bouncycastle.openpgp.PGPCompressedData;
-import org.bouncycastle.openpgp.PGPLiteralData;
-import org.bouncycastle.openpgp.PGPLiteralDataGenerator;
-import org.bouncycastle.openpgp.PGPObjectFactory;
-import org.bouncycastle.openpgp.PGPOnePassSignature;
-import org.bouncycastle.openpgp.PGPOnePassSignatureList;
-import org.bouncycastle.openpgp.PGPPublicKeyRing;
-import org.bouncycastle.openpgp.PGPSecretKeyRing;
-import org.bouncycastle.openpgp.PGPSignature;
-import org.bouncycastle.openpgp.PGPSignatureGenerator;
-import org.bouncycastle.openpgp.PGPSignatureList;
-import org.bouncycastle.openpgp.PGPUtil;
-import org.bouncycastle.util.test.UncloseableOutputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -28,14 +8,36 @@ import java.io.OutputStream;
 import java.security.Security;
 import java.util.Date;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import org.bouncycastle.bcpg.BCPGOutputStream;
+import org.bouncycastle.bcpg.PublicKeyAlgorithmTags;
+import org.bouncycastle.openpgp.PGPCompressedData;
+import org.bouncycastle.openpgp.PGPLiteralData;
+import org.bouncycastle.openpgp.PGPLiteralDataGenerator;
+import org.bouncycastle.openpgp.PGPOnePassSignature;
+import org.bouncycastle.openpgp.PGPOnePassSignatureList;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.openpgp.PGPSignature;
+import org.bouncycastle.openpgp.PGPSignatureGenerator;
+import org.bouncycastle.openpgp.PGPSignatureList;
+import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory;
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.util.test.UncloseableOutputStream;
+
 /**
  * GPG compatability test vectors
  */
 public class DSA2Test
     extends TestCase
 {
-    private static final String TEST_DATA_HOME = "bc.test.data.home";
-
     public void setUp()
     {
         if (Security.getProvider("BC") == null)
@@ -142,9 +144,9 @@ public class DSA2Test
         String                data = "hello world!";
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ByteArrayInputStream  testIn = new ByteArrayInputStream(data.getBytes());
-        PGPSignatureGenerator sGen = new PGPSignatureGenerator(PublicKeyAlgorithmTags.DSA, digest, "BC");
+        PGPSignatureGenerator sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(PublicKeyAlgorithmTags.DSA, digest).setProvider("BC"));
 
-        sGen.initSign(PGPSignature.BINARY_DOCUMENT, secRing.getSecretKey().extractPrivateKey("test".toCharArray(), "BC"));
+        sGen.init(PGPSignature.BINARY_DOCUMENT, secRing.getSecretKey().extractPrivateKey(new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build("test".toCharArray())));
 
         BCPGOutputStream bcOut = new BCPGOutputStream(bOut);
 
@@ -171,7 +173,7 @@ public class DSA2Test
 
         sGen.generate().encode(bcOut);
 
-        PGPObjectFactory        pgpFact = new PGPObjectFactory(bOut.toByteArray());
+        JcaPGPObjectFactory        pgpFact = new JcaPGPObjectFactory(bOut.toByteArray());
         PGPOnePassSignatureList p1 = (PGPOnePassSignatureList)pgpFact.nextObject();
         PGPOnePassSignature     ops = p1.get(0);
 
@@ -186,7 +188,7 @@ public class DSA2Test
 
         InputStream             dIn = p2.getInputStream();
 
-        ops.initVerify(pubRing.getPublicKey(), "BC");
+        ops.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), pubRing.getPublicKey());
 
         while ((ch = dIn.read()) >= 0)
         {
@@ -208,11 +210,11 @@ public class DSA2Test
         throws Exception
     {
         PGPPublicKeyRing publicKey = loadPublicKey(publicKeyFile);
-        PGPObjectFactory pgpFact = loadSig(sigFile);
+        JcaPGPObjectFactory pgpFact = loadSig(sigFile);
 
         PGPCompressedData c1 = (PGPCompressedData)pgpFact.nextObject();
 
-        pgpFact = new PGPObjectFactory(c1.getDataStream());
+        pgpFact = new JcaPGPObjectFactory(c1.getDataStream());
 
         PGPOnePassSignatureList p1 = (PGPOnePassSignatureList)pgpFact.nextObject();
         PGPOnePassSignature ops = p1.get(0);
@@ -221,7 +223,7 @@ public class DSA2Test
 
         InputStream dIn = p2.getInputStream();
 
-        ops.initVerify(publicKey.getPublicKey(), "BC");
+        ops.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), publicKey.getPublicKey());
 
         int ch;
         while ((ch = dIn.read()) >= 0)
@@ -234,43 +236,25 @@ public class DSA2Test
         assertTrue(ops.verify(p3.get(0)));
     }
 
-    private PGPObjectFactory loadSig(
+    private JcaPGPObjectFactory loadSig(
         String sigName)
         throws Exception
     {
-        FileInputStream fIn = new FileInputStream(getDataHome() + "/sigs/" + sigName);
-
-        return new PGPObjectFactory(fIn);
+        return new JcaPGPObjectFactory(this.getClass().getResourceAsStream("dsa/sigs/" + sigName));
     }
 
     private PGPPublicKeyRing loadPublicKey(
         String keyName)
         throws Exception
     {
-        FileInputStream fIn = new FileInputStream(getDataHome() + "/keys/" + keyName);
-
-        return new PGPPublicKeyRing(fIn);
+        return new PGPPublicKeyRing(this.getClass().getResourceAsStream("dsa/keys/" + keyName), new JcaKeyFingerprintCalculator());
     }
 
     private PGPSecretKeyRing loadSecretKey(
         String keyName)
         throws Exception
     {
-        FileInputStream fIn = new FileInputStream(getDataHome() + "/keys/" + keyName);
-
-        return new PGPSecretKeyRing(fIn);
-    }
-
-    private String getDataHome()
-    {
-        String dataHome = System.getProperty(TEST_DATA_HOME);
-
-        if (dataHome == null)
-        {
-            throw new IllegalStateException(TEST_DATA_HOME + " property not set");
-        }
-
-        return dataHome + "/openpgp/dsa";
+        return new PGPSecretKeyRing(this.getClass().getResourceAsStream("dsa/keys/" + keyName), new JcaKeyFingerprintCalculator());
     }
 
     public static void main (String[] args)

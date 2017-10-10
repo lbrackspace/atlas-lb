@@ -2,6 +2,7 @@ package org.bouncycastle.cert.crmf;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,27 +11,30 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Null;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.crmf.AttributeTypeAndValue;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.crmf.CertRequest;
+import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
+import org.bouncycastle.asn1.crmf.OptionalValidity;
 import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.crmf.SubsequentMessage;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.Time;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.ContentSigner;
 
 public class CertificateRequestMessageBuilder
 {
     private final BigInteger certReqId;
 
-    private X509ExtensionsGenerator extGenerator;
+    private ExtensionsGenerator extGenerator;
     private CertTemplateBuilder templateBuilder;
     private List controls;
     private ContentSigner popSigner;
@@ -44,7 +48,7 @@ public class CertificateRequestMessageBuilder
     {
         this.certReqId = certReqId;
 
-        this.extGenerator = new X509ExtensionsGenerator();
+        this.extGenerator = new ExtensionsGenerator();
         this.templateBuilder = new CertTemplateBuilder();
         this.controls = new ArrayList();
     }
@@ -89,12 +93,38 @@ public class CertificateRequestMessageBuilder
         return this;
     }
 
+    /**
+     * Request a validity period for the certificate. Either, but not both, of the date parameters may be null.
+     *
+     * @param notBeforeDate not before date for certificate requested.
+     * @param notAfterDate not after date for the certificate requested.
+     *
+     * @return the current builder.
+     */
+    public CertificateRequestMessageBuilder setValidity(Date notBeforeDate, Date notAfterDate)
+    {
+        templateBuilder.setValidity(new OptionalValidity(createTime(notBeforeDate), createTime(notAfterDate)));
+
+        return this;
+    }
+
+    private Time createTime(Date date)
+    {
+        if (date != null)
+        {
+            return new Time(date);
+        }
+
+        return null;
+    }
+
     public CertificateRequestMessageBuilder addExtension(
         ASN1ObjectIdentifier oid,
         boolean              critical,
         ASN1Encodable        value)
+        throws CertIOException
     {
-        extGenerator.addExtension(oid, critical,  value);
+        CRMFUtil.addExtension(extGenerator, oid, critical, value);
 
         return this;
     }
@@ -177,7 +207,7 @@ public class CertificateRequestMessageBuilder
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 
-        v.add(new DERInteger(certReqId));
+        v.add(new ASN1Integer(certReqId));
 
         if (!extGenerator.isEmpty())
         {
@@ -208,21 +238,32 @@ public class CertificateRequestMessageBuilder
 
         if (popSigner != null)
         {
-            SubjectPublicKeyInfo pubKeyInfo = request.getCertTemplate().getPublicKey();
-            ProofOfPossessionSigningKeyBuilder builder = new ProofOfPossessionSigningKeyBuilder(pubKeyInfo);
+            CertTemplate template = request.getCertTemplate();
 
-            if (sender != null)
+            if (template.getSubject() == null || template.getPublicKey() == null)
             {
-                builder.setSender(sender);
+                SubjectPublicKeyInfo pubKeyInfo = request.getCertTemplate().getPublicKey();
+                ProofOfPossessionSigningKeyBuilder builder = new ProofOfPossessionSigningKeyBuilder(pubKeyInfo);
+
+                if (sender != null)
+                {
+                    builder.setSender(sender);
+                }
+                else
+                {
+                    PKMACValueGenerator pkmacGenerator = new PKMACValueGenerator(pkmacBuilder);
+
+                    builder.setPublicKeyMac(pkmacGenerator, password);
+                }
+
+                v.add(new ProofOfPossession(builder.build(popSigner)));
             }
             else
             {
-                PKMACValueGenerator pkmacGenerator = new PKMACValueGenerator(pkmacBuilder);
+                ProofOfPossessionSigningKeyBuilder builder = new ProofOfPossessionSigningKeyBuilder(request);
 
-                builder.setPublicKeyMac(pkmacGenerator, password);
+                v.add(new ProofOfPossession(builder.build(popSigner)));
             }
-
-            v.add(new ProofOfPossession(builder.build(popSigner)));
         }
         else if (popoPrivKey != null)
         {

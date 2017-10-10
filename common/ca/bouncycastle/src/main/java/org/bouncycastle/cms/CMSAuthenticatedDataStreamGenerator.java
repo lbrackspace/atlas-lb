@@ -2,31 +2,18 @@ package org.bouncycastle.cms;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
-import java.security.SecureRandom;
-import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.InvalidParameterSpecException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.Mac;
-import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.BERSequenceGenerator;
 import org.bouncycastle.asn1.BERSet;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -34,7 +21,6 @@ import org.bouncycastle.asn1.cms.AuthenticatedData;
 import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.operator.DigestCalculator;
-import org.bouncycastle.operator.GenericKey;
 import org.bouncycastle.operator.MacCalculator;
 import org.bouncycastle.util.io.TeeOutputStream;
 
@@ -175,7 +161,12 @@ public class CMSAuthenticatedDataStreamGenerator
             //
             BERSequenceGenerator authGen = new BERSequenceGenerator(cGen.getRawOutputStream(), 0, true);
 
-            authGen.addObject(new DERInteger(AuthenticatedData.calculateVersion(null)));
+            authGen.addObject(new ASN1Integer(AuthenticatedData.calculateVersion(originatorInfo)));
+
+            if (originatorInfo != null)
+            {
+                authGen.addObject(new DERTaggedObject(false, 0, originatorInfo));
+            }
 
             if (berEncodeRecipientSet)
             {
@@ -283,7 +274,7 @@ public class CMSAuthenticatedDataStreamGenerator
 
             if (digestCalculator != null)
             {
-                parameters = Collections.unmodifiableMap(getBaseParameters(contentType, digestCalculator.getAlgorithmIdentifier(), digestCalculator.getDigest()));
+                parameters = Collections.unmodifiableMap(getBaseParameters(contentType, digestCalculator.getAlgorithmIdentifier(), macCalculator.getAlgorithmIdentifier(), digestCalculator.getDigest()));
 
                 if (authGen == null)
                 {
@@ -294,7 +285,7 @@ public class CMSAuthenticatedDataStreamGenerator
 
                 OutputStream mOut = macCalculator.getOutputStream();
 
-                mOut.write(authed.getDEREncoded());
+                mOut.write(authed.getEncoded(ASN1Encoding.DER));
 
                 mOut.close();
 
@@ -315,281 +306,5 @@ public class CMSAuthenticatedDataStreamGenerator
             envGen.close();
             cGen.close();
         }
-    }
-
-
-    /**
-     * constructor allowing specific source of randomness
-     * @param rand instance of SecureRandom to use
-     * @deprecated no longer of any use, use basic constructor.
-     */
-    public CMSAuthenticatedDataStreamGenerator(
-        SecureRandom rand)
-    {
-        super(rand);
-    }
-
-    private class OldCmsAuthenticatedDataOutputStream
-        extends OutputStream
-    {
-        private OutputStream dataStream;
-        private Mac mac;
-        private BERSequenceGenerator cGen;
-        private BERSequenceGenerator envGen;
-        private BERSequenceGenerator eiGen;
-
-        public OldCmsAuthenticatedDataOutputStream(
-            OutputStream dataStream,
-            Mac mac,
-            BERSequenceGenerator cGen,
-            BERSequenceGenerator envGen,
-            BERSequenceGenerator eiGen)
-        {
-            this.dataStream = dataStream;
-            this.mac = mac;
-            this.cGen = cGen;
-            this.envGen = envGen;
-            this.eiGen = eiGen;
-        }
-
-        public void write(
-            int b)
-            throws IOException
-        {
-            dataStream.write(b);
-        }
-
-        public void write(
-            byte[] bytes,
-            int    off,
-            int    len)
-            throws IOException
-        {
-            dataStream.write(bytes, off, len);
-        }
-
-        public void write(
-            byte[] bytes)
-            throws IOException
-        {
-            dataStream.write(bytes);
-        }
-
-        public void close()
-            throws IOException
-        {
-            dataStream.close();
-            eiGen.close();
-
-            // [TODO] auth attributes go here
-            envGen.addObject(new DEROctetString(mac.doFinal()));
-            // [TODO] unauth attributes go here
-
-            envGen.close();
-            cGen.close();
-        }
-    }
-
-    /**
-     * generate an enveloped object that contains an CMS Enveloped Data
-     * object using the given provider and the passed in key generator.
-     * @throws java.io.IOException
-     * @deprecated
-     */
-    private OutputStream open(
-        OutputStream out,
-        String       macOID,
-        KeyGenerator keyGen,
-        Provider     provider)
-        throws NoSuchAlgorithmException, CMSException
-    {
-        Provider            encProvider = keyGen.getProvider();
-        SecretKey           encKey = keyGen.generateKey();
-        AlgorithmParameterSpec params = generateParameterSpec(macOID, encKey, encProvider);
-
-        Iterator it = oldRecipientInfoGenerators.iterator();
-        ASN1EncodableVector recipientInfos = new ASN1EncodableVector();
-
-        while (it.hasNext())
-        {
-            IntRecipientInfoGenerator recipient = (IntRecipientInfoGenerator)it.next();
-
-            try
-            {
-                recipientInfos.add(recipient.generate(encKey, rand, provider));
-            }
-            catch (InvalidKeyException e)
-            {
-                throw new CMSException("key inappropriate for algorithm.", e);
-            }
-            catch (GeneralSecurityException e)
-            {
-                throw new CMSException("error making encrypted content.", e);
-            }
-        }
-
-        for (it = recipientInfoGenerators.iterator(); it.hasNext();)
-        {
-            RecipientInfoGenerator recipient = (RecipientInfoGenerator)it.next();
-
-            recipientInfos.add(recipient.generate(new GenericKey(encKey)));
-        }
-
-        return open(out, macOID, encKey, params, recipientInfos, encProvider);
-    }
-
-    protected OutputStream open(
-        OutputStream        out,
-        String              macOID,
-        SecretKey           encKey,
-        AlgorithmParameterSpec params,
-        ASN1EncodableVector recipientInfos,
-        String              provider)
-        throws NoSuchAlgorithmException, NoSuchProviderException, CMSException
-    {
-        return open(out, macOID, encKey, params, recipientInfos, CMSUtils.getProvider(provider));
-    }
-
-    /**
-     * @deprecated
-     */
-    protected OutputStream open(
-        OutputStream        out,
-        String              macOID,
-        SecretKey           encKey,
-        AlgorithmParameterSpec params,
-        ASN1EncodableVector recipientInfos,
-        Provider            provider)
-        throws NoSuchAlgorithmException, CMSException
-    {
-        try
-        {
-            //
-            // ContentInfo
-            //
-            BERSequenceGenerator cGen = new BERSequenceGenerator(out);
-
-            cGen.addObject(CMSObjectIdentifiers.authenticatedData);
-
-            //
-            // Authenticated Data
-            //
-            BERSequenceGenerator authGen = new BERSequenceGenerator(cGen.getRawOutputStream(), 0, true);
-
-            authGen.addObject(new DERInteger(AuthenticatedData.calculateVersion(null)));
-
-            if (berEncodeRecipientSet)
-            {
-                authGen.getRawOutputStream().write(new BERSet(recipientInfos).getEncoded());
-            }
-            else
-            {
-                authGen.getRawOutputStream().write(new DERSet(recipientInfos).getEncoded());
-            }
-
-            Mac mac = CMSEnvelopedHelper.INSTANCE.getMac(macOID, provider);
-
-            mac.init(encKey, params);
-
-            AlgorithmIdentifier macAlgId = getAlgorithmIdentifier(macOID, params, provider);
-
-            authGen.getRawOutputStream().write(macAlgId.getEncoded());
-
-            BERSequenceGenerator eiGen = new BERSequenceGenerator(authGen.getRawOutputStream());
-
-            eiGen.addObject(CMSObjectIdentifiers.data);
-
-            OutputStream octetStream = CMSUtils.createBEROctetOutputStream(
-                    eiGen.getRawOutputStream(), 0, false, bufferSize);
-
-            OutputStream mOut = new TeeOutputStream(octetStream, new MacOutputStream(mac));
-
-            return new OldCmsAuthenticatedDataOutputStream(mOut, mac, cGen, authGen, eiGen);
-        }
-        catch (InvalidKeyException e)
-        {
-            throw new CMSException("key invalid in message.", e);
-        }
-        catch (NoSuchPaddingException e)
-        {
-            throw new CMSException("required padding not supported.", e);
-        }
-        catch (InvalidAlgorithmParameterException e)
-        {
-            throw new CMSException("algorithm parameter invalid.", e);
-        }
-        catch (InvalidParameterSpecException e)
-        {
-            throw new CMSException("algorithm parameter spec invalid.", e);
-        }
-        catch (IOException e)
-        {
-            throw new CMSException("exception decoding algorithm parameters.", e);
-        }
-    }
-
-    /**
-     * generate an authenticated object that contains an CMS Authenticated Data
-     * object using the given provider.
-     * @throws java.io.IOException
-     * @deprecated use open(out, MacCalculator)
-     */
-    public OutputStream open(
-        OutputStream    out,
-        String          encryptionOID,
-        String          provider)
-        throws NoSuchAlgorithmException, NoSuchProviderException, CMSException, IOException
-    {
-        return open(out, encryptionOID, CMSUtils.getProvider(provider));
-    }
-
-    /**
-     * @deprecated use open(out, MacCalculator)
-     */
-    public OutputStream open(
-        OutputStream    out,
-        String          encryptionOID,
-        Provider        provider)
-        throws NoSuchAlgorithmException, CMSException, IOException
-    {
-        KeyGenerator keyGen = CMSEnvelopedHelper.INSTANCE.createSymmetricKeyGenerator(encryptionOID, provider);
-
-        keyGen.init(rand);
-
-        return open(out, encryptionOID, keyGen, provider);
-    }
-
-    /**
-     * generate an enveloped object that contains an CMS Enveloped Data
-     * object using the given provider.
-     * @deprecated use open(out, MacCalculator)
-     */
-    public OutputStream open(
-        OutputStream    out,
-        String          encryptionOID,
-        int             keySize,
-        String          provider)
-        throws NoSuchAlgorithmException, NoSuchProviderException, CMSException, IOException
-    {
-        return open(out, encryptionOID, keySize, CMSUtils.getProvider(provider));
-    }
-
-    /**
-     * generate an enveloped object that contains an CMS Enveloped Data
-     * object using the given provider.
-     * @deprecated use open(out, MacCalculator)
-     */
-    public OutputStream open(
-        OutputStream    out,
-        String          encryptionOID,
-        int             keySize,
-        Provider        provider)
-        throws NoSuchAlgorithmException, CMSException, IOException
-    {
-        KeyGenerator keyGen = CMSEnvelopedHelper.INSTANCE.createSymmetricKeyGenerator(encryptionOID, provider);
-
-        keyGen.init(keySize, rand);
-
-        return open(out, encryptionOID, keyGen, provider);
     }
 }

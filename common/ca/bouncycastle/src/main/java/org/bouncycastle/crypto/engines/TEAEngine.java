@@ -3,6 +3,7 @@ package org.bouncycastle.crypto.engines;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.OutputLengthException;
 import org.bouncycastle.crypto.params.KeyParameter;
 
 /**
@@ -85,7 +86,7 @@ public class TEAEngine
         
         if ((outOff + block_size) > out.length)
         {
-            throw new DataLengthException("output buffer too short");
+            throw new OutputLengthException("output buffer too short");
         }
         
         return (_forEncryption) ? encryptBlock(in, inOff, out, outOff)
@@ -104,6 +105,11 @@ public class TEAEngine
     private void setKey(
         byte[]      key)
     {
+        if (key.length != 16) 
+        {
+            throw new IllegalArgumentException("Key size must be 128 bits.");
+        }
+
         _a = bytesToInt(key, 0);
         _b = bytesToInt(key, 4);
         _c = bytesToInt(key, 8);

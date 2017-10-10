@@ -1,12 +1,16 @@
 package org.bouncycastle.bcpg;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import org.bouncycastle.util.Encodable;
 
 /**
  * Basic type for a PGP packet.
  */
 public abstract class ContainedPacket 
     extends Packet
+    implements Encodable
 {
     public byte[] getEncoded() 
         throws IOException
@@ -15,7 +19,9 @@ public abstract class ContainedPacket
         BCPGOutputStream         pOut = new BCPGOutputStream(bOut);
         
         pOut.writePacket(this);
-        
+
+        pOut.close();
+
         return bOut.toByteArray();
     }
     

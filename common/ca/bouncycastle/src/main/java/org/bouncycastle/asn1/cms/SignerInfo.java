@@ -1,24 +1,81 @@
 package org.bouncycastle.asn1.cms;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import java.util.Enumeration;
+
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
-import java.util.Enumeration;
-
+/**
+ * <a href="http://tools.ietf.org/html/rfc5652#section-5.3">RFC 5652</a>:
+ * Signature container per Signer, see {@link SignerIdentifier}.
+ * <pre>
+ * PKCS#7:
+ *
+ * SignerInfo ::= SEQUENCE {
+ *     version                   Version,
+ *     sid                       SignerIdentifier,
+ *     digestAlgorithm           DigestAlgorithmIdentifier,
+ *     authenticatedAttributes   [0] IMPLICIT Attributes OPTIONAL,
+ *     digestEncryptionAlgorithm DigestEncryptionAlgorithmIdentifier,
+ *     encryptedDigest           EncryptedDigest,
+ *     unauthenticatedAttributes [1] IMPLICIT Attributes OPTIONAL
+ * }
+ *
+ * EncryptedDigest ::= OCTET STRING
+ *
+ * DigestAlgorithmIdentifier ::= AlgorithmIdentifier
+ *
+ * DigestEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier
+ *
+ * -----------------------------------------
+ *
+ * RFC 5652:
+ *
+ * SignerInfo ::= SEQUENCE {
+ *     version            CMSVersion,
+ *     sid                SignerIdentifier,
+ *     digestAlgorithm    DigestAlgorithmIdentifier,
+ *     signedAttrs        [0] IMPLICIT SignedAttributes OPTIONAL,
+ *     signatureAlgorithm SignatureAlgorithmIdentifier,
+ *     signature          SignatureValue,
+ *     unsignedAttrs      [1] IMPLICIT UnsignedAttributes OPTIONAL
+ * }
+ *
+ * -- {@link SignerIdentifier} referenced certificates are at containing
+ * -- {@link SignedData} certificates element.
+ *
+ * SignerIdentifier ::= CHOICE {
+ *     issuerAndSerialNumber {@link IssuerAndSerialNumber},
+ *     subjectKeyIdentifier  [0] SubjectKeyIdentifier }
+ *
+ * -- See {@link Attributes} for generalized SET OF {@link Attribute}
+ *
+ * SignedAttributes   ::= SET SIZE (1..MAX) OF Attribute
+ * UnsignedAttributes ::= SET SIZE (1..MAX) OF Attribute
+ * 
+ * {@link Attribute} ::= SEQUENCE {
+ *     attrType   OBJECT IDENTIFIER,
+ *     attrValues SET OF AttributeValue }
+ *
+ * AttributeValue ::= ANY
+ * 
+ * SignatureValue ::= OCTET STRING
+ * </pre>
+ */
 public class SignerInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERInteger              version;
+    private ASN1Integer              version;
     private SignerIdentifier        sid;
     private AlgorithmIdentifier     digAlgorithm;
     private ASN1Set                 authenticatedAttributes;
@@ -26,22 +83,44 @@ public class SignerInfo
     private ASN1OctetString         encryptedDigest;
     private ASN1Set                 unauthenticatedAttributes;
 
+    /**
+     * Return a SignerInfo object from the given input
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> null &rarr; null
+     * <li> {@link SignerInfo} object
+     * <li> {@link org.bouncycastle.asn1.ASN1Sequence#getInstance(java.lang.Object) ASN1Sequence} input formats with SignerInfo structure inside
+     * </ul>
+     *
+     * @param o the object we want converted.
+     * @exception IllegalArgumentException if the object cannot be converted.
+     */
     public static SignerInfo getInstance(
         Object  o)
         throws IllegalArgumentException
     {
-        if (o == null || o instanceof SignerInfo)
+        if (o instanceof SignerInfo)
         {
             return (SignerInfo)o;
         }
-        else if (o instanceof ASN1Sequence)
+        else if (o != null)
         {
-            return new SignerInfo((ASN1Sequence)o);
+            return new SignerInfo(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + o.getClass().getName());
+        return null;
     }
 
+    /**
+     *
+     * @param sid
+     * @param digAlgorithm            CMS knows as 'digestAlgorithm'
+     * @param authenticatedAttributes CMS knows as 'signedAttrs'
+     * @param digEncryptionAlgorithm  CMS knows as 'signatureAlgorithm'
+     * @param encryptedDigest         CMS knows as 'signature'
+     * @param unauthenticatedAttributes CMS knows as 'unsignedAttrs'
+     */
     public SignerInfo(
         SignerIdentifier        sid,
         AlgorithmIdentifier     digAlgorithm,
@@ -52,11 +131,11 @@ public class SignerInfo
     {
         if (sid.isTagged())
         {
-            this.version = new DERInteger(3);
+            this.version = new ASN1Integer(3);
         }
         else
         {
-            this.version = new DERInteger(1);
+            this.version = new ASN1Integer(1);
         }
 
         this.sid = sid;
@@ -67,12 +146,49 @@ public class SignerInfo
         this.unauthenticatedAttributes = unauthenticatedAttributes;
     }
 
+    /**
+     *
+     * @param sid
+     * @param digAlgorithm            CMS knows as 'digestAlgorithm'
+     * @param authenticatedAttributes CMS knows as 'signedAttrs'
+     * @param digEncryptionAlgorithm  CMS knows as 'signatureAlgorithm'
+     * @param encryptedDigest         CMS knows as 'signature'
+     * @param unauthenticatedAttributes CMS knows as 'unsignedAttrs'
+     */
+    public SignerInfo(
+        SignerIdentifier        sid,
+        AlgorithmIdentifier     digAlgorithm,
+        Attributes              authenticatedAttributes,
+        AlgorithmIdentifier     digEncryptionAlgorithm,
+        ASN1OctetString         encryptedDigest,
+        Attributes              unauthenticatedAttributes)
+    {
+        if (sid.isTagged())
+        {
+            this.version = new ASN1Integer(3);
+        }
+        else
+        {
+            this.version = new ASN1Integer(1);
+        }
+
+        this.sid = sid;
+        this.digAlgorithm = digAlgorithm;
+        this.authenticatedAttributes = ASN1Set.getInstance(authenticatedAttributes);
+        this.digEncryptionAlgorithm = digEncryptionAlgorithm;
+        this.encryptedDigest = encryptedDigest;
+        this.unauthenticatedAttributes = ASN1Set.getInstance(unauthenticatedAttributes);
+    }
+
+    /**
+     * @deprecated use getInstance() method.
+     */
     public SignerInfo(
         ASN1Sequence seq)
     {
         Enumeration     e = seq.getObjects();
 
-        version = (DERInteger)e.nextElement();
+        version = (ASN1Integer)e.nextElement();
         sid = SignerIdentifier.getInstance(e.nextElement());
         digAlgorithm = AlgorithmIdentifier.getInstance(e.nextElement());
 
@@ -102,7 +218,7 @@ public class SignerInfo
         }
     }
 
-    public DERInteger getVersion()
+    public ASN1Integer getVersion()
     {
         return version;
     }
@@ -139,25 +255,8 @@ public class SignerInfo
 
     /**
      * Produce an object suitable for an ASN1OutputStream.
-     * <pre>
-     *  SignerInfo ::= SEQUENCE {
-     *      version Version,
-     *      SignerIdentifier sid,
-     *      digestAlgorithm DigestAlgorithmIdentifier,
-     *      authenticatedAttributes [0] IMPLICIT Attributes OPTIONAL,
-     *      digestEncryptionAlgorithm DigestEncryptionAlgorithmIdentifier,
-     *      encryptedDigest EncryptedDigest,
-     *      unauthenticatedAttributes [1] IMPLICIT Attributes OPTIONAL
-     *  }
-     *
-     *  EncryptedDigest ::= OCTET STRING
-     *
-     *  DigestAlgorithmIdentifier ::= AlgorithmIdentifier
-     *
-     *  DigestEncryptionAlgorithmIdentifier ::= AlgorithmIdentifier
-     * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

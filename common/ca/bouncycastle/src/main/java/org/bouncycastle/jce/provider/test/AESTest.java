@@ -1,8 +1,12 @@
 package org.bouncycastle.jce.provider.test;
 
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.encoders.Hex;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.Security;
 
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
@@ -10,12 +14,11 @@ import javax.crypto.CipherOutputStream;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.security.Key;
-import java.security.Security;
+
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.crypto.prng.FixedSecureRandom;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.encoders.Hex;
 
 /**
  * basic test class for the AES cipher vectors from FIPS-197
@@ -284,6 +287,82 @@ public class AESTest
         {
             // expected
         }
+
+
+        // reuse test
+        in = Cipher.getInstance("AES/GCM/NoPadding", "BC");
+        
+        in.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(N));
+
+        enc = in.doFinal(P);
+
+        try
+        {
+            in.doFinal(P);
+            fail("no exception on reuse");
+        }
+        catch (IllegalStateException e)
+        {
+            isTrue("wrong message", e.getMessage().equals("GCM cipher cannot be reused for encryption"));
+        }
+
+        try
+        {
+            in.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(N));
+            fail("no exception on reuse");
+        }
+        catch (InvalidKeyException e)
+        {
+            isTrue("wrong message", e.getMessage().equals("cannot reuse nonce for GCM encryption"));
+        }
+    }
+
+    private void ocbTest()
+        throws Exception
+    {
+        byte[] K = Hex.decode(
+              "000102030405060708090A0B0C0D0E0F");
+        byte[] P = Hex.decode(
+              "000102030405060708090A0B0C0D0E0F");
+        byte[] N = Hex.decode("000102030405060708090A0B");
+        String T = "4CBB3E4BD6B456AF";
+        byte[] C = Hex.decode(
+            "BEA5E8798DBE7110031C144DA0B2612213CC8B747807121A" + T);
+
+        Key                     key;
+        Cipher                  in, out;
+
+        key = new SecretKeySpec(K, "AES");
+
+        in = Cipher.getInstance("AES/OCB/NoPadding", "BC");
+        out = Cipher.getInstance("AES/OCB/NoPadding", "BC");
+
+        in.init(Cipher.ENCRYPT_MODE, key, new IvParameterSpec(N));
+
+        byte[] enc = in.doFinal(P);
+        if (!areEqual(enc, C))
+        {
+            fail("ciphertext doesn't match in OCB");
+        }
+
+        out.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(N));
+
+        byte[] dec = out.doFinal(C);
+        if (!areEqual(dec, P))
+        {
+            fail("plaintext doesn't match in OCB");
+        }
+
+        try
+        {
+            in = Cipher.getInstance("AES/OCB/PKCS5Padding", "BC");
+
+            fail("bad padding missed in OCB");
+        }
+        catch (NoSuchPaddingException e)
+        {
+            // expected
+        }
     }
 
     public void performTest()
@@ -302,6 +381,18 @@ public class AESTest
         byte[]  out1 = Hex.decode("1fa68b0a8112b447aef34bd8fb5a7b829d3e862371d2cfe5");
         
         wrapTest(1, "AESWrap", kek1, in1, out1);
+
+        byte[]  kek2 = Hex.decode("000102030405060708090a0b0c0d0e0f");
+        byte[]  in2 = Hex.decode("00112233445566778899aabbccddeeff");
+        byte[]  out2 = Hex.decode("7c8798dfc802553b3f00bb4315e3a087322725c92398b9c112c74d0925c63b61");
+
+        wrapTest(2, "AESRFC3211WRAP", kek2,  kek2, new FixedSecureRandom(Hex.decode("9688df2af1b7b1ac9688df2a")), in2, out2);
+
+        byte[] kek3 = Hex.decode("5840df6e29b02af1ab493b705bf16ea1ae8338f4dcc176a8");
+        byte[] in3 = Hex.decode("c37b7e6492584340bed12207808941155068f738");
+        byte[] out3 = Hex.decode("138bdeaa9b8fa7fc61f97742e72248ee5ae6ae5360d1ae6a5f54f373fa543b6a");
+
+        wrapTest(3, "AESRFC5649WRAP", kek3, in3, out3);
 
         String[] oids = {
                 NISTObjectIdentifiers.id_aes128_ECB.getId(),
@@ -337,16 +428,25 @@ public class AESTest
 
 
         String[] wrapOids = {
-                NISTObjectIdentifiers.id_aes128_wrap.getId(),
-                NISTObjectIdentifiers.id_aes192_wrap.getId(),
-                NISTObjectIdentifiers.id_aes256_wrap.getId()
+            NISTObjectIdentifiers.id_aes128_wrap.getId(),
+            NISTObjectIdentifiers.id_aes192_wrap.getId(),
+            NISTObjectIdentifiers.id_aes256_wrap.getId(),
         };
 
         wrapOidTest(wrapOids, "AESWrap");
 
+        wrapOids = new String[] {
+                NISTObjectIdentifiers.id_aes128_wrap_pad.getId(),
+                NISTObjectIdentifiers.id_aes192_wrap_pad.getId(),
+                NISTObjectIdentifiers.id_aes256_wrap_pad.getId()
+        };
+
+        wrapOidTest(wrapOids, "AESWrapPad");
+
         eaxTest();
         ccmTest();
         gcmTest();
+        ocbTest();
     }
 
     public static void main(

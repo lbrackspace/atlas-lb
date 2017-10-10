@@ -1,8 +1,8 @@
 package org.bouncycastle.crypto.params;
 
-import org.bouncycastle.crypto.CipherParameters;
-
 import java.math.BigInteger;
+
+import org.bouncycastle.crypto.CipherParameters;
 
 public class DHParameters
     implements CipherParameters
@@ -84,9 +84,9 @@ public class DHParameters
     {
         if (l != 0)
         {
-            if (l >= p.bitLength())
+            if (l > p.bitLength())
             {
-                throw new IllegalArgumentException("when l value specified, it must be less than bitlength(p)");
+                throw new IllegalArgumentException("when l value specified, it must satisfy 2^(l-1) <= p");
             }
             if (l < m)
             {

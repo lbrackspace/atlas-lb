@@ -1,36 +1,36 @@
 package org.bouncycastle.asn1.ocsp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extensions;
 
 public class Request
-    extends ASN1Encodable
+    extends ASN1Object
 {
     CertID            reqCert;
-    X509Extensions    singleRequestExtensions;
+    Extensions    singleRequestExtensions;
 
     public Request(
         CertID          reqCert,
-        X509Extensions  singleRequestExtensions)
+        Extensions singleRequestExtensions)
     {
         this.reqCert = reqCert;
         this.singleRequestExtensions = singleRequestExtensions;
     }
 
-    public Request(
+    private Request(
         ASN1Sequence    seq)
     {
         reqCert = CertID.getInstance(seq.getObjectAt(0));
 
         if (seq.size() == 2)
         {
-            singleRequestExtensions = X509Extensions.getInstance(
+            singleRequestExtensions = Extensions.getInstance(
                                 (ASN1TaggedObject)seq.getObjectAt(1), true);
         }
     }
@@ -45,16 +45,16 @@ public class Request
     public static Request getInstance(
         Object  obj)
     {
-        if (obj == null || obj instanceof Request)
+        if (obj instanceof Request)
         {
             return (Request)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new Request((ASN1Sequence)obj);
+            return new Request(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
     public CertID getReqCert()
@@ -62,7 +62,7 @@ public class Request
         return reqCert;
     }
 
-    public X509Extensions getSingleRequestExtensions()
+    public Extensions getSingleRequestExtensions()
     {
         return singleRequestExtensions;
     }
@@ -75,7 +75,7 @@ public class Request
      *     singleRequestExtensions     [0] EXPLICIT Extensions OPTIONAL }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector    v = new ASN1EncodableVector();
 

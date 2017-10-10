@@ -2,26 +2,28 @@ package org.bouncycastle.cms;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AlgorithmParameters;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
 
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.AuthenticatedData;
+import org.bouncycastle.asn1.cms.CMSAlgorithmProtection;
 import org.bouncycastle.asn1.cms.CMSAttributes;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.Encodable;
 
 /**
  * containing class for an CMS Authenticated Data object
  */
 public class CMSAuthenticatedData
+    implements Encodable
 {
     RecipientInformationStore   recipientInfoStore;
     ContentInfo                 contentInfo;
@@ -30,6 +32,7 @@ public class CMSAuthenticatedData
     private ASN1Set authAttrs;
     private ASN1Set unauthAttrs;
     private byte[] mac;
+    private OriginatorInformation originatorInfo;
 
     public CMSAuthenticatedData(
         byte[]    authData)
@@ -77,13 +80,17 @@ public class CMSAuthenticatedData
 
         AuthenticatedData authData = AuthenticatedData.getInstance(contentInfo.getContent());
 
+        if (authData.getOriginatorInfo() != null)
+        {
+            this.originatorInfo = new OriginatorInformation(authData.getOriginatorInfo());
+        }
+
         //
         // read the recipients
         //
         ASN1Set recipientInfos = authData.getRecipientInfos();
 
         this.macAlg = authData.getMacAlgorithm();
-
 
         this.authAttrs = authData.getAuthAttrs();
         this.mac = authData.getMac().getOctets();
@@ -106,6 +113,34 @@ public class CMSAuthenticatedData
                 throw new CMSException("a digest calculator provider is required if authenticated attributes are present");
             }
 
+            AttributeTable table = new AttributeTable(authAttrs);
+
+            ASN1EncodableVector protectionAttributes = table.getAll(CMSAttributes.cmsAlgorithmProtect);
+            if (protectionAttributes.size() > 1)
+            {
+                throw new CMSException("Only one instance of a cmsAlgorithmProtect attribute can be present");
+            }
+
+            if (protectionAttributes.size() > 0)
+            {
+                Attribute attr = Attribute.getInstance(protectionAttributes.get(0));
+                if (attr.getAttrValues().size() != 1)
+                {
+                    throw new CMSException("A cmsAlgorithmProtect attribute MUST contain exactly one value");
+                }
+
+                CMSAlgorithmProtection algorithmProtection = CMSAlgorithmProtection.getInstance(attr.getAttributeValues()[0]);
+
+                if (!CMSUtils.isEquivalent(algorithmProtection.getDigestAlgorithm(), authData.getDigestAlgorithm()))
+                {
+                    throw new CMSException("CMS Algorithm Identifier Protection check failed for digestAlgorithm");
+                }
+
+                if (!CMSUtils.isEquivalent(algorithmProtection.getMacAlgorithm(), macAlg))
+                {
+                    throw new CMSException("CMS Algorithm Identifier Protection check failed for macAlgorithm");
+                }
+            }
             try
             {
                 CMSSecureReadable secureReadable = new CMSEnvelopedHelper.CMSDigestAuthenticatedSecureReadable(digestCalculatorProvider.get(authData.getDigestAlgorithm()), readable);
@@ -131,21 +166,41 @@ public class CMSAuthenticatedData
         }
     }
 
+    /**
+     * Return the originator information associated with this message if present.
+     *
+     * @return OriginatorInformation, null if not present.
+     */
+    public OriginatorInformation getOriginatorInfo()
+    {
+        return originatorInfo;
+    }
+
     public byte[] getMac()
     {
         return Arrays.clone(mac);
     }
 
     private byte[] encodeObj(
-        DEREncodable    obj)
+        ASN1Encodable obj)
         throws IOException
     {
         if (obj != null)
         {
-            return obj.getDERObject().getEncoded();
+            return obj.toASN1Primitive().getEncoded();
         }
 
         return null;
+    }
+
+    /**
+     * Return the MAC algorithm details for the MAC associated with the data in this object.
+     *
+     * @return AlgorithmIdentifier representing the MAC algorithm.
+     */
+    public AlgorithmIdentifier getMacAlgorithm()
+    {
+        return macAlg;
     }
 
     /**
@@ -153,7 +208,7 @@ public class CMSAuthenticatedData
      */
     public String getMacAlgOID()
     {
-        return macAlg.getObjectId().getId();
+        return macAlg.getAlgorithm().getId();
     }
 
     /**
@@ -173,37 +228,6 @@ public class CMSAuthenticatedData
     }
 
     /**
-     * Return an AlgorithmParameters object giving the MAC parameters
-     * used to digest the message content.
-     *
-     * @param provider the provider to generate the parameters for.
-     * @return the parameters object, null if there is not one.
-     * @throws org.bouncycastle.cms.CMSException if the algorithm cannot be found, or the parameters can't be parsed.
-     * @throws java.security.NoSuchProviderException if the provider cannot be found.
-     */
-    public AlgorithmParameters getMacAlgorithmParameters(
-        String  provider)
-    throws CMSException, NoSuchProviderException
-    {
-        return getMacAlgorithmParameters(CMSUtils.getProvider(provider));
-    }
-
-    /**
-     * Return an AlgorithmParameters object giving the MAC parameters
-     * used to digest the message content.
-     *
-     * @param provider the provider to generate the parameters for.
-     * @return the parameters object, null if there is not one.
-     * @throws org.bouncycastle.cms.CMSException if the algorithm cannot be found, or the parameters can't be parsed.
-     */
-    public AlgorithmParameters getMacAlgorithmParameters(
-        Provider provider)
-    throws CMSException
-    {
-        return CMSEnvelopedHelper.INSTANCE.getEncryptionAlgorithmParameters(getMacAlgOID(), getMacAlgParams(), provider);
-    }
-
-    /**
      * return a store of the intended recipients for this message
      */
     public RecipientInformationStore getRecipientInfos()
@@ -213,8 +237,17 @@ public class CMSAuthenticatedData
 
     /**
      * return the ContentInfo
+     * @deprecated use toASN1Structure()
      */
     public ContentInfo getContentInfo()
+    {
+        return contentInfo;
+    }
+
+    /**
+     * return the ContentInfo
+     */
+    public ContentInfo toASN1Structure()
     {
         return contentInfo;
     }

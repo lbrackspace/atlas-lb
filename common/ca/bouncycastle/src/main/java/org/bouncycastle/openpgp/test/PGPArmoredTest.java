@@ -1,11 +1,13 @@
 package org.bouncycastle.openpgp.test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import org.bouncycastle.bcpg.ArmoredInputStream;
 import org.bouncycastle.bcpg.ArmoredOutputStream;
-import org.bouncycastle.openpgp.PGPObjectFactory;
+import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory;
 import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.Strings;
 import org.bouncycastle.util.encoders.Base64;
@@ -87,7 +89,25 @@ public class PGPArmoredTest
         return matches;
     }
 
-    private void blankLineTest() throws Exception
+    private void pgpUtilTest()
+        throws Exception
+    {
+        // check decoder exception isn't escaping.
+        ByteArrayInputStream bIn = new ByteArrayInputStream(Strings.toByteArray("abcde"));
+
+        try
+        {
+            PGPUtil.getDecoderStream(bIn);
+            fail("no exception");
+        }
+        catch (IOException e)
+        {
+            // expected: ignore.
+        }
+    }
+
+    private void blankLineTest()
+        throws Exception
     {
         byte[] blankLineBytes = Strings.toByteArray(blankLineData);
         ByteArrayInputStream bIn = new ByteArrayInputStream(blankLineBytes);
@@ -162,7 +182,7 @@ public class PGPArmoredTest
 
         ArmoredInputStream aIn = new ArmoredInputStream(new ByteArrayInputStream(bOut.toByteArray()));
 
-        PGPObjectFactory fact = new PGPObjectFactory(aIn);
+        JcaPGPObjectFactory fact = new JcaPGPObjectFactory(aIn);
         int count = 0;
 
         while (fact.nextObject() != null)
@@ -188,7 +208,7 @@ public class PGPArmoredTest
 
         aIn = new ArmoredInputStream(new ByteArrayInputStream(bOut.toByteArray()));
 
-        fact = new PGPObjectFactory(aIn);
+        fact = new JcaPGPObjectFactory(aIn);
         count = 0;
 
         while (fact.nextObject() != null)
@@ -224,7 +244,7 @@ public class PGPArmoredTest
         do
         {
             atLeastOne = false;
-            fact = new PGPObjectFactory(aIn);
+            fact = new JcaPGPObjectFactory(aIn);
 
             while (fact.nextObject() != null)
             {
@@ -240,6 +260,7 @@ public class PGPArmoredTest
         }
 
         blankLineTest();
+        pgpUtilTest();
     }
 
     public String getName()

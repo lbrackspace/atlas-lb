@@ -3,18 +3,20 @@ package org.bouncycastle.cert;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.Locale;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.TBSCertList;
 import org.bouncycastle.asn1.x509.Time;
 import org.bouncycastle.asn1.x509.V2TBSCertListGenerator;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.operator.ContentSigner;
 
 /**
@@ -23,7 +25,7 @@ import org.bouncycastle.operator.ContentSigner;
 public class X509v2CRLBuilder
 {
     private V2TBSCertListGenerator      tbsGen;
-    private X509ExtensionsGenerator     extGenerator;
+    private ExtensionsGenerator         extGenerator;
 
     /**
      * Basic constructor.
@@ -36,10 +38,47 @@ public class X509v2CRLBuilder
         Date     thisUpdate)
     {
         tbsGen = new V2TBSCertListGenerator();
-        extGenerator = new X509ExtensionsGenerator();
+        extGenerator = new ExtensionsGenerator();
 
         tbsGen.setIssuer(issuer);
         tbsGen.setThisUpdate(new Time(thisUpdate));
+    }
+
+    /**
+     * Basic constructor with Locale. You may need to use this constructor if the default locale
+     * doesn't use a Gregorian calender so that the Time produced is compatible with other ASN.1 implementations.
+     *
+     * @param issuer the issuer this CRL is associated with.
+     * @param thisUpdate  the date of this update.
+     * @param dateLocale locale to be used for date interpretation.
+     */
+    public X509v2CRLBuilder(
+        X500Name issuer,
+        Date     thisUpdate,
+        Locale   dateLocale)
+    {
+        tbsGen = new V2TBSCertListGenerator();
+        extGenerator = new ExtensionsGenerator();
+
+        tbsGen.setIssuer(issuer);
+        tbsGen.setThisUpdate(new Time(thisUpdate, dateLocale));
+    }
+
+    /**
+     * Basic constructor.
+     *
+     * @param issuer the issuer this CRL is associated with.
+     * @param thisUpdate  the Time of this update.
+     */
+    public X509v2CRLBuilder(
+        X500Name issuer,
+        Time     thisUpdate)
+    {
+        tbsGen = new V2TBSCertListGenerator();
+        extGenerator = new ExtensionsGenerator();
+
+        tbsGen.setIssuer(issuer);
+        tbsGen.setThisUpdate(thisUpdate);
     }
 
     /**
@@ -51,7 +90,33 @@ public class X509v2CRLBuilder
     public X509v2CRLBuilder setNextUpdate(
         Date    date)
     {
-        tbsGen.setNextUpdate(new Time(date));
+        return this.setNextUpdate(new Time(date));
+    }
+
+    /**
+     * Set the date by which the next CRL will become available.
+     *
+     * @param date  date of next CRL update.
+     * @param dateLocale locale to be used for date interpretation.
+     * @return the current builder.
+     */
+    public X509v2CRLBuilder setNextUpdate(
+        Date    date,
+        Locale  dateLocale)
+    {
+        return this.setNextUpdate(new Time(date, dateLocale));
+    }
+
+    /**
+     * Set the date by which the next CRL will become available.
+     *
+     * @param date  date of next CRL update.
+     * @return the current builder.
+     */
+    public X509v2CRLBuilder setNextUpdate(
+        Time    date)
+    {
+        tbsGen.setNextUpdate(date);
 
         return this;
     }
@@ -66,7 +131,7 @@ public class X509v2CRLBuilder
      */
     public X509v2CRLBuilder addCRLEntry(BigInteger userCertificateSerial, Date revocationDate, int reason)
     {
-        tbsGen.addCRLEntry(new DERInteger(userCertificateSerial), new Time(revocationDate), reason);
+        tbsGen.addCRLEntry(new ASN1Integer(userCertificateSerial), new Time(revocationDate), reason);
 
         return this;
     }
@@ -83,11 +148,11 @@ public class X509v2CRLBuilder
      */
     public X509v2CRLBuilder addCRLEntry(BigInteger userCertificateSerial, Date revocationDate, int reason, Date invalidityDate)
     {
-        tbsGen.addCRLEntry(new DERInteger(userCertificateSerial), new Time(revocationDate), reason, new DERGeneralizedTime(invalidityDate));
+        tbsGen.addCRLEntry(new ASN1Integer(userCertificateSerial), new Time(revocationDate), reason, new ASN1GeneralizedTime(invalidityDate));
 
         return this;
     }
-   
+
     /**
      * Add a CRL entry with extensions.
      *
@@ -96,13 +161,13 @@ public class X509v2CRLBuilder
      * @param extensions extension set to be associated with this CRLEntry.
      * @return the current builder.
      */
-    public X509v2CRLBuilder addCRLEntry(BigInteger userCertificateSerial, Date revocationDate, X509Extensions extensions)
+    public X509v2CRLBuilder addCRLEntry(BigInteger userCertificateSerial, Date revocationDate, Extensions extensions)
     {
-        tbsGen.addCRLEntry(new DERInteger(userCertificateSerial), new Time(revocationDate), extensions);
+        tbsGen.addCRLEntry(new ASN1Integer(userCertificateSerial), new Time(revocationDate), extensions);
 
         return this;
     }
-    
+
     /**
      * Add the CRLEntry objects contained in a previous CRL.
      * 
@@ -117,7 +182,7 @@ public class X509v2CRLBuilder
         {
             for (Enumeration en = revocations.getRevokedCertificateEnumeration(); en.hasMoreElements();)
             {
-                    tbsGen.addCRLEntry(ASN1Sequence.getInstance(((ASN1Encodable)en.nextElement()).getDERObject()));
+                tbsGen.addCRLEntry(ASN1Sequence.getInstance(((ASN1Encodable)en.nextElement()).toASN1Primitive()));
             }
         }
 
@@ -136,8 +201,44 @@ public class X509v2CRLBuilder
         ASN1ObjectIdentifier oid,
         boolean isCritical,
         ASN1Encodable value)
+        throws CertIOException
     {
-        extGenerator.addExtension(oid, isCritical, value);
+        CertUtils.addExtension(extGenerator, oid, isCritical, value);
+
+        return this;
+    }
+
+    /**
+     * Add a given extension field for the standard extensions tag (tag 3) using a byte encoding of the
+     * extension value.
+     *
+     * @param oid the OID defining the extension type.
+     * @param isCritical true if the extension is critical, false otherwise.
+     * @param encodedValue a byte array representing the encoding of the extension value.
+     * @return this builder object.
+     */
+    public X509v2CRLBuilder addExtension(
+        ASN1ObjectIdentifier oid,
+        boolean isCritical,
+        byte[] encodedValue)
+        throws CertIOException
+    {
+        extGenerator.addExtension(oid, isCritical, encodedValue);
+
+        return this;
+    }
+
+    /**
+     * Add a given extension field for the standard extensions tag (tag 3).
+     *
+     * @param extension the full extension value.
+     * @return this builder object.
+     */
+    public X509v2CRLBuilder addExtension(
+        Extension extension)
+        throws CertIOException
+    {
+        extGenerator.addExtension(extension);
 
         return this;
     }

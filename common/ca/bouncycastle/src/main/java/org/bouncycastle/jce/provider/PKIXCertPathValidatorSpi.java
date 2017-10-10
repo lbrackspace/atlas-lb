@@ -1,5 +1,6 @@
 package org.bouncycastle.jce.provider;
 
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.PublicKey;
 import java.security.cert.CertPath;
@@ -7,6 +8,7 @@ import java.security.cert.CertPathParameters;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertPathValidatorResult;
 import java.security.cert.CertPathValidatorSpi;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.PKIXCertPathValidatorResult;
 import java.security.cert.PKIXParameters;
@@ -18,11 +20,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.security.auth.x500.X500Principal;
-
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.TBSCertificate;
+import org.bouncycastle.jcajce.PKIXExtendedBuilderParameters;
+import org.bouncycastle.jcajce.PKIXExtendedParameters;
+import org.bouncycastle.jcajce.util.BCJcaJceHelper;
+import org.bouncycastle.jcajce.util.JcaJceHelper;
 import org.bouncycastle.jce.exception.ExtCertPathValidatorException;
 import org.bouncycastle.x509.ExtendedPKIXParameters;
 
@@ -33,6 +40,11 @@ import org.bouncycastle.x509.ExtendedPKIXParameters;
 public class PKIXCertPathValidatorSpi
         extends CertPathValidatorSpi
 {
+    private final JcaJceHelper helper = new BCJcaJceHelper();
+
+    public PKIXCertPathValidatorSpi()
+    {
+    }
 
     public CertPathValidatorResult engineValidate(
             CertPath certPath,
@@ -40,21 +52,34 @@ public class PKIXCertPathValidatorSpi
             throws CertPathValidatorException,
             InvalidAlgorithmParameterException
     {
-        if (!(params instanceof PKIXParameters))
+        PKIXExtendedParameters paramsPKIX;
+        if (params instanceof PKIXParameters)
         {
-            throw new InvalidAlgorithmParameterException("Parameters must be a " + PKIXParameters.class.getName()
-                    + " instance.");
-        }
+            PKIXExtendedParameters.Builder paramsPKIXBldr = new PKIXExtendedParameters.Builder((PKIXParameters)params);
 
-        ExtendedPKIXParameters paramsPKIX;
-        if (params instanceof ExtendedPKIXParameters)
+            if (params instanceof ExtendedPKIXParameters)
+            {
+                ExtendedPKIXParameters extPKIX = (ExtendedPKIXParameters)params;
+
+                paramsPKIXBldr.setUseDeltasEnabled(extPKIX.isUseDeltasEnabled());
+                paramsPKIXBldr.setValidityModel(extPKIX.getValidityModel());
+            }
+
+            paramsPKIX = paramsPKIXBldr.build();
+        }
+        else if (params instanceof PKIXExtendedBuilderParameters)
         {
-            paramsPKIX = (ExtendedPKIXParameters)params;
+            paramsPKIX = ((PKIXExtendedBuilderParameters)params).getBaseParameters();
+        }
+        else if (params instanceof PKIXExtendedParameters)
+        {
+            paramsPKIX = (PKIXExtendedParameters)params;
         }
         else
         {
-            paramsPKIX = ExtendedPKIXParameters.getInstance((PKIXParameters)params);
+            throw new InvalidAlgorithmParameterException("Parameters must be a " + PKIXParameters.class.getName() + " instance.");
         }
+
         if (paramsPKIX.getTrustAnchors() == null)
         {
             throw new InvalidAlgorithmParameterException(
@@ -73,7 +98,7 @@ public class PKIXCertPathValidatorSpi
 
         if (certs.isEmpty())
         {
-            throw new CertPathValidatorException("Certification path is empty.", null, certPath, 0);
+            throw new CertPathValidatorException("Certification path is empty.", null, certPath, -1);
         }
 
         //
@@ -94,16 +119,21 @@ public class PKIXCertPathValidatorSpi
         {
             trust = CertPathValidatorUtilities.findTrustAnchor((X509Certificate) certs.get(certs.size() - 1),
                     paramsPKIX.getTrustAnchors(), paramsPKIX.getSigProvider());
+
+            if (trust == null)
+            {
+                throw new CertPathValidatorException("Trust anchor for certification path not found.", null, certPath, -1);
+            }
+
+            checkCertificate(trust.getTrustedCert());
         }
         catch (AnnotatedException e)
         {
-            throw new CertPathValidatorException(e.getMessage(), e, certPath, certs.size() - 1);
+            throw new CertPathValidatorException(e.getMessage(), e.getUnderlyingException(), certPath, certs.size() - 1);
         }
 
-        if (trust == null)
-        {
-            throw new CertPathValidatorException("Trust anchor for certification path not found.", null, certPath, -1);
-        }
+        // RFC 5280 - CRLs must originate from the same trust anchor as the target certificate.
+        paramsPKIX = new PKIXExtendedParameters.Builder(paramsPKIX).setTrustAnchor(trust).build();
 
         //
         // (e), (f), (g) are part of the paramsPKIX object.
@@ -186,19 +216,19 @@ public class PKIXCertPathValidatorSpi
         // (g), (h), (i), (j)
         //
         PublicKey workingPublicKey;
-        X500Principal workingIssuerName;
+        X500Name workingIssuerName;
 
         X509Certificate sign = trust.getTrustedCert();
         try
         {
             if (sign != null)
             {
-                workingIssuerName = CertPathValidatorUtilities.getSubjectPrincipal(sign);
+                workingIssuerName = PrincipalUtils.getSubjectPrincipal(sign);
                 workingPublicKey = sign.getPublicKey();
             }
             else
             {
-                workingIssuerName = new X500Principal(trust.getCAName());
+                workingIssuerName = PrincipalUtils.getCA(trust);
                 workingPublicKey = trust.getCAPublicKey();
             }
         }
@@ -218,8 +248,8 @@ public class PKIXCertPathValidatorSpi
             throw new ExtCertPathValidatorException(
                     "Algorithm identifier of public key of trust anchor could not be read.", e, certPath, -1);
         }
-        DERObjectIdentifier workingPublicKeyAlgorithm = workingAlgId.getObjectId();
-        DEREncodable workingPublicKeyParameters = workingAlgId.getParameters();
+        ASN1ObjectIdentifier workingPublicKeyAlgorithm = workingAlgId.getAlgorithm();
+        ASN1Encodable workingPublicKeyParameters = workingAlgId.getParameters();
 
         //
         // (k)
@@ -267,12 +297,21 @@ public class PKIXCertPathValidatorSpi
             cert = (X509Certificate) certs.get(index);
             boolean verificationAlreadyPerformed = (index == certs.size() - 1);
 
+            try
+            {
+                checkCertificate(cert);
+            }
+            catch (AnnotatedException e)
+            {
+                throw new CertPathValidatorException(e.getMessage(), e.getUnderlyingException(), certPath, index);
+            }
+
             //
             // 6.1.3
             //
 
             RFC3280CertPathUtilities.processCertA(certPath, paramsPKIX, index, workingPublicKey,
-                verificationAlreadyPerformed, workingIssuerName, sign);
+                verificationAlreadyPerformed, workingIssuerName, sign, helper);
 
             RFC3280CertPathUtilities.processCertBC(certPath, index, nameConstraintValidator);
 
@@ -286,11 +325,15 @@ public class PKIXCertPathValidatorSpi
             //
             // 6.1.4
             //
-
             if (i != n)
             {
                 if (cert != null && cert.getVersion() == 1)
                 {
+                    // we've found the trust anchor at the top of the path, ignore and keep going
+                    if ((i == 1) && cert.equals(trust.getTrustedCert()))
+                    {
+                        continue;
+                    }
                     throw new CertPathValidatorException("Version 1 certificates can't be used as CA ones.", null,
                             certPath, index);
                 }
@@ -357,12 +400,12 @@ public class PKIXCertPathValidatorSpi
                 sign = cert;
 
                 // (c)
-                workingIssuerName = CertPathValidatorUtilities.getSubjectPrincipal(sign);
+                workingIssuerName = PrincipalUtils.getSubjectPrincipal(sign);
 
                 // (d)
                 try
                 {
-                    workingPublicKey = CertPathValidatorUtilities.getNextWorkingKey(certPath.getCertificates(), index);
+                    workingPublicKey = CertPathValidatorUtilities.getNextWorkingKey(certPath.getCertificates(), index, helper);
                 }
                 catch (CertPathValidatorException e)
                 {
@@ -371,7 +414,7 @@ public class PKIXCertPathValidatorSpi
 
                 workingAlgId = CertPathValidatorUtilities.getAlgorithmIdentifier(workingPublicKey);
                 // (f)
-                workingPublicKeyAlgorithm = workingAlgId.getObjectId();
+                workingPublicKeyAlgorithm = workingAlgId.getAlgorithm();
                 // (e)
                 workingPublicKeyParameters = workingAlgId.getParameters();
             }
@@ -409,6 +452,7 @@ public class PKIXCertPathValidatorSpi
             criticalExtensions.remove(RFC3280CertPathUtilities.SUBJECT_ALTERNATIVE_NAME);
             criticalExtensions.remove(RFC3280CertPathUtilities.NAME_CONSTRAINTS);
             criticalExtensions.remove(RFC3280CertPathUtilities.CRL_DISTRIBUTION_POINTS);
+            criticalExtensions.remove(Extension.extendedKeyUsage.getId());
         }
         else
         {
@@ -428,4 +472,20 @@ public class PKIXCertPathValidatorSpi
         throw new CertPathValidatorException("Path processing failed on policy.", null, certPath, index);
     }
 
+    static void checkCertificate(X509Certificate cert)
+        throws AnnotatedException
+    {
+        try
+        {
+            TBSCertificate.getInstance(cert.getTBSCertificate());
+        }
+        catch (CertificateEncodingException e)
+        {
+            throw new AnnotatedException("unable to process TBSCertificate");
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new AnnotatedException(e.getMessage());
+        }
+    }
 }

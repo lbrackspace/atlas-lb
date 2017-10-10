@@ -1,15 +1,5 @@
 package org.bouncycastle.jce.provider.test.nist;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.i18n.ErrorBundle;
-import org.bouncycastle.x509.PKIXCertPathReviewer;
-import org.bouncycastle.x509.extension.X509ExtensionUtil;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.Security;
@@ -24,6 +14,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +22,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.i18n.ErrorBundle;
+import org.bouncycastle.x509.PKIXCertPathReviewer;
+import org.bouncycastle.x509.extension.X509ExtensionUtil;
 
 /**
  * NIST CertPath test data for RFC 3280
@@ -79,7 +80,7 @@ public class NistCertPathReviewerTest
                 new String[] { "BadSignedCACRL", TRUST_ANCHOR_ROOT_CRL},
                 1,
                 "CertPathReviewer.signatureNotVerified",
-                "The certificate signature is invalid. A java.security.InvalidKeyException occurred.");
+                "The certificate signature is invalid. A java.security.SignatureException occurred.");
     }
     
     public void testInvalidEESignatureTest3()
@@ -90,7 +91,7 @@ public class NistCertPathReviewerTest
             new String[] { TRUST_ANCHOR_ROOT_CRL, GOOD_CA_CRL },
             0,
             "CertPathReviewer.signatureNotVerified",
-            "The certificate signature is invalid. A java.security.InvalidKeyException occurred.");
+            "The certificate signature is invalid. A java.security.SignatureException occurred.");
     }
     
     public void testValidDSASignaturesTest4()
@@ -117,7 +118,7 @@ public class NistCertPathReviewerTest
                 new String[] { TRUST_ANCHOR_ROOT_CRL, "DSACACRL" },
                 0,
                 "CertPathReviewer.signatureNotVerified",
-                "The certificate signature is invalid. A java.security.InvalidKeyException occurred.");
+                "The certificate signature is invalid. A java.security.SignatureException occurred.");
     }
     
     public void testCANotBeforeDateTest1()
@@ -588,7 +589,8 @@ public class NistCertPathReviewerTest
         
         params.addCertStore(store);
         params.setRevocationEnabled(true);
-        
+        params.setDate(new GregorianCalendar(2010, 1, 1).getTime());
+
         if (policies != null)
         {
             params.setExplicitPolicyRequired(true);
@@ -661,13 +663,13 @@ public class NistCertPathReviewerTest
         throws Exception
     {
         X509Certificate cert = loadCert(trustAnchorName);
-        byte[]          extBytes = cert.getExtensionValue(X509Extensions.NameConstraints.getId());
+        byte[]          extBytes = cert.getExtensionValue(X509Extension.nameConstraints.getId());
         
         if (extBytes != null)
         {
-            ASN1Encodable extValue = X509ExtensionUtil.fromExtensionValue(extBytes);
+            ASN1Primitive extValue = X509ExtensionUtil.fromExtensionValue(extBytes);
             
-            return new TrustAnchor(cert, extValue.getDEREncoded());
+            return new TrustAnchor(cert, extValue.getEncoded(ASN1Encoding.DER));
         }
         
         return new TrustAnchor(cert, null);

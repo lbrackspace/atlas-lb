@@ -2,15 +2,23 @@ package org.bouncycastle.asn1.cms;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
+/**
+ * <a href="http://tools.ietf.org/html/rfc5544">RFC 5544</a>
+ * Binding Documents with Time-Stamps; TimeStampTokenEvidence object.
+ * <pre>
+ * TimeStampTokenEvidence ::=
+ *    SEQUENCE SIZE(1..MAX) OF TimeStampAndCRL
+ * </pre>
+ */
 public class TimeStampTokenEvidence
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private TimeStampAndCRL[] timeStampAndCRLs;
 
@@ -43,6 +51,19 @@ public class TimeStampTokenEvidence
         return getInstance(ASN1Sequence.getInstance(tagged, explicit));
     }
 
+    /**
+     * Return a TimeStampTokenEvidence object from the given object.
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> null &rarr; null
+     * <li> {@link TimeStampTokenEvidence} object
+     * <li> {@link org.bouncycastle.asn1.ASN1Sequence#getInstance(java.lang.Object) ASN1Sequence} input formats with TimeStampTokenEvidence structure inside
+     * </ul>
+     *
+     * @param obj the object we want converted.
+     * @exception IllegalArgumentException if the object cannot be converted.
+     */
     public static TimeStampTokenEvidence getInstance(Object obj)
     {
         if (obj instanceof TimeStampTokenEvidence)
@@ -62,14 +83,7 @@ public class TimeStampTokenEvidence
         return timeStampAndCRLs;
     }
     
-    /**
-     * <pre>
-     * TimeStampTokenEvidence ::=
-     *    SEQUENCE SIZE(1..MAX) OF TimeStampAndCRL
-     * </pre>
-     * @return
-     */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

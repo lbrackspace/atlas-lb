@@ -8,7 +8,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
 
 /**
- * a holding class for a byte array of data to be processed.
+ * a class representing null or absent content.
  */
 public class CMSAbsentContent
     implements CMSTypedData, CMSReadable
@@ -17,7 +17,7 @@ public class CMSAbsentContent
 
     public CMSAbsentContent()
     {
-        this(new ASN1ObjectIdentifier(CMSObjectIdentifiers.data.getId()));
+        this(CMSObjectIdentifiers.data);
     }
 
     public CMSAbsentContent(

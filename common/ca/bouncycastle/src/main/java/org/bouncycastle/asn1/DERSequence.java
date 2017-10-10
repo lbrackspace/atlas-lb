@@ -1,80 +1,107 @@
 package org.bouncycastle.asn1;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Enumeration;
 
+/**
+ * Definite length SEQUENCE, encoding tells explicit number of bytes
+ * that the content of this sequence occupies.
+ * <p>
+ * For X.690 syntax rules, see {@link ASN1Sequence}.
+ */
 public class DERSequence
     extends ASN1Sequence
 {
+    private int bodyLength = -1;
+
     /**
-     * create an empty sequence
+     * Create an empty sequence
      */
     public DERSequence()
     {
     }
 
     /**
-     * create a sequence containing one object
+     * Create a sequence containing one object
+     * @param obj the object to go in the sequence.
      */
     public DERSequence(
-        DEREncodable    obj)
+        ASN1Encodable obj)
     {
-        this.addObject(obj);
+        super(obj);
     }
 
     /**
-     * create a sequence containing a vector of objects.
+     * Create a sequence containing a vector of objects.
+     * @param v the vector of objects to make up the sequence.
      */
     public DERSequence(
-        ASN1EncodableVector   v)
+        ASN1EncodableVector v)
     {
-        for (int i = 0; i != v.size(); i++)
-        {
-            this.addObject(v.get(i));
-        }
+        super(v);
     }
 
     /**
-     * create a sequence containing an array of objects.
+     * Create a sequence containing an array of objects.
+     * @param array the array of objects to make up the sequence.
      */
     public DERSequence(
-        ASN1Encodable[]   a)
+        ASN1Encodable[]   array)
     {
-        for (int i = 0; i != a.length; i++)
-        {
-            this.addObject(a[i]);
-        }
+        super(array);
     }
-    
+
+    private int getBodyLength()
+        throws IOException
+    {
+        if (bodyLength < 0)
+        {
+            int length = 0;
+
+            for (Enumeration e = this.getObjects(); e.hasMoreElements();)
+            {
+                Object    obj = e.nextElement();
+
+                length += ((ASN1Encodable)obj).toASN1Primitive().toDERObject().encodedLength();
+            }
+
+            bodyLength = length;
+        }
+
+        return bodyLength;
+    }
+
+    int encodedLength()
+        throws IOException
+    {
+        int length = getBodyLength();
+
+        return 1 + StreamUtil.calculateBodyLength(length) + length;
+    }
+
     /*
      * A note on the implementation:
      * <p>
      * As DER requires the constructed, definite-length model to
      * be used for structured types, this varies slightly from the
-     * ASN.1 descriptions given. Rather than just outputing SEQUENCE,
+     * ASN.1 descriptions given. Rather than just outputting SEQUENCE,
      * we also have to specify CONSTRUCTED, and the objects length.
      */
     void encode(
-        DEROutputStream out)
+        ASN1OutputStream out)
         throws IOException
     {
-        // TODO Intermediate buffer could be avoided if we could calculate expected length
-        ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
-        DEROutputStream         dOut = new DEROutputStream(bOut);
-        Enumeration             e = this.getObjects();
+        ASN1OutputStream        dOut = out.getDERSubStream();
+        int                     length = getBodyLength();
 
-        while (e.hasMoreElements())
+        out.write(BERTags.SEQUENCE | BERTags.CONSTRUCTED);
+        out.writeLength(length);
+
+        for (Enumeration e = this.getObjects(); e.hasMoreElements();)
         {
             Object    obj = e.nextElement();
 
-            dOut.writeObject(obj);
+            dOut.writeObject((ASN1Encodable)obj);
         }
-
-        dOut.close();
-
-        byte[]  bytes = bOut.toByteArray();
-
-        out.writeEncoded(SEQUENCE | CONSTRUCTED, bytes);
     }
 }

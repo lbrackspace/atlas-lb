@@ -3,21 +3,25 @@ package org.bouncycastle.crypto.modes;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.StreamBlockCipher;
 import org.bouncycastle.crypto.params.ParametersWithIV;
+import org.bouncycastle.util.Arrays;
 
 /**
  * implements a Cipher-FeedBack (CFB) mode on top of a simple cipher.
  */
 public class CFBBlockCipher
-    implements BlockCipher
+    extends StreamBlockCipher
 {
     private byte[]          IV;
     private byte[]          cfbV;
     private byte[]          cfbOutV;
+    private byte[]          inBuf;
 
     private int             blockSize;
     private BlockCipher     cipher = null;
     private boolean         encrypting;
+    private int             byteCount;
 
     /**
      * Basic constructor.
@@ -30,22 +34,15 @@ public class CFBBlockCipher
         BlockCipher cipher,
         int         bitBlockSize)
     {
+        super(cipher);
+
         this.cipher = cipher;
         this.blockSize = bitBlockSize / 8;
 
         this.IV = new byte[cipher.getBlockSize()];
         this.cfbV = new byte[cipher.getBlockSize()];
         this.cfbOutV = new byte[cipher.getBlockSize()];
-    }
-
-    /**
-     * return the underlying block cipher that we are wrapping.
-     *
-     * @return the underlying block cipher that we are wrapping.
-     */
-    public BlockCipher getUnderlyingCipher()
-    {
-        return cipher;
+        this.inBuf = new byte[blockSize];
     }
 
     /**
@@ -68,32 +65,40 @@ public class CFBBlockCipher
         
         if (params instanceof ParametersWithIV)
         {
-                ParametersWithIV ivParam = (ParametersWithIV)params;
-                byte[]      iv = ivParam.getIV();
+            ParametersWithIV ivParam = (ParametersWithIV)params;
+            byte[]      iv = ivParam.getIV();
 
-                if (iv.length < IV.length)
+            if (iv.length < IV.length)
+            {
+                // prepend the supplied IV with zeros (per FIPS PUB 81)
+                System.arraycopy(iv, 0, IV, IV.length - iv.length, iv.length);
+                for (int i = 0; i < IV.length - iv.length; i++)
                 {
-                    // prepend the supplied IV with zeros (per FIPS PUB 81)
-                    System.arraycopy(iv, 0, IV, IV.length - iv.length, iv.length);
-                    for (int i = 0; i < IV.length - iv.length; i++)
-                    {
-                        IV[i] = 0;
-                    }
+                    IV[i] = 0;
                 }
-                else
-                {
-                    System.arraycopy(iv, 0, IV, 0, IV.length);
-                }
+            }
+            else
+            {
+                System.arraycopy(iv, 0, IV, 0, IV.length);
+            }
 
-                reset();
+            reset();
 
+            // if null it's an IV changed only.
+            if (ivParam.getParameters() != null)
+            {
                 cipher.init(true, ivParam.getParameters());
+            }
         }
         else
         {
-                reset();
+            reset();
 
+            // if it's null, key is to be reused.
+            if (params != null)
+            {
                 cipher.init(true, params);
+            }
         }
     }
 
@@ -106,6 +111,54 @@ public class CFBBlockCipher
     public String getAlgorithmName()
     {
         return cipher.getAlgorithmName() + "/CFB" + (blockSize * 8);
+    }
+
+    protected byte calculateByte(byte in)
+          throws DataLengthException, IllegalStateException
+    {
+        return (encrypting) ? encryptByte(in) : decryptByte(in);
+    }
+
+    private byte encryptByte(byte in)
+    {
+        if (byteCount == 0)
+        {
+            cipher.processBlock(cfbV, 0, cfbOutV, 0);
+        }
+
+        byte rv = (byte)(cfbOutV[byteCount] ^ in);
+        inBuf[byteCount++] = rv;
+
+        if (byteCount == blockSize)
+        {
+            byteCount = 0;
+
+            System.arraycopy(cfbV, blockSize, cfbV, 0, cfbV.length - blockSize);
+            System.arraycopy(inBuf, 0, cfbV, cfbV.length - blockSize, blockSize);
+        }
+
+        return rv;
+    }
+
+    private byte decryptByte(byte in)
+    {
+        if (byteCount == 0)
+        {
+            cipher.processBlock(cfbV, 0, cfbOutV, 0);
+        }
+
+        inBuf[byteCount] = in;
+        byte rv = (byte)(cfbOutV[byteCount++] ^ in);
+
+        if (byteCount == blockSize)
+        {
+            byteCount = 0;
+
+            System.arraycopy(cfbV, blockSize, cfbV, 0, cfbV.length - blockSize);
+            System.arraycopy(inBuf, 0, cfbV, cfbV.length - blockSize, blockSize);
+        }
+
+        return rv;
     }
 
     /**
@@ -138,7 +191,9 @@ public class CFBBlockCipher
         int         outOff)
         throws DataLengthException, IllegalStateException
     {
-        return (encrypting) ? encryptBlock(in, inOff, out, outOff) : decryptBlock(in, inOff, out, outOff);
+        processBytes(in, inOff, blockSize, out, outOff);
+
+        return blockSize;
     }
 
     /**
@@ -160,31 +215,7 @@ public class CFBBlockCipher
         int         outOff)
         throws DataLengthException, IllegalStateException
     {
-        if ((inOff + blockSize) > in.length)
-        {
-            throw new DataLengthException("input buffer too short");
-        }
-
-        if ((outOff + blockSize) > out.length)
-        {
-            throw new DataLengthException("output buffer too short");
-        }
-
-        cipher.processBlock(cfbV, 0, cfbOutV, 0);
-
-        //
-        // XOR the cfbV with the plaintext producing the ciphertext
-        //
-        for (int i = 0; i < blockSize; i++)
-        {
-            out[outOff + i] = (byte)(cfbOutV[i] ^ in[inOff + i]);
-        }
-
-        //
-        // change over the input block.
-        //
-        System.arraycopy(cfbV, blockSize, cfbV, 0, cfbV.length - blockSize);
-        System.arraycopy(out, outOff, cfbV, cfbV.length - blockSize, blockSize);
+        processBytes(in, inOff, blockSize, out, outOff);
 
         return blockSize;
     }
@@ -208,33 +239,19 @@ public class CFBBlockCipher
         int         outOff)
         throws DataLengthException, IllegalStateException
     {
-        if ((inOff + blockSize) > in.length)
-        {
-            throw new DataLengthException("input buffer too short");
-        }
-
-        if ((outOff + blockSize) > out.length)
-        {
-            throw new DataLengthException("output buffer too short");
-        }
-
-        cipher.processBlock(cfbV, 0, cfbOutV, 0);
-
-        //
-        // change over the input block.
-        //
-        System.arraycopy(cfbV, blockSize, cfbV, 0, cfbV.length - blockSize);
-        System.arraycopy(in, inOff, cfbV, cfbV.length - blockSize, blockSize);
-
-        //
-        // XOR the cfbV with the ciphertext producing the plaintext
-        //
-        for (int i = 0; i < blockSize; i++)
-        {
-            out[outOff + i] = (byte)(cfbOutV[i] ^ in[inOff + i]);
-        }
+        processBytes(in, inOff, blockSize, out, outOff);
 
         return blockSize;
+    }
+
+    /**
+     * Return the current state of the initialisation vector.
+     *
+     * @return current IV
+     */
+    public byte[] getCurrentIV()
+    {
+        return Arrays.clone(cfbV);
     }
 
     /**
@@ -244,6 +261,8 @@ public class CFBBlockCipher
     public void reset()
     {
         System.arraycopy(IV, 0, cfbV, 0, IV.length);
+        Arrays.fill(inBuf, (byte)0);
+        byteCount = 0;
 
         cipher.reset();
     }

@@ -1,30 +1,49 @@
 package org.bouncycastle.asn1.ocsp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.X509Extensions;
 
 public class SingleResponse
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private CertID              certID;
     private CertStatus          certStatus;
-    private DERGeneralizedTime  thisUpdate;
-    private DERGeneralizedTime  nextUpdate;
-    private X509Extensions      singleExtensions;
+    private ASN1GeneralizedTime  thisUpdate;
+    private ASN1GeneralizedTime  nextUpdate;
+    private Extensions      singleExtensions;
+
+    /**
+     * @deprecated use method taking ASN1GeneralizedTime and Extensions
+     * @param certID
+     * @param certStatus
+     * @param thisUpdate
+     * @param nextUpdate
+     * @param singleExtensions
+     */
+    public SingleResponse(
+        CertID              certID,
+        CertStatus          certStatus,
+        ASN1GeneralizedTime thisUpdate,
+        ASN1GeneralizedTime nextUpdate,
+        X509Extensions singleExtensions)
+    {
+        this(certID, certStatus, thisUpdate, nextUpdate, Extensions.getInstance(singleExtensions));
+    }
 
     public SingleResponse(
         CertID              certID,
         CertStatus          certStatus,
-        DERGeneralizedTime  thisUpdate,
-        DERGeneralizedTime  nextUpdate,
-        X509Extensions      singleExtensions)
+        ASN1GeneralizedTime thisUpdate,
+        ASN1GeneralizedTime nextUpdate,
+        Extensions          singleExtensions)
     {
         this.certID = certID;
         this.certStatus = certStatus;
@@ -33,18 +52,18 @@ public class SingleResponse
         this.singleExtensions = singleExtensions;
     }
 
-    public SingleResponse(
+    private SingleResponse(
         ASN1Sequence    seq)
     {
         this.certID = CertID.getInstance(seq.getObjectAt(0));
         this.certStatus = CertStatus.getInstance(seq.getObjectAt(1));
-        this.thisUpdate = (DERGeneralizedTime)seq.getObjectAt(2);
+        this.thisUpdate = ASN1GeneralizedTime.getInstance(seq.getObjectAt(2));
 
         if (seq.size() > 4)
         {
-            this.nextUpdate = DERGeneralizedTime.getInstance(
+            this.nextUpdate = ASN1GeneralizedTime.getInstance(
                                 (ASN1TaggedObject)seq.getObjectAt(3), true);
-            this.singleExtensions = X509Extensions.getInstance(
+            this.singleExtensions = Extensions.getInstance(
                                 (ASN1TaggedObject)seq.getObjectAt(4), true);
         }
         else if (seq.size() > 3)
@@ -53,11 +72,11 @@ public class SingleResponse
 
             if (o.getTagNo() == 0)
             {
-                this.nextUpdate = DERGeneralizedTime.getInstance(o, true);
+                this.nextUpdate = ASN1GeneralizedTime.getInstance(o, true);
             }
             else
             {
-                this.singleExtensions = X509Extensions.getInstance(o, true);
+                this.singleExtensions = Extensions.getInstance(o, true);
             }
         }
     }
@@ -72,16 +91,16 @@ public class SingleResponse
     public static SingleResponse getInstance(
         Object  obj)
     {
-        if (obj == null || obj instanceof SingleResponse)
+        if (obj instanceof SingleResponse)
         {
             return (SingleResponse)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new SingleResponse((ASN1Sequence)obj);
+            return new SingleResponse(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
     public CertID getCertID()
@@ -94,17 +113,17 @@ public class SingleResponse
         return certStatus;
     }
 
-    public DERGeneralizedTime getThisUpdate()
+    public ASN1GeneralizedTime getThisUpdate()
     {
         return thisUpdate;
     }
 
-    public DERGeneralizedTime getNextUpdate()
+    public ASN1GeneralizedTime getNextUpdate()
     {
         return nextUpdate;
     }
 
-    public X509Extensions getSingleExtensions()
+    public Extensions getSingleExtensions()
     {
         return singleExtensions;
     }
@@ -120,7 +139,7 @@ public class SingleResponse
      *          singleExtensions   [1]       EXPLICIT Extensions OPTIONAL }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

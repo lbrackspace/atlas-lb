@@ -1,5 +1,6 @@
 package org.bouncycastle.cert.ocsp.test;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.Security;
@@ -9,13 +10,15 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Exception;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
@@ -30,9 +33,7 @@ import org.bouncycastle.cert.ocsp.Req;
 import org.bouncycastle.cert.ocsp.RespID;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaBasicOCSPRespBuilder;
-import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.ocsp.test.OCSPTestUtil;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
@@ -75,8 +76,7 @@ public class OCSPTest
             + "r07NEadxM3HQkt0aX5XYEl8eRoifwqYAI9h0ziZfTNes8elNfb3DoPPjqq6V"
             + "mMg0f0iMS4W8LjNPorjRB+kIosa1deAGPhq0eJ8yr0/s2QR2/WFD5P4aXc8I"
             + "KWleklnIImS3zqiPrq6tl2Bm8DZj7vXlTOwmraSQxUwzCKwYob1yGvNOUQTq"
-            + "pG6jxn7jgDawHU1+WjWQe4Q34/pWeGLysxTraMa+Ug9kPe+jy/qRX2xwvKBZ"
-            + "====");
+            + "pG6jxn7jgDawHU1+WjWQe4Q34/pWeGLysxTraMa+Ug9kPe+jy/qRX2xwvKBZ");
 
     byte[] testResp2 = Base64.decode(
         "MIII1QoBAKCCCM4wggjKBgkrBgEFBQcwAQEEggi7MIIItzCBjqADAgEAoSMw"
@@ -129,8 +129,7 @@ public class OCSPTest
             + "tO8yWWl+xWIuxKoAO8a0Rh97TyYfAj4++GIm43b2zIvRXEWAytjz7rXUMwRC"
             + "1ipRQwSA9gyw2y0s8emV/VwJQXsTe9xtDqlEC67b90V/BgL/jxck5E8yrY9Z"
             + "gNxlOgcqscObisAkB5I6GV+dfa+BmZrhSJ/bvFMUrnFzjLFvZp/9qiK11r5K"
-            + "A5oyOoNv0w+8bbtMNEc1"
-            + "====");
+            + "A5oyOoNv0w+8bbtMNEc1");
 
     /**
      * extra version number encoding.
@@ -225,6 +224,47 @@ public class OCSPTest
         + "vL7EIfjK13nUxf8d49GzZlFMNqGDMjfMp1FYrHBGLZBr8br/G/7em1Cprw7iR8cw"
         + "pddz+QXXFIrIz5Y9D/x1RrwoLibPw0kMrSwI2G4aCvoBySfbD6cpnJf6YHRctdSb"
         + "755zhdBW7XWTl6ReUVuEt0hTFms4F60kFAi5hIbDRSN1Slv5yP2b0EA=");
+
+    private static byte[] invalidResp = Base64.decode(
+        "MIIGggoAoIIGfDCCBngGCSsGAQUFBzABAQSCBmkwggZlMIHeoTQwMjELMAkG"
+      + "A1UEBhMCVVMxDTALBgNVBAoMBGlXYXkxFDASBgNVBAMMC2lXYXkgT3BlbkNB"
+      + "GA8yMDEyMDEyMzIxMjkxMVowbjBsMEQwCQYFKw4DAhoFAAQUPA5ymcOyHyZJ"
+      + "d7DAidsEh79Uh6QEFMHnDLGSc/VElMBzr5f0+LQnpN2YAgsA5xIzv2Ln0dAa"
+      + "94IAGA8yMDEyMDEyMzIxMjkxMVqgERgPMjAxMjAxMjMyMTM0MTFaoSUwIzAh"
+      + "BgkrBgEFBQcwAQIEFCHEdgCz5w64KgppPIetaRzxewinMA0GCSqGSIb3DQEB"
+      + "CwUAA4IBAQBsW8cXR4eOLgclY/uRodjso/5xkHIAiJy+DpgqELRrnzKe87HO"
+      + "Km7DCicz1nwsPJskK14xtIw1rfQ8nzgztriComAUVc/pxJ9wQWGZI3d2dNbW"
+      + "AmecKb/mG0QrJrt3U5D0+CFTUq5u7NOs1jZRe+df9TDLBr0vIA6a0I6K9M9F"
+      + "ZOPWU/j5KVjoi0/kv4wnxRzQ2zc4Z3b5gm9T0MXMH5bST3z4yhOs/NRezNTA"
+      + "fBQvimS60d4fybH0pXcVYUH81y5fm9rCpuwQ6rMt2vi0ZKrfyVom4OIAr/gh"
+      + "Doj8Yh/LdtI1RvFkAL3pvzs06cfg3qM38b9Uh9w93w4/Hguw14eroIIEbDCC"
+      + "BGgwggRkMIIDTKADAgECAgEBMA0GCSqGSIb3DQEBCwUAMDIxCzAJBgNVBAYT"
+      + "AlVTMQ0wCwYDVQQKDARpV2F5MRQwEgYDVQQDDAtpV2F5IE9wZW5DQTAeFw0x"
+      + "MjAxMjAxNTIyMjFaFw0zMjAxMTUxNTIyMjFaMDIxCzAJBgNVBAYTAlVTMQ0w"
+      + "CwYDVQQKDARpV2F5MRQwEgYDVQQDDAtpV2F5IE9wZW5DQTCCASIwDQYJKoZI"
+      + "hvcNAQEBBQADggEPADCCAQoCggEBALOnLWYPvGNLxodQQ16tqCKflpEQF2OA"
+      + "0inZbIeUVxOgph5Qf562XV1Mtbv5Agv+z4/LSLbwuo28NTkhSlEEwf1k9vL9"
+      + "/wFvpPZ4ecpqXOS6LJ6khmMh53IwK/QpG8CeF9UxTZskjQzD9XgnNGYd2BIj"
+      + "qVbzU5qWhsPYPRrsAaE2jS6My5+xfiw46/Xj26VZQ/PR/rVURsc40fpCE30y"
+      + "TyORQeeZfjb/LxXH3e/3wjya04MBACv+uX89n5YXG7OH6zTriMAOn/aiXPfE"
+      + "E8g834RKvVS7ruELWG/IcZDC+Eoy2qtgG7y1rFlXd3H/6rny+Xd+BZrt0WP/"
+      + "hfezklVw3asCAwEAAaOCAYMwggF/MA8GA1UdEwEB/wQFMAMBAf8wCwYDVR0P"
+      + "BAQDAgEGMB0GA1UdDgQWBBTB5wyxknP1RJTAc6+X9Pi0J6TdmDAfBgNVHSME"
+      + "GDAWgBTB5wyxknP1RJTAc6+X9Pi0J6TdmDAjBgNVHREEHDAagRhzdXBwb3J0"
+      + "QGl3YXlzb2Z0d2FyZS5jb20wIwYDVR0SBBwwGoEYc3VwcG9ydEBpd2F5c29m"
+      + "dHdhcmUuY29tMIGYBggrBgEFBQcBAQSBizCBiDA5BggrBgEFBQcwAoYtaHR0"
+      + "cDovL2l3NTRjZW50LXZtMi9wa2kvcHViL2NhY2VydC9jYWNlcnQuY3J0MCUG"
+      + "CCsGAQUFBzABhhlodHRwOi8vaXc1NGNlbnQtdm0yOjI1NjAvMCQGCCsGAQUF"
+      + "BzAMhhhodHRwOi8vaXc1NGNlbnQtdm0yOjgzMC8wOgYDVR0fBDMwMTAvoC2g"
+      + "K4YpaHR0cDovL2l3NTRjZW50LXZtMi9wa2kvcHViL2NybC9jYWNybC5jcmww"
+      + "DQYJKoZIhvcNAQELBQADggEBAE9wBjQ1c+HAO2gIzT+J5Gqgrcu/m7t4hnHN"
+      + "m5eyIfwXD1T6wOhovFmzPTaO9BSNsi4G5R7yZxOHeLN4PIY2kwFIbSkg7mwe"
+      + "5aGp2RPIuK/MtzMZT6pq8uMGhzyHGsqtdkz7p26/G0anU2u59eimcvISdwNE"
+      + "QXOIp/KNUC+Vx+Pmfw8PuFYDNacZ6YXp5qKoEjyUoBhNicmVINTNfDu0CQhu"
+      + "pDr2UmDMDT2cdmTSRC0rcTe3BNzWqtsXNmIBFL1oB7B0PZbmFm8Bgvk1azxa"
+      + "ClrcOKZWKOWa14XJy/DJk6nlOiq5W2AglUt8JVOpa5oVdiNRIT2WoGnpqVV9"
+      + "tUeoWog=");
+
     private static final String BC = "BC";
 
     public String getName()
@@ -241,7 +281,7 @@ public class OCSPTest
         DigestCalculatorProvider digCalcProv = new JcaDigestCalculatorProviderBuilder().setProvider(BC).build();
 
         String origDN = "CN=Eric H. Echidna, E=eric@bouncycastle.org, O=Bouncy Castle, C=AU";
-        GeneralName origName = new GeneralName(new X509Name(origDN));
+        GeneralName origName = new GeneralName(new X500Name(origDN));
 
         //
         // general id value for our test issuer cert and a serial number.
@@ -282,7 +322,7 @@ public class OCSPTest
 
         gen = new OCSPReqBuilder();
 
-        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X509Principal("CN=fred")));
+        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X500Name("CN=fred")));
 
         gen.addRequest(
             new CertificateID(digCalcProv.get(CertificateID.HASH_SHA1), testCert, BigInteger.valueOf(1)));
@@ -346,12 +386,13 @@ public class OCSPTest
 
         rand.nextBytes(sampleNonce);
 
-        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X509Principal("CN=fred")));
+        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X500Name("CN=fred")));
 
-        oids.addElement(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
-        values.addElement(new X509Extension(false, new DEROctetString(new DEROctetString(sampleNonce))));
+        ExtensionsGenerator extGen = new ExtensionsGenerator();
 
-        gen.setRequestExtensions(new X509Extensions(oids, values));
+        extGen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(sampleNonce));
+
+        gen.setRequestExtensions(extGen.generate());
 
         gen.addRequest(
             new CertificateID(digCalcProv.get(CertificateID.HASH_SHA1), testCert, BigInteger.valueOf(1)));
@@ -387,7 +428,7 @@ public class OCSPTest
             fail("wrong number of non-critical extensions in OCSP request.");
         }
 
-        X509Extension extValue = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+        Extension extValue = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
 
         ASN1Encodable extObj = extValue.getParsedValue();
 
@@ -430,7 +471,7 @@ public class OCSPTest
         DigestCalculatorProvider digCalcProv = new JcaDigestCalculatorProviderBuilder().setProvider(BC).build();
 
         String origDN = "CN=Eric H. Echidna, E=eric@bouncycastle.org, O=Bouncy Castle, C=AU";
-        GeneralName origName = new GeneralName(new X509Name(origDN));
+        GeneralName origName = new GeneralName(new X500Name(origDN));
 
         //
         // general id value for our test issuer cert and a serial number.
@@ -473,7 +514,7 @@ public class OCSPTest
 
         gen = new OCSPReqBuilder();
 
-        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X509Principal("CN=fred")));
+        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X500Name("CN=fred")));
 
         gen.addRequest(
             new CertificateID(digCalcProv.get(CertificateID.HASH_SHA1), testCert, BigInteger.valueOf(1)));
@@ -530,19 +571,18 @@ public class OCSPTest
 
         gen = new OCSPReqBuilder();
 
-        Vector oids = new Vector();
-        Vector values = new Vector();
         byte[] sampleNonce = new byte[16];
         Random rand = new Random();
 
         rand.nextBytes(sampleNonce);
 
-        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X509Principal("CN=fred")));
+        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X500Name("CN=fred")));
 
-        oids.addElement(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
-        values.addElement(new X509Extension(false, new DEROctetString(new DEROctetString(sampleNonce))));
+        ExtensionsGenerator extGen = new ExtensionsGenerator();
 
-        gen.setRequestExtensions(new X509Extensions(oids, values));
+        extGen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(sampleNonce));
+
+        gen.setRequestExtensions(extGen.generate());
 
         gen.addRequest(
             new CertificateID(digCalcProv.get(CertificateID.HASH_SHA1), testCert, BigInteger.valueOf(1)));
@@ -578,7 +618,7 @@ public class OCSPTest
             fail("wrong number of non-critical extensions in OCSP request.");
         }
 
-        X509Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+        Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
 
         ASN1Encodable extObj = ext.getParsedValue();
 
@@ -626,6 +666,33 @@ public class OCSPTest
         }
     }
 
+    public void testInvalidResp()
+        throws Exception
+    {
+        try
+        {
+            OCSPResp response = new OCSPResp(invalidResp);
+        }
+        catch (CertIOException e)
+        {
+            if (e.getCause() instanceof ASN1Exception)
+            {
+                Throwable c = ((ASN1Exception)e.getCause()).getCause();
+
+                if (!c.getMessage().equals("ENUMERATED has zero length"))
+                {
+                    fail("parsing failed, but for wrong reason: " + c.getMessage());
+                }
+            }
+            else
+            {
+                fail("parsing failed, but for wrong reason: " + e.getMessage());
+            }
+        }
+
+
+    }
+
     public void performTest()
         throws Exception
     {
@@ -634,7 +701,7 @@ public class OCSPTest
         X509CertificateHolder testCert = new JcaX509CertificateHolder(OCSPTestUtil.makeCertificate(signKP, signDN, signKP, signDN));
 
         String origDN = "CN=Eric H. Echidna, E=eric@bouncycastle.org, O=Bouncy Castle, C=AU";
-        GeneralName origName = new GeneralName(new X509Name(origDN));
+        GeneralName origName = new GeneralName(new X500Name(origDN));
         DigestCalculatorProvider digCalcProv = new JcaDigestCalculatorProviderBuilder().setProvider(BC).build();
 
         //
@@ -678,7 +745,7 @@ public class OCSPTest
 
         gen = new OCSPReqBuilder();
 
-        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X509Principal("CN=fred")));
+        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X500Name("CN=fred")));
 
         gen.addRequest(
             new CertificateID(digCalcProv.get(CertificateID.HASH_SHA1), testCert, BigInteger.valueOf(1)));
@@ -742,12 +809,13 @@ public class OCSPTest
 
         rand.nextBytes(sampleNonce);
 
-        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X509Principal("CN=fred")));
+        gen.setRequestorName(new GeneralName(GeneralName.directoryName, new X500Name("CN=fred")));
 
-        oids.addElement(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
-        values.addElement(new X509Extension(false, new DEROctetString(new DEROctetString(sampleNonce))));
+        ExtensionsGenerator extGen = new ExtensionsGenerator();
 
-        gen.setRequestExtensions(new X509Extensions(oids, values));
+        extGen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(sampleNonce));
+
+        gen.setRequestExtensions(extGen.generate());
 
         gen.addRequest(
             new CertificateID(digCalcProv.get(CertificateID.HASH_SHA1), testCert, BigInteger.valueOf(1)));
@@ -783,7 +851,7 @@ public class OCSPTest
             fail("wrong number of non-critical extensions in OCSP request.");
         }
 
-        X509Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
+        Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
 
         ASN1Encodable extObj = ext.getParsedValue();
 
@@ -861,6 +929,36 @@ public class OCSPTest
         testECDSA();
         testRSA();
         testIrregularVersionReq();
+        testInvalidResp();
+
+        //
+        // Empty data test
+        //
+        try
+        {
+            response = new OCSPResp(new byte[0]);
+            fail("no exception thrown");
+        }
+        catch (IOException e)
+        {
+             if (!e.getMessage().equals("malformed response: no response data found"))
+             {
+                 fail("wrong exception");
+             }
+        }
+
+        try
+        {
+            req = new OCSPReq(new byte[0]);
+            fail("no exception thrown");
+        }
+        catch (IOException e)
+        {
+             if (!e.getMessage().equals("malformed request: no request data found"))
+             {
+                 fail("wrong exception");
+             }
+        }
     }
 
     public static void main(

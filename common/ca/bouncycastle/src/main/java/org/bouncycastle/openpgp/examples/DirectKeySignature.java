@@ -1,7 +1,12 @@
 package org.bouncycastle.openpgp.examples;
 
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.security.Security;
+import java.util.Iterator;
+
 import org.bouncycastle.bcpg.ArmoredOutputStream;
-import org.bouncycastle.bcpg.BCPGOutputStream;
 import org.bouncycastle.bcpg.sig.NotationData;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPPrivateKey;
@@ -14,14 +19,9 @@ import org.bouncycastle.openpgp.PGPSignatureGenerator;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketVector;
 import org.bouncycastle.openpgp.PGPUtil;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.security.Security;
-import java.util.Iterator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
 /**
  * A simple utility class that directly signs a public key and writes the signed key to "SignedKey.asc" in 
@@ -46,7 +46,7 @@ public class DirectKeySignature
 
         if (args.length == 1)
         {
-            PGPPublicKeyRing ring = new PGPPublicKeyRing(PGPUtil.getDecoderStream(new FileInputStream(args[0])));
+            PGPPublicKeyRing ring = new PGPPublicKeyRing(PGPUtil.getDecoderStream(new FileInputStream(args[0])), new JcaKeyFingerprintCalculator());
             PGPPublicKey key = ring.getPublicKey();
             
             // iterate through all direct key signautures and look for NotationData subpackets
@@ -68,15 +68,14 @@ public class DirectKeySignature
         else if (args.length == 5)
         {
             // gather command line arguments
-            PGPSecretKeyRing secRing = new PGPSecretKeyRing(PGPUtil.getDecoderStream(new FileInputStream(args[0])));
+            PGPSecretKeyRing secRing = new PGPSecretKeyRing(PGPUtil.getDecoderStream(new FileInputStream(args[0])), new JcaKeyFingerprintCalculator());
             String secretKeyPass = args[1];
-            PGPPublicKeyRing ring = new PGPPublicKeyRing(PGPUtil.getDecoderStream(new FileInputStream(args[2])));
+            PGPPublicKeyRing ring = new PGPPublicKeyRing(PGPUtil.getDecoderStream(new FileInputStream(args[2])), new JcaKeyFingerprintCalculator());
             String notationName = args[3];
             String notationValue = args[4];
 
             // create the signed keyRing
-            PGPPublicKeyRing sRing = null;
-            sRing = new PGPPublicKeyRing(new ByteArrayInputStream(signPublicKey(secRing.getSecretKey(), secretKeyPass, ring.getPublicKey(), notationName, notationValue, true)));
+            PGPPublicKeyRing sRing = new PGPPublicKeyRing(new ByteArrayInputStream(signPublicKey(secRing.getSecretKey(), secretKeyPass, ring.getPublicKey(), notationName, notationValue)), new JcaKeyFingerprintCalculator());
             ring = sRing;
 
             // write the created keyRing to file
@@ -93,24 +92,13 @@ public class DirectKeySignature
         }
     }
 
-    private static byte[] signPublicKey(PGPSecretKey secretKey, String secretKeyPass, PGPPublicKey keyToBeSigned, String notationName, String notationValue, boolean armor) throws Exception
+    private static byte[] signPublicKey(PGPSecretKey secretKey, String secretKeyPass, PGPPublicKey keyToBeSigned, String notationName, String notationValue) throws Exception
     {
-        OutputStream out = new ByteArrayOutputStream();
+        PGPPrivateKey pgpPrivKey = secretKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(secretKeyPass.toCharArray()));
 
-        if (armor)
-        {
-            out = new ArmoredOutputStream(out);
-        }
+        PGPSignatureGenerator       sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(secretKey.getPublicKey().getAlgorithm(), PGPUtil.SHA1).setProvider("BC"));
 
-        PGPPrivateKey pgpPrivKey = secretKey.extractPrivateKey(secretKeyPass.toCharArray(), "BC");
-
-        PGPSignatureGenerator       sGen = new PGPSignatureGenerator(secretKey.getPublicKey().getAlgorithm(), PGPUtil.SHA1, "BC");
-
-        sGen.initSign(PGPSignature.DIRECT_KEY, pgpPrivKey);
-
-        BCPGOutputStream            bOut = new BCPGOutputStream(out);
-
-        sGen.generateOnePassVersion(false).encode(bOut);
+        sGen.init(PGPSignature.DIRECT_KEY, pgpPrivKey);
 
         PGPSignatureSubpacketGenerator spGen = new PGPSignatureSubpacketGenerator();
 
@@ -119,14 +107,8 @@ public class DirectKeySignature
         spGen.setNotationData(true, isHumanReadable, notationName, notationValue);
 
         PGPSignatureSubpacketVector packetVector = spGen.generate();
+
         sGen.setHashedSubpackets(packetVector);
-
-        bOut.flush();
-
-        if (armor)
-        {
-            out.close();
-        }
 
         return PGPPublicKey.addCertification(keyToBeSigned, sGen.generate()).getEncoded();
     }

@@ -6,11 +6,11 @@ package org.bouncycastle.asn1.x500.style;
  * lightweight Java environment don't support classes like
  * StringTokenizer.
  */
-class X500NameTokenizer
+public class X500NameTokenizer
 {
     private String          value;
     private int             index;
-    private char            seperator;
+    private char            separator;
     private StringBuffer    buf = new StringBuffer();
 
     public X500NameTokenizer(
@@ -21,11 +21,11 @@ class X500NameTokenizer
     
     public X500NameTokenizer(
         String  oid,
-        char    seperator)
+        char    separator)
     {
         this.value = oid;
         this.index = -1;
-        this.seperator = seperator;
+        this.separator = separator;
     }
 
     public boolean hasMoreTokens()
@@ -56,32 +56,22 @@ class X500NameTokenizer
                 {
                     quoted = !quoted;
                 }
-                else
-                {
-                    buf.append(c);
-                }
+                buf.append(c);
                 escaped = false;
             }
             else
             {
                 if (escaped || quoted)
                 {
-                    if (c == '#' && buf.charAt(buf.length() - 1) == '=')
-                    {
-                        buf.append('\\');
-                    }
-                    else if (c == '+' && seperator != '+')
-                    {
-                        buf.append('\\');
-                    }
                     buf.append(c);
                     escaped = false;
                 }
                 else if (c == '\\')
                 {
+                    buf.append(c);
                     escaped = true;
                 }
-                else if (c == seperator)
+                else if (c == separator)
                 {
                     break;
                 }
@@ -94,6 +84,7 @@ class X500NameTokenizer
         }
 
         index = end;
-        return buf.toString().trim();
+
+        return buf.toString();
     }
 }

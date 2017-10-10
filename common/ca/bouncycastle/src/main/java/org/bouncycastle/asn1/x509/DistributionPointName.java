@@ -2,11 +2,12 @@ package org.bouncycastle.asn1.x509;
 
 import org.bouncycastle.asn1.ASN1Choice;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.util.Strings;
 
 /**
  * The DistributionPointName object.
@@ -18,10 +19,10 @@ import org.bouncycastle.asn1.DERTaggedObject;
  * </pre>
  */
 public class DistributionPointName
-    extends ASN1Encodable
+    extends ASN1Object
     implements ASN1Choice
 {
-    DEREncodable        name;
+    ASN1Encodable        name;
     int                 type;
 
     public static final int FULL_NAME = 0;
@@ -47,17 +48,6 @@ public class DistributionPointName
         }
 
         throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
-    }
-
-    /*
-     * @deprecated use ASN1Encodable
-     */
-    public DistributionPointName(
-        int             type,
-        DEREncodable    name)
-    {
-        this.type = type;
-        this.name = name;
     }
 
     public DistributionPointName(
@@ -109,14 +99,14 @@ public class DistributionPointName
         }
     }
     
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return new DERTaggedObject(false, type, name);
     }
 
     public String toString()
     {
-        String       sep = System.getProperty("line.separator");
+        String       sep = Strings.lineSeparator();
         StringBuffer buf = new StringBuffer();
         buf.append("DistributionPointName: [");
         buf.append(sep);

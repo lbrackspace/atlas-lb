@@ -9,32 +9,33 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
-import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.util.Integers;
 
 
 public class X509ExtensionUtil
 {
-    public static ASN1Object fromExtensionValue(
+    public static ASN1Primitive fromExtensionValue(
         byte[]  encodedValue) 
         throws IOException
     {
-        ASN1OctetString octs = (ASN1OctetString)ASN1Object.fromByteArray(encodedValue);
+        ASN1OctetString octs = (ASN1OctetString)ASN1Primitive.fromByteArray(encodedValue);
         
-        return ASN1Object.fromByteArray(octs.getOctets());
+        return ASN1Primitive.fromByteArray(octs.getOctets());
     }
 
     public static Collection getIssuerAlternativeNames(X509Certificate cert)
             throws CertificateParsingException
     {
-        byte[] extVal = cert.getExtensionValue(X509Extensions.IssuerAlternativeName.getId());
+        byte[] extVal = cert.getExtensionValue(X509Extension.issuerAlternativeName.getId());
 
         return getAlternativeNames(extVal);
     }
@@ -42,7 +43,7 @@ public class X509ExtensionUtil
     public static Collection getSubjectAlternativeNames(X509Certificate cert)
             throws CertificateParsingException
     {        
-        byte[] extVal = cert.getExtensionValue(X509Extensions.SubjectAlternativeName.getId());
+        byte[] extVal = cert.getExtensionValue(X509Extension.subjectAlternativeName.getId());
 
         return getAlternativeNames(extVal);
     }
@@ -62,16 +63,16 @@ public class X509ExtensionUtil
             {
                 GeneralName genName = GeneralName.getInstance(it.nextElement());
                 List list = new ArrayList();
-                list.add(new Integer(genName.getTagNo()));
+                list.add(Integers.valueOf(genName.getTagNo()));
                 switch (genName.getTagNo())
                 {
                 case GeneralName.ediPartyName:
                 case GeneralName.x400Address:
                 case GeneralName.otherName:
-                    list.add(genName.getName().getDERObject());
+                    list.add(genName.getName().toASN1Primitive());
                     break;
                 case GeneralName.directoryName:
-                    list.add(X509Name.getInstance(genName.getName()).toString());
+                    list.add(X500Name.getInstance(genName.getName()).toString());
                     break;
                 case GeneralName.dNSName:
                 case GeneralName.rfc822Name:
@@ -79,7 +80,7 @@ public class X509ExtensionUtil
                     list.add(((ASN1String)genName.getName()).getString());
                     break;
                 case GeneralName.registeredID:
-                    list.add(DERObjectIdentifier.getInstance(genName.getName()).getId());
+                    list.add(ASN1ObjectIdentifier.getInstance(genName.getName()).getId());
                     break;
                 case GeneralName.iPAddress:
                     list.add(DEROctetString.getInstance(genName.getName()).getOctets());

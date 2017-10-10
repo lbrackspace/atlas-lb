@@ -1,25 +1,21 @@
 package org.bouncycastle.cms;
 
-import java.io.IOException;
 import java.math.BigInteger;
 
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.crypto.Digest;
-import org.bouncycastle.crypto.digests.SHA1Digest;
-import org.bouncycastle.util.Arrays;
+import org.bouncycastle.cert.selector.X509CertificateHolderSelector;
 
 public class KeyTransRecipientId
     extends RecipientId
 {
-    private byte[] subjectKeyId;
+    private X509CertificateHolderSelector baseSelector;
 
-    private X500Name issuer;
-    private BigInteger serialNumber;
+    private KeyTransRecipientId(X509CertificateHolderSelector baseSelector)
+    {
+        super(keyTrans);
+
+        this.baseSelector = baseSelector;
+    }
 
     /**
      * Construct a key trans recipient ID with the value of a public key's subjectKeyId.
@@ -28,10 +24,7 @@ public class KeyTransRecipientId
      */
     public KeyTransRecipientId(byte[] subjectKeyId)
     {
-        super(keyTrans);
-        super.setSubjectKeyIdentifier(new DEROctetString(subjectKeyId).getDEREncoded());
-
-        this.subjectKeyId = subjectKeyId;
+        this(null, null, subjectKeyId);
     }
 
     /**
@@ -43,36 +36,40 @@ public class KeyTransRecipientId
      */
     public KeyTransRecipientId(X500Name issuer, BigInteger serialNumber)
     {
-        super(keyTrans);
-        this.issuer = issuer;
-        this.serialNumber = serialNumber;
+        this(issuer, serialNumber, null);
+    }
 
-        try
-        {
-            this.setIssuer(issuer.getDEREncoded());
-        }
-        catch (IOException e)
-        {
-            throw new IllegalArgumentException("invalid issuer: " + e.getMessage());
-        }
-        this.setSerialNumber(serialNumber);
+    /**
+     * Construct a key trans recipient ID based on the issuer and serial number of the recipient's associated
+     * certificate.
+     *
+     * @param issuer the issuer of the recipient's associated certificate.
+     * @param serialNumber the serial number of the recipient's associated certificate.
+     * @param subjectKeyId the subject key identifier to use to match the recipients associated certificate.
+     */
+    public KeyTransRecipientId(X500Name issuer, BigInteger serialNumber, byte[] subjectKeyId)
+    {
+        this(new X509CertificateHolderSelector(issuer, serialNumber, subjectKeyId));
+    }
+
+    public X500Name getIssuer()
+    {
+        return baseSelector.getIssuer();
+    }
+
+    public BigInteger getSerialNumber()
+    {
+        return baseSelector.getSerialNumber();
+    }
+
+    public byte[] getSubjectKeyIdentifier()
+    {
+        return baseSelector.getSubjectKeyIdentifier();
     }
 
     public int hashCode()
     {
-        int code = Arrays.hashCode(subjectKeyId);
-
-        if (this.serialNumber != null)
-        {
-            code ^= this.serialNumber.hashCode();
-        }
-
-        if (this.issuer != null)
-        {
-            code ^= this.issuer.hashCode();
-        }
-
-        return code;
+        return baseSelector.hashCode();
     }
 
     public boolean equals(
@@ -85,61 +82,21 @@ public class KeyTransRecipientId
 
         KeyTransRecipientId id = (KeyTransRecipientId)o;
 
-        return Arrays.areEqual(subjectKeyId, id.subjectKeyId)
-            && equalsObj(this.serialNumber, id.serialNumber)
-            && equalsObj(this.issuer, id.issuer);
+        return this.baseSelector.equals(id.baseSelector);
     }
 
-    private boolean equalsObj(Object a, Object b)
+    public Object clone()
     {
-        return (a != null) ? a.equals(b) : b == null;
+        return new KeyTransRecipientId(this.baseSelector);
     }
 
     public boolean match(Object obj)
     {
-        if (obj instanceof X509CertificateHolder)
-        {
-            X509CertificateHolder certHldr = (X509CertificateHolder)obj;
-
-            if (this.getSerialNumber() != null)
-            {
-                IssuerAndSerialNumber iAndS = certHldr.getIssuerAndSerialNumber();
-
-                return iAndS.getName().equals(this.issuer)
-                    && iAndS.getSerialNumber().getValue().equals(this.getSerialNumber());
-            }
-            else if (this.getSubjectKeyIdentifier() != null)
-            {
-                X509Extension ext = certHldr.getExtension(X509Extension.subjectKeyIdentifier);
-
-                if (ext == null)
-                {
-                    Digest dig = new SHA1Digest();
-                    byte[] hash = new byte[dig.getDigestSize()];
-                    byte[] spkiEnc = certHldr.getSubjectPublicKeyInfo().getDEREncoded();
-
-                    // try the outlook 2010 calculation
-                    dig.update(spkiEnc, 0, spkiEnc.length);
-
-                    dig.doFinal(hash, 0);
-
-                    return Arrays.areEqual(subjectKeyId, hash);
-                }
-
-                byte[] subKeyID = ASN1OctetString.getInstance(ext.getParsedValue()).getOctets();
-
-                return Arrays.areEqual(subjectKeyId, subKeyID);
-            }
-        }
-        else if (obj instanceof byte[])
-        {
-            return Arrays.areEqual(subjectKeyId, (byte[])obj);
-        }
-        else if (obj instanceof KeyTransRecipientInformation)
+        if (obj instanceof KeyTransRecipientInformation)
         {
             return ((KeyTransRecipientInformation)obj).getRID().equals(this);
         }
 
-        return false;
+        return baseSelector.match(obj);
     }
 }

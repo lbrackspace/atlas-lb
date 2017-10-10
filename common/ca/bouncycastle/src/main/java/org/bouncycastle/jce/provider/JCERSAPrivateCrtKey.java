@@ -1,16 +1,18 @@
 package org.bouncycastle.jce.provider;
 
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.pkcs.RSAPrivateKeyStructure;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
-
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.spec.RSAPrivateCrtKeySpec;
+
+import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.crypto.params.RSAPrivateCrtKeyParameters;
+import org.bouncycastle.jcajce.provider.asymmetric.util.KeyUtil;
+import org.bouncycastle.util.Strings;
 
 /**
  * A provider representation for a RSA private key, with CRT factors included.
@@ -87,15 +89,16 @@ public class JCERSAPrivateCrtKey
      */
     JCERSAPrivateCrtKey(
         PrivateKeyInfo  info)
+        throws IOException
     {
-        this(new RSAPrivateKeyStructure((ASN1Sequence)info.getPrivateKey()));
+        this(org.bouncycastle.asn1.pkcs.RSAPrivateKey.getInstance(info.parsePrivateKey()));
     }
 
     /**
      * construct an RSA key from a ASN.1 RSA private key object.
      */
     JCERSAPrivateCrtKey(
-        RSAPrivateKeyStructure  key)
+        RSAPrivateKey  key)
     {
         this.modulus = key.getModulus();
         this.publicExponent = key.getPublicExponent();
@@ -125,9 +128,7 @@ public class JCERSAPrivateCrtKey
      */
     public byte[] getEncoded()
     {
-        PrivateKeyInfo          info = new PrivateKeyInfo(new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption, new DERNull()), new RSAPrivateKeyStructure(getModulus(), getPublicExponent(), getPrivateExponent(), getPrimeP(), getPrimeQ(), getPrimeExponentP(), getPrimeExponentQ(), getCrtCoefficient()).getDERObject());
-
-        return info.getDEREncoded();
+        return KeyUtil.getEncodedPrivateKeyInfo(new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE), new RSAPrivateKey(getModulus(), getPublicExponent(), getPrivateExponent(), getPrimeP(), getPrimeQ(), getPrimeExponentP(), getPrimeExponentQ(), getCrtCoefficient()));
     }
 
     /**
@@ -224,7 +225,7 @@ public class JCERSAPrivateCrtKey
     public String toString()
     {
         StringBuffer    buf = new StringBuffer();
-        String          nl = System.getProperty("line.separator");
+        String          nl = Strings.lineSeparator();
 
         buf.append("RSA Private CRT Key").append(nl);
         buf.append("            modulus: ").append(this.getModulus().toString(16)).append(nl);

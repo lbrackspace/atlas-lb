@@ -1,21 +1,31 @@
 package org.bouncycastle.asn1.cms;
 
 import org.bouncycastle.asn1.ASN1Choice;
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERTaggedObject;
 
+/**
+ * <a href="http://tools.ietf.org/html/rfc5652#section-6.2.2">RFC 5652</a>:
+ * Content encryption key delivery mechanisms.
+ * <p>
+ * <pre>
+ * KeyAgreeRecipientIdentifier ::= CHOICE {
+ *     issuerAndSerialNumber IssuerAndSerialNumber,
+ *     rKeyId [0] IMPLICIT RecipientKeyIdentifier }
+ * </pre>
+ */
 public class KeyAgreeRecipientIdentifier
-    extends ASN1Encodable
+    extends ASN1Object
     implements ASN1Choice
 {
     private IssuerAndSerialNumber issuerSerial;
     private RecipientKeyIdentifier rKeyID;
 
     /**
-     * return an KeyAgreeRecipientIdentifier object from a tagged object.
+     * Return an KeyAgreeRecipientIdentifier object from a tagged object.
      *
      * @param obj the tagged object holding the object we want.
      * @param explicit true if the object is meant to be explicitly
@@ -31,7 +41,16 @@ public class KeyAgreeRecipientIdentifier
     }
     
     /**
-     * return an KeyAgreeRecipientIdentifier object from the given object.
+     * Return an KeyAgreeRecipientIdentifier object from the given object.
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> {@link KeyAgreeRecipientIdentifier} object
+     * <li> {@link org.bouncycastle.asn1.ASN1Sequence#getInstance(java.lang.Object) ASN1Sequence} input formats with IssuerAndSerialNumber structure inside
+     * <li> {@link org.bouncycastle.asn1.ASN1TaggedObject#getInstance(java.lang.Object) ASN1TaggedObject} with tag value 0: a KeyAgreeRecipientIdentifier data structure
+     * </ul>
+     * <p>
+     * Note: no byte[] input!
      *
      * @param obj the object we want converted.
      * @exception IllegalArgumentException if the object cannot be converted.
@@ -84,18 +103,12 @@ public class KeyAgreeRecipientIdentifier
 
     /** 
      * Produce an object suitable for an ASN1OutputStream.
-     * <pre>
-     * KeyAgreeRecipientIdentifier ::= CHOICE {
-     *     issuerAndSerialNumber IssuerAndSerialNumber,
-     *     rKeyId [0] IMPLICIT RecipientKeyIdentifier
-     * }
-     * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         if (issuerSerial != null)
         {
-            return issuerSerial.toASN1Object();
+            return issuerSerial.toASN1Primitive();
         }
 
         return new DERTaggedObject(false, 0, rKeyID);

@@ -2,12 +2,12 @@ package org.bouncycastle.asn1.icao;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 /**
@@ -38,9 +38,9 @@ import org.bouncycastle.asn1.DERSequence;
  * </pre>
  */
 public class DataGroupHash 
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    DERInteger dataGroupNumber;    
+    ASN1Integer dataGroupNumber;    
     ASN1OctetString    dataGroupHashValue;
     
     public static DataGroupHash getInstance(
@@ -63,7 +63,7 @@ public class DataGroupHash
         Enumeration e = seq.getObjects();
 
         // dataGroupNumber
-        dataGroupNumber = DERInteger.getInstance(e.nextElement());
+        dataGroupNumber = ASN1Integer.getInstance(e.nextElement());
         // dataGroupHashValue
         dataGroupHashValue = ASN1OctetString.getInstance(e.nextElement());   
     }
@@ -72,7 +72,7 @@ public class DataGroupHash
         int dataGroupNumber,        
         ASN1OctetString     dataGroupHashValue)
     {
-        this.dataGroupNumber = new DERInteger(dataGroupNumber);
+        this.dataGroupNumber = new ASN1Integer(dataGroupNumber);
         this.dataGroupHashValue = dataGroupHashValue; 
     }    
 
@@ -86,7 +86,7 @@ public class DataGroupHash
         return dataGroupHashValue;
     }     
     
-    public DERObject toASN1Object() 
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector seq = new ASN1EncodableVector();
         seq.add(dataGroupNumber);

@@ -10,59 +10,69 @@ import org.bouncycastle.crypto.params.DHPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.util.BigIntegers;
 
-public class DefaultTlsAgreementCredentials implements TlsAgreementCredentials
+public class DefaultTlsAgreementCredentials
+    extends AbstractTlsAgreementCredentials
 {
-    protected Certificate clientCert;
-    protected AsymmetricKeyParameter clientPrivateKey;
+    protected Certificate certificate;
+    protected AsymmetricKeyParameter privateKey;
 
     protected BasicAgreement basicAgreement;
+    protected boolean truncateAgreement;
 
-    public DefaultTlsAgreementCredentials(Certificate clientCertificate, AsymmetricKeyParameter clientPrivateKey)
+    public DefaultTlsAgreementCredentials(Certificate certificate, AsymmetricKeyParameter privateKey)
     {
-        if (clientCertificate == null)
+        if (certificate == null)
         {
-            throw new IllegalArgumentException("'clientCertificate' cannot be null");
+            throw new IllegalArgumentException("'certificate' cannot be null");
         }
-        if (clientCertificate.certs.length == 0)
+        if (certificate.isEmpty())
         {
-            throw new IllegalArgumentException("'clientCertificate' cannot be empty");
+            throw new IllegalArgumentException("'certificate' cannot be empty");
         }
-        if (clientPrivateKey == null)
+        if (privateKey == null)
         {
-            throw new IllegalArgumentException("'clientPrivateKey' cannot be null");
+            throw new IllegalArgumentException("'privateKey' cannot be null");
         }
-        if (!clientPrivateKey.isPrivate())
+        if (!privateKey.isPrivate())
         {
-            throw new IllegalArgumentException("'clientPrivateKey' must be private");
+            throw new IllegalArgumentException("'privateKey' must be private");
         }
 
-        if (clientPrivateKey instanceof DHPrivateKeyParameters)
+        if (privateKey instanceof DHPrivateKeyParameters)
         {
             basicAgreement = new DHBasicAgreement();
+            truncateAgreement = true;
         }
-        else if (clientPrivateKey instanceof ECPrivateKeyParameters)
+        else if (privateKey instanceof ECPrivateKeyParameters)
         {
             basicAgreement = new ECDHBasicAgreement();
+            truncateAgreement = false;
         }
         else
         {
-            throw new IllegalArgumentException("'clientPrivateKey' type not supported: "
-                + clientPrivateKey.getClass().getName());
+            throw new IllegalArgumentException("'privateKey' type not supported: "
+                + privateKey.getClass().getName());
         }
 
-        this.clientCert = clientCertificate;
-        this.clientPrivateKey = clientPrivateKey;
+        this.certificate = certificate;
+        this.privateKey = privateKey;
     }
 
     public Certificate getCertificate()
     {
-        return clientCert;
+        return certificate;
     }
 
-    public byte[] generateAgreement(AsymmetricKeyParameter serverPublicKey)
+    public byte[] generateAgreement(AsymmetricKeyParameter peerPublicKey)
     {
-        basicAgreement.init(clientPrivateKey);
-        BigInteger agreementValue = basicAgreement.calculateAgreement(serverPublicKey);
-        return BigIntegers.asUnsignedByteArray(agreementValue);
+        basicAgreement.init(privateKey);
+        BigInteger agreementValue = basicAgreement.calculateAgreement(peerPublicKey);
+
+        if (truncateAgreement)
+        {
+            return BigIntegers.asUnsignedByteArray(agreementValue);
+        }
+
+        return BigIntegers.asUnsignedByteArray(basicAgreement.getFieldSize(), agreementValue);
     }
 }

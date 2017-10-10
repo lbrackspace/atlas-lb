@@ -1,56 +1,54 @@
 package org.bouncycastle.asn1.tsp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERBoolean;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extensions;
 
 public class TimeStampReq
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    DERInteger version;
+    ASN1Integer version;
 
     MessageImprint messageImprint;
 
-    DERObjectIdentifier tsaPolicy;
+    ASN1ObjectIdentifier tsaPolicy;
 
-    DERInteger nonce;
+    ASN1Integer nonce;
 
-    DERBoolean certReq;
+    ASN1Boolean certReq;
 
-    X509Extensions extensions;
+    Extensions extensions;
 
     public static TimeStampReq getInstance(Object o)
     {
-        if (o == null || o instanceof TimeStampReq)
+        if (o instanceof TimeStampReq)
         {
             return (TimeStampReq) o;
         }
-        else if (o instanceof ASN1Sequence)
+        else if (o != null)
         {
-            return new TimeStampReq((ASN1Sequence) o);
+            return new TimeStampReq(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException(
-                "Unknown object in 'TimeStampReq' factory : "
-                        + o.getClass().getName() + ".");
+        return null;
     }
 
-    public TimeStampReq(ASN1Sequence seq)
+    private TimeStampReq(ASN1Sequence seq)
     {
         int nbObjects = seq.size();
 
         int seqStart = 0;
 
         // version
-        version = DERInteger.getInstance(seq.getObjectAt(seqStart));
+        version = ASN1Integer.getInstance(seq.getObjectAt(seqStart));
 
         seqStart++;
 
@@ -62,19 +60,19 @@ public class TimeStampReq
         for (int opt = seqStart; opt < nbObjects; opt++)
         {
             // tsaPolicy
-            if (seq.getObjectAt(opt) instanceof DERObjectIdentifier)
+            if (seq.getObjectAt(opt) instanceof ASN1ObjectIdentifier)
             {
-                tsaPolicy = DERObjectIdentifier.getInstance(seq.getObjectAt(opt));
+                tsaPolicy = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(opt));
             }
             // nonce
-            else if (seq.getObjectAt(opt) instanceof DERInteger)
+            else if (seq.getObjectAt(opt) instanceof ASN1Integer)
             {
-                nonce = DERInteger.getInstance(seq.getObjectAt(opt));
+                nonce = ASN1Integer.getInstance(seq.getObjectAt(opt));
             }
             // certReq
-            else if (seq.getObjectAt(opt) instanceof DERBoolean)
+            else if (seq.getObjectAt(opt) instanceof ASN1Boolean)
             {
-                certReq = DERBoolean.getInstance(seq.getObjectAt(opt));
+                certReq = ASN1Boolean.getInstance(seq.getObjectAt(opt));
             }
             // extensions
             else if (seq.getObjectAt(opt) instanceof ASN1TaggedObject)
@@ -82,7 +80,7 @@ public class TimeStampReq
                 ASN1TaggedObject    tagged = (ASN1TaggedObject)seq.getObjectAt(opt);
                 if (tagged.getTagNo() == 0)
                 {
-                    extensions = X509Extensions.getInstance(tagged, false);
+                    extensions = Extensions.getInstance(tagged, false);
                 }
             }
         }
@@ -90,13 +88,13 @@ public class TimeStampReq
 
     public TimeStampReq(
         MessageImprint      messageImprint,
-        DERObjectIdentifier tsaPolicy,
-        DERInteger          nonce,
-        DERBoolean          certReq,
-        X509Extensions      extensions)
+        ASN1ObjectIdentifier tsaPolicy,
+        ASN1Integer          nonce,
+        ASN1Boolean          certReq,
+        Extensions      extensions)
     {
         // default
-        version = new DERInteger(1);
+        version = new ASN1Integer(1);
 
         this.messageImprint = messageImprint;
         this.tsaPolicy = tsaPolicy;
@@ -105,7 +103,7 @@ public class TimeStampReq
         this.extensions = extensions;
     }
 
-    public DERInteger getVersion()
+    public ASN1Integer getVersion()
     {
         return version;
     }
@@ -115,22 +113,22 @@ public class TimeStampReq
         return messageImprint;
     }
 
-    public DERObjectIdentifier getReqPolicy()
+    public ASN1ObjectIdentifier getReqPolicy()
     {
         return tsaPolicy;
     }
 
-    public DERInteger getNonce()
+    public ASN1Integer getNonce()
     {
         return nonce;
     }
 
-    public DERBoolean getCertReq()
+    public ASN1Boolean getCertReq()
     {
         return certReq;
     }
 
-    public X509Extensions getExtensions()
+    public Extensions getExtensions()
     {
         return extensions;
     }
@@ -149,7 +147,7 @@ public class TimeStampReq
      * }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
         

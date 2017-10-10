@@ -4,23 +4,16 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.SignerIdentifier;
 import org.bouncycastle.asn1.cms.SignerInfo;
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.operator.ContentSigner;
@@ -29,54 +22,37 @@ import org.bouncycastle.operator.DigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DigestCalculator;
 import org.bouncycastle.operator.DigestCalculatorProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.io.TeeOutputStream;
 
 public class SignerInfoGenerator
 {
-    private static final Set RSA_PKCS1d5 = new HashSet();
-
-    static
-    {
-        RSA_PKCS1d5.add(PKCSObjectIdentifiers.md2WithRSAEncryption);
-        RSA_PKCS1d5.add(PKCSObjectIdentifiers.md4WithRSAEncryption);
-        RSA_PKCS1d5.add(PKCSObjectIdentifiers.md5WithRSAEncryption);
-        RSA_PKCS1d5.add(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        RSA_PKCS1d5.add(PKCSObjectIdentifiers.sha224WithRSAEncryption);
-        RSA_PKCS1d5.add(PKCSObjectIdentifiers.sha256WithRSAEncryption);
-        RSA_PKCS1d5.add(PKCSObjectIdentifiers.sha384WithRSAEncryption);
-        RSA_PKCS1d5.add(PKCSObjectIdentifiers.sha512WithRSAEncryption);
-        RSA_PKCS1d5.add(OIWObjectIdentifiers.md4WithRSAEncryption);
-        RSA_PKCS1d5.add(OIWObjectIdentifiers.md4WithRSA);
-        RSA_PKCS1d5.add(OIWObjectIdentifiers.md5WithRSA);
-        RSA_PKCS1d5.add(OIWObjectIdentifiers.sha1WithRSA);
-        RSA_PKCS1d5.add(TeleTrusTObjectIdentifiers.rsaSignatureWithripemd128);
-        RSA_PKCS1d5.add(TeleTrusTObjectIdentifiers.rsaSignatureWithripemd160);
-        RSA_PKCS1d5.add(TeleTrusTObjectIdentifiers.rsaSignatureWithripemd256);
-    }
-
     private final SignerIdentifier signerIdentifier;
     private final CMSAttributeTableGenerator sAttrGen;
     private final CMSAttributeTableGenerator unsAttrGen;
     private final ContentSigner signer;
     private final DigestCalculator digester;
     private final DigestAlgorithmIdentifierFinder digAlgFinder = new DefaultDigestAlgorithmIdentifierFinder();
+    private final CMSSignatureEncryptionAlgorithmFinder sigEncAlgFinder;
 
     private byte[] calculatedDigest = null;
     private X509CertificateHolder certHolder;
 
-    public SignerInfoGenerator(
-        SignerIdentifier signerIdentifier,
-        ContentSigner signer,
-        DigestCalculatorProvider digesterProvider)
-        throws OperatorCreationException
-    {
-        this(signerIdentifier, signer, digesterProvider, false);
-    }
-
-    public SignerInfoGenerator(
+    SignerInfoGenerator(
         SignerIdentifier signerIdentifier,
         ContentSigner signer,
         DigestCalculatorProvider digesterProvider,
+        CMSSignatureEncryptionAlgorithmFinder sigEncAlgFinder)
+        throws OperatorCreationException
+    {
+        this(signerIdentifier, signer, digesterProvider, sigEncAlgFinder, false);
+    }
+
+    SignerInfoGenerator(
+        SignerIdentifier signerIdentifier,
+        ContentSigner signer,
+        DigestCalculatorProvider digesterProvider,
+        CMSSignatureEncryptionAlgorithmFinder sigEncAlgFinder,
         boolean isDirectSignature)
         throws OperatorCreationException
     {
@@ -102,6 +78,8 @@ public class SignerInfoGenerator
             this.sAttrGen = new DefaultSignedAttributeTableGenerator();
             this.unsAttrGen = null;
         }
+
+        this.sigEncAlgFinder = sigEncAlgFinder;
     }
 
     public SignerInfoGenerator(
@@ -112,14 +90,16 @@ public class SignerInfoGenerator
         this.signerIdentifier = original.signerIdentifier;
         this.signer = original.signer;
         this.digester = original.digester;
+        this.sigEncAlgFinder = original.sigEncAlgFinder;
         this.sAttrGen = sAttrGen;
         this.unsAttrGen = unsAttrGen;
     }
 
-    public SignerInfoGenerator(
+    SignerInfoGenerator(
         SignerIdentifier signerIdentifier,
         ContentSigner signer,
         DigestCalculatorProvider digesterProvider,
+        CMSSignatureEncryptionAlgorithmFinder sigEncAlgFinder,
         CMSAttributeTableGenerator sAttrGen,
         CMSAttributeTableGenerator unsAttrGen)
         throws OperatorCreationException
@@ -138,6 +118,17 @@ public class SignerInfoGenerator
 
         this.sAttrGen = sAttrGen;
         this.unsAttrGen = unsAttrGen;
+        this.sigEncAlgFinder = sigEncAlgFinder;
+    }
+
+    public SignerIdentifier getSID()
+    {
+        return signerIdentifier;
+    }
+
+    public int getGeneratedVersion()
+    {
+        return signerIdentifier.isTagged() ? 3 : 1;
     }
 
     public boolean hasAssociatedCertificate()
@@ -192,13 +183,15 @@ public class SignerInfoGenerator
              */
             ASN1Set signedAttr = null;
 
+            AlgorithmIdentifier digestEncryptionAlgorithm = sigEncAlgFinder.findEncryptionAlgorithm(signer.getAlgorithmIdentifier());
+
             AlgorithmIdentifier digestAlg = null;
 
             if (sAttrGen != null)
             {
                 digestAlg = digester.getAlgorithmIdentifier();
                 calculatedDigest = digester.getDigest();
-                Map parameters = getBaseParameters(contentType, digester.getAlgorithmIdentifier(), calculatedDigest);
+                Map parameters = getBaseParameters(contentType, digester.getAlgorithmIdentifier(), digestEncryptionAlgorithm, calculatedDigest);
                 AttributeTable signed = sAttrGen.getAttributes(Collections.unmodifiableMap(parameters));
 
                 signedAttr = getAttributeSet(signed);
@@ -206,7 +199,7 @@ public class SignerInfoGenerator
                 // sig must be composed from the DER encoding.
                 OutputStream sOut = signer.getOutputStream();
 
-                sOut.write(signedAttr.getEncoded(ASN1Encodable.DER));
+                sOut.write(signedAttr.getEncoded(ASN1Encoding.DER));
 
                 sOut.close();
             }
@@ -229,15 +222,13 @@ public class SignerInfoGenerator
             ASN1Set unsignedAttr = null;
             if (unsAttrGen != null)
             {
-                Map parameters = getBaseParameters(contentType, digestAlg, calculatedDigest);
-                parameters.put(CMSAttributeTableGenerator.SIGNATURE, sigBytes.clone());
+                Map parameters = getBaseParameters(contentType, digestAlg, digestEncryptionAlgorithm, calculatedDigest);
+                parameters.put(CMSAttributeTableGenerator.SIGNATURE, Arrays.clone(sigBytes));
 
                 AttributeTable unsigned = unsAttrGen.getAttributes(Collections.unmodifiableMap(parameters));
 
                 unsignedAttr = getAttributeSet(unsigned);
             }
-
-            AlgorithmIdentifier digestEncryptionAlgorithm = getSignatureAlgorithm(signer.getAlgorithmIdentifier());
 
             return new SignerInfo(signerIdentifier, digestAlg,
                 signedAttr, digestEncryptionAlgorithm, new DEROctetString(sigBytes), unsignedAttr);
@@ -264,7 +255,7 @@ public class SignerInfoGenerator
         return null;
     }
 
-    private Map getBaseParameters(DERObjectIdentifier contentType, AlgorithmIdentifier digAlgId, byte[] hash)
+    private Map getBaseParameters(ASN1ObjectIdentifier contentType, AlgorithmIdentifier digAlgId, AlgorithmIdentifier sigAlgId, byte[] hash)
     {
         Map param = new HashMap();
 
@@ -274,27 +265,17 @@ public class SignerInfoGenerator
         }
 
         param.put(CMSAttributeTableGenerator.DIGEST_ALGORITHM_IDENTIFIER, digAlgId);
-        param.put(CMSAttributeTableGenerator.DIGEST,  hash.clone());
+        param.put(CMSAttributeTableGenerator.SIGNATURE_ALGORITHM_IDENTIFIER, sigAlgId);
+        param.put(CMSAttributeTableGenerator.DIGEST,  Arrays.clone(hash));
+
         return param;
-    }
-
-    private AlgorithmIdentifier getSignatureAlgorithm(AlgorithmIdentifier sigAlgID)
-        throws IOException
-    {
-        // RFC3370 section 3.2
-        if (RSA_PKCS1d5.contains(sigAlgID.getAlgorithm()))
-        {
-            return new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE);
-        }
-
-        return sigAlgID;
     }
 
     public byte[] getCalculatedDigest()
     {
         if (calculatedDigest != null)
         {
-            return (byte[])calculatedDigest.clone();
+            return Arrays.clone(calculatedDigest);
         }
 
         return null;

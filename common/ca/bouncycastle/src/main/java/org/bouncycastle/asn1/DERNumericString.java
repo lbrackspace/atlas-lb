@@ -2,19 +2,31 @@ package org.bouncycastle.asn1;
 
 import java.io.IOException;
 
+import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.Strings;
+
 /**
  * DER NumericString object - this is an ascii string of characters {0,1,2,3,4,5,6,7,8,9, }.
+ * ASN.1 NUMERIC-STRING object.
+ * <p>
+ * This is an ASCII string of characters {0,1,2,3,4,5,6,7,8,9} + space.
+ * <p>
+ * See X.680 section 37.2.
+ * <p>
+ * Explicit character set escape sequences are not allowed.
  */
 public class DERNumericString
-    extends ASN1Object
-    implements DERString
+    extends ASN1Primitive
+    implements ASN1String
 {
-    String  string;
+    private final byte[]  string;
 
     /**
-     * return a Numeric string from the passed in object
+     * Return a Numeric string from the passed in object
      *
+     * @param obj a DERNumericString or an object that can be converted into one.
      * @exception IllegalArgumentException if the object cannot be converted.
+     * @return a DERNumericString instance, or null
      */
     public static DERNumericString getInstance(
         Object  obj)
@@ -24,23 +36,36 @@ public class DERNumericString
             return (DERNumericString)obj;
         }
 
+        if (obj instanceof byte[])
+        {
+            try
+            {
+                return (DERNumericString)fromByteArray((byte[])obj);
+            }
+            catch (Exception e)
+            {
+                throw new IllegalArgumentException("encoding error in getInstance: " + e.toString());
+            }
+        }
+
         throw new IllegalArgumentException("illegal object in getInstance: " + obj.getClass().getName());
     }
 
     /**
-     * return an Numeric String from a tagged object.
+     * Return an Numeric String from a tagged object.
      *
      * @param obj the tagged object holding the object we want
      * @param explicit true if the object is meant to be explicitly
      *              tagged false otherwise.
      * @exception IllegalArgumentException if the tagged object cannot
      *               be converted.
+     * @return a DERNumericString instance, or null.
      */
     public static DERNumericString getInstance(
         ASN1TaggedObject obj,
         boolean          explicit)
     {
-        DERObject o = obj.getObject();
+        ASN1Primitive o = obj.getObject();
 
         if (explicit || o instanceof DERNumericString)
         {
@@ -53,23 +78,16 @@ public class DERNumericString
     }
 
     /**
-     * basic constructor - with bytes.
+     * Basic constructor - with bytes.
      */
-    public DERNumericString(
+    DERNumericString(
         byte[]   string)
     {
-        char[]  cs = new char[string.length];
-
-        for (int i = 0; i != cs.length; i++)
-        {
-            cs[i] = (char)(string[i] & 0xff);
-        }
-
-        this.string = new String(cs);
+        this.string = string;
     }
 
     /**
-     * basic constructor -  without validation..
+     * Basic constructor -  without validation..
      */
     public DERNumericString(
         String   string)
@@ -94,46 +112,48 @@ public class DERNumericString
             throw new IllegalArgumentException("string contains illegal characters");
         }
 
-        this.string = string;
+        this.string = Strings.toByteArray(string);
     }
 
     public String getString()
     {
-        return string;
+        return Strings.fromByteArray(string);
     }
 
     public String toString()
     {
-        return string;
+        return getString();
     }
 
     public byte[] getOctets()
     {
-        char[]  cs = string.toCharArray();
-        byte[]  bs = new byte[cs.length];
+        return Arrays.clone(string);
+    }
 
-        for (int i = 0; i != cs.length; i++)
-        {
-            bs[i] = (byte)cs[i];
-        }
+    boolean isConstructed()
+    {
+        return false;
+    }
 
-        return bs; 
+    int encodedLength()
+    {
+        return 1 + StreamUtil.calculateBodyLength(string.length) + string.length;
     }
 
     void encode(
-        DEROutputStream  out)
+        ASN1OutputStream out)
         throws IOException
     {
-        out.writeEncoded(NUMERIC_STRING, this.getOctets());
+        out.writeEncoded(BERTags.NUMERIC_STRING, string);
     }
 
     public int hashCode()
     {
-        return this.getString().hashCode();
+        return Arrays.hashCode(string);
     }
 
     boolean asn1Equals(
-        DERObject  o)
+        ASN1Primitive o)
     {
         if (!(o instanceof DERNumericString))
         {
@@ -142,7 +162,7 @@ public class DERNumericString
 
         DERNumericString  s = (DERNumericString)o;
 
-        return this.getString().equals(s.getString());
+        return Arrays.areEqual(string, s.string);
     }
 
     /**

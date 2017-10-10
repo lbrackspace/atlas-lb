@@ -2,7 +2,6 @@ package org.bouncycastle.crypto.agreement;
 
 import java.math.BigInteger;
 
-
 import org.bouncycastle.crypto.BasicAgreement;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.params.ECDomainParameters;
@@ -40,15 +39,30 @@ public class ECDHCBasicAgreement
         this.key = (ECPrivateKeyParameters)key;
     }
 
+    public int getFieldSize()
+    {
+        return (key.getParameters().getCurve().getFieldSize() + 7) / 8;
+    }
+
     public BigInteger calculateAgreement(
         CipherParameters pubKey)
     {
-        ECPublicKeyParameters   pub = (ECPublicKeyParameters)pubKey;
-        ECDomainParameters      params = pub.getParameters();
-        ECPoint P = pub.getQ().multiply(params.getH().multiply(key.getD()));
+        ECPublicKeyParameters pub = (ECPublicKeyParameters)pubKey;
+        ECDomainParameters params = pub.getParameters();
+        if (!params.equals(key.getParameters()))
+        {
+            throw new IllegalStateException("ECDHC public key has wrong domain parameters");
+        }
 
-        // if (p.isInfinity()) throw new RuntimeException("Invalid public key");
+        BigInteger hd = params.getH().multiply(key.getD()).mod(params.getN());
 
-        return P.getX().toBigInteger();
+        ECPoint P = pub.getQ().multiply(hd).normalize();
+
+        if (P.isInfinity())
+        {
+            throw new IllegalStateException("Infinity is not a valid agreement value for ECDHC");
+        }
+
+        return P.getAffineXCoord().toBigInteger();
     }
 }

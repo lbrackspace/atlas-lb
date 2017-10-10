@@ -1,11 +1,11 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERSequence;
-
 import java.util.Enumeration;
+
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERSequence;
 
 /**
  * Target information extension for attributes certificates according to RFC
@@ -17,7 +17,7 @@ import java.util.Enumeration;
  * 
  */
 public class TargetInformation
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private ASN1Sequence targets;
 
@@ -35,15 +35,14 @@ public class TargetInformation
     {
         if (obj instanceof TargetInformation)
         {
-            return (TargetInformation) obj;
+            return (TargetInformation)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new TargetInformation((ASN1Sequence) obj);
+            return new TargetInformation(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: "
-            + obj.getClass());
+        return null;
     }
 
     /**
@@ -112,9 +111,9 @@ public class TargetInformation
      * targets element. If this was produced from a
      * {@link org.bouncycastle.asn1.ASN1Sequence} the encoding is kept.
      * 
-     * @return a DERObject
+     * @return a ASN1Primitive
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return targets;
     }

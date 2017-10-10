@@ -2,36 +2,75 @@ package org.bouncycastle.asn1.cms;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.BERSequence;
 import org.bouncycastle.asn1.BERTaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
 
+/**
+ * <a href="http://tools.ietf.org/html/rfc5652#section-3">RFC 5652</a> ContentInfo, and 
+ * <a href="http://tools.ietf.org/html/rfc5652#section-5.2">RFC 5652</a> EncapsulatedContentInfo objects.
+ *
+ * <pre>
+ * ContentInfo ::= SEQUENCE {
+ *     contentType ContentType,
+ *     content [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL
+ * }
+ *
+ * EncapsulatedContentInfo ::= SEQUENCE {
+ *     eContentType ContentType,
+ *     eContent [0] EXPLICIT OCTET STRING OPTIONAL
+ * }
+ * </pre>
+ */
 public class ContentInfo
-    extends ASN1Encodable
+    extends ASN1Object
     implements CMSObjectIdentifiers
 {
     private ASN1ObjectIdentifier contentType;
-    private DEREncodable        content;
+    private ASN1Encodable        content;
 
+    /**
+     * Return an ContentInfo object from the given object.
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> null &rarr; null
+     * <li> {@link ContentInfo} object
+     * <li> {@link org.bouncycastle.asn1.ASN1Sequence#getInstance(java.lang.Object) ASN1Sequence} input formats with ContentInfo structure inside
+     * </ul>
+     *
+     * @param obj the object we want converted.
+     * @exception IllegalArgumentException if the object cannot be converted.
+     */
     public static ContentInfo getInstance(
         Object  obj)
     {
-        if (obj == null || obj instanceof ContentInfo)
+        if (obj instanceof ContentInfo)
         {
             return (ContentInfo)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new ContentInfo((ASN1Sequence)obj);
+            return new ContentInfo(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
+    public static ContentInfo getInstance(
+        ASN1TaggedObject obj,
+        boolean explicit)
+    {
+        return getInstance(ASN1Sequence.getInstance(obj, explicit));
+    }
+
+    /**
+     * @deprecated use getInstance()
+     */
     public ContentInfo(
         ASN1Sequence  seq)
     {
@@ -56,7 +95,7 @@ public class ContentInfo
 
     public ContentInfo(
         ASN1ObjectIdentifier contentType,
-        DEREncodable        content)
+        ASN1Encodable        content)
     {
         this.contentType = contentType;
         this.content = content;
@@ -67,21 +106,15 @@ public class ContentInfo
         return contentType;
     }
 
-    public DEREncodable getContent()
+    public ASN1Encodable getContent()
     {
         return content;
     }
 
     /**
      * Produce an object suitable for an ASN1OutputStream.
-     * <pre>
-     * ContentInfo ::= SEQUENCE {
-     *          contentType ContentType,
-     *          content
-     *          [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL }
-     * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

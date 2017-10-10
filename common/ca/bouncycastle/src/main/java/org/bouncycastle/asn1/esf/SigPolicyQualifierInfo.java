@@ -2,49 +2,46 @@ package org.bouncycastle.asn1.esf;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 
 public class SigPolicyQualifierInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERObjectIdentifier  sigPolicyQualifierId;
-    private DEREncodable         sigQualifier;
+    private ASN1ObjectIdentifier  sigPolicyQualifierId;
+    private ASN1Encodable         sigQualifier;
 
     public SigPolicyQualifierInfo(
-        DERObjectIdentifier   sigPolicyQualifierId,
-        DEREncodable          sigQualifier)
+        ASN1ObjectIdentifier   sigPolicyQualifierId,
+        ASN1Encodable          sigQualifier)
     {
         this.sigPolicyQualifierId = sigPolicyQualifierId;
         this.sigQualifier = sigQualifier;
     }
 
-    public SigPolicyQualifierInfo(
+    private SigPolicyQualifierInfo(
         ASN1Sequence seq)
     {
-        sigPolicyQualifierId = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+        sigPolicyQualifierId = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
         sigQualifier = seq.getObjectAt(1);
     }
 
     public static SigPolicyQualifierInfo getInstance(
         Object obj)
     {
-        if (obj == null || obj instanceof SigPolicyQualifierInfo)
+        if (obj instanceof SigPolicyQualifierInfo)
         {
             return (SigPolicyQualifierInfo) obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new SigPolicyQualifierInfo((ASN1Sequence) obj);
+            return new SigPolicyQualifierInfo(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException(
-                "unknown object in 'SigPolicyQualifierInfo' factory: "
-                        + obj.getClass().getName() + ".");
+        return null;
     }
 
     public ASN1ObjectIdentifier getSigPolicyQualifierId()
@@ -52,7 +49,7 @@ public class SigPolicyQualifierInfo
         return new ASN1ObjectIdentifier(sigPolicyQualifierId.getId());
     }
 
-    public DEREncodable getSigQualifier()
+    public ASN1Encodable getSigQualifier()
     {
         return sigQualifier;
     }
@@ -66,7 +63,7 @@ public class SigPolicyQualifierInfo
      * SigPolicyQualifierId ::= OBJECT IDENTIFIER
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

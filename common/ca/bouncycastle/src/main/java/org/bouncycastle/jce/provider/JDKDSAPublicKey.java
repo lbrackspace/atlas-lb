@@ -1,15 +1,5 @@
 package org.bouncycastle.jce.provider;
 
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.DSAParameter;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
-import org.bouncycastle.crypto.params.DSAPublicKeyParameters;
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -18,6 +8,17 @@ import java.security.interfaces.DSAParams;
 import java.security.interfaces.DSAPublicKey;
 import java.security.spec.DSAParameterSpec;
 import java.security.spec.DSAPublicKeySpec;
+
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.DSAParameter;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
+import org.bouncycastle.crypto.params.DSAPublicKeyParameters;
+import org.bouncycastle.util.Strings;
 
 public class JDKDSAPublicKey
     implements DSAPublicKey
@@ -60,11 +61,11 @@ public class JDKDSAPublicKey
         SubjectPublicKeyInfo    info)
     {
 
-        DERInteger              derY;
+        ASN1Integer              derY;
 
         try
         {
-            derY = (DERInteger)info.getPublicKey();
+            derY = (ASN1Integer)info.parsePublicKey();
         }
         catch (IOException e)
         {
@@ -73,15 +74,15 @@ public class JDKDSAPublicKey
 
         this.y = derY.getValue();
 
-        if (isNotNull(info.getAlgorithmId().getParameters()))
+        if (isNotNull(info.getAlgorithm().getParameters()))
         {
-            DSAParameter params = new DSAParameter((ASN1Sequence)info.getAlgorithmId().getParameters());
+            DSAParameter params = DSAParameter.getInstance(info.getAlgorithm().getParameters());
             
             this.dsaSpec = new DSAParameterSpec(params.getP(), params.getQ(), params.getG());
         }
     }
 
-    private boolean isNotNull(DEREncodable parameters)
+    private boolean isNotNull(ASN1Encodable parameters)
     {
         return parameters != null && !DERNull.INSTANCE.equals(parameters);
     }
@@ -98,12 +99,19 @@ public class JDKDSAPublicKey
 
     public byte[] getEncoded()
     {
-        if (dsaSpec == null)
+        try
         {
-            return new SubjectPublicKeyInfo(new AlgorithmIdentifier(X9ObjectIdentifiers.id_dsa), new DERInteger(y)).getDEREncoded();
-        }
+            if (dsaSpec == null)
+            {
+                return new SubjectPublicKeyInfo(new AlgorithmIdentifier(X9ObjectIdentifiers.id_dsa), new ASN1Integer(y)).getEncoded(ASN1Encoding.DER);
+            }
 
-        return new SubjectPublicKeyInfo(new AlgorithmIdentifier(X9ObjectIdentifiers.id_dsa, new DSAParameter(dsaSpec.getP(), dsaSpec.getQ(), dsaSpec.getG()).getDERObject()), new DERInteger(y)).getDEREncoded();
+            return new SubjectPublicKeyInfo(new AlgorithmIdentifier(X9ObjectIdentifiers.id_dsa, new DSAParameter(dsaSpec.getP(), dsaSpec.getQ(), dsaSpec.getG())), new ASN1Integer(y)).getEncoded(ASN1Encoding.DER);
+        }
+        catch (IOException e)
+        {
+            return null;
+        }
     }
 
     public DSAParams getParams()
@@ -119,7 +127,7 @@ public class JDKDSAPublicKey
     public String toString()
     {
         StringBuffer    buf = new StringBuffer();
-        String          nl = System.getProperty("line.separator");
+        String          nl = Strings.lineSeparator();
 
         buf.append("DSA Public Key").append(nl);
         buf.append("            y: ").append(this.getY().toString(16)).append(nl);

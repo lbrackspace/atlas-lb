@@ -8,8 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
 
 class OCSPUtils
@@ -19,7 +19,7 @@ class OCSPUtils
     static Set EMPTY_SET = Collections.unmodifiableSet(new HashSet());
     static List EMPTY_LIST = Collections.unmodifiableList(new ArrayList());
 
-    static Date extractDate(DERGeneralizedTime time)
+    static Date extractDate(ASN1GeneralizedTime time)
     {
         try
         {
@@ -31,7 +31,7 @@ class OCSPUtils
         }
     }
 
-    static Set getCriticalExtensionOIDs(X509Extensions extensions)
+    static Set getCriticalExtensionOIDs(Extensions extensions)
     {
         if (extensions == null)
         {
@@ -41,7 +41,7 @@ class OCSPUtils
         return Collections.unmodifiableSet(new HashSet(Arrays.asList(extensions.getCriticalExtensionOIDs())));
     }
 
-    static Set getNonCriticalExtensionOIDs(X509Extensions extensions)
+    static Set getNonCriticalExtensionOIDs(Extensions extensions)
     {
         if (extensions == null)
         {
@@ -52,7 +52,7 @@ class OCSPUtils
         return Collections.unmodifiableSet(new HashSet(Arrays.asList(extensions.getNonCriticalExtensionOIDs())));
     }
 
-    static List getExtensionOIDs(X509Extensions extensions)
+    static List getExtensionOIDs(Extensions extensions)
     {
         if (extensions == null)
         {

@@ -15,8 +15,9 @@ import java.util.List;
 import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -60,8 +61,8 @@ public class AttributeCertificateHolder
         BigInteger serialNumber)
     {
         holder = new org.bouncycastle.asn1.x509.Holder(new IssuerSerial(
-            new GeneralNames(new DERSequence(new GeneralName(issuerName))),
-            new DERInteger(serialNumber)));
+            GeneralNames.getInstance(new DERSequence(new GeneralName(issuerName))),
+            new ASN1Integer(serialNumber)));
     }
 
     public AttributeCertificateHolder(X500Principal issuerName,
@@ -85,7 +86,7 @@ public class AttributeCertificateHolder
         }
 
         holder = new Holder(new IssuerSerial(generateGeneralNames(name),
-            new DERInteger(cert.getSerialNumber())));
+            new ASN1Integer(cert.getSerialNumber())));
     }
 
     public AttributeCertificateHolder(X509Principal principal)
@@ -125,7 +126,7 @@ public class AttributeCertificateHolder
         String digestAlgorithm, String otherObjectTypeID, byte[] objectDigest)
     {
         holder = new Holder(new ObjectDigestInfo(digestedObjectType,
-            otherObjectTypeID, new AlgorithmIdentifier(digestAlgorithm), Arrays
+            new ASN1ObjectIdentifier(otherObjectTypeID), new AlgorithmIdentifier(new ASN1ObjectIdentifier(digestAlgorithm)), Arrays
                 .clone(objectDigest)));
     }
 
@@ -163,7 +164,7 @@ public class AttributeCertificateHolder
     {
         if (holder.getObjectDigestInfo() != null)
         {
-            return holder.getObjectDigestInfo().getDigestAlgorithm().getObjectId()
+            return holder.getObjectDigestInfo().getDigestAlgorithm().getAlgorithm()
                 .getId();
         }
         return null;
@@ -200,7 +201,7 @@ public class AttributeCertificateHolder
 
     private GeneralNames generateGeneralNames(X509Principal principal)
     {
-        return new GeneralNames(new DERSequence(new GeneralName(principal)));
+        return GeneralNames.getInstance(new DERSequence(new GeneralName(principal)));
     }
 
     private boolean matchesDN(X509Principal subject, GeneralNames targets)
@@ -215,7 +216,7 @@ public class AttributeCertificateHolder
             {
                 try
                 {
-                    if (new X509Principal(((ASN1Encodable)gn.getName())
+                    if (new X509Principal(((ASN1Encodable)gn.getName()).toASN1Primitive()
                         .getEncoded()).equals(subject))
                     {
                         return true;
@@ -241,7 +242,7 @@ public class AttributeCertificateHolder
                 try
                 {
                     l.add(new X500Principal(
-                        ((ASN1Encodable)names[i].getName()).getEncoded()));
+                        ((ASN1Encodable)names[i].getName()).toASN1Primitive().getEncoded()));
                 }
                 catch (IOException e)
                 {
@@ -321,7 +322,7 @@ public class AttributeCertificateHolder
     public Object clone()
     {
         return new AttributeCertificateHolder((ASN1Sequence)holder
-            .toASN1Object());
+            .toASN1Primitive());
     }
 
     public boolean match(Certificate cert)

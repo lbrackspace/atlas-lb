@@ -1,15 +1,21 @@
 package org.bouncycastle.jce.provider.test;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.util.test.SimpleTest;
-
 import java.io.IOException;
 import java.security.AlgorithmParameters;
 import java.security.Security;
 import java.security.spec.AlgorithmParameterSpec;
 import java.security.spec.DSAParameterSpec;
+import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidParameterSpecException;
+
+import javax.crypto.spec.IvParameterSpec;
+
+import org.bouncycastle.asn1.sec.SECObjectIdentifiers;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.util.test.SimpleTest;
 
 public class AlgorithmParametersTest
     extends SimpleTest
@@ -48,9 +54,12 @@ public class AlgorithmParametersTest
             // expected already initialized
         }
 
+        // check default
+        spec = alg.getParameterSpec(AlgorithmParameterSpec.class);
+
         try
         {
-            spec = alg.getParameterSpec(AlgorithmParameterSpec.class);
+            spec = alg.getParameterSpec(IvParameterSpec.class);
             fail("wrong spec not detected");
         }
         catch (InvalidParameterSpecException e)
@@ -93,6 +102,15 @@ public class AlgorithmParametersTest
         throws Exception
     {
         basicTest("DSA", DSAParameterSpec.class, dsaParams);
+
+        AlgorithmParameters al = AlgorithmParameters.getInstance("EC", "BC");
+
+        al.init(new ECGenParameterSpec(SECObjectIdentifiers.secp256r1.getId()));
+
+        if (!Arrays.areEqual(Hex.decode("06082a8648ce3d030107"), al.getEncoded()))
+        {
+             fail("EC param test failed");
+        }
     }
 
     public String getName()

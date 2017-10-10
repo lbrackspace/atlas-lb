@@ -1,28 +1,28 @@
 package org.bouncycastle.asn1.cmp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 public class PBMParameter
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private ASN1OctetString salt;
     private AlgorithmIdentifier owf;
-    private DERInteger iterationCount;
+    private ASN1Integer iterationCount;
     private AlgorithmIdentifier mac;
 
     private PBMParameter(ASN1Sequence seq)
     {
         salt = ASN1OctetString.getInstance(seq.getObjectAt(0));
         owf = AlgorithmIdentifier.getInstance(seq.getObjectAt(1));
-        iterationCount = DERInteger.getInstance(seq.getObjectAt(2));
+        iterationCount = ASN1Integer.getInstance(seq.getObjectAt(2));
         mac = AlgorithmIdentifier.getInstance(seq.getObjectAt(3));
     }
 
@@ -33,12 +33,12 @@ public class PBMParameter
             return (PBMParameter)o;
         }
 
-        if (o instanceof ASN1Sequence)
+        if (o != null)
         {
-            return new PBMParameter((ASN1Sequence)o);
+            return new PBMParameter(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
     }
 
     public PBMParameter(
@@ -48,13 +48,13 @@ public class PBMParameter
         AlgorithmIdentifier mac)
     {
         this(new DEROctetString(salt), owf,
-             new DERInteger(iterationCount), mac);
+             new ASN1Integer(iterationCount), mac);
     }
 
     public PBMParameter(
         ASN1OctetString salt,
         AlgorithmIdentifier owf,
-        DERInteger iterationCount,
+        ASN1Integer iterationCount,
         AlgorithmIdentifier mac)
     {
         this.salt = salt;
@@ -73,7 +73,7 @@ public class PBMParameter
         return owf;
     }
 
-    public DERInteger getIterationCount()
+    public ASN1Integer getIterationCount()
     {
         return iterationCount;
     }
@@ -103,7 +103,7 @@ public class PBMParameter
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

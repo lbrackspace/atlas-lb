@@ -2,10 +2,10 @@ package org.bouncycastle.asn1.cmp;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -14,10 +14,10 @@ import org.bouncycastle.asn1.x509.GeneralName;
 
 public class PKIHeaderBuilder
 {
-    private DERInteger pvno;
+    private ASN1Integer pvno;
     private GeneralName sender;
     private GeneralName recipient;
-    private DERGeneralizedTime messageTime;
+    private ASN1GeneralizedTime messageTime;
     private AlgorithmIdentifier protectionAlg;
     private ASN1OctetString senderKID;       // KeyIdentifier
     private ASN1OctetString recipKID;        // KeyIdentifier
@@ -32,11 +32,11 @@ public class PKIHeaderBuilder
         GeneralName sender,
         GeneralName recipient)
     {
-        this(new DERInteger(pvno), sender, recipient);
+        this(new ASN1Integer(pvno), sender, recipient);
     }
 
     private PKIHeaderBuilder(
-        DERInteger pvno,
+        ASN1Integer pvno,
         GeneralName sender,
         GeneralName recipient)
     {
@@ -45,7 +45,7 @@ public class PKIHeaderBuilder
         this.recipient = recipient;
     }
 
-    public PKIHeaderBuilder setMessageTime(DERGeneralizedTime time)
+    public PKIHeaderBuilder setMessageTime(ASN1GeneralizedTime time)
     {
         messageTime = time;
 
@@ -61,7 +61,7 @@ public class PKIHeaderBuilder
 
     public PKIHeaderBuilder setSenderKID(byte[] kid)
     {
-        return setSenderKID(new DEROctetString(kid));
+        return setSenderKID(kid == null ? null : new DEROctetString(kid));
     }
 
     public PKIHeaderBuilder setSenderKID(ASN1OctetString kid)
@@ -73,7 +73,7 @@ public class PKIHeaderBuilder
 
     public PKIHeaderBuilder setRecipKID(byte[] kid)
     {
-        return setRecipKID(new DEROctetString(kid));
+        return setRecipKID(kid == null ? null : new DEROctetString(kid));
     }
 
     public PKIHeaderBuilder setRecipKID(DEROctetString kid)
@@ -85,7 +85,7 @@ public class PKIHeaderBuilder
 
     public PKIHeaderBuilder setTransactionID(byte[] tid)
     {
-        return setTransactionID(new DEROctetString(tid));
+        return setTransactionID(tid == null ? null : new DEROctetString(tid));
     }
 
     public PKIHeaderBuilder setTransactionID(ASN1OctetString tid)
@@ -97,7 +97,7 @@ public class PKIHeaderBuilder
 
     public PKIHeaderBuilder setSenderNonce(byte[] nonce)
     {
-        return setSenderNonce(new DEROctetString(nonce));
+        return setSenderNonce(nonce == null ? null : new DEROctetString(nonce));
     }
 
     public PKIHeaderBuilder setSenderNonce(ASN1OctetString nonce)
@@ -109,7 +109,7 @@ public class PKIHeaderBuilder
 
     public PKIHeaderBuilder setRecipNonce(byte[] nonce)
     {
-        return setRecipNonce(new DEROctetString(nonce));
+        return setRecipNonce(nonce == null ? null : new DEROctetString(nonce));
     }
 
     public PKIHeaderBuilder setRecipNonce(ASN1OctetString nonce)

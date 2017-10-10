@@ -2,19 +2,19 @@ package org.bouncycastle.asn1.cmp;
 
 import java.math.BigInteger;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 public class PKIStatusInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    DERInteger      status;
+    ASN1Integer      status;
     PKIFreeText     statusString;
     DERBitString    failInfo;
 
@@ -32,18 +32,18 @@ public class PKIStatusInfo
         {
             return (PKIStatusInfo)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new PKIStatusInfo((ASN1Sequence)obj);
+            return new PKIStatusInfo(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
-    public PKIStatusInfo(
+    private PKIStatusInfo(
         ASN1Sequence seq)
     {
-        this.status = DERInteger.getInstance(seq.getObjectAt(0));
+        this.status = ASN1Integer.getInstance(seq.getObjectAt(0));
 
         this.statusString = null;
         this.failInfo = null;
@@ -70,42 +70,30 @@ public class PKIStatusInfo
     /**
      * @param status
      */
-    public PKIStatusInfo(int status)
-    {
-        this.status = new DERInteger(status);
-    }
-
     public PKIStatusInfo(PKIStatus status)
     {
-        this.status = DERInteger.getInstance(status.toASN1Object());
+        this.status = ASN1Integer.getInstance(status.toASN1Primitive());
     }
 
     /**
+     *
      * @param status
      * @param statusString
      */
     public PKIStatusInfo(
-        int         status,
-        PKIFreeText statusString)
-    {
-        this.status = new DERInteger(status);
-        this.statusString = statusString;
-    }
-
-    public PKIStatusInfo(
         PKIStatus   status,
         PKIFreeText statusString)
     {
-        this.status = DERInteger.getInstance(status.toASN1Object());
+        this.status = ASN1Integer.getInstance(status.toASN1Primitive());
         this.statusString = statusString;
     }
 
     public PKIStatusInfo(
-            int            status,
-            PKIFreeText    statusString,
-            PKIFailureInfo failInfo)
+        PKIStatus      status,
+        PKIFreeText    statusString,
+        PKIFailureInfo failInfo)
     {
-        this.status = new DERInteger(status);
+        this.status = ASN1Integer.getInstance(status.toASN1Primitive());
         this.statusString = statusString;
         this.failInfo = failInfo;
     }
@@ -156,7 +144,7 @@ public class PKIStatusInfo
      *
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

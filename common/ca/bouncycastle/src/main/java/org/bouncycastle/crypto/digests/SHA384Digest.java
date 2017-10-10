@@ -1,6 +1,7 @@
 package org.bouncycastle.crypto.digests;
 
-import org.bouncycastle.crypto.util.Pack;
+import org.bouncycastle.util.Memoable;
+import org.bouncycastle.util.Pack;
 
 
 /**
@@ -17,7 +18,6 @@ import org.bouncycastle.crypto.util.Pack;
 public class SHA384Digest
     extends LongDigest
 {
-
     private static final int    DIGEST_LENGTH = 48;
 
     /**
@@ -34,6 +34,16 @@ public class SHA384Digest
     public SHA384Digest(SHA384Digest t)
     {
         super(t);
+    }
+
+    /**
+     * State constructor - create a digest initialised with the state of a previous one.
+     *
+     * @param encodedState the encoded state from the originating digest.
+     */
+    public SHA384Digest(byte[] encodedState)
+    {
+        restoreState(encodedState);
     }
 
     public String getAlgorithmName()
@@ -83,5 +93,24 @@ public class SHA384Digest
         H6 = 0x8eb44a8768581511l;
         H7 = 0xdb0c2e0d64f98fa7l;
         H8 = 0x47b5481dbefa4fa4l;
+    }
+
+    public Memoable copy()
+    {
+        return new SHA384Digest(this);
+    }
+
+    public void reset(Memoable other)
+    {
+        SHA384Digest d = (SHA384Digest)other;
+
+        super.copyIn(d);
+    }
+
+    public byte[] getEncodedState()
+    {
+        byte[] encoded = new byte[getEncodedStateSize()];
+        super.populateState(encoded);
+        return encoded;
     }
 }

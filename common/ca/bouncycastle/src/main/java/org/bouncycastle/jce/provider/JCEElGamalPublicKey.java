@@ -9,13 +9,13 @@ import javax.crypto.interfaces.DHPublicKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.DHPublicKeySpec;
 
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.oiw.ElGamalParameter;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.params.ElGamalPublicKeyParameters;
+import org.bouncycastle.jcajce.provider.asymmetric.util.KeyUtil;
 import org.bouncycastle.jce.interfaces.ElGamalPublicKey;
 import org.bouncycastle.jce.spec.ElGamalParameterSpec;
 import org.bouncycastle.jce.spec.ElGamalPublicKeySpec;
@@ -74,12 +74,12 @@ public class JCEElGamalPublicKey
     JCEElGamalPublicKey(
         SubjectPublicKeyInfo    info)
     {
-        ElGamalParameter        params = new ElGamalParameter((ASN1Sequence)info.getAlgorithmId().getParameters());
-        DERInteger              derY = null;
+        ElGamalParameter        params = ElGamalParameter.getInstance(info.getAlgorithm().getParameters());
+        ASN1Integer              derY = null;
 
         try
         {
-            derY = (DERInteger)info.getPublicKey();
+            derY = (ASN1Integer)info.parsePublicKey();
         }
         catch (IOException e)
         {
@@ -102,9 +102,7 @@ public class JCEElGamalPublicKey
 
     public byte[] getEncoded()
     {
-        SubjectPublicKeyInfo    info = new SubjectPublicKeyInfo(new AlgorithmIdentifier(OIWObjectIdentifiers.elGamalAlgorithm, new ElGamalParameter(elSpec.getP(), elSpec.getG()).getDERObject()), new DERInteger(y));
-
-        return info.getDEREncoded();
+        return KeyUtil.getEncodedSubjectPublicKeyInfo(new AlgorithmIdentifier(OIWObjectIdentifiers.elGamalAlgorithm, new ElGamalParameter(elSpec.getP(), elSpec.getG())), new ASN1Integer(y));
     }
 
     public ElGamalParameterSpec getParameters()

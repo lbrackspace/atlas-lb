@@ -2,6 +2,7 @@ package org.bouncycastle.crypto.engines;
 
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.OutputLengthException;
 import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
@@ -43,13 +44,14 @@ public class VMPCEngine implements StreamCipher
         }
 
         ParametersWithIV ivParams = (ParametersWithIV) params;
-        KeyParameter key = (KeyParameter) ivParams.getParameters();
 
         if (!(ivParams.getParameters() instanceof KeyParameter))
         {
             throw new IllegalArgumentException(
                 "VMPC init parameters must include a key");
         }
+
+        KeyParameter key = (KeyParameter) ivParams.getParameters();
 
         this.workingIV = ivParams.getIV();
 
@@ -89,7 +91,7 @@ public class VMPCEngine implements StreamCipher
         n = 0;
     }
 
-    public void processBytes(byte[] in, int inOff, int len, byte[] out,
+    public int processBytes(byte[] in, int inOff, int len, byte[] out,
         int outOff)
     {
         if ((inOff + len) > in.length)
@@ -99,7 +101,7 @@ public class VMPCEngine implements StreamCipher
 
         if ((outOff + len) > out.length)
         {
-            throw new DataLengthException("output buffer too short");
+            throw new OutputLengthException("output buffer too short");
         }
 
         for (int i = 0; i < len; i++)
@@ -115,6 +117,8 @@ public class VMPCEngine implements StreamCipher
             // xor
             out[i + outOff] = (byte) (in[i + inOff] ^ z);
         }
+
+        return len;
     }
 
     public void reset()

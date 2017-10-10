@@ -1,21 +1,21 @@
 package org.bouncycastle.asn1.crmf;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 public class PKIPublicationInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERInteger action;
+    private ASN1Integer action;
     private ASN1Sequence pubInfos;
 
     private PKIPublicationInfo(ASN1Sequence seq)
     {
-        action = DERInteger.getInstance(seq.getObjectAt(0));
+        action = ASN1Integer.getInstance(seq.getObjectAt(0));
         pubInfos = ASN1Sequence.getInstance(seq.getObjectAt(1));
     }
 
@@ -26,15 +26,15 @@ public class PKIPublicationInfo
             return (PKIPublicationInfo)o;
         }
 
-        if (o instanceof ASN1Sequence)
+        if (o != null)
         {
-            return new PKIPublicationInfo((ASN1Sequence)o);
+            return new PKIPublicationInfo(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
     }
 
-    public DERInteger getAction()
+    public ASN1Integer getAction()
     {
         return action;
     }
@@ -69,7 +69,7 @@ public class PKIPublicationInfo
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

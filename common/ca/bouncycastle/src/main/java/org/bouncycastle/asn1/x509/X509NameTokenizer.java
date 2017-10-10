@@ -5,12 +5,13 @@ package org.bouncycastle.asn1.x509;
  * java.util.StringTokenizer. We need this class as some of the
  * lightweight Java environment don't support classes like
  * StringTokenizer.
+ * @deprecated use X500NameTokenizer
  */
 public class X509NameTokenizer
 {
     private String          value;
     private int             index;
-    private char            seperator;
+    private char separator;
     private StringBuffer    buf = new StringBuffer();
 
     public X509NameTokenizer(
@@ -21,11 +22,11 @@ public class X509NameTokenizer
     
     public X509NameTokenizer(
         String  oid,
-        char    seperator)
+        char separator)
     {
         this.value = oid;
         this.index = -1;
-        this.seperator = seperator;
+        this.separator = separator;
     }
 
     public boolean hasMoreTokens()
@@ -56,32 +57,22 @@ public class X509NameTokenizer
                 {
                     quoted = !quoted;
                 }
-                else
-                {
-                    buf.append(c);
-                }
+                buf.append(c);
                 escaped = false;
             }
             else
             {
                 if (escaped || quoted)
                 {
-                    if (c == '#' && buf.charAt(buf.length() - 1) == '=')
-                    {
-                        buf.append('\\');
-                    }
-                    else if (c == '+' && seperator != '+')
-                    {
-                        buf.append('\\');
-                    }
                     buf.append(c);
                     escaped = false;
                 }
                 else if (c == '\\')
                 {
+                    buf.append(c);
                     escaped = true;
                 }
-                else if (c == seperator)
+                else if (c == separator)
                 {
                     break;
                 }
@@ -94,6 +85,7 @@ public class X509NameTokenizer
         }
 
         index = end;
-        return buf.toString().trim();
+
+        return buf.toString();
     }
 }

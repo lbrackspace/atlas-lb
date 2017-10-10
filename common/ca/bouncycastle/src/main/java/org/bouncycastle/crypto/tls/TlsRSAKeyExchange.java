@@ -3,53 +3,71 @@ package org.bouncycastle.crypto.tls;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Vector;
 
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
-import org.bouncycastle.crypto.InvalidCipherTextException;
-import org.bouncycastle.crypto.encodings.PKCS1Encoding;
-import org.bouncycastle.crypto.engines.RSABlindedEngine;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.params.ParametersWithRandom;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
+import org.bouncycastle.util.io.Streams;
 
 /**
- * TLS 1.0 RSA key exchange.
+ * (D)TLS and SSLv3 RSA key exchange.
  */
-class TlsRSAKeyExchange implements TlsKeyExchange
+public class TlsRSAKeyExchange
+    extends AbstractTlsKeyExchange
 {
-    protected TlsClientContext context;
-
     protected AsymmetricKeyParameter serverPublicKey = null;
 
     protected RSAKeyParameters rsaServerPublicKey = null;
 
+    protected TlsEncryptionCredentials serverCredentials = null;
+
     protected byte[] premasterSecret;
 
-    TlsRSAKeyExchange(TlsClientContext context)
+    public TlsRSAKeyExchange(Vector supportedSignatureAlgorithms)
     {
-        this.context = context;
+        super(KeyExchangeAlgorithm.RSA, supportedSignatureAlgorithms);
     }
 
-    public void skipServerCertificate() throws IOException
+    public void skipServerCredentials()
+        throws IOException
     {
         throw new TlsFatalAlert(AlertDescription.unexpected_message);
     }
 
-    public void processServerCertificate(Certificate serverCertificate) throws IOException
+    public void processServerCredentials(TlsCredentials serverCredentials)
+        throws IOException
     {
-        X509CertificateStructure x509Cert = serverCertificate.certs[0];
-        SubjectPublicKeyInfo keyInfo = x509Cert.getSubjectPublicKeyInfo();
+        if (!(serverCredentials instanceof TlsEncryptionCredentials))
+        {
+            throw new TlsFatalAlert(AlertDescription.internal_error);
+        }
 
+        processServerCertificate(serverCredentials.getCertificate());
+
+        this.serverCredentials = (TlsEncryptionCredentials)serverCredentials;
+    }
+
+    public void processServerCertificate(Certificate serverCertificate)
+        throws IOException
+    {
+        if (serverCertificate.isEmpty())
+        {
+            throw new TlsFatalAlert(AlertDescription.bad_certificate);
+        }
+
+        org.bouncycastle.asn1.x509.Certificate x509Cert = serverCertificate.getCertificateAt(0);
+
+        SubjectPublicKeyInfo keyInfo = x509Cert.getSubjectPublicKeyInfo();
         try
         {
             this.serverPublicKey = PublicKeyFactory.createKey(keyInfo);
         }
         catch (RuntimeException e)
         {
-            throw new TlsFatalAlert(AlertDescription.unsupported_certificate);
+            throw new TlsFatalAlert(AlertDescription.unsupported_certificate, e);
         }
 
         // Sanity check the PublicKeyFactory
@@ -62,24 +80,7 @@ class TlsRSAKeyExchange implements TlsKeyExchange
 
         TlsUtils.validateKeyUsage(x509Cert, KeyUsage.keyEncipherment);
 
-        // TODO 
-        /*
-         * Perform various checks per RFC2246 7.4.2: "Unless otherwise specified, the
-         * signing algorithm for the certificate must be the same as the algorithm for the
-         * certificate key."
-         */
-    }
-
-    public void skipServerKeyExchange() throws IOException
-    {
-        // OK
-    }
-
-    public void processServerKeyExchange(InputStream is)
-        throws IOException
-    {
-        // TODO
-        throw new TlsFatalAlert(AlertDescription.unexpected_message);
+        super.processServerCertificate(serverCertificate);
     }
 
     public void validateCertificateRequest(CertificateRequest certificateRequest)
@@ -90,22 +91,18 @@ class TlsRSAKeyExchange implements TlsKeyExchange
         {
             switch (types[i])
             {
-                case ClientCertificateType.rsa_sign:
-                case ClientCertificateType.dss_sign:
-                case ClientCertificateType.ecdsa_sign:
-                    break;
-                default:
-                    throw new TlsFatalAlert(AlertDescription.illegal_parameter);
+            case ClientCertificateType.rsa_sign:
+            case ClientCertificateType.dss_sign:
+            case ClientCertificateType.ecdsa_sign:
+                break;
+            default:
+                throw new TlsFatalAlert(AlertDescription.illegal_parameter);
             }
         }
     }
 
-    public void skipClientCredentials() throws IOException
-    {
-        // OK
-    }
-
-    public void processClientCredentials(TlsCredentials clientCredentials) throws IOException
+    public void processClientCredentials(TlsCredentials clientCredentials)
+        throws IOException
     {
         if (!(clientCredentials instanceof TlsSignerCredentials))
         {
@@ -113,73 +110,76 @@ class TlsRSAKeyExchange implements TlsKeyExchange
         }
     }
 
-    public void generateClientKeyExchange(OutputStream os) throws IOException
+    public void generateClientKeyExchange(OutputStream output)
+        throws IOException
     {
-        /*
-         * Choose a PremasterSecret and send it encrypted to the server
-         */
-        premasterSecret = new byte[48];
-        context.getSecureRandom().nextBytes(premasterSecret);
-        TlsUtils.writeVersion(premasterSecret, 0);
-
-        PKCS1Encoding encoding = new PKCS1Encoding(new RSABlindedEngine());
-        encoding.init(true, new ParametersWithRandom(this.rsaServerPublicKey, context.getSecureRandom()));
-
-        try
-        {
-            byte[] keData = encoding.processBlock(premasterSecret, 0, premasterSecret.length);
-            TlsUtils.writeUint24(keData.length + 2, os);
-            TlsUtils.writeOpaque16(keData, os);
-        }
-        catch (InvalidCipherTextException e)
-        {
-            /*
-             * This should never happen, only during decryption.
-             */
-            throw new TlsFatalAlert(AlertDescription.internal_error);
-        }
+        this.premasterSecret = TlsRSAUtils.generateEncryptedPreMasterSecret(context, rsaServerPublicKey, output);
     }
 
-    public byte[] generatePremasterSecret() throws IOException
+    public void processClientKeyExchange(InputStream input)
+        throws IOException
     {
+        byte[] encryptedPreMasterSecret;
+        if (TlsUtils.isSSL(context))
+        {
+            // TODO Do any SSLv3 clients actually include the length?
+            encryptedPreMasterSecret = Streams.readAll(input);
+        }
+        else
+        {
+            encryptedPreMasterSecret = TlsUtils.readOpaque16(input);
+        }
+
+        this.premasterSecret = serverCredentials.decryptPreMasterSecret(encryptedPreMasterSecret);
+    }
+
+    public byte[] generatePremasterSecret()
+        throws IOException
+    {
+        if (this.premasterSecret == null)
+        {
+            throw new TlsFatalAlert(AlertDescription.internal_error);
+        }
+
         byte[] tmp = this.premasterSecret;
         this.premasterSecret = null;
         return tmp;
     }
 
     // Would be needed to process RSA_EXPORT server key exchange
-//    protected void processRSAServerKeyExchange(InputStream is, Signer signer) throws IOException
-//    {
-//        InputStream sigIn = is;
-//        if (signer != null)
-//        {
-//            sigIn = new SignerInputStream(is, signer);
-//        }
-//
-//        byte[] modulusBytes = TlsUtils.readOpaque16(sigIn);
-//        byte[] exponentBytes = TlsUtils.readOpaque16(sigIn);
-//
-//        if (signer != null)
-//        {
-//            byte[] sigByte = TlsUtils.readOpaque16(is);
-//
-//            if (!signer.verifySignature(sigByte))
-//            {
-//                handler.failWithError(AlertLevel.fatal, AlertDescription.bad_certificate);
-//            }
-//        }
-//
-//        BigInteger modulus = new BigInteger(1, modulusBytes);
-//        BigInteger exponent = new BigInteger(1, exponentBytes);
-//
-//        this.rsaServerPublicKey = validateRSAPublicKey(new RSAKeyParameters(false, modulus,
-//            exponent));
-//    }
+    // protected void processRSAServerKeyExchange(InputStream is, Signer signer) throws IOException
+    // {
+    // InputStream sigIn = is;
+    // if (signer != null)
+    // {
+    // sigIn = new SignerInputStream(is, signer);
+    // }
+    //
+    // byte[] modulusBytes = TlsUtils.readOpaque16(sigIn);
+    // byte[] exponentBytes = TlsUtils.readOpaque16(sigIn);
+    //
+    // if (signer != null)
+    // {
+    // byte[] sigByte = TlsUtils.readOpaque16(is);
+    //
+    // if (!signer.verifySignature(sigByte))
+    // {
+    // handler.failWithError(AlertLevel.fatal, AlertDescription.bad_certificate);
+    // }
+    // }
+    //
+    // BigInteger modulus = new BigInteger(1, modulusBytes);
+    // BigInteger exponent = new BigInteger(1, exponentBytes);
+    //
+    // this.rsaServerPublicKey = validateRSAPublicKey(new RSAKeyParameters(false, modulus,
+    // exponent));
+    // }
 
-    protected RSAKeyParameters validateRSAPublicKey(RSAKeyParameters key) throws IOException
+    protected RSAKeyParameters validateRSAPublicKey(RSAKeyParameters key)
+        throws IOException
     {
         // TODO What is the minimum bit length required?
-//        key.getModulus().bitLength();
+        // key.getModulus().bitLength();
 
         if (!key.getExponent().isProbablePrime(2))
         {

@@ -1,59 +1,39 @@
 package org.bouncycastle.openpgp;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.math.BigInteger;
-import java.security.*;
 import java.util.Date;
 
 import org.bouncycastle.bcpg.MPInteger;
 import org.bouncycastle.bcpg.OnePassSignaturePacket;
 import org.bouncycastle.bcpg.PublicKeyAlgorithmTags;
 import org.bouncycastle.bcpg.SignaturePacket;
+import org.bouncycastle.openpgp.operator.PGPContentSigner;
+import org.bouncycastle.openpgp.operator.PGPContentSignerBuilder;
 
 /**
  * Generator for old style PGP V3 Signatures.
  */
 public class PGPV3SignatureGenerator
 {
-    private int keyAlgorithm;
-    private int hashAlgorithm;
-    private PGPPrivateKey privKey;
-    private Signature sig;
-    private MessageDigest dig;
-    private int signatureType;
-    
     private byte            lastb;
-    
-    /**
-     * Create a generator for the passed in keyAlgorithm and hashAlgorithm codes.
-     * 
-     * @param keyAlgorithm
-     * @param hashAlgorithm
-     * @param provider
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     * @throws PGPException
-     */
-     public PGPV3SignatureGenerator(
-        int  keyAlgorithm,
-        int  hashAlgorithm,
-        String provider)
-        throws NoSuchAlgorithmException, NoSuchProviderException, PGPException
-    {
-        this(keyAlgorithm, hashAlgorithm, PGPUtil.getProvider(provider));
-    }
+    private OutputStream    sigOut;
+    private PGPContentSignerBuilder contentSignerBuilder;
+    private PGPContentSigner contentSigner;
+    private int              sigType;
+    private int              providedKeyAlgorithm = -1;
 
+    /**
+     * Create a signature generator built on the passed in contentSignerBuilder.
+     *
+     * @param contentSignerBuilder  builder to produce PGPContentSigner objects for generating signatures.
+     */
     public PGPV3SignatureGenerator(
-        int  keyAlgorithm,
-        int  hashAlgorithm,
-        Provider provider)
-        throws NoSuchAlgorithmException, PGPException
+        PGPContentSignerBuilder contentSignerBuilder)
     {
-        this.keyAlgorithm = keyAlgorithm;
-        this.hashAlgorithm = hashAlgorithm;
-        
-        dig = PGPUtil.getDigestInstance(PGPUtil.getDigestName(hashAlgorithm), provider);
-        sig = Signature.getInstance(PGPUtil.getSignatureName(keyAlgorithm, hashAlgorithm), provider);
+        this.contentSignerBuilder = contentSignerBuilder;
     }
     
     /**
@@ -63,92 +43,55 @@ public class PGPV3SignatureGenerator
      * @param key
      * @throws PGPException
      */
-    public void initSign(
+    public void init(
         int           signatureType,
         PGPPrivateKey key)
         throws PGPException
     {
-        initSign(signatureType, key, null);
+        contentSigner = contentSignerBuilder.build(signatureType, key);
+        sigOut = contentSigner.getOutputStream();
+        sigType = contentSigner.getType();
+        lastb = 0;
+
+        if (providedKeyAlgorithm >= 0 && providedKeyAlgorithm != contentSigner.getKeyAlgorithm())
+        {
+            throw new PGPException("key algorithm mismatch");
+        }
     }
 
-    /**
-     * Initialise the generator for signing.
-     * 
-     * @param signatureType
-     * @param key
-     * @param random
-     * @throws PGPException
-     */
-    public void initSign(
-        int           signatureType,
-        PGPPrivateKey key,
-        SecureRandom  random)
-        throws PGPException
-    {
-        this.privKey = key;
-        this.signatureType = signatureType;
-        
-        try
-        {
-            if (random == null)
-            {
-                sig.initSign(key.getKey());
-            }
-            else
-            {
-                sig.initSign(key.getKey(), random);
-            }
-        }
-        catch (InvalidKeyException e)
-        {
-           throw new PGPException("invalid key.", e);
-        }
-        
-        dig.reset();
-        lastb = 0;
-    }
-    
     public void update(
-        byte b) 
-        throws SignatureException
+        byte b)
     {
-        if (signatureType == PGPSignature.CANONICAL_TEXT_DOCUMENT)
+        if (sigType == PGPSignature.CANONICAL_TEXT_DOCUMENT)
         {
             if (b == '\r')
             {
-                sig.update((byte)'\r');
-                sig.update((byte)'\n');
-                dig.update((byte)'\r');
-                dig.update((byte)'\n');
+                byteUpdate((byte)'\r');
+                byteUpdate((byte)'\n');
             }
             else if (b == '\n')
             {
                 if (lastb != '\r')
                 {
-                    sig.update((byte)'\r');
-                    sig.update((byte)'\n');
-                    dig.update((byte)'\r');
-                    dig.update((byte)'\n');
+                    byteUpdate((byte)'\r');
+                    byteUpdate((byte)'\n');
                 }
             }
             else
             {
-                sig.update(b);
-                dig.update(b);
+                byteUpdate(b);
             }
             
             lastb = b;
         }
         else
         {
-            sig.update(b);
-            dig.update(b);
+            byteUpdate(b);
         }
     }
     
     public void update(
-        byte[] b) 
-        throws SignatureException
+        byte[] b)
     {
         this.update(b, 0, b.length);
     }
@@ -156,10 +99,9 @@ public class PGPV3SignatureGenerator
     public void update(
         byte[]  b,
         int     off,
-        int     len) 
-        throws SignatureException
+        int     len)
     {
-        if (signatureType == PGPSignature.CANONICAL_TEXT_DOCUMENT)
+        if (sigType == PGPSignature.CANONICAL_TEXT_DOCUMENT)
         {
             int finish = off + len;
             
@@ -170,11 +112,34 @@ public class PGPV3SignatureGenerator
         }
         else
         {
-            sig.update(b, off, len);
-            dig.update(b, off, len);
+            blockUpdate(b, off, len);
         }
     }
-    
+
+    private void byteUpdate(byte b)
+    {
+        try
+        {
+            sigOut.write(b);
+        }
+        catch (IOException e)
+        {
+            throw new PGPRuntimeOperationException("unable to update signature: " + e.getMessage(), e);
+        }
+    }
+
+    private void blockUpdate(byte[] block, int off, int len)
+    {
+        try
+        {
+            sigOut.write(block, off, len);
+        }
+        catch (IOException e)
+        {
+            throw new PGPRuntimeOperationException("unable to update signature: " + e.getMessage(), e);
+        }
+    }
+
     /**
      * Return the one pass header associated with the current signature.
      * 
@@ -186,7 +151,7 @@ public class PGPV3SignatureGenerator
         boolean isNested)
         throws PGPException
     {
-        return new PGPOnePassSignature(new OnePassSignaturePacket(signatureType, hashAlgorithm, keyAlgorithm, privKey.getKeyID(), isNested));
+        return new PGPOnePassSignature(new OnePassSignaturePacket(sigType, contentSigner.getHashAlgorithm(), contentSigner.getKeyAlgorithm(), contentSigner.getKeyID(), isNested));
     }
     
     /**
@@ -194,16 +159,15 @@ public class PGPV3SignatureGenerator
      * 
      * @return PGPSignature
      * @throws PGPException
-     * @throws SignatureException
      */
     public PGPSignature generate()
-            throws PGPException, SignatureException
+        throws PGPException
     {
         long creationTime = new Date().getTime() / 1000;
 
         ByteArrayOutputStream sOut = new ByteArrayOutputStream();
 
-        sOut.write(signatureType);
+        sOut.write(sigType);
         sOut.write((byte)(creationTime >> 24));
         sOut.write((byte)(creationTime >> 16));
         sOut.write((byte)(creationTime >> 8));
@@ -211,28 +175,27 @@ public class PGPV3SignatureGenerator
 
         byte[] hData = sOut.toByteArray();
 
-        sig.update(hData);
-        dig.update(hData);
+        blockUpdate(hData, 0, hData.length);
 
         MPInteger[] sigValues;
-        if (keyAlgorithm == PublicKeyAlgorithmTags.RSA_SIGN
-            || keyAlgorithm == PublicKeyAlgorithmTags.RSA_GENERAL)
+        if (contentSigner.getKeyAlgorithm() == PublicKeyAlgorithmTags.RSA_SIGN
+            || contentSigner.getKeyAlgorithm() == PublicKeyAlgorithmTags.RSA_GENERAL)
             // an RSA signature
         {
             sigValues = new MPInteger[1];
-            sigValues[0] = new MPInteger(new BigInteger(1, sig.sign()));
+            sigValues[0] = new MPInteger(new BigInteger(1, contentSigner.getSignature()));
         }
         else
         {
-            sigValues = PGPUtil.dsaSigToMpi(sig.sign());
+            sigValues = PGPUtil.dsaSigToMpi(contentSigner.getSignature());
         }
 
-        byte[] digest = dig.digest();
+        byte[] digest = contentSigner.getDigest();
         byte[] fingerPrint = new byte[2];
 
         fingerPrint[0] = digest[0];
         fingerPrint[1] = digest[1];
 
-        return new PGPSignature(new SignaturePacket(3, signatureType, privKey.getKeyID(), keyAlgorithm, hashAlgorithm, creationTime * 1000, fingerPrint, sigValues));
+        return new PGPSignature(new SignaturePacket(3, contentSigner.getType(), contentSigner.getKeyID(), contentSigner.getKeyAlgorithm(), contentSigner.getHashAlgorithm(), creationTime * 1000, fingerPrint, sigValues));
     }
 }

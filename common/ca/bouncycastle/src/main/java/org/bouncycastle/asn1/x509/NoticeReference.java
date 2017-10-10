@@ -1,14 +1,14 @@
-
 package org.bouncycastle.asn1.x509;
 
+import java.math.BigInteger;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 /**
@@ -27,70 +27,78 @@ import org.bouncycastle.asn1.DERSequence;
  * @see PolicyInformation
  */
 public class NoticeReference 
-    extends ASN1Encodable
+    extends ASN1Object
 {
-   private DisplayText organization;
-   private ASN1Sequence noticeNumbers;
+    private DisplayText organization;
+    private ASN1Sequence noticeNumbers;
+
+    private static ASN1EncodableVector convertVector(Vector numbers)
+    {
+        ASN1EncodableVector av = new ASN1EncodableVector();
+
+        Enumeration it = numbers.elements();
+
+        while (it.hasMoreElements())
+        {
+            Object o = it.nextElement();
+            ASN1Integer di;
+
+            if (o instanceof BigInteger)
+            {
+                di = new ASN1Integer((BigInteger)o);
+            }
+            else if (o instanceof Integer)
+            {
+                di = new ASN1Integer(((Integer)o).intValue());
+            }
+            else
+            {
+                throw new IllegalArgumentException();
+            }
+
+            av.add(di);
+        }
+        return av;
+    }
 
    /**
     * Creates a new <code>NoticeReference</code> instance.
     *
-    * @param orgName a <code>String</code> value
+    * @param organization a <code>String</code> value
     * @param numbers a <code>Vector</code> value
     */
    public NoticeReference(
-       String orgName,
+       String organization,
        Vector numbers) 
    {
-      organization = new DisplayText(orgName);
+       this(organization, convertVector(numbers));
+   }
 
-      Object o = numbers.elementAt(0);
-
-      ASN1EncodableVector av = new ASN1EncodableVector();
-      if (o instanceof Integer)
-      {
-         Enumeration it = numbers.elements();
-
-         while (it.hasMoreElements())
-         {
-            Integer nm = (Integer) it.nextElement();
-               DERInteger di = new DERInteger(nm.intValue());
-            av.add (di);
-         }
-      }
-
-      noticeNumbers = new DERSequence(av);
+    /**
+    * Creates a new <code>NoticeReference</code> instance.
+    *
+    * @param organization a <code>String</code> value
+    * @param noticeNumbers an <code>ASN1EncodableVector</code> value
+    */
+   public NoticeReference(
+       String organization,
+       ASN1EncodableVector noticeNumbers)
+   {
+       this(new DisplayText(organization), noticeNumbers);
    }
 
    /**
     * Creates a new <code>NoticeReference</code> instance.
     *
-    * @param orgName a <code>String</code> value
-    * @param numbers an <code>ASN1EncodableVector</code> value
+    * @param organization displayText
+    * @param noticeNumbers an <code>ASN1EncodableVector</code> value
     */
    public NoticeReference(
-       String orgName, 
-       ASN1Sequence numbers) 
+       DisplayText  organization,
+       ASN1EncodableVector noticeNumbers)
    {
-       organization = new DisplayText (orgName);
-       noticeNumbers = numbers;
-   }
-
-   /**
-    * Creates a new <code>NoticeReference</code> instance.
-    *
-    * @param displayTextType an <code>int</code> value
-    * @param orgName a <code>String</code> value
-    * @param numbers an <code>ASN1EncodableVector</code> value
-    */
-   public NoticeReference(
-       int displayTextType,
-       String orgName,
-       ASN1Sequence numbers) 
-   {
-       organization = new DisplayText(displayTextType, 
-                                     orgName);
-       noticeNumbers = numbers;
+       this.organization = organization;
+       this.noticeNumbers = new DERSequence(noticeNumbers);
    }
 
    /**
@@ -99,10 +107,10 @@ public class NoticeReference
     * instance from its encodable/encoded form. 
     *
     * @param as an <code>ASN1Sequence</code> value obtained from either
-    * calling @{link toASN1Object()} for a <code>NoticeReference</code>
+    * calling @{link toASN1Primitive()} for a <code>NoticeReference</code>
     * instance or from parsing it from a DER-encoded stream. 
     */
-   public NoticeReference(
+   private NoticeReference(
        ASN1Sequence as) 
    {
        if (as.size() != 2)
@@ -122,12 +130,12 @@ public class NoticeReference
       {
           return (NoticeReference)as;
       }
-      else if (as instanceof ASN1Sequence)
+      else if (as != null)
       {
-          return new NoticeReference((ASN1Sequence)as);
+          return new NoticeReference(ASN1Sequence.getInstance(as));
       }
 
-      throw new IllegalArgumentException("unknown object in getInstance.");
+      return null;
    }
    
    public DisplayText getOrganization()
@@ -135,17 +143,24 @@ public class NoticeReference
        return organization;
    }
    
-   public ASN1Sequence getNoticeNumbers()
+   public ASN1Integer[] getNoticeNumbers()
    {
-       return noticeNumbers;
+       ASN1Integer[] tmp = new ASN1Integer[noticeNumbers.size()];
+
+       for (int i = 0; i != noticeNumbers.size(); i++)
+       {
+           tmp[i] = ASN1Integer.getInstance(noticeNumbers.getObjectAt(i));
+       }
+
+       return tmp;
    }
    
    /**
     * Describe <code>toASN1Object</code> method here.
     *
-    * @return a <code>DERObject</code> value
+    * @return a <code>ASN1Primitive</code> value
     */
-   public DERObject toASN1Object() 
+   public ASN1Primitive toASN1Primitive()
    {
       ASN1EncodableVector av = new ASN1EncodableVector();
       av.add (organization);

@@ -1,9 +1,12 @@
 package org.bouncycastle.cert.ocsp;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
+import org.bouncycastle.asn1.ASN1Exception;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ocsp.BasicOCSPResponse;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPResponse;
@@ -12,6 +15,14 @@ import org.bouncycastle.cert.CertIOException;
 
 public class OCSPResp
 {
+    public static final int SUCCESSFUL = 0;  // Response has valid confirmations
+    public static final int MALFORMED_REQUEST = 1;  // Illegal confirmation request
+    public static final int INTERNAL_ERROR = 2;  // Internal error in issuer
+    public static final int TRY_LATER = 3;  // Try again later
+    // (4) is not used
+    public static final int SIG_REQUIRED = 5;  // Must sign the request
+    public static final int UNAUTHORIZED = 6;  // Request unauthorized
+
     private OCSPResponse    resp;
 
     public OCSPResp(
@@ -22,6 +33,13 @@ public class OCSPResp
 
     public OCSPResp(
         byte[]          resp)
+        throws IOException
+    {
+        this(new ByteArrayInputStream(resp));
+    }
+
+    public OCSPResp(
+        InputStream resp)
         throws IOException
     {
         this(new ASN1InputStream(resp));
@@ -42,6 +60,15 @@ public class OCSPResp
         catch (ClassCastException e)
         {
             throw new CertIOException("malformed response: " + e.getMessage(), e);
+        }
+        catch (ASN1Exception e)
+        {
+            throw new CertIOException("malformed response: " + e.getMessage(), e);
+        }
+
+        if (resp == null)
+        {
+            throw new CertIOException("malformed response: no response data found");
         }
     }
 
@@ -64,7 +91,7 @@ public class OCSPResp
         {
             try
             {
-                ASN1Object obj = ASN1Object.fromByteArray(rb.getResponse().getOctets());
+                ASN1Primitive obj = ASN1Primitive.fromByteArray(rb.getResponse().getOctets());
                 return new BasicOCSPResp(BasicOCSPResponse.getInstance(obj));
             }
             catch (Exception e)
@@ -82,7 +109,7 @@ public class OCSPResp
     public byte[] getEncoded()
         throws IOException
     {
-    	return resp.getEncoded();
+        return resp.getEncoded();
     }
     
     public boolean equals(Object o)
@@ -105,5 +132,10 @@ public class OCSPResp
     public int hashCode()
     {
         return resp.hashCode();
+    }
+
+    public OCSPResponse toASN1Structure()
+    {
+        return resp;
     }
 }

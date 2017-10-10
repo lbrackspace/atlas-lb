@@ -1,8 +1,8 @@
 package org.bouncycastle.crypto.digests;
 
 
-import org.bouncycastle.crypto.digests.GeneralDigest;
-import org.bouncycastle.crypto.util.Pack;
+import org.bouncycastle.util.Memoable;
+import org.bouncycastle.util.Pack;
 
 
 /**
@@ -18,6 +18,7 @@ import org.bouncycastle.crypto.util.Pack;
  */
 public class SHA256Digest
     extends GeneralDigest
+    implements EncodableDigest
 {
     private static final int    DIGEST_LENGTH = 32;
 
@@ -42,6 +43,13 @@ public class SHA256Digest
     {
         super(t);
 
+        copyIn(t);
+    }
+
+    private void copyIn(SHA256Digest t)
+    {
+        super.copyIn(t);
+
         H1 = t.H1;
         H2 = t.H2;
         H3 = t.H3;
@@ -54,6 +62,32 @@ public class SHA256Digest
         System.arraycopy(t.X, 0, X, 0, t.X.length);
         xOff = t.xOff;
     }
+
+    /**
+     * State constructor - create a digest initialised with the state of a previous one.
+     *
+     * @param encodedState the encoded state from the originating digest.
+     */
+    public SHA256Digest(byte[] encodedState)
+    {
+        super(encodedState);
+
+        H1 = Pack.bigEndianToInt(encodedState, 16);
+        H2 = Pack.bigEndianToInt(encodedState, 20);
+        H3 = Pack.bigEndianToInt(encodedState, 24);
+        H4 = Pack.bigEndianToInt(encodedState, 28);
+        H5 = Pack.bigEndianToInt(encodedState, 32);
+        H6 = Pack.bigEndianToInt(encodedState, 36);
+        H7 = Pack.bigEndianToInt(encodedState, 40);
+        H8 = Pack.bigEndianToInt(encodedState, 44);
+
+        xOff = Pack.bigEndianToInt(encodedState, 48);
+        for (int i = 0; i != xOff; i++)
+        {
+            X[i] = Pack.bigEndianToInt(encodedState, 52 + (i * 4));
+        }
+    }
+
 
     public String getAlgorithmName()
     {
@@ -291,5 +325,41 @@ public class SHA256Digest
         0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
         0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     };
+
+    public Memoable copy()
+    {
+        return new SHA256Digest(this);
+    }
+
+    public void reset(Memoable other)
+    {
+        SHA256Digest d = (SHA256Digest)other;
+
+        copyIn(d);
+    }
+
+    public byte[] getEncodedState()
+    {
+        byte[] state = new byte[52 + xOff * 4];
+
+        super.populateState(state);
+
+        Pack.intToBigEndian(H1, state, 16);
+        Pack.intToBigEndian(H2, state, 20);
+        Pack.intToBigEndian(H3, state, 24);
+        Pack.intToBigEndian(H4, state, 28);
+        Pack.intToBigEndian(H5, state, 32);
+        Pack.intToBigEndian(H6, state, 36);
+        Pack.intToBigEndian(H7, state, 40);
+        Pack.intToBigEndian(H8, state, 44);
+        Pack.intToBigEndian(xOff, state, 48);
+
+        for (int i = 0; i != xOff; i++)
+        {
+            Pack.intToBigEndian(X[i], state, 52 + (i * 4));
+        }
+
+        return state;
+    }
 }
 

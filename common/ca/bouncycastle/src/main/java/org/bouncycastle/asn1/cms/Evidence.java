@@ -1,13 +1,25 @@
 package org.bouncycastle.asn1.cms;
 
 import org.bouncycastle.asn1.ASN1Choice;
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERTaggedObject;
 
+/**
+ * <a href="http://tools.ietf.org/html/rfc5544">RFC 5544</a>:
+ * Binding Documents with Time-Stamps; Evidence object.
+ * <p>
+ * <pre>
+ * Evidence ::= CHOICE {
+ *     tstEvidence    [0] TimeStampTokenEvidence,   -- see RFC 3161
+ *     ersEvidence    [1] EvidenceRecord,           -- see RFC 4998
+ *     otherEvidence  [2] OtherEvidence
+ * }
+ * </pre>
+ */
 public class Evidence
-    extends ASN1Encodable
+    extends ASN1Object
     implements ASN1Choice
 {
     private TimeStampTokenEvidence tstEvidence;
@@ -25,9 +37,21 @@ public class Evidence
         }
     }
 
+    /**
+     * Return an Evidence object from the given object.
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> {@link Evidence} object
+     * <li> {@link org.bouncycastle.asn1.ASN1TaggedObject#getInstance(java.lang.Object) ASN1TaggedObject} input formats with Evidence data inside
+     * </ul>
+     *
+     * @param obj the object we want converted.
+     * @exception IllegalArgumentException if the object cannot be converted.
+     */
     public static Evidence getInstance(Object obj)
     {
-        if (obj instanceof Evidence)
+        if (obj == null || obj instanceof Evidence)
         {
             return (Evidence)obj;
         }
@@ -44,7 +68,7 @@ public class Evidence
         return tstEvidence;
     }
 
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
        if (tstEvidence != null)
        {

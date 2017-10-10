@@ -1,8 +1,5 @@
 package org.bouncycastle.openpgp;
 
-import org.bouncycastle.bcpg.BCPGOutputStream;
-import org.bouncycastle.util.Strings;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,11 +12,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.bouncycastle.bcpg.BCPGOutputStream;
+import org.bouncycastle.openpgp.operator.KeyFingerPrintCalculator;
+import org.bouncycastle.util.Strings;
+import org.bouncycastle.util.Iterable;
+
 /**
  * Often a PGP key ring file is made up of a succession of master/sub-key key rings.
  * If you want to read an entire secret key file in one hit this is the class for you.
  */
-public class PGPSecretKeyRingCollection 
+public class PGPSecretKeyRingCollection
+    implements Iterable<PGPSecretKeyRing>
 {
     private Map    secretRings = new HashMap();
     private List   order = new ArrayList();
@@ -33,24 +36,26 @@ public class PGPSecretKeyRingCollection
     }
     
     public PGPSecretKeyRingCollection(
-        byte[]    encoding)
+        byte[]    encoding,
+        KeyFingerPrintCalculator fingerPrintCalculator)
         throws IOException, PGPException
     {
-        this(new ByteArrayInputStream(encoding));
+        this(new ByteArrayInputStream(encoding), fingerPrintCalculator);
     }
 
     /**
      * Build a PGPSecretKeyRingCollection from the passed in input stream.
      *
      * @param in  input stream containing data
-     * @throws IOException if a problem parsinh the base stream occurs
+     * @throws IOException if a problem parsing the base stream occurs
      * @throws PGPException if an object is encountered which isn't a PGPSecretKeyRing
      */
     public PGPSecretKeyRingCollection(
-        InputStream    in)
+        InputStream    in,
+        KeyFingerPrintCalculator fingerPrintCalculator)
         throws IOException, PGPException
     {
-        PGPObjectFactory    pgpFact = new PGPObjectFactory(in);
+        PGPObjectFactory    pgpFact = new PGPObjectFactory(in, fingerPrintCalculator);
         Object              obj;
 
         while ((obj = pgpFact.nextObject()) != null)
@@ -69,7 +74,7 @@ public class PGPSecretKeyRingCollection
     }
     
     public PGPSecretKeyRingCollection(
-        Collection    collection)
+        Collection<PGPSecretKeyRing>    collection)
         throws IOException, PGPException
     {
         Iterator                it = collection.iterator();
@@ -97,7 +102,7 @@ public class PGPSecretKeyRingCollection
     /**
      * return the secret key rings making up this collection.
      */
-    public Iterator getKeyRings()
+    public Iterator<PGPSecretKeyRing> getKeyRings()
     {
         return secretRings.values().iterator();
     }
@@ -109,7 +114,7 @@ public class PGPSecretKeyRingCollection
      * @return an iterator (possibly empty) of key rings which matched.
      * @throws PGPException
      */
-    public Iterator getKeyRings(
+    public Iterator<PGPSecretKeyRing> getKeyRings(
         String    userID) 
         throws PGPException
     {   
@@ -125,7 +130,7 @@ public class PGPSecretKeyRingCollection
      * @return an iterator (possibly empty) of key rings which matched.
      * @throws PGPException
      */
-    public Iterator getKeyRings(
+    public Iterator<PGPSecretKeyRing> getKeyRings(
         String    userID,
         boolean   matchPartial) 
         throws PGPException
@@ -143,7 +148,7 @@ public class PGPSecretKeyRingCollection
      * @return an iterator (possibly empty) of key rings which matched.
      * @throws PGPException
      */
-    public Iterator getKeyRings(
+    public Iterator<PGPSecretKeyRing> getKeyRings(
         String    userID,
         boolean   matchPartial,
         boolean   ignoreCase) 
@@ -363,5 +368,13 @@ public class PGPSecretKeyRingCollection
         }
         
         return new PGPSecretKeyRingCollection(newSecretRings, newOrder);
+    }
+
+    /**
+     * Support method for Iterable where available.
+     */
+    public Iterator<PGPSecretKeyRing> iterator()
+    {
+        return secretRings.values().iterator();
     }
 }

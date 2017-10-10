@@ -15,7 +15,6 @@ import org.bouncycastle.bcpg.BCPGOutputStream;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openpgp.PGPCompressedData;
 import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPObjectFactory;
 import org.bouncycastle.openpgp.PGPPrivateKey;
 import org.bouncycastle.openpgp.PGPPublicKey;
 import org.bouncycastle.openpgp.PGPPublicKeyRingCollection;
@@ -24,6 +23,11 @@ import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureGenerator;
 import org.bouncycastle.openpgp.PGPSignatureList;
 import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory;
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
 /**
  * A simple utility class that creates seperate signatures for files and verifies them.
@@ -54,7 +58,7 @@ public class DetachedSignatureProcessor
         in.close();
     }
 
-    /**
+    /*
      * verify the signature in in against the file fileName.
      */
     private static void verifySignature(
@@ -65,15 +69,15 @@ public class DetachedSignatureProcessor
     {
         in = PGPUtil.getDecoderStream(in);
         
-        PGPObjectFactory    pgpFact = new PGPObjectFactory(in);
-        PGPSignatureList    p3 = null;
+        JcaPGPObjectFactory    pgpFact = new JcaPGPObjectFactory(in);
+        PGPSignatureList    p3;
 
         Object    o = pgpFact.nextObject();
         if (o instanceof PGPCompressedData)
         {
             PGPCompressedData             c1 = (PGPCompressedData)o;
 
-            pgpFact = new PGPObjectFactory(c1.getDataStream());
+            pgpFact = new JcaPGPObjectFactory(c1.getDataStream());
             
             p3 = (PGPSignatureList)pgpFact.nextObject();
         }
@@ -82,7 +86,7 @@ public class DetachedSignatureProcessor
             p3 = (PGPSignatureList)o;
         }
             
-        PGPPublicKeyRingCollection  pgpPubRingCollection = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(keyIn));
+        PGPPublicKeyRingCollection  pgpPubRingCollection = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(keyIn), new JcaKeyFingerprintCalculator());
 
 
         InputStream                 dIn = new BufferedInputStream(new FileInputStream(fileName));
@@ -90,7 +94,7 @@ public class DetachedSignatureProcessor
         PGPSignature                sig = p3.get(0);
         PGPPublicKey                key = pgpPubRingCollection.getPublicKey(sig.getKeyID());
 
-        sig.initVerify(key, "BC");
+        sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), key);
 
         int ch;
         while ((ch = dIn.read()) >= 0)
@@ -141,10 +145,10 @@ public class DetachedSignatureProcessor
         }
 
         PGPSecretKey             pgpSec = PGPExampleUtil.readSecretKey(keyIn);
-        PGPPrivateKey            pgpPrivKey = pgpSec.extractPrivateKey(pass, "BC");        
-        PGPSignatureGenerator    sGen = new PGPSignatureGenerator(pgpSec.getPublicKey().getAlgorithm(), PGPUtil.SHA1, "BC");
+        PGPPrivateKey            pgpPrivKey = pgpSec.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(pass));
+        PGPSignatureGenerator    sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(pgpSec.getPublicKey().getAlgorithm(), PGPUtil.SHA1).setProvider("BC"));
         
-        sGen.initSign(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
+        sGen.init(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
         
         BCPGOutputStream         bOut = new BCPGOutputStream(out);
         

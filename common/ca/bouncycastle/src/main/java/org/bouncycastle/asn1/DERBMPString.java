@@ -2,20 +2,28 @@ package org.bouncycastle.asn1;
 
 import java.io.IOException;
 
+import org.bouncycastle.util.Arrays;
+
 /**
- * DER BMPString object.
+ * DER BMPString object encodes BMP (<i>Basic Multilingual Plane</i>) subset
+ * (aka UCS-2) of UNICODE (ISO 10646) characters in codepoints 0 to 65535.
+ * <p>
+ * At ISO-10646:2011 the term "BMP" has been withdrawn, and replaced by
+ * term "UCS-2".
+ * </p>
  */
 public class DERBMPString
-    extends ASN1Object
-    implements DERString
+    extends ASN1Primitive
+    implements ASN1String
 {
-    String  string;
+    private final char[]  string;
 
     /**
-     * return a BMP String from the given object.
+     * Return a BMP String from the given object.
      *
      * @param obj the object we want converted.
      * @exception IllegalArgumentException if the object cannot be converted.
+     * @return a DERBMPString instance, or null.
      */
     public static DERBMPString getInstance(
         Object  obj)
@@ -25,23 +33,36 @@ public class DERBMPString
             return (DERBMPString)obj;
         }
 
+        if (obj instanceof byte[])
+        {
+            try
+            {
+                return (DERBMPString)fromByteArray((byte[])obj);
+            }
+            catch (Exception e)
+            {
+                throw new IllegalArgumentException("encoding error in getInstance: " + e.toString());
+            }
+        }
+
         throw new IllegalArgumentException("illegal object in getInstance: " + obj.getClass().getName());
     }
 
     /**
-     * return a BMP String from a tagged object.
+     * Return a BMP String from a tagged object.
      *
      * @param obj the tagged object holding the object we want
      * @param explicit true if the object is meant to be explicitly
      *              tagged false otherwise.
      * @exception IllegalArgumentException if the tagged object cannot
      *              be converted.
+     * @return a DERBMPString instance.
      */
     public static DERBMPString getInstance(
         ASN1TaggedObject obj,
         boolean          explicit)
     {
-        DERObject o = obj.getObject();
+        ASN1Primitive o = obj.getObject();
 
         if (explicit || o instanceof DERBMPString)
         {
@@ -52,12 +73,12 @@ public class DERBMPString
             return new DERBMPString(ASN1OctetString.getInstance(o).getOctets());
         }
     }
-    
 
     /**
-     * basic constructor - byte encoded string.
+     * Basic constructor - byte encoded string.
+     * @param string the encoded BMP STRING to wrap.
      */
-    public DERBMPString(
+    DERBMPString(
         byte[]   string)
     {
         char[]  cs = new char[string.length / 2];
@@ -67,35 +88,41 @@ public class DERBMPString
             cs[i] = (char)((string[2 * i] << 8) | (string[2 * i + 1] & 0xff));
         }
 
-        this.string = new String(cs);
+        this.string = cs;
     }
 
-    /**
-     * basic constructor
-     */
-    public DERBMPString(
-        String   string)
+    DERBMPString(char[] string)
     {
         this.string = string;
     }
 
+    /**
+     * Basic constructor
+     * @param string a String to wrap as a BMP STRING.
+     */
+    public DERBMPString(
+        String   string)
+    {
+        this.string = string.toCharArray();
+    }
+
     public String getString()
     {
-        return string;
+        return new String(string);
     }
 
     public String toString()
     {
-        return string;
+        return getString();
     }
 
     public int hashCode()
     {
-        return this.getString().hashCode();
+        return Arrays.hashCode(string);
     }
 
     protected boolean asn1Equals(
-        DERObject  o)
+        ASN1Primitive o)
     {
         if (!(o instanceof DERBMPString))
         {
@@ -104,22 +131,32 @@ public class DERBMPString
 
         DERBMPString  s = (DERBMPString)o;
 
-        return this.getString().equals(s.getString());
+        return Arrays.areEqual(string, s.string);
+    }
+
+    boolean isConstructed()
+    {
+        return false;
+    }
+
+    int encodedLength()
+    {
+        return 1 + StreamUtil.calculateBodyLength(string.length * 2) + (string.length * 2);
     }
 
     void encode(
-        DEROutputStream  out)
+        ASN1OutputStream out)
         throws IOException
     {
-        char[]  c = string.toCharArray();
-        byte[]  b = new byte[c.length * 2];
+        out.write(BERTags.BMP_STRING);
+        out.writeLength(string.length * 2);
 
-        for (int i = 0; i != c.length; i++)
+        for (int i = 0; i != string.length; i++)
         {
-            b[2 * i] = (byte)(c[i] >> 8);
-            b[2 * i + 1] = (byte)c[i];
-        }
+            char c = string[i];
 
-        out.writeEncoded(BMP_STRING, b);
+            out.write((byte)(c >> 8));
+            out.write((byte)c);
+        }
     }
 }

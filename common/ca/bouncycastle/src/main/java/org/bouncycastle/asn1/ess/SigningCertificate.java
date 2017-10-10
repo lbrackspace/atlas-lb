@@ -1,39 +1,37 @@
 package org.bouncycastle.asn1.ess;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 
 
 public class SigningCertificate
-    extends ASN1Encodable
+    extends ASN1Object
 {
     ASN1Sequence certs;
     ASN1Sequence policies;
 
     public static SigningCertificate getInstance(Object o)
     {
-        if (o == null || o instanceof SigningCertificate)
+        if (o instanceof SigningCertificate)
         {
             return (SigningCertificate) o;
         }
-        else if (o instanceof ASN1Sequence)
+        else if (o != null)
         {
-            return new SigningCertificate((ASN1Sequence) o);
+            return new SigningCertificate(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException(
-                "unknown object in 'SigningCertificate' factory : "
-                        + o.getClass().getName() + ".");
+        return null;
     }
 
     /**
      * constructeurs
      */
-    public SigningCertificate(ASN1Sequence seq)
+    private SigningCertificate(ASN1Sequence seq)
     {
         if (seq.size() < 1 || seq.size() > 2)
         {
@@ -95,7 +93,7 @@ public class SigningCertificate
      *  member-body(2) us(840) rsadsi(113549) pkcs(1) pkcs9(9)
      *  smime(16) id-aa(2) 12 }
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

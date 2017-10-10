@@ -8,72 +8,97 @@ import org.bouncycastle.crypto.params.DSAPrivateKeyParameters;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.params.RSAKeyParameters;
 
-public class DefaultTlsSignerCredentials implements TlsSignerCredentials
+public class DefaultTlsSignerCredentials
+    extends AbstractTlsSignerCredentials
 {
-    protected TlsClientContext context;
-    protected Certificate clientCert;
-    protected AsymmetricKeyParameter clientPrivateKey;
+    protected TlsContext context;
+    protected Certificate certificate;
+    protected AsymmetricKeyParameter privateKey;
+    protected SignatureAndHashAlgorithm signatureAndHashAlgorithm;
 
-    protected TlsSigner clientSigner;
+    protected TlsSigner signer;
 
-    public DefaultTlsSignerCredentials(TlsClientContext context, Certificate clientCertificate,
-        AsymmetricKeyParameter clientPrivateKey)
+    public DefaultTlsSignerCredentials(TlsContext context, Certificate certificate, AsymmetricKeyParameter privateKey)
     {
-        if (clientCertificate == null)
+        this(context, certificate, privateKey, null);
+    }
+
+    public DefaultTlsSignerCredentials(TlsContext context, Certificate certificate, AsymmetricKeyParameter privateKey,
+        SignatureAndHashAlgorithm signatureAndHashAlgorithm)
+    {
+        if (certificate == null)
         {
-            throw new IllegalArgumentException("'clientCertificate' cannot be null");
+            throw new IllegalArgumentException("'certificate' cannot be null");
         }
-        if (clientCertificate.certs.length == 0)
+        if (certificate.isEmpty())
         {
-            throw new IllegalArgumentException("'clientCertificate' cannot be empty");
+            throw new IllegalArgumentException("'certificate' cannot be empty");
         }
-        if (clientPrivateKey == null)
+        if (privateKey == null)
         {
-            throw new IllegalArgumentException("'clientPrivateKey' cannot be null");
+            throw new IllegalArgumentException("'privateKey' cannot be null");
         }
-        if (!clientPrivateKey.isPrivate())
+        if (!privateKey.isPrivate())
         {
-            throw new IllegalArgumentException("'clientPrivateKey' must be private");
+            throw new IllegalArgumentException("'privateKey' must be private");
+        }
+        if (TlsUtils.isTLSv12(context) && signatureAndHashAlgorithm == null)
+        {
+            throw new IllegalArgumentException("'signatureAndHashAlgorithm' cannot be null for (D)TLS 1.2+");
         }
 
-        if (clientPrivateKey instanceof RSAKeyParameters)
+        if (privateKey instanceof RSAKeyParameters)
         {
-            clientSigner = new TlsRSASigner();
+            this.signer = new TlsRSASigner();
         }
-        else if (clientPrivateKey instanceof DSAPrivateKeyParameters)
+        else if (privateKey instanceof DSAPrivateKeyParameters)
         {
-            clientSigner = new TlsDSSSigner();
+            this.signer = new TlsDSSSigner();
         }
-        else if (clientPrivateKey instanceof ECPrivateKeyParameters)
+        else if (privateKey instanceof ECPrivateKeyParameters)
         {
-            clientSigner = new TlsECDSASigner();
+            this.signer = new TlsECDSASigner();
         }
         else
         {
-            throw new IllegalArgumentException("'clientPrivateKey' type not supported: "
-                + clientPrivateKey.getClass().getName());
+            throw new IllegalArgumentException("'privateKey' type not supported: " + privateKey.getClass().getName());
         }
 
+        this.signer.init(context);
+
         this.context = context;
-        this.clientCert = clientCertificate;
-        this.clientPrivateKey = clientPrivateKey;
+        this.certificate = certificate;
+        this.privateKey = privateKey;
+        this.signatureAndHashAlgorithm = signatureAndHashAlgorithm;
     }
 
     public Certificate getCertificate()
     {
-        return clientCert;
+        return certificate;
     }
 
-    public byte[] generateCertificateSignature(byte[] md5andsha1) throws IOException
+    public byte[] generateCertificateSignature(byte[] hash)
+        throws IOException
     {
         try
         {
-            return clientSigner.calculateRawSignature(context.getSecureRandom(), clientPrivateKey,
-                md5andsha1);
+            if (TlsUtils.isTLSv12(context))
+            {
+                return signer.generateRawSignature(signatureAndHashAlgorithm, privateKey, hash);
+            }
+            else
+            {
+                return signer.generateRawSignature(privateKey, hash);
+            }
         }
         catch (CryptoException e)
         {
-            throw new TlsFatalAlert(AlertDescription.internal_error);
+            throw new TlsFatalAlert(AlertDescription.internal_error, e);
         }
+    }
+
+    public SignatureAndHashAlgorithm getSignatureAndHashAlgorithm()
+    {
+        return signatureAndHashAlgorithm;
     }
 }

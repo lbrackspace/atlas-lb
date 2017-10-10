@@ -1,23 +1,23 @@
 package org.bouncycastle.jce.provider;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.SignedData;
-import org.bouncycastle.x509.X509AttributeCertificate;
-import org.bouncycastle.x509.X509StreamParserSpi;
-import org.bouncycastle.x509.X509V2AttributeCertificate;
-import org.bouncycastle.x509.util.StreamParsingException;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.SignedData;
+import org.bouncycastle.x509.X509AttributeCertificate;
+import org.bouncycastle.x509.X509StreamParserSpi;
+import org.bouncycastle.x509.X509V2AttributeCertificate;
+import org.bouncycastle.x509.util.StreamParsingException;
 
 public class X509AttrCertParser
     extends X509StreamParserSpi
@@ -32,11 +32,11 @@ public class X509AttrCertParser
         InputStream in)
         throws IOException
     {
-        ASN1InputStream dIn = new ASN1InputStream(in, ProviderUtil.getReadLimit(in));
+        ASN1InputStream dIn = new ASN1InputStream(in);
         ASN1Sequence seq = (ASN1Sequence)dIn.readObject();
 
         if (seq.size() > 1
-                && seq.getObjectAt(0) instanceof DERObjectIdentifier)
+                && seq.getObjectAt(0) instanceof ASN1ObjectIdentifier)
         {
             if (seq.getObjectAt(0).equals(PKCSObjectIdentifiers.signedData))
             {

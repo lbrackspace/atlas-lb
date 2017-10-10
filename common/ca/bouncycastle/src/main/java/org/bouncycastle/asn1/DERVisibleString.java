@@ -2,19 +2,27 @@ package org.bouncycastle.asn1;
 
 import java.io.IOException;
 
+import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.Strings;
+
 /**
- * DER VisibleString object.
+ * DER VisibleString object encoding ISO 646 (ASCII) character code points 32 to 126.
+ * <p>
+ * Explicit character set escape sequences are not allowed.
+ * </p>
  */
 public class DERVisibleString
-    extends ASN1Object
-    implements DERString
+    extends ASN1Primitive
+    implements ASN1String
 {
-    String  string;
+    private final byte[]  string;
 
     /**
-     * return a Visible String from the passed in object.
+     * Return a Visible String from the passed in object.
      *
+     * @param obj a DERVisibleString or an object that can be converted into one.
      * @exception IllegalArgumentException if the object cannot be converted.
+     * @return a DERVisibleString instance, or null
      */
     public static DERVisibleString getInstance(
         Object  obj)
@@ -24,103 +32,112 @@ public class DERVisibleString
             return (DERVisibleString)obj;
         }
 
-        if (obj instanceof ASN1OctetString)
+        if (obj instanceof byte[])
         {
-            return new DERVisibleString(((ASN1OctetString)obj).getOctets());
-        }
-
-        if (obj instanceof ASN1TaggedObject)
-        {
-            return getInstance(((ASN1TaggedObject)obj).getObject());
+            try
+            {
+                return (DERVisibleString)fromByteArray((byte[])obj);
+            }
+            catch (Exception e)
+            {
+                throw new IllegalArgumentException("encoding error in getInstance: " + e.toString());
+            }
         }
 
         throw new IllegalArgumentException("illegal object in getInstance: " + obj.getClass().getName());
     }
 
     /**
-     * return a Visible String from a tagged object.
+     * Return a Visible String from a tagged object.
      *
      * @param obj the tagged object holding the object we want
      * @param explicit true if the object is meant to be explicitly
      *              tagged false otherwise.
      * @exception IllegalArgumentException if the tagged object cannot
      *               be converted.
+     * @return a DERVisibleString instance, or null
      */
     public static DERVisibleString getInstance(
         ASN1TaggedObject obj,
         boolean          explicit)
     {
-        return getInstance(obj.getObject());
-    }
+        ASN1Primitive o = obj.getObject();
 
-    /**
-     * basic constructor - byte encoded string.
-     */
-    public DERVisibleString(
-        byte[]   string)
-    {
-        char[]  cs = new char[string.length];
-
-        for (int i = 0; i != cs.length; i++)
+        if (explicit || o instanceof DERVisibleString)
         {
-            cs[i] = (char)(string[i] & 0xff);
+            return getInstance(o);
         }
-
-        this.string = new String(cs);
+        else
+        {
+            return new DERVisibleString(ASN1OctetString.getInstance(o).getOctets());
+        }
     }
 
-    /**
-     * basic constructor
+    /*
+     * Basic constructor - byte encoded string.
      */
-    public DERVisibleString(
-        String   string)
+    DERVisibleString(
+        byte[]   string)
     {
         this.string = string;
     }
 
+    /**
+     * Basic constructor
+     *
+     * @param string the string to be carried in the VisibleString object,
+     */
+    public DERVisibleString(
+        String   string)
+    {
+        this.string = Strings.toByteArray(string);
+    }
+
     public String getString()
     {
-        return string;
+        return Strings.fromByteArray(string);
     }
 
     public String toString()
     {
-        return string;
+        return getString();
     }
 
     public byte[] getOctets()
     {
-        char[]  cs = string.toCharArray();
-        byte[]  bs = new byte[cs.length];
+        return Arrays.clone(string);
+    }
 
-        for (int i = 0; i != cs.length; i++)
-        {
-            bs[i] = (byte)cs[i];
-        }
+    boolean isConstructed()
+    {
+        return false;
+    }
 
-        return bs;
+    int encodedLength()
+    {
+        return 1 + StreamUtil.calculateBodyLength(string.length) + string.length;
     }
 
     void encode(
-        DEROutputStream  out)
+        ASN1OutputStream out)
         throws IOException
     {
-        out.writeEncoded(VISIBLE_STRING, this.getOctets());
+        out.writeEncoded(BERTags.VISIBLE_STRING, this.string);
     }
     
     boolean asn1Equals(
-        DERObject  o)
+        ASN1Primitive o)
     {
         if (!(o instanceof DERVisibleString))
         {
             return false;
         }
 
-        return this.getString().equals(((DERVisibleString)o).getString());
+        return Arrays.areEqual(string, ((DERVisibleString)o).string);
     }
     
     public int hashCode()
     {
-        return this.getString().hashCode();
+        return Arrays.hashCode(string);
     }
 }

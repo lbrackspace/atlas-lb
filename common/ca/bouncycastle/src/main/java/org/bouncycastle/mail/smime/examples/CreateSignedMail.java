@@ -1,6 +1,5 @@
 package org.bouncycastle.mail.smime.examples;
 
-import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -25,8 +24,6 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
 import org.bouncycastle.asn1.smime.SMIMECapabilitiesAttribute;
@@ -39,6 +36,7 @@ import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.bc.BcX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
@@ -62,9 +60,7 @@ public class CreateSignedMail
         PublicKey pub) 
         throws IOException
     {
-        ByteArrayInputStream bIn = new ByteArrayInputStream(pub.getEncoded());
-        SubjectPublicKeyInfo info = new SubjectPublicKeyInfo(
-            (ASN1Sequence)new ASN1InputStream(bIn).readObject());
+        SubjectPublicKeyInfo info = SubjectPublicKeyInfo.getInstance(pub.getEncoded());
 
         return new AuthorityKeyIdentifier(info);
     }
@@ -73,12 +69,9 @@ public class CreateSignedMail
         PublicKey pub) 
         throws IOException
     {
-        ByteArrayInputStream bIn = new ByteArrayInputStream(pub.getEncoded());
+        SubjectPublicKeyInfo info = SubjectPublicKeyInfo.getInstance(pub.getEncoded());
 
-        SubjectPublicKeyInfo info = new SubjectPublicKeyInfo(
-            (ASN1Sequence)new ASN1InputStream(bIn).readObject());
-
-        return new SubjectKeyIdentifier(info);
+        return new BcX509ExtensionUtils().createSubjectKeyIdentifier(info);
     }
 
     /**

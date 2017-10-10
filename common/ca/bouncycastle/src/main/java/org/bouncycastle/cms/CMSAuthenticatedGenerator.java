@@ -1,23 +1,11 @@
 package org.bouncycastle.cms;
 
-import java.io.IOException;
-import java.security.AlgorithmParameterGenerator;
-import java.security.AlgorithmParameters;
-import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.SecureRandom;
-import java.security.spec.AlgorithmParameterSpec;
-import java.security.spec.InvalidParameterSpecException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.RC2ParameterSpec;
-
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.util.Arrays;
 
 public class CMSAuthenticatedGenerator
     extends CMSEnvelopedGenerator
@@ -32,52 +20,6 @@ public class CMSAuthenticatedGenerator
     {
     }
 
-    /**
-     * constructor allowing specific source of randomness
-     *
-     * @param rand instance of SecureRandom to use
-     */
-    public CMSAuthenticatedGenerator(
-        SecureRandom rand)
-    {
-        super(rand);
-    }
-
-    protected AlgorithmIdentifier getAlgorithmIdentifier(String encryptionOID, AlgorithmParameterSpec paramSpec, Provider provider)
-        throws IOException, NoSuchAlgorithmException, InvalidParameterSpecException
-    {
-        AlgorithmParameters params = CMSEnvelopedHelper.INSTANCE.createAlgorithmParameters(encryptionOID, provider);
-        params.init(paramSpec);
-
-        return getAlgorithmIdentifier(encryptionOID, params);
-    }
-
-    protected AlgorithmParameterSpec generateParameterSpec(String encryptionOID, SecretKey encKey, Provider encProvider)
-        throws CMSException
-    {
-        try
-        {
-            if (encryptionOID.equals(RC2_CBC))
-            {
-                byte[] iv = new byte[8];
-
-                rand.nextBytes(iv);
-
-                return new RC2ParameterSpec(encKey.getEncoded().length * 8, iv);
-            }
-
-            AlgorithmParameterGenerator pGen = CMSEnvelopedHelper.INSTANCE.createAlgorithmParameterGenerator(encryptionOID, encProvider);
-
-            AlgorithmParameters p = pGen.generateParameters();
-
-            return p.getParameterSpec(IvParameterSpec.class);
-        }
-        catch (GeneralSecurityException e)
-        {
-            return null;
-        }
-    }
-
     public void setAuthenticatedAttributeGenerator(CMSAttributeTableGenerator authGen)
     {
         this.authGen = authGen;
@@ -88,12 +30,13 @@ public class CMSAuthenticatedGenerator
         this.unauthGen = unauthGen;
     }
 
-    protected Map getBaseParameters(DERObjectIdentifier contentType, AlgorithmIdentifier digAlgId, byte[] hash)
+    protected Map getBaseParameters(ASN1ObjectIdentifier contentType, AlgorithmIdentifier digAlgId, AlgorithmIdentifier macAlgId, byte[] hash)
     {
         Map param = new HashMap();
         param.put(CMSAttributeTableGenerator.CONTENT_TYPE, contentType);
         param.put(CMSAttributeTableGenerator.DIGEST_ALGORITHM_IDENTIFIER, digAlgId);
-        param.put(CMSAttributeTableGenerator.DIGEST,  hash.clone());
+        param.put(CMSAttributeTableGenerator.DIGEST,  Arrays.clone(hash));
+        param.put(CMSAttributeTableGenerator.MAC_ALGORITHM_IDENTIFIER,  macAlgId);
         return param;
     }
 }

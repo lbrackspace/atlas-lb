@@ -6,17 +6,20 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ocsp.BasicOCSPResponse;
 import org.bouncycastle.asn1.ocsp.ResponseData;
 import org.bouncycastle.asn1.ocsp.SingleResponse;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.Certificate;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.operator.ContentVerifier;
 import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.util.Encodable;
 
 /**
  * <pre>
@@ -28,17 +31,18 @@ import org.bouncycastle.operator.ContentVerifierProvider;
  * </pre>
  */
 public class BasicOCSPResp
+    implements Encodable
 {
     private BasicOCSPResponse   resp;
     private ResponseData        data;
-    private X509Extensions extensions;
+    private Extensions extensions;
 
     public BasicOCSPResp(
         BasicOCSPResponse   resp)
     {
         this.resp = resp;
         this.data = resp.getTbsResponseData();
-        this.extensions = resp.getTbsResponseData().getResponseExtensions();
+        this.extensions = Extensions.getInstance(resp.getTbsResponseData().getResponseExtensions());
     }
 
     /**
@@ -47,7 +51,24 @@ public class BasicOCSPResp
      */
     public byte[] getTBSResponseData()
     {
-        return resp.getTbsResponseData().getDEREncoded();
+        try
+        {
+            return resp.getTbsResponseData().getEncoded(ASN1Encoding.DER);
+        }
+        catch (IOException e)
+        {
+            return null;
+        }
+    }
+
+    /**
+     * Return the algorithm identifier describing the signature used in the response.
+     *
+     * @return an AlgorithmIdentifier
+     */
+    public AlgorithmIdentifier getSignatureAlgorithmID()
+    {
+        return resp.getSignatureAlgorithm();
     }
 
     public int getVersion()
@@ -83,7 +104,7 @@ public class BasicOCSPResp
        return extensions != null;
    }
 
-   public X509Extension getExtension(ASN1ObjectIdentifier oid)
+   public Extension getExtension(ASN1ObjectIdentifier oid)
    {
        if (extensions != null)
        {
@@ -116,7 +137,7 @@ public class BasicOCSPResp
 
     public byte[] getSignature()
     {
-        return resp.getSignature().getBytes();
+        return resp.getSignature().getOctets();
     }
 
     public X509CertificateHolder[] getCerts()
@@ -134,7 +155,7 @@ public class BasicOCSPResp
 
                 for (int i = 0; i != certs.length; i++)
                 {
-                    certs[i] = new X509CertificateHolder(X509CertificateStructure.getInstance(s.getObjectAt(i)));
+                    certs[i] = new X509CertificateHolder(Certificate.getInstance(s.getObjectAt(i)));
                 }
 
                 return certs;
@@ -160,7 +181,7 @@ public class BasicOCSPResp
             ContentVerifier verifier = verifierProvider.get(resp.getSignatureAlgorithm());
             OutputStream vOut = verifier.getOutputStream();
 
-            vOut.write(resp.getTbsResponseData().getDEREncoded());
+            vOut.write(resp.getTbsResponseData().getEncoded(ASN1Encoding.DER));
             vOut.close();
 
             return verifier.verify(this.getSignature());
@@ -177,7 +198,7 @@ public class BasicOCSPResp
     public byte[] getEncoded()
         throws IOException
     {
-    	return resp.getEncoded();
+        return resp.getEncoded();
     }
     
     public boolean equals(Object o)

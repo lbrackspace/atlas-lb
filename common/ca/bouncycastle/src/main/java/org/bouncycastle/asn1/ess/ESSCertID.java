@@ -1,16 +1,16 @@
 package org.bouncycastle.asn1.ess;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.IssuerSerial;
 
 public class ESSCertID
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private ASN1OctetString certHash;
 
@@ -18,24 +18,22 @@ public class ESSCertID
 
     public static ESSCertID getInstance(Object o)
     {
-        if (o == null || o instanceof ESSCertID)
+        if (o instanceof ESSCertID)
         {
             return (ESSCertID)o;
         }
-        else if (o instanceof ASN1Sequence)
+        else if (o != null)
         {
-            return new ESSCertID((ASN1Sequence)o);
+            return new ESSCertID(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException(
-                "unknown object in 'ESSCertID' factory : "
-                        + o.getClass().getName() + ".");
+        return null;
     }
 
     /**
      * constructor
      */
-    public ESSCertID(ASN1Sequence seq)
+    private ESSCertID(ASN1Sequence seq)
     {
         if (seq.size() < 1 || seq.size() > 2)
         {
@@ -81,7 +79,7 @@ public class ESSCertID
      *     issuerSerial IssuerSerial OPTIONAL }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
         

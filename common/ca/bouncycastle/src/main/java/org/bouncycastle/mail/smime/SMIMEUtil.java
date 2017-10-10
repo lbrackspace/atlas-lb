@@ -6,29 +6,38 @@ import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
-import java.security.Security;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Part;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 
 import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cms.CMSTypedStream;
-import org.bouncycastle.jce.PrincipalUtil;
 import org.bouncycastle.mail.smime.util.CRLFOutputStream;
 import org.bouncycastle.mail.smime.util.FileBackedMimeBodyPart;
+import org.bouncycastle.util.Strings;
 
 public class SMIMEUtil
 {
+    private static final String MULTIPART = "multipart";
     private static final int BUF_SIZE = 32760;
-    
+
+    public static boolean isMultipartContent(Part part)
+        throws MessagingException
+    {
+        String          partType = Strings.toLowerCase(part.getContentType());
+
+        return partType.startsWith(MULTIPART);
+    }
+
     static boolean isCanonicalisationRequired(
         MimeBodyPart   bodyPart,
         String defaultContentTransferEncoding) 
@@ -47,24 +56,6 @@ public class SMIMEUtil
         }
 
         return !contentTransferEncoding.equalsIgnoreCase("binary");
-    }
-
-    public static Provider getProvider(String providerName)
-        throws NoSuchProviderException
-    {
-        if (providerName != null)
-        {
-            Provider prov = Security.getProvider(providerName);
-
-            if (prov != null)
-            {
-                return prov;
-            }
-
-            throw new NoSuchProviderException("provider " + providerName + " not found.");
-        }
-
-        return null;
     }
 
     static class LineOutputStream extends FilterOutputStream
@@ -279,6 +270,7 @@ public class SMIMEUtil
 
     static void outputBodyPart(
         OutputStream out,
+        boolean      topLevel,
         BodyPart     bodyPart,
         String       defaultContentTransferEncoding) 
         throws MessagingException, IOException
@@ -289,9 +281,19 @@ public class SMIMEUtil
             String[]        cte = mimePart.getHeader("Content-Transfer-Encoding");
             String          contentTransferEncoding;
 
-            if (mimePart.getContent() instanceof MimeMultipart)
+            if (isMultipartContent(mimePart))
             {
-                MimeMultipart mp = (MimeMultipart)bodyPart.getContent();
+                Object content = bodyPart.getContent();
+                Multipart mp;
+                if (content instanceof Multipart)
+                {
+                    mp = (Multipart)content;
+                }
+                else
+                {
+                    mp = new MimeMultipart(bodyPart.getDataHandler().getDataSource());
+                }
+
                 ContentType contentType = new ContentType(mp.getContentType());
                 String boundary = "--" + contentType.getParameter("boundary");
 
@@ -312,20 +314,23 @@ public class SMIMEUtil
                 {
                     lOut.writeln(boundary);
                     BodyPart part = mp.getBodyPart(i);
-                    outputBodyPart(out, part, defaultContentTransferEncoding);
-                    if (!(part.getContent() instanceof MimeMultipart))
+                    outputBodyPart(out, false, part, defaultContentTransferEncoding);
+                    if (!isMultipartContent(part))
                     {
                         lOut.writeln();       // CRLF terminator needed
                     }
                     else
-                    {
+                    {                        // output nested preamble
                         outputPostamble(lOut, mimePart, boundary, part);
                     }
                 }
 
                 lOut.writeln(boundary + "--");
-     
-                outputPostamble(lOut, mimePart, mp.getCount(), boundary);
+
+                if (topLevel)
+                {
+                    outputPostamble(lOut, mimePart, mp.getCount(), boundary);
+                }
 
                 return;
             }
@@ -406,6 +411,8 @@ public class SMIMEUtil
 
                 outCRLF.write(buf, 0, len);
             }
+
+            inRaw.close();
 
             outCRLF.flush();
         }
@@ -525,7 +532,7 @@ public class SMIMEUtil
     {
         try
         {
-            return new IssuerAndSerialNumber(PrincipalUtil.getIssuerX509Principal(cert), cert.getSerialNumber());        
+            return new IssuerAndSerialNumber(new JcaX509CertificateHolder(cert).getIssuer(), cert.getSerialNumber());
         }
         catch (Exception e)
         {

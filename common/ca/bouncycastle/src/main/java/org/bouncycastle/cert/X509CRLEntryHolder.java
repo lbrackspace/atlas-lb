@@ -6,9 +6,10 @@ import java.util.List;
 import java.util.Set;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.TBSCertList;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
 
 /**
  * Holding class for an X.509 CRL Entry structure.
@@ -16,12 +17,22 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 public class X509CRLEntryHolder
 {
     private TBSCertList.CRLEntry entry;
-    private X509Extensions extensions;
+    private GeneralNames ca;
 
-    X509CRLEntryHolder(TBSCertList.CRLEntry entry)
+    X509CRLEntryHolder(TBSCertList.CRLEntry entry, boolean isIndirect, GeneralNames previousCA)
     {
         this.entry = entry;
-        this.extensions = entry.getExtensions();
+        this.ca = previousCA;
+
+        if (isIndirect && entry.hasExtensions())
+        {
+            Extension currentCaName = entry.getExtensions().getExtension(Extension.certificateIssuer);
+
+            if (currentCaName != null)
+            {
+                ca = GeneralNames.getInstance(currentCaName.getParsedValue());
+            }
+        }
     }
 
     /**
@@ -51,7 +62,22 @@ public class X509CRLEntryHolder
      */
     public boolean hasExtensions()
     {
-        return extensions != null;
+        return entry.hasExtensions();
+    }
+
+    /**
+     * Return the available names for the certificate issuer for the certificate referred to by this CRL entry.
+     * <p>
+     * Note: this will be the issuer of the CRL unless it has been specified that the CRL is indirect
+     * in the IssuingDistributionPoint extension and either a previous entry, or the current one,
+     * has specified a different CA via the certificateIssuer extension.
+     * </p>
+     *
+     * @return the revoked certificate's issuer.
+     */
+    public GeneralNames getCertificateIssuer()
+    {
+        return this.ca;
     }
 
     /**
@@ -61,14 +87,26 @@ public class X509CRLEntryHolder
      *
      * @return the extension if present, null otherwise.
      */
-    public X509Extension getExtension(ASN1ObjectIdentifier oid)
+    public Extension getExtension(ASN1ObjectIdentifier oid)
     {
+        Extensions extensions = entry.getExtensions();
+
         if (extensions != null)
         {
             return extensions.getExtension(oid);
         }
 
         return null;
+    }
+
+    /**
+     * Return the extensions block associated with this CRL entry if there is one.
+     *
+     * @return the extensions block, null otherwise.
+     */
+    public Extensions getExtensions()
+    {
+        return entry.getExtensions();
     }
 
     /**
@@ -79,7 +117,7 @@ public class X509CRLEntryHolder
      */
     public List getExtensionOIDs()
     {
-        return CertUtils.getExtensionOIDs(extensions);
+        return CertUtils.getExtensionOIDs(entry.getExtensions());
     }
 
     /**
@@ -90,7 +128,7 @@ public class X509CRLEntryHolder
      */
     public Set getCriticalExtensionOIDs()
     {
-        return CertUtils.getCriticalExtensionOIDs(extensions);
+        return CertUtils.getCriticalExtensionOIDs(entry.getExtensions());
     }
 
     /**
@@ -101,6 +139,6 @@ public class X509CRLEntryHolder
      */
     public Set getNonCriticalExtensionOIDs()
     {
-        return CertUtils.getNonCriticalExtensionOIDs(extensions);
+        return CertUtils.getNonCriticalExtensionOIDs(entry.getExtensions());
     }
 }

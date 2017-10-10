@@ -22,6 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,10 +32,11 @@ import java.util.Set;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.x509.Extension;
 
 /**
  * NIST CertPath test data for RFC 3280
@@ -205,7 +207,7 @@ public class NistCertPathTest
                 new String[] { "NegativeSerialNumberCACert", "InvalidNegativeSerialNumberTest15EE" }, 
                 new String[] { TRUST_ANCHOR_ROOT_CRL, "NegativeSerialNumberCACRL" },
                 0,
-                "Certificate revocation after Fri Apr 20 00:57:20", "reason: keyCompromise");
+                "Certificate revocation after 2001-04-19 14:57:20 +0000", "reason: keyCompromise");
     }
     
     //
@@ -695,7 +697,8 @@ public class NistCertPathTest
         
         params.addCertStore(store);
         params.setRevocationEnabled(true);
-        
+        params.setDate(new GregorianCalendar(2010, 1, 1).getTime());
+
         if (policies != null)
         {
             params.setExplicitPolicyRequired(true);
@@ -755,6 +758,7 @@ public class NistCertPathTest
         }
 
         builderParams.addCertStore(store);
+        builderParams.setDate(new GregorianCalendar(2010, 1, 1).getTime());
 
         try
         {
@@ -827,13 +831,13 @@ public class NistCertPathTest
         throws Exception
     {
         X509Certificate cert = loadCert(trustAnchorName);
-        byte[]          extBytes = cert.getExtensionValue(X509Extensions.NameConstraints.getId());
+        byte[]          extBytes = cert.getExtensionValue(Extension.nameConstraints.getId());
         
         if (extBytes != null)
         {
-            ASN1Encodable extValue = X509ExtensionUtil.fromExtensionValue(extBytes);
+            ASN1Encodable extValue = ASN1Primitive.fromByteArray(ASN1OctetString.getInstance(extBytes).getOctets());
             
-            return new TrustAnchor(cert, extValue.getDEREncoded());
+            return new TrustAnchor(cert, extValue.toASN1Primitive().getEncoded(ASN1Encoding.DER));
         }
         
         return new TrustAnchor(cert, null);

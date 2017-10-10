@@ -4,16 +4,17 @@ import java.util.Enumeration;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 public class CertReqMsg
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private CertRequest certReq;
-    private ProofOfPossession popo;
+    private ProofOfPossession pop;
     private ASN1Sequence regInfo;
 
     private CertReqMsg(ASN1Sequence seq)
@@ -27,7 +28,7 @@ public class CertReqMsg
 
             if (o instanceof ASN1TaggedObject || o instanceof ProofOfPossession)
             {
-                popo = ProofOfPossession.getInstance(o);
+                pop = ProofOfPossession.getInstance(o);
             }
             else
             {
@@ -50,15 +51,22 @@ public class CertReqMsg
         return null;
     }
 
+    public static CertReqMsg getInstance(
+        ASN1TaggedObject obj,
+        boolean explicit)
+    {
+        return getInstance(ASN1Sequence.getInstance(obj, explicit));
+    }
+
     /**
      * Creates a new CertReqMsg.
      * @param certReq CertRequest
-     * @param popo may be null
+     * @param pop may be null
      * @param regInfo may be null
      */
     public CertReqMsg(
         CertRequest certReq,
-        ProofOfPossession popo,
+        ProofOfPossession pop,
         AttributeTypeAndValue[] regInfo)
     {
         if (certReq == null)
@@ -67,7 +75,7 @@ public class CertReqMsg
         }
 
         this.certReq = certReq;
-        this.popo = popo;
+        this.pop = pop;
 
         if (regInfo != null)
         {
@@ -80,17 +88,19 @@ public class CertReqMsg
         return certReq;
     }
 
+
     /**
      * @deprecated use getPopo
      */
     public ProofOfPossession getPop()
     {
-        return popo;
+        return pop;
     }
+
 
     public ProofOfPossession getPopo()
     {
-        return popo;
+        return pop;
     }
 
     public AttributeTypeAndValue[] getRegInfo()
@@ -114,19 +124,19 @@ public class CertReqMsg
      * <pre>
      * CertReqMsg ::= SEQUENCE {
      *                    certReq   CertRequest,
-     *                    pop       ProofOfPossession  OPTIONAL,
+     *                    popo       ProofOfPossession  OPTIONAL,
      *                    -- content depends upon key type
      *                    regInfo   SEQUENCE SIZE(1..MAX) OF AttributeTypeAndValue OPTIONAL }
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 
         v.add(certReq);
 
-        addOptional(v, popo);
+        addOptional(v, pop);
         addOptional(v, regInfo);
 
         return new DERSequence(v);

@@ -2,13 +2,13 @@ package org.bouncycastle.asn1.esf;
 
 import java.math.BigInteger;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1UTCTime;
 import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERUTCTime;
 import org.bouncycastle.asn1.x500.X500Name;
 
 /**
@@ -22,11 +22,11 @@ import org.bouncycastle.asn1.x500.X500Name;
  * </pre>
  */
 public class CrlIdentifier
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private X500Name crlIssuer;
-    private DERUTCTime crlIssuedTime;
-    private DERInteger crlNumber;
+    private ASN1UTCTime crlIssuedTime;
+    private ASN1Integer crlNumber;
 
     public static CrlIdentifier getInstance(Object obj)
     {
@@ -39,7 +39,7 @@ public class CrlIdentifier
             return new CrlIdentifier(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("null value in getInstance");
+        return null;
     }
 
     private CrlIdentifier(ASN1Sequence seq)
@@ -49,26 +49,26 @@ public class CrlIdentifier
             throw new IllegalArgumentException();
         }
         this.crlIssuer = X500Name.getInstance(seq.getObjectAt(0));
-        this.crlIssuedTime = DERUTCTime.getInstance(seq.getObjectAt(1));
+        this.crlIssuedTime = ASN1UTCTime.getInstance(seq.getObjectAt(1));
         if (seq.size() > 2)
         {
-            this.crlNumber = DERInteger.getInstance(seq.getObjectAt(2));
+            this.crlNumber = ASN1Integer.getInstance(seq.getObjectAt(2));
         }
     }
 
-    public CrlIdentifier(X500Name crlIssuer, DERUTCTime crlIssuedTime)
+    public CrlIdentifier(X500Name crlIssuer, ASN1UTCTime crlIssuedTime)
     {
         this(crlIssuer, crlIssuedTime, null);
     }
 
-    public CrlIdentifier(X500Name crlIssuer, DERUTCTime crlIssuedTime,
+    public CrlIdentifier(X500Name crlIssuer, ASN1UTCTime crlIssuedTime,
                          BigInteger crlNumber)
     {
         this.crlIssuer = crlIssuer;
         this.crlIssuedTime = crlIssuedTime;
         if (null != crlNumber)
         {
-            this.crlNumber = new DERInteger(crlNumber);
+            this.crlNumber = new ASN1Integer(crlNumber);
         }
     }
 
@@ -77,7 +77,7 @@ public class CrlIdentifier
         return this.crlIssuer;
     }
 
-    public DERUTCTime getCrlIssuedTime()
+    public ASN1UTCTime getCrlIssuedTime()
     {
         return this.crlIssuedTime;
     }
@@ -91,10 +91,10 @@ public class CrlIdentifier
         return this.crlNumber.getValue();
     }
 
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
-        v.add(this.crlIssuer.toASN1Object());
+        v.add(this.crlIssuer.toASN1Primitive());
         v.add(this.crlIssuedTime);
         if (null != this.crlNumber)
         {

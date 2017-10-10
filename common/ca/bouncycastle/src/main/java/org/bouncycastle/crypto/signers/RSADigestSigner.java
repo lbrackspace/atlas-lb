@@ -1,7 +1,11 @@
 package org.bouncycastle.crypto.signers;
 
+import java.io.IOException;
+import java.util.Hashtable;
+
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
@@ -18,8 +22,7 @@ import org.bouncycastle.crypto.encodings.PKCS1Encoding;
 import org.bouncycastle.crypto.engines.RSABlindedEngine;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithRandom;
-
-import java.util.Hashtable;
+import org.bouncycastle.util.Arrays;
 
 public class RSADigestSigner
     implements Signer
@@ -45,6 +48,13 @@ public class RSADigestSigner
         oidMap.put("SHA-256", NISTObjectIdentifiers.id_sha256);
         oidMap.put("SHA-384", NISTObjectIdentifiers.id_sha384);
         oidMap.put("SHA-512", NISTObjectIdentifiers.id_sha512);
+        oidMap.put("SHA-512/224", NISTObjectIdentifiers.id_sha512_224);
+        oidMap.put("SHA-512/256", NISTObjectIdentifiers.id_sha512_256);
+
+        oidMap.put("SHA3-224", NISTObjectIdentifiers.id_sha3_224);
+        oidMap.put("SHA3-256", NISTObjectIdentifiers.id_sha3_256);
+        oidMap.put("SHA3-384", NISTObjectIdentifiers.id_sha3_384);
+        oidMap.put("SHA3-512", NISTObjectIdentifiers.id_sha3_512);
 
         oidMap.put("MD2", PKCSObjectIdentifiers.md2);
         oidMap.put("MD4", PKCSObjectIdentifiers.md4);
@@ -54,9 +64,15 @@ public class RSADigestSigner
     public RSADigestSigner(
         Digest digest)
     {
-        this.digest = digest;
+        this(digest, (ASN1ObjectIdentifier)oidMap.get(digest.getAlgorithmName()));
+    }
 
-        algId = new AlgorithmIdentifier((DERObjectIdentifier)oidMap.get(digest.getAlgorithmName()), DERNull.INSTANCE);
+    public RSADigestSigner(
+        Digest digest,
+        ASN1ObjectIdentifier digestOid)
+    {
+        this.digest = digest;
+        this.algId = new AlgorithmIdentifier(digestOid, DERNull.INSTANCE);
     }
 
     /**
@@ -141,8 +157,15 @@ public class RSADigestSigner
         byte[] hash = new byte[digest.getDigestSize()];
         digest.doFinal(hash, 0);
 
-        byte[] data = derEncode(hash);
-        return rsaEngine.processBlock(data, 0, data.length);
+        try
+        {
+            byte[] data = derEncode(hash);
+            return rsaEngine.processBlock(data, 0, data.length);
+        }
+        catch (IOException e)
+        {
+            throw new CryptoException("unable to encode signature: " + e.getMessage(), e);
+        }
     }
 
     /**
@@ -158,6 +181,7 @@ public class RSADigestSigner
         }
 
         byte[] hash = new byte[digest.getDigestSize()];
+
         digest.doFinal(hash, 0);
 
         byte[] sig;
@@ -175,13 +199,7 @@ public class RSADigestSigner
 
         if (sig.length == expected.length)
         {
-            for (int i = 0; i < sig.length; i++)
-            {
-                if (sig[i] != expected[i])
-                {
-                    return false;
-                }
-            }
+            return Arrays.constantTimeAreEqual(sig, expected);
         }
         else if (sig.length == expected.length - 2)  // NULL left out
         {
@@ -191,28 +209,26 @@ public class RSADigestSigner
             expected[1] -= 2;      // adjust lengths
             expected[3] -= 2;
 
+            int nonEqual = 0;
+
             for (int i = 0; i < hash.length; i++)
             {
-                if (sig[sigOffset + i] != expected[expectedOffset + i])  // check hash
-                {
-                    return false;
-                }
+                nonEqual |= (sig[sigOffset + i] ^ expected[expectedOffset + i]);
             }
 
             for (int i = 0; i < sigOffset; i++)
             {
-                if (sig[i] != expected[i])  // check header less NULL
-                {
-                    return false;
-                }
+                nonEqual |= (sig[i] ^ expected[i]);  // check header less NULL
             }
+
+            return nonEqual == 0;
         }
         else
         {
+            Arrays.constantTimeAreEqual(expected, expected);  // keep time "steady".
+
             return false;
         }
-
-        return true;
     }
 
     public void reset()
@@ -222,9 +238,10 @@ public class RSADigestSigner
 
     private byte[] derEncode(
         byte[] hash)
+        throws IOException
     {
         DigestInfo dInfo = new DigestInfo(algId, hash);
 
-        return dInfo.getDEREncoded();
+        return dInfo.getEncoded(ASN1Encoding.DER);
     }
 }

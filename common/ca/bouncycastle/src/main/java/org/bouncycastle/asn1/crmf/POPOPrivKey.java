@@ -2,15 +2,16 @@ package org.bouncycastle.asn1.crmf;
 
 import org.bouncycastle.asn1.ASN1Choice;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.cms.EnvelopedData;
 
 public class POPOPrivKey
-    extends ASN1Encodable
+    extends ASN1Object
     implements ASN1Choice
 {
     public static final int thisMessage = 0;
@@ -32,7 +33,7 @@ public class POPOPrivKey
             this.obj = DERBitString.getInstance(obj, false);
             break;
         case subsequentMessage:
-            this.obj = SubsequentMessage.valueOf(DERInteger.getInstance(obj, false).getValue().intValue());
+            this.obj = SubsequentMessage.valueOf(ASN1Integer.getInstance(obj, false).getValue().intValue());
             break;
         case dhMAC:
             this.obj = DERBitString.getInstance(obj, false);
@@ -48,9 +49,23 @@ public class POPOPrivKey
         }
     }
 
-    public static POPOPrivKey getInstance(ASN1TaggedObject tagged, boolean isExplicit)
+    public static POPOPrivKey getInstance(Object obj)
     {
-        return new POPOPrivKey(ASN1TaggedObject.getInstance(tagged.getObject()));
+        if (obj instanceof POPOPrivKey)
+        {
+            return (POPOPrivKey)obj;
+        }
+        if (obj != null)
+        {
+            return new POPOPrivKey(ASN1TaggedObject.getInstance(obj));
+        }
+
+        return null;
+    }
+
+    public static POPOPrivKey getInstance(ASN1TaggedObject obj, boolean explicit)
+    {
+        return getInstance(ASN1TaggedObject.getInstance(obj, explicit));
     }
 
     public POPOPrivKey(SubsequentMessage msg)
@@ -82,7 +97,7 @@ public class POPOPrivKey
      *        encryptedKey      [4] EnvelopedData }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return new DERTaggedObject(false, tagNo, obj);
     }

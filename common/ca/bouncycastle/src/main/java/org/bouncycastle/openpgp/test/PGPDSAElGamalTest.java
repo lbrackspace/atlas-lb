@@ -31,7 +31,6 @@ import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPKeyPair;
 import org.bouncycastle.openpgp.PGPLiteralData;
 import org.bouncycastle.openpgp.PGPLiteralDataGenerator;
-import org.bouncycastle.openpgp.PGPObjectFactory;
 import org.bouncycastle.openpgp.PGPOnePassSignature;
 import org.bouncycastle.openpgp.PGPOnePassSignatureList;
 import org.bouncycastle.openpgp.PGPPrivateKey;
@@ -43,6 +42,17 @@ import org.bouncycastle.openpgp.PGPSignature;
 import org.bouncycastle.openpgp.PGPSignatureGenerator;
 import org.bouncycastle.openpgp.PGPSignatureList;
 import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory;
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPDigestCalculatorProviderBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyConverter;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPKeyPair;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePGPDataEncryptorBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePublicKeyDataDecryptorFactoryBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcePublicKeyKeyEncryptionMethodGenerator;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.test.SimpleTest;
 import org.bouncycastle.util.test.UncloseableOutputStream;
@@ -133,13 +143,11 @@ public class PGPDSAElGamalTest
         try
         {
             PGPPublicKey pubKey = null;
-            
-            PGPUtil.setDefaultProvider("BC");
 
             //
             // Read the public key
             //
-            PGPObjectFactory    pgpFact = new PGPObjectFactory(testPubKeyRing);
+            JcaPGPObjectFactory    pgpFact = new JcaPGPObjectFactory(testPubKeyRing);
             
             PGPPublicKeyRing        pgpPub = (PGPPublicKeyRing)pgpFact.nextObject();
 
@@ -153,8 +161,8 @@ public class PGPDSAElGamalTest
             //
             // Read the private key
             //
-            PGPSecretKeyRing    sKey = new PGPSecretKeyRing(testPrivKeyRing);
-            PGPPrivateKey        pgpPrivKey = sKey.getSecretKey().extractPrivateKey(pass, "BC");
+            PGPSecretKeyRing    sKey = new PGPSecretKeyRing(testPrivKeyRing, new JcaKeyFingerprintCalculator());
+            PGPPrivateKey        pgpPrivKey = sKey.getSecretKey().extractPrivateKey(new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build(pass));
             
             //
             // signature generation
@@ -162,9 +170,9 @@ public class PGPDSAElGamalTest
             String                                data = "hello world!";
             ByteArrayOutputStream    bOut = new ByteArrayOutputStream();
             ByteArrayInputStream        testIn = new ByteArrayInputStream(data.getBytes());
-            PGPSignatureGenerator    sGen = new PGPSignatureGenerator(PGPPublicKey.DSA, PGPUtil.SHA1, "BC");
+            PGPSignatureGenerator    sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(PGPPublicKey.DSA, PGPUtil.SHA1).setProvider("BC"));
         
-            sGen.initSign(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
+            sGen.init(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
 
             PGPCompressedDataGenerator cGen = new PGPCompressedDataGenerator(
                 PGPCompressedData.ZIP);
@@ -200,11 +208,11 @@ public class PGPDSAElGamalTest
             //
             // verify generated signature
             //
-            pgpFact = new PGPObjectFactory(bOut.toByteArray());
+            pgpFact = new JcaPGPObjectFactory(bOut.toByteArray());
 
             PGPCompressedData c1 = (PGPCompressedData)pgpFact.nextObject();
 
-            pgpFact = new PGPObjectFactory(c1.getDataStream());
+            pgpFact = new JcaPGPObjectFactory(c1.getDataStream());
             
             PGPOnePassSignatureList p1 = (PGPOnePassSignatureList)pgpFact.nextObject();
             
@@ -218,7 +226,7 @@ public class PGPDSAElGamalTest
 
             InputStream    dIn = p2.getInputStream();
 
-            ops.initVerify(pubKey, "BC");
+            ops.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), pubKey);
             
             while ((ch = dIn.read()) >= 0)
             {
@@ -250,7 +258,7 @@ public class PGPDSAElGamalTest
                 if (pgpKey.getAlgorithm() == PGPPublicKey.ELGAMAL_ENCRYPT
                     || pgpKey.getAlgorithm() == PGPPublicKey.ELGAMAL_GENERAL)
                 {
-                    pKey = pgpKey.getKey("BC");
+                    pKey = new JcaPGPKeyConverter().setProvider("BC").getPublicKey(pgpKey);
                     pgpKeyID = pgpKey.getKeyID();
                     if (pgpKey.getBitStrength() != 1024)
                     {
@@ -272,9 +280,9 @@ public class PGPDSAElGamalTest
 
             byte[]  out = c.doFinal(in);
             
-            pgpPrivKey = sKey.getSecretKey(pgpKeyID).extractPrivateKey(pass, "BC");
+            pgpPrivKey = sKey.getSecretKey(pgpKeyID).extractPrivateKey(new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build(pass));
             
-            c.init(Cipher.DECRYPT_MODE, pgpPrivKey.getKey());
+            c.init(Cipher.DECRYPT_MODE, new JcaPGPKeyConverter().setProvider("BC").getPrivateKey(pgpPrivKey));
             
             out = c.doFinal(out);
             
@@ -288,19 +296,19 @@ public class PGPDSAElGamalTest
             //
             byte[]    text = { (byte)'h', (byte)'e', (byte)'l', (byte)'l', (byte)'o', (byte)' ', (byte)'w', (byte)'o', (byte)'r', (byte)'l', (byte)'d', (byte)'!', (byte)'\n' };
             
-            PGPObjectFactory pgpF = new PGPObjectFactory(encMessage);
+            JcaPGPObjectFactory pgpF = new JcaPGPObjectFactory(encMessage);
 
             PGPEncryptedDataList            encList = (PGPEncryptedDataList)pgpF.nextObject();
         
             PGPPublicKeyEncryptedData    encP = (PGPPublicKeyEncryptedData)encList.get(0);
 
-            InputStream clear = encP.getDataStream(pgpPrivKey, "BC");
+            InputStream clear = encP.getDataStream(new JcePublicKeyDataDecryptorFactoryBuilder().setProvider("BC").build(pgpPrivKey));
                      
-            pgpFact = new PGPObjectFactory(clear);
+            pgpFact = new JcaPGPObjectFactory(clear);
 
             c1 = (PGPCompressedData)pgpFact.nextObject();
 
-            pgpFact = new PGPObjectFactory(c1.getDataStream());
+            pgpFact = new JcaPGPObjectFactory(c1.getDataStream());
             
             PGPLiteralData    ld = (PGPLiteralData)pgpFact.nextObject();
         
@@ -326,19 +334,19 @@ public class PGPDSAElGamalTest
             //
             // signed and encrypted message
             //
-            pgpF = new PGPObjectFactory(signedAndEncMessage);
+            pgpF = new JcaPGPObjectFactory(signedAndEncMessage);
 
             encList = (PGPEncryptedDataList)pgpF.nextObject();
         
             encP = (PGPPublicKeyEncryptedData)encList.get(0);
 
-            clear = encP.getDataStream(pgpPrivKey, "BC");
+            clear = encP.getDataStream(new JcePublicKeyDataDecryptorFactoryBuilder().setProvider("BC").build(pgpPrivKey));
                      
-            pgpFact = new PGPObjectFactory(clear);
+            pgpFact = new JcaPGPObjectFactory(clear);
 
             c1 = (PGPCompressedData)pgpFact.nextObject();
 
-            pgpFact = new PGPObjectFactory(c1.getDataStream());
+            pgpFact = new JcaPGPObjectFactory(c1.getDataStream());
             
             p1 = (PGPOnePassSignatureList)pgpFact.nextObject();
             
@@ -358,7 +366,7 @@ public class PGPDSAElGamalTest
             //
             // note: we use the DSA public key here.
             //
-            ops.initVerify(pgpPub.getPublicKey(), "BC");
+            ops.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), pgpPub.getPublicKey());
             
             while ((ch = inLd.read()) >= 0)
             {
@@ -382,10 +390,10 @@ public class PGPDSAElGamalTest
             // encrypt
             //
             ByteArrayOutputStream        cbOut = new ByteArrayOutputStream();
-            PGPEncryptedDataGenerator    cPk = new PGPEncryptedDataGenerator(SymmetricKeyAlgorithmTags.TRIPLE_DES, new SecureRandom(), "BC");            
+            PGPEncryptedDataGenerator    cPk = new PGPEncryptedDataGenerator(new JcePGPDataEncryptorBuilder(SymmetricKeyAlgorithmTags.TRIPLE_DES).setSecureRandom(new SecureRandom()).setProvider("BC"));
             PGPPublicKey                        puK = sKey.getSecretKey(pgpKeyID).getPublicKey();
             
-            cPk.addMethod(puK);
+            cPk.addMethod(new JcePublicKeyKeyEncryptionMethodGenerator(puK).setProvider("BC"));
             
             OutputStream    cOut = cPk.open(new UncloseableOutputStream(cbOut), bOut.toByteArray().length);
 
@@ -393,15 +401,15 @@ public class PGPDSAElGamalTest
 
             cOut.close();
 
-            pgpF = new PGPObjectFactory(cbOut.toByteArray());
+            pgpF = new JcaPGPObjectFactory(cbOut.toByteArray());
 
             encList = (PGPEncryptedDataList)pgpF.nextObject();
         
             encP = (PGPPublicKeyEncryptedData)encList.get(0);
             
-            pgpPrivKey = sKey.getSecretKey(pgpKeyID).extractPrivateKey(pass, "BC");
+            pgpPrivKey = sKey.getSecretKey(pgpKeyID).extractPrivateKey(new JcePBESecretKeyDecryptorBuilder(new JcaPGPDigestCalculatorProviderBuilder().setProvider("BC").build()).setProvider("BC").build(pass));
 
-            clear = encP.getDataStream(pgpPrivKey, "BC");
+            clear = encP.getDataStream(new JcePublicKeyDataDecryptorFactoryBuilder().setProvider("BC").build(pgpPrivKey));
             
             bOut.reset();
             
@@ -431,7 +439,7 @@ public class PGPDSAElGamalTest
             
             KeyPair kp = kpg.generateKeyPair();
             
-            PGPKeyPair    pgpKp = new PGPKeyPair(PGPPublicKey.ELGAMAL_GENERAL , kp.getPublic(), kp.getPrivate(), new Date());
+            PGPKeyPair    pgpKp = new JcaPGPKeyPair(PGPPublicKey.ELGAMAL_GENERAL, kp, new Date());
             
             PGPPublicKey k1 = pgpKp.getPublicKey();
             
@@ -457,14 +465,14 @@ public class PGPDSAElGamalTest
                 // Run a short encrypt/decrypt test with random key for the given parameters
                 kp = keyGen.generateKeyPair();
 
-                PGPKeyPair elGamalKeyPair = new PGPKeyPair(
+                PGPKeyPair elGamalKeyPair = new JcaPGPKeyPair(
                     PublicKeyAlgorithmTags.ELGAMAL_GENERAL, kp, new Date());
 
-                cPk = new PGPEncryptedDataGenerator(SymmetricKeyAlgorithmTags.CAST5, random, "BC");
+                cPk = new PGPEncryptedDataGenerator(new JcePGPDataEncryptorBuilder(SymmetricKeyAlgorithmTags.CAST5).setSecureRandom(new SecureRandom()).setProvider("BC"));
 
                 puK = elGamalKeyPair.getPublicKey();
 
-                cPk.addMethod(puK);
+                cPk.addMethod(new JcePublicKeyKeyEncryptionMethodGenerator(puK).setProvider("BC"));
 
                 cbOut = new ByteArrayOutputStream();
 
@@ -474,7 +482,7 @@ public class PGPDSAElGamalTest
 
                 cOut.close();
 
-                pgpF = new PGPObjectFactory(cbOut.toByteArray());
+                pgpF = new JcaPGPObjectFactory(cbOut.toByteArray());
 
                 encList = (PGPEncryptedDataList)pgpF.nextObject();
 
@@ -483,7 +491,7 @@ public class PGPDSAElGamalTest
                 pgpPrivKey = elGamalKeyPair.getPrivateKey();
 
                 // Note: This is where an exception would be expected if the P size causes problems
-                clear = encP.getDataStream(pgpPrivKey, "BC");
+                clear = encP.getDataStream(new JcePublicKeyDataDecryptorFactoryBuilder().setProvider("BC").build(pgpPrivKey));
 
                 ByteArrayOutputStream dec = new ByteArrayOutputStream();
 
@@ -512,11 +520,11 @@ public class PGPDSAElGamalTest
                 {
                     byte[] kEnc = pgpKey.getEncoded();
 
-                    PGPObjectFactory objF = new PGPObjectFactory(kEnc);
+                    JcaPGPObjectFactory objF = new JcaPGPObjectFactory(kEnc);
 
                     PGPPublicKey k = (PGPPublicKey)objF.nextObject();
 
-                    pKey = k.getKey("BC");
+                    pKey = new JcaPGPKeyConverter().setProvider("BC").getPublicKey(k);
                     pgpKeyID = k.getKeyID();
                     if (k.getBitStrength() != 1024)
                     {

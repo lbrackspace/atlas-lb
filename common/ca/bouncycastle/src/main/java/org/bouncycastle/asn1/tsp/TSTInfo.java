@@ -1,104 +1,78 @@
 package org.bouncycastle.asn1.tsp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERBoolean;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.X509Extensions;
-
-import java.io.IOException;
 import java.util.Enumeration;
 
+import org.bouncycastle.asn1.ASN1Boolean;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralName;
+
 public class TSTInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    DERInteger version;
-
-    DERObjectIdentifier tsaPolicyId;
-
-    MessageImprint messageImprint;
-
-    DERInteger serialNumber;
-
-    DERGeneralizedTime genTime;
-
-    Accuracy accuracy;
-
-    DERBoolean ordering;
-
-    DERInteger nonce;
-
-    GeneralName tsa;
-
-    X509Extensions extensions;
+    private ASN1Integer version;
+    private ASN1ObjectIdentifier tsaPolicyId;
+    private MessageImprint messageImprint;
+    private ASN1Integer serialNumber;
+    private ASN1GeneralizedTime genTime;
+    private Accuracy accuracy;
+    private ASN1Boolean ordering;
+    private ASN1Integer nonce;
+    private GeneralName tsa;
+    private Extensions extensions;
 
     public static TSTInfo getInstance(Object o)
     {
-        if (o == null || o instanceof TSTInfo)
+        if (o instanceof TSTInfo)
         {
-            return (TSTInfo) o;
+            return (TSTInfo)o;
         }
-        else if (o instanceof ASN1Sequence)
+        else if (o != null)
         {
-            return new TSTInfo((ASN1Sequence) o);
-        }
-        else if (o instanceof ASN1OctetString)
-        {
-            try
-            {
-                return getInstance(new ASN1InputStream(((ASN1OctetString)o).getOctets()).readObject());
-            }
-            catch (IOException ioEx)
-            {
-                throw new IllegalArgumentException(
-                        "Bad object format in 'TSTInfo' factory.");
-            }
+            return new TSTInfo(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException(
-                "Unknown object in 'TSTInfo' factory : "
-                        + o.getClass().getName() + ".");
+        return null;
     }
 
-    public TSTInfo(ASN1Sequence seq)
+    private TSTInfo(ASN1Sequence seq)
     {
         Enumeration e = seq.getObjects();
 
         // version
-        version = DERInteger.getInstance(e.nextElement());
+        version = ASN1Integer.getInstance(e.nextElement());
 
         // tsaPolicy
-        tsaPolicyId = DERObjectIdentifier.getInstance(e.nextElement());
+        tsaPolicyId = ASN1ObjectIdentifier.getInstance(e.nextElement());
 
         // messageImprint
         messageImprint = MessageImprint.getInstance(e.nextElement());
 
         // serialNumber
-        serialNumber = DERInteger.getInstance(e.nextElement());
+        serialNumber = ASN1Integer.getInstance(e.nextElement());
 
         // genTime
-        genTime = DERGeneralizedTime.getInstance(e.nextElement());
+        genTime = ASN1GeneralizedTime.getInstance(e.nextElement());
 
         // default for ordering
-        ordering = new DERBoolean(false);
+        ordering = ASN1Boolean.getInstance(false);
         
         while (e.hasMoreElements())
         {
-            DERObject o = (DERObject) e.nextElement();
+            ASN1Object o = (ASN1Object) e.nextElement();
 
             if (o instanceof ASN1TaggedObject)
             {
-                DERTaggedObject tagged = (DERTaggedObject) o;
+                ASN1TaggedObject tagged = (ASN1TaggedObject) o;
 
                 switch (tagged.getTagNo())
                 {
@@ -106,34 +80,34 @@ public class TSTInfo
                     tsa = GeneralName.getInstance(tagged, true);
                     break;
                 case 1:
-                    extensions = X509Extensions.getInstance(tagged, false);
+                    extensions = Extensions.getInstance(tagged, false);
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown tag value " + tagged.getTagNo());
                 }
             }
-            else if (o instanceof DERSequence)
+            else if (o instanceof ASN1Sequence || o instanceof Accuracy)
             {
                 accuracy = Accuracy.getInstance(o);
             }
-            else if (o instanceof DERBoolean)
+            else if (o instanceof ASN1Boolean)
             {
-                ordering = DERBoolean.getInstance(o);
+                ordering = ASN1Boolean.getInstance(o);
             }
-            else if (o instanceof DERInteger)
+            else if (o instanceof ASN1Integer)
             {
-                nonce = DERInteger.getInstance(o);
+                nonce = ASN1Integer.getInstance(o);
             }
 
         }
     }
 
-    public TSTInfo(DERObjectIdentifier tsaPolicyId, MessageImprint messageImprint,
-            DERInteger serialNumber, DERGeneralizedTime genTime,
-            Accuracy accuracy, DERBoolean ordering, DERInteger nonce,
-            GeneralName tsa, X509Extensions extensions)
+    public TSTInfo(ASN1ObjectIdentifier tsaPolicyId, MessageImprint messageImprint,
+            ASN1Integer serialNumber, ASN1GeneralizedTime genTime,
+            Accuracy accuracy, ASN1Boolean ordering, ASN1Integer nonce,
+            GeneralName tsa, Extensions extensions)
     {
-        version = new DERInteger(1);
+        version = new ASN1Integer(1);
         this.tsaPolicyId = tsaPolicyId;
         this.messageImprint = messageImprint;
         this.serialNumber = serialNumber;
@@ -146,17 +120,22 @@ public class TSTInfo
         this.extensions = extensions;
     }
 
+    public ASN1Integer getVersion()
+    {
+        return version;
+    }
+
     public MessageImprint getMessageImprint()
     {
         return messageImprint;
     }
 
-    public DERObjectIdentifier getPolicy()
+    public ASN1ObjectIdentifier getPolicy()
     {
         return tsaPolicyId;
     }
 
-    public DERInteger getSerialNumber()
+    public ASN1Integer getSerialNumber()
     {
         return serialNumber;
     }
@@ -166,17 +145,17 @@ public class TSTInfo
         return accuracy;
     }
 
-    public DERGeneralizedTime getGenTime()
+    public ASN1GeneralizedTime getGenTime()
     {
         return genTime;
     }
 
-    public DERBoolean getOrdering()
+    public ASN1Boolean getOrdering()
     {
         return ordering;
     }
 
-    public DERInteger getNonce()
+    public ASN1Integer getNonce()
     {
         return nonce;
     }
@@ -186,7 +165,7 @@ public class TSTInfo
         return tsa;
     }
 
-    public X509Extensions getExtensions()
+    public Extensions getExtensions()
     {
         return extensions;
     }
@@ -214,7 +193,7 @@ public class TSTInfo
      * 
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector seq = new ASN1EncodableVector();
         seq.add(version);

@@ -6,21 +6,20 @@ import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.Wrapper;
-import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.crypto.params.ParametersWithRandom;
+import org.bouncycastle.crypto.util.DigestFactory;
 import org.bouncycastle.util.Arrays;
 
 /**
  * Wrap keys according to
- * <A HREF="http://www.ietf.org/internet-drafts/draft-ietf-smime-key-wrap-01.txt">
- * draft-ietf-smime-key-wrap-01.txt</A>.
+ * <A HREF="https://www.ietf.org/rfc/rfc3217.txt">
+ * RFC 3217</A>.
  * <p>
  * Note: 
  * <ul>
- * <li>this is based on a draft, and as such is subject to change - don't use this class for anything requiring long term storage.
  * <li>if you are using this to wrap triple-des keys you need to set the
  * parity bits on the key and, if it's a two-key triple-des key, pad it
  * yourself.
@@ -52,14 +51,14 @@ public class DESedeWrapEngine
     //
     // checksum digest
     //
-    Digest  sha1 = new SHA1Digest();
+    Digest  sha1 = DigestFactory.createSHA1();
     byte[]  digest = new byte[20];
 
    /**
     * Method init
     *
-    * @param forWrapping
-    * @param param
+    * @param forWrapping true if for wrapping, false otherwise.
+    * @param param necessary parameters, may include KeyParameter, ParametersWithRandom, and ParametersWithIV
     */
     public void init(boolean forWrapping, CipherParameters param)
     {
@@ -128,9 +127,9 @@ public class DESedeWrapEngine
    /**
     * Method wrap
     *
-    * @param in
-    * @param inOff
-    * @param inLen
+    * @param in byte array containing the encoded key.
+    * @param inOff off set into in that the data starts at.
+    * @param inLen  length of the data.
     * @return the wrapped bytes.
     */
    public byte[] wrap(byte[] in, int inOff, int inLen) 
@@ -199,9 +198,9 @@ public class DESedeWrapEngine
    /**
     * Method unwrap
     *
-    * @param in
-    * @param inOff
-    * @param inLen
+    * @param in byte array containing the wrapped key.
+    * @param inOff off set into in that the data starts at.
+    * @param inLen  length of the data.
     * @return the unwrapped bytes.
     * @throws InvalidCipherTextException
     */
@@ -305,10 +304,11 @@ public class DESedeWrapEngine
      * - Compute the 20 octet SHA-1 hash on the key being wrapped.
      * - Use the first 8 octets of this hash as the checksum value.
      *
-     * @param key
+     * For details see http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum.
+     *
+     * @param key the key to check,
      * @return the CMS checksum.
      * @throws RuntimeException
-     * @see http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum
      */
     private byte[] calculateCMSKeyChecksum(
         byte[] key)
@@ -324,10 +324,11 @@ public class DESedeWrapEngine
     }
 
     /**
-     * @param key
-     * @param checksum
+     * For details see http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum
+     *
+     * @param key key to be validated.
+     * @param checksum the checksum.
      * @return true if okay, false otherwise.
-     * @see http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum
      */
     private boolean checkCMSKeyChecksum(
         byte[] key,

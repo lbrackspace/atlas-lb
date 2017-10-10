@@ -1,16 +1,17 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.DERSequence;
-
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
+
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.DERSequence;
 
 /**
  * The extendedKeyUsage object.
@@ -19,11 +20,18 @@ import java.util.Vector;
  * </pre>
  */
 public class ExtendedKeyUsage
-    extends ASN1Encodable
+    extends ASN1Object
 {
     Hashtable     usageTable = new Hashtable();
     ASN1Sequence  seq;
 
+    /**
+     * Return an ExtendedKeyUsage from the passed in tagged object.
+     *
+     * @param obj the tagged object containing the ExtendedKeyUsage
+     * @param explicit true if the tagged object should be interpreted as explicitly tagged, false if implicit.
+     * @return the ExtendedKeyUsage contained.
+     */
     public static ExtendedKeyUsage getInstance(
         ASN1TaggedObject obj,
         boolean          explicit)
@@ -31,6 +39,12 @@ public class ExtendedKeyUsage
         return getInstance(ASN1Sequence.getInstance(obj, explicit));
     }
 
+    /**
+     * Return an ExtendedKeyUsage from the passed in object.
+     *
+     * @param obj an ExtendedKeyUsage, some form or encoding of one, or null.
+     * @return  an ExtendedKeyUsage object, or null if null is passed in.
+     */
     public static ExtendedKeyUsage getInstance(
         Object obj)
     {
@@ -38,20 +52,30 @@ public class ExtendedKeyUsage
         {
             return (ExtendedKeyUsage)obj;
         }
-        
-        if(obj instanceof ASN1Sequence) 
+        else if (obj != null)
         {
-            return new ExtendedKeyUsage((ASN1Sequence)obj);
+            return new ExtendedKeyUsage(ASN1Sequence.getInstance(obj));
         }
 
-        if (obj instanceof X509Extension)
-        {
-            return getInstance(X509Extension.convertValueToObject((X509Extension)obj));
-        }
-
-        throw new IllegalArgumentException("Invalid ExtendedKeyUsage: " + obj.getClass().getName());
+        return null;
     }
 
+    /**
+     * Retrieve an ExtendedKeyUsage for a passed in Extensions object, if present.
+     *
+     * @param extensions the extensions object to be examined.
+     * @return  the ExtendedKeyUsage, null if the extension is not present.
+     */
+    public static ExtendedKeyUsage fromExtensions(Extensions extensions)
+    {
+        return ExtendedKeyUsage.getInstance(extensions.getExtensionParsedValue(Extension.extendedKeyUsage));
+    }
+
+    /**
+     * Base constructor, from a single KeyPurposeId.
+     *
+     * @param usage the keyPurposeId to be included.
+     */
     public ExtendedKeyUsage(
         KeyPurposeId  usage)
     {
@@ -60,7 +84,7 @@ public class ExtendedKeyUsage
         this.usageTable.put(usage, usage);
     }
     
-    public ExtendedKeyUsage(
+    private ExtendedKeyUsage(
         ASN1Sequence  seq)
     {
         this.seq = seq;
@@ -69,24 +93,46 @@ public class ExtendedKeyUsage
 
         while (e.hasMoreElements())
         {
-            Object  o = e.nextElement();
-            if (!(o instanceof DERObjectIdentifier))
+            ASN1Encodable o = (ASN1Encodable)e.nextElement();
+            if (!(o.toASN1Primitive() instanceof ASN1ObjectIdentifier))
             {
-                throw new IllegalArgumentException("Only DERObjectIdentifiers allowed in ExtendedKeyUsage.");
+                throw new IllegalArgumentException("Only ASN1ObjectIdentifiers allowed in ExtendedKeyUsage.");
             }
             this.usageTable.put(o, o);
         }
     }
 
+    /**
+     * Base constructor, from multiple KeyPurposeIds.
+     *
+     * @param usages an array of KeyPurposeIds.
+     */
     public ExtendedKeyUsage(
-        Vector  usages)
+        KeyPurposeId[]  usages)
+    {
+        ASN1EncodableVector v = new ASN1EncodableVector();
+
+        for (int i = 0; i != usages.length; i++)
+        {
+            v.add(usages[i]);
+            this.usageTable.put(usages[i], usages[i]);
+        }
+
+        this.seq = new DERSequence(v);
+    }
+
+    /**
+     * @deprecated use KeyPurposeId[] constructor.
+     */
+    public ExtendedKeyUsage(
+        Vector usages)
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
         Enumeration         e = usages.elements();
 
         while (e.hasMoreElements())
         {
-            DERObject  o = (DERObject)e.nextElement();
+            KeyPurposeId  o = KeyPurposeId.getInstance(e.nextElement());
 
             v.add(o);
             this.usageTable.put(o, o);
@@ -95,6 +141,12 @@ public class ExtendedKeyUsage
         this.seq = new DERSequence(v);
     }
 
+    /**
+     * Return true if this ExtendedKeyUsage object contains the passed in keyPurposeId.
+     *
+     * @param keyPurposeId  the KeyPurposeId of interest.
+     * @return true if the keyPurposeId is present, false otherwise.
+     */
     public boolean hasKeyPurposeId(
         KeyPurposeId keyPurposeId)
     {
@@ -103,25 +155,37 @@ public class ExtendedKeyUsage
     
     /**
      * Returns all extended key usages.
-     * The returned vector contains DERObjectIdentifiers.
-     * @return A vector with all key purposes.
+     *
+     * @return An array with all key purposes.
      */
-    public Vector getUsages()
+    public KeyPurposeId[] getUsages()
     {
-        Vector temp = new Vector();
-        for (Enumeration it = usageTable.elements(); it.hasMoreElements();)
+        KeyPurposeId[] temp = new KeyPurposeId[seq.size()];
+
+        int i = 0;
+        for (Enumeration it = seq.getObjects(); it.hasMoreElements();)
         {
-            temp.addElement(it.nextElement());
+            temp[i++] = KeyPurposeId.getInstance(it.nextElement());
         }
         return temp;
     }
 
+    /**
+     * Return the number of KeyPurposeIds present in this ExtendedKeyUsage.
+     *
+     * @return the number of KeyPurposeIds
+     */
     public int size()
     {
         return usageTable.size();
     }
-    
-    public DERObject toASN1Object()
+
+    /**
+     * Return the ASN.1 primitive form of this object.
+     *
+     * @return an ASN1Sequence.
+     */
+    public ASN1Primitive toASN1Primitive()
     {
         return seq;
     }

@@ -125,15 +125,14 @@ public class PKCS12ParametersGenerator
 
         byte[]  B = new byte[v];
         int     c = (n + u - 1) / u;
+        byte[]  A = new byte[u];
 
         for (int i = 1; i <= c; i++)
         {
-            byte[]  A = new byte[u];
-
             digest.update(D, 0, D.length);
             digest.update(I, 0, I.length);
             digest.doFinal(A, 0);
-            for (int j = 1; j != iterationCount; j++)
+            for (int j = 1; j < iterationCount; j++)
             {
                 digest.update(A, 0, A.length);
                 digest.doFinal(A, 0);

@@ -5,26 +5,50 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * A generic interface for key exchange implementations in TLS 1.0.
+ * A generic interface for key exchange implementations in (D)TLS.
  */
 public interface TlsKeyExchange
 {
-    void skipServerCertificate() throws IOException;
+    void init(TlsContext context);
 
-    void processServerCertificate(Certificate serverCertificate) throws IOException;
-
-    void skipServerKeyExchange() throws IOException;
-
-    void processServerKeyExchange(InputStream is)
+    void skipServerCredentials()
         throws IOException;
 
-    void validateCertificateRequest(CertificateRequest certificateRequest) throws IOException;
+    void processServerCredentials(TlsCredentials serverCredentials)
+        throws IOException;
 
-    void skipClientCredentials() throws IOException;
+    void processServerCertificate(Certificate serverCertificate)
+        throws IOException;
 
-    void processClientCredentials(TlsCredentials clientCredentials) throws IOException;
+    boolean requiresServerKeyExchange();
 
-    void generateClientKeyExchange(OutputStream os) throws IOException;
+    byte[] generateServerKeyExchange()
+        throws IOException;
 
-    byte[] generatePremasterSecret() throws IOException;
+    void skipServerKeyExchange()
+        throws IOException;
+
+    void processServerKeyExchange(InputStream input)
+        throws IOException;
+
+    void validateCertificateRequest(CertificateRequest certificateRequest)
+        throws IOException;
+
+    void skipClientCredentials()
+        throws IOException;
+
+    void processClientCredentials(TlsCredentials clientCredentials)
+        throws IOException;
+
+    void processClientCertificate(Certificate clientCertificate)
+        throws IOException;
+
+    void generateClientKeyExchange(OutputStream output)
+        throws IOException;
+
+    void processClientKeyExchange(InputStream input)
+        throws IOException;
+
+    byte[] generatePremasterSecret()
+        throws IOException;
 }

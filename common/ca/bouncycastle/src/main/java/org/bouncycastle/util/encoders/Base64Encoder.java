@@ -3,24 +3,27 @@ package org.bouncycastle.util.encoders;
 import java.io.IOException;
 import java.io.OutputStream;
 
+/**
+ * A streaming Base64 encoder.
+ */
 public class Base64Encoder
     implements Encoder
 {
     protected final byte[] encodingTable =
-        {
-            (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F', (byte)'G',
-            (byte)'H', (byte)'I', (byte)'J', (byte)'K', (byte)'L', (byte)'M', (byte)'N',
-            (byte)'O', (byte)'P', (byte)'Q', (byte)'R', (byte)'S', (byte)'T', (byte)'U',
-            (byte)'V', (byte)'W', (byte)'X', (byte)'Y', (byte)'Z',
-            (byte)'a', (byte)'b', (byte)'c', (byte)'d', (byte)'e', (byte)'f', (byte)'g',
-            (byte)'h', (byte)'i', (byte)'j', (byte)'k', (byte)'l', (byte)'m', (byte)'n',
-            (byte)'o', (byte)'p', (byte)'q', (byte)'r', (byte)'s', (byte)'t', (byte)'u',
-            (byte)'v',
-            (byte)'w', (byte)'x', (byte)'y', (byte)'z',
-            (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6',
-            (byte)'7', (byte)'8', (byte)'9',
-            (byte)'+', (byte)'/'
-        };
+    {
+        (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F', (byte)'G',
+        (byte)'H', (byte)'I', (byte)'J', (byte)'K', (byte)'L', (byte)'M', (byte)'N',
+        (byte)'O', (byte)'P', (byte)'Q', (byte)'R', (byte)'S', (byte)'T', (byte)'U',
+        (byte)'V', (byte)'W', (byte)'X', (byte)'Y', (byte)'Z',
+        (byte)'a', (byte)'b', (byte)'c', (byte)'d', (byte)'e', (byte)'f', (byte)'g',
+        (byte)'h', (byte)'i', (byte)'j', (byte)'k', (byte)'l', (byte)'m', (byte)'n',
+        (byte)'o', (byte)'p', (byte)'q', (byte)'r', (byte)'s', (byte)'t', (byte)'u',
+        (byte)'v',
+        (byte)'w', (byte)'x', (byte)'y', (byte)'z',
+        (byte)'0', (byte)'1', (byte)'2', (byte)'3', (byte)'4', (byte)'5', (byte)'6',
+        (byte)'7', (byte)'8', (byte)'9',
+        (byte)'+', (byte)'/'
+    };
 
     protected byte    padding = (byte)'=';
     
@@ -31,6 +34,11 @@ public class Base64Encoder
 
     protected void initialiseDecodingTable()
     {
+        for (int i = 0; i < decodingTable.length; i++)
+        {
+            decodingTable[i] = (byte)0xff;
+        }
+        
         for (int i = 0; i < encodingTable.length; i++)
         {
             decodingTable[encodingTable[i]] = (byte)i;
@@ -163,6 +171,11 @@ public class Base64Encoder
             
             b4 = decodingTable[data[i++]];
 
+            if ((b1 | b2 | b3 | b4) < 0)
+            {
+                throw new IOException("invalid characters encountered in base64 data");
+            }
+            
             out.write((b1 << 2) | (b2 >> 4));
             out.write((b2 << 4) | (b3 >> 2));
             out.write((b3 << 6) | b4);
@@ -233,6 +246,11 @@ public class Base64Encoder
             
             b4 = decodingTable[data.charAt(i++)];
 
+            if ((b1 | b2 | b3 | b4) < 0)
+            {
+                throw new IOException("invalid characters encountered in base64 data");
+            }
+               
             out.write((b1 << 2) | (b2 >> 4));
             out.write((b2 << 4) | (b3 >> 2));
             out.write((b3 << 6) | b4);
@@ -254,8 +272,18 @@ public class Base64Encoder
         
         if (c3 == padding)
         {
+            if (c4 != padding)
+            {
+                throw new IOException("invalid characters encountered at end of base64 data");
+            }
+            
             b1 = decodingTable[c1];
             b2 = decodingTable[c2];
+
+            if ((b1 | b2) < 0)
+            {
+                throw new IOException("invalid characters encountered at end of base64 data");
+            }
 
             out.write((b1 << 2) | (b2 >> 4));
             
@@ -267,6 +295,11 @@ public class Base64Encoder
             b2 = decodingTable[c2];
             b3 = decodingTable[c3];
 
+            if ((b1 | b2 | b3) < 0)
+            {
+                throw new IOException("invalid characters encountered at end of base64 data");
+            }
+            
             out.write((b1 << 2) | (b2 >> 4));
             out.write((b2 << 4) | (b3 >> 2));
             
@@ -279,6 +312,11 @@ public class Base64Encoder
             b3 = decodingTable[c3];
             b4 = decodingTable[c4];
 
+            if ((b1 | b2 | b3 | b4) < 0)
+            {
+                throw new IOException("invalid characters encountered at end of base64 data");
+            }
+            
             out.write((b1 << 2) | (b2 >> 4));
             out.write((b2 << 4) | (b3 >> 2));
             out.write((b3 << 6) | b4);

@@ -3,6 +3,8 @@ package org.bouncycastle.tsp.cms;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.cms.Evidence;
@@ -87,7 +89,7 @@ class TimeStampDataUtil
             token = this.getTimeStampToken(timeStamps[0]);
 
             TimeStampTokenInfo info = token.getTimeStampInfo();
-            String algOID = info.getMessageImprintAlgOID();
+            ASN1ObjectIdentifier algOID = info.getMessageImprintAlgOID();
 
             DigestCalculator calc = calculatorProvider.get(new AlgorithmIdentifier(algOID));
 
@@ -127,7 +129,7 @@ class TimeStampDataUtil
 
         try
         {
-            out.write(tspToken.getDEREncoded());
+            out.write(tspToken.getEncoded(ASN1Encoding.DER));
 
             out.close();
 
@@ -157,7 +159,7 @@ class TimeStampDataUtil
                     TimeStampTokenInfo info = token.getTimeStampInfo();
                     DigestCalculator calculator = calculatorProvider.get(info.getHashAlgorithm());
 
-                    calculator.getOutputStream().write(timeStamps[i - 1].getDEREncoded());
+                    calculator.getOutputStream().write(timeStamps[i - 1].getEncoded(ASN1Encoding.DER));
 
                     currentDigest = calculator.getDigest();
                 }
@@ -200,7 +202,7 @@ class TimeStampDataUtil
                     TimeStampTokenInfo info = token.getTimeStampInfo();
                     DigestCalculator calculator = calculatorProvider.get(info.getHashAlgorithm());
 
-                    calculator.getOutputStream().write(timeStamps[i - 1].getDEREncoded());
+                    calculator.getOutputStream().write(timeStamps[i - 1].getEncoded(ASN1Encoding.DER));
 
                     currentDigest = calculator.getDigest();
                 }

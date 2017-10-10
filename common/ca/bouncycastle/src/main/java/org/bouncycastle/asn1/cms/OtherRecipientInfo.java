@@ -2,36 +2,48 @@ package org.bouncycastle.asn1.cms;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 
+/**
+ * <a href="http://tools.ietf.org/html/rfc5652#section-6.2.5">RFC 5652</a>:
+ * Content encryption key delivery mechanisms.
+ * <pre>
+ * OtherRecipientInfo ::= SEQUENCE {
+ *    oriType OBJECT IDENTIFIER,
+ *    oriValue ANY DEFINED BY oriType }
+ * </pre>
+ */
 public class OtherRecipientInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERObjectIdentifier    oriType;
-    private DEREncodable           oriValue;
+    private ASN1ObjectIdentifier    oriType;
+    private ASN1Encodable           oriValue;
 
     public OtherRecipientInfo(
-        DERObjectIdentifier     oriType,
-        DEREncodable            oriValue)
+        ASN1ObjectIdentifier     oriType,
+        ASN1Encodable            oriValue)
     {
         this.oriType = oriType;
         this.oriValue = oriValue;
     }
-    
+
+    /**
+     * @deprecated use getInstance().
+     */
     public OtherRecipientInfo(
         ASN1Sequence seq)
     {
-        oriType = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+        oriType = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
         oriValue = seq.getObjectAt(1);
     }
 
     /**
-     * return a OtherRecipientInfo object from a tagged object.
+     * Return a OtherRecipientInfo object from a tagged object.
      *
      * @param obj the tagged object holding the object we want.
      * @param explicit true if the object is meant to be explicitly
@@ -47,7 +59,14 @@ public class OtherRecipientInfo
     }
     
     /**
-     * return a OtherRecipientInfo object from the given object.
+     * Return a OtherRecipientInfo object from the given object.
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> null &rarr; null
+     * <li> {@link PasswordRecipientInfo} object
+     * <li> {@link org.bouncycastle.asn1.ASN1Sequence#getInstance(java.lang.Object) ASN1Sequence} input formats with OtherRecipientInfo structure inside
+     * </ul>
      *
      * @param obj the object we want converted.
      * @exception IllegalArgumentException if the object cannot be converted.
@@ -55,38 +74,33 @@ public class OtherRecipientInfo
     public static OtherRecipientInfo getInstance(
         Object obj)
     {
-        if (obj == null || obj instanceof OtherRecipientInfo)
+        if (obj instanceof OtherRecipientInfo)
         {
             return (OtherRecipientInfo)obj;
         }
         
-        if (obj instanceof ASN1Sequence)
+        if (obj != null)
         {
-            return new OtherRecipientInfo((ASN1Sequence)obj);
+            return new OtherRecipientInfo(ASN1Sequence.getInstance(obj));
         }
         
-        throw new IllegalArgumentException("Invalid OtherRecipientInfo: " + obj.getClass().getName());
+        return null;
     }
 
-    public DERObjectIdentifier getType()
+    public ASN1ObjectIdentifier getType()
     {
         return oriType;
     }
 
-    public DEREncodable getValue()
+    public ASN1Encodable getValue()
     {
         return oriValue;
     }
 
     /** 
      * Produce an object suitable for an ASN1OutputStream.
-     * <pre>
-     * OtherRecipientInfo ::= SEQUENCE {
-     *    oriType OBJECT IDENTIFIER,
-     *    oriValue ANY DEFINED BY oriType }
-     * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

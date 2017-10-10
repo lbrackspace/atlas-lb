@@ -1,15 +1,10 @@
 package org.bouncycastle.jce;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.nist.NISTNamedCurves;
-import org.bouncycastle.asn1.sec.SECNamedCurves;
-import org.bouncycastle.asn1.teletrust.TeleTrusTNamedCurves;
-import org.bouncycastle.asn1.x9.X962NamedCurves;
+import java.util.Enumeration;
+
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-
-import java.util.Enumeration;
-import java.util.Vector;
 
 /**
  * a table of locally supported named curves.
@@ -26,56 +21,35 @@ public class ECNamedCurveTable
     public static ECNamedCurveParameterSpec getParameterSpec(
         String  name)
     {
-        X9ECParameters  ecP = X962NamedCurves.getByName(name);
+        X9ECParameters  ecP = org.bouncycastle.crypto.ec.CustomNamedCurves.getByName(name);
         if (ecP == null)
         {
             try
             {
-                ecP = X962NamedCurves.getByOID(new DERObjectIdentifier(name));
+                ecP = org.bouncycastle.crypto.ec.CustomNamedCurves.getByOID(new ASN1ObjectIdentifier(name));
             }
             catch (IllegalArgumentException e)
             {
                 // ignore - not an oid
             }
-        }
-        
-        if (ecP == null)
-        {
-            ecP = SECNamedCurves.getByName(name);
+
             if (ecP == null)
             {
-                try
+                ecP = org.bouncycastle.asn1.x9.ECNamedCurveTable.getByName(name);
+                if (ecP == null)
                 {
-                    ecP = SECNamedCurves.getByOID(new DERObjectIdentifier(name));
-                }
-                catch (IllegalArgumentException e)
-                {
-                    // ignore - not an oid
+                    try
+                    {
+                        ecP = org.bouncycastle.asn1.x9.ECNamedCurveTable.getByOID(new ASN1ObjectIdentifier(name));
+                    }
+                    catch (IllegalArgumentException e)
+                    {
+                        // ignore - not an oid
+                    }
                 }
             }
         }
 
-        if (ecP == null)
-        {
-            ecP = TeleTrusTNamedCurves.getByName(name);
-            if (ecP == null)
-            {
-                try
-                {
-                    ecP = TeleTrusTNamedCurves.getByOID(new DERObjectIdentifier(name));
-                }
-                catch (IllegalArgumentException e)
-                {
-                    // ignore - not an oid
-                }
-            }
-        }
-
-        if (ecP == null)
-        {
-            ecP = NISTNamedCurves.getByName(name);
-        }
-        
         if (ecP == null)
         {
             return null;
@@ -97,23 +71,6 @@ public class ECNamedCurveTable
      */
     public static Enumeration getNames()
     {
-        Vector v = new Vector();
-        
-        addEnumeration(v, X962NamedCurves.getNames());
-        addEnumeration(v, SECNamedCurves.getNames());
-        addEnumeration(v, NISTNamedCurves.getNames());
-        addEnumeration(v, TeleTrusTNamedCurves.getNames());
-
-        return v.elements();
-    }
-
-    private static void addEnumeration(
-        Vector v, 
-        Enumeration e)
-    {
-        while (e.hasMoreElements())
-        {
-            v.addElement(e.nextElement());
-        }
+        return org.bouncycastle.asn1.x9.ECNamedCurveTable.getNames();
     }
 }

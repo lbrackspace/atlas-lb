@@ -3,7 +3,9 @@ package org.bouncycastle.crypto.engines;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.OutputLengthException;
 import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.util.Pack;
 
 /**
  * an implementation of the AES (Rijndael), from FIPS-197.
@@ -110,9 +112,7 @@ public class AESLightEngine
          0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36, 0x6c, 0xd8, 0xab, 0x4d, 0x9a,
          0x2f, 0x5e, 0xbc, 0x63, 0xc6, 0x97, 0x35, 0x6a, 0xd4, 0xb3, 0x7d, 0xfa, 0xef, 0xc5, 0x91 };
 
-    private int shift(
-        int     r,
-        int     shift)
+    private static int shift(int r, int shift)
     {
         return (r >>> shift) | (r << -shift);
     }
@@ -122,10 +122,20 @@ public class AESLightEngine
     private static final int m1 = 0x80808080;
     private static final int m2 = 0x7f7f7f7f;
     private static final int m3 = 0x0000001b;
+    private static final int m4 = 0xC0C0C0C0;
+    private static final int m5 = 0x3f3f3f3f;
 
-    private int FFmulX(int x)
+    private static int FFmulX(int x)
     {
         return (((x & m2) << 1) ^ (((x & m1) >>> 7) * m3));
+    }
+
+    private static int FFmulX2(int x)
+    {
+        int t0  = (x & m5) << 2;
+        int t1  = (x & m4);
+            t1 ^= (t1 >>> 1);
+        return t0 ^ (t1 >>> 2) ^ (t1 >>> 5);
     }
 
     /* 
@@ -138,24 +148,27 @@ public class AESLightEngine
 
     */
 
-    private int mcol(int x)
+    private static int mcol(int x)
     {
-        int f2 = FFmulX(x);
-        return f2 ^ shift(x ^ f2, 8) ^ shift(x, 16) ^ shift(x, 24);
+        int t0, t1;
+        t0  = shift(x, 8);
+        t1  = x ^ t0;
+        return shift(t1, 16) ^ t0 ^ FFmulX(t1);
     }
 
-    private int inv_mcol(int x)
+    private static int inv_mcol(int x)
     {
-        int f2 = FFmulX(x);
-        int f4 = FFmulX(f2);
-        int f8 = FFmulX(f4);
-        int f9 = x ^ f8;
-        
-        return f2 ^ f4 ^ f8 ^ shift(f2 ^ f9, 8) ^ shift(f4 ^ f9, 16) ^ shift(f9, 24);
+        int t0, t1;
+        t0  = x;
+        t1  = t0 ^ shift(t0, 8);
+        t0 ^= FFmulX(t1);
+        t1 ^= FFmulX2(t0);
+        t0 ^= t1 ^ shift(t1, 16);
+        return t0;
     }
 
 
-    private int subWord(int x)
+    private static int subWord(int x)
     {
         return (S[x&255]&255 | ((S[(x>>8)&255]&255)<<8) | ((S[(x>>16)&255]&255)<<16) | S[(x>>24)&255]<<24);
     }
@@ -166,59 +179,128 @@ public class AESLightEngine
      * AES specified a fixed block size of 128 bits and key sizes 128/192/256 bits
      * This code is written assuming those are the only possible values
      */
-    private int[][] generateWorkingKey(
-                                    byte[] key,
-                                    boolean forEncryption)
+    private int[][] generateWorkingKey(byte[] key, boolean forEncryption)
     {
-        int         KC = key.length / 4;  // key length in words
-        int         t;
-        
-        if (((KC != 4) && (KC != 6) && (KC != 8)) || ((KC * 4) != key.length))
+        int keyLen = key.length;
+        if (keyLen < 16 || keyLen > 32 || (keyLen & 7) != 0)
         {
             throw new IllegalArgumentException("Key length not 128/192/256 bits.");
         }
 
+        int KC = keyLen >> 2;
         ROUNDS = KC + 6;  // This is not always true for the generalized Rijndael that allows larger block sizes
         int[][] W = new int[ROUNDS+1][4];   // 4 words in a block
-        
-        //
-        // copy the key into the round key array
-        //
-        
-        t = 0;
-        int i = 0;
-        while (i < key.length)
+
+        switch (KC)
+        {
+        case 4:
+        {
+            int t0 = Pack.littleEndianToInt(key,  0); W[0][0] = t0;
+            int t1 = Pack.littleEndianToInt(key,  4); W[0][1] = t1;
+            int t2 = Pack.littleEndianToInt(key,  8); W[0][2] = t2;
+            int t3 = Pack.littleEndianToInt(key, 12); W[0][3] = t3;
+
+            for (int i = 1; i <= 10; ++i)
             {
-                W[t >> 2][t & 3] = (key[i]&0xff) | ((key[i+1]&0xff) << 8) | ((key[i+2]&0xff) << 16) | (key[i+3] << 24);
-                i+=4;
-                t++;
+                int u = subWord(shift(t3, 8)) ^ rcon[i - 1];
+                t0 ^= u;  W[i][0] = t0;
+                t1 ^= t0; W[i][1] = t1;
+                t2 ^= t1; W[i][2] = t2;
+                t3 ^= t2; W[i][3] = t3;
             }
-        
-        //
-        // while not enough round key material calculated
-        // calculate new values
-        //
-        int k = (ROUNDS + 1) << 2;
-        for (i = KC; (i < k); i++)
+
+            break;
+        }
+        case 6:
+        {
+            int t0 = Pack.littleEndianToInt(key,  0); W[0][0] = t0;
+            int t1 = Pack.littleEndianToInt(key,  4); W[0][1] = t1;
+            int t2 = Pack.littleEndianToInt(key,  8); W[0][2] = t2;
+            int t3 = Pack.littleEndianToInt(key, 12); W[0][3] = t3;
+            int t4 = Pack.littleEndianToInt(key, 16); W[1][0] = t4;
+            int t5 = Pack.littleEndianToInt(key, 20); W[1][1] = t5;
+
+            int rcon = 1;
+            int u = subWord(shift(t5, 8)) ^ rcon; rcon <<= 1;
+            t0 ^= u;  W[1][2] = t0;
+            t1 ^= t0; W[1][3] = t1;
+            t2 ^= t1; W[2][0] = t2;
+            t3 ^= t2; W[2][1] = t3;
+            t4 ^= t3; W[2][2] = t4;
+            t5 ^= t4; W[2][3] = t5;
+
+            for (int i = 3; i < 12; i += 3)
             {
-                int temp = W[(i-1)>>2][(i-1)&3];
-                if ((i % KC) == 0)
-                {
-                    temp = subWord(shift(temp, 8)) ^ rcon[(i / KC)-1];
-                }
-                else if ((KC > 6) && ((i % KC) == 4))
-                {
-                    temp = subWord(temp);
-                }
-                
-                W[i>>2][i&3] = W[(i - KC)>>2][(i-KC)&3] ^ temp;
+                u = subWord(shift(t5, 8)) ^ rcon; rcon <<= 1;
+                t0 ^= u;  W[i    ][0] = t0;
+                t1 ^= t0; W[i    ][1] = t1;
+                t2 ^= t1; W[i    ][2] = t2;
+                t3 ^= t2; W[i    ][3] = t3;
+                t4 ^= t3; W[i + 1][0] = t4;
+                t5 ^= t4; W[i + 1][1] = t5;
+                u = subWord(shift(t5, 8)) ^ rcon; rcon <<= 1;
+                t0 ^= u;  W[i + 1][2] = t0;
+                t1 ^= t0; W[i + 1][3] = t1;
+                t2 ^= t1; W[i + 2][0] = t2;
+                t3 ^= t2; W[i + 2][1] = t3;
+                t4 ^= t3; W[i + 2][2] = t4;
+                t5 ^= t4; W[i + 2][3] = t5;
             }
+
+            u = subWord(shift(t5, 8)) ^ rcon;
+            t0 ^= u;  W[12][0] = t0;
+            t1 ^= t0; W[12][1] = t1;
+            t2 ^= t1; W[12][2] = t2;
+            t3 ^= t2; W[12][3] = t3;
+
+            break;
+        }
+        case 8:
+        {
+            int t0 = Pack.littleEndianToInt(key,  0); W[0][0] = t0;
+            int t1 = Pack.littleEndianToInt(key,  4); W[0][1] = t1;
+            int t2 = Pack.littleEndianToInt(key,  8); W[0][2] = t2;
+            int t3 = Pack.littleEndianToInt(key, 12); W[0][3] = t3;
+            int t4 = Pack.littleEndianToInt(key, 16); W[1][0] = t4;
+            int t5 = Pack.littleEndianToInt(key, 20); W[1][1] = t5;
+            int t6 = Pack.littleEndianToInt(key, 24); W[1][2] = t6;
+            int t7 = Pack.littleEndianToInt(key, 28); W[1][3] = t7;
+
+            int u, rcon = 1;
+
+            for (int i = 2; i < 14; i += 2)
+            {
+                u = subWord(shift(t7, 8)) ^ rcon; rcon <<= 1;
+                t0 ^= u;  W[i    ][0] = t0;
+                t1 ^= t0; W[i    ][1] = t1;
+                t2 ^= t1; W[i    ][2] = t2;
+                t3 ^= t2; W[i    ][3] = t3;
+                u = subWord(t3);
+                t4 ^= u;  W[i + 1][0] = t4;
+                t5 ^= t4; W[i + 1][1] = t5;
+                t6 ^= t5; W[i + 1][2] = t6;
+                t7 ^= t6; W[i + 1][3] = t7;
+            }
+
+            u = subWord(shift(t7, 8)) ^ rcon;
+            t0 ^= u;  W[14][0] = t0;
+            t1 ^= t0; W[14][1] = t1;
+            t2 ^= t1; W[14][2] = t2;
+            t3 ^= t2; W[14][3] = t3;
+
+            break;
+        }
+        default:
+        {
+            throw new IllegalStateException("Should never get here");
+        }
+        }
 
         if (!forEncryption)
         {
             for (int j = 1; j < ROUNDS; j++)
             {
-                for (i = 0; i < 4; i++) 
+                for (int i = 0; i < 4; i++)
                 {
                     W[j][i] = inv_mcol(W[j][i]);
                 }
@@ -292,7 +374,7 @@ public class AESLightEngine
 
         if ((outOff + (32 / 2)) > out.length)
         {
-            throw new DataLengthException("output buffer too short");
+            throw new OutputLengthException("output buffer too short");
         }
 
         if (forEncryption)
@@ -371,70 +453,65 @@ public class AESLightEngine
 
     private void encryptBlock(int[][] KW)
     {
-        int r, r0, r1, r2, r3;
+        int t0 = this.C0 ^ KW[0][0];
+        int t1 = this.C1 ^ KW[0][1];
+        int t2 = this.C2 ^ KW[0][2];
 
-        C0 ^= KW[0][0];
-        C1 ^= KW[0][1];
-        C2 ^= KW[0][2];
-        C3 ^= KW[0][3];
-
-        for (r = 1; r < ROUNDS - 1;)
+        int r = 1, r0, r1, r2, r3 = this.C3 ^ KW[0][3];
+        while (r < ROUNDS - 1)
         {
-            r0 = mcol((S[C0&255]&255) ^ ((S[(C1>>8)&255]&255)<<8) ^ ((S[(C2>>16)&255]&255)<<16) ^ (S[(C3>>24)&255]<<24)) ^ KW[r][0];
-            r1 = mcol((S[C1&255]&255) ^ ((S[(C2>>8)&255]&255)<<8) ^ ((S[(C3>>16)&255]&255)<<16) ^ (S[(C0>>24)&255]<<24)) ^ KW[r][1];
-            r2 = mcol((S[C2&255]&255) ^ ((S[(C3>>8)&255]&255)<<8) ^ ((S[(C0>>16)&255]&255)<<16) ^ (S[(C1>>24)&255]<<24)) ^ KW[r][2];
-            r3 = mcol((S[C3&255]&255) ^ ((S[(C0>>8)&255]&255)<<8) ^ ((S[(C1>>16)&255]&255)<<16) ^ (S[(C2>>24)&255]<<24)) ^ KW[r++][3];
-            C0 = mcol((S[r0&255]&255) ^ ((S[(r1>>8)&255]&255)<<8) ^ ((S[(r2>>16)&255]&255)<<16) ^ (S[(r3>>24)&255]<<24)) ^ KW[r][0];
-            C1 = mcol((S[r1&255]&255) ^ ((S[(r2>>8)&255]&255)<<8) ^ ((S[(r3>>16)&255]&255)<<16) ^ (S[(r0>>24)&255]<<24)) ^ KW[r][1];
-            C2 = mcol((S[r2&255]&255) ^ ((S[(r3>>8)&255]&255)<<8) ^ ((S[(r0>>16)&255]&255)<<16) ^ (S[(r1>>24)&255]<<24)) ^ KW[r][2];
-            C3 = mcol((S[r3&255]&255) ^ ((S[(r0>>8)&255]&255)<<8) ^ ((S[(r1>>16)&255]&255)<<16) ^ (S[(r2>>24)&255]<<24)) ^ KW[r++][3];
+            r0 = mcol((S[t0&255]&255) ^ ((S[(t1>>8)&255]&255)<<8) ^ ((S[(t2>>16)&255]&255)<<16) ^ (S[(r3>>24)&255]<<24)) ^ KW[r][0];
+            r1 = mcol((S[t1&255]&255) ^ ((S[(t2>>8)&255]&255)<<8) ^ ((S[(r3>>16)&255]&255)<<16) ^ (S[(t0>>24)&255]<<24)) ^ KW[r][1];
+            r2 = mcol((S[t2&255]&255) ^ ((S[(r3>>8)&255]&255)<<8) ^ ((S[(t0>>16)&255]&255)<<16) ^ (S[(t1>>24)&255]<<24)) ^ KW[r][2];
+            r3 = mcol((S[r3&255]&255) ^ ((S[(t0>>8)&255]&255)<<8) ^ ((S[(t1>>16)&255]&255)<<16) ^ (S[(t2>>24)&255]<<24)) ^ KW[r++][3];
+            t0 = mcol((S[r0&255]&255) ^ ((S[(r1>>8)&255]&255)<<8) ^ ((S[(r2>>16)&255]&255)<<16) ^ (S[(r3>>24)&255]<<24)) ^ KW[r][0];
+            t1 = mcol((S[r1&255]&255) ^ ((S[(r2>>8)&255]&255)<<8) ^ ((S[(r3>>16)&255]&255)<<16) ^ (S[(r0>>24)&255]<<24)) ^ KW[r][1];
+            t2 = mcol((S[r2&255]&255) ^ ((S[(r3>>8)&255]&255)<<8) ^ ((S[(r0>>16)&255]&255)<<16) ^ (S[(r1>>24)&255]<<24)) ^ KW[r][2];
+            r3 = mcol((S[r3&255]&255) ^ ((S[(r0>>8)&255]&255)<<8) ^ ((S[(r1>>16)&255]&255)<<16) ^ (S[(r2>>24)&255]<<24)) ^ KW[r++][3];
         }
 
-        r0 = mcol((S[C0&255]&255) ^ ((S[(C1>>8)&255]&255)<<8) ^ ((S[(C2>>16)&255]&255)<<16) ^ (S[(C3>>24)&255]<<24)) ^ KW[r][0];
-        r1 = mcol((S[C1&255]&255) ^ ((S[(C2>>8)&255]&255)<<8) ^ ((S[(C3>>16)&255]&255)<<16) ^ (S[(C0>>24)&255]<<24)) ^ KW[r][1];
-        r2 = mcol((S[C2&255]&255) ^ ((S[(C3>>8)&255]&255)<<8) ^ ((S[(C0>>16)&255]&255)<<16) ^ (S[(C1>>24)&255]<<24)) ^ KW[r][2];
-        r3 = mcol((S[C3&255]&255) ^ ((S[(C0>>8)&255]&255)<<8) ^ ((S[(C1>>16)&255]&255)<<16) ^ (S[(C2>>24)&255]<<24)) ^ KW[r++][3];
+        r0 = mcol((S[t0&255]&255) ^ ((S[(t1>>8)&255]&255)<<8) ^ ((S[(t2>>16)&255]&255)<<16) ^ (S[(r3>>24)&255]<<24)) ^ KW[r][0];
+        r1 = mcol((S[t1&255]&255) ^ ((S[(t2>>8)&255]&255)<<8) ^ ((S[(r3>>16)&255]&255)<<16) ^ (S[(t0>>24)&255]<<24)) ^ KW[r][1];
+        r2 = mcol((S[t2&255]&255) ^ ((S[(r3>>8)&255]&255)<<8) ^ ((S[(t0>>16)&255]&255)<<16) ^ (S[(t1>>24)&255]<<24)) ^ KW[r][2];
+        r3 = mcol((S[r3&255]&255) ^ ((S[(t0>>8)&255]&255)<<8) ^ ((S[(t1>>16)&255]&255)<<16) ^ (S[(t2>>24)&255]<<24)) ^ KW[r++][3];
 
         // the final round is a simple function of S
 
-        C0 = (S[r0&255]&255) ^ ((S[(r1>>8)&255]&255)<<8) ^ ((S[(r2>>16)&255]&255)<<16) ^ (S[(r3>>24)&255]<<24) ^ KW[r][0];
-        C1 = (S[r1&255]&255) ^ ((S[(r2>>8)&255]&255)<<8) ^ ((S[(r3>>16)&255]&255)<<16) ^ (S[(r0>>24)&255]<<24) ^ KW[r][1];
-        C2 = (S[r2&255]&255) ^ ((S[(r3>>8)&255]&255)<<8) ^ ((S[(r0>>16)&255]&255)<<16) ^ (S[(r1>>24)&255]<<24) ^ KW[r][2];
-        C3 = (S[r3&255]&255) ^ ((S[(r0>>8)&255]&255)<<8) ^ ((S[(r1>>16)&255]&255)<<16) ^ (S[(r2>>24)&255]<<24) ^ KW[r][3];
-
+        this.C0 = (S[r0&255]&255) ^ ((S[(r1>>8)&255]&255)<<8) ^ ((S[(r2>>16)&255]&255)<<16) ^ (S[(r3>>24)&255]<<24) ^ KW[r][0];
+        this.C1 = (S[r1&255]&255) ^ ((S[(r2>>8)&255]&255)<<8) ^ ((S[(r3>>16)&255]&255)<<16) ^ (S[(r0>>24)&255]<<24) ^ KW[r][1];
+        this.C2 = (S[r2&255]&255) ^ ((S[(r3>>8)&255]&255)<<8) ^ ((S[(r0>>16)&255]&255)<<16) ^ (S[(r1>>24)&255]<<24) ^ KW[r][2];
+        this.C3 = (S[r3&255]&255) ^ ((S[(r0>>8)&255]&255)<<8) ^ ((S[(r1>>16)&255]&255)<<16) ^ (S[(r2>>24)&255]<<24) ^ KW[r][3];
     }
 
     private void decryptBlock(int[][] KW)
     {
-        int r, r0, r1, r2, r3;
+        int t0 = this.C0 ^ KW[ROUNDS][0];
+        int t1 = this.C1 ^ KW[ROUNDS][1];
+        int t2 = this.C2 ^ KW[ROUNDS][2];
 
-        C0 ^= KW[ROUNDS][0];
-        C1 ^= KW[ROUNDS][1];
-        C2 ^= KW[ROUNDS][2];
-        C3 ^= KW[ROUNDS][3];
-
-        for (r = ROUNDS-1; r>1;)
+        int r = ROUNDS - 1, r0, r1, r2, r3 = this.C3 ^ KW[ROUNDS][3];
+        while (r > 1)
         {
-            r0 = inv_mcol((Si[C0&255]&255) ^ ((Si[(C3>>8)&255]&255)<<8) ^ ((Si[(C2>>16)&255]&255)<<16) ^ (Si[(C1>>24)&255]<<24)) ^ KW[r][0];
-            r1 = inv_mcol((Si[C1&255]&255) ^ ((Si[(C0>>8)&255]&255)<<8) ^ ((Si[(C3>>16)&255]&255)<<16) ^ (Si[(C2>>24)&255]<<24)) ^ KW[r][1];
-            r2 = inv_mcol((Si[C2&255]&255) ^ ((Si[(C1>>8)&255]&255)<<8) ^ ((Si[(C0>>16)&255]&255)<<16) ^ (Si[(C3>>24)&255]<<24)) ^ KW[r][2];
-            r3 = inv_mcol((Si[C3&255]&255) ^ ((Si[(C2>>8)&255]&255)<<8) ^ ((Si[(C1>>16)&255]&255)<<16) ^ (Si[(C0>>24)&255]<<24)) ^ KW[r--][3];
-            C0 = inv_mcol((Si[r0&255]&255) ^ ((Si[(r3>>8)&255]&255)<<8) ^ ((Si[(r2>>16)&255]&255)<<16) ^ (Si[(r1>>24)&255]<<24)) ^ KW[r][0];
-            C1 = inv_mcol((Si[r1&255]&255) ^ ((Si[(r0>>8)&255]&255)<<8) ^ ((Si[(r3>>16)&255]&255)<<16) ^ (Si[(r2>>24)&255]<<24)) ^ KW[r][1];
-            C2 = inv_mcol((Si[r2&255]&255) ^ ((Si[(r1>>8)&255]&255)<<8) ^ ((Si[(r0>>16)&255]&255)<<16) ^ (Si[(r3>>24)&255]<<24)) ^ KW[r][2];
-            C3 = inv_mcol((Si[r3&255]&255) ^ ((Si[(r2>>8)&255]&255)<<8) ^ ((Si[(r1>>16)&255]&255)<<16) ^ (Si[(r0>>24)&255]<<24)) ^ KW[r--][3];
+            r0 = inv_mcol((Si[t0&255]&255) ^ ((Si[(r3>>8)&255]&255)<<8) ^ ((Si[(t2>>16)&255]&255)<<16) ^ (Si[(t1>>24)&255]<<24)) ^ KW[r][0];
+            r1 = inv_mcol((Si[t1&255]&255) ^ ((Si[(t0>>8)&255]&255)<<8) ^ ((Si[(r3>>16)&255]&255)<<16) ^ (Si[(t2>>24)&255]<<24)) ^ KW[r][1];
+            r2 = inv_mcol((Si[t2&255]&255) ^ ((Si[(t1>>8)&255]&255)<<8) ^ ((Si[(t0>>16)&255]&255)<<16) ^ (Si[(r3>>24)&255]<<24)) ^ KW[r][2];
+            r3 = inv_mcol((Si[r3&255]&255) ^ ((Si[(t2>>8)&255]&255)<<8) ^ ((Si[(t1>>16)&255]&255)<<16) ^ (Si[(t0>>24)&255]<<24)) ^ KW[r--][3];
+            t0 = inv_mcol((Si[r0&255]&255) ^ ((Si[(r3>>8)&255]&255)<<8) ^ ((Si[(r2>>16)&255]&255)<<16) ^ (Si[(r1>>24)&255]<<24)) ^ KW[r][0];
+            t1 = inv_mcol((Si[r1&255]&255) ^ ((Si[(r0>>8)&255]&255)<<8) ^ ((Si[(r3>>16)&255]&255)<<16) ^ (Si[(r2>>24)&255]<<24)) ^ KW[r][1];
+            t2 = inv_mcol((Si[r2&255]&255) ^ ((Si[(r1>>8)&255]&255)<<8) ^ ((Si[(r0>>16)&255]&255)<<16) ^ (Si[(r3>>24)&255]<<24)) ^ KW[r][2];
+            r3 = inv_mcol((Si[r3&255]&255) ^ ((Si[(r2>>8)&255]&255)<<8) ^ ((Si[(r1>>16)&255]&255)<<16) ^ (Si[(r0>>24)&255]<<24)) ^ KW[r--][3];
         }
 
-        r0 = inv_mcol((Si[C0&255]&255) ^ ((Si[(C3>>8)&255]&255)<<8) ^ ((Si[(C2>>16)&255]&255)<<16) ^ (Si[(C1>>24)&255]<<24)) ^ KW[r][0];
-        r1 = inv_mcol((Si[C1&255]&255) ^ ((Si[(C0>>8)&255]&255)<<8) ^ ((Si[(C3>>16)&255]&255)<<16) ^ (Si[(C2>>24)&255]<<24)) ^ KW[r][1];
-        r2 = inv_mcol((Si[C2&255]&255) ^ ((Si[(C1>>8)&255]&255)<<8) ^ ((Si[(C0>>16)&255]&255)<<16) ^ (Si[(C3>>24)&255]<<24)) ^ KW[r][2];
-        r3 = inv_mcol((Si[C3&255]&255) ^ ((Si[(C2>>8)&255]&255)<<8) ^ ((Si[(C1>>16)&255]&255)<<16) ^ (Si[(C0>>24)&255]<<24)) ^ KW[r][3];
+        r0 = inv_mcol((Si[t0&255]&255) ^ ((Si[(r3>>8)&255]&255)<<8) ^ ((Si[(t2>>16)&255]&255)<<16) ^ (Si[(t1>>24)&255]<<24)) ^ KW[r][0];
+        r1 = inv_mcol((Si[t1&255]&255) ^ ((Si[(t0>>8)&255]&255)<<8) ^ ((Si[(r3>>16)&255]&255)<<16) ^ (Si[(t2>>24)&255]<<24)) ^ KW[r][1];
+        r2 = inv_mcol((Si[t2&255]&255) ^ ((Si[(t1>>8)&255]&255)<<8) ^ ((Si[(t0>>16)&255]&255)<<16) ^ (Si[(r3>>24)&255]<<24)) ^ KW[r][2];
+        r3 = inv_mcol((Si[r3&255]&255) ^ ((Si[(t2>>8)&255]&255)<<8) ^ ((Si[(t1>>16)&255]&255)<<16) ^ (Si[(t0>>24)&255]<<24)) ^ KW[r][3];
 
         // the final round's table is a simple function of Si
 
-        C0 = (Si[r0&255]&255) ^ ((Si[(r3>>8)&255]&255)<<8) ^ ((Si[(r2>>16)&255]&255)<<16) ^ (Si[(r1>>24)&255]<<24) ^ KW[0][0];
-        C1 = (Si[r1&255]&255) ^ ((Si[(r0>>8)&255]&255)<<8) ^ ((Si[(r3>>16)&255]&255)<<16) ^ (Si[(r2>>24)&255]<<24) ^ KW[0][1];
-        C2 = (Si[r2&255]&255) ^ ((Si[(r1>>8)&255]&255)<<8) ^ ((Si[(r0>>16)&255]&255)<<16) ^ (Si[(r3>>24)&255]<<24) ^ KW[0][2];
-        C3 = (Si[r3&255]&255) ^ ((Si[(r2>>8)&255]&255)<<8) ^ ((Si[(r1>>16)&255]&255)<<16) ^ (Si[(r0>>24)&255]<<24) ^ KW[0][3];
+        this.C0 = (Si[r0&255]&255) ^ ((Si[(r3>>8)&255]&255)<<8) ^ ((Si[(r2>>16)&255]&255)<<16) ^ (Si[(r1>>24)&255]<<24) ^ KW[0][0];
+        this.C1 = (Si[r1&255]&255) ^ ((Si[(r0>>8)&255]&255)<<8) ^ ((Si[(r3>>16)&255]&255)<<16) ^ (Si[(r2>>24)&255]<<24) ^ KW[0][1];
+        this.C2 = (Si[r2&255]&255) ^ ((Si[(r1>>8)&255]&255)<<8) ^ ((Si[(r0>>16)&255]&255)<<16) ^ (Si[(r3>>24)&255]<<24) ^ KW[0][2];
+        this.C3 = (Si[r3&255]&255) ^ ((Si[(r2>>8)&255]&255)<<8) ^ ((Si[(r1>>16)&255]&255)<<16) ^ (Si[(r0>>24)&255]<<24) ^ KW[0][3];
     }
 }

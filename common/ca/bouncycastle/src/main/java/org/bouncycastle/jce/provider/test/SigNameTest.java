@@ -28,6 +28,12 @@ public class SigNameTest
         checkName("SHA256withRSA");
         checkName("SHA384withRSA");
         checkName("SHA512withRSA");
+
+        checkName("SHA3-224withRSA");
+        checkName("SHA3-256withRSA");
+        checkName("SHA3-384withRSA");
+        checkName("SHA3-512withRSA");
+
         checkName("MD2withRSA");
         checkName("MD4withRSA");
         checkName("MD5withRSA");
@@ -66,6 +72,15 @@ public class SigNameTest
         checkName("SHA1withRSA/ISO9796-2");
         checkName("MD5withRSA/ISO9796-2");
         checkName("RIPEMD160withRSA/ISO9796-2");
+
+        checkName("RIPEMD128withRSA/X9.31");
+        checkName("RIPEMD160withRSA/X9.31");
+        checkName("SHA1withRSA/X9.31");
+        checkName("SHA224withRSA/X9.31");
+        checkName("SHA256withRSA/X9.31");
+        checkName("SHA384withRSA/X9.31");
+        checkName("SHA512withRSA/X9.31");
+        checkName("WhirlpoolwithRSA/X9.31");
     }
 
     public String getName()

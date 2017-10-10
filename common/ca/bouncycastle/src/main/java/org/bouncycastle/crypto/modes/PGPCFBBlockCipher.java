@@ -3,6 +3,7 @@ package org.bouncycastle.crypto.modes;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.OutputLengthException;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
 /**
@@ -188,7 +189,7 @@ public class PGPCFBBlockCipher
     /**
      * Encrypt one byte of data according to CFB mode.
      * @param data the byte to encrypt
-     * @param where am i in the current block, determines when to resync the block
+     * @param blockOff where am i in the current block, determines when to resync the block
      * @returns the encrypted byte
      */
     private byte encryptByte(byte data, int blockOff)
@@ -220,13 +221,13 @@ public class PGPCFBBlockCipher
             throw new DataLengthException("input buffer too short");
         }
 
-        if ((outOff + blockSize) > out.length)
-        {
-            throw new DataLengthException("output buffer too short");
-        }
-        
         if (count == 0)
         {
+            if ((outOff + 2 * blockSize + 2) > out.length)
+            {
+                throw new OutputLengthException("output buffer too short");
+            }
+
             cipher.processBlock(FR, 0, FRE, 0);
 
             for (int n = 0; n < blockSize; n++) 
@@ -258,6 +259,11 @@ public class PGPCFBBlockCipher
         }
         else if (count >= blockSize + 2)
         {
+            if ((outOff + blockSize) > out.length)
+            {
+                throw new OutputLengthException("output buffer too short");
+            }
+
             cipher.processBlock(FR, 0, FRE, 0);
 
             for (int n = 0; n < blockSize; n++) 
@@ -294,10 +300,9 @@ public class PGPCFBBlockCipher
         {
             throw new DataLengthException("input buffer too short");
         }
-
         if ((outOff + blockSize) > out.length)
         {
-            throw new DataLengthException("output buffer too short");
+            throw new OutputLengthException("output buffer too short");
         }
         
         if (count == 0)
@@ -383,10 +388,9 @@ public class PGPCFBBlockCipher
         {
             throw new DataLengthException("input buffer too short");
         }
-
         if ((outOff + blockSize) > out.length)
         {
-            throw new DataLengthException("output buffer too short");
+            throw new OutputLengthException("output buffer too short");
         }
         
         cipher.processBlock(FR, 0, FRE, 0);
@@ -427,10 +431,9 @@ public class PGPCFBBlockCipher
         {
             throw new DataLengthException("input buffer too short");
         }
-
         if ((outOff + blockSize) > out.length)
         {
-            throw new DataLengthException("output buffer too short");
+            throw new OutputLengthException("output buffer too short");
         }
         
         cipher.processBlock(FR, 0, FRE, 0);

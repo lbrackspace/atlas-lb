@@ -1,122 +1,30 @@
 package org.bouncycastle.asn1;
 
-import java.io.IOException;
 import java.math.BigInteger;
 
-import org.bouncycastle.util.Arrays;
-
+/**
+ * @deprecated  Use ASN1Integer instead of this,
+ */
 public class DERInteger
-    extends ASN1Object
+    extends ASN1Integer
 {
-    byte[]      bytes;
-
     /**
-     * return an integer from the passed in object
+     * Constructor from a byte array containing a signed representation of the number.
      *
-     * @exception IllegalArgumentException if the object cannot be converted.
+     * @param bytes a byte array containing the signed number.A copy is made of the byte array.
      */
-    public static DERInteger getInstance(
-        Object  obj)
+    public DERInteger(byte[] bytes)
     {
-        if (obj == null || obj instanceof DERInteger)
-        {
-            return (DERInteger)obj;
-        }
-
-        throw new IllegalArgumentException("illegal object in getInstance: " + obj.getClass().getName());
+        super(bytes, true);
     }
 
-    /**
-     * return an Integer from a tagged object.
-     *
-     * @param obj the tagged object holding the object we want
-     * @param explicit true if the object is meant to be explicitly
-     *              tagged false otherwise.
-     * @exception IllegalArgumentException if the tagged object cannot
-     *               be converted.
-     */
-    public static DERInteger getInstance(
-        ASN1TaggedObject obj,
-        boolean          explicit)
+    public DERInteger(BigInteger value)
     {
-        DERObject o = obj.getObject();
-
-        if (explicit || o instanceof DERInteger)
-        {
-            return getInstance(o);
-        }
-        else
-        {
-            return new ASN1Integer(ASN1OctetString.getInstance(obj.getObject()).getOctets());
-        }
+        super(value);
     }
 
-    public DERInteger(
-        int         value)
+    public DERInteger(long value)
     {
-        bytes = BigInteger.valueOf(value).toByteArray();
-    }
-
-    public DERInteger(
-        BigInteger   value)
-    {
-        bytes = value.toByteArray();
-    }
-
-    public DERInteger(
-        byte[]   bytes)
-    {
-        this.bytes = bytes;
-    }
-
-    public BigInteger getValue()
-    {
-        return new BigInteger(bytes);
-    }
-
-    /**
-     * in some cases positive values get crammed into a space,
-     * that's not quite big enough...
-     */
-    public BigInteger getPositiveValue()
-    {
-        return new BigInteger(1, bytes);
-    }
-
-    void encode(
-        DEROutputStream out)
-        throws IOException
-    {
-        out.writeEncoded(INTEGER, bytes);
-    }
-    
-    public int hashCode()
-    {
-         int     value = 0;
- 
-         for (int i = 0; i != bytes.length; i++)
-         {
-             value ^= (bytes[i] & 0xff) << (i % 4);
-         }
- 
-         return value;
-    }
-
-    boolean asn1Equals(
-        DERObject  o)
-    {
-        if (!(o instanceof DERInteger))
-        {
-            return false;
-        }
-
-        DERInteger other = (DERInteger)o;
-
-        return Arrays.areEqual(bytes, other.bytes);
-    }
-
-    public String toString()
-    {
-      return getValue().toString();
+        super(value);
     }
 }

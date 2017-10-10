@@ -14,14 +14,19 @@ import javax.crypto.SecretKey;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.crmf.CRMFException;
-import org.bouncycastle.jcajce.DefaultJcaJceHelper;
-import org.bouncycastle.jcajce.NamedJcaJceHelper;
-import org.bouncycastle.jcajce.ProviderJcaJceHelper;
+import org.bouncycastle.jcajce.util.DefaultJcaJceHelper;
+import org.bouncycastle.jcajce.util.NamedJcaJceHelper;
+import org.bouncycastle.jcajce.util.ProviderJcaJceHelper;
+import org.bouncycastle.operator.DefaultSecretKeySizeProvider;
 import org.bouncycastle.operator.GenericKey;
 import org.bouncycastle.operator.OutputEncryptor;
+import org.bouncycastle.operator.SecretKeySizeProvider;
+import org.bouncycastle.operator.jcajce.JceGenericKey;
 
 public class JceCRMFEncryptorBuilder
 {
+    private static final SecretKeySizeProvider KEY_SIZE_PROVIDER = DefaultSecretKeySizeProvider.INSTANCE;
+
     private final ASN1ObjectIdentifier encryptionOID;
     private final int                  keySize;
 
@@ -85,6 +90,11 @@ public class JceCRMFEncryptorBuilder
 
             if (keySize < 0)
             {
+                keySize = KEY_SIZE_PROVIDER.getKeySize(encryptionOID);
+            }
+
+            if (keySize < 0)
+            {
                 keyGen.init(random);
             }
             else
@@ -129,7 +139,7 @@ public class JceCRMFEncryptorBuilder
 
         public GenericKey getKey()
         {
-            return new GenericKey(encKey);
+            return new JceGenericKey(algorithmIdentifier, encKey);
         }
     }
 }

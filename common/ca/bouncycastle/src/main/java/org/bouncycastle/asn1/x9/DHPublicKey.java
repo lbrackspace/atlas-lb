@@ -1,20 +1,41 @@
 package org.bouncycastle.asn1.x9;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import java.math.BigInteger;
+
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 
+/**
+ * X9.42 definition of a DHPublicKey
+ * <pre>
+ *     DHPublicKey ::= INTEGER
+ * </pre>
+ */
 public class DHPublicKey
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERInteger y;
+    private ASN1Integer y;
 
+    /**
+     * Return a DHPublicKey from the passed in tagged object.
+     *
+     * @param obj a tagged object.
+     * @param explicit true if the contents of the object is explictly tagged, false otherwise.
+     * @return a DHPublicKey
+     */
     public static DHPublicKey getInstance(ASN1TaggedObject obj, boolean explicit)
     {
-        return getInstance(DERInteger.getInstance(obj, explicit));
+        return getInstance(ASN1Integer.getInstance(obj, explicit));
     }
 
+    /**
+     * Return a DHPublicKey from the passed in object.
+     *
+     * @param obj an object for conversion or a byte[].
+     * @return a DHPublicKey
+     */
     public static DHPublicKey getInstance(Object obj)
     {
         if (obj == null || obj instanceof DHPublicKey)
@@ -22,15 +43,15 @@ public class DHPublicKey
             return (DHPublicKey)obj;
         }
 
-        if (obj instanceof DERInteger)
+        if (obj instanceof ASN1Integer)
         {
-            return new DHPublicKey((DERInteger)obj);
+            return new DHPublicKey((ASN1Integer)obj);
         }
 
         throw new IllegalArgumentException("Invalid DHPublicKey: " + obj.getClass().getName());
     }
 
-    public DHPublicKey(DERInteger y)
+    private DHPublicKey(ASN1Integer y)
     {
         if (y == null)
         {
@@ -40,12 +61,37 @@ public class DHPublicKey
         this.y = y;
     }
 
-    public DERInteger getY()
+    /**
+     * Base constructor.
+     *
+     * @param y the public value Y.
+     */
+    public DHPublicKey(BigInteger y)
     {
-        return this.y;
+        if (y == null)
+        {
+            throw new IllegalArgumentException("'y' cannot be null");
+        }
+
+        this.y = new ASN1Integer(y);
     }
 
-    public DERObject toASN1Object()
+    /**
+     * Return the public value Y for the key.
+     *
+     * @return the Y value.
+     */
+    public BigInteger getY()
+    {
+        return this.y.getPositiveValue();
+    }
+
+    /**
+     * Return an ASN.1 primitive representation of this object.
+     *
+     * @return an ASN1Integer.
+     */
+    public ASN1Primitive toASN1Primitive()
     {
         return this.y;
     }

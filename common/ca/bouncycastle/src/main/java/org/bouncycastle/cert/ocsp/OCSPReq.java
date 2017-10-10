@@ -6,16 +6,18 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Set;
 
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1Exception;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OutputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ocsp.OCSPRequest;
 import org.bouncycastle.asn1.ocsp.Request;
+import org.bouncycastle.asn1.x509.Certificate;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.operator.ContentVerifier;
@@ -56,7 +58,7 @@ public class OCSPReq
     private static final X509CertificateHolder[] EMPTY_CERTS = new X509CertificateHolder[0];
 
     private OCSPRequest    req;
-    private X509Extensions extensions;
+    private Extensions extensions;
 
     public OCSPReq(
         OCSPRequest req)
@@ -79,6 +81,10 @@ public class OCSPReq
         try
         {
             this.req = OCSPRequest.getInstance(aIn.readObject());
+            if (req == null)
+            {
+                throw new CertIOException("malformed request: no request data found");
+            }
             this.extensions = req.getTbsRequest().getRequestExtensions();
         }
         catch (IllegalArgumentException e)
@@ -89,9 +95,13 @@ public class OCSPReq
         {
             throw new CertIOException("malformed request: " + e.getMessage(), e);
         }
+        catch (ASN1Exception e)
+        {
+            throw new CertIOException("malformed request: " + e.getMessage(), e);
+        }
     }
 
-    public int getVersion()
+    public int getVersionNumber()
     {
         return req.getTbsRequest().getVersion().getValue().intValue() + 1;
     }
@@ -119,7 +129,7 @@ public class OCSPReq
         return extensions != null;
     }
 
-    public X509Extension getExtension(ASN1ObjectIdentifier oid)
+    public Extension getExtension(ASN1ObjectIdentifier oid)
     {
         if (extensions != null)
         {
@@ -164,7 +174,7 @@ public class OCSPReq
             return null;
         }
 
-        return req.getOptionalSignature().getSignature().getBytes();
+        return req.getOptionalSignature().getSignature().getOctets();
     }
 
     public X509CertificateHolder[] getCerts()
@@ -182,7 +192,7 @@ public class OCSPReq
 
                 for (int i = 0; i != certs.length; i++)
                 {
-                    certs[i] = new X509CertificateHolder(X509CertificateStructure.getInstance(s.getObjectAt(i)));
+                    certs[i] = new X509CertificateHolder(Certificate.getInstance(s.getObjectAt(i)));
                 }
 
                 return certs;
@@ -223,7 +233,7 @@ public class OCSPReq
             ContentVerifier verifier = verifierProvider.get(req.getOptionalSignature().getSignatureAlgorithm());
             OutputStream sOut = verifier.getOutputStream();
 
-            sOut.write(req.getTbsRequest().getDEREncoded());
+            sOut.write(req.getTbsRequest().getEncoded(ASN1Encoding.DER));
 
             return verifier.verify(this.getSignature());
         }

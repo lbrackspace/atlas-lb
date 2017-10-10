@@ -1,5 +1,11 @@
 package org.bouncycastle.jce.provider;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
 import org.bouncycastle.jce.X509LDAPCertStoreParameters;
 import org.bouncycastle.util.Selector;
 import org.bouncycastle.util.StoreException;
@@ -9,12 +15,6 @@ import org.bouncycastle.x509.X509CertificatePair;
 import org.bouncycastle.x509.X509StoreParameters;
 import org.bouncycastle.x509.X509StoreSpi;
 import org.bouncycastle.x509.util.LDAPStoreHelper;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * A SPI implementation of Bouncy Castle <code>X509Store</code> for getting
@@ -52,17 +52,17 @@ public class X509StoreLDAPCerts
 
     /**
      * Returns a collection of matching certificates from the LDAP location.
-     * <p/>
+     * <p>
      * The selector must be a of type <code>X509CertStoreSelector</code>. If
      * it is not an empty collection is returned.
-     * <p/>
+     * </p><p>
      * The implementation searches only for CA certificates, if the method
      * {@link java.security.cert.X509CertSelector#getBasicConstraints()} is
      * greater or equal to 0. If it is -2 only end certificates are searched.
-     * <p/>
+     * </p><p>
      * The subject and the serial number for end certificates should be
      * reasonable criterias for a selector.
-     *
+     * </p>
      * @param selector The selector to use for finding.
      * @return A collection with the matches.
      * @throws StoreException if an exception occurs while searching.

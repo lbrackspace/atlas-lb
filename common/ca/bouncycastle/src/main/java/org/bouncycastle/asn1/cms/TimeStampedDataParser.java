@@ -2,19 +2,30 @@ package org.bouncycastle.asn1.cms;
 
 import java.io.IOException;
 
-import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1OctetStringParser;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1SequenceParser;
-import org.bouncycastle.asn1.BERSequence;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 
+/**
+ * Parser for <a href="http://tools.ietf.org/html/rfc5544">RFC 5544</a>:
+ * {@link TimeStampedData} object.
+ * <p>
+ * <pre>
+ * TimeStampedData ::= SEQUENCE {
+ *   version              INTEGER { v1(1) },
+ *   dataUri              IA5String OPTIONAL,
+ *   metaData             MetaData OPTIONAL,
+ *   content              OCTET STRING OPTIONAL,
+ *   temporalEvidence     Evidence
+ * }
+ * </pre>
+ */
 public class TimeStampedDataParser
 {
-    private DERInteger version;
+    private ASN1Integer version;
     private DERIA5String dataUri;
     private MetaData metaData;
     private ASN1OctetStringParser content;
@@ -25,9 +36,9 @@ public class TimeStampedDataParser
         throws IOException
     {
         this.parser = parser;
-        this.version = DERInteger.getInstance(parser.readObject());
+        this.version = ASN1Integer.getInstance(parser.readObject());
 
-        DEREncodable obj = parser.readObject();
+        ASN1Encodable obj = parser.readObject();
 
         if (obj instanceof DERIA5String)
         {
@@ -36,7 +47,7 @@ public class TimeStampedDataParser
         }
         if (obj instanceof MetaData || obj instanceof ASN1SequenceParser)
         {
-            this.metaData = MetaData.getInstance(obj.getDERObject());
+            this.metaData = MetaData.getInstance(obj.toASN1Primitive());
             obj = parser.readObject();
         }
         if (obj instanceof ASN1OctetStringParser)
@@ -80,47 +91,9 @@ public class TimeStampedDataParser
     {
         if (temporalEvidence == null)
         {
-            temporalEvidence = Evidence.getInstance(parser.readObject().getDERObject());
+            temporalEvidence = Evidence.getInstance(parser.readObject().toASN1Primitive());
         }
 
         return temporalEvidence;
-    }
-
-    /**
-     * <pre>
-     * TimeStampedData ::= SEQUENCE {
-     *   version              INTEGER { v1(1) },
-     *   dataUri              IA5String OPTIONAL,
-     *   metaData             MetaData OPTIONAL,
-     *   content              OCTET STRING OPTIONAL,
-     *   temporalEvidence     Evidence
-     * }
-     * </pre>
-     * @return
-     */
-    public DERObject toASN1Object()
-    {
-        ASN1EncodableVector v = new ASN1EncodableVector();
-
-        v.add(version);
-
-        if (dataUri != null)
-        {
-            v.add(dataUri);
-        }
-
-        if (metaData != null)
-        {
-            v.add(metaData);
-        }
-
-        if (content != null)
-        {
-            v.add(content);
-        }
-
-        v.add(temporalEvidence);
-
-        return new BERSequence(v);
     }
 }

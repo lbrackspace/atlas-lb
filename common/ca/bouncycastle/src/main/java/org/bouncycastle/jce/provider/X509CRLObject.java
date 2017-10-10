@@ -1,17 +1,18 @@
 package org.bouncycastle.jce.provider;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Principal;
+import java.security.Provider;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
@@ -25,22 +26,24 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1OutputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.CertificateList;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.TBSCertList;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.X509Principal;
+import org.bouncycastle.util.Strings;
 import org.bouncycastle.util.encoders.Hex;
-import org.bouncycastle.x509.extension.X509ExtensionUtil;
 
 /**
  * The following extensions are listed in RFC 2459 as relevant to CRLs
@@ -50,6 +53,7 @@ import org.bouncycastle.x509.extension.X509ExtensionUtil;
  * CRL Number
  * Delta CRL Indicator (critical)
  * Issuing Distribution Point (critical)
+ * @deprecated Do not use this class directly - either use org.bouncycastle.cert (bcpkix) or CertificateFactory.
  */
 public class X509CRLObject
     extends X509CRL
@@ -58,6 +62,24 @@ public class X509CRLObject
     private String sigAlgName;
     private byte[] sigAlgParams;
     private boolean isIndirect;
+    private boolean isHashCodeSet = false;
+    private int     hashCodeValue;
+
+    public static boolean isIndirectCRL(X509CRL crl)
+        throws CRLException
+    {
+        try
+        {
+            byte[] idp = crl.getExtensionValue(Extension.issuingDistributionPoint.getId());
+            return idp != null
+                && IssuingDistributionPoint.getInstance(ASN1OctetString.getInstance(idp).getOctets()).isIndirectCRL();
+        }
+        catch (Exception e)
+        {
+            throw new ExtCRLException(
+                    "Exception reading IssuingDistributionPoint", e);
+        }
+    }
 
     public X509CRLObject(
         CertificateList c)
@@ -71,14 +93,14 @@ public class X509CRLObject
             
             if (c.getSignatureAlgorithm().getParameters() != null)
             {
-                this.sigAlgParams = ((ASN1Encodable)c.getSignatureAlgorithm().getParameters()).getDEREncoded();
+                this.sigAlgParams = ((ASN1Encodable)c.getSignatureAlgorithm().getParameters()).toASN1Primitive().getEncoded(ASN1Encoding.DER);
             }
             else
             {
                 this.sigAlgParams = null;
             }
 
-            this.isIndirect = isIndirectCRL();
+            this.isIndirect = isIndirectCRL(this);
         }
         catch (Exception e)
         {
@@ -109,7 +131,7 @@ public class X509CRLObject
     {
         if (this.getVersion() == 2)
         {
-            X509Extensions extensions = c.getTBSCertList().getExtensions();
+            Extensions extensions = c.getTBSCertList().getExtensions();
 
             if (extensions != null)
             {
@@ -118,8 +140,8 @@ public class X509CRLObject
 
                 while (e.hasMoreElements())
                 {
-                    DERObjectIdentifier oid = (DERObjectIdentifier)e.nextElement();
-                    X509Extension ext = extensions.getExtension(oid);
+                    ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier)e.nextElement();
+                    Extension ext = extensions.getExtension(oid);
 
                     if (critical == ext.isCritical())
                     {
@@ -146,17 +168,17 @@ public class X509CRLObject
 
     public byte[] getExtensionValue(String oid)
     {
-        X509Extensions exts = c.getTBSCertList().getExtensions();
+        Extensions exts = c.getTBSCertList().getExtensions();
 
         if (exts != null)
         {
-            X509Extension   ext = exts.getExtension(new DERObjectIdentifier(oid));
+            Extension ext = exts.getExtension(new ASN1ObjectIdentifier(oid));
 
             if (ext != null)
             {
                 try
                 {
-                    return ext.getValue().getEncoded();
+                    return ext.getExtnValue().getEncoded();
                 }
                 catch (Exception e)
                 {
@@ -173,7 +195,7 @@ public class X509CRLObject
     {
         try
         {
-            return c.getEncoded(ASN1Encodable.DER);
+            return c.getEncoded(ASN1Encoding.DER);
         }
         catch (IOException e)
         {
@@ -182,25 +204,71 @@ public class X509CRLObject
     }
 
     public void verify(PublicKey key)
-        throws CRLException,  NoSuchAlgorithmException,
-            InvalidKeyException, NoSuchProviderException, SignatureException
+        throws CRLException, NoSuchAlgorithmException,
+        InvalidKeyException, NoSuchProviderException, SignatureException
     {
-        verify(key, BouncyCastleProvider.PROVIDER_NAME);
+        Signature sig;
+
+        try
+        {
+            sig = Signature.getInstance(getSigAlgName(), BouncyCastleProvider.PROVIDER_NAME);
+        }
+        catch (Exception e)
+        {
+            sig = Signature.getInstance(getSigAlgName());
+        }
+
+        doVerify(key, sig);
     }
 
     public void verify(PublicKey key, String sigProvider)
         throws CRLException, NoSuchAlgorithmException,
-            InvalidKeyException, NoSuchProviderException, SignatureException
+        InvalidKeyException, NoSuchProviderException, SignatureException
+    {
+        Signature sig;
+
+        if (sigProvider != null)
+        {
+            sig = Signature.getInstance(getSigAlgName(), sigProvider);
+        }
+        else
+        {
+            sig = Signature.getInstance(getSigAlgName());
+        }
+
+        doVerify(key, sig);
+    }
+
+    public void verify(PublicKey key, Provider sigProvider)
+        throws CRLException, NoSuchAlgorithmException,
+        InvalidKeyException, SignatureException
+    {
+        Signature sig;
+
+        if (sigProvider != null)
+        {
+            sig = Signature.getInstance(getSigAlgName(), sigProvider);
+        }
+        else
+        {
+            sig = Signature.getInstance(getSigAlgName());
+        }
+
+        doVerify(key, sig);
+    }
+
+    private void doVerify(PublicKey key, Signature sig)
+        throws CRLException, NoSuchAlgorithmException,
+        InvalidKeyException, SignatureException
     {
         if (!c.getSignatureAlgorithm().equals(c.getTBSCertList().getSignature()))
         {
             throw new CRLException("Signature algorithm on CertificateList does not match TBSCertList.");
         }
 
-        Signature sig = Signature.getInstance(getSigAlgName(), sigProvider);
-
         sig.initVerify(key);
         sig.update(this.getTBSCertList());
+
         if (!sig.verify(this.getSignature()))
         {
             throw new SignatureException("CRL does not verify with supplied public key.");
@@ -209,24 +277,19 @@ public class X509CRLObject
 
     public int getVersion()
     {
-        return c.getVersion();
+        return c.getVersionNumber();
     }
 
     public Principal getIssuerDN()
     {
-        return new X509Principal(c.getIssuer());
+        return new X509Principal(X500Name.getInstance(c.getIssuer().toASN1Primitive()));
     }
 
     public X500Principal getIssuerX500Principal()
     {
         try
         {
-            ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
-            ASN1OutputStream        aOut = new ASN1OutputStream(bOut);
-
-            aOut.writeObject(c.getIssuer());
-
-            return new X500Principal(bOut.toByteArray());
+            return new X500Principal(c.getIssuer().getEncoded());
         }
         catch (IOException e)
         {
@@ -254,13 +317,21 @@ public class X509CRLObject
         Set entrySet = new HashSet();
         Enumeration certs = c.getRevokedCertificateEnumeration();
 
-        X500Principal previousCertificateIssuer = getIssuerX500Principal();
+        X500Name previousCertificateIssuer = null; // the issuer
         while (certs.hasMoreElements())
         {
             TBSCertList.CRLEntry entry = (TBSCertList.CRLEntry)certs.nextElement();
             X509CRLEntryObject crlEntry = new X509CRLEntryObject(entry, isIndirect, previousCertificateIssuer);
             entrySet.add(crlEntry);
-            previousCertificateIssuer = crlEntry.getCertificateIssuer();
+            if (isIndirect && entry.hasExtensions())
+            {
+                Extension currentCaName = entry.getExtensions().getExtension(Extension.certificateIssuer);
+
+                if (currentCaName != null)
+                {
+                    previousCertificateIssuer = X500Name.getInstance(GeneralNames.getInstance(currentCaName.getParsedValue()).getNames()[0].getName());
+                }
+            }
         }
 
         return entrySet;
@@ -270,18 +341,25 @@ public class X509CRLObject
     {
         Enumeration certs = c.getRevokedCertificateEnumeration();
 
-        X500Principal previousCertificateIssuer = getIssuerX500Principal();
+        X500Name previousCertificateIssuer = null; // the issuer
         while (certs.hasMoreElements())
         {
             TBSCertList.CRLEntry entry = (TBSCertList.CRLEntry)certs.nextElement();
-            X509CRLEntryObject crlEntry = new X509CRLEntryObject(entry, isIndirect, previousCertificateIssuer);
 
             if (serialNumber.equals(entry.getUserCertificate().getValue()))
             {
-                return crlEntry;
+                return new X509CRLEntryObject(entry, isIndirect, previousCertificateIssuer);
             }
 
-            previousCertificateIssuer = crlEntry.getCertificateIssuer();
+            if (isIndirect && entry.hasExtensions())
+            {
+                Extension currentCaName = entry.getExtensions().getExtension(Extension.certificateIssuer);
+
+                if (currentCaName != null)
+                {
+                    previousCertificateIssuer = X500Name.getInstance(GeneralNames.getInstance(currentCaName.getParsedValue()).getNames()[0].getName());
+                }
+            }
         }
 
         return null;
@@ -314,7 +392,7 @@ public class X509CRLObject
 
     public byte[] getSignature()
     {
-        return c.getSignature().getBytes();
+        return c.getSignature().getOctets();
     }
 
     public String getSigAlgName()
@@ -324,7 +402,7 @@ public class X509CRLObject
 
     public String getSigAlgOID()
     {
-        return c.getSignatureAlgorithm().getObjectId().getId();
+        return c.getSignatureAlgorithm().getAlgorithm().getId();
     }
 
     public byte[] getSigAlgParams()
@@ -349,7 +427,7 @@ public class X509CRLObject
     public String toString()
     {
         StringBuffer buf = new StringBuffer();
-        String nl = System.getProperty("line.separator");
+        String nl = Strings.lineSeparator();
 
         buf.append("              Version: ").append(this.getVersion()).append(
             nl);
@@ -380,7 +458,7 @@ public class X509CRLObject
             }
         }
 
-        X509Extensions extensions = c.getTBSCertList().getExtensions();
+        Extensions extensions = c.getTBSCertList().getExtensions();
 
         if (extensions != null)
         {
@@ -393,51 +471,48 @@ public class X509CRLObject
 
             while (e.hasMoreElements())
             {
-                DERObjectIdentifier oid = (DERObjectIdentifier) e.nextElement();
-                X509Extension ext = extensions.getExtension(oid);
+                ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) e.nextElement();
+                Extension ext = extensions.getExtension(oid);
 
-                if (ext.getValue() != null)
+                if (ext.getExtnValue() != null)
                 {
-                    byte[] octs = ext.getValue().getOctets();
+                    byte[] octs = ext.getExtnValue().getOctets();
                     ASN1InputStream dIn = new ASN1InputStream(octs);
                     buf.append("                       critical(").append(
                         ext.isCritical()).append(") ");
                     try
                     {
-                        if (oid.equals(X509Extensions.CRLNumber))
+                        if (oid.equals(Extension.cRLNumber))
                         {
                             buf.append(
-                                new CRLNumber(DERInteger.getInstance(
+                                new CRLNumber(ASN1Integer.getInstance(
                                     dIn.readObject()).getPositiveValue()))
                                 .append(nl);
                         }
-                        else if (oid.equals(X509Extensions.DeltaCRLIndicator))
+                        else if (oid.equals(Extension.deltaCRLIndicator))
                         {
                             buf.append(
                                 "Base CRL: "
-                                    + new CRLNumber(DERInteger.getInstance(
+                                    + new CRLNumber(ASN1Integer.getInstance(
                                         dIn.readObject()).getPositiveValue()))
                                 .append(nl);
                         }
                         else if (oid
-                            .equals(X509Extensions.IssuingDistributionPoint))
+                            .equals(Extension.issuingDistributionPoint))
                         {
                             buf.append(
-                                new IssuingDistributionPoint((ASN1Sequence) dIn
-                                    .readObject())).append(nl);
+                               IssuingDistributionPoint.getInstance(dIn.readObject())).append(nl);
                         }
                         else if (oid
-                            .equals(X509Extensions.CRLDistributionPoints))
+                            .equals(Extension.cRLDistributionPoints))
                         {
                             buf.append(
-                                new CRLDistPoint((ASN1Sequence) dIn
-                                    .readObject())).append(nl);
+                                CRLDistPoint.getInstance(dIn.readObject())).append(nl);
                         }
-                        else if (oid.equals(X509Extensions.FreshestCRL))
+                        else if (oid.equals(Extension.freshestCRL))
                         {
                             buf.append(
-                                new CRLDistPoint((ASN1Sequence) dIn
-                                    .readObject())).append(nl);
+                                CRLDistPoint.getInstance(dIn.readObject())).append(nl);
                         }
                         else
                         {
@@ -486,16 +561,53 @@ public class X509CRLObject
             throw new RuntimeException("X.509 CRL used with non X.509 Cert");
         }
 
-        TBSCertList.CRLEntry[] certs = c.getRevokedCertificates();
+        Enumeration certs = c.getRevokedCertificateEnumeration();
+
+        X500Name caName = c.getIssuer();
 
         if (certs != null)
         {
             BigInteger serial = ((X509Certificate)cert).getSerialNumber();
 
-            for (int i = 0; i < certs.length; i++)
+            while (certs.hasMoreElements())
             {
-                if (certs[i].getUserCertificate().getValue().equals(serial))
+                TBSCertList.CRLEntry entry = TBSCertList.CRLEntry.getInstance(certs.nextElement());
+
+                if (isIndirect && entry.hasExtensions())
                 {
+                    Extension currentCaName = entry.getExtensions().getExtension(Extension.certificateIssuer);
+
+                    if (currentCaName != null)
+                    {
+                        caName = X500Name.getInstance(GeneralNames.getInstance(currentCaName.getParsedValue()).getNames()[0].getName());
+                    }
+                }
+
+                if (entry.getUserCertificate().getValue().equals(serial))
+                {
+                    X500Name issuer;
+
+                    if (cert instanceof  X509Certificate)
+                    {
+                        issuer = X500Name.getInstance(((X509Certificate)cert).getIssuerX500Principal().getEncoded());
+                    }
+                    else
+                    {
+                        try
+                        {
+                            issuer = org.bouncycastle.asn1.x509.Certificate.getInstance(cert.getEncoded()).getIssuer();
+                        }
+                        catch (CertificateEncodingException e)
+                        {
+                            throw new RuntimeException("Cannot process certificate");
+                        }
+                    }
+
+                    if (!caName.equals(issuer))
+                    {
+                        return false;
+                    }
+
                     return true;
                 }
             }
@@ -504,27 +616,49 @@ public class X509CRLObject
         return false;
     }
 
-    private boolean isIndirectCRL()
-        throws CRLException
+    public boolean equals(Object other)
     {
-        byte[] idp = getExtensionValue(X509Extensions.IssuingDistributionPoint.getId());
-        boolean isIndirect = false;
-        try
+        if (this == other)
         {
-            if (idp != null)
-            {
-                isIndirect = IssuingDistributionPoint.getInstance(
-                        X509ExtensionUtil.fromExtensionValue(idp))
-                        .isIndirectCRL();
-            }
-        }
-        catch (Exception e)
-        {
-            throw new ExtCRLException(
-                    "Exception reading IssuingDistributionPoint", e);
+            return true;
         }
 
-        return isIndirect;
+        if (!(other instanceof X509CRL))
+        {
+            return false;
+        }
+
+        if (other instanceof X509CRLObject)
+        {
+            X509CRLObject crlObject = (X509CRLObject)other;
+
+            if (isHashCodeSet)
+            {
+                boolean otherIsHashCodeSet = crlObject.isHashCodeSet;
+                if (otherIsHashCodeSet)
+                {
+                    if (crlObject.hashCodeValue != hashCodeValue)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return this.c.equals(crlObject.c);
+        }
+
+        return super.equals(other);
+    }
+
+    public int hashCode()
+    {
+        if (!isHashCodeSet)
+        {
+            isHashCodeSet = true;
+            hashCodeValue = super.hashCode();
+        }
+
+        return hashCodeValue;
     }
 }
 
