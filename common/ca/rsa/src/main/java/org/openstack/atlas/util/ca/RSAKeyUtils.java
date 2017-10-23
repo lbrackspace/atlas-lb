@@ -226,7 +226,7 @@ public class RSAKeyUtils {
         return out;
     }
 
-    static String objToString(PublicKey jPub) throws NotAnRSAKeyException {
+    public static String objToString(PublicKey jPub) throws NotAnRSAKeyException {
         if (jPub instanceof BCRSAPublicKey) {
             BCRSAPublicKey pubKey = (BCRSAPublicKey) jPub;
             BigInteger mod = getModulus(jPub);
