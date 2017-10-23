@@ -147,7 +147,7 @@ public class CertUtils {
         // If the user left a blank serial number then use the current time for the serial number
         serialNum = (serial == null) ? BigInteger.valueOf(System.currentTimeMillis()) : serial;
         subject = CsrUtils.getX500SubjectNameFromCSR(req);
-        issuer = CertUtils.getIssuerNameFromCert(caCrt);
+        issuer = CertUtils.getSubjectNameFromCert(caCrt);
         //subject = new X500Principal(req.getCertificationRequestInfo().getSubject().toString());
         certBuilder = new JcaX509v3CertificateBuilder(issuer, serialNum,
                 notBefore, notAfter, subject, crtPub);

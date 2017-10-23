@@ -1,17 +1,14 @@
 package org.openstack.atlas.util.ca.chain;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
-import java.security.cert.X509Certificate;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.bouncycastle.jce.provider.X509CertificateObject;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.CsrUtils;
 import org.openstack.atlas.util.ca.PemUtils;
@@ -33,6 +30,7 @@ public class ChainBuilderMain {
     public static final int BUFFSIZE = 1024 * 64;
 
     public static void main(String[] args) throws IOException, NotAnX509CertificateException, RsaException {
+        Object obj;
         ChainConfig conf;
         String confFile;
         if (args.length <= 0) {
@@ -64,13 +62,14 @@ public class ChainBuilderMain {
 
         System.out.printf("using config: %s\n", conf.toString());
         KeyPair rootKey = null;
-        X509CertificateObject rootCrt = null;
+        X509CertificateHolder rootCrt = null;
 
         List<PemBlock> pemBlocks;
         pemBlocks = PemUtils.parseMultiPem(StaticFileUtils.readFile(conf.getRootKeyFile()));
         for (PemBlock pemBlock : pemBlocks) {
             System.out.printf("block class in %s = %s\n", conf.getRootKeyFile(), pemBlock.getDecodedObject().getClass().getName());
-            if (pemBlock.getDecodedObject() instanceof KeyPair) {
+            obj = pemBlock.getDecodedObject();
+            if (obj instanceof KeyPair) {
                 rootKey = (KeyPair) pemBlock.getDecodedObject();
                 break;
             }
@@ -79,8 +78,9 @@ public class ChainBuilderMain {
         pemBlocks = PemUtils.parseMultiPem(StaticFileUtils.readFile(conf.getRootCrtFile()));
         for (PemBlock pemBlock : pemBlocks) {
             System.out.printf("block class in %s = %s\n", conf.getCrtFile(), pemBlock.getDecodedObject().getClass().getName());
-            if (pemBlock.getDecodedObject() instanceof X509CertificateObject) {
-                rootCrt = (X509CertificateObject) pemBlock.getDecodedObject();
+            obj = pemBlock.getDecodedObject();
+            if (obj instanceof X509CertificateHolder) {
+                rootCrt = (X509CertificateHolder) pemBlock.getDecodedObject();
                 break;
             }
         }
@@ -95,7 +95,7 @@ public class ChainBuilderMain {
         Date notAfter = secsFromDate(now, conf.getNotAfter());
         List<X509ChainEntry> chainEntries = X509PathBuilder.newChain(rootKey, rootCrt, issuerNames, conf.getKeySize(), notBefore, notAfter);
         KeyPair finalSigningKey;
-        X509CertificateObject finalIssueingCrt;
+        X509CertificateHolder finalIssueingCrt;
         System.out.printf("RootCrt:\n%s\n", inspectCrt(rootCrt));
         System.out.printf("Imd crts:\n");
         if (!chainEntries.isEmpty()) {
@@ -140,8 +140,8 @@ public class ChainBuilderMain {
         String csrPem = PemUtils.toPemString(csr);
         System.out.printf("%s\n", csrPem);
         System.out.printf("Signing CSR with crt %s\n", inspectCrt(finalIssueingCrt));
-        X509CertificateObject crt = (X509CertificateObject) CertUtils.signCSR(csr, finalSigningKey, finalIssueingCrt, notBefore, notAfter, BigInteger.ZERO);
-        System.out.printf("Certificate signed\n%s\n", inspectCrt((X509CertificateObject) crt));
+        X509CertificateHolder crt = (X509CertificateHolder) CertUtils.signCSR(csr, finalSigningKey, finalIssueingCrt, notBefore, notAfter, BigInteger.ZERO);
+        System.out.printf("Certificate signed\n%s\n", inspectCrt((X509CertificateHolder) crt));
         String crtPem = PemUtils.toPemString(crt);
         System.out.printf("%s\n", crtPem);
         System.out.printf("Saving crt to file %s\n", crtFile);
@@ -155,7 +155,7 @@ public class ChainBuilderMain {
         return new Date((long) ((double) (now.getTime()) + secs * MILLIS_PER_SEC));
     }
 
-    public static String inspectCrt(X509CertificateObject crt) throws NotAnX509CertificateException {
+    public static String inspectCrt(X509CertificateHolder crt) throws NotAnX509CertificateException {
         StringBuilder sb = new StringBuilder();
         X509Inspector xi = new X509Inspector(crt);
         String notBefore = StaticDateTimeUtils.toSqlTime(StaticDateTimeUtils.toDate(xi.getNotBefore()));
@@ -180,7 +180,6 @@ public class ChainBuilderMain {
                 append(", serial=").append((xi.getAuthKeyIdSerial() == null) ? "null" : xi.getAuthKeyIdSerial().toString(16)).
                 append(", dirName=").append((xi.getAuthKeyIdDirname() == null) ? "null" : xi.getAuthKeyIdDirname()).
                 append("}");
-
         return sb.toString();
     }
 }

@@ -2482,6 +2482,9 @@ public class CaFrame extends javax.swing.JFrame {
             dbg.redWrite("Cause exception while trying to add wast %d bytes\n", nBytes);
             dbg.writeException(ex);
             return;
+        }catch(OutOfMemoryError ex){
+            dbg.redWrite("Out of Memory Error");
+            return;
         }
     }//GEN-LAST:event_wastBytesButtonActionPerformed
 

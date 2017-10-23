@@ -226,6 +226,9 @@ public class X509Inspector {
     public BigInteger getAuthKeyIdSerial() {
         Extensions exts = x509holder.getExtensions();
         AuthorityKeyIdentifier authKeyId = AuthorityKeyIdentifier.fromExtensions(exts);
+        if(authKeyId == null){
+            return null;
+        }
         BigInteger serial = authKeyId.getAuthorityCertSerialNumber();
         return serial;
     }

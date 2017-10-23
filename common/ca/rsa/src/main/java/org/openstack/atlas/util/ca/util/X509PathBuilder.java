@@ -74,7 +74,8 @@ public class X509PathBuilder {
         List<X509ChainEntry> chain = new ArrayList<X509ChainEntry>();
         X509Certificate caCrtXC = CertUtils.getX509Certificate(rootCert);
         X509CertificateHolder crt;
-
+        X509CertificateHolder currCa = rootCert;
+        KeyPair currSigningKey = rootKey;
         Object obj;
         PKCS10CertificationRequest csr;
         KeyPair caKey = rootKey;
@@ -83,7 +84,7 @@ public class X509PathBuilder {
         for (String subjName : subjNames) {
             key = RSAKeyUtils.genKeyPair(keySize);
             csr = CsrUtils.newCsr(subjName, key, true);
-            obj = CertUtils.signCSR(csr, caKey, rootCert, notBefore, notAfter, null);
+            obj = CertUtils.signCSR(csr, currSigningKey, currCa, notBefore, notAfter, null);
             if (!(obj instanceof X509CertificateHolder)) {
                 String fmt = "Could not generate X509CertificateObject for subj \"%s\"";
                 String msg = String.format(fmt, subjName);
@@ -91,7 +92,8 @@ public class X509PathBuilder {
             }
             crt = (X509CertificateHolder) obj;
             chain.add(new X509ChainEntry(key, csr, crt));
-            caKey = key;
+            currSigningKey = key;
+            currCa = crt;
         }
         return chain;
     }
