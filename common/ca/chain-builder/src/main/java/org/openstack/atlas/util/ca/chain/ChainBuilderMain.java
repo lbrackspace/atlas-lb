@@ -100,10 +100,10 @@ public class ChainBuilderMain {
         System.out.printf("Imd crts:\n");
         if (!chainEntries.isEmpty()) {
             for (X509ChainEntry entry : chainEntries) {
-                System.out.printf("%s\n\n", inspectCrt(entry.getX509obj()));
+                System.out.printf("%s\n\n", inspectCrt(entry.getX509Holder()));
             }
             finalSigningKey = chainEntries.get(chainEntries.size() - 1).getKey();
-            finalIssueingCrt = chainEntries.get(chainEntries.size() - 1).getX509obj();
+            finalIssueingCrt = chainEntries.get(chainEntries.size() - 1).getX509Holder();
         } else {
             finalSigningKey = rootKey;
             finalIssueingCrt = rootCrt;
@@ -117,7 +117,7 @@ public class ChainBuilderMain {
         OutputStream os;
         os = StaticFileUtils.openOutputFile(imdFile, BUFFSIZE);
         for (X509ChainEntry entry : chainEntries) {
-            String x509Pem = PemUtils.toPemString(entry.getX509obj());
+            String x509Pem = PemUtils.toPemString(entry.getX509Holder());
             os.write(x509Pem.getBytes("utf-8"));
         }
         os.close();

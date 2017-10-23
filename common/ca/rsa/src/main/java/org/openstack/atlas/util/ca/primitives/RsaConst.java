@@ -7,28 +7,37 @@ import java.security.Security;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.DigestCalculator;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
 import org.openstack.atlas.util.ca.StringUtils;
+import org.openstack.atlas.util.ca.exceptions.RsaException;
 
 public class RsaConst {
 
     public static final String DEFAULT_SIGNATURE_ALGO = "SHA256WITHRSA";
     public static final String USASCII = "US-ASCII";
     public static final BigInteger E = new BigInteger("65537");
-    public static final int PAGESIZE = 4096;
     public static final int DEFAULT_PRIME_CERTAINTY = 32;
     public static final Map<String, String> oids;
+    public static final String BC = "BC";
+    public static final ASN1ObjectIdentifier subjectKeyId;
+    public static final ASN1ObjectIdentifier authKeyId;
     private static int initCount = 0;
-
+    
     static {
+        subjectKeyId = new ASN1ObjectIdentifier("2.5.29.14");
+        authKeyId = new ASN1ObjectIdentifier("2.5.29.35");
         Provider bc = new BouncyCastleProvider();
         Security.addProvider(bc);
         // Cause the bouncycastle PKCS10CertificationRequest class was being

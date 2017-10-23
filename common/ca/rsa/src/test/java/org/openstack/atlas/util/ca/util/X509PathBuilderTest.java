@@ -10,13 +10,13 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.bouncycastle.jce.X509Principal;
+import junit.framework.Assert;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.X509CertificateObject;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -26,12 +26,18 @@ import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnRSAKeyException;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 import org.openstack.atlas.util.ca.CertUtils;
+import org.openstack.atlas.util.ca.CsrUtils;
+import org.openstack.atlas.util.ca.RSAKeyUtils;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
+import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
+import org.openstack.atlas.util.ca.zeus.ErrorEntry;
 
 public class X509PathBuilderTest {
 
+    private static final int KEY_SIZE = 512;
     private static final String rootKeyPem = ""
             + "-----BEGIN RSA PRIVATE KEY-----\n"
             + "MIIJKQIBAAKCAgEAmER5iviUcEGRtLZHts2/BjAbJ4gBihJX5vz/CTShPT7uK0De\n"
@@ -120,7 +126,7 @@ public class X509PathBuilderTest {
             + "-----END CERTIFICATE-----\n"
             + "";
     private static final String rootSubj = "CN=Test CA, OU=CloudLoadBalancers, O=Rackspace, L=San Antonio, ST=Texas, C=US";
-    private X509CertificateObject rootCrt;
+    private X509CertificateHolder rootCrt;
     private KeyPair rootKey;
 
     public X509PathBuilderTest() {
@@ -144,7 +150,7 @@ public class X509PathBuilderTest {
     public void tearDown() {
     }
 
-    private X509CertificateObject getCrt(String crtPem) throws NotAnX509CertificateException {
+    private X509CertificateHolder getCrt(String crtPem) throws NotAnX509CertificateException {
         Object obj;
         NotAnX509CertificateException notCrtException = new NotAnX509CertificateException(crtPem);
         try {
@@ -152,10 +158,10 @@ public class X509PathBuilderTest {
         } catch (PemException ex) {
             throw notCrtException;
         }
-        if (!(obj instanceof X509CertificateObject)) {
+        if (!(obj instanceof X509CertificateHolder)) {
             throw notCrtException;
         }
-        return (X509CertificateObject) obj;
+        return (X509CertificateHolder) obj;
     }
 
     private KeyPair getKey(String keyPem) throws NotAnRSAKeyException {
@@ -175,36 +181,35 @@ public class X509PathBuilderTest {
     @Test
     public void testCreateChainBasedOnRootCa() throws NotAnX509CertificateException, RsaException {
         List<String> subjNames = new ArrayList<String>();
-        subjNames.add("O=Rackspace hosting, OU=Platform CloudSites, CN=IMD 1");
-        subjNames.add("O=Rackspace hosting, OU=Platform CloudSites, CN=IMD 2");
-        subjNames.add("O=Rackspace hosting, OU=Platform CloudSites, CN=IMD 3");
-        subjNames.add("O=Rackspace hosting, OU=Platform CloudSites, CN=IMD 4");
-        subjNames.add("O=Rackspace hosting, OU=Platform CloudSites, CN=IMD 5");
-        subjNames.add("O=Rackspace hosting, OU=Platform CloudSites,C=US,ST=Texas,L=San Antonio,CN=www.junit-mosso-apache2zeus-test.com");
+        subjNames.add("O=Rackspace hosting,OU=Platform CloudSites,CN=IMD 1");
+        subjNames.add("O=Rackspace hosting,OU=Platform CloudSites,CN=IMD 2");
+        subjNames.add("O=Rackspace hosting,OU=Platform CloudSites,CN=IMD 3");
+        subjNames.add("O=Rackspace hosting,OU=Platform CloudSites,CN=IMD 4");
+        subjNames.add("O=Rackspace hosting,OU=Platform CloudSites,CN=IMD 5");
+        subjNames.add("O=Rackspace hosting,OU=Platform CloudSites,C=US,ST=Texas,L=San Antonio,CN=www.rackexp.org");
         long now = System.currentTimeMillis();
-        long hourAgo = 1000 * 60 * 60;
-        long yearFromNow = 1000 * 60 * 60 * 24 * 365;
-        int keySize = 2048;
+        long hourAgo = 1000L * 60L * 60L;
+        long yearFromNow = 1000L * 60L * 60L * 24L * 364L;
         Date before = new Date(now - hourAgo);
         Date after = new Date(now + yearFromNow);
-        List<X509ChainEntry> chain = X509PathBuilder.newChain(rootKey, rootCrt, subjNames, keySize, before, after);
+        List<X509ChainEntry> chain = X509PathBuilder.newChain(rootKey, rootCrt, subjNames, KEY_SIZE, before, after);
         assertTrue(chain.size() == 6);
         for (int i = 0; i < chain.size(); i++) {
-            X509Certificate x509 = (X509Certificate) chain.get(i).getX509obj();
-            String subj = x509.getSubjectX500Principal().getName();
-            String expSubj = new X509Principal(subjNames.get(i)).getName();
+            X509CertificateHolder xh = chain.get(i).getX509Holder();
+            String subj = xh.getSubject().toString();
+            String expSubj = subjNames.get(i);
             assertEquals(expSubj, subj);
         }
-
+        X509Certificate rootCrtXC = CertUtils.getX509Certificate(rootCrt);
         // Verify root signatures
-        assertTrue(CertUtils.isSelfSigned(rootCrt));
+        assertTrue(CertUtils.isSelfSigned(rootCrtXC));
         assertTrue(CertUtils.validateKeyMatchesCrt(rootKey, rootCrt).isEmpty());
         assertTrue(CertUtils.validateKeySignsCert(rootKey, rootCrt).isEmpty());
-        assertTrue(CertUtils.verifyIssuerAndSubjectCert(rootCrt, chain.get(0).getX509obj()).isEmpty());
+        assertTrue(CertUtils.verifyIssuerAndSubjectCert(rootCrt, chain.get(0).getX509Holder()).isEmpty());
 
         for (int i = 1; i < chain.size(); i++) {
-            X509CertificateObject issuerCrt = chain.get(i - 1).getX509obj();
-            X509CertificateObject subjectCrt = chain.get(i).getX509obj();
+            X509CertificateHolder issuerCrt = chain.get(i - 1).getX509Holder();
+            X509CertificateHolder subjectCrt = chain.get(i).getX509Holder();
             KeyPair issuerKey = chain.get(i - 1).getKey();
             KeyPair subjectKey = chain.get(i).getKey();
 
@@ -225,12 +230,12 @@ public class X509PathBuilderTest {
 
             StringBuilder pemChain = new StringBuilder(4096);
             for (X509ChainEntry entry : chain) {
-                pemChain.append(PemUtils.toPemString(entry.getX509obj()));
+                pemChain.append(PemUtils.toPemString(entry.getX509Holder()));
             }
             // The users Site cert is at the end of the chain
             X509ChainEntry userEntry = chain.get(chain.size() - 1);
             KeyPair userKey = userEntry.getKey();
-            X509CertificateObject userCrt = userEntry.getX509obj();
+            X509CertificateHolder userCrt = userEntry.getX509Holder();
             PKCS10CertificationRequest userCsr = userEntry.getCsr();
             System.out.printf("chain:\n%s\n\n", pemChain.toString());
             System.out.printf("RootCa:\n%s\n\n", PemUtils.toPemString(rootCrt));

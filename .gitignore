@@ -24,3 +24,4 @@ atlas-parent.ids
 *.out
 *.log
 *.log.*
+/common/ca/rsa/nbproject/

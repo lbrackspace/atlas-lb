@@ -90,7 +90,7 @@ public class ZeusCrtFile {
     }
 
     public String errorStrings(boolean showException) {
-        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
+        StringBuilder sb = new StringBuilder();
         for (ErrorEntry errorEntry : errors) {
             sb.append(errorEntry.toString(showException));
         }

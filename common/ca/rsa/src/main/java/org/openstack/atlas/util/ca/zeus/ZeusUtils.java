@@ -6,17 +6,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.bouncycastle.jce.provider.JCERSAPrivateCrtKey;
-import org.bouncycastle.jce.provider.JCERSAPublicKey;
-import org.bouncycastle.jce.provider.X509CertificateObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.PemUtils;
+import org.openstack.atlas.util.ca.RSAKeyUtils;
+import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
+import org.openstack.atlas.util.ca.exceptions.RsaException;
 import org.openstack.atlas.util.ca.exceptions.X509PathBuildException;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
@@ -38,36 +44,27 @@ public class ZeusUtils {
     static {
         RsaConst.init();
     }
-    private Set<X509CertificateObject> roots;
+    private Set<X509CertificateHolder> roots;
 
     public ZeusUtils() {
-        roots = new HashSet<X509CertificateObject>();
+        roots = new HashSet<X509CertificateHolder>();
     }
 
-    public ZeusUtils(Set<X509CertificateObject> roots) {
+    public ZeusUtils(Set<X509CertificateHolder> roots) {
         this.roots = roots;
-    }
-
-    public ZeusCrtFile buildZeusCrtFile(String keyStr, String userCrtStr, String intermediates, boolean useLbaasValidation) {
-        Date date = new Date(System.currentTimeMillis());
-        if (!useLbaasValidation) {
-            return buildZeusCrtFile(keyStr, userCrtStr, intermediates, date);
-        } else {
-            return buildZeusCrtFileLbassValidation(keyStr, userCrtStr, intermediates);
-        }
     }
 
     public ZeusCrtFile buildZeusCrtFileLbassValidation(String userKeyStr, String userCrtStr, String intermediates) {
         ZeusCrtFile zcf = new ZeusCrtFile();
         List<ErrorEntry> errors = zcf.getErrors();
-        Map<X509CertificateObject, Integer> lineMap = new HashMap<X509CertificateObject, Integer>();
+        Map<X509CertificateHolder, Integer> lineMap = new HashMap<X509CertificateHolder, Integer>();
         String zkey = "";
         String zcrt = "";
         String msg;
 
         KeyPair userKey = parseKey(userKeyStr, zcf.getErrors());
-        X509CertificateObject userCrt = decodeCrt(userCrtStr, zcf);
-        List<X509CertificateObject> imdCrts = decodeImd(lineMap, intermediates, zcf);
+        X509CertificateHolder userCrt = decodeCrt(userCrtStr, zcf);
+        List<X509CertificateHolder> imdCrts = decodeImd(lineMap, intermediates, zcf);
 
         // Verify key matches cert if both are Present
         if (!zcf.containsErrorTypes(ErrorType.UNREADABLE_CERT, ErrorType.UNREADABLE_KEY)) {
@@ -91,8 +88,6 @@ public class ZeusUtils {
         }
 
         // If their is a chain don't bother validating the chain order.
-
-
         // If there where no errors build the full ZCF object
         if (!ErrorEntry.hasFatal(errors)) {
             StringBuilder sb = new StringBuilder(4096);
@@ -106,7 +101,7 @@ public class ZeusUtils {
             } catch (PemException ex) {
                 errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Error encodeing users Crt", true, ex));
             }
-            for (X509CertificateObject x509obj : imdCrts) {
+            for (X509CertificateHolder x509obj : imdCrts) {
                 try {
                     String x509Str = PemUtils.toPemString(x509obj);
                     sb.append(x509Str);
@@ -122,17 +117,6 @@ public class ZeusUtils {
             }
 
             // Also append a NO_PATH_TO_ROOT error if the cert has no known root
-            if (!ErrorEntry.hasFatal(errors)) {
-                Set<X509CertificateObject> imdSet = new HashSet<X509CertificateObject>(imdCrts);
-                X509PathBuilder<X509CertificateObject> pathBuilder = new X509PathBuilder<X509CertificateObject>(roots, imdSet);
-                try {
-                    X509BuiltPath<X509CertificateObject> builtPath = pathBuilder.buildPath(userCrt);
-                } catch (X509PathBuildException ex) {
-                    // Make NO PATH to ROOT a  non fatal error
-                    errors.add(new ErrorEntry(ErrorType.NO_PATH_TO_ROOT, "Chain has no path to root", false, ex));
-                }
-            }
-
             // If there are still no errors we can set the key and crt
             if (!ErrorEntry.hasFatal(errors)) {
                 zcrt = sb.toString();
@@ -143,88 +127,11 @@ public class ZeusUtils {
         return zcf;
     }
 
-    public ZeusCrtFile buildZeusCrtFile(String keyStr, String userCrtStr, String intermediates, Date date) {
-        ZeusCrtFile zcf = new ZeusCrtFile();
-        List<ErrorEntry> errors = zcf.getErrors();
-        List<PemBlock> blocks;
-        KeyPair kp = null;
-        X509CertificateObject userCrt = null;
-        Object obj;
-        // Read Key
-        kp = parseKey(keyStr, errors);
-        userCrt = parseCert(userCrtStr, errors);
-
-        if (userCrt != null) {
-            if (CertUtils.isCertExpired(userCrt, date)) {
-                Date after = userCrt.getNotAfter();
-                String errorMsg = invalidDateMessage("User cert expired on", after);
-                errors.add(new ErrorEntry(ErrorType.EXPIRED_CERT, errorMsg, true, null));
-            }
-
-            if (CertUtils.isCertPremature(userCrt, date)) {
-                Date before = userCrt.getNotBefore();
-                String errorMsg = invalidDateMessage("User cert isn't valid till", before);
-                errors.add(new ErrorEntry(ErrorType.PREMATURE_CERT, errorMsg, false, null));
-            }
-        }
-
-        // Check key and cert match
-        if (kp != null && userCrt != null) {
-            PublicKey userKey = userCrt.getPublicKey();
-            List<ErrorEntry> keyCrtErrors = CertUtils.validateKeyMatchesCert((JCERSAPublicKey) kp.getPublic(), userCrt);
-            if (keyCrtErrors.size() > 0) {
-                errors.addAll(keyCrtErrors);
-                return zcf;
-            }
-        }
-        // Retrieve Intermediates.
-        Set<X509CertificateObject> intermediateCerts = new HashSet<X509CertificateObject>();
-        if (intermediates != null) {
-            intermediateCerts = parseIntermediateCerts(intermediates, errors);
-        }
-
-        if (userCrt != null) {
-            X509PathBuilder<X509CertificateObject> pathBuilder = new X509PathBuilder<X509CertificateObject>(roots, intermediateCerts);
-            X509BuiltPath<X509CertificateObject> builtPath;
-            try {
-                builtPath = pathBuilder.buildPath(userCrt, date);
-            } catch (X509PathBuildException ex) {
-                errors.add(new ErrorEntry(ErrorType.NO_PATH_TO_ROOT, "No Path to root", false, ex));
-                return zcf;
-            }
-            StringBuilder zcrtString = new StringBuilder(RsaConst.PAGESIZE);
-            List<ErrorEntry> certWriteErrors = new ArrayList<ErrorEntry>();
-            for (X509CertificateObject x509obj : builtPath.getPath()) {
-                try {
-                    String x509String = PemUtils.toPemString(x509obj);
-                    zcrtString.append(x509String);
-                } catch (PemException ex) {
-                    certWriteErrors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Coulden't encode intermediate certififacte", true, ex));
-                }
-                if (certWriteErrors.size() > 0) {
-                    errors.addAll(certWriteErrors);
-                    return zcf;
-                }
-            }
-            zcf.setPublic_cert(zcrtString.toString());
-        }
-        if (kp != null) {
-            try {
-                String privKey = PemUtils.toPemString(kp);
-                zcf.setPrivate_key(privKey);
-            } catch (PemException ex) {
-                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_KEY, ex.getMessage(), true, ex));
-                return zcf;
-            }
-        }
-        return zcf;
-    }
-
-    public Set<X509CertificateObject> getRoots() {
+    public Set<X509CertificateHolder> getRoots() {
         return roots;
     }
 
-    public void setRoots(Set<X509CertificateObject> roots) {
+    public void setRoots(Set<X509CertificateHolder> roots) {
         this.roots = roots;
     }
 
@@ -234,40 +141,46 @@ public class ZeusUtils {
         Object obj;
         if (blocks.size() < 1) {
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, KEYREQUIRED, true, null));
-            return kp;
+            return null;
         }
 
         if (blocks.size() > 1) {
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, "Multiple pem blocks used in Key", true, null));
-            return kp;
+            return null;
         }
         obj = blocks.get(0).getDecodedObject();
         if (obj == null) {
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, "Unable to parse pemblock to RSA Key", true, null));
-            return kp;
+            return null;
         }
-        if (obj instanceof JCERSAPrivateCrtKey) {
+        if (obj instanceof BCRSAPrivateCrtKey) {
             try {
-                obj = HackedProviderAccessor.newKeyPair((JCERSAPrivateCrtKey) obj);
-            } catch (InvalidKeySpecException ex) {
+                obj = RSAKeyUtils.getPemKeyPair((BCRSAPrivateCrtKey) obj);
+            } catch (PemException ex) {
                 errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, "Error while attempting to convert key from PKCS8 to PKCS1", true, ex));
+                return null;
             }
         }
         if (!(obj instanceof KeyPair)) {
-            String msg = String.format("%s keyobject was an unstance of %s but was expecting a %s", ERRORDECODINGKEY, obj.getClass().getName(), className(KeyPair.class));
+            String msg = String.format("%s keyobject was an unstance of %s but was expecting a %s",
+                    ERRORDECODINGKEY, obj.getClass().getName(),
+                    KeyPair.class.getCanonicalName());
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, msg, true, null));
-            return kp;
+            return null;
         }
-
         kp = (KeyPair) obj;
-        if (!(kp.getPublic() instanceof JCERSAPublicKey)) {
-            String msg = String.format("%s Error decoding public portion of key. Objected decoded to class %s but was expecting %s", ERRORDECODINGKEY, obj.getClass().getName(), className(JCERSAPublicKey.class));
+        if (!(kp.getPublic() instanceof BCRSAPublicKey)) {
+            String msg = String.format("%s Error decoding public portion of key. Objected decoded to class %s but was expecting %s",
+                    ERRORDECODINGKEY, obj.getClass().getName(),
+                    BCRSAPublicKey.class.getCanonicalName());
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, msg, true, null));
             kp = null;
             return kp;
         }
-        if (!(kp.getPrivate() instanceof JCERSAPrivateCrtKey)) {
-            String msg = String.format("%s Error decoding private portion of key. Object decoded to class %s but was expecting %s", ERRORDECODINGKEY, obj.getClass().getName(), className(JCERSAPrivateCrtKey.class));
+        if (!(kp.getPrivate() instanceof BCRSAPrivateCrtKey)) {
+            String msg = String.format("%s Error decoding private portion of key. Object decoded to class %s but was expecting %s",
+                    ERRORDECODINGKEY, obj.getClass().getName(),
+                    BCRSAPrivateCrtKey.class.getCanonicalName());
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, msg, true, null));
             kp = null;
             return kp;
@@ -275,8 +188,8 @@ public class ZeusUtils {
         return kp;
     }
 
-    public static X509CertificateObject parseCert(String certIn, List<ErrorEntry> errors) {
-        X509CertificateObject x509obj = null;
+    public static X509CertificateHolder parseCert(String certIn, List<ErrorEntry> errors) {
+        X509CertificateHolder x509obj = null;
         List<PemBlock> blocks = PemUtils.parseMultiPem(certIn);
         Object obj;
         if (blocks.size() < 1) {
@@ -289,18 +202,20 @@ public class ZeusUtils {
             return x509obj;
         }
         obj = blocks.get(0).getDecodedObject();
-        if ((obj == null) || !(obj instanceof X509CertificateObject)) {
-            String msg = String.format("%s Certificate decoded to class %s but was expecting %s", ERRORDECODINGCERT, obj.getClass().getName(), className(X509CertificateObject.class));
+        if ((obj == null) || !(obj instanceof X509CertificateHolder)) {
+            String msg = String.format("%s Certificate decoded to class %s but was expecting %s",
+                    ERRORDECODINGCERT, obj.getClass().getName(),
+                    X509CertificateHolder.class.getCanonicalName());
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null));
             return x509obj;
         }
-        x509obj = (X509CertificateObject) obj;
+        x509obj = (X509CertificateHolder) obj;
         return x509obj;
     }
 
-    public static Set<X509CertificateObject> parseIntermediateCerts(String intermediates, List<ErrorEntry> errors) {
-        ResponseWithExcpetions<Set<X509CertificateObject>> resp = X509ReaderWriter.readSet(intermediates);
-        Set<X509CertificateObject> intermediateCerts = resp.getReturnObject();
+    public static Set<X509CertificateHolder> parseIntermediateCerts(String intermediates, List<ErrorEntry> errors) {
+        ResponseWithExcpetions<Set<X509CertificateHolder>> resp = X509ReaderWriter.readSet(intermediates);
+        Set<X509CertificateHolder> intermediateCerts = resp.getReturnObject();
 
         for (Throwable th : resp.getExceptions()) {
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, th.getMessage(), false, th));
@@ -315,11 +230,11 @@ public class ZeusUtils {
         return msg;
     }
 
-    public static List<X509CertificateObject> decodeImd(Map<X509CertificateObject, Integer> lineMap, String imdStr, ZeusCrtFile zcf) {
+    public static List<X509CertificateHolder> decodeImd(Map<X509CertificateHolder, Integer> lineMap, String imdStr, ZeusCrtFile zcf) {
         List<ErrorEntry> errors = zcf.getErrors();
         ErrorEntry errorEntry;
-        List<X509CertificateObject> imdCrts = new ArrayList<X509CertificateObject>();
-        X509CertificateObject x509obj;
+        List<X509CertificateHolder> imdCrts = new ArrayList<X509CertificateHolder>();
+        X509CertificateHolder xh;
         List<PemBlock> blocks = PemUtils.parseMultiPem(imdStr);
         String msg;
         if (imdStr == null || imdStr.length() == 0) {
@@ -333,45 +248,39 @@ public class ZeusUtils {
                 errors.add(errorEntry);
                 continue;
             }
-            if (!(obj instanceof X509CertificateObject)) {
-                msg = String.format("Object at line %d decoded to class %s but was expecting %s", block.getLineNum(), obj.getClass().getName(), className(X509CertificateObject.class));
+            if (!(obj instanceof X509CertificateHolder)) {
+                msg = String.format("Object at line %d decoded to class %s but was expecting %s",
+                        block.getLineNum(), obj.getClass().getName(),
+                        X509CertificateHolder.class.getCanonicalName());
                 errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null);
                 errors.add(errorEntry);
                 continue;
             }
-            x509obj = (X509CertificateObject) obj;
-            imdCrts.add(x509obj);
-            lineMap.put(x509obj, new Integer(block.getLineNum()));
+            xh = (X509CertificateHolder) obj;
+            imdCrts.add(xh);
+            lineMap.put(xh, new Integer(block.getLineNum()));
         }
         return imdCrts;
     }
 
-    private static X509CertificateObject decodeCrt(String crtStr, ZeusCrtFile zcf) {
-        X509CertificateObject crt;
+    private static X509CertificateHolder decodeCrt(String crtStr, ZeusCrtFile zcf) {
+        X509CertificateHolder crt;
         ErrorEntry errorEntry;
         List<ErrorEntry> errors = zcf.getErrors();
-        Object obj;
         try {
-            obj = PemUtils.fromPemString(crtStr);
-            if (!(obj instanceof X509CertificateObject)) {
-                String msg = String.format("crt object decoded to class %s but was expecting X509CertificateObject", obj.getClass().getName(), className(X509CertificateObject.class));
+            Object obj = PemUtils.fromPemString(crtStr);
+            if (!(obj instanceof X509CertificateHolder)) {
+                String msg = String.format("crt object decoded to class %s but was expecting X509CertificateHolder", obj.getClass().getName(), X509CertificateHolder.class.getName());
                 errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, msg, true, null);
                 errors.add(errorEntry);
                 return null;
             }
-            crt = (X509CertificateObject) obj;
-            return crt;
+            crt = (X509CertificateHolder) obj;
         } catch (PemException ex) {
             errorEntry = new ErrorEntry(ErrorType.UNREADABLE_CERT, "Unable to read userCrt", true, ex);
             errors.add(errorEntry);
             return null;
         }
-    }
-
-    private static String className(Class clazz) {
-        if (clazz == null) {
-            return null;
-        }
-        return clazz.getName();
+        return crt;
     }
 }

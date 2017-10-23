@@ -1,35 +1,29 @@
 package org.openstack.atlas.util.ca.util.fileio;
 
 import org.openstack.atlas.util.ca.util.X509MapValue;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
-import org.openstack.atlas.util.ca.exceptions.CapManUtilException;
 import org.openstack.atlas.util.ca.exceptions.FileUtilsException;
 
 public class RsaFileUtils {
@@ -165,8 +159,8 @@ public class RsaFileUtils {
             if (!(decodedObj instanceof X509Certificate)) {
                 continue;
             }
-            X509CertificateObject x509obj = (X509CertificateObject) block.getDecodedObject();
-            X509MapValue valMap = new X509MapValue(x509obj, file.getAbsolutePath(), block.getLineNum());
+            X509CertificateHolder x509Holder = (X509CertificateHolder) block.getDecodedObject();
+            X509MapValue valMap = new X509MapValue(x509Holder, file.getAbsolutePath(), block.getLineNum());
             valMapList.add(valMap);
         }
         return valMapList;

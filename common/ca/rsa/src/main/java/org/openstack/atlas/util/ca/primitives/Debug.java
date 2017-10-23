@@ -61,4 +61,10 @@ public class Debug {
 
     public static void nop() {
     }
+
+    public static String castExceptionMessage(Class from, Class to) {
+        String fromPath = findClassPath(from);
+        String toPath = findClassPath(to);
+        return String.format("Could not convert %s to %s", fromPath, toPath);
+    }
 }

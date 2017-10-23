@@ -6,7 +6,6 @@
         <artifactId>atlas-ca-parent</artifactId>
         <version>1.25.57-SNAPSHOT</version>
     </parent>
-
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ca-rsa</artifactId>
     <packaging>jar</packaging>

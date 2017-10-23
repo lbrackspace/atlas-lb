@@ -1,38 +1,32 @@
 package org.openstack.atlas.util.ca;
 
 import org.openstack.atlas.util.ca.primitives.Debug;
-import java.util.Set;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMReader;
-import org.bouncycastle.openssl.PEMWriter;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.security.Provider;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openstack.atlas.util.ca.exceptions.PemException;
-import java.security.Security;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import java.util.ArrayList;
 import java.util.List;
-import java.nio.charset.Charset;
+import java.security.KeyPair;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
+import org.bouncycastle.openssl.PEMException;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.openstack.atlas.util.ca.exceptions.NotAPemObject;
 import org.openstack.atlas.util.ca.primitives.ByteLineReader;
 import static org.openstack.atlas.util.ca.primitives.ByteLineReader.cmpBytes;
-import static org.openstack.atlas.util.ca.primitives.ByteLineReader.appendLF;
 
 public class PemUtils {
 
+    public JcaPEMWriter ass;
     public static final byte[] BEG_PRV;
     public static final byte[] END_PRV;
     public static final byte[] BEG_CSR;
@@ -59,80 +53,117 @@ public class PemUtils {
         BEG_RSA = StringUtils.asciiBytes("-----BEGIN PRIVATE KEY-----");
         END_RSA = StringUtils.asciiBytes("-----END PRIVATE KEY-----");
 
-        BEG_LINES = new byte[][]{BEG_PRV, BEG_CSR,BEG_CRT, BEG_RSA};
-        END_LINES = new byte[][]{END_PRV, END_CSR,END_CRT, END_RSA};
+        BEG_LINES = new byte[][]{BEG_PRV, BEG_CSR, BEG_CRT, BEG_RSA};
+        END_LINES = new byte[][]{END_PRV, END_CSR, END_CRT, END_RSA};
     }
 
-    public static Object fromPemString(String pem) throws PemException {
-        if (pem == null) {
-            throw new NotAPemObject("String parameter in call to PemUtils.fromPemString(String pem) was null");
-        }
-        try {
-            byte[] pemBytes = pem.getBytes(RsaConst.USASCII);
-            return fromPem(pemBytes);
-        } catch (UnsupportedEncodingException ex) {
-            throw new PemException("Error decodeing PEM", ex);
-        }
-    }
-
-    public static Object fromPem(byte[] pem) throws PemException {
-        Object out;
-        ByteArrayInputStream bas;
-        InputStreamReader isr;
-        PEMReader pr;
-
-        if (pem == null) {
-            throw new NotAPemObject("byte[] parameter pem in call to PemUtils.fromPem(byte[] pem) was null");
-        }
-
-        bas = new ByteArrayInputStream(pem);
-        isr = new InputStreamReader(bas);
-        pr = new PEMReader(isr);
-        try {
-            out = pr.readObject();
-            pr.close();
-            isr.close();
-            bas.close();
-        } catch (IOException ex) {
-            throw new PemException("Could not read PEM data", ex);
-        }
-        if (out == null) {
-            throw new NotAPemObject("Returned obj instance was null in call to Object obj = Object fromPem(bytes[] pem)");
-        }
-        return out;
-    }
-
-    public static String toPemString(Object obj) throws PemException {
-        byte[] pemBytes = toPem(obj);
-        String out;
-        try {
-            out = new String(pemBytes, RsaConst.USASCII);
-        } catch (UnsupportedEncodingException ex) {
-            System.out.printf("Exception: %s\n",Debug.getEST(ex));
-            throw new PemException("Could not encode Object to PEM", ex);
-        }
-        return out;
-
-    }
-
-    public static byte[] toPem(Object obj) throws PemException {
+    public static byte[] toPemBytes(Object obj) throws PemException {
         byte[] out;
-        ByteArrayOutputStream bas;
+        JcaPEMWriter pw;
         OutputStreamWriter osw;
-        PEMWriter pw;
-        bas = new ByteArrayOutputStream(RsaConst.PAGESIZE);
+        ByteArrayOutputStream bas;
+        bas = new ByteArrayOutputStream(PAGESIZE);
         osw = new OutputStreamWriter(bas);
-        pw = new PEMWriter(osw);
+        pw = new JcaPEMWriter(osw);
         try {
             pw.writeObject(obj);
             pw.flush();
             pw.close();
         } catch (IOException ex) {
-            System.out.printf("Exception: %s\n",Debug.getEST(ex));
-            throw new PemException("Error encoding object to PEM", ex);
+            String msg = String.format("Error encoding object %s to PEM",
+                    obj.getClass().getCanonicalName());
+            throw new PemException(msg);
         }
         out = bas.toByteArray();
+        try {
+            pw.close();
+            osw.close();
+            bas.close();
+        } catch (IOException ex) {
+            // Like really, Can't close with out an exceptuon
+        }
         return out;
+    }
+
+    public static String toPemString(Object obj) throws PemException {
+        byte[] pemBytes;
+        String out;
+        pemBytes = toPemBytes(obj);
+        try {
+            out = new String(pemBytes, RsaConst.USASCII);
+        } catch (UnsupportedEncodingException ex) {
+            throw new PemException("Could not encode pem to us-ascii", ex);
+        }
+        return out;
+    }
+
+    public static Object fromPemBytes(byte[] pemBytes) throws PemException {
+        Object obj;
+        ByteArrayInputStream bis;
+        InputStreamReader isr;
+        PEMParser pr;
+        if (pemBytes == null) {
+            throw new NotAPemObject("pem data was null could not decode");
+        }
+        bis = new ByteArrayInputStream(pemBytes);
+        isr = new InputStreamReader(bis);
+        pr = new PEMParser(isr);
+        try {
+            obj = pr.readObject();
+            pr.close();
+            isr.close();
+            bis.close();
+            if (obj == null) {
+                String msg = "Returned obj instance was null in call to fromPemBytes(byte[] pemBytes)";
+                throw new NotAPemObject(msg);
+            }
+        } catch (IOException ex) {
+            throw new PemException("could not read PEM data", ex);
+        }
+        if (obj instanceof PEMKeyPair) {
+            PEMKeyPair pkp = (PEMKeyPair) obj;
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider(RsaConst.BC);
+            KeyPair kp;
+            try {
+                kp = converter.getKeyPair(pkp);
+                return kp;
+            } catch (PEMException ex) {
+                String fmt = "Could not convert %s to KeyPair";
+                String msg = String.format(fmt, Debug.findClassPath(obj.getClass()));
+                throw new PemException(msg, ex);
+            }
+        } else if (obj instanceof PrivateKeyInfo) {
+
+            try {
+                JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider(RsaConst.BC);
+                PrivateKeyInfo privKeyInfo = (PrivateKeyInfo) obj;
+                BCRSAPrivateCrtKey privKey = (BCRSAPrivateCrtKey) converter.getPrivateKey(privKeyInfo);
+                byte[] privKeyBytes = PemUtils.toPemBytes(privKey);
+                KeyPair kp = (KeyPair) PemUtils.fromPemBytes(privKeyBytes);
+                return kp;
+            } catch (IOException ex) {
+                String fmt = "Could not convert %s to %s";
+                String msg = String.format(fmt,
+                        Debug.findClassPath(obj.getClass()),
+                        Debug.findClassPath(KeyPair.class));
+            }
+        }
+        return obj; // Not sure what to convert this object to so just return it
+    }
+
+    public static Object fromPemString(String pemStr) throws PemException {
+        byte[] pemBytes;
+        Object obj;
+        if (pemStr == null) {
+            throw new NotAPemObject("String parameter in call to PemUtils.fromPemString(String pem) was null");
+        }
+        try {
+            pemBytes = pemStr.getBytes(RsaConst.USASCII);
+            obj = fromPemBytes(pemBytes);
+            return obj;
+        } catch (UnsupportedEncodingException ex) {
+            throw new PemException("Error decoding PEM", ex);
+        }
     }
 
     public static String toMultiPemString(List<? extends Object> objList) throws PemException {
@@ -152,7 +183,7 @@ public class PemUtils {
                 continue;
             }
             try {
-                pemBytes = toPem(obj);
+                pemBytes = toPemBytes(obj);
             } catch (PemException ex) {
                 continue;
             }
@@ -214,7 +245,7 @@ public class PemUtils {
                     pemBlock.setPemData(bytes);
                     pemBlock.setEndLine(StringUtils.asciiString(line));
                     try {
-                        decodedObject = PemUtils.fromPem(bytes);
+                        decodedObject = PemUtils.fromPemBytes(bytes);
                     } catch (PemException ex) {
                         decodedObject = null;
                     }
@@ -253,8 +284,8 @@ public class PemUtils {
     }
 
     public static boolean isBegPemBlock(byte[] line) {
-        for(int i=0;i<BEG_LINES.length;i++){
-            if(cmpBytes(line,BEG_LINES[i])){
+        for (int i = 0; i < BEG_LINES.length; i++) {
+            if (cmpBytes(line, BEG_LINES[i])) {
                 return true;
             }
         }
@@ -262,8 +293,8 @@ public class PemUtils {
     }
 
     public static boolean isEndPemBlock(byte[] line) {
-        for(int i=0;i<END_LINES.length;i++){
-            if(cmpBytes(line,END_LINES[i])){
+        for (int i = 0; i < END_LINES.length; i++) {
+            if (cmpBytes(line, END_LINES[i])) {
                 return true;
             }
         }

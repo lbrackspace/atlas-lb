@@ -8,9 +8,8 @@ import java.security.spec.RSAPublicKeySpec;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.KeyPair;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 import org.bouncycastle.jce.provider.JCERSAPublicKey;
-import org.bouncycastle.jce.provider.JDKKeyFactory;
-import org.bouncycastle.jce.provider.JDKKeyFactory.RSA;
 
 public class HackedProviderAccessor {
 
@@ -32,12 +31,12 @@ public class HackedProviderAccessor {
         return pub;
     }
 
-    public static JCERSAPublicKey newJCERSAPublicKey(JCERSAPrivateCrtKey privKey) throws InvalidKeySpecException {
+    public static BCRSAPublicKey newJCERSAPublicKey(JCERSAPrivateCrtKey privKey) throws InvalidKeySpecException {
         BigInteger mod = privKey.getModulus();
         BigInteger pubExp = privKey.getPublicExponent();
         RSAPublicKeySpec rsaPubKeySpec = new RSAPublicKeySpec(mod, pubExp);
         JDKRsaFactoryExtender rsaFactory = new JDKRsaFactoryExtender();
-        JCERSAPublicKey publicKey = (JCERSAPublicKey) rsaFactory.getPublicKeyFromSpec(rsaPubKeySpec);
+        BCRSAPublicKey publicKey = rsaFactory.getPublicKeyFromSpec(rsaPubKeySpec);
         return publicKey;
     }
 }

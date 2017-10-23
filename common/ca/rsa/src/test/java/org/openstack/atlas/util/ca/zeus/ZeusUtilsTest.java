@@ -11,11 +11,13 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.bouncycastle.jce.provider.X509CertificateObject;
-import org.junit.*;
-
-import static org.junit.Assert.*;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
@@ -30,10 +32,10 @@ import org.openstack.atlas.util.ca.util.X509PathBuilder;
 public class ZeusUtilsTest {
 
     private static KeyPair userKey;
-    private static X509CertificateObject userCrt;
-    private static Set<X509CertificateObject> imdCrts;
-    private static X509CertificateObject rootCA;
-    private static int keySize = 512; // Keeping the key small for testing
+    private static X509CertificateHolder userCrt;
+    private static Set<X509CertificateHolder> imdCrts;
+    private static X509CertificateHolder rootCA;
+    private static final int keySize = 512; // Keeping the key small for testing
     private static List<X509ChainEntry> chainEntries;
     // These are for testing pre defined keys and certs
     private static final String workingRootCa;
@@ -202,13 +204,13 @@ public class ZeusUtilsTest {
         subjNames.add(subjName);
         chainEntries = X509PathBuilder.newChain(subjNames, keySize, notBefore, notAfter);
         int lastIdx = chainEntries.size() - 1;
-        rootCA = chainEntries.get(0).getX509obj();
-        userCrt = chainEntries.get(lastIdx).getX509obj();
+        rootCA = chainEntries.get(0).getX509Holder();
+        userCrt = chainEntries.get(lastIdx).getX509Holder();
         userKey = chainEntries.get(lastIdx).getKey();
 
-        imdCrts = new HashSet<X509CertificateObject>();
+        imdCrts = new HashSet<X509CertificateHolder>();
         for (int i = 1; i < lastIdx; i++) {
-            imdCrts.add(chainEntries.get(i).getX509obj());
+            imdCrts.add(chainEntries.get(i).getX509Holder());
         }
     }
 
@@ -226,48 +228,49 @@ public class ZeusUtilsTest {
 
     @Test
     public void testZeusCertFile() throws X509PathBuildException, PemException {
-        StringBuilder wtf = new StringBuilder(4096);
-        StringBuilder sb = new StringBuilder(4096);
-        Set<X509CertificateObject> roots = new HashSet<X509CertificateObject>();
+        StringBuilder stackMsg = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
+        Set<X509CertificateHolder> roots = new HashSet<X509CertificateHolder>();
         String rootCaStr = PemUtils.toPemString(rootCA);
         roots.add(rootCA);
         String userKeyStr = PemUtils.toPemString(userKey);
         String userCrtStr = PemUtils.toPemString(userCrt);
-        List<X509CertificateObject> imdCrtsReversed = new ArrayList(imdCrts);
+        List<X509CertificateHolder> imdCrtsReversed = new ArrayList(imdCrts);
         Collections.reverse(imdCrtsReversed);
-        for (X509CertificateObject x509obj : imdCrtsReversed) {
+        for (X509CertificateHolder x509obj : imdCrtsReversed) {
             sb.append(PemUtils.toPemString(x509obj));
         }
         String imdsString = sb.toString();
         ZeusUtils zu = new ZeusUtils(roots);
-        ZeusCrtFile zcf = zu.buildZeusCrtFile(userKeyStr, userCrtStr, imdsString, false);
+        ZeusCrtFile zcf = zu.buildZeusCrtFileLbassValidation(userKeyStr, userCrtStr, imdsString);
+        
         for (ErrorEntry errors : zcf.getErrors()) {
             Throwable ex = errors.getException();
             if (ex != null) {
-                wtf.append(StringUtils.getEST(ex));
+                stackMsg.append(StringUtils.getEST(ex));
             }
         }
 
-        assertTrue(zcf.getErrors().isEmpty());
+        Assert.assertTrue(zcf.getErrors().isEmpty());
         List<PemBlock> parsedImds = PemUtils.parseMultiPem(imdsString);
-        assertTrue(parsedImds.size() == 7);
+        Assert.assertTrue(parsedImds.size() == 7);
         for (PemBlock block : parsedImds) {
-            assertTrue(block.getDecodedObject() instanceof X509CertificateObject);
+            Assert.assertTrue(block.getDecodedObject() instanceof X509CertificateHolder);
         }
     }
 
     @Test
     public void testLbaasValidation() throws PemException {
-        Set<X509CertificateObject> roots = loadX509Set((X509CertificateObject) PemUtils.fromPemString(workingRootCa));
-        Set<X509CertificateObject> blanks = loadX509Set();
+        Set<X509CertificateHolder> roots = loadX509Set((X509CertificateHolder) PemUtils.fromPemString(workingRootCa));
+        Set<X509CertificateHolder> blanks = loadX509Set();
         boolean expectNoErrors = false;
         boolean expectErrors = true;
         boolean expectFatalErrors = true;
         boolean expectNoFatalErrors = false;
         assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, workingUserChain, expectNoFatalErrors, expectNoErrors);
-        assertZCFLbaasErrors(blanks, workingUserKey, workingUserCrt, workingUserChain, expectNoFatalErrors, expectErrors);
-        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, "", expectNoFatalErrors, expectErrors);
-        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, null, expectNoFatalErrors, expectErrors);
+        assertZCFLbaasErrors(blanks, workingUserKey, workingUserCrt, workingUserChain, expectNoFatalErrors, expectNoErrors); // No Path to root no longer consiered
+        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, "", expectNoFatalErrors, expectNoErrors);
+        assertZCFLbaasErrors(roots, workingUserKey, workingUserCrt, null, expectNoFatalErrors, expectNoErrors);
         assertZCFLbaasErrors(roots, workingUserKey, "", "", expectFatalErrors, expectErrors);
         assertZCFLbaasErrors(roots, workingUserKey, "", null, expectFatalErrors, expectErrors);
         assertZCFLbaasErrors(roots, workingUserKey, null, null, expectFatalErrors, expectErrors);
@@ -277,38 +280,38 @@ public class ZeusUtilsTest {
         assertZCFLbaasErrors(roots, "", "", workingUserChain, expectFatalErrors, expectErrors);
     }
 
-    private void assertZCFLbaasErrors(Set<X509CertificateObject> roots, String key, String crt, String imd, boolean expectFatalErrors, boolean expectErrors) {
+    private void assertZCFLbaasErrors(Set<X509CertificateHolder> roots, String key, String crt, String imd, boolean expectFatalErrors, boolean expectErrors) {
         ZeusUtils zu = new ZeusUtils(roots);
-        ZeusCrtFile zcf = zu.buildZeusCrtFile(key, crt, imd, true);
+        ZeusCrtFile zcf = zu.buildZeusCrtFileLbassValidation(key, crt, imd);
         boolean hasErrors = zcf.hasErrors();
         boolean hasFatalErrors = zcf.hasFatalErrors();
         boolean testFailed = false;
-        StringBuilder assertFailSb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         if (expectErrors && !hasErrors) {
-            assertFailSb.append(String.format("Expected errors but buildZeusCrtFile returned no Errors. "));
+            sb.append(String.format("Expected errors but buildZeusCrtFile returned no Errors. "));
             testFailed = true;
         }
         if (!expectErrors && hasErrors) {
-            assertFailSb.append(String.format("Wasn't expected errors but buildZeusCrtFile returned %s.", StringUtils.joinString(zcf.getErrors(), ",")));
+            sb.append(String.format("Wasn't expected errors but buildZeusCrtFile returned %s.", StringUtils.joinString(zcf.getErrors(), ",")));
             testFailed = true;
         }
         if (expectFatalErrors && !hasFatalErrors) {
-            assertFailSb.append(String.format("Expected fatal Errors but buildZeusCrtFile returned no Fatal Errors. "));
+            sb.append(String.format("Expected fatal Errors but buildZeusCrtFile returned no Fatal Errors. "));
             testFailed = true;
         }
         if (!expectFatalErrors && hasFatalErrors) {
-            assertFailSb.append(String.format("wasn't expecting Fatal Errors but buildZeusCrtFile returned %s. ", StringUtils.joinString(zcf.getFatalErrors(), ",")));
+            sb.append(String.format("wasn't expecting Fatal Errors but buildZeusCrtFile returned %s. ", StringUtils.joinString(zcf.getFatalErrors(), ",")));
         }
 
         if (testFailed) {
-            fail(assertFailSb.toString());
+            Assert.fail(sb.toString());
         }
     }
 
-    private Set<X509CertificateObject> loadX509Set(X509CertificateObject... x509objs) {
-        Set<X509CertificateObject> x509set = new HashSet<X509CertificateObject>();
+    private Set<X509CertificateHolder> loadX509Set(X509CertificateHolder... x509objs) {
+        Set<X509CertificateHolder> x509set = new HashSet<X509CertificateHolder>();
         for (int i = 0; i < x509objs.length; i++) {
-            X509CertificateObject x509obj = x509objs[i];
+            X509CertificateHolder x509obj = x509objs[i];
             if (x509obj == null) {
                 continue; // Cause I'm paranoid
             }
