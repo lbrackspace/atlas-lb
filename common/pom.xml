@@ -18,9 +18,7 @@
         <module>b64aes</module>
         <module>cidr</module>
         <module>ca</module>
-<!-- 
         <module>crypto-tool</module>
--->
     </modules>
 
     <build>
