@@ -78,7 +78,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
         if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
             //Must be secure-only
-            if (sslTermination.isSecureTrafficOnly() != null && !sslTermination.isSecureTrafficOnly()) {
+            if (sslTermination.getSecureTrafficOnly() != null && !sslTermination.getSecureTrafficOnly()) {
                 throw new BadRequestException("Cannot use 'mixed-mode' SSL termination while HTTPS Redirect is enabled.");
             }
             //Must use secure port 443

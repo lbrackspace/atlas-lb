@@ -153,19 +153,19 @@ public class DomainToDataModelLoadBalancerMapperTest {
             Assert.assertEquals(new Integer(9999), dataModelLoadBalancer.getPort());
             Assert.assertEquals(new GregorianCalendar(2010, 10, 10), dataModelLoadBalancer.getCreated().getTime());
             Assert.assertEquals(new GregorianCalendar(2010, 10, 10), dataModelLoadBalancer.getUpdated().getTime());
-            Assert.assertTrue(dataModelLoadBalancer.getConnectionLogging().isEnabled());
+            Assert.assertTrue(dataModelLoadBalancer.getConnectionLogging().getEnabled());
         }
 
         @Test
         public void should_map_half_close() {
-            Assert.assertEquals(true, dataModelLoadBalancer.isHalfClosed());
+            Assert.assertEquals(true, dataModelLoadBalancer.getHalfClosed());
         }
 
         @Test
         public void should_map_half_close_when_false() {
             loadBalancer.setHalfClosed(false);
             dataModelLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class);
-            Assert.assertEquals(false, dataModelLoadBalancer.isHalfClosed());
+            Assert.assertEquals(false, dataModelLoadBalancer.getHalfClosed());
         }
 
         @Test

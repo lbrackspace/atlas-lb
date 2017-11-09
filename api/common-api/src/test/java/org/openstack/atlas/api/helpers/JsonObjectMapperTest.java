@@ -85,7 +85,7 @@ public class JsonObjectMapperTest {
     public void shouldMapConnectionLoggingDeserialize() throws IOException {
         String clJson = "{\"connectionLogging\":{\"enabled\": true}}";
         ConnectionLogging cl = mapper.readValue(clJson, ConnectionLogging.class);
-        Assert.assertEquals(Boolean.TRUE, cl.isEnabled());
+        Assert.assertEquals(Boolean.TRUE, cl.getEnabled());
     }
 
     @Test
@@ -191,7 +191,7 @@ public class JsonObjectMapperTest {
         Assert.assertEquals(host.getMaxConcurrentConnections(), new Integer(5));
         Assert.assertEquals(host.getManagementSoapInterface(), "https://SomeSoapNode.com:9090");
         Assert.assertEquals(host.getManagementRestInterface(), "https://SomeRestNode.com:9070");
-        Assert.assertEquals(host.isRestEndpointActive(), true);
+        Assert.assertEquals(host.getRestEndpointActive(), true);
         Assert.assertEquals(host.getIpv4Servicenet(), "10.2.2.80");
         Assert.assertEquals(host.getCoreDeviceId(), "SomeCoreDevice");
         Assert.assertEquals(host.getIpv4Public(), "172.11.11.110");

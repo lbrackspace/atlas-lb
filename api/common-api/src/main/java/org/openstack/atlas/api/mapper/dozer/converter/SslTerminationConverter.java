@@ -40,8 +40,8 @@ public class SslTerminationConverter implements CustomConverter {
             String key = apiSslTerm.getPrivatekey();
             String imd = apiSslTerm.getIntermediateCertificate();
             Integer securePort = apiSslTerm.getSecurePort();
-            Boolean isEnabled = apiSslTerm.isEnabled();
-            Boolean isSecureTrafficOnly = apiSslTerm.isSecureTrafficOnly();
+            Boolean isEnabled = apiSslTerm.getEnabled();
+            Boolean isSecureTrafficOnly = apiSslTerm.getSecureTrafficOnly();
             List<SecurityProtocol> securityProtocols = apiSslTerm.getSecurityProtocols();
 
             if (isEnabled == null) {

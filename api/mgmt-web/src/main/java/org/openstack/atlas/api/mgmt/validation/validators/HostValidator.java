@@ -53,16 +53,16 @@ public class HostValidator implements ResourceValidator<Host> {
                 result(validationTarget().getIpv4Servicenet()).must().exist().forContext(POST).withMessage("ipv4Servicenet must be present in host"); // JIRA:882
                 // result(validationTarget().getIpv6Public()).must().exist().forContext(POST).withMessage("ipv6Public was must be present in host");
                 // result(validationTarget().getIpv6Servicenet()).must().exist().forContext(POST).withMessage("ipv6Servicenet must be present in host");
-                result(validationTarget().isSoapEndpointActive()).must().exist().forContext(POST).withMessage("SoapEndPointActive must be preset for host");
-                result(validationTarget().isRestEndpointActive()).must().exist().forContext(POST).withMessage("RestEndPointActive must be preset for host");
-                result(validationTarget().isSoapEndpointActive()).if_().exist().then().must().adhereTo(new Verifier<Boolean>() {
+                result(validationTarget().getSoapEndpointActive()).must().exist().forContext(POST).withMessage("SoapEndPointActive must be preset for host");
+                result(validationTarget().getRestEndpointActive()).must().exist().forContext(POST).withMessage("RestEndPointActive must be preset for host");
+                result(validationTarget().getSoapEndpointActive()).if_().exist().then().must().adhereTo(new Verifier<Boolean>() {
 
                     @Override
                     public VerifierResult verify(Boolean isSoapEndpointActive) {
                         return new VerifierResult(isSoapEndpointActive != null && (isSoapEndpointActive || !isSoapEndpointActive));
                     }
                 }).withMessage("Soap end point active must be of boolean value");
-                result(validationTarget().isRestEndpointActive()).if_().exist().then().must().adhereTo(new Verifier<Boolean>() {
+                result(validationTarget().getRestEndpointActive()).if_().exist().then().must().adhereTo(new Verifier<Boolean>() {
 
                     @Override
                     public VerifierResult verify(Boolean isRestEndpointActive) {

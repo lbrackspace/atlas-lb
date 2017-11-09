@@ -289,8 +289,8 @@ public class DataModelToDomainLoadBalancerTest {
             dHost.setSoapEndpointActive(Boolean.TRUE);
             dHost.setRestEndpointActive(Boolean.TRUE);
             rHost = mapper.map(dHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
-            Assert.assertEquals(Boolean.TRUE, rHost.isSoapEndpointActive());
-            Assert.assertEquals(Boolean.TRUE, rHost.isRestEndpointActive());
+            Assert.assertEquals(Boolean.TRUE, rHost.getSoapEndpointActive());
+            Assert.assertEquals(Boolean.TRUE, rHost.getRestEndpointActive());
         }
 
         @Test
@@ -301,8 +301,8 @@ public class DataModelToDomainLoadBalancerTest {
             dHost.setSoapEndpointActive(Boolean.FALSE);
             dHost.setRestEndpointActive(Boolean.FALSE);
             rHost = mapper.map(dHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
-            Assert.assertEquals(Boolean.FALSE, rHost.isSoapEndpointActive());
-            Assert.assertEquals(Boolean.FALSE, rHost.isRestEndpointActive());
+            Assert.assertEquals(Boolean.FALSE, rHost.getSoapEndpointActive());
+            Assert.assertEquals(Boolean.FALSE, rHost.getRestEndpointActive());
         }
 
         @Test
@@ -311,8 +311,8 @@ public class DataModelToDomainLoadBalancerTest {
             org.openstack.atlas.service.domain.entities.Host dHost;
             dHost = new org.openstack.atlas.service.domain.entities.Host();
             rHost = mapper.map(dHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
-            Assert.assertEquals(null, rHost.isSoapEndpointActive());
-            Assert.assertEquals(null, rHost.isRestEndpointActive());
+            Assert.assertEquals(null, rHost.getSoapEndpointActive());
+            Assert.assertEquals(null, rHost.getRestEndpointActive());
         }
     }
 

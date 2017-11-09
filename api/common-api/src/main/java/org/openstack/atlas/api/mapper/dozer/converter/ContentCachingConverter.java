@@ -13,10 +13,10 @@ public class ContentCachingConverter implements CustomConverter {
         }
 
         if (sourceFieldValue instanceof ContentCaching && destinationClass.equals(Boolean.class)) {
-            if (((ContentCaching)sourceFieldValue).isEnabled() == null) {
+            if (((ContentCaching)sourceFieldValue).getEnabled() == null) {
                 return false;
             }
-            return ((ContentCaching)sourceFieldValue).isEnabled();
+            return ((ContentCaching)sourceFieldValue).getEnabled();
         }
 
         if (sourceFieldValue instanceof Boolean) {

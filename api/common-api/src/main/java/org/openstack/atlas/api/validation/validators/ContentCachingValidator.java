@@ -15,7 +15,7 @@ public class ContentCachingValidator implements ResourceValidator<ContentCaching
         validator = build(new ValidatorBuilder<ContentCaching>(ContentCaching.class) {
             {
 
-                result(validationTarget().isEnabled()).must().exist().withMessage("Must specify whether content caching is enabled or not.");
+                result(validationTarget().getEnabled()).must().exist().withMessage("Must specify whether content caching is enabled or not.");
             }
         });
     }
