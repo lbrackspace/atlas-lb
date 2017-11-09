@@ -1,25 +1,36 @@
 package org.bouncycastle.asn1.cms;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.BERSequence;
 import org.bouncycastle.asn1.BERTaggedObject;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
+/**
+ * <a href="http://tools.ietf.org/html/rfc5652#section-6.1">RFC 5652</a> EncryptedContentInfo object.
+ *
+ * <pre>
+ * EncryptedContentInfo ::= SEQUENCE {
+ *     contentType ContentType,
+ *     contentEncryptionAlgorithm ContentEncryptionAlgorithmIdentifier,
+ *     encryptedContent [0] IMPLICIT EncryptedContent OPTIONAL 
+ * }
+ * </pre>
+ */
 public class EncryptedContentInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERObjectIdentifier contentType;
+    private ASN1ObjectIdentifier contentType;
     private AlgorithmIdentifier contentEncryptionAlgorithm;
     private ASN1OctetString     encryptedContent;
     
     public EncryptedContentInfo(
-        DERObjectIdentifier contentType, 
+        ASN1ObjectIdentifier contentType, 
         AlgorithmIdentifier contentEncryptionAlgorithm,
         ASN1OctetString     encryptedContent)
     {
@@ -28,10 +39,15 @@ public class EncryptedContentInfo
         this.encryptedContent = encryptedContent;
     }
     
-    public EncryptedContentInfo(
+    private EncryptedContentInfo(
         ASN1Sequence seq)
     {
-        contentType = (DERObjectIdentifier)seq.getObjectAt(0);
+        if (seq.size() < 2)
+        {
+            throw new IllegalArgumentException("Truncated Sequence Found");
+        }
+
+        contentType = (ASN1ObjectIdentifier)seq.getObjectAt(0);
         contentEncryptionAlgorithm = AlgorithmIdentifier.getInstance(
                                                         seq.getObjectAt(1));
         if (seq.size() > 2)
@@ -42,7 +58,14 @@ public class EncryptedContentInfo
     }
 
     /**
-     * return an EncryptedContentInfo object from the given object.
+     * Return an EncryptedContentInfo object from the given object.
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> null &rarr; null
+     * <li> {@link EncryptedContentInfo} object
+     * <li> {@link org.bouncycastle.asn1.ASN1Sequence#getInstance(java.lang.Object) ASN1Sequence} input formats
+     * </ul>
      *
      * @param obj the object we want converted.
      * @exception IllegalArgumentException if the object cannot be converted.
@@ -50,21 +73,19 @@ public class EncryptedContentInfo
     public static EncryptedContentInfo getInstance(
         Object obj)
     {
-        if (obj == null || obj instanceof EncryptedContentInfo)
+        if (obj instanceof EncryptedContentInfo)
         {
             return (EncryptedContentInfo)obj;
         }
-        
-        if (obj instanceof ASN1Sequence)
+        if (obj != null)
         {
-            return new EncryptedContentInfo((ASN1Sequence)obj);
+            return new EncryptedContentInfo(ASN1Sequence.getInstance(obj));
         }
         
-        throw new IllegalArgumentException("Invalid EncryptedContentInfo: "
-                                                + obj.getClass().getName());
+        return null;
     }
 
-    public DERObjectIdentifier getContentType()
+    public ASN1ObjectIdentifier getContentType()
     {
         return contentType;
     }
@@ -81,15 +102,8 @@ public class EncryptedContentInfo
 
     /** 
      * Produce an object suitable for an ASN1OutputStream.
-     * <pre>
-     * EncryptedContentInfo ::= SEQUENCE {
-     *     contentType ContentType,
-     *     contentEncryptionAlgorithm ContentEncryptionAlgorithmIdentifier,
-     *     encryptedContent [0] IMPLICIT EncryptedContent OPTIONAL 
-     * }
-     * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
         

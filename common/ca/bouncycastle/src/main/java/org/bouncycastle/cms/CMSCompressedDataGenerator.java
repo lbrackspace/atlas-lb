@@ -3,11 +3,9 @@ package org.bouncycastle.cms;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.zip.DeflaterOutputStream;
 
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.BERConstructedOctetString;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.BEROctetString;
 import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
 import org.bouncycastle.asn1.cms.CompressedData;
 import org.bouncycastle.asn1.cms.ContentInfo;
@@ -38,45 +36,6 @@ public class CMSCompressedDataGenerator
 
     /**
      * generate an object that contains an CMS Compressed Data
-     * @deprecated use generate(CMSTypedData, OutputCompressor)
-     */
-    public CMSCompressedData generate(
-        CMSProcessable  content,
-        String          compressionOID)
-        throws CMSException
-    {
-        AlgorithmIdentifier     comAlgId;
-        ASN1OctetString         comOcts;
-
-        try
-        {
-            ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-            DeflaterOutputStream  zOut = new DeflaterOutputStream(bOut);
-
-            content.write(zOut);
-
-            zOut.close();
-
-            comAlgId = new AlgorithmIdentifier(new DERObjectIdentifier(compressionOID));
-            comOcts = new BERConstructedOctetString(bOut.toByteArray());
-        }
-        catch (IOException e)
-        {
-            throw new CMSException("exception encoding data.", e);
-        }
-
-        ContentInfo     comContent = new ContentInfo(
-                                    CMSObjectIdentifiers.data, comOcts);
-
-        ContentInfo     contentInfo = new ContentInfo(
-                                    CMSObjectIdentifiers.compressedData,
-                                    new CompressedData(comAlgId, comContent));
-
-        return new CMSCompressedData(contentInfo);
-    }
-
-    /**
-     * generate an object that contains an CMS Compressed Data
      */
     public CMSCompressedData generate(
         CMSTypedData content,
@@ -96,7 +55,7 @@ public class CMSCompressedDataGenerator
             zOut.close();
 
             comAlgId = compressor.getAlgorithmIdentifier();
-            comOcts = new BERConstructedOctetString(bOut.toByteArray());
+            comOcts = new BEROctetString(bOut.toByteArray());
         }
         catch (IOException e)
         {

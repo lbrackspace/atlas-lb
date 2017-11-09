@@ -65,12 +65,12 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithLoggingTrue() throws Exception {
         lb.setConnectionLogging(true);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb, null);
+        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_CONNECTION_LOGGING), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
     }
@@ -79,12 +79,12 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithLoggingFalse() throws Exception {
         lb.setConnectionLogging(false);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb, null);
+        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_CONNECTION_LOGGING), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
     }
@@ -93,7 +93,7 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
@@ -105,13 +105,13 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidLogging() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb, null);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb, null);
+        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_CONNECTION_LOGGING), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));

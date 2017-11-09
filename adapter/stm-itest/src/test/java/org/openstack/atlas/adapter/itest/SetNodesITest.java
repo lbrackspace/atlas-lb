@@ -30,7 +30,7 @@ public class SetNodesITest extends STMTestBase {
     public void standUp() throws Exception {
         vsName = ZxtmNameBuilder.genVSName(lb);
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
-        stmAdapter.updateLoadBalancer(config, lb, lb, null);
+        stmAdapter.updateLoadBalancer(config, lb, lb);
     }
 
     private void setNodes() throws Exception {
@@ -73,6 +73,8 @@ public class SetNodesITest extends STMTestBase {
     }
 
     private String getFullAddress(Node node) {
+        // Marking this as a possible place for IpHelper.createZeusIpString(node.getIpAddress(), node.getPort())
+        // In this case, this whole method would go away usages would be replaced with the above
         return node.getIpAddress() + ":" + node.getPort();
     }
 

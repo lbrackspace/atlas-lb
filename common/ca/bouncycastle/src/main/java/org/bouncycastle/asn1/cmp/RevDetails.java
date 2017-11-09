@@ -1,25 +1,26 @@
 package org.bouncycastle.asn1.cmp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.X509Extensions;
 
 public class RevDetails
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private CertTemplate certDetails;
-    private X509Extensions crlEntryDetails;
+    private Extensions crlEntryDetails;
 
     private RevDetails(ASN1Sequence seq)
     {
         certDetails = CertTemplate.getInstance(seq.getObjectAt(0));
         if  (seq.size() > 1)
         {
-            crlEntryDetails = X509Extensions.getInstance(seq.getObjectAt(1));
+            crlEntryDetails = Extensions.getInstance(seq.getObjectAt(1));
         }
     }
 
@@ -30,12 +31,12 @@ public class RevDetails
             return (RevDetails)o;
         }
 
-        if (o instanceof ASN1Sequence)
+        if (o != null)
         {
-            return new RevDetails((ASN1Sequence)o);
+            return new RevDetails(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
     }
 
     public RevDetails(CertTemplate certDetails)
@@ -43,8 +44,20 @@ public class RevDetails
         this.certDetails = certDetails;
     }
 
+    /**
+     * @deprecated use method taking Extensions
+     * @param certDetails
+     * @param crlEntryDetails
+     */
     public RevDetails(CertTemplate certDetails, X509Extensions crlEntryDetails)
     {
+        this.certDetails = certDetails;
+        this.crlEntryDetails = Extensions.getInstance(crlEntryDetails.toASN1Primitive());
+    }
+
+    public RevDetails(CertTemplate certDetails, Extensions crlEntryDetails)
+    {
+        this.certDetails = certDetails;
         this.crlEntryDetails = crlEntryDetails;
     }
 
@@ -53,7 +66,7 @@ public class RevDetails
         return certDetails;
     }
 
-    public X509Extensions getCrlEntryDetails()
+    public Extensions getCrlEntryDetails()
     {
         return crlEntryDetails;
     }
@@ -71,7 +84,7 @@ public class RevDetails
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -14,11 +15,10 @@ import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class HibernateDbConf {
 
-    public static final String exampleJson = ""
-            + "{\n"
+    public static final String exampleJson = "{\n"
             + "  \"db\": {\n"
             + "    \"dialect\": \"org.hibernate.dialect.MySQL5InnoDBDialect\", \n"
-            + "    \"url\": \"jdbc:mysql://mysql-master-n01.ord1.lbaas.rackspace.net:3306/loadbalancing\", \n"
+            + "    \"url\": \"jdbc:mysql://mysql-master-n01.dfw1.lbaas.rackspace.net:3306/loadbalancing\", \n"
             + "    \"driver\": \"com.mysql.jdbc.Driver\", \n"
             + "    \"passwd\": \"YourPassword\", \n"
             + "    \"classes\": [\n"
@@ -64,6 +64,7 @@ public class HibernateDbConf {
             + "      \"org.openstack.atlas.service.domain.entities.JobState\", \n"
             + "      \"org.openstack.atlas.service.domain.entities.UserPages\", \n"
             + "      \"org.openstack.atlas.service.domain.entities.SslTermination\", \n"
+            + "      \"org.openstack.atlas.service.domain.entities.CertificateMapping\",\n"
             + "      \"org.openstack.atlas.service.domain.entities.Defaults\", \n"
             + "      \"org.openstack.atlas.service.domain.entities.AllowedDomain\", \n"
             + "      \"org.openstack.atlas.service.domain.entities.LoadbalancerMeta\", \n"
@@ -86,7 +87,7 @@ public class HibernateDbConf {
             + "    \"user\": \"lbaas\", \n"
             + "    \"hbm2ddl\": \"none\"\n"
             + "  }\n"
-            + "}";
+            + "}\n";
     private String dbKey;
     private String url;
     private String user;
@@ -108,6 +109,7 @@ public class HibernateDbConf {
                 append(", dialect=").append(dialect).
                 append(", hbm2ddl=").append(hbm2ddl).
                 append(", packageName=").append(packageName).
+                append(", db_key=").append(dbKey).
                 append(", classNames=");
         if (classNames == null) {
             sb.append("null");
@@ -139,6 +141,7 @@ public class HibernateDbConf {
                 classList.add((String) classes.get(i));
             }
         }
+        Collections.sort(classList);
         return classList;
     }
 
@@ -153,7 +156,7 @@ public class HibernateDbConf {
         conf.setUser((String) dbConf.get("user"));
         conf.setPasswd((String) dbConf.get("passwd"));
         conf.setClassNames(classList);
-        conf.setDbKey((String) dbConf.get("dbkey"));
+        conf.setDbKey((String) dbConf.get("db_key"));
         conf.setDialect((String) dbConf.get("dialect"));
         conf.setDriver((String) dbConf.get("driver"));
         conf.setPackageName((String) dbConf.get("package"));

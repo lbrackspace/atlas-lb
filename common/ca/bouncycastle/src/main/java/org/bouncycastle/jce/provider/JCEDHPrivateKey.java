@@ -10,10 +10,11 @@ import javax.crypto.interfaces.DHPrivateKey;
 import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.DHPrivateKeySpec;
 
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.DHParameter;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -21,6 +22,7 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x9.DHDomainParameters;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.crypto.params.DHPrivateKeyParameters;
+import org.bouncycastle.jcajce.provider.asymmetric.util.PKCS12BagAttributeCarrierImpl;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 
 public class JCEDHPrivateKey
@@ -55,17 +57,18 @@ public class JCEDHPrivateKey
 
     JCEDHPrivateKey(
         PrivateKeyInfo  info)
+        throws IOException
     {
         ASN1Sequence    seq = ASN1Sequence.getInstance(info.getAlgorithmId().getParameters());
-        DERInteger      derX = (DERInteger)info.getPrivateKey();
-        DERObjectIdentifier id = info.getAlgorithmId().getObjectId();
+        ASN1Integer      derX = ASN1Integer.getInstance(info.parsePrivateKey());
+        ASN1ObjectIdentifier id = info.getAlgorithmId().getAlgorithm();
 
         this.info = info;
         this.x = derX.getValue();
 
         if (id.equals(PKCSObjectIdentifiers.dhKeyAgreement))
         {
-            DHParameter params = new DHParameter(seq);
+            DHParameter params = DHParameter.getInstance(seq);
 
             if (params.getL() != null)
             {
@@ -118,14 +121,21 @@ public class JCEDHPrivateKey
      */
     public byte[] getEncoded()
     {
-        if (info != null)
+        try
         {
-            return info.getDEREncoded();
-        }
-        
-        PrivateKeyInfo          info = new PrivateKeyInfo(new AlgorithmIdentifier(PKCSObjectIdentifiers.dhKeyAgreement, new DHParameter(dhSpec.getP(), dhSpec.getG(), dhSpec.getL()).getDERObject()), new DERInteger(getX()));
+            if (info != null)
+            {
+                return info.getEncoded(ASN1Encoding.DER);
+            }
 
-        return info.getDEREncoded();
+            PrivateKeyInfo          info = new PrivateKeyInfo(new AlgorithmIdentifier(PKCSObjectIdentifiers.dhKeyAgreement, new DHParameter(dhSpec.getP(), dhSpec.getG(), dhSpec.getL())), new ASN1Integer(getX()));
+
+            return info.getEncoded(ASN1Encoding.DER);
+        }
+        catch (IOException e)
+        {
+            return null;
+        }
     }
 
     public DHParameterSpec getParams()
@@ -158,14 +168,14 @@ public class JCEDHPrivateKey
     }
 
     public void setBagAttribute(
-        DERObjectIdentifier oid,
-        DEREncodable        attribute)
+        ASN1ObjectIdentifier oid,
+        ASN1Encodable attribute)
     {
         attrCarrier.setBagAttribute(oid, attribute);
     }
 
-    public DEREncodable getBagAttribute(
-        DERObjectIdentifier oid)
+    public ASN1Encodable getBagAttribute(
+        ASN1ObjectIdentifier oid)
     {
         return attrCarrier.getBagAttribute(oid);
     }

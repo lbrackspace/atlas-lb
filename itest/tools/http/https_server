@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+
+from threading import Thread
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+from SocketServer import ForkingMixIn, ThreadingMixIn
+import socket
+import thread
+import threading
+import json
+import copy
+import time
+import ssl
+import sys
+import os
+
+counter = 0
+lock = threading.Lock()
+
+def inc_counter(n):
+    global counter, lock
+    with lock:
+        counter += n
+        return counter
+
+
+def usage(prog):
+    printf("usage is %s <host> <port> <msg> <keyfile> <crtfile>\n",prog)
+    printf("Examples\n")
+    printf("#if you want to advertise the CA as apart of your chain\n")
+    printf("%s 127.0.0.1 8080 msg ./localhost.key all.crt\n\n",prog)
+    printf("#if you want to advertise only the chain\n")
+    printf("%s 127.0.0.1 8080 msg ./localhost.key chain.crt\n\n",prog)
+    printf("#if you want to only want to show the local crt\n")
+    printf("%s 127.0.0.1 8080 msg ./localhost.key localhost.crt\n\n",prog)
+
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def fprintf(fp,format,*args): fp.write(format%args)
+
+class ThreadedHTTPServer(ThreadingMixIn,HTTPServer):
+    pass
+
+
+def TestHandlerClassFactory(*args, **kw):
+    msg = kw.pop("msg", "Default MSG")
+    class TestHandler(BaseHTTPRequestHandler):
+        def __init__(self, *args, **kw):
+            self.msg = msg
+            BaseHTTPRequestHandler.__init__(self,*args,**kw)
+
+        def headers2json(self):
+            obj = {}
+            obj["headers"]=[]
+            obj["request_counter"] = inc_counter(1)
+            obj["local_ip"]=self.request.getsockname()[0]
+            obj["remote_ip"]=self.request.getpeername()[0]
+            obj["msg"] = self.msg
+            for hdr in self.headers.headers:
+                obj["headers"].append(hdr)
+            jsonData = json.dumps(obj,indent=2)
+            return jsonData
+
+        def do_GET(self):
+            printf("count = %i\n", inc_counter(0))
+            data = self.headers2json()
+            self.send_response(200)
+            self.send_header("content-length",len(data))
+            self.send_header("content-type","application/json")
+            self.end_headers()
+            self.wfile.write(data)
+            return
+    return TestHandler
+
+def dirPrint(obj):
+    for m in sorted(dir(obj)):
+        print m
+
+if __name__ == '__main__':
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv) < 6:
+        usage(prog)
+        sys.exit()
+    wrapOpts = {}
+    host = sys.argv[1]
+    port = int(sys.argv[2])
+    msg = sys.argv[3]
+    wrapOpts["keyfile"] = sys.argv[4]
+    wrapOpts["certfile"] = sys.argv[5]
+    wrapOpts["server_side"] = True
+
+    printf("proces id = %s\n",os.getpid())
+    printf("Listening on %s:%s\n",host,port)
+    handler = TestHandlerClassFactory(msg=msg)
+    server = ThreadedHTTPServer((host,port),handler)
+    server.socket = ssl.wrap_socket(server.socket,**wrapOpts)
+    printf("Serving forever\n")
+    server.serve_forever()

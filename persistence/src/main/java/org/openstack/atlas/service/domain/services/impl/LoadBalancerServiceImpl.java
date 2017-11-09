@@ -2,8 +2,6 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.StaleObjectStateException;
-import org.hibernate.exception.LockAcquisitionException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
@@ -185,6 +183,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
+    @Transactional
+    public boolean testAndSetStatusPending(LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException {
+        return loadBalancerRepository.testAndSetStatus(lb.getAccountId(), lb.getId(), LoadBalancerStatus.PENDING_UPDATE, false);
+    }
+
+    @Override
     @DeadLockRetry
     @Transactional
     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException {
@@ -196,6 +200,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         return isStatusSet;
+    }
+
+    @Override
+    @DeadLockRetry
+    @Transactional
+    public boolean testAndSetStatus(LoadBalancer lb, LoadBalancerStatus loadBalancerStatus) throws EntityNotFoundException, UnprocessableEntityException {
+        return testAndSetStatus(lb.getAccountId(), lb.getId(), loadBalancerStatus);
     }
 
     @Override
@@ -459,6 +470,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     @Transactional
     public LoadBalancer get(Integer id, Integer accountId) throws EntityNotFoundException {
         return loadBalancerRepository.getByIdAndAccountId(id, accountId);
+    }
+
+    @Override
+    @Transactional
+    public LoadBalancer getWithUserPages(Integer id) throws EntityNotFoundException {
+        return loadBalancerRepository.getByIdWithUserPages(id);
     }
 
     @Override
@@ -877,12 +894,20 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         if (!isHost) {
-            loadBalancer.setHost(hostService.getDefaultActiveHostAndActiveCluster(loadBalancer.getAccountId()));
+            loadBalancer.setHost(hostService.getDefaultActiveHostAndActiveCluster(loadBalancer.getAccountId(), loadBalancerHasPublicVip(loadBalancer)));
         } else {
             if (gLb != null) {
                 loadBalancer.setHost(gLb.getHost());
             }
         }
+    }
+
+    private boolean loadBalancerHasPublicVip(LoadBalancer loadBalancer) {
+        for (LoadBalancerJoinVip join_vip : loadBalancer.getLoadBalancerJoinVipSet()) {
+            VirtualIpType vip_type = join_vip.getVirtualIp().getVipType();
+            if (vip_type.equals(VirtualIpType.PUBLIC)) return true;
+        }
+        return false;
     }
 
     private void setVipConfigForLoadBalancer(LoadBalancer lbFromApi) throws OutOfVipsException, AccountMismatchException, UniqueLbPortViolationException, EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
@@ -1112,7 +1137,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 }
                 lb.setHost(specifiedHost);
             } else {
-                lb.setHost(hostService.getDefaultActiveHostAndActiveCluster(lb.getAccountId()));
+                lb.setHost(hostService.getDefaultActiveHostAndActiveCluster(lb.getAccountId(), loadBalancerHasPublicVip(lb)));
             }
         }
     }

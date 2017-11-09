@@ -21,6 +21,6 @@ public class MustNotBeEmpty implements Verifier {
             return new VerifierResult(((Collection) obj).isEmpty());
         }
 
-        return new VerifierResult(false);
+        return new VerifierResult(true);
     }
 }

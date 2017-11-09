@@ -1,15 +1,15 @@
 package org.bouncycastle.asn1.isismtt.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.DERSequence;
-
 import java.math.BigInteger;
 import java.util.Enumeration;
+
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERSequence;
 
 /**
  * Monetary limit for transactions. The QcEuMonetaryLimit QC statement MUST be
@@ -17,11 +17,10 @@ import java.util.Enumeration;
  * since January 1, 2004. For the sake of backward compatibility with
  * certificates already in use, components SHOULD support MonetaryLimit (as well
  * as QcEuLimitValue).
- * <p/>
+ * <p>
  * Indicates a monetary limit within which the certificate holder is authorized
  * to act. (This value DOES NOT express a limit on the liability of the
  * certification authority).
- * <p/>
  * <pre>
  *    MonetaryLimitSyntax ::= SEQUENCE
  *    {
@@ -30,17 +29,17 @@ import java.util.Enumeration;
  *      exponent INTEGER
  *    }
  * </pre>
- * <p/>
+ * <p>
  * currency must be the ISO code.
- * <p/>
+ * <p>
  * value = amount�10*exponent
  */
 public class MonetaryLimit
-    extends ASN1Encodable
+    extends ASN1Object
 {
     DERPrintableString currency;
-    DERInteger amount;
-    DERInteger exponent;
+    ASN1Integer amount;
+    ASN1Integer exponent;
 
     public static MonetaryLimit getInstance(Object obj)
     {
@@ -66,14 +65,13 @@ public class MonetaryLimit
         }
         Enumeration e = seq.getObjects();
         currency = DERPrintableString.getInstance(e.nextElement());
-        amount = DERInteger.getInstance(e.nextElement());
-        exponent = DERInteger.getInstance(e.nextElement());
+        amount = ASN1Integer.getInstance(e.nextElement());
+        exponent = ASN1Integer.getInstance(e.nextElement());
     }
 
     /**
      * Constructor from a given details.
-     * <p/>
-     * <p/>
+     * <p>
      * value = amount�10^exponent
      *
      * @param currency The currency. Must be the ISO code.
@@ -83,8 +81,8 @@ public class MonetaryLimit
     public MonetaryLimit(String currency, int amount, int exponent)
     {
         this.currency = new DERPrintableString(currency, true);
-        this.amount = new DERInteger(amount);
-        this.exponent = new DERInteger(exponent);
+        this.amount = new ASN1Integer(amount);
+        this.exponent = new ASN1Integer(exponent);
     }
 
     public String getCurrency()
@@ -104,9 +102,8 @@ public class MonetaryLimit
 
     /**
      * Produce an object suitable for an ASN1OutputStream.
-     * <p/>
+     * <p>
      * Returns:
-     * <p/>
      * <pre>
      *    MonetaryLimitSyntax ::= SEQUENCE
      *    {
@@ -118,7 +115,7 @@ public class MonetaryLimit
      *
      * @return a DERObject
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector seq = new ASN1EncodableVector();
         seq.add(currency);

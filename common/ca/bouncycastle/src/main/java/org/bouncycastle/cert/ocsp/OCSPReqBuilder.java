@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.ocsp.OCSPRequest;
@@ -14,8 +15,8 @@ import org.bouncycastle.asn1.ocsp.Signature;
 import org.bouncycastle.asn1.ocsp.TBSRequest;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.operator.ContentSigner;
 
@@ -23,16 +24,16 @@ public class OCSPReqBuilder
 {
     private List            list = new ArrayList();
     private GeneralName     requestorName = null;
-    private X509Extensions  requestExtensions = null;
+    private Extensions  requestExtensions = null;
     
     private class RequestObject
     {
         CertificateID   certId;
-        X509Extensions  extensions;
+        Extensions  extensions;
 
         public RequestObject(
             CertificateID   certId,
-            X509Extensions  extensions)
+            Extensions  extensions)
         {
             this.certId = certId;
             this.extensions = extensions;
@@ -41,7 +42,7 @@ public class OCSPReqBuilder
         public Request toRequest()
             throws Exception
         {
-            return new Request(certId.toASN1Object(), extensions);
+            return new Request(certId.toASN1Primitive(), extensions);
         }
     }
 
@@ -66,7 +67,7 @@ public class OCSPReqBuilder
      */
     public OCSPReqBuilder addRequest(
         CertificateID   certId,
-        X509Extensions  singleRequestExtensions)
+        Extensions singleRequestExtensions)
     {
         list.add(new RequestObject(certId, singleRequestExtensions));
 
@@ -74,9 +75,9 @@ public class OCSPReqBuilder
     }
 
     /**
-     * Set the requestor name to the passed in X500Principal
+     * Set the requestor name to the passed in X500Name
      * 
-     * @param requestorName a X500Principal representing the requestor name.
+     * @param requestorName an X500Name representing the requestor name.
      */
     public OCSPReqBuilder setRequestorName(
         X500Name requestorName)
@@ -95,7 +96,7 @@ public class OCSPReqBuilder
     }
     
     public OCSPReqBuilder setRequestExtensions(
-        X509Extensions      requestExtensions)
+        Extensions      requestExtensions)
     {
         this.requestExtensions = requestExtensions;
 
@@ -138,7 +139,7 @@ public class OCSPReqBuilder
             {
                 OutputStream sOut = contentSigner.getOutputStream();
 
-                sOut.write(tbsReq.getDEREncoded());
+                sOut.write(tbsReq.getEncoded(ASN1Encoding.DER));
 
                 sOut.close();
             }
@@ -175,7 +176,7 @@ public class OCSPReqBuilder
      * Generate an unsigned request
      * 
      * @return the OCSPReq
-     * @throws org.bouncycastle.ocsp.OCSPException
+     * @throws org.bouncycastle.cert.ocsp.OCSPException
      */
     public OCSPReq build()
         throws OCSPException

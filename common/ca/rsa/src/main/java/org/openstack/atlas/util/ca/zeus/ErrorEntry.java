@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.openstack.atlas.util.ca.StringUtils;
+import org.openstack.atlas.util.ca.primitives.Debug;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.util.StaticHelpers;
 
@@ -60,7 +61,7 @@ public class ErrorEntry {
     }
 
     public String toString(boolean showException) {
-        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
+        StringBuilder sb = new StringBuilder();
         sb.append(String.format("{%s,%s,", errorType.toString(), errorDetail));
         sb.append(fatal ? "Fatal}" : "NotFatal}");
         if (!showException) {
@@ -69,7 +70,7 @@ public class ErrorEntry {
         sb.append(" Exceptions:\n");
         List<Throwable> exceptions = StaticHelpers.getExceptionCausesList(exception);
         for (Throwable ex : exceptions) {
-            sb.append(StringUtils.getEST(ex));
+            sb.append(Debug.getExtendedStackTrace(ex));
         }
         sb.append("}\n");
         return sb.toString();

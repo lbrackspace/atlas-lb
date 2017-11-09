@@ -9,6 +9,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.ip.IPUtils;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
@@ -24,7 +25,6 @@ import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
 import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
-import org.rackspace.stingray.client.traffic.ip.TrafficIpIpMapping;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.*;
@@ -53,16 +53,17 @@ public class ResourceTranslator {
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
-        translateLoadBalancerResource(config, vsName, loadBalancer, queLb, true);
+        translateLoadBalancerResource(config, vsName, loadBalancer, queLb, true, true);
     }
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
-                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert) throws InsufficientRequestException {
+                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert, boolean vipsEnabled)
+            throws InsufficientRequestException {
         //Order matters when translating the entire entity.
-        if (loadBalancer.getHealthMonitor() != null && !loadBalancer.hasSsl()) translateMonitorResource(loadBalancer);
+        if (loadBalancer.getHealthMonitor() != null) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
 
-        translateTrafficIpGroupsResource(config, loadBalancer, true);
+        translateTrafficIpGroupsResource(config, loadBalancer, vipsEnabled);
 
         if (loadBalancer.getSslTermination() != null) translateKeypairResource(loadBalancer, careAboutCert);
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
@@ -76,7 +77,7 @@ public class ResourceTranslator {
     }
 
     //This could probably be trimmed down a bit
-    private VirtualServer translateRedirectVirtualServerResource(LoadBalancerEndpointConfiguration config, String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
+    public VirtualServer translateRedirectVirtualServerResource(LoadBalancerEndpointConfiguration config, String vsName, LoadBalancer loadBalancer) throws InsufficientRequestException {
         VirtualServerBasic basic = new VirtualServerBasic();
         VirtualServerSsl ssl = new VirtualServerSsl();
         VirtualServerProperties properties = new VirtualServerProperties();
@@ -91,6 +92,11 @@ public class ResourceTranslator {
 
         basic.setEnabled(true);
 
+        //protection class settings
+        if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
+            basic.setProtection_class(ZxtmNameBuilder.genVSName(loadBalancer));
+        }
+
         // Redirection specific
         basic.setPort(80);
         basic.setPool("discard");
@@ -100,7 +106,12 @@ public class ResourceTranslator {
         log.setEnabled(false);
         properties.setLog(log);
 
-        ce.setError_file("Default");
+        //error file settings
+        if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
+            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genRedirectVSName(loadBalancer)));
+        } else {
+            ce.setError_file("Default");
+        }
         properties.setConnection_errors(ce);
 
         //trafficscript or rule settings
@@ -137,6 +148,12 @@ public class ResourceTranslator {
             basic.setPort(loadBalancer.getSslTermination().getSecurePort());
             basic.setSsl_decrypt(true);
             basic.setEnabled(loadBalancer.isUsingSsl());
+            if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
+                ssl.setAdd_http_headers(true);
+                VirtualServerHttp virtualServerHttp = new VirtualServerHttp();
+                virtualServerHttp.setLocation_rewrite("never");
+                properties.setHttp(virtualServerHttp);
+            }
         } else {
             basic.setPort(loadBalancer.getPort());
             if (loadBalancer.hasSsl()) {
@@ -153,6 +170,10 @@ public class ResourceTranslator {
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
             basic.setProtection_class(ZxtmNameBuilder.genVSName(loadBalancer));
         }
+        // Dumbing this down for SOAP compatibility, this isn't deleted now
+        // else {
+        //     basic.setProtection_class("");
+        // }
 
         //connection log settings
         if (loadBalancer.isConnectionLogging() != null && loadBalancer.isConnectionLogging()) {
@@ -184,10 +205,9 @@ public class ResourceTranslator {
         }
 
         //error file settings
-        if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) { // if userPages is null, just leave the ce object alone and it should use the default page
-            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genVSName(loadBalancer)));
+        if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
+            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(vsName));
         } else {
-            //Doesnt look like thats the case for some reason :( may be bug in STM -- need to reverify this
             ce.setError_file("Default");
         }
         properties.setConnection_errors(ce);
@@ -229,8 +249,10 @@ public class ResourceTranslator {
         // Add new traffic ip groups for IPv6 vips
         for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : loadBalancer.getLoadBalancerJoinVip6Set()) {
             try {
+                VirtualIpv6 virtualIpv6 = loadBalancerJoinVip6ToAdd.getVirtualIp();
+                virtualIpv6.setCluster(config.getTrafficManagerHost().getCluster());
                 nameandgroup.put(ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVip6ToAdd.getVirtualIp()),
-                        translateTrafficIpGroupResource(config, loadBalancerJoinVip6ToAdd.getVirtualIp().getDerivedIpString(), isEnabled));
+                        translateTrafficIpGroupResource(config, virtualIpv6.getDerivedIpString(), isEnabled));
             } catch (IPStringConversionException e) {
                 //Generally means there is a missing value, wrap up the exception into general IRE;
                 throw new InsufficientRequestException(e);
@@ -241,8 +263,7 @@ public class ResourceTranslator {
         return nameandgroup;
     }
 
-    private TrafficIp translateTrafficIpGroupResource(LoadBalancerEndpointConfiguration config
-            , String ipaddress, boolean isEnabled) {
+    private TrafficIp translateTrafficIpGroupResource(LoadBalancerEndpointConfiguration config, String ipaddress, boolean isEnabled) {
         TrafficIp tig = new TrafficIp();
         TrafficIpProperties properties = new TrafficIpProperties();
         TrafficIpBasic basic = new TrafficIpBasic();
@@ -311,7 +332,7 @@ public class ResourceTranslator {
                 PoolNodeWeight nw;
                 for (Node n : nodes) {
                     nw = new PoolNodeWeight();
-                    nw.setNode(n.getIpAddress() + ":" + Integer.toString(n.getPort()));
+                    nw.setNode(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
                     nw.setWeight(n.getWeight());
                     weights.add(nw);
                 }
@@ -418,16 +439,26 @@ public class ResourceTranslator {
             Integer maxConnections = limits.getMaxConnections();
             if (maxConnections == null) maxConnections = 0;
             limiting.setMax_1_connections(maxConnections);
-            limiting.setMax_10_connections(maxConnections * 10);
-            limiting.setMax_connection_rate(limits.getMaxConnectionRate());
-            limiting.setMin_connections(limits.getMinConnections());
-            limiting.setRate_timer(limits.getRateInterval());
-        } else {
-            limiting.setMax_10_connections(0);
-            limiting.setMax_1_connections(0);
-            limiting.setMax_connection_rate(0);
+
+            /* Zeus bug requires us to set per-process to false and ignore most of these settings */
+            basic.setPer_process_connection_count(false);
             limiting.setMin_connections(0);
             limiting.setRate_timer(1);
+            limiting.setMax_connection_rate(0);
+            limiting.setMax_10_connections(0);
+            //limiting.setMin_connections(limits.getMinConnections());
+            //limiting.setRate_timer(limits.getRateInterval());
+            //limiting.setMax_connection_rate(limits.getMaxConnectionRate());
+            //limiting.setMax_10_connections(maxConnections * 10);
+        } else {
+            limiting.setMax_1_connections(0);
+
+            /* Zeus bug requires us to set per-process to false */
+            basic.setPer_process_connection_count(false);
+            limiting.setMin_connections(0);
+            limiting.setRate_timer(1);
+            limiting.setMax_connection_rate(0);
+            limiting.setMax_10_connections(0);
         }
         properties.setConnection_limiting(limiting);
 

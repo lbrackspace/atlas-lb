@@ -5,6 +5,8 @@ import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.Mac;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.paddings.ISO7816d4Padding;
+import org.bouncycastle.crypto.params.KeyParameter;
+import org.bouncycastle.util.Pack;
 
 /**
  * CMAC - as specified at www.nuee.nagoya-u.ac.jp/labs/tiwata/omac/omac.html
@@ -27,9 +29,7 @@ import org.bouncycastle.crypto.paddings.ISO7816d4Padding;
  */
 public class CMac implements Mac
 {
-    private static final byte CONSTANT_128 = (byte)0x87;
-    private static final byte CONSTANT_64 = (byte)0x1b;
-
+    private byte[] poly;
     private byte[] ZEROES;
 
     private byte[] mac;
@@ -40,7 +40,7 @@ public class CMac implements Mac
 
     private int macSize;
 
-    private byte[] L, Lu, Lu2;
+    private byte[] Lu, Lu2;
 
     /**
      * create a standard MAC based on a CBC block cipher (64 or 128 bit block).
@@ -57,14 +57,14 @@ public class CMac implements Mac
     /**
      * create a standard MAC based on a block cipher with the size of the
      * MAC been given in bits.
-     * <p/>
+     * <p>
      * Note: the size of the MAC must be at least 24 bits (FIPS Publication 81),
      * or 16 bits if being used as a data authenticator (FIPS Publication 113),
      * and in general should be less than the size of the block cipher as it reduces
      * the chance of an exhaustive attack (see Handbook of Applied Cryptography).
      *
      * @param cipher        the cipher to be used as the basis of the MAC generation.
-     * @param macSizeInBits the size of the MAC in bits, must be a multiple of 8 and <= 128.
+     * @param macSizeInBits the size of the MAC in bits, must be a multiple of 8 and &lt;= 128.
      */
     public CMac(BlockCipher cipher, int macSizeInBits)
     {
@@ -80,14 +80,9 @@ public class CMac implements Mac
                     + (cipher.getBlockSize() * 8));
         }
 
-        if (cipher.getBlockSize() != 8 && cipher.getBlockSize() != 16)
-        {
-            throw new IllegalArgumentException(
-                "Block size must be either 64 or 128 bits");
-        }
-
         this.cipher = new CBCBlockCipher(cipher);
         this.macSize = macSizeInBits / 8;
+        this.poly = lookupPoly(cipher.getBlockSize());
 
         mac = new byte[cipher.getBlockSize()];
 
@@ -103,35 +98,111 @@ public class CMac implements Mac
         return cipher.getAlgorithmName();
     }
 
+    private static int shiftLeft(byte[] block, byte[] output)
+    {
+        int i = block.length;
+        int bit = 0;
+        while (--i >= 0)
+        {
+            int b = block[i] & 0xff;
+            output[i] = (byte)((b << 1) | bit);
+            bit = (b >>> 7) & 1;
+        }
+        return bit;
+    }
+
     private byte[] doubleLu(byte[] in)
     {
-        int FirstBit = (in[0] & 0xFF) >> 7;
         byte[] ret = new byte[in.length];
-        for (int i = 0; i < in.length - 1; i++)
-        {
-            ret[i] = (byte)((in[i] << 1) + ((in[i + 1] & 0xFF) >> 7));
-        }
-        ret[in.length - 1] = (byte)(in[in.length - 1] << 1);
-        if (FirstBit == 1)
-        {
-            ret[in.length - 1] ^= in.length == 16 ? CONSTANT_128 : CONSTANT_64;
-        }
+        int carry = shiftLeft(in, ret);
+
+        /*
+         * NOTE: This construction is an attempt at a constant-time implementation.
+         */
+        int mask = (-carry) & 0xff;
+        ret[in.length - 3] ^= poly[1] & mask;
+        ret[in.length - 2] ^= poly[2] & mask;
+        ret[in.length - 1] ^= poly[3] & mask;
+
         return ret;
+    }
+
+    private static byte[] lookupPoly(int blockSizeLength)
+    {
+        int xor;
+        switch (blockSizeLength * 8)
+        {
+        case 64:
+            xor = 0x1B;
+            break;
+        case 128:
+            xor = 0x87;
+            break;
+        case 160:
+            xor = 0x2D;
+            break;
+        case 192:
+            xor = 0x87;
+            break;
+        case 224:
+            xor = 0x309;
+            break;
+        case 256:
+            xor = 0x425;
+            break;
+        case 320:
+            xor = 0x1B;
+            break;
+        case 384:
+            xor = 0x100D;
+            break;
+        case 448:
+            xor = 0x851;
+            break;
+        case 512:
+            xor = 0x125;
+            break;
+        case 768:
+            xor = 0xA0011;
+            break;
+        case 1024:
+            xor = 0x80043;
+            break;
+        case 2048:
+            xor = 0x86001;
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown block size for CMAC: " + (blockSizeLength * 8));
+        }
+
+        return Pack.intToBigEndian(xor);
     }
 
     public void init(CipherParameters params)
     {
-        reset();
+        validate(params);
 
         cipher.init(true, params);
 
         //initializes the L, Lu, Lu2 numbers
-        L = new byte[ZEROES.length];
+        byte[] L = new byte[ZEROES.length];
         cipher.processBlock(ZEROES, 0, L, 0);
         Lu = doubleLu(L);
         Lu2 = doubleLu(Lu);
 
-        cipher.init(true, params);
+        reset();
+    }
+
+    void validate(CipherParameters params)
+    {
+        if (params != null)
+        {
+            if (!(params instanceof KeyParameter))
+            {
+                // CMAC mode does not permit IV to underlying CBC mode
+                throw new IllegalArgumentException("CMac mode only permits key to be set.");
+            }
+        }
     }
 
     public int getMacSize()

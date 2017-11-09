@@ -1,33 +1,5 @@
 package org.bouncycastle.openpgp.test;
 
-import org.bouncycastle.bcpg.CompressionAlgorithmTags;
-import org.bouncycastle.bcpg.HashAlgorithmTags;
-import org.bouncycastle.bcpg.PublicKeyAlgorithmTags;
-import org.bouncycastle.bcpg.SignatureSubpacketTags;
-import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
-import org.bouncycastle.bcpg.sig.KeyFlags;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openpgp.PGPException;
-import org.bouncycastle.openpgp.PGPLiteralData;
-import org.bouncycastle.openpgp.PGPLiteralDataGenerator;
-import org.bouncycastle.openpgp.PGPObjectFactory;
-import org.bouncycastle.openpgp.PGPOnePassSignature;
-import org.bouncycastle.openpgp.PGPOnePassSignatureList;
-import org.bouncycastle.openpgp.PGPPrivateKey;
-import org.bouncycastle.openpgp.PGPPublicKey;
-import org.bouncycastle.openpgp.PGPSecretKey;
-import org.bouncycastle.openpgp.PGPSecretKeyRing;
-import org.bouncycastle.openpgp.PGPSignature;
-import org.bouncycastle.openpgp.PGPSignatureGenerator;
-import org.bouncycastle.openpgp.PGPSignatureList;
-import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
-import org.bouncycastle.openpgp.PGPSignatureSubpacketVector;
-import org.bouncycastle.openpgp.PGPV3SignatureGenerator;
-import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.util.io.Streams;
-import org.bouncycastle.util.test.SimpleTest;
-import org.bouncycastle.util.test.UncloseableOutputStream;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,6 +9,47 @@ import java.security.NoSuchProviderException;
 import java.security.Security;
 import java.security.SignatureException;
 import java.util.Date;
+import java.util.Iterator;
+
+import org.bouncycastle.bcpg.CompressionAlgorithmTags;
+import org.bouncycastle.bcpg.HashAlgorithmTags;
+import org.bouncycastle.bcpg.PublicKeyAlgorithmTags;
+import org.bouncycastle.bcpg.SignatureSubpacketTags;
+import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
+import org.bouncycastle.bcpg.sig.KeyFlags;
+import org.bouncycastle.bcpg.sig.NotationData;
+import org.bouncycastle.bcpg.sig.SignatureTarget;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openpgp.PGPException;
+import org.bouncycastle.openpgp.PGPLiteralData;
+import org.bouncycastle.openpgp.PGPLiteralDataGenerator;
+import org.bouncycastle.openpgp.PGPOnePassSignature;
+import org.bouncycastle.openpgp.PGPOnePassSignatureList;
+import org.bouncycastle.openpgp.PGPPrivateKey;
+import org.bouncycastle.openpgp.PGPPublicKey;
+import org.bouncycastle.openpgp.PGPPublicKeyRing;
+import org.bouncycastle.openpgp.PGPSecretKey;
+import org.bouncycastle.openpgp.PGPSecretKeyRing;
+import org.bouncycastle.openpgp.PGPSignature;
+import org.bouncycastle.openpgp.PGPSignatureGenerator;
+import org.bouncycastle.openpgp.PGPSignatureList;
+import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
+import org.bouncycastle.openpgp.PGPSignatureSubpacketVector;
+import org.bouncycastle.openpgp.PGPUserAttributeSubpacketVector;
+import org.bouncycastle.openpgp.PGPV3SignatureGenerator;
+import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory;
+import org.bouncycastle.openpgp.operator.bc.BcKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.bc.BcPGPContentVerifierBuilderProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
+import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.util.io.Streams;
+import org.bouncycastle.util.test.SimpleTest;
+import org.bouncycastle.util.test.UncloseableOutputStream;
 
 public class PGPSignatureTest
     extends SimpleTest
@@ -92,16 +105,317 @@ public class PGPSignatureTest
 
     byte[]    nullPacketsSubKeyBinding = Base64.decode(
             "iDYEGBECAAAAACp9AJ9PlJCrFpi+INwG7z61eku2Wg1HaQCgl33X5Egj+Kf7F9CXIWj2iFCvQDo=");
-    
+
+    byte[]   okAttr =
+        Base64.decode(
+            "mQENBFOkuoMBCAC+8WcWLBZovlR5pLW4tbOoH3APia+poMEeTNkXKe8yAH0f"
+          + "ZmTQgeXFBIizd4Ka1QETbayv+C6Axt6Ipdwf+3N/lqcOqg6PEwuIX4MBrv5R"
+          + "ILMH5QyM3a3RlyXa7xES3I9t2VHiZvl15OrTZe67YNGtxlXyeawt6v/9d/a3"
+          + "M1EaUzjN4H2EfI3P/VWpMUvQkn70996UKInOyaSB0hef/QS10jshG9DdgmLM"
+          + "1/mJFRp8ynZOV4yGLnAdoEoPGG/HJZEzWfqOiwmWZOIrZIwedY1eKuMIhUGv"
+          + "LTC9u+9X0h+Y0st5eb1pf8OLvrpRpEyHMrxXfj/V3rxom4d160ifGihPABEB"
+          + "AAG0GndpdGggYXR0dHIgPGF0dHJAYXR0ci5uZXQ+iQE4BBMBAgAiBQJTpLqD"
+          + "AhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRBCjbg0bKVgCXJiB/wO"
+          + "6ksdrAy+zVxygFhk6Ju2vpMAOGnLl1nqBVT1mA5XiJu3rSiJmROLF2l21K0M"
+          + "BICZfz+mjIwN56RZNzZnEmXk/E2+PgADV5VTRRsjqlyoeN/NrLWuTm9FyngJ"
+          + "f96jVPysN6FzYRUB5Fuys57P+nu0RMoLGkHmQhp4L5hgNJTBy1SRnXukoIgJ"
+          + "2Ra3EBQ7dBrzuWW1ycwU5acfOoxfcVqgXkiXaxgvujFChZGWT6djbnbbzlMm"
+          + "sMKr6POKChEPWo1HJXXz1OaPsd75JA8bImgnrHhB3dHhD2wIqzQrtTxvraqz"
+          + "ZWWR2xYZPltzBSlaAdn8Hf0GGBoMhutb3tJLzbAX0cybzJkBEAABAQAAAAAA"
+          + "AAAAAAAAAP/Y/+AAEEpGSUYAAQEAAAEAAQAA/9sAQwAKBwcIBwYKCAgICwoK"
+          + "Cw4YEA4NDQ4dFRYRGCMfJSQiHyIhJis3LyYpNCkhIjBBMTQ5Oz4+PiUuRElD"
+          + "PEg3PT47/9sAQwEKCwsODQ4cEBAcOygiKDs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7"
+          + "Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7/8AAEQgAkAB4AwEiAAIR"
+          + "AQMRAf/EAB8AAAEFAQEBAQEBAAAAAAAAAAABAgMEBQYHCAkKC//EALUQAAIB"
+          + "AwMCBAMFBQQEAAABfQECAwAEEQUSITFBBhNRYQcicRQygZGhCCNCscEVUtHw"
+          + "JDNicoIJChYXGBkaJSYnKCkqNDU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVm"
+          + "Z2hpanN0dXZ3eHl6g4SFhoeIiYqSk5SVlpeYmZqio6Slpqeoqaqys7S1tre4"
+          + "ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn6Onq8fLz9PX29/j5+v/EAB8B"
+          + "AAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkKC//EALURAAIBAgQEAwQHBQQE"
+          + "AAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRCkaGxwQkjM1LwFWJy0QoWJDTh"
+          + "JfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2"
+          + "d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXG"
+          + "x8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX29/j5+v/aAAwDAQACEQMRAD8A"
+          + "9moqtf30Gm2cl3cvtijGSa4a++LNlGStlZvKR0ZuBWkKU6nwomU4x3PQqK8g"
+          + "uPinrEzYhhihX86ns/Ffia/XzElJUHOV4/rW/wBUqJXlZEe2i9j1iivMP+Ex"
+          + "1q3+/KCw6gip4PiXdREC5tUkHcrwaTwlVbK4e1iekUVzmheNdO1ycWyK8U5G"
+          + "drf410QOa55RcXaSNE09ULRRRUjCiiigAooooAKKKKAOY+IblfCN1g9cA/rX"
+          + "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"
+          + "0GvLdt0Lx24c"
+        );
+
+    byte[] attrLongLength =
+        Base64.decode(
+            "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"
+          + "mZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2drh4uPk5ebn"
+          + "6Onq8fLz9PX29/j5+v/EAB8BAAMBAQEBAQEBAQEAAAAAAAABAgMEBQYHCAkK"
+          + "C//EALURAAIBAgQEAwQHBQQEAAECdwABAgMRBAUhMQYSQVEHYXETIjKBCBRC"
+          + "kaGxwQkjM1LwFWJy0QoWJDThJfEXGBkaJicoKSo1Njc4OTpDREVGR0hJSlNU"
+          + "VVZXWFlaY2RlZmdoaWpzdHV2d3h5eoKDhIWGh4iJipKTlJWWl5iZmqKjpKWm"
+          + "p6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uLj5OXm5+jp6vLz9PX2"
+          + "9/j5+v/aAAwDAQACEQMRAD8A9moqtf30Gm2cl3cvtijGSa4a++LNlGStlZvK"
+          + "R0ZuBWkKU6nwomU4x3PQqK8guPinrEzYhhihX86ns/Ffia/XzElJUHOV4/rW"
+          + "/wBUqJXlZEe2i9j1iivMP+Ex1q3+/KCw6gip4PiXdREC5tUkHcrwaTwlVbK4"
+          + "e1iekUVzmheNdO1ycWyK8U5Gdrf410QOa55RcXaSNE09ULRRRUjCiiigAooo"
+          + "oAKKKKAOY+IblfCN1g9cA/rXh1fQPiXT4dU0o2dwXEcrclCARgE8ZB9K4J/A"
+          + "GkKeJr38ZU/+Ir0MLiIUoNSOerTlJ3R54v3hXpfg3UdNGmrHPMsToOc9+KrQ"
+          + "eBdAd2SS7vkYdPnX/wCIqy3gfRoThb+9GP8AaQ/+yVdavRqxs2yYU5wdzH16"
+          + "4t57+V7XHlZOCOh5rn5n5NdrJ4U0xBt/tC8x16p/8RTP+EK0uRQ32q9IPfzE"
+          + "/wDiKuGKpRSSYnSm3c5/wjP5XiKFywUDqScelevR6/pCR4k1S0DDqPOXI/Wv"
+          + "PLjwdplpbtPG9zI6so2yspU5YDoFHrW7pOmRWpEiqVyuPlHH41xYmpGpPmib"
+          + "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");
+
+    private void testRemoveSignature()
+        throws IOException
+    {
+        byte[] testPubKeyRing =
+            Base64.decode(
+                "mQGiBEAR8jYRBADNifuSopd20JOQ5x30ljIaY0M6927+vo09NeNxS3KqItba"
+                    + "nz9o5e2aqdT0W1xgdHYZmdElOHTTsugZxdXTEhghyxoo3KhVcNnTABQyrrvX"
+                    + "qouvmP2fEDEw0Vpyk+90BpyY9YlgeX/dEA8OfooRLCJde/iDTl7r9FT+mts8"
+                    + "g3azjwCgx+pOLD9LPBF5E4FhUOdXISJ0f4EEAKXSOi9nZzajpdhe8W2ZL9gc"
+                    + "BpzZi6AcrRZBHOEMqd69gtUxA4eD8xycUQ42yH89imEcwLz8XdJ98uHUxGJi"
+                    + "qp6hq4oakmw8GQfiL7yQIFgaM0dOAI9Afe3m84cEYZsoAFYpB4/s9pVMpPRH"
+                    + "NsVspU0qd3NHnSZ0QXs8L8DXGO1uBACjDUj+8GsfDCIP2QF3JC+nPUNa0Y5t"
+                    + "wKPKl+T8hX/0FBD7fnNeC6c9j5Ir/Fp/QtdaDAOoBKiyNLh1JaB1NY6US5zc"
+                    + "qFks2seZPjXEiE6OIDXYra494mjNKGUobA4hqT2peKWXt/uBcuL1mjKOy8Qf"
+                    + "JxgEd0MOcGJO+1PFFZWGzLQ3RXJpYyBILiBFY2hpZG5hICh0ZXN0IGtleSBv"
+                    + "bmx5KSA8ZXJpY0Bib3VuY3ljYXN0bGUub3JnPohZBBMRAgAZBQJAEfI2BAsH"
+                    + "AwIDFQIDAxYCAQIeAQIXgAAKCRAOtk6iUOgnkDdnAKC/CfLWikSBdbngY6OK"
+                    + "5UN3+o7q1ACcDRqjT3yjBU3WmRUNlxBg3tSuljmwAgAAuQENBEAR8jgQBAC2"
+                    + "kr57iuOaV7Ga1xcU14MNbKcA0PVembRCjcVjei/3yVfT/fuCVtGHOmYLEBqH"
+                    + "bn5aaJ0P/6vMbLCHKuN61NZlts+LEctfwoya43RtcubqMc7eKw4k0JnnoYgB"
+                    + "ocLXOtloCb7jfubOsnfORvrUkK0+Ne6anRhFBYfaBmGU75cQgwADBQP/XxR2"
+                    + "qGHiwn+0YiMioRDRiIAxp6UiC/JQIri2AKSqAi0zeAMdrRsBN7kyzYVVpWwN"
+                    + "5u13gPdQ2HnJ7d4wLWAuizUdKIQxBG8VoCxkbipnwh2RR4xCXFDhJrJFQUm+"
+                    + "4nKx9JvAmZTBIlI5Wsi5qxst/9p5MgP3flXsNi1tRbTmRhqIRgQYEQIABgUC"
+                    + "QBHyOAAKCRAOtk6iUOgnkBStAJoCZBVM61B1LG2xip294MZecMtCwQCbBbsk"
+                    + "JVCXP0/Szm05GB+WN+MOCT2wAgAA");
+
+        JcaPGPObjectFactory pgpFact = new JcaPGPObjectFactory(testPubKeyRing);
+
+        PGPPublicKeyRing pgpPub = (PGPPublicKeyRing)pgpFact.nextObject();
+
+        Iterator itSignatures = pgpPub.getPublicKey().getSignatures();
+        while (itSignatures.hasNext())
+        {
+            PGPSignature sig = (PGPSignature)itSignatures.next();
+            if (sig.getSignatureType() == PGPSignature.POSITIVE_CERTIFICATION)
+            {
+                PGPPublicKey.removeCertification(pgpPub.getPublicKey(), sig);
+            }
+        }
+    }
+
     public void performTest()
         throws Exception
     {
+        testRemoveSignature();
+
         //
         // RSA tests
         //
-        PGPSecretKeyRing pgpPriv = new PGPSecretKeyRing(rsaKeyRing);         
-        PGPSecretKey secretKey = pgpPriv.getSecretKey();        
-        PGPPrivateKey pgpPrivKey = secretKey.extractPrivateKey(rsaPass, "BC");
+        PGPSecretKeyRing pgpPriv = new PGPSecretKeyRing(rsaKeyRing, new JcaKeyFingerprintCalculator());
+        PGPSecretKey secretKey = pgpPriv.getSecretKey();
+        PGPPrivateKey pgpPrivKey = secretKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(rsaPass));
 
         try
         {
@@ -113,7 +427,7 @@ public class PGPSignatureTest
         {
             // expected
         }
-        
+
         try
         {
             testSigV3(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey);
@@ -128,30 +442,30 @@ public class PGPSignatureTest
         //
         // certifications
         //
-        PGPSignatureGenerator sGen = new PGPSignatureGenerator(PublicKeyAlgorithmTags.RSA_GENERAL, HashAlgorithmTags.SHA1, "BC");
-        
-        sGen.initSign(PGPSignature.KEY_REVOCATION, pgpPrivKey);
+        PGPSignatureGenerator sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(PublicKeyAlgorithmTags.RSA_GENERAL, HashAlgorithmTags.SHA1).setProvider("BC"));
+
+        sGen.init(PGPSignature.KEY_REVOCATION, pgpPrivKey);
 
         PGPSignature sig = sGen.generateCertification(secretKey.getPublicKey());
-        
-        sig.initVerify(secretKey.getPublicKey(), "BC");
-        
+
+        sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), secretKey.getPublicKey());
+
         if (!sig.verifyCertification(secretKey.getPublicKey()))
         {
             fail("revocation verification failed.");
         }
-        
-        PGPSecretKeyRing pgpDSAPriv = new PGPSecretKeyRing(dsaKeyRing);         
-        PGPSecretKey secretDSAKey = pgpDSAPriv.getSecretKey();        
-        PGPPrivateKey pgpPrivDSAKey = secretDSAKey.extractPrivateKey(dsaPass, "BC");
-        
-        sGen = new PGPSignatureGenerator(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, "BC");
-        
-        sGen.initSign(PGPSignature.SUBKEY_BINDING, pgpPrivDSAKey);
+
+        PGPSecretKeyRing pgpDSAPriv = new PGPSecretKeyRing(dsaKeyRing, new JcaKeyFingerprintCalculator());
+        PGPSecretKey secretDSAKey = pgpDSAPriv.getSecretKey();
+        PGPPrivateKey pgpPrivDSAKey = secretDSAKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(dsaPass));
+
+        sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1).setProvider("BC"));
+
+        sGen.init(PGPSignature.SUBKEY_BINDING, pgpPrivDSAKey);
 
         PGPSignatureSubpacketGenerator    unhashedGen = new PGPSignatureSubpacketGenerator();
         PGPSignatureSubpacketGenerator    hashedGen = new PGPSignatureSubpacketGenerator();
-        
+
         hashedGen.setSignatureExpirationTime(false, TEST_EXPIRATION_TIME);
         hashedGen.setSignerUserID(true, TEST_USER_ID);
         hashedGen.setPreferredCompressionAlgorithms(false, PREFERRED_COMPRESSION_ALGORITHMS);
@@ -160,25 +474,25 @@ public class PGPSignatureTest
 
         sGen.setHashedSubpackets(hashedGen.generate());
         sGen.setUnhashedSubpackets(unhashedGen.generate());
-        
+
         sig = sGen.generateCertification(secretDSAKey.getPublicKey(), secretKey.getPublicKey());
 
         byte[] sigBytes = sig.getEncoded();
-        
-        PGPObjectFactory f = new PGPObjectFactory(sigBytes);
-        
+
+        JcaPGPObjectFactory f = new JcaPGPObjectFactory(sigBytes);
+
         sig = ((PGPSignatureList) f.nextObject()).get(0);
-        
-        sig.initVerify(secretDSAKey.getPublicKey(), "BC");
-        
+
+        sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), secretDSAKey.getPublicKey());
+
         if (!sig.verifyCertification(secretDSAKey.getPublicKey(), secretKey.getPublicKey()))
         {
             fail("subkey binding verification failed.");
         }
-        
+
         PGPSignatureSubpacketVector hashedPcks = sig.getHashedSubPackets();
         PGPSignatureSubpacketVector unhashedPcks = sig.getUnhashedSubPackets();
-        
+
         if (hashedPcks.size() != 6)
         {
             fail("wrong number of hashed packets found.");
@@ -193,108 +507,108 @@ public class PGPSignatureTest
         {
             fail("test userid not matching");
         }
-        
+
         if (hashedPcks.getSignatureExpirationTime() != TEST_EXPIRATION_TIME)
         {
             fail("test signature expiration time not matching");
         }
-        
+
         if (unhashedPcks.getIssuerKeyID() != secretDSAKey.getKeyID())
         {
             fail("wrong issuer key ID found in certification");
         }
-        
+
         int[] prefAlgs = hashedPcks.getPreferredCompressionAlgorithms();
         preferredAlgorithmCheck("compression", PREFERRED_COMPRESSION_ALGORITHMS, prefAlgs);
 
         prefAlgs = hashedPcks.getPreferredHashAlgorithms();
         preferredAlgorithmCheck("hash", PREFERRED_HASH_ALGORITHMS, prefAlgs);
-        
+
         prefAlgs = hashedPcks.getPreferredSymmetricAlgorithms();
         preferredAlgorithmCheck("symmetric", PREFERRED_SYMMETRIC_ALGORITHMS, prefAlgs);
-        
+
         int[] criticalHashed = hashedPcks.getCriticalTags();
-        
+
         if (criticalHashed.length != 1)
         {
             fail("wrong number of critical packets found.");
         }
-        
+
         if (criticalHashed[0] != SignatureSubpacketTags.SIGNER_USER_ID)
         {
             fail("wrong critical packet found in tag list.");
         }
-        
+
         //
         // no packets passed
         //
-        sGen = new PGPSignatureGenerator(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, "BC");
-        
-        sGen.initSign(PGPSignature.SUBKEY_BINDING, pgpPrivDSAKey);
+        sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1).setProvider("BC"));
+
+        sGen.init(PGPSignature.SUBKEY_BINDING, pgpPrivDSAKey);
 
         sGen.setHashedSubpackets(null);
         sGen.setUnhashedSubpackets(null);
 
         sig = sGen.generateCertification(TEST_USER_ID, secretKey.getPublicKey());
-        
-        sig.initVerify(secretDSAKey.getPublicKey(), "BC");
-        
+
+        sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), secretDSAKey.getPublicKey());
+
         if (!sig.verifyCertification(TEST_USER_ID, secretKey.getPublicKey()))
         {
             fail("subkey binding verification failed.");
         }
-        
+
         hashedPcks = sig.getHashedSubPackets();
-        
+
         if (hashedPcks.size() != 1)
         {
             fail("found wrong number of hashed packets");
         }
-        
+
         unhashedPcks = sig.getUnhashedSubPackets();
-        
+
         if (unhashedPcks.size() != 1)
         {
             fail("found wrong number of unhashed packets");
         }
-        
+
         try
         {
             sig.verifyCertification(secretKey.getPublicKey());
-            
+
             fail("failed to detect non-key signature.");
         }
-        catch (IllegalStateException e)
+        catch (PGPException e)
         {
             // expected
         }
-        
+
         //
         // override hash packets
         //
-        sGen = new PGPSignatureGenerator(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, "BC");
-        
-        sGen.initSign(PGPSignature.SUBKEY_BINDING, pgpPrivDSAKey);
+        sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1).setProvider("BC"));
+
+        sGen.init(PGPSignature.SUBKEY_BINDING, pgpPrivDSAKey);
 
         hashedGen = new PGPSignatureSubpacketGenerator();
-        
+
         hashedGen.setSignatureCreationTime(false, new Date(0L));
-        
+
         sGen.setHashedSubpackets(hashedGen.generate());
-        
+
         sGen.setUnhashedSubpackets(null);
 
         sig = sGen.generateCertification(TEST_USER_ID, secretKey.getPublicKey());
-        
-        sig.initVerify(secretDSAKey.getPublicKey(), "BC");
-        
+
+        sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), secretDSAKey.getPublicKey());
+
         if (!sig.verifyCertification(TEST_USER_ID, secretKey.getPublicKey()))
         {
             fail("subkey binding verification failed.");
         }
-        
+
         hashedPcks = sig.getHashedSubPackets();
-        
+
         if (hashedPcks.size() != 1)
         {
             fail("found wrong number of hashed packets in override test");
@@ -304,50 +618,50 @@ public class PGPSignatureTest
         {
             fail("hasSubpacket test for creation time failed");
         }
-        
+
         if (!hashedPcks.getSignatureCreationTime().equals(new Date(0L)))
         {
             fail("creation of overriden date failed.");
         }
-        
+
         prefAlgs = hashedPcks.getPreferredCompressionAlgorithms();
         preferredAlgorithmCheck("compression", NO_PREFERENCES, prefAlgs);
 
         prefAlgs = hashedPcks.getPreferredHashAlgorithms();
         preferredAlgorithmCheck("hash", NO_PREFERENCES, prefAlgs);
-        
+
         prefAlgs = hashedPcks.getPreferredSymmetricAlgorithms();
         preferredAlgorithmCheck("symmetric", NO_PREFERENCES, prefAlgs);
-        
+
         if (hashedPcks.getKeyExpirationTime() != 0)
         {
             fail("unexpected key expiration time found");
         }
-        
+
         if (hashedPcks.getSignatureExpirationTime() != 0)
         {
             fail("unexpected signature expiration time found");
         }
-        
+
         if (hashedPcks.getSignerUserID() != null)
         {
             fail("unexpected signer user ID found");
         }
-        
+
         criticalHashed = hashedPcks.getCriticalTags();
-        
+
         if (criticalHashed.length != 0)
         {
             fail("critical packets found when none expected");
         }
-        
+
         unhashedPcks = sig.getUnhashedSubPackets();
-        
+
         if (unhashedPcks.size() != 1)
         {
             fail("found wrong number of unhashed packets in override test");
         }
-        
+
         //
         // general signatures
         //
@@ -359,14 +673,14 @@ public class PGPSignatureTest
         testTextSig(PublicKeyAlgorithmTags.RSA_GENERAL, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey, TEST_DATA, TEST_DATA_WITH_CRLF);
         testTextSigV3(PublicKeyAlgorithmTags.RSA_GENERAL, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey, TEST_DATA_WITH_CRLF, TEST_DATA_WITH_CRLF);
         testTextSigV3(PublicKeyAlgorithmTags.RSA_GENERAL, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey, TEST_DATA, TEST_DATA_WITH_CRLF);
-        
+
         //
         // DSA Tests
         //
-        pgpPriv = new PGPSecretKeyRing(dsaKeyRing);         
-        secretKey = pgpPriv.getSecretKey();        
-        pgpPrivKey = secretKey.extractPrivateKey(dsaPass, "BC");
-        
+        pgpPriv = new PGPSecretKeyRing(dsaKeyRing, new JcaKeyFingerprintCalculator());
+        secretKey = pgpPriv.getSecretKey();
+        pgpPrivKey = secretKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(dsaPass));
+
         try
         {
             testSig(PublicKeyAlgorithmTags.RSA_GENERAL, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey);
@@ -377,7 +691,7 @@ public class PGPSignatureTest
         {
             // expected
         }
-        
+
         try
         {
             testSigV3(PublicKeyAlgorithmTags.RSA_GENERAL, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey);
@@ -388,22 +702,210 @@ public class PGPSignatureTest
         {
             // expected
         }
-        
+
         testSig(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey);
         testSigV3(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey);
         testTextSig(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey, TEST_DATA_WITH_CRLF, TEST_DATA_WITH_CRLF);
         testTextSig(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey, TEST_DATA, TEST_DATA_WITH_CRLF);
         testTextSigV3(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey, TEST_DATA_WITH_CRLF, TEST_DATA_WITH_CRLF);
         testTextSigV3(PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1, secretKey.getPublicKey(), pgpPrivKey, TEST_DATA, TEST_DATA_WITH_CRLF);
-        
+
         // special cases
         //
         testMissingSubpackets(nullPacketsSubKeyBinding);
-        
+
         testMissingSubpackets(generateV3BinarySig(pgpPrivKey, PublicKeyAlgorithmTags.DSA, HashAlgorithmTags.SHA1));
 
         // keyflags
         testKeyFlagsValues();
+
+        testSubpacketGenerator();
+        testSignatureTarget();
+        testUserAttributeEncoding();
+    }
+
+    private void testUserAttributeEncoding()
+        throws Exception
+    {
+        PGPPublicKeyRing pkr = new PGPPublicKeyRing(okAttr, new BcKeyFingerprintCalculator());
+
+        checkUserAttribute("normal", pkr, pkr.getPublicKey());
+
+        pkr = new PGPPublicKeyRing(attrLongLength, new BcKeyFingerprintCalculator());
+
+        checkUserAttribute("long", pkr, pkr.getPublicKey());
+    }
+
+    private void checkUserAttribute(String type, PGPPublicKeyRing pkr, PGPPublicKey masterPk)
+        throws PGPException
+    {
+        Iterator attrit = pkr.getPublicKey().getUserAttributes();
+        while (attrit.hasNext())
+        {
+            PGPUserAttributeSubpacketVector attr = (PGPUserAttributeSubpacketVector)attrit.next();
+
+            Iterator sigit = masterPk.getSignaturesForUserAttribute(attr);
+            while (sigit.hasNext())
+            {
+                PGPSignature sig = (PGPSignature)sigit.next();
+
+                sig.init(new BcPGPContentVerifierBuilderProvider(), masterPk);
+                if (!sig.verifyCertification(attr, masterPk))
+                {
+                    fail("user attribute sig failed to verify on " + type);
+                }
+            }
+        }
+    }
+
+    private void testSignatureTarget()
+    {
+        byte[] hash = Hex.decode("0001020304050607080910111213141516171819");
+        PGPSignatureSubpacketGenerator sGen = new PGPSignatureSubpacketGenerator();
+
+        sGen.setSignatureTarget(true, PublicKeyAlgorithmTags.ECDSA, HashAlgorithmTags.SHA1, hash);
+
+        PGPSignatureSubpacketVector sVec = sGen.generate();
+
+        isTrue("no sig target", sVec.hasSubpacket(SignatureSubpacketTags.SIGNATURE_TARGET));
+
+        SignatureTarget sigTarg = sVec.getSignatureTarget();
+
+        isTrue("wrong critical", sigTarg.isCritical());
+        isTrue("wrong key alg", PublicKeyAlgorithmTags.ECDSA == sigTarg.getPublicKeyAlgorithm());
+        isTrue("wrong hash alg", HashAlgorithmTags.SHA1 == sigTarg.getHashAlgorithm());
+        isTrue("wrong hash data", Arrays.areEqual(hash, sigTarg.getHashData()));
+
+        sGen = new PGPSignatureSubpacketGenerator();
+
+        sGen.setSignatureTarget(false, PublicKeyAlgorithmTags.RSA_SIGN, HashAlgorithmTags.SHA256, hash);
+
+        sVec = sGen.generate();
+
+        sigTarg = sVec.getSignatureTarget();
+
+        isTrue("wrong critical", !sigTarg.isCritical());
+        isTrue("wrong key alg", PublicKeyAlgorithmTags.RSA_SIGN == sigTarg.getPublicKeyAlgorithm());
+        isTrue("wrong hash alg", HashAlgorithmTags.SHA256 == sigTarg.getHashAlgorithm());
+        isTrue("wrong hash data", Arrays.areEqual(hash, sigTarg.getHashData()));
+    }
+
+    private void testSubpacketGenerator()
+    {
+        PGPSignatureSubpacketGenerator sGen = new PGPSignatureSubpacketGenerator();
+
+        String name1 = genString(64);
+        String value1 = genString(72);
+
+        sGen.setNotationData(true, true, name1, value1);
+
+        PGPSignatureSubpacketVector sVec = sGen.generate();
+
+        NotationData[] nd = sVec.getNotationDataOccurrences();
+
+        if (nd.length != 1 || !nd[0].isHumanReadable())
+        {
+            fail("length and readability test 1 failed");
+        }
+
+        if (!nd[0].getNotationName().equals(name1) || !nd[0].getNotationValue().equals(value1))
+        {
+            fail("name/value test 1 failed");
+        }
+
+        String name2 = genString(256);
+        String value2 = genString(264);
+
+        sGen.setNotationData(true, false, name2, value2);
+
+        sVec = sGen.generate();
+
+        nd = sVec.getNotationDataOccurrences();
+
+        if (nd.length != 2 || !nd[0].isHumanReadable() || nd[1].isHumanReadable())
+        {
+            fail("length and readability test 2 failed");
+        }
+
+        if (!nd[0].getNotationName().equals(name1) || !nd[0].getNotationValue().equals(value1))
+        {
+            fail("name/value test 2.1 failed");
+        }
+
+        if (!nd[1].getNotationName().equals(name2) || !nd[1].getNotationValue().equals(value2))
+        {
+            fail("name/value test 2.2 failed");
+        }
+
+        String name3 = genString(0xffff);
+        String value3 = genString(0xffff);
+
+        sGen.setNotationData(true, false, name3, value3);
+
+        sVec = sGen.generate();
+
+        nd = sVec.getNotationDataOccurrences();
+
+        if (nd.length != 3 || !nd[0].isHumanReadable() || nd[1].isHumanReadable() || nd[2].isHumanReadable())
+        {
+            fail("length and readability test 3 failed");
+        }
+
+        if (!nd[0].getNotationName().equals(name1) || !nd[0].getNotationValue().equals(value1))
+        {
+            fail("name/value test 3.1 failed");
+        }
+
+        if (!nd[1].getNotationName().equals(name2) || !nd[1].getNotationValue().equals(value2))
+        {
+            fail("name/value test 3.2 failed");
+        }
+
+        if (!nd[2].getNotationName().equals(name3) || !nd[2].getNotationValue().equals(value3))
+        {
+            fail("name/value test 3.3 failed");
+        }
+
+        String name4 = genString(0xffff1);
+        String value4 = genString(0xfffff);
+
+        try
+        {
+            sGen.setNotationData(true, false, name4, value4);
+            fail("truncation occurs silently");
+        }
+        catch (IllegalArgumentException e)
+        {
+            if (!"notationName exceeds maximum length.".equals(e.getMessage()))
+            {
+                fail("wrong message");
+            }
+        }
+
+        try
+        {
+            sGen.setNotationData(true, false, name3, value4);
+            fail("truncation occurs silently");
+        }
+        catch (IllegalArgumentException e)
+        {
+            if (!"notationValue exceeds maximum length.".equals(e.getMessage()))
+            {
+                fail("wrong message");
+            }
+        }
+    }
+
+    private String genString(int length)
+    {
+        char[] chars = new char[length];
+
+        for (int i = 0; i != length; i++)
+        {
+            chars[i] = (char)('a' + (i % 26));
+        }
+
+        return new String(chars);
     }
 
     private void testKeyFlagsValues()
@@ -435,7 +937,7 @@ public class PGPSignatureTest
 
     private void checkValue(byte[] flag, int value)
     {
-        KeyFlags f = new KeyFlags(true, flag);
+        KeyFlags f = new KeyFlags(true, false, flag);
 
         if (f.getFlags() != value)
         {
@@ -446,7 +948,7 @@ public class PGPSignatureTest
     private void testMissingSubpackets(byte[] signature) 
         throws IOException
     {
-        PGPObjectFactory f = new PGPObjectFactory(signature);
+        JcaPGPObjectFactory f = new JcaPGPObjectFactory(signature);
         Object           obj = f.nextObject();
         
         while (!(obj instanceof PGPSignatureList))
@@ -516,7 +1018,7 @@ public class PGPSignatureTest
             {
                 if (expected[i] != prefAlgs[i])
                 {
-                    fail("wrong algorithm found for " + type + ": expected " + expected[i] + " got " + prefAlgs);
+                    fail("wrong algorithm found for " + type + ": expected " + expected[i] + " got " + prefAlgs[i]);
                 }
             }
         }
@@ -531,9 +1033,9 @@ public class PGPSignatureTest
     {            
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ByteArrayInputStream  testIn = new ByteArrayInputStream(TEST_DATA);
-        PGPSignatureGenerator sGen = new PGPSignatureGenerator(encAlgorithm, hashAlgorithm, "BC");
+        PGPSignatureGenerator sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(encAlgorithm, hashAlgorithm).setProvider("BC"));
         
-        sGen.initSign(PGPSignature.BINARY_DOCUMENT, privKey);
+        sGen.init(PGPSignature.BINARY_DOCUMENT, privKey);
         sGen.generateOnePassVersion(false).encode(bOut);
     
         PGPLiteralDataGenerator    lGen = new PGPLiteralDataGenerator();
@@ -570,12 +1072,12 @@ public class PGPSignatureTest
         byte[]         canonicalData)
         throws Exception
     {            
-        PGPSignatureGenerator sGen = new PGPSignatureGenerator(encAlgorithm, HashAlgorithmTags.SHA1, "BC");  
+        PGPSignatureGenerator sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(encAlgorithm, HashAlgorithmTags.SHA1).setProvider("BC"));
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ByteArrayInputStream  testIn = new ByteArrayInputStream(data);
         Date                  creationTime = new Date();
         
-        sGen.initSign(PGPSignature.CANONICAL_TEXT_DOCUMENT, privKey);
+        sGen.init(PGPSignature.CANONICAL_TEXT_DOCUMENT, privKey);
         sGen.generateOnePassVersion(false).encode(bOut);
 
         PGPLiteralDataGenerator    lGen = new PGPLiteralDataGenerator();
@@ -627,9 +1129,9 @@ public class PGPSignatureTest
     {
         ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
         ByteArrayInputStream    testIn = new ByteArrayInputStream(TEST_DATA);
-        PGPV3SignatureGenerator sGen = new PGPV3SignatureGenerator(encAlgorithm, hashAlgorithm, "BC");
+        PGPV3SignatureGenerator sGen = new PGPV3SignatureGenerator(new JcaPGPContentSignerBuilder(encAlgorithm, hashAlgorithm).setProvider("BC"));
         
-        sGen.initSign(PGPSignature.BINARY_DOCUMENT, privKey);
+        sGen.init(PGPSignature.BINARY_DOCUMENT, privKey);
         sGen.generateOnePassVersion(false).encode(bOut);
     
         PGPLiteralDataGenerator lGen = new PGPLiteralDataGenerator();
@@ -666,11 +1168,11 @@ public class PGPSignatureTest
         byte[]         canonicalData)
         throws Exception
     {            
-        PGPV3SignatureGenerator sGen = new PGPV3SignatureGenerator(encAlgorithm, HashAlgorithmTags.SHA1, "BC");
+        PGPV3SignatureGenerator sGen = new PGPV3SignatureGenerator(new JcaPGPContentSignerBuilder(encAlgorithm, HashAlgorithmTags.SHA1).setProvider("BC"));
         ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
         ByteArrayInputStream    testIn = new ByteArrayInputStream(data);
         
-        sGen.initSign(PGPSignature.CANONICAL_TEXT_DOCUMENT, privKey);
+        sGen.init(PGPSignature.CANONICAL_TEXT_DOCUMENT, privKey);
         sGen.generateOnePassVersion(false).encode(bOut);
 
         PGPLiteralDataGenerator lGen = new PGPLiteralDataGenerator();
@@ -712,13 +1214,13 @@ public class PGPSignatureTest
         byte[] original) 
         throws IOException, PGPException, NoSuchProviderException, SignatureException
     {
-        PGPObjectFactory        pgpFact = new PGPObjectFactory(encodedSig);
+        JcaPGPObjectFactory        pgpFact = new JcaPGPObjectFactory(encodedSig);
         PGPOnePassSignatureList p1 = (PGPOnePassSignatureList)pgpFact.nextObject();
         PGPOnePassSignature     ops = p1.get(0);
         PGPLiteralData          p2 = (PGPLiteralData)pgpFact.nextObject();
         InputStream             dIn = p2.getInputStream();
     
-        ops.initVerify(pubKey, "BC");
+        ops.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), pubKey);
         
         int ch;
 
@@ -750,7 +1252,7 @@ public class PGPSignatureTest
             fail("Failed generated signature check - " + hashAlgorithm);
         }
         
-        sig.initVerify(pubKey, "BC");
+        sig.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), pubKey);
         
         for (int i = 0; i != original.length; i++)
         {

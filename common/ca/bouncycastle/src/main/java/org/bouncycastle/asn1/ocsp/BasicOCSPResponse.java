@@ -1,17 +1,17 @@
 package org.bouncycastle.asn1.ocsp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 public class BasicOCSPResponse
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private ResponseData        tbsResponseData;
     private AlgorithmIdentifier signatureAlgorithm;
@@ -30,7 +30,7 @@ public class BasicOCSPResponse
         this.certs = certs;
     }
 
-    public BasicOCSPResponse(
+    private BasicOCSPResponse(
         ASN1Sequence    seq)
     {
         this.tbsResponseData = ResponseData.getInstance(seq.getObjectAt(0));
@@ -53,16 +53,16 @@ public class BasicOCSPResponse
     public static BasicOCSPResponse getInstance(
         Object  obj)
     {
-        if (obj == null || obj instanceof BasicOCSPResponse)
+        if (obj instanceof BasicOCSPResponse)
         {
             return (BasicOCSPResponse)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new BasicOCSPResponse((ASN1Sequence)obj);
+            return new BasicOCSPResponse(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
     public ResponseData getTbsResponseData()
@@ -95,7 +95,7 @@ public class BasicOCSPResponse
      *      certs                [0] EXPLICIT SEQUENCE OF Certificate OPTIONAL }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

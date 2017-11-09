@@ -1,0 +1,11 @@
+import sys
+
+sys.path.insert(0,'/path/to/debdist')
+
+activate_this = '/path/to/debdist/.venv/bin/activate_this.py'
+execfile(activate_this, dict(__file__=activate_this))
+
+from DebDistClient import DebForm, DebBoolean, DebDistClient
+from DebDistClient import app as application
+client = DebDistClient("/path/to/debdist/myconfig.cfg")
+application.clientObject = client

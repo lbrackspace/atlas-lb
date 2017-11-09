@@ -1,81 +1,46 @@
 package org.bouncycastle.jce.provider.test;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.security.AlgorithmParameters;
 import java.security.KeyFactory;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
-import java.security.Signature;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
-import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.Collection;
-import java.util.Date;
-import java.util.Hashtable;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
-import javax.security.auth.x500.X500Principal;
-
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Object;
-import org.bouncycastle.asn1.DEREnumerated;
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.cms.CMSObjectIdentifiers;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.cms.SignedData;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
-import org.bouncycastle.asn1.x509.CRLReason;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
-import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.X509Principal;
-import org.bouncycastle.jce.interfaces.ECPointEncoder;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jce.interfaces.ECPublicKey;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECParameterSpec;
-import org.bouncycastle.jce.spec.ECPrivateKeySpec;
-import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.bouncycastle.jce.spec.GOST3410ParameterSpec;
-import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.util.Strings;
 import org.bouncycastle.util.encoders.Base64;
-import org.bouncycastle.util.encoders.Hex;
+import org.bouncycastle.util.io.Streams;
 import org.bouncycastle.util.test.SimpleTest;
-import org.bouncycastle.x509.X509V1CertificateGenerator;
-import org.bouncycastle.x509.X509V2CRLGenerator;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
-import org.bouncycastle.x509.extension.AuthorityKeyIdentifierStructure;
-import org.bouncycastle.x509.extension.X509ExtensionUtil;
+import org.bouncycastle.util.test.TestFailedException;
 
 public class CertTest
     extends SimpleTest
@@ -1026,6 +991,271 @@ public class CertTest
             "CM0TjDGJLP3lBQN6Q1z0bSsP508yfleP68wWuZWIA9CafIWuD+SN6qa7flbHy7Df" +
             "D2a8yuoaYDAIBgYqhQMCAgMDQQA8L8kJRLcnqeyn1en7U23Sw6pkfEQu3u0xFkVP" +
             "vFQ/3cHeF26NG+xxtZPz3TaTVXdoiYkXYiD02rEx1bUcM97i");
+    
+    private final byte[] uaczo1 = Base64.decode(
+            "MIIFWzCCBNegAwIBAgIUMAR1He8seK4BAAAAAQAAAAEAAAAwDQYLKoYkAgEBAQED" +
+            "AQEwgfoxPzA9BgNVBAoMNtCc0ZbQvdGW0YHRgtC10YDRgdGC0LLQviDRjtGB0YLQ" +
+            "uNGG0ZbRlyDQo9C60YDQsNGX0L3QuDExMC8GA1UECwwo0JDQtNC80ZbQvdGW0YHR" +
+            "gtGA0LDRgtC+0YAg0IbQotChINCm0JfQnjFJMEcGA1UEAwxA0KbQtdC90YLRgNCw" +
+            "0LvRjNC90LjQuSDQt9Cw0YHQstGW0LTRh9GD0LLQsNC70YzQvdC40Lkg0L7RgNCz" +
+            "0LDQvTEZMBcGA1UEBQwQVUEtMDAwMTU2MjItMjAxMjELMAkGA1UEBhMCVUExETAP" +
+            "BgNVBAcMCNCa0LjRl9CyMB4XDTEyMDkyODE5NTMwMFoXDTIyMDkyODE5NTMwMFow" +
+            "gfoxPzA9BgNVBAoMNtCc0ZbQvdGW0YHRgtC10YDRgdGC0LLQviDRjtGB0YLQuNGG" +
+            "0ZbRlyDQo9C60YDQsNGX0L3QuDExMC8GA1UECwwo0JDQtNC80ZbQvdGW0YHRgtGA" +
+            "0LDRgtC+0YAg0IbQotChINCm0JfQnjFJMEcGA1UEAwxA0KbQtdC90YLRgNCw0LvR" +
+            "jNC90LjQuSDQt9Cw0YHQstGW0LTRh9GD0LLQsNC70YzQvdC40Lkg0L7RgNCz0LDQ" +
+            "vTEZMBcGA1UEBQwQVUEtMDAwMTU2MjItMjAxMjELMAkGA1UEBhMCVUExETAPBgNV" +
+            "BAcMCNCa0LjRl9CyMIIBUTCCARIGCyqGJAIBAQEBAwEBMIIBATCBvDAPAgIBrzAJ" +
+            "AgEBAgEDAgEFAgEBBDbzykDGaaTaFzFJyhLDLa4Ya1Osa8Y2WZferq6K0tiI+b/V" +
+            "NAFpTvnEJz2M/m3Cj3BqD0kQzgMCNj//////////////////////////////////" +
+            "/7oxdUWACajApyTwL4Gqih/Lr4DZDHqVEQUEzwQ2fIV8lMVDO/2ZHhfCJoQGWFCp" +
+            "oknte8JJrlpOh4aJ+HLvetUkCC7DA46a7ee6a6Ezgdl5umIaBECp1utF8TxwgoDE" +
+            "lnsjH16t9ljrpMA3KR042WvwJcpOF/jpcg3GFbQ6KJdfC8Heo2Q4tWTqLBef0BI+" +
+            "bbj6xXkEAzkABDa2G/m9S2LKqyw5UPXFHV+oDXB+AHtSW3BnZ9zlzRuvbido2tDG" +
+            "qE/CL5kFHZE0NfTrHrGa1USjggE6MIIBNjApBgNVHQ4EIgQgMAR1He8seK4VC6vv" +
+            "vv8Nq9v4LOVonutO0xCl+xM4+wowKwYDVR0jBCQwIoAgMAR1He8seK4VC6vvvv8N" +
+            "q9v4LOVonutO0xCl+xM4+wowDgYDVR0PAQH/BAQDAgEGMBkGA1UdIAEB/wQPMA0w" +
+            "CwYJKoYkAgEBAQICMBIGA1UdEwEB/wQIMAYBAf8CAQIwHgYIKwYBBQUHAQMBAf8E" +
+            "DzANMAsGCSqGJAIBAQECATA9BgNVHR8ENjA0MDKgMKAuhixodHRwOi8vY3pvLmdv" +
+            "di51YS9kb3dubG9hZC9jcmxzL0NaTy1GdWxsLmNybDA+BgNVHS4ENzA1MDOgMaAv" +
+            "hi1odHRwOi8vY3pvLmdvdi51YS9kb3dubG9hZC9jcmxzL0NaTy1EZWx0YS5jcmww" +
+            "DQYLKoYkAgEBAQEDAQEDbwAEbPF4bx7drDxzzYABhB33Y0MQ+/N5FuPl7faVx/es" +
+            "V5n5DXg5TzZovzZeICB5JHPLcbdeCq6aGwvXsgybt34zqf7LKmfq0rFNYfXJVWFH" +
+            "4Tg5sPA+fCQ+T0O35VN873BLgTGz7bnHH9o8bnjwMA==");
+    
+    private final byte[] uaczo2 = Base64.decode(
+            "MIIEvTCCBDmgAwIBAgIDAYhwMA0GCyqGJAIBAQEBAwEBMIIBHjELMAkGA1UEBhMC" +
+            "VUExKDAmBgNVBAgMH9Ca0LjRl9Cy0YHRjNC60LAg0L7QsdC70LDRgdGC0YwxETAP" +
+            "BgNVBAcMCNCa0LjRl9CyMUkwRwYDVQQKDEDQptC10L3RgtGA0LDQu9GM0L3QuNC5" +
+            "INC30LDRgdCy0ZbQtNGH0YPQstCw0LvRjNC90LjQuSDQvtGA0LPQsNC9MTUwMwYD" +
+            "VQQLDCzQotC10YXQvdC+0LvQvtCz0ZbRh9C90LjQuSDRhtC10L3RgtGAINCm0JfQ" +
+            "njE1MDMGA1UEAwws0KPQutGA0LDRl9C90LAsINCm0JfQniAvIFVrcmFpbmUsIENl" +
+            "bnRyYWwgQ0ExGTAXBgNVBAUTEFVBLTM3MjAwMzAzLTIwMTAwHhcNMDYxMjI1MDc0" +
+            "MDU4WhcNMTExMjI0MDc0MDU4WjCCAR4xCzAJBgNVBAYTAlVBMSgwJgYDVQQIDB/Q" +
+            "mtC40ZfQstGB0YzQutCwINC+0LHQu9Cw0YHRgtGMMREwDwYDVQQHDAjQmtC40ZfQ" +
+            "sjFJMEcGA1UECgxA0KbQtdC90YLRgNCw0LvRjNC90LjQuSDQt9Cw0YHQstGW0LTR" +
+            "h9GD0LLQsNC70YzQvdC40Lkg0L7RgNCz0LDQvTE1MDMGA1UECwws0KLQtdGF0L3Q" +
+            "vtC70L7Qs9GW0YfQvdC40Lkg0YbQtdC90YLRgCDQptCX0J4xNTAzBgNVBAMMLNCj" +
+            "0LrRgNCw0ZfQvdCwLCDQptCX0J4gLyBVa3JhaW5lLCBDZW50cmFsIENBMRkwFwYD" +
+            "VQQFExBVQS0zNzIwMDMwMy0yMDEwMIGdMGAGCyqGJAIBAQEBAwEBMFEGDSqGJAIB" +
+            "AQEBAwEBAgkEQKnW60XxPHCCgMSWeyMfXq32WOukwDcpHTjZa/Alyk4X+OlyDcYV" +
+            "tDool18Lwd6jZDi1ZOosF5/QEj5tuPrFeQQDOQAENlMfji/H5gxxL5TKtLMFv2X3" +
+            "0EJrj3orwGV0zEz+EgSChr+I8bsOrnfkr5UwMQIjGJOg1G/nYKOCARgwggEUMA8G" +
+            "A1UdEwEB/wQFMAMBAf8weQYDVR0gAQH/BG8wbTBeBgkqhiQCAQEBAgEwUTBPBggr" +
+            "BgEFBQcCARZDaHR0cDovL2N6by5nb3YudWEvY29udGVudC9ub3JtYXRpdmVfZG9j" +
+            "dW1lbnQvZ2VuZXJhbF9kb2MvcmVnQ1pPLnppcDALBgkqhiQCAQEBAgIwHgYIKwYB" +
+            "BQUHAQMBAf8EDzANMAsGCSqGJAIBAQECATAOBgNVHQ8BAf8EBAMCAcYwKQYDVR0O" +
+            "BCIEIPqbNt55OgWdLCn8hfuY9HJE3d3+DTTBlTJBN0nxog+mMCsGA1UdIwQkMCKA" +
+            "IPqbNt55OgWdLCn8hfuY9HJE3d3+DTTBlTJBN0nxog+mMA0GCyqGJAIBAQEBAwEB" +
+            "A28ABGx8QNaWcy0admsBt6iB0Vi+kAargzsQuoc/BThskYdxGNftLvYDPYxkEM2N" +
+            "GQ+9f1RJgCSNVRj3NhWoHhkqcL5R3gxAHie+a+zMqsX0258hGdT3MXkm0Syn/cNo" +
+            "sga4XzzvnVaas9vsPKMrZTQ=");
+    
+    private final byte[] uaczo3 = Base64.decode(
+            "MIIEtTCCBDGgAwIBAgIDAYisMA0GCyqGJAIBAQEBAwEBMIIBGjELMAkGA1UEBhMC" +
+            "VUExKDAmBgNVBAgMH9Ca0LjRl9Cy0YHRjNC60LAg0L7QsdC70LDRgdGC0YwxETAP" +
+            "BgNVBAcMCNCa0LjRl9CyMUkwRwYDVQQKDEDQptC10L3RgtGA0LDQu9GM0L3QuNC5" +
+            "INC30LDRgdCy0ZbQtNGH0YPQstCw0LvRjNC90LjQuSDQvtGA0LPQsNC9MTEwLwYD" +
+            "VQQLDCjQkNC00LzRltC90ZbRgdGC0YDQsNGC0L7RgCDQhtCi0KEg0KbQl9CeMTUw" +
+            "MwYDVQQDDCzQo9C60YDQsNGX0L3QsCwg0KbQl9CeIC8gVWtyYWluZSwgQ2VudHJh" +
+            "bCBDQTEZMBcGA1UEBRMQVUEtMDAwMTU2MjItMjAxMTAeFw0wNzEyMjAxMDAwMDBa" +
+            "Fw0xMjEyMTgxMDAwMDBaMIIBGjELMAkGA1UEBhMCVUExKDAmBgNVBAgMH9Ca0LjR" +
+            "l9Cy0YHRjNC60LAg0L7QsdC70LDRgdGC0YwxETAPBgNVBAcMCNCa0LjRl9CyMUkw" +
+            "RwYDVQQKDEDQptC10L3RgtGA0LDQu9GM0L3QuNC5INC30LDRgdCy0ZbQtNGH0YPQ" +
+            "stCw0LvRjNC90LjQuSDQvtGA0LPQsNC9MTEwLwYDVQQLDCjQkNC00LzRltC90ZbR" +
+            "gdGC0YDQsNGC0L7RgCDQhtCi0KEg0KbQl9CeMTUwMwYDVQQDDCzQo9C60YDQsNGX" +
+            "0L3QsCwg0KbQl9CeIC8gVWtyYWluZSwgQ2VudHJhbCBDQTEZMBcGA1UEBRMQVUEt" +
+            "MDAwMTU2MjItMjAxMTCBnTBgBgsqhiQCAQEBAQMBATBRBg0qhiQCAQEBAQMBAQIJ" +
+            "BECp1utF8TxwgoDElnsjH16t9ljrpMA3KR042WvwJcpOF/jpcg3GFbQ6KJdfC8He" +
+            "o2Q4tWTqLBef0BI+bbj6xXkEAzkABDajkfNBomH27xjY1N7wklRvY5E0ZFaU53Fh" +
+            "y4jUY+G4AUhEHHCkTvUja8CUxPqtb9KyfuZELVOjggEYMIIBFDAPBgNVHRMBAf8E" +
+            "BTADAQH/MHkGA1UdIAEB/wRvMG0wXgYJKoYkAgEBAQIBMFEwTwYIKwYBBQUHAgEW" +
+            "Q2h0dHA6Ly9jem8uZ292LnVhL2NvbnRlbnQvbm9ybWF0aXZlX2RvY3VtZW50L2dl" +
+            "bmVyYWxfZG9jL3JlZ0NaTy56aXAwCwYJKoYkAgEBAQICMB4GCCsGAQUFBwEDAQH/" +
+            "BA8wDTALBgkqhiQCAQEBAgEwDgYDVR0PAQH/BAQDAgHGMCkGA1UdDgQiBCC+e+cA" +
+            "bIdAgQkh6q3dUAZjPrNhwDDGrVnLNP6telmoCjArBgNVHSMEJDAigCC+e+cAbIdA" +
+            "gQkh6q3dUAZjPrNhwDDGrVnLNP6telmoCjANBgsqhiQCAQEBAQMBAQNvAARsyq9i" +
+            "ajEgdBh5mPUZefcLY56AIRWqmsJsWuZuUbCa5oQXRH5iCRa4PSvs8v6zHAKKlMgK" +
+            "gaoY6jywqmwiMlylbSgo/A0HKdCFnUUl7S8yjE4054MSSIjb2R0c2pmqmwtU25JB" +
+            "/MkNbe77Uzka");
+    
+    private final byte[] uaczo4 = Base64.decode(
+            "MIIEKzCCA6egAwIBAgIBATANBgsqhiQCAQEBAQMBATCBzDFJMEcGA1UECwxA0KbQ" +
+            "tdC90YLRgNCw0LvRjNC90LjQuSDQt9Cw0YHQstGW0LTRh9GD0LLQsNC70YzQvdC4" +
+            "0Lkg0L7RgNCz0LDQvTE1MDMGA1UEAwws0KPQutGA0LDRl9C90LAsINCm0JfQniAv" +
+            "IFVrcmFpbmUsIENlbnRyYWwgQ0ExCzAJBgNVBAYTAlVBMREwDwYDVQQHDAjQmtC4" +
+            "0ZfQsjEoMCYGA1UECAwf0JrQuNGX0LLRgdGM0LrQsCDQvtCx0LvQsNGB0YLRjDAe" +
+            "Fw0wNTEyMjMyMzAxMDFaFw0xMDEyMjMyMzAxMDFaMIHMMUkwRwYDVQQLDEDQptC1" +
+            "0L3RgtGA0LDQu9GM0L3QuNC5INC30LDRgdCy0ZbQtNGH0YPQstCw0LvRjNC90LjQ" +
+            "uSDQvtGA0LPQsNC9MTUwMwYDVQQDDCzQo9C60YDQsNGX0L3QsCwg0KbQl9CeIC8g" +
+            "VWtyYWluZSwgQ2VudHJhbCBDQTELMAkGA1UEBhMCVUExETAPBgNVBAcMCNCa0LjR" +
+            "l9CyMSgwJgYDVQQIDB/QmtC40ZfQstGB0YzQutCwINC+0LHQu9Cw0YHRgtGMMIIB" +
+            "UTCCARIGCyqGJAIBAQEBAwEBMIIBATCBvDAPAgIBrzAJAgEBAgEDAgEFAgEBBDbz" +
+            "ykDGaaTaFzFJyhLDLa4Ya1Osa8Y2WZferq6K0tiI+b/VNAFpTvnEJz2M/m3Cj3Bq" +
+            "D0kQzgMCNj///////////////////////////////////7oxdUWACajApyTwL4Gq" +
+            "ih/Lr4DZDHqVEQUEzwQ2lqAgR9+skUI33jGNgj2Qsh9+3x7so5koelwr4fy89k/x" +
+            "5eqNSvFZ/1fPHfXz+iz7PmFIhr15BECLwhftNllK8B904j3LmmBY/teFIBSrw2lL" +
+            "CKc1nWIez+h/01q0GSxgeuwU0oOw9WmwlkGuj13DJ8cSmm70jTULAzkABDa6vb3U" +
+            "VIxZr2cXcVSvKkPM65Ii2+8biqyoH8i9e0NKJu+IhjDvUrvzlr8U+ywuf5bpSj4N" +
+            "fEmjezB5MA4GA1UdDwEB/wQEAwIBxjAPBgNVHRMBAf8EBTADAQH/MCsGA1UdIwQk" +
+            "MCKAIOPEn/xcXE6VGFNB8vbfXS1XMYYzAa4ML8opsOslTHJNMCkGA1UdDgQiBCDj" +
+            "xJ/8XFxOlRhTQfL2310tVzGGMwGuDC/KKbDrJUxyTTANBgsqhiQCAQEBAQMBAQNv" +
+            "AARsh0unjBfQoINx2rXAJggrBdoRsCouw8lN771DhcuUrlQUuEEQHTaZrQoYbECu" +
+            "AGfsxfTyldQDEOVzD/Uq8Xh4gIHuSqki9mRSjMR19MQtTKRmI9TRHIeTdIZ6l3P7" +
+            "jFfGJvTP0E9NYSolx+kM");
+
+    private final byte[] sha3Cert = Base64.decode(
+        "MIID8jCCAqagAwIBAgIICfBykpzUT+IwQQYJKoZIhvcNAQEKMDSgDzANBglg"
+      + "hkgBZQMEAggFAKEcMBoGCSqGSIb3DQEBCDANBglghkgBZQMEAggFAKIDAgEg"
+      + "MCwxCzAJBgNVBAYTAkRFMQ4wDAYDVQQKDAV4aXBraTENMAsGA1UEAwwEUkNB"
+      + "MTAeFw0xNjEwMTgxODQzMjhaFw0yNjEwMTgxODQzMjdaMCwxCzAJBgNVBAYT"
+      + "AkRFMQ4wDAYDVQQKDAV4aXBraTENMAsGA1UEAwwEUkNBMTCCASIwDQYJKoZI"
+      + "hvcNAQEBBQADggEPADCCAQoCggEBAK/pzm1RASDYDg3WBXyW3AnAESRF/+li"
+      + "qh0X8Y89m+JFJeOi1u89bOSPjsFfo5SbRSElyRXedh/d37KrONg39NEKIcC6"
+      + "iSuiNfXu0D6nlSzhrQzmvHIyfLnm8N2JtHDr/hZIprOcFO+lZTJIjjrOVe9y"
+      + "lFGgGDd/uQCEJk1Cmi5Ivi9odeiN3z8lVlGNeN9/Q5n47ijuYWr73z/FyyAK"
+      + "gAG3B5nhAYWs4ft0O3JWBc0QJZzShqsRjm3SNhAqMDnRoTq04PFgbDYizV8T"
+      + "ydz2kCne79TDwsY4MckYYaGoNcPoQXVS+9YjQjI72ktSlxiJxodL9WMFl+ED"
+      + "5ZLBRIRsDJECAwEAAaOBrzCBrDAPBgNVHRMBAf8EBTADAQH/MGoGCCsGAQUF"
+      + "BwEBBF4wXDAnBggrBgEFBQcwAoYbaHR0cDovL2V4YW1wbGUub3JnL1JDQTEu"
+      + "ZGVyMDEGCCsGAQUFBzABhiVodHRwOi8vbG9jYWxob3N0OjgwODAvb2NzcC9y"
+      + "ZXNwb25kZXIxMB0GA1UdDgQWBBRTXKdJI3P1kveLlRxPvzUfDnC8JjAOBgNV"
+      + "HQ8BAf8EBAMCAQYwQQYJKoZIhvcNAQEKMDSgDzANBglghkgBZQMEAggFAKEc"
+      + "MBoGCSqGSIb3DQEBCDANBglghkgBZQMEAggFAKIDAgEgA4IBAQCpSVaqOMKz"
+      + "6NT0+mivEhig9cKsglFhnWStKUtdhrG4HqOf6Qjny9Xvq1nE7x8e2xAoaZLd"
+      + "GMsNAWFCbwzoJrDL7Ct6itQ5ymxi2haN+Urc5UWJd/8C0R74OdP1uPCiljZ9"
+      + "DdjbNk/hS36UPYi+FT5r6Jr/1X/EqgL1MOUsSTEXdYlZH662zjbV4D9QSBzx"
+      + "ul9bYyWrqSZFKvKef4UQwUy8yXtChwiwp50mfJQBdVcIqPBYCgmLYclamjQx"
+      + "hlkk5VbZb4D/Cv4HxrdxpJfy/ewUZR7uHlzDx0/m4qjzNzWgq+sh3ZbveDrV"
+      + "wd/FDMFOxSIno9qgHtdfgXRwZJ+l07fF");
+
+    private final String ecPemCert =
+        "-----BEGIN CERTIFICATE-----\n" +
+            "MIIB/jCCAYWgAwIBAgIIdJclisc/elQwCgYIKoZIzj0EAwMwRTELMAkGA1UEBhMC\n" +
+            "VVMxFDASBgNVBAoMC0FmZmlybVRydXN0MSAwHgYDVQQDDBdBZmZpcm1UcnVzdCBQ\n" +
+            "cmVtaXVtIEVDQzAeFw0xMDAxMjkxNDIwMjRaFw00MDEyMzExNDIwMjRaMEUxCzAJ\n" +
+            "BgNVBAYTAlVTMRQwEgYDVQQKDAtBZmZpcm1UcnVzdDEgMB4GA1UEAwwXQWZmaXJt\n" +
+            "VHJ1c3QgUHJlbWl1bSBFQ0MwdjAQBgcqhkjOPQIBBgUrgQQAIgNiAAQNMF4bFZ0D\n" +
+            "0KF5Nbc6PJJ6yhUczWLznCZcBz3lVPqj1swS6vQUX+iOGasvLkjmrBhDeKzQN8O9\n" +
+            "ss0s5kfiGuZjuD0uL3jET9v0D6RoTFVya5UdThhClXjMNzyR4ptlKymjQjBAMB0G\n" +
+            "A1UdDgQWBBSaryl6wBE1NSZRMADDav5A1a7WPDAPBgNVHRMBAf8EBTADAQH/MA4G\n" +
+            "A1UdDwEB/wQEAwIBBjAKBggqhkjOPQQDAwNnADBkAjAXCfOHiFBar8jAQr9HX/Vs\n" +
+            "aobgxCd05DhT1wV/GzTjxi+zygk8N53X57hG8f2h4nECMEJZh0PUUd+60wkyWs6I\n" +
+            "flc9nF9Ca/UHLbXwgpP5WW+uZPpY5Yse42O+tYHNbwKMeQ==\n" +
+            "-----END CERTIFICATE-----";
+
+    private final String pemPKCS7 =
+        "-----BEGIN PKCS7-----\n"+
+        "MIIJDAYJKoZIhvcNAQcCoIII/TCCCPkCAQExADALBgkqhkiG9w0BBwGgggjfMIIF\n"+
+        "wTCCBKmgAwIBAgIJ+pQ4odKc8AABMA0GCSqGSIb3DQEBBQUAMGAxCzAJBgNVBAYT\n"+
+        "AlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRIwEAYDVQQHEwlTYW4gTWF0ZW8xFzAV\n"+
+        "BgNVBAoTDkdlbml1cy5jb20gSW5jMQ8wDQYDVQQLEwZOZXRPcHMwHhcNMTQwMTI4\n"+
+        "MjE0MjE0WhcNMjQwMTI2MjE0MjE0WjBgMQswCQYDVQQGEwJVUzETMBEGA1UECBMK\n"+
+        "Q2FsaWZvcm5pYTESMBAGA1UEBxMJU2FuIE1hdGVvMRcwFQYDVQQKEw5HZW5pdXMu\n"+
+        "Y29tIEluYzEPMA0GA1UECxMGTmV0T3BzMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A\n"+
+        "MIIBCgKCAQEArfmkkDffJP6ODl13KnTaB8cwvB4anWw8+bGa8y9N7wPx7RWZWFMr\n"+
+        "fOac01p2fhq+oUIw3/uxRcDAQBQx0ZFLx3OFMuQkTpFbzHeSctsXi1Kk28pn4K3B\n"+
+        "K2CModRh8ir/qdhu0PG4SsXdyN8uT8H6bitmH4vpLaAMMi6aa1M6Ygio8a37UCQQ\n"+
+        "7fw2P7YVR61BsyqwsM/eYtgd2LqrObLwkkOvxTwpZPWDftHI4ucz1rgNnD9q0H3g\n"+
+        "kyGyGq9NBkBHJ25+CkMe+1q/eh4Xt2kt2ML4q5YZmQEwHm1eIR3/uGlb1+bueRMd\n"+
+        "hrueth/FsUiKPJ0gzmsxzQefgcLnctIx3wIDAQABo4ICfDCCAngwCQYDVR0TBAIw\n"+
+        "ADALBgNVHQ8EBAMCBeAwHQYDVR0OBBYEFJ/uU/wudzNDSI/SWkNNTXNLq2EIMIGS\n"+
+        "BgNVHSMEgYowgYeAFJ/uU/wudzNDSI/SWkNNTXNLq2EIoWSkYjBgMQswCQYDVQQG\n"+
+        "EwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTESMBAGA1UEBxMJU2FuIE1hdGVvMRcw\n"+
+        "FQYDVQQKEw5HZW5pdXMuY29tIEluYzEPMA0GA1UECxMGTmV0T3Bzggn6lDih0pzw\n"+
+        "AAEwHgYJYIZIAYb4QgENBBEWD1guNTA5IFVuaXQgVGVzdDCBwwYDVR0RBIG7MIG4\n"+
+        "oA4GAyoDBKAHDAV0ZXN0MYEQeDUwOUBleGFtcGxlLmNvbYIQeDUwOS5leGFtcGxl\n"+
+        "LmNvbaRQME4xCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1Bd2Vzb21lIER1ZGVzMRcw\n"+
+        "FQYDVQQLFA7DnGJlciBGcsOuZW5kczEOMAwGA1UEAxQF4oiGxpKGJWh0dHA6Ly93\n"+
+        "d3cuZXhhbXBsZS5jb20vP3E9YXdlc29tZW5lc3OHBMCoAAGIAyoDBDCBwwYDVR0S\n"+
+        "BIG7MIG4oA4GAyoDBKAHDAV0ZXN0MYEQeDUwOUBleGFtcGxlLmNvbYIQeDUwOS5l\n"+
+        "eGFtcGxlLmNvbaRQME4xCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1Bd2Vzb21lIER1\n"+
+        "ZGVzMRcwFQYDVQQLFA7DnGJlciBGcsOuZW5kczEOMAwGA1UEAxQF4oiGxpKGJWh0\n"+
+        "dHA6Ly93d3cuZXhhbXBsZS5jb20vP3E9YXdlc29tZW5lc3OHBMCoAAGIAyoDBDAN\n"+
+        "BgkqhkiG9w0BAQUFAAOCAQEAQK5jBzTq2lX1GpVD9RHxtTHJn/WkYOpMJYJruw8j\n"+
+        "HGfQwAkhlL9AqWgodTruoTnXgZbA7F3S8hx9gmUbHVjVeBvxZnGEJ8g7So1erFKv\n"+
+        "yQD1Ajtn7+uGXw6s0Dvde2ZVzV05pRk9ybg7kxKNXvVbKS3kyd6XoA27H5CSmzDu\n"+
+        "8cwHQkN4mJlwAiNCwMarpN4m4X0rQ+g1Ncfq+4sRjFLd8VVCbCpzD8UMBOVTpxxj\n"+
+        "kSyRPJZ7Db8SY0H2vcTUj2Yyog1RQ+RA/xp7Fgw+leEiveIE23Dq62hCHq6rU5Vj\n"+
+        "6L/LlLiKZ17lZT4z0fJ0lukPUpmVTynALKsKNm57+fOfnzCCAxYwggLWoAMCAQIC\n"+
+        "CQDcaK5WyhbztjAJBgcqhkjOOAQDMGAxCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpD\n"+
+        "YWxpZm9ybmlhMRIwEAYDVQQHEwlTYW4gTWF0ZW8xFzAVBgNVBAoTDkdlbml1cy5j\n"+
+        "b20gSW5jMQ8wDQYDVQQLEwZOZXRPcHMwHhcNMTQwMTI4MjE0MjE1WhcNMTQwMjI3\n"+
+        "MjE0MjE1WjBgMQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTESMBAG\n"+
+        "A1UEBxMJU2FuIE1hdGVvMRcwFQYDVQQKEw5HZW5pdXMuY29tIEluYzEPMA0GA1UE\n"+
+        "CxMGTmV0T3BzMIIBtzCCASsGByqGSM44BAEwggEeAoGBAIiv42coWuyVXpYoyEwf\n"+
+        "7uevd4ILhylFuvKH5tRWRcZENuxPOmXfr3L43PCdbnJhXMg3RkkWgjaE7lBk5evx\n"+
+        "LKH6rU2a1GnGmoY34OIvVvGL3xi96uYTTvLIX3+6NXaAlNppIBSHXcYx8cMdtYIn\n"+
+        "3J6JGSHEPo36ay4rDZbfS1frAhUAxF6k+/9T00QMolE41R+6ytzrawkCgYA4soyt\n"+
+        "rrIrQq6gwm2HanT8coIChr3/Et8rMamj7gS1yT9kH8HNGf217XtE3f/LUZZWUkBq\n"+
+        "3PNOuxhprNmvSAdQ7ZzhWfRvOFHKaH/DtKvLeEC5I00DfYSI64/V869Jy7lnyY7M\n"+
+        "h7ShLIwOlwnBDIL5oluircfXTr20a/Jv9pS1AAOBhQACgYEAhg6lELBZAIHVkjm7\n"+
+        "bwVJ5G/ka+KCjXxWXo+BCbqo0LqfrKQoQwUcwDzuKdqWxYbyUd0cl5/9fX59/RT/\n"+
+        "9ULklGy+dTyUSc/hj85PCXLYly3G6WECiN29TK0QLhEMZfi+iSm3YxNX3rxvmrHb\n"+
+        "bfO2SMef4r6ujv9KscDg0zQ4AgajGjAYMAkGA1UdEwQCMAAwCwYDVR0PBAQDAgA3\n"+
+        "MAkGByqGSM44BAMDLwAwLAIUVcYZ1LNv22fDBiajZ99FpTn05SMCFCgMXzUGLdPy\n"+
+        "gY460q7tGpuydry+oQAxAA==\n"+
+        "-----END PKCS7-----\n";
+
+    private static byte[] sm_root = Base64.decode(
+        "MIICwzCCAmmgAwIBAgIIIBQGIgAAAAMwCgYIKoEcz1UBg3UwgdgxCzAJBgNVBAYT" +
+            "AkNOMRIwEAYDVQQIDAnmsZ/oi4/nnIExEjAQBgNVBAcMCeWNl+S6rOW4gjE8MDoG" +
+            "A1UECgwz5rGf6IuP55yB55S15a2Q5ZWG5Yqh5pyN5Yqh5Lit5b+D5pyJ6ZmQ6LSj" +
+            "5Lu75YWs5Y+4MUswSQYDVQQLDELmsZ/oi4/nnIHnlLXlrZDllYbliqHmnI3liqHk" +
+            "uK3lv4PmnInpmZDotKPku7vlhazlj7jlronlhajkuovkuJrpg6gxFjAUBgNVBAMM" +
+            "DUpTQ0FfUk9PVF9TTTIwHhcNMTQwNjIyMDQ1MzAyWhcNMzQwNjIyMDQ1MzAyWjCB" +
+            "1jELMAkGA1UEBhMCQ04xEjAQBgNVBAgMCeaxn+iLj+ecgTESMBAGA1UEBwwJ5Y2X" +
+            "5Lqs5biCMTwwOgYDVQQKDDPmsZ/oi4/nnIHnlLXlrZDllYbliqHmnI3liqHkuK3l" +
+            "v4PmnInpmZDotKPku7vlhazlj7gxSzBJBgNVBAsMQuaxn+iLj+ecgeeUteWtkOWV" +
+            "huWKoeacjeWKoeS4reW/g+aciemZkOi0o+S7u+WFrOWPuOWuieWFqOS6i+S4mumD" +
+            "qDEUMBIGA1UEAwwLSlNDQV9DQV9TTTIwWTATBgcqhkjOPQIBBggqgRzPVQGCLQNC" +
+            "AAS/gvW90+LvyXPgpR7L0pwlVoZQdan7V5YQMEpxt47tzer31/8WJIfldx9NL/1A" +
+            "swkk6ItveCVW5k0u+IIk6crLox0wGzAMBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIB" +
+            "BjAKBggqgRzPVQGDdQNIADBFAiEAy9NkogihHCj9Jx0ZiHdkMyCHF0wHWX58KZco" +
+            "CW5mjbgCIC9cAyuVV91ygLWk14PDuIAPFWKm6rJPXbiZL6KzwHQA");
+
+    private static byte[] sm_ca = Base64.decode(
+         "MIIC/TCCAqKgAwIBAgIIIBYDKQETeGQwCgYIKoEcz1UBg3UwgccxCzAJBgNVBAYT" +
+             "AkNOMRIwEAYDVQQIDAnmsZ/oi4/nnIExEjAQBgNVBAcMCeWNl+S6rOW4gjE8MDoG" +
+             "A1UECgwz5rGf6IuP55yB55S15a2Q5ZWG5Yqh5pyN5Yqh5Lit5b+D5pyJ6ZmQ6LSj" +
+             "5Lu75YWs5Y+4MTwwOgYDVQQLDDPmsZ/oi4/nnIHnlLXlrZDllYbliqHmnI3liqHk" +
+             "uK3lv4PmnInpmZDotKPku7vlhazlj7gxFDASBgNVBAMMC0pTQ0FfQ0FfU00yMB4X" +
+             "DTE2MDMyOTA3MzQxOVoXDTIxMDMyOTA3MzQxOVowejENMAsGA1UEAxMEaG9zdDEL" +
+             "MAkGA1UECxMCMTExETAPBgNVBAoTCEFCQyBsdGQuMQswCQYDVQQHEwJOSjELMAkG" +
+             "A1UECBMCSlMxIjAgBgRVBC0RExhEOURGQThBN0NFMDg5QTg0Q0Q4Q0RCQjYxCzAJ" +
+             "BgNVBAYTAkNOMFkwEwYHKoZIzj0CAQYIKoEcz1UBgi0DQgAEaTG1mpejjdsNRr2q" +
+             "p3ZC0pPXuBO19sNhIJEG6cMSi/kE1hNDosCBRhpr2gOqKP9bXHrIhVGe41Z9Ci8L" +
+             "jf/hpaOBwzCBwDAJBgNVHRMEAjAAMAsGA1UdDwQEAwIEsDAdBgNVHSUEFjAUBggr" +
+             "BgEFBQcDAgYIKwYBBQUHAwQwHwYDVR0jBBgwFoAU/9NocgiO5XrE+eYsU0VOkaSx" +
+             "egMwRwYIKwYBBQUHAQEEOzA5MDcGCCsGAQUFBzAChitodHRwOi8vMTAuMTA4LjUu" +
+             "Mjo4ODgwL2Rvd25sb2FkL0pTQ0FfQ0EuY2VyMB0GA1UdDgQWBBQQ80pId+SJS9uP" +
+             "aZaItbNdEE2C0zAKBggqgRzPVQGDdQNJADBGAiEAogpBxL3Cc4P4v+FvQsnCgCZs" +
+             "oSdFZLZDB4uDlOIqU9wCIQDXmE1iiCsWi1RmdoY+/ics2ZlY8vyHWBJnZ+XFy1Jb" +
+             "fA==");
+
+    private static byte[] sm_sign = Base64.decode(
+        "MIID9zCCA5ygAwIBAgIIIBcEJwKSCCMwCgYIKoEcz1UBg3UwgccxCzAJBgNVBAYT" +
+        "AkNOMRIwEAYDVQQIDAnmsZ/oi4/nnIExEjAQBgNVBAcMCeWNl+S6rOW4gjE8MDoG" +
+        "A1UECgwz5rGf6IuP55yB55S15a2Q5ZWG5Yqh5pyN5Yqh5Lit5b+D5pyJ6ZmQ6LSj" +
+        "5Lu75YWs5Y+4MTwwOgYDVQQLDDPmsZ/oi4/nnIHnlLXlrZDllYbliqHmnI3liqHk" +
+        "uK3lv4PmnInpmZDotKPku7vlhazlj7gxFDASBgNVBAMMC0pTQ0FfQ0FfU00yMB4X" +
+        "DTE3MDQyNzAwMzkwNVoXDTE4MDQyNzAwMzkwNVowggEdMQ4wDAYDVQRYDAUwMDAw" +
+        "MTESMBAGA1UEGgwJ5biC6L6W5Yy6MRswGQYDVQQBDBIzMjAxMTIxOTgxMDUxMTAw" +
+        "MTQxDTALBgRVBIhYDAM0NTYxDTALBgRVBIhXDAMxMjMxEjAQBgNVBC0MCXVzZXJD" +
+        "ZXJ0MjELMAkGA1UEBhMCQ04xEjAQBgNVBAgMCeaxn+iLj+ecgTESMBAGA1UEBwwJ" +
+        "5Y2X5Lqs5biCMQwwCgYDVQQLDAMwMDgxHzAdBgkqhkiG9w0BCQEWEDMyNzMyMTU2" +
+        "OEBxcS5jb20xITAfBgNVBCoMGOa1i+ivlee9keWFs1NNMueul+azlTEyMzEhMB8G" +
+        "A1UEAwwY5rWL6K+V572R5YWzU00y566X5rOVMTIzMFkwEwYHKoZIzj0CAQYIKoEc" +
+        "z1UBgi0DQgAEdbrBzy2y8Gz4grOF23iaDipPhRPQRApAMIAP0cAuL1tATFjFuWJs" +
+        "pBc1cnCZmsOJnVpV4W7VF8hNOaqv3Tq4NqOCARcwggETMAkGA1UdEwQCMAAwCwYD" +
+        "VR0PBAQDAgbAMB0GA1UdDgQWBBRsWSOQDniy75t7UEvTXugwfq0HpzAfBgNVHSME" +
+        "GDAWgBT/02hyCI7lesT55ixTRU6RpLF6AzAxBgNVHSUEKjAoBggrBgEFBQcDAgYI" +
+        "KwYBBQUHAwgGCCsGAQUFBwMEBggrBgEFBQcDCDA9BgNVHR8ENjA0MDKgMKAuhixo" +
+        "dHRwOi8vY3JsLmpzY2EuY29tLmNuL2NybC9TTTJDUkxfRU5USVRZLmNybDBHBggr" +
+        "BgEFBQcBAQQ7MDkwNwYIKwYBBQUHMAKBK2h0dHA6Ly8xMC4xMDguNS4yOjg4ODAv" +
+        "ZG93bmxvYWQvSlNDQV9DQS5jZXIwCgYIKoEcz1UBg3UDSQAwRgIhALFoMoA1+uO4" +
+        "tXfmoyePz1pmv0CWPBgEP1EfDeS6FPitAiEAjHJYq7ryHKULqpRg6ph9r+xUDoWd" +
+        "0TPMOQ9jj4XJPO4=");
 
     private PublicKey dudPublicKey = new PublicKey() 
     {
@@ -1067,11 +1297,12 @@ public class CertTest
             Certificate cert = fact.generateCertificate(bIn);
 
             PublicKey    k = cert.getPublicKey();
+
             // System.out.println(cert);
         }
         catch (Exception e)
         {
-            fail(dump + System.getProperty("line.separator") + getName() + ": "+ id + " failed - exception " + e.toString(), e);
+            fail(dump + Strings.lineSeparator() + getName() + ": "+ id + " failed - exception " + e.toString(), e);
         }
 
     }
@@ -1100,7 +1331,7 @@ public class CertTest
         }
         catch (Exception e)
         {
-            fail(dump + System.getProperty("line.separator") + getName() + ": "+ id + " failed - exception " + e.toString(), e);
+            fail(dump + Strings.lineSeparator() + getName() + ": "+ id + " failed - exception " + e.toString(), e);
         }
 
     }
@@ -1131,7 +1362,7 @@ public class CertTest
         }
         catch (Exception e)
         {
-            fail(dump + System.getProperty("line.separator") + getName() + ": "+ id + " failed - exception " + e.toString(), e);
+            fail(dump + Strings.lineSeparator() + getName() + ": "+ id + " failed - exception " + e.toString(), e);
         }
 
     }
@@ -1139,7 +1370,8 @@ public class CertTest
 
     public void checkSelfSignedCertificate(
         int     id,
-        byte[]  bytes)
+        byte[]  bytes,
+        String  sigAlgName)
     {
         ByteArrayInputStream    bIn;
         String                  dump = "";
@@ -1155,587 +1387,22 @@ public class CertTest
             PublicKey    k = cert.getPublicKey();
 
             cert.verify(k);
-            // System.out.println(cert);
-        }
-        catch (Exception e)
-        {
-            fail(dump + System.getProperty("line.separator") + getName() + ": "+ id + " failed - exception " + e.toString(), e);
-        }
-
-    }
-
-    /**
-     * we generate a self signed certificate for the sake of testing - RSA
-     */
-    public void checkCreation1()
-        throws Exception
-    {
-        //
-        // a sample key pair.
-        //
-        RSAPublicKeySpec pubKeySpec = new RSAPublicKeySpec(
-            new BigInteger("b4a7e46170574f16a97082b22be58b6a2a629798419be12872a4bdba626cfae9900f76abfb12139dce5de56564fab2b6543165a040c606887420e33d91ed7ed7", 16),
-            new BigInteger("11", 16));
-
-        RSAPrivateCrtKeySpec privKeySpec = new RSAPrivateCrtKeySpec(
-            new BigInteger("b4a7e46170574f16a97082b22be58b6a2a629798419be12872a4bdba626cfae9900f76abfb12139dce5de56564fab2b6543165a040c606887420e33d91ed7ed7", 16),
-            new BigInteger("11", 16),
-            new BigInteger("9f66f6b05410cd503b2709e88115d55daced94d1a34d4e32bf824d0dde6028ae79c5f07b580f5dce240d7111f7ddb130a7945cd7d957d1920994da389f490c89", 16),
-            new BigInteger("c0a0758cdf14256f78d4708c86becdead1b50ad4ad6c5c703e2168fbf37884cb", 16),
-            new BigInteger("f01734d7960ea60070f1b06f2bb81bfac48ff192ae18451d5e56c734a5aab8a5", 16),
-            new BigInteger("b54bb9edff22051d9ee60f9351a48591b6500a319429c069a3e335a1d6171391", 16),
-            new BigInteger("d3d83daf2a0cecd3367ae6f8ae1aeb82e9ac2f816c6fc483533d8297dd7884cd", 16),
-            new BigInteger("b8f52fc6f38593dabb661d3f50f8897f8106eee68b1bce78a95b132b4e5b5d19", 16));
-
-        //
-        // set up the keys
-        //
-        PrivateKey          privKey;
-        PublicKey           pubKey;
-
-        KeyFactory  fact = KeyFactory.getInstance("RSA", "BC");
-
-        privKey = fact.generatePrivate(privKeySpec);
-        pubKey = fact.generatePublic(pubKeySpec);
-
-        //
-        // distinguished name table.
-        //
-        Vector                      ord = new Vector();
-        Vector                      values = new Vector();
-
-        ord.addElement(X509Principal.C);
-        ord.addElement(X509Principal.O);
-        ord.addElement(X509Principal.L);
-        ord.addElement(X509Principal.ST);
-        ord.addElement(X509Principal.E);
-
-        values.addElement("AU");
-        values.addElement("The Legion of the Bouncy Castle");
-        values.addElement("Melbourne");
-        values.addElement("Victoria");
-        values.addElement("feedback-crypto@bouncycastle.org");
-
-        //
-        // extensions
-        //
-
-        //
-        // create the certificate - version 3 - without extensions
-        //
-        X509V3CertificateGenerator  certGen = new X509V3CertificateGenerator();
-
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal(ord, values));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal(ord, values));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
-
-        X509Certificate cert = certGen.generate(privKey);
-
-        cert.checkValidity(new Date());
-
-        cert.verify(pubKey);
-
-        Set dummySet = cert.getNonCriticalExtensionOIDs();
-        if (dummySet != null)
-        {
-            fail("non-critical oid set should be null");
-        }
-        dummySet = cert.getCriticalExtensionOIDs();
-        if (dummySet != null)
-        {
-            fail("critical oid set should be null");
-        }
-
-        //
-        // create the certificate - version 3 - with extensions
-        //
-        certGen = new X509V3CertificateGenerator();
-
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal(ord, values));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal(ord, values));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm("MD5WithRSAEncryption");
-        certGen.addExtension("2.5.29.15", true,
-            new X509KeyUsage(X509KeyUsage.encipherOnly));
-        certGen.addExtension("2.5.29.37", true,
-            new DERSequence(KeyPurposeId.anyExtendedKeyUsage));
-        certGen.addExtension("2.5.29.17", true,
-            new GeneralNames(new GeneralName(GeneralName.rfc822Name, "test@test.test")));
-
-        cert = certGen.generate(privKey);
-
-        cert.checkValidity(new Date());
-
-        cert.verify(pubKey);
-
-        ByteArrayInputStream   sbIn = new ByteArrayInputStream(cert.getEncoded());
-        ASN1InputStream        sdIn = new ASN1InputStream(sbIn);
-        ByteArrayInputStream   bIn = new ByteArrayInputStream(cert.getEncoded());
-        CertificateFactory     certFact = CertificateFactory.getInstance("X.509", "BC");
-
-        cert = (X509Certificate)certFact.generateCertificate(bIn);
-
-        if (!cert.getKeyUsage()[7])
-        {
-            fail("error generating cert - key usage wrong.");
-        }
-        
-        List l = cert.getExtendedKeyUsage();
-        if (!l.get(0).equals(KeyPurposeId.anyExtendedKeyUsage.getId()))
-        {
-            fail("failed extended key usage test");
-        }
-
-        Collection c = cert.getSubjectAlternativeNames();
-        Iterator   it = c.iterator();
-        while (it.hasNext())
-        {
-            List    gn = (List)it.next();
-            if (!gn.get(1).equals("test@test.test"))
+            if (sigAlgName != null && !sigAlgName.equals(((X509Certificate)cert).getSigAlgName()))
             {
-                fail("failed subject alternative names test");
+                fail("sigAlgName not matched on certificate: " + sigAlgName);
             }
-        }
-
-        // System.out.println(cert);
-
-        //
-        // create the certificate - version 1
-        //
-        X509V1CertificateGenerator  certGen1 = new X509V1CertificateGenerator();
-
-        certGen1.setSerialNumber(BigInteger.valueOf(1));
-        certGen1.setIssuerDN(new X509Principal(ord, values));
-        certGen1.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen1.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen1.setSubjectDN(new X509Principal(ord, values));
-        certGen1.setPublicKey(pubKey);
-        certGen1.setSignatureAlgorithm("MD5WithRSAEncryption");
-
-        cert = certGen1.generate(privKey);
-
-        cert.checkValidity(new Date());
-
-        cert.verify(pubKey);
-
-        bIn = new ByteArrayInputStream(cert.getEncoded());
-        certFact = CertificateFactory.getInstance("X.509", "BC");
-
-        cert = (X509Certificate)certFact.generateCertificate(bIn);
-
-        // System.out.println(cert);
-        if (!cert.getIssuerDN().equals(cert.getSubjectDN()))
-        {
-            fail("name comparison fails");
-        }
-    }
-
-    /**
-     * we generate a self signed certificate for the sake of testing - DSA
-     */
-    public void checkCreation2()
-    {
-        //
-        // set up the keys
-        //
-        PrivateKey          privKey;
-        PublicKey           pubKey;
-
-        try
-        {
-            KeyPairGenerator    g = KeyPairGenerator.getInstance("DSA", "SUN");
-
-            g.initialize(512, new SecureRandom());
-
-            KeyPair p = g.generateKeyPair();
-
-            privKey = p.getPrivate();
-            pubKey = p.getPublic();
-        }
-        catch (Exception e)
-        {
-            fail("error setting up keys - " + e.toString());
-            return;
-        }
-
-        //
-        // distinguished name table.
-        //
-        Vector                      ord = new Vector();
-        Vector                      values = new Vector();
-
-        ord.addElement(X509Principal.C);
-        ord.addElement(X509Principal.O);
-        ord.addElement(X509Principal.L);
-        ord.addElement(X509Principal.ST);
-        ord.addElement(X509Principal.E);
-
-        values.addElement("AU");
-        values.addElement("The Legion of the Bouncy Castle");
-        values.addElement("Melbourne");
-        values.addElement("Victoria");
-        values.addElement("feedback-crypto@bouncycastle.org");
-
-        //
-        // extensions
-        //
-
-        //
-        // create the certificate - version 3
-        //
-        X509V3CertificateGenerator  certGen = new X509V3CertificateGenerator();
-
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal(ord, values));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal(ord, values));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm("SHA1withDSA");
-
-        try
-        {
-            X509Certificate cert = certGen.generate(privKey);
-
-            cert.checkValidity(new Date());
-
-            cert.verify(pubKey);
-
-            ByteArrayInputStream    bIn = new ByteArrayInputStream(cert.getEncoded());
-            CertificateFactory      fact = CertificateFactory.getInstance("X.509", "BC");
-
-            cert = (X509Certificate)fact.generateCertificate(bIn);
 
             // System.out.println(cert);
         }
-        catch (Exception e)
+        catch (TestFailedException e)
         {
-            fail("error setting generating cert - " + e.toString());
-        }
-
-        //
-        // create the certificate - version 1
-        //
-        X509V1CertificateGenerator  certGen1 = new X509V1CertificateGenerator();
-
-        certGen1.setSerialNumber(BigInteger.valueOf(1));
-        certGen1.setIssuerDN(new X509Principal(ord, values));
-        certGen1.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen1.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen1.setSubjectDN(new X509Principal(ord, values));
-        certGen1.setPublicKey(pubKey);
-        certGen1.setSignatureAlgorithm("SHA1withDSA");
-
-        try
-        {
-            X509Certificate cert = certGen1.generate(privKey);
-
-            cert.checkValidity(new Date());
-
-            cert.verify(pubKey);
-
-            ByteArrayInputStream    bIn = new ByteArrayInputStream(cert.getEncoded());
-            CertificateFactory      fact = CertificateFactory.getInstance("X.509", "BC");
-
-            cert = (X509Certificate)fact.generateCertificate(bIn);
-
-            //System.out.println(cert);
+            throw e;
         }
         catch (Exception e)
         {
-            fail("error setting generating cert - " + e.toString());
-        }
-        
-        //
-        // exception test
-        //
-        try
-        {
-            certGen.setPublicKey(dudPublicKey);
-            
-            fail("key without encoding not detected in v1");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // expected
-        }
-    }
-
-    /**
-     * we generate a self signed certificate for the sake of testing - ECDSA
-     */
-    public void checkCreation3()
-    {
-        ECCurve curve = new ECCurve.Fp(
-            new BigInteger("883423532389192164791648750360308885314476597252960362792450860609699839"), // q
-            new BigInteger("7fffffffffffffffffffffff7fffffffffff8000000000007ffffffffffc", 16), // a
-            new BigInteger("6b016c3bdcf18941d0d654921475ca71a9db2fb27d1d37796185c2942c0a", 16)); // b
-
-        ECParameterSpec spec = new ECParameterSpec(
-            curve,
-            curve.decodePoint(Hex.decode("020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf")), // G
-            new BigInteger("883423532389192164791648750360308884807550341691627752275345424702807307")); // n
-        
-
-        ECPrivateKeySpec privKeySpec = new ECPrivateKeySpec(
-            new BigInteger("876300101507107567501066130761671078357010671067781776716671676178726717"), // d
-            spec);
-
-        ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(
-            curve.decodePoint(Hex.decode("025b6dc53bc61a2548ffb0f671472de6c9521a9d2d2534e65abfcbd5fe0c70")), // Q
-            spec);
-
-        //
-        // set up the keys
-        //
-        PrivateKey          privKey;
-        PublicKey           pubKey;
-
-        try
-        {
-            KeyFactory     fact = KeyFactory.getInstance("ECDSA", "BC");
-
-            privKey = fact.generatePrivate(privKeySpec);
-            pubKey = fact.generatePublic(pubKeySpec);
-        }
-        catch (Exception e)
-        {
-            fail("error setting up keys - " + e.toString());
-            return;
+            fail(dump + Strings.lineSeparator() + getName() + ": "+ id + " failed - exception " + e.toString(), e);
         }
 
-        //
-        // distinguished name table.
-        //
-        Hashtable                   attrs = new Hashtable();
-        Vector                      order = new Vector();
-
-        attrs.put(X509Principal.C, "AU");
-        attrs.put(X509Principal.O, "The Legion of the Bouncy Castle");
-        attrs.put(X509Principal.L, "Melbourne");
-        attrs.put(X509Principal.ST, "Victoria");
-        attrs.put(X509Principal.E, "feedback-crypto@bouncycastle.org");
-
-        order.addElement(X509Principal.C);
-        order.addElement(X509Principal.O);
-        order.addElement(X509Principal.L);
-        order.addElement(X509Principal.ST);
-        order.addElement(X509Principal.E);
-
-
-        //
-        // toString test
-        //
-        X509Principal p = new X509Principal(order, attrs);
-        String  s = p.toString();
-
-        if (!s.equals("C=AU,O=The Legion of the Bouncy Castle,L=Melbourne,ST=Victoria,E=feedback-crypto@bouncycastle.org"))
-        {
-            fail("ordered X509Principal test failed - s = " + s + ".");
-        }
-
-//        p = new X509Principal(attrs);
-//        s = p.toString();
-//
-//        //
-//        // we need two of these as the hash code for strings changed...
-//        //
-//        if (!s.equals("O=The Legion of the Bouncy Castle,E=feedback-crypto@bouncycastle.org,ST=Victoria,L=Melbourne,C=AU") && !s.equals("ST=Victoria,L=Melbourne,C=AU,E=feedback-crypto@bouncycastle.org,O=The Legion of the Bouncy Castle"))
-//        {
-//            fail("unordered X509Principal test failed.");
-//        }
-
-        //
-        // create the certificate - version 3
-        //
-        X509V3CertificateGenerator  certGen = new X509V3CertificateGenerator();
-
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal(order, attrs));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal(order, attrs));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm("SHA1withECDSA");
-
-        try
-        {
-            X509Certificate cert = certGen.generate(privKey);
-
-            cert.checkValidity(new Date());
-
-            cert.verify(pubKey);
-
-            ByteArrayInputStream    bIn = new ByteArrayInputStream(cert.getEncoded());
-            CertificateFactory      fact = CertificateFactory.getInstance("X.509", "BC");
-
-            cert = (X509Certificate)fact.generateCertificate(bIn);
-
-            //
-            // try with point compression turned off
-            //
-            ((ECPointEncoder)pubKey).setPointFormat("UNCOMPRESSED");
-            
-            certGen.setPublicKey(pubKey);
-            
-            cert = certGen.generate(privKey, "BC");
-
-            cert.checkValidity(new Date());
-
-            cert.verify(pubKey);
-
-            bIn = new ByteArrayInputStream(cert.getEncoded());
-            fact = CertificateFactory.getInstance("X.509", "BC");
-
-            cert = (X509Certificate)fact.generateCertificate(bIn);
-            // System.out.println(cert);
-        }
-        catch (Exception e)
-        {
-            fail("error setting generating cert - " + e.toString());
-        }
-
-        X509Principal pr = new X509Principal("O=\"The Bouncy Castle, The Legion of\",E=feedback-crypto@bouncycastle.org,ST=Victoria,L=Melbourne,C=AU");
-
-        if (!pr.toString().equals("O=The Bouncy Castle\\, The Legion of,E=feedback-crypto@bouncycastle.org,ST=Victoria,L=Melbourne,C=AU"))
-        {
-            fail("string based X509Principal test failed.");
-        }
-
-        pr = new X509Principal("O=The Bouncy Castle\\, The Legion of,E=feedback-crypto@bouncycastle.org,ST=Victoria,L=Melbourne,C=AU");
-
-        if (!pr.toString().equals("O=The Bouncy Castle\\, The Legion of,E=feedback-crypto@bouncycastle.org,ST=Victoria,L=Melbourne,C=AU"))
-        {
-            fail("string based X509Principal test failed.");
-        }
-
-    }
-
-    /**
-     * we generate a self signed certificate for the sake of testing - SHA224withECDSA
-     */
-    private void createECCert(String algorithm, DERObjectIdentifier algOid)
-        throws Exception
-    {
-        ECCurve.Fp curve = new ECCurve.Fp(
-            new BigInteger("6864797660130609714981900799081393217269435300143305409394463459185543183397656052122559640661454554977296311391480858037121987999716643812574028291115057151"), // q (or p)
-            new BigInteger("01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC", 16),   // a
-            new BigInteger("0051953EB9618E1C9A1F929A21A0B68540EEA2DA725B99B315F3B8B489918EF109E156193951EC7E937B1652C0BD3BB1BF073573DF883D2C34F1EF451FD46B503F00", 16));  // b
-
-        ECParameterSpec spec = new ECParameterSpec(
-            curve,
-            curve.decodePoint(Hex.decode("02C6858E06B70404E9CD9E3ECB662395B4429C648139053FB521F828AF606B4D3DBAA14B5E77EFE75928FE1DC127A2FFA8DE3348B3C1856A429BF97E7E31C2E5BD66")), // G
-            new BigInteger("01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA51868783BF2F966B7FCC0148F709A5D03BB5C9B8899C47AEBB6FB71E91386409", 16)); // n
-
-        ECPrivateKeySpec privKeySpec = new ECPrivateKeySpec(
-            new BigInteger("5769183828869504557786041598510887460263120754767955773309066354712783118202294874205844512909370791582896372147797293913785865682804434049019366394746072023"), // d
-            spec);
-
-        ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(
-            curve.decodePoint(Hex.decode("026BFDD2C9278B63C92D6624F151C9D7A822CC75BD983B17D25D74C26740380022D3D8FAF304781E416175EADF4ED6E2B47142D2454A7AC7801DD803CF44A4D1F0AC")), // Q
-            spec);
-
-        //
-        // set up the keys
-        //
-        PrivateKey          privKey;
-        PublicKey           pubKey;
-
-        KeyFactory     fact = KeyFactory.getInstance("ECDSA", "BC");
-
-        privKey = fact.generatePrivate(privKeySpec);
-        pubKey = fact.generatePublic(pubKeySpec);
-
-
-        //
-        // distinguished name table.
-        //
-        Hashtable                   attrs = new Hashtable();
-        Vector                      order = new Vector();
-
-        attrs.put(X509Principal.C, "AU");
-        attrs.put(X509Principal.O, "The Legion of the Bouncy Castle");
-        attrs.put(X509Principal.L, "Melbourne");
-        attrs.put(X509Principal.ST, "Victoria");
-        attrs.put(X509Principal.E, "feedback-crypto@bouncycastle.org");
-
-        order.addElement(X509Principal.C);
-        order.addElement(X509Principal.O);
-        order.addElement(X509Principal.L);
-        order.addElement(X509Principal.ST);
-        order.addElement(X509Principal.E);
-
-        //
-        // create the certificate - version 3
-        //
-        X509V3CertificateGenerator  certGen = new X509V3CertificateGenerator();
-
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal(order, attrs));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal(order, attrs));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm(algorithm);
-
-
-        X509Certificate cert = certGen.generate(privKey, "BC");
-
-        cert.checkValidity(new Date());
-
-        cert.verify(pubKey);
-
-        ByteArrayInputStream    bIn = new ByteArrayInputStream(cert.getEncoded());
-        CertificateFactory      certFact = CertificateFactory.getInstance("X.509", "BC");
-
-        cert = (X509Certificate)certFact.generateCertificate(bIn);
-
-        //
-        // try with point compression turned off
-        //
-        ((ECPointEncoder)pubKey).setPointFormat("UNCOMPRESSED");
-        
-        certGen.setPublicKey(pubKey);
-        
-        cert = certGen.generate(privKey, "BC");
-
-        cert.checkValidity(new Date());
-
-        cert.verify(pubKey);
-
-        bIn = new ByteArrayInputStream(cert.getEncoded());
-        certFact = CertificateFactory.getInstance("X.509", "BC");
-
-        cert = (X509Certificate)certFact.generateCertificate(bIn);
-        
-        if (!cert.getSigAlgOID().equals(algOid.toString()))
-        {
-            fail("ECDSA oid incorrect.");
-        }
-        
-        if (cert.getSigAlgParams() != null)
-        {
-            fail("sig parameters present");
-        }
-        
-        Signature sig = Signature.getInstance(algorithm, "BC");
-        
-        sig.initVerify(pubKey);
-        
-        sig.update(cert.getTBSCertificate());
-        
-        if (!sig.verify(cert.getSignature()))
-        {
-            fail("EC certificate signature not mapped correctly.");
-        }
-        // System.out.println(cert);
     }
     
     private void checkCRL(
@@ -1757,532 +1424,11 @@ public class CertTest
         }
         catch (Exception e)
         {
-            fail(dump + System.getProperty("line.separator") + getName() + ": "+ id + " failed - exception " + e.toString(), e);
+            fail(dump + Strings.lineSeparator() + getName() + ": "+ id + " failed - exception " + e.toString(), e);
         }
 
     }
 
-    public void checkCRLCreation1()
-        throws Exception
-    {
-        KeyPairGenerator     kpGen = KeyPairGenerator.getInstance("RSA", "BC");
-        X509V2CRLGenerator   crlGen = new X509V2CRLGenerator();
-        Date                 now = new Date();
-        KeyPair              pair = kpGen.generateKeyPair();
-        
-        crlGen.setIssuerDN(new X500Principal("CN=Test CA"));
-        
-        crlGen.setThisUpdate(now);
-        crlGen.setNextUpdate(new Date(now.getTime() + 100000));
-        crlGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
-        
-        crlGen.addCRLEntry(BigInteger.ONE, now, CRLReason.privilegeWithdrawn);
-        
-        crlGen.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(pair.getPublic()));
-        
-        X509CRL    crl = crlGen.generate(pair.getPrivate(), "BC");
-        
-        if (!crl.getIssuerX500Principal().equals(new X500Principal("CN=Test CA")))
-        {
-            fail("failed CRL issuer test");
-        }
-        
-        byte[] authExt = crl.getExtensionValue(X509Extensions.AuthorityKeyIdentifier.getId());
-        
-        if (authExt == null)
-        {
-            fail("failed to find CRL extension");
-        }
-        
-        AuthorityKeyIdentifier authId = new AuthorityKeyIdentifierStructure(authExt);
-        
-        X509CRLEntry entry = crl.getRevokedCertificate(BigInteger.ONE);
-        
-        if (entry == null)
-        {
-            fail("failed to find CRL entry");
-        }
-        
-        if (!entry.getSerialNumber().equals(BigInteger.ONE))
-        {
-            fail("CRL cert serial number does not match");
-        }
-        
-        if (!entry.hasExtensions())
-        {
-            fail("CRL entry extension not found");
-        }
-    
-        byte[]  ext = entry.getExtensionValue(X509Extensions.ReasonCode.getId());
-    
-        if (ext != null)
-        {
-            DEREnumerated   reasonCode = (DEREnumerated)X509ExtensionUtil.fromExtensionValue(ext);
-                                                                       
-            if (reasonCode.getValue().intValue() != CRLReason.privilegeWithdrawn)
-            {
-                fail("CRL entry reasonCode wrong");
-            }
-        }
-        else
-        {
-            fail("CRL entry reasonCode not found");
-        }
-    }
-    
-    public void checkCRLCreation2()
-        throws Exception
-    {
-        KeyPairGenerator     kpGen = KeyPairGenerator.getInstance("RSA", "BC");
-        X509V2CRLGenerator   crlGen = new X509V2CRLGenerator();
-        Date                 now = new Date();
-        KeyPair              pair = kpGen.generateKeyPair();
-        
-        crlGen.setIssuerDN(new X500Principal("CN=Test CA"));
-        
-        crlGen.setThisUpdate(now);
-        crlGen.setNextUpdate(new Date(now.getTime() + 100000));
-        crlGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
-        
-        Vector extOids = new Vector();
-        Vector extValues = new Vector();
-        
-        CRLReason crlReason = new CRLReason(CRLReason.privilegeWithdrawn);
-        
-        try
-        {
-            extOids.addElement(X509Extensions.ReasonCode);
-            extValues.addElement(new X509Extension(false, new DEROctetString(crlReason.getEncoded())));
-        }
-        catch (IOException e)
-        {
-            throw new IllegalArgumentException("error encoding reason: " + e);
-        }
-        
-        X509Extensions entryExtensions = new X509Extensions(extOids, extValues);
-        
-        crlGen.addCRLEntry(BigInteger.ONE, now, entryExtensions);
-        
-        crlGen.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(pair.getPublic()));
-        
-        X509CRL    crl = crlGen.generate(pair.getPrivate(), "BC");
-        
-        if (!crl.getIssuerX500Principal().equals(new X500Principal("CN=Test CA")))
-        {
-            fail("failed CRL issuer test");
-        }
-        
-        byte[] authExt = crl.getExtensionValue(X509Extensions.AuthorityKeyIdentifier.getId());
-        
-        if (authExt == null)
-        {
-            fail("failed to find CRL extension");
-        }
-        
-        AuthorityKeyIdentifier authId = new AuthorityKeyIdentifierStructure(authExt);
-        
-        X509CRLEntry entry = crl.getRevokedCertificate(BigInteger.ONE);
-        
-        if (entry == null)
-        {
-            fail("failed to find CRL entry");
-        }
-        
-        if (!entry.getSerialNumber().equals(BigInteger.ONE))
-        {
-            fail("CRL cert serial number does not match");
-        }
-        
-        if (!entry.hasExtensions())
-        {
-            fail("CRL entry extension not found");
-        }
-
-        byte[]  ext = entry.getExtensionValue(X509Extensions.ReasonCode.getId());
-
-        if (ext != null)
-        {
-            DEREnumerated   reasonCode = (DEREnumerated)X509ExtensionUtil.fromExtensionValue(ext);
-                                                                       
-            if (reasonCode.getValue().intValue() != CRLReason.privilegeWithdrawn)
-            {
-                fail("CRL entry reasonCode wrong");
-            }
-        }
-        else
-        {
-            fail("CRL entry reasonCode not found");
-        }
-    }
-    
-    public void checkCRLCreation3()
-        throws Exception
-    {
-        KeyPairGenerator     kpGen = KeyPairGenerator.getInstance("RSA", "BC");
-        X509V2CRLGenerator   crlGen = new X509V2CRLGenerator();
-        Date                 now = new Date();
-        KeyPair              pair = kpGen.generateKeyPair();
-        
-        crlGen.setIssuerDN(new X500Principal("CN=Test CA"));
-        
-        crlGen.setThisUpdate(now);
-        crlGen.setNextUpdate(new Date(now.getTime() + 100000));
-        crlGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
-        
-        Vector extOids = new Vector();
-        Vector extValues = new Vector();
-        
-        CRLReason crlReason = new CRLReason(CRLReason.privilegeWithdrawn);
-        
-        try
-        {
-            extOids.addElement(X509Extensions.ReasonCode);
-            extValues.addElement(new X509Extension(false, new DEROctetString(crlReason.getEncoded())));
-        }
-        catch (IOException e)
-        {
-            throw new IllegalArgumentException("error encoding reason: " + e);
-        }
-        
-        X509Extensions entryExtensions = new X509Extensions(extOids, extValues);
-        
-        crlGen.addCRLEntry(BigInteger.ONE, now, entryExtensions);
-        
-        crlGen.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(pair.getPublic()));
-        
-        X509CRL    crl = crlGen.generate(pair.getPrivate(), "BC");
-        
-        if (!crl.getIssuerX500Principal().equals(new X500Principal("CN=Test CA")))
-        {
-            fail("failed CRL issuer test");
-        }
-        
-        byte[] authExt = crl.getExtensionValue(X509Extensions.AuthorityKeyIdentifier.getId());
-        
-        if (authExt == null)
-        {
-            fail("failed to find CRL extension");
-        }
-        
-        AuthorityKeyIdentifier authId = new AuthorityKeyIdentifierStructure(authExt);
-        
-        X509CRLEntry entry = crl.getRevokedCertificate(BigInteger.ONE);
-        
-        if (entry == null)
-        {
-            fail("failed to find CRL entry");
-        }
-        
-        if (!entry.getSerialNumber().equals(BigInteger.ONE))
-        {
-            fail("CRL cert serial number does not match");
-        }
-        
-        if (!entry.hasExtensions())
-        {
-            fail("CRL entry extension not found");
-        }
-    
-        byte[]  ext = entry.getExtensionValue(X509Extensions.ReasonCode.getId());
-    
-        if (ext != null)
-        {
-            DEREnumerated   reasonCode = (DEREnumerated)X509ExtensionUtil.fromExtensionValue(ext);
-                                                                       
-            if (reasonCode.getValue().intValue() != CRLReason.privilegeWithdrawn)
-            {
-                fail("CRL entry reasonCode wrong");
-            }
-        }
-        else
-        {
-            fail("CRL entry reasonCode not found");
-        }
-        
-        //
-        // check loading of existing CRL
-        //
-        crlGen = new X509V2CRLGenerator();
-        now = new Date();
-        
-        crlGen.setIssuerDN(new X500Principal("CN=Test CA"));
-        
-        crlGen.setThisUpdate(now);
-        crlGen.setNextUpdate(new Date(now.getTime() + 100000));
-        crlGen.setSignatureAlgorithm("SHA256WithRSAEncryption");
-        
-        crlGen.addCRL(crl);
-        
-        crlGen.addCRLEntry(BigInteger.valueOf(2), now, entryExtensions);
-        
-        crlGen.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(pair.getPublic()));
-        
-        X509CRL    newCrl = crlGen.generate(pair.getPrivate(), "BC");
-        
-        int     count = 0;
-        boolean oneFound = false;
-        boolean twoFound = false;
-        
-        Iterator it = newCrl.getRevokedCertificates().iterator();
-        while (it.hasNext())
-        {
-            X509CRLEntry crlEnt = (X509CRLEntry)it.next();
-
-            if (crlEnt.getSerialNumber().intValue() == 1)
-            {
-                oneFound = true;
-            }
-            else if (crlEnt.getSerialNumber().intValue() == 2)
-            {
-                twoFound = true;
-            }
-            
-            count++;
-        }
-        
-        if (count != 2)
-        {
-            fail("wrong number of CRLs found");
-        }
-
-        if (!oneFound || !twoFound)
-        {
-            fail("wrong CRLs found in copied list");
-        }
-
-        //
-        // check factory read back
-        //
-        CertificateFactory cFact = CertificateFactory.getInstance("X.509", "BC");
-
-        X509CRL readCrl = (X509CRL)cFact.generateCRL(new ByteArrayInputStream(newCrl.getEncoded()));
-
-        if (readCrl == null)
-        {
-            fail("crl not returned!");
-        }
-
-        Collection col = cFact.generateCRLs(new ByteArrayInputStream(newCrl.getEncoded()));
-
-        if (col.size() != 1)
-        {
-            fail("wrong number of CRLs found in collection");
-        }
-    }
-    
-    /**
-     * we generate a self signed certificate for the sake of testing - GOST3410
-     */
-    public void checkCreation4()
-        throws Exception
-    {
-        //
-        // set up the keys
-        //
-        PrivateKey          privKey;
-        PublicKey           pubKey;
-
-        KeyPairGenerator    g = KeyPairGenerator.getInstance("GOST3410", "BC");
-        GOST3410ParameterSpec gost3410P = new GOST3410ParameterSpec("GostR3410-94-CryptoPro-A");
-
-        g.initialize(gost3410P, new SecureRandom());
-
-        KeyPair p = g.generateKeyPair();
-
-        privKey = p.getPrivate();
-        pubKey = p.getPublic();
-
-        //
-        // distinguished name table.
-        //
-        Hashtable                   attrs = new Hashtable();
-        Vector                      order = new Vector();
-
-        attrs.put(X509Principal.C, "AU");
-        attrs.put(X509Principal.O, "The Legion of the Bouncy Castle");
-        attrs.put(X509Principal.L, "Melbourne");
-        attrs.put(X509Principal.ST, "Victoria");
-        attrs.put(X509Principal.E, "feedback-crypto@bouncycastle.org");
-
-        order.addElement(X509Principal.C);
-        order.addElement(X509Principal.O);
-        order.addElement(X509Principal.L);
-        order.addElement(X509Principal.ST);
-        order.addElement(X509Principal.E);
-
-        //
-        // extensions
-        //
-
-        //
-        // create the certificate - version 3
-        //
-        X509V3CertificateGenerator  certGen = new X509V3CertificateGenerator();
-
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal(order, attrs));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal(order, attrs));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm("GOST3411withGOST3410");
-
-        X509Certificate cert = certGen.generate(privKey, "BC");
-
-        cert.checkValidity(new Date());
-
-        //
-        // check verifies in general
-        //
-        cert.verify(pubKey);
-
-        //
-        // check verifies with contained key
-        //
-        cert.verify(cert.getPublicKey());
-        
-        ByteArrayInputStream    bIn = new ByteArrayInputStream(cert.getEncoded());
-        CertificateFactory      fact = CertificateFactory.getInstance("X.509", "BC");
-
-        cert = (X509Certificate)fact.generateCertificate(bIn);
-
-        //System.out.println(cert);
-
-        //check getEncoded()
-        byte[]  bytesch = cert.getEncoded();
-    }
-    
-    public void checkCreation5()
-        throws Exception
-    {
-        //
-        // a sample key pair.
-        //
-        RSAPublicKeySpec pubKeySpec = new RSAPublicKeySpec(
-            new BigInteger("b4a7e46170574f16a97082b22be58b6a2a629798419be12872a4bdba626cfae9900f76abfb12139dce5de56564fab2b6543165a040c606887420e33d91ed7ed7", 16),
-            new BigInteger("11", 16));
-    
-        RSAPrivateCrtKeySpec privKeySpec = new RSAPrivateCrtKeySpec(
-            new BigInteger("b4a7e46170574f16a97082b22be58b6a2a629798419be12872a4bdba626cfae9900f76abfb12139dce5de56564fab2b6543165a040c606887420e33d91ed7ed7", 16),
-            new BigInteger("11", 16),
-            new BigInteger("9f66f6b05410cd503b2709e88115d55daced94d1a34d4e32bf824d0dde6028ae79c5f07b580f5dce240d7111f7ddb130a7945cd7d957d1920994da389f490c89", 16),
-            new BigInteger("c0a0758cdf14256f78d4708c86becdead1b50ad4ad6c5c703e2168fbf37884cb", 16),
-            new BigInteger("f01734d7960ea60070f1b06f2bb81bfac48ff192ae18451d5e56c734a5aab8a5", 16),
-            new BigInteger("b54bb9edff22051d9ee60f9351a48591b6500a319429c069a3e335a1d6171391", 16),
-            new BigInteger("d3d83daf2a0cecd3367ae6f8ae1aeb82e9ac2f816c6fc483533d8297dd7884cd", 16),
-            new BigInteger("b8f52fc6f38593dabb661d3f50f8897f8106eee68b1bce78a95b132b4e5b5d19", 16));
-    
-        //
-        // set up the keys
-        //
-        SecureRandom        rand = new SecureRandom();
-        PrivateKey          privKey;
-        PublicKey           pubKey;
-    
-        KeyFactory  fact = KeyFactory.getInstance("RSA", "BC");
-    
-        privKey = fact.generatePrivate(privKeySpec);
-        pubKey = fact.generatePublic(pubKeySpec);
-    
-        //
-        // distinguished name table.
-        //
-        Vector                      ord = new Vector();
-        Vector                      values = new Vector();
-    
-        ord.addElement(X509Principal.C);
-        ord.addElement(X509Principal.O);
-        ord.addElement(X509Principal.L);
-        ord.addElement(X509Principal.ST);
-        ord.addElement(X509Principal.E);
-    
-        values.addElement("AU");
-        values.addElement("The Legion of the Bouncy Castle");
-        values.addElement("Melbourne");
-        values.addElement("Victoria");
-        values.addElement("feedback-crypto@bouncycastle.org");
-    
-        //
-        // create base certificate - version 3
-        //
-        X509V3CertificateGenerator  certGen = new X509V3CertificateGenerator();
-    
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal(ord, values));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal(ord, values));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm("MD5WithRSAEncryption");
-        certGen.addExtension("2.5.29.15", true,
-            new X509KeyUsage(X509KeyUsage.encipherOnly));
-        certGen.addExtension("2.5.29.37", true,
-            new DERSequence(KeyPurposeId.anyExtendedKeyUsage));
-        certGen.addExtension("2.5.29.17", true,
-            new GeneralNames(new GeneralName(GeneralName.rfc822Name, "test@test.test")));
-    
-        X509Certificate baseCert = certGen.generate(privKey, "BC");
-        
-        //
-        // copy certificate
-        //
-        certGen = new X509V3CertificateGenerator();
-        
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal(ord, values));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal(ord, values));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm("MD5WithRSAEncryption");
-
-        certGen.copyAndAddExtension(new DERObjectIdentifier("2.5.29.15"), true, baseCert);
-        certGen.copyAndAddExtension("2.5.29.37", false, baseCert);
-        
-        X509Certificate cert = certGen.generate(privKey, "BC");
-        
-        cert.checkValidity(new Date());
-    
-        cert.verify(pubKey);
-    
-        if (!areEqual(baseCert.getExtensionValue("2.5.29.15"), cert.getExtensionValue("2.5.29.15")))
-        {
-            fail("2.5.29.15 differs");
-        }
-        
-        if (!areEqual(baseCert.getExtensionValue("2.5.29.37"), cert.getExtensionValue("2.5.29.37")))
-        {
-            fail("2.5.29.37 differs");
-        }
-        
-        //
-        // exception test
-        //
-        try
-        {
-            certGen.copyAndAddExtension("2.5.99.99", true, baseCert);
-            
-            fail("exception not thrown on dud extension copy");
-        }
-        catch (CertificateParsingException e)
-        {
-            // expected
-        }
-        
-        try
-        {
-            certGen.setPublicKey(dudPublicKey);
-            
-            certGen.generate(privKey, "BC");
-            
-            fail("key without encoding not detected in v3");
-        }
-        catch (IllegalArgumentException e)
-        {
-            // expected
-        }
-    }
-    
     private void testForgedSignature() 
         throws Exception
     {
@@ -2343,6 +1489,20 @@ public class CertTest
         {
             fail("PEM crl collection not right");
         }
+
+        cert = readPEMCert(cf, ecPemCert);
+
+        SubjectPublicKeyInfo pubInfo = SubjectPublicKeyInfo.getInstance(cert.getPublicKey().getEncoded());
+
+        AlgorithmParameters ecParams = AlgorithmParameters.getInstance("EC", "BC");
+
+        ecParams.init(pubInfo.getAlgorithm().getParameters().toASN1Primitive().getEncoded());
+
+        if (!new BigInteger("ffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973", 16)
+            .equals(((ECPublicKey)cert.getPublicKey()).getParameters().getN()))
+        {
+            fail("N incorrect");
+        }
     }
 
     private static Certificate readPEMCert(CertificateFactory cf, String pemData)
@@ -2357,7 +1517,7 @@ public class CertTest
         ASN1EncodableVector certs = new ASN1EncodableVector();
 
         certs.add(new ASN1InputStream(CertPathTest.rootCertBin).readObject());
-        certs.add(new DERTaggedObject(false, 2, new ASN1InputStream(AttrCertTest.attrCert).readObject()));
+        certs.add(new DERTaggedObject(false, 2, new ASN1InputStream(AttrCertData.attrCert).readObject()));
 
         ASN1EncodableVector crls = new ASN1EncodableVector();
 
@@ -2369,15 +1529,21 @@ public class CertTest
         CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
 
         X509Certificate cert = (X509Certificate)cf.generateCertificate(new ByteArrayInputStream(info.getEncoded()));
-        if (cert == null || !areEqual(cert.getEncoded(), certs.get(0).getDERObject().getEncoded()))
+        if (cert == null || !areEqual(cert.getEncoded(), certs.get(0).toASN1Primitive().getEncoded()))
         {
             fail("PKCS7 cert not read");
         }
         X509CRL crl = (X509CRL)cf.generateCRL(new ByteArrayInputStream(info.getEncoded()));
-        if (crl == null || !areEqual(crl.getEncoded(), crls.get(0).getDERObject().getEncoded()))
+        if (crl == null || !areEqual(crl.getEncoded(), crls.get(0).toASN1Primitive().getEncoded()))
         {
             fail("PKCS7 crl not read");
         }
+
+        if (!"SHA256WITHRSA".equals(crl.getSigAlgName()))
+        {
+            fail("signature ID not matched in CRL: " + crl.getSigAlgName());
+        }
+
         Collection col = cf.generateCertificates(new ByteArrayInputStream(info.getEncoded()));
         if (col.size() != 1 || !col.contains(cert))
         {
@@ -2428,6 +1594,8 @@ public class CertTest
         //
         InputStream in = new ByteArrayInputStream(pkcs7CrlProblem);
         Collection certCol = cf.generateCertificates(in);
+
+        in.reset();
         Collection crlCol = cf.generateCRLs(in);
 
         if (crlCol.size() != 0)
@@ -2439,56 +1607,22 @@ public class CertTest
         {
             fail("wrong number of Certs: " + certCol.size());
         }
-    }
 
-    private void createPSSCert(String algorithm)
-        throws Exception
-    {
-        KeyPair pair = generateLongFixedKeys();
+        in = new ByteArrayInputStream(pemPKCS7.getBytes("US-ASCII"));
+        certCol = cf.generateCertificates(in);
 
-        PrivateKey privKey = pair.getPrivate();
-        PublicKey pubKey = pair.getPublic();
+        in.reset();
+        crlCol = cf.generateCRLs(in);
 
-        //
-        // distinguished name table.
-        //
-        Vector                      ord = new Vector();
-        Vector                      values = new Vector();
+        if (crlCol.size() != 0)
+        {
+            fail("wrong number of CRLs: " + crlCol.size());
+        }
 
-        ord.addElement(X509Principal.C);
-        ord.addElement(X509Principal.O);
-        ord.addElement(X509Principal.L);
-        ord.addElement(X509Principal.ST);
-        ord.addElement(X509Principal.E);
-
-        values.addElement("AU");
-        values.addElement("The Legion of the Bouncy Castle");
-        values.addElement("Melbourne");
-        values.addElement("Victoria");
-        values.addElement("feedback-crypto@bouncycastle.org");
-
-        //
-        // create base certificate - version 3
-        //
-        X509V3CertificateGenerator  certGen = new X509V3CertificateGenerator();
-
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal(ord, values));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal(ord, values));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm(algorithm);
-        certGen.addExtension("2.5.29.15", true,
-            new X509KeyUsage(X509KeyUsage.encipherOnly));
-        certGen.addExtension("2.5.29.37", true,
-            new DERSequence(KeyPurposeId.anyExtendedKeyUsage));
-        certGen.addExtension("2.5.29.17", true,
-            new GeneralNames(new GeneralName(GeneralName.rfc822Name, "test@test.test")));
-
-        X509Certificate baseCert = certGen.generate(privKey, "BC");
-
-        baseCert.verify(pubKey);
+        if (certCol.size() != 2)
+        {
+            fail("wrong number of Certs: " + certCol.size());
+        }
     }
 
     private KeyPair generateLongFixedKeys()
@@ -2527,55 +1661,6 @@ public class CertTest
         x509.verify(x509.getPublicKey(), "BC");
     }
 
-    private void testNullDerNullCert()
-        throws Exception
-    {
-        KeyPair pair = generateLongFixedKeys();
-        PublicKey pubKey = pair.getPublic();
-        PrivateKey privKey = pair.getPrivate();
-
-        X509V3CertificateGenerator  certGen = new X509V3CertificateGenerator();
-
-        certGen.setSerialNumber(BigInteger.valueOf(1));
-        certGen.setIssuerDN(new X509Principal("CN=Test"));
-        certGen.setNotBefore(new Date(System.currentTimeMillis() - 50000));
-        certGen.setNotAfter(new Date(System.currentTimeMillis() + 50000));
-        certGen.setSubjectDN(new X509Principal("CN=Test"));
-        certGen.setPublicKey(pubKey);
-        certGen.setSignatureAlgorithm("MD5WithRSAEncryption");
-        X509Certificate cert = certGen.generate(privKey, "BC");
-
-        X509CertificateStructure struct = X509CertificateStructure.getInstance(ASN1Object.fromByteArray(cert.getEncoded()));
-
-        ASN1Encodable tbsCertificate = struct.getTBSCertificate();
-        AlgorithmIdentifier sig = struct.getSignatureAlgorithm();
-
-        ASN1EncodableVector v = new ASN1EncodableVector();
-
-        v.add(tbsCertificate);
-        v.add(new AlgorithmIdentifier(sig.getObjectId()));
-        v.add(struct.getSignature());
-
-        // verify
-        ByteArrayInputStream    bIn;
-        String                  dump = "";
-
-        try
-        {
-            bIn = new ByteArrayInputStream(new DERSequence(v).getEncoded());
-
-            CertificateFactory  fact = CertificateFactory.getInstance("X.509", "BC");
-
-            cert = (X509Certificate)fact.generateCertificate(bIn);
-
-            cert.verify(cert.getPublicKey());
-        }
-        catch (Exception e)
-        {
-            fail(dump + System.getProperty("line.separator") + getName() + ": testNullDerNull failed - exception " + e.toString(), e);
-        }
-    }
-
     private void checkComparison(byte[] encCert)
         throws NoSuchProviderException, CertificateException
     {
@@ -2590,15 +1675,162 @@ public class CertTest
             fail("BC/Sun equals test failed");
         }
 
-        if (bcCert.hashCode() != sunCert.hashCode())
+        // Yes, they actually changed hashCode() on a certificate in JDK 1.8...
+//        if (bcCert.hashCode() != sunCert.hashCode())
+//        {
+//            fail("BC/Sun hashCode test failed");
+//        }
+    }
+
+    private void testV1CRL()
+        throws Exception
+    {
+        byte[] certData = Streams.readAll(this.getClass().getResourceAsStream("ThawteSGCCA.cer"));
+        byte[] crlData = Streams.readAll(this.getClass().getResourceAsStream("ThawteSGCCA.crl"));
+
+        // verify CRL with default (JCE) provider
+        CertificateFactory jceFac = CertificateFactory.getInstance("X.509");
+
+        X509Certificate jceIssuer = (X509Certificate)
+            jceFac.generateCertificate(new ByteArrayInputStream(certData));
+
+        X509CRL jceCRL = (X509CRL)jceFac.generateCRL(new ByteArrayInputStream(crlData));
+
+        jceCRL.verify(jceIssuer.getPublicKey());
+
+        // verify CRL with BC provider
+        CertificateFactory bcFac = CertificateFactory.getInstance("X.509", "BC");
+
+        X509Certificate bcIssuer = (X509Certificate)
+            bcFac.generateCertificate(new ByteArrayInputStream(certData));
+
+        X509CRL bcCRL = (X509CRL)bcFac.generateCRL(new ByteArrayInputStream(crlData));
+
+        jceCRL.verify(bcIssuer.getPublicKey());
+
+        bcCRL.verify(bcIssuer.getPublicKey());
+
+        if (!"SHA1WITHRSA".equals(bcCRL.getSigAlgName()))
         {
-            fail("BC/Sun hashCode test failed");
+            fail("signature ID not matched in CRL");
         }
+
+        if (!"SHA1WITHRSA".equals(bcIssuer.getSigAlgName()))
+        {
+            fail("signature ID not matched in certificate");
+        }
+    }
+
+    private void testCertPathEncAvailableTest()
+        throws Exception
+    {
+        CertificateFactory certFact = CertificateFactory.getInstance("X.509", "BC");
+
+        Iterator it = certFact.getCertPathEncodings();
+
+        if (!"PkiPath".equals(it.next()))
+        {
+            fail("available enc 1 wrong");
+        }
+        if (!"PEM".equals(it.next()))
+        {
+            fail("available enc 2 wrong");
+        }
+        if (!"PKCS7".equals(it.next()))
+        {
+            fail("available enc 3 wrong");
+        }
+
+        if (it.hasNext())
+        {
+            fail("wrong number of encodings");
+        }
+    }
+
+    private void pemFileTest()
+        throws Exception
+    {
+        CertificateFactory certFact = CertificateFactory.getInstance("X.509", "BC");
+
+        Collection<Certificate> certs1 = (Collection<Certificate>)certFact.generateCertificates(this.getClass().getResourceAsStream("cert_chain.txt"));
+
+        isTrue("certs wrong <cr><nl>", 2 == certs1.size());
+
+        BufferedInputStream in = new BufferedInputStream(this.getClass().getResourceAsStream("cert_chain.txt"));
+
+        Set certs2 = new HashSet();
+        while ((in.available() > 0))
+        {
+            Certificate c = certFact.generateCertificate(in);
+
+            // this isn't strictly correct with the way it's defined in the Java JavaDoc - need it for backward
+            // compatibility.
+            if (c != null)
+            {
+                certs2.add(c);
+            }
+        }
+
+        isTrue("certs size <cr><nl>", certs1.size() == certs2.size());
+
+        for (Iterator it = certs1.iterator(); it.hasNext();)
+        {
+            certs2.remove(it.next());
+        }
+
+        isTrue("collection not empty", certs2.isEmpty());
+    }
+
+    private void invalidCRLs()
+        throws Exception
+    {
+        CertificateFactory certFact = CertificateFactory.getInstance("X.509", "BC");
+
+        Collection crls = certFact.generateCRLs(this.getClass().getResourceAsStream("cert_chain.txt"));
+        isTrue("multi crl", crls.isEmpty());
+        CRL crl = certFact.generateCRL(this.getClass().getResourceAsStream("cert_chain.txt"));
+        isTrue("single crl", crl == null);
+    }
+
+    private void pemFileTestWithNl()
+        throws Exception
+    {
+        CertificateFactory certFact = CertificateFactory.getInstance("X.509", "BC");
+
+        Collection<Certificate> certs1 = (Collection<Certificate>)certFact.generateCertificates(this.getClass().getResourceAsStream("cert_chain_nl.txt"));
+
+        isTrue("certs wrong <nl>", 2 == certs1.size());
+
+        BufferedInputStream in = new BufferedInputStream(this.getClass().getResourceAsStream("cert_chain_nl.txt"));
+
+        Set certs2 = new HashSet();
+        while ((in.available() > 0))
+        {
+            Certificate c = certFact.generateCertificate(in);
+
+            // this isn't strictly correct with the way it's defined in the Java JavaDoc - need it for backward
+            // compatibility.
+            if (c != null)
+            {
+                certs2.add(c);
+            }
+        }
+
+        isTrue("certs size <nl>", certs1.size() == certs2.size());
+
+        for (Iterator it = certs1.iterator(); it.hasNext();)
+        {
+            certs2.remove(it.next());
+        }
+
+        isTrue("collection not empty", certs2.isEmpty());
     }
 
     public void performTest()
         throws Exception
     {
+        testV1CRL();
+
         checkCertificate(1, cert1);
         checkCertificate(2, cert2);
         checkCertificate(3, cert3);
@@ -2606,54 +1838,55 @@ public class CertTest
         checkCertificate(5, cert5);
         checkCertificate(6, oldEcdsa);
         checkCertificate(7, cert7);
+        checkCertificate(8, sm_sign);
 
         checkComparison(cert1);
 
         checkKeyUsage(8, keyUsage);
-        checkSelfSignedCertificate(9, uncompressedPtEC);
+        checkSelfSignedCertificate(9, uncompressedPtEC, "ECDSA");
         checkNameCertificate(10, nameCert);
 
-        checkSelfSignedCertificate(11, probSelfSignedCert);
-        checkSelfSignedCertificate(12, gostCA1);
-        checkSelfSignedCertificate(13, gostCA2);
-        checkSelfSignedCertificate(14, gost341094base);
-        checkSelfSignedCertificate(15, gost34102001base);
-        checkSelfSignedCertificate(16, gost341094A);
-        checkSelfSignedCertificate(17, gost341094B);
-        checkSelfSignedCertificate(17, gost34102001A);
+        checkSelfSignedCertificate(11, probSelfSignedCert, "SHA1WITHRSA");
+        checkSelfSignedCertificate(12, gostCA1, "GOST3410");
+        checkSelfSignedCertificate(13, gostCA2, "GOST3411WITHECGOST3410");
+        checkSelfSignedCertificate(14, gost341094base, "GOST3410");
+        checkSelfSignedCertificate(15, gost34102001base, "GOST3411WITHECGOST3410");
+        checkSelfSignedCertificate(16, gost341094A, "GOST3410");
+        checkSelfSignedCertificate(17, gost341094B, "GOST3410");
+        checkSelfSignedCertificate(18, gost34102001A, "GOST3411WITHECGOST3410");
+
+        try
+        {
+            checkSelfSignedCertificate(19, uaczo1, "GOST3411WITHDSTU4145LE");
+            checkSelfSignedCertificate(20, uaczo2, "GOST3411WITHDSTU4145LE");
+            checkSelfSignedCertificate(21, uaczo3, "GOST3411WITHDSTU4145LE");
+            checkSelfSignedCertificate(22, uaczo4, "GOST3411WITHDSTU4145LE");
+        }
+        catch (Exception e)
+        {
+            if (e instanceof NoSuchAlgorithmException)
+            {
+                // ignore - only valid for jdk1.5+
+            }
+        }
+
+        checkSelfSignedCertificate(23, sha3Cert, "SHA3-256withRSAandMGF1");
 
         checkCRL(1, crl1);
 
-        checkCreation1();
-        checkCreation2();
-        checkCreation3();
-        checkCreation4();
-        checkCreation5();
-
-        createECCert("SHA1withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA1);
-        createECCert("SHA224withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA224);
-        createECCert("SHA256withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA256);
-        createECCert("SHA384withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA384);
-        createECCert("SHA512withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA512);
-
-        createPSSCert("SHA1withRSAandMGF1");
-        createPSSCert("SHA224withRSAandMGF1");
-        createPSSCert("SHA256withRSAandMGF1");
-        createPSSCert("SHA384withRSAandMGF1");
-
-        checkCRLCreation1();
-        checkCRLCreation2();
-        checkCRLCreation3();
-
         pemTest();
+        pemFileTest();
+        pemFileTestWithNl();
         pkcs7Test();
         rfc4491Test();
-        
+
+        invalidCRLs();
+
         testForgedSignature();
 
-        testNullDerNullCert();
-
         checkCertificate(18, emptyDNCert);
+
+        testCertPathEncAvailableTest();
     }
 
     public static void main(

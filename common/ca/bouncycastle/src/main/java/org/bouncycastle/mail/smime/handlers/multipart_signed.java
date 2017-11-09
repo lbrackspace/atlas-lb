@@ -1,6 +1,12 @@
 package org.bouncycastle.mail.smime.handlers;
 
-import org.bouncycastle.mail.smime.SMIMEStreamingProcessor;
+import java.awt.datatransfer.DataFlavor;
+import java.io.BufferedInputStream;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Enumeration;
 
 import javax.activation.ActivationDataFlavor;
 import javax.activation.DataContentHandler;
@@ -10,13 +16,9 @@ import javax.mail.Multipart;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
-import java.awt.datatransfer.DataFlavor;
-import java.io.BufferedInputStream;
-import java.io.FilterOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Enumeration;
+
+import org.bouncycastle.mail.smime.SMIMEStreamingProcessor;
+import org.bouncycastle.mail.smime.SMIMEUtil;
 
 public class multipart_signed 
     implements DataContentHandler 
@@ -88,6 +90,8 @@ public class multipart_signed
             {
                 os.write(b);
             }
+
+            in.close();
         }
         else if (obj instanceof SMIMEStreamingProcessor)
         {
@@ -130,26 +134,31 @@ public class multipart_signed
 
         MimeBodyPart    mimePart = (MimeBodyPart)bodyPart;
 
-        if (mimePart.getContent() instanceof Multipart)
+        if (SMIMEUtil.isMultipartContent(mimePart))
         {
-            Multipart mp = (Multipart)mimePart.getContent();
-            ContentType contentType = new ContentType(mp.getContentType());
-            String boundary = "--" + contentType.getParameter("boundary");
+            Object content = mimePart.getContent();
 
-            LineOutputStream lOut = new LineOutputStream(out);
-
-            Enumeration headers = mimePart.getAllHeaderLines();
-            while (headers.hasMoreElements())
+            if (content instanceof Multipart)
             {
-                lOut.writeln((String)headers.nextElement());
+                Multipart mp = (Multipart)content;
+                ContentType contentType = new ContentType(mp.getContentType());
+                String boundary = "--" + contentType.getParameter("boundary");
+
+                LineOutputStream lOut = new LineOutputStream(out);
+
+                Enumeration headers = mimePart.getAllHeaderLines();
+                while (headers.hasMoreElements())
+                {
+                    lOut.writeln((String)headers.nextElement());
+                }
+
+                lOut.writeln();      // CRLF separator
+
+                outputPreamble(lOut, mimePart, boundary);
+
+                outputBodyPart(out, mp);
+                return;
             }
-
-            lOut.writeln();      // CRLF separator
-
-            outputPreamble(lOut, mimePart, boundary);
-
-            outputBodyPart(out, mp);
-            return;
         }
 
         mimePart.writeTo(out);

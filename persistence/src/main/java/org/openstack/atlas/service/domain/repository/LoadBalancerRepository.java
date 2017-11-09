@@ -44,8 +44,8 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.DEL
 @Repository
 @Transactional
 public class LoadBalancerRepository {
-    private final Log LOG = LogFactory.getLog(LoadBalancerRepository.class);
 
+    private final Log LOG = LogFactory.getLog(LoadBalancerRepository.class);
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
@@ -146,11 +146,24 @@ public class LoadBalancerRepository {
     public LoadBalancer getByIdAndAccountIdWithUserPages(Integer id, Integer accountId) throws EntityNotFoundException {
         LoadBalancer lb;
         lb = getById(id);
-        if (!lb.getAccountId().equals(accountId)) {
+        if (lb == null || !lb.getAccountId().equals(accountId)) {
             String message = Constants.LoadBalancerNotFound;
             LOG.warn(message);
             throw new EntityNotFoundException(message);
         }
+        try {
+            lb.getUserPages();
+        } catch (Exception e) {
+            UserPages up = new UserPages();
+            up.setErrorpage(null);
+            lb.setUserPages(up);
+        }
+        return lb;
+    }
+
+    public LoadBalancer getByIdWithUserPages(Integer id) throws EntityNotFoundException {
+        LoadBalancer lb;
+        lb = getById(id);
         try {
             lb.getUserPages();
         } catch (Exception e) {
@@ -213,7 +226,7 @@ public class LoadBalancerRepository {
         q.setMaxResults(1);
         al = q.getResultList();
         if (al.size() != 1) {
-            throw new EntityNotFoundException("Node not nound");
+            throw new EntityNotFoundException("Network item not found");
         }
         return al.get(0);
     }
@@ -246,7 +259,7 @@ public class LoadBalancerRepository {
     }
 
     public ConnectionLimit getConnectionLimitsbyAccountIdLoadBalancerId(Integer accountId,
-                                                                        Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -270,7 +283,7 @@ public class LoadBalancerRepository {
     }
 
     public SessionPersistence getSessionPersistenceByAccountIdLoadBalancerId(Integer accountId,
-                                                                             Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
+            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException, BadRequestException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -282,7 +295,7 @@ public class LoadBalancerRepository {
     }
 
     public LoadBalancer enableSessionPersistenceByIdAndAccountId(Integer id,
-                                                                 Integer accountId) throws EntityNotFoundException, BadRequestException {
+            Integer accountId) throws EntityNotFoundException, BadRequestException {
         LoadBalancer lb;
         lb = getById(id);
         if (!lb.getAccountId().equals(accountId)) {
@@ -295,7 +308,6 @@ public class LoadBalancerRepository {
 
         return lb;
     }
-
 
     public boolean testAndSetStatus(Integer accountId, Integer loadbalancerId, LoadBalancerStatus statusToChangeTo, boolean allowConcurrentModifications) throws EntityNotFoundException, UnprocessableEntityException {
         String qStr = "from LoadBalancer lb where lb.accountId=:aid and lb.id=:lid";
@@ -478,14 +490,16 @@ public class LoadBalancerRepository {
     public boolean isServicenetLoadBalancer(Integer loadBalancerId) {
         List<LoadBalancerJoinVip> vips;
         for (LoadBalancerJoinVip vip : getVipsByLoadBalancerId(loadBalancerId)) {
-            if (VirtualIpType.SERVICENET == vip.getVirtualIp().getVipType()) return true;
+            if (VirtualIpType.SERVICENET == vip.getVirtualIp().getVipType()) {
+                return true;
+            }
         }
         return false;
     }
 
     public List<LoadBalancer> getLoadbalancersGeneric(Integer accountId,
-                                                      String status, LbQueryStatus queryStatus, Calendar changedSince,
-                                                      Integer offset, Integer limit, Integer marker) throws BadRequestException {
+            String status, LbQueryStatus queryStatus, Calendar changedSince,
+            Integer offset, Integer limit, Integer marker) throws BadRequestException {
         List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
         LoadBalancerStatus lbStatus;
         String selectClause;
@@ -653,20 +667,20 @@ public class LoadBalancerRepository {
         List<Object> hResults;
         String queryStr =
                 "select l.id, "
-                        + "l.name, "
-                        + "l.status, "
-                        + "l.protocol, "
-                        + "v4, "
-                        + "v6, "
-                        + "c.id, "
-                        + "c.name, "
-                        + "c.dataCenter "
-                        + "from LoadBalancer l "
-                        + "left join l.loadBalancerJoinVipSet v4 "
-                        + "left join l.loadBalancerJoinVip6Set v6  "
-                        + "join l.host h "
-                        + "join h.cluster c "
-                        + "where l.accountId=:accountId";
+                + "l.name, "
+                + "l.status, "
+                + "l.protocol, "
+                + "v4, "
+                + "v6, "
+                + "c.id, "
+                + "c.name, "
+                + "c.dataCenter "
+                + "from LoadBalancer l "
+                + "left join l.loadBalancerJoinVipSet v4 "
+                + "left join l.loadBalancerJoinVip6Set v6  "
+                + "join l.host h "
+                + "join h.cluster c "
+                + "where l.accountId=:accountId";
         hResults = entityManager.createQuery(queryStr).setParameter("accountId", accountId).getResultList();
         for (Object row : hResults) {
             Object[] t = (Object[]) row;
@@ -738,7 +752,7 @@ public class LoadBalancerRepository {
     }
 
     public List<AccessList> getAccessListByAccountIdLoadBalancerId(int accountId, int loadbalancerId,
-                                                                   Integer... p) throws EntityNotFoundException, DeletedStatusException {
+            Integer... p) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId,
                 accountId); // Puke if the LoadBalancer is not found presumebly Account LoadBalancer mismatch
         List<AccessList> accessList = new ArrayList<AccessList>();
@@ -797,7 +811,7 @@ public class LoadBalancerRepository {
     }
 
     public HealthMonitor getHealthMonitor(Integer accountId,
-                                          Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
+            Integer loadbalancerId) throws EntityNotFoundException, DeletedStatusException {
         LoadBalancer lb = getByIdAndAccountId(loadbalancerId, accountId);
         if (lb.getStatus().equals(LoadBalancerStatus.DELETED)) {
             throw new DeletedStatusException("The loadbalancer is marked as deleted.");
@@ -1151,7 +1165,7 @@ public class LoadBalancerRepository {
 
         Query query = entityManager.createQuery(
                 "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 "
-                        + "and u.numAttempts <= :numAttempts order by u.id asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+                + "and u.numAttempts <= :numAttempts order by u.id asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
 
         usageList = query.getResultList();
 
@@ -1167,7 +1181,7 @@ public class LoadBalancerRepository {
 
         Query query = entityManager.createQuery(
                 "from Usage u where u.startTime >= :startTime and u.startTime <= :endTime and u.needsPushed = 1 "
-                        + "and u.numAttempts >= :numAttempts order by u.startTime asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
+                + "and u.numAttempts >= :numAttempts order by u.startTime asc").setParameter("startTime", startTime).setParameter("endTime", endTime).setParameter("numAttempts", numAttempts);
 
         usageList = query.getResultList();
 
@@ -1234,7 +1248,7 @@ public class LoadBalancerRepository {
     }
 
     private AccountBilling getNewOrExistingAccountBilling(Map<Integer, AccountBilling> accountBillings,
-                                                          Integer accountId) {
+            Integer accountId) {
         AccountBilling accountBilling;
         if (accountBillings.containsKey(accountId)) {
             accountBilling = accountBillings.get(accountId);
@@ -1363,7 +1377,7 @@ public class LoadBalancerRepository {
     }
 
     public HostUsageRecord getHostUsage(Integer hostId, Calendar startTime,
-                                        Calendar endTime) throws EntityNotFoundException {
+            Calendar endTime) throws EntityNotFoundException {
 
         Query query;
         List<Object> hostUsageResults;
@@ -1715,12 +1729,28 @@ public class LoadBalancerRepository {
         return entityManager.createQuery(criteria).setFirstResult(offset).setMaxResults(limit + 1).getResultList();
     }
 
+    public LoadBalancer getLoadBalancerIdAccountAndName(Integer lid) throws EntityNotFoundException {
+        List<LoadBalancer> loadBalancers = new ArrayList<LoadBalancer>();
+        String qStr = "SELECT l.id, l.accountId, l.name FROM LoadBalancer l where id = :lid";
+        Query q = entityManager.createQuery(qStr).setParameter("lid", lid);
+        List<Object[]> resultList = q.getResultList();
+        if (resultList == null || resultList.size() <= 0) {
+            throw new EntityNotFoundException();
+        }
+        for (Object[] row : resultList) {
+            LoadBalancer lb = new LoadBalancer();
+            lb.setId((Integer) row[0]);
+            lb.setAccountId((Integer) row[1]);
+            lb.setName((String) row[2]);
+            loadBalancers.add(lb);
+        }
+        return loadBalancers.get(0);
+    }
+
     public Set<LbIdAccountId> getLoadBalancersActiveDuringPeriod(Calendar startTime, Calendar endTime) {
         Set<LbIdAccountId> lbIds = new HashSet<LbIdAccountId>();
 
-        Query query = entityManager.createQuery("SELECT l.id, l.accountId FROM LoadBalancer l where (l.status != 'DELETED' or l.updated >= :startTime) and l.provisioned < :endTime and l.status not in ('BUILD', 'PENDING_DELETE')")
-                .setParameter("startTime", startTime)
-                .setParameter("endTime", endTime);
+        Query query = entityManager.createQuery("SELECT l.id, l.accountId FROM LoadBalancer l where (l.status != 'DELETED' or l.updated >= :startTime) and l.provisioned < :endTime and l.status not in ('BUILD', 'PENDING_DELETE')").setParameter("startTime", startTime).setParameter("endTime", endTime);
 
         final List<Object[]> resultList = query.getResultList();
 
@@ -1732,6 +1762,27 @@ public class LoadBalancerRepository {
         }
 
         return lbIds;
+    }
+
+    public List<SslTermInfoDb> getSslTermInfo() {
+        List<SslTermInfoDb> sslTerms = new ArrayList<SslTermInfoDb>();
+        String qStr = "select s.loadbalancer.id, s.loadbalancer.accountId, "
+                + "s.id, s.privatekey, s.certificate, s.intermediateCertificate "
+                + "from SslTermination s";
+        Query q = entityManager.createQuery(qStr);
+        List<Object> rows = q.getResultList();
+        for (Object uncastedRowArryObj : rows) {
+            Object[] row = (Object[]) uncastedRowArryObj;
+            SslTermInfoDb sslTermInfo = new SslTermInfoDb();
+            sslTermInfo.setLoadbalancerId((Integer) row[0]);
+            sslTermInfo.setAccountId((Integer) row[1]);
+            sslTermInfo.setSslId((Integer) row[2]);
+            sslTermInfo.setPrivatekey((String) row[3]);
+            sslTermInfo.setCertificate((String) row[4]);
+            sslTermInfo.setIntermediateCertificate((String) row[5]);
+            sslTerms.add(sslTermInfo);
+        }
+        return sslTerms;
     }
 
     public Map<Integer, Integer> getAccountIdMapForUsageRecords(List<Usage> rawLoadBalancerUsageList) {

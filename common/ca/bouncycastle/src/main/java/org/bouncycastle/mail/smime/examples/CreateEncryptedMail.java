@@ -3,6 +3,7 @@ package org.bouncycastle.mail.smime.examples;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.security.KeyStore;
+import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
@@ -15,6 +16,10 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 
+import org.bouncycastle.cms.CMSAlgorithm;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKeyTransRecipientInfoGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.mail.smime.SMIMEEnvelopedGenerator;
 
 /**
@@ -39,6 +44,11 @@ public class CreateEncryptedMail
         {
             System.err.println("usage: CreateEncryptedMail pkcs12Keystore password");
             System.exit(0);
+        }
+
+        if (Security.getProvider("BC") == null)
+        {
+            Security.addProvider(new BouncyCastleProvider());
         }
 
         //
@@ -74,7 +84,7 @@ public class CreateEncryptedMail
         //
         SMIMEEnvelopedGenerator  gen = new SMIMEEnvelopedGenerator();
           
-        gen.addKeyTransRecipient((X509Certificate)chain[0]);
+        gen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator((X509Certificate)chain[0]).setProvider("BC"));
 
         //
         // create a subject key id - this has to be done the same way as
@@ -96,7 +106,7 @@ public class CreateEncryptedMail
 
         msg.setText("Hello world!");
 
-        MimeBodyPart mp = gen.generate(msg, SMIMEEnvelopedGenerator.RC2_CBC, "BC");
+        MimeBodyPart mp = gen.generate(msg, new JceCMSContentEncryptorBuilder(CMSAlgorithm.RC2_CBC).setProvider("BC").build());
         //
         // Get a Session object and create the mail message
         //

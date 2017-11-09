@@ -1,11 +1,13 @@
 package org.openstack.atlas.api.validation.validators;
 
+import org.apache.commons.lang.StringUtils;
 import org.openstack.atlas.api.validation.verifiers.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
 import org.openstack.atlas.api.validation.Validator;
 import org.openstack.atlas.api.validation.ValidatorBuilder;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 
+import static org.openstack.atlas.api.validation.context.HttpRequestType.POST;
 import static org.openstack.atlas.api.validation.validators.HealthMonitorValidator.FLOOR;
 import static org.openstack.atlas.api.validation.validators.HealthMonitorValidator.CEILING;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
@@ -22,14 +24,8 @@ public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonit
                 // SHARED EXPECTATIONS
                 result(validationTarget().getType()).must().exist().withMessage("Must provide a type for the health monitor.");
                 result(validationTarget().getId()).must().not().exist().withMessage("Health monitor id field cannot be modified.");
-                result(validationTarget().getDelay()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Delay for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Timeout for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getAttemptsBeforeDeactivation()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(FLOOR, CEILING)).withMessage(String.format("Attempts before deactivation for the health monitor must be between %d and %d.", FLOOR, CEILING));
-                result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a valid path for the health monitor.");
-                result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a status regex for the health monitor.");
-                result(validationTarget().getBodyRegex()).if_().exist().then().must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a body regex for the health monitor.");
                 result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("path" + maxStrMsg);
-                result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new HealthMonitorPathVerifier()).withMessage("Must provide a foward slash(/) as the begining of the path.");                                                                                                                         
+                result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new HealthMonitorPathVerifier()).withMessage("Must provide a forward slash(/) as the beginning of the path.");
                 result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("statusRegex" + maxStrMsg);
                 result(validationTarget().getBodyRegex()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("bodyRegex" + maxStrMsg);
                 result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new RegexValidatorVerifier()).withMessage("Must provide a valid status regex");
@@ -44,11 +40,17 @@ public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonit
                         return new VerifierResult(monitor.getDelay() != null ||
                                 monitor.getTimeout() != null ||
                                 monitor.getAttemptsBeforeDeactivation() != null ||
-                                monitor.getPath() != null ||
-                                monitor.getStatusRegex() != null ||
-                                monitor.getBodyRegex() != null);
+                                StringUtils.isNotEmpty(monitor.getPath())||
+                                StringUtils.isNotEmpty(monitor.getStatusRegex()) ||
+                                StringUtils.isNotEmpty(monitor.getBodyRegex()));
                     }
                 }).forContext(PUT).withMessage("The health monitor must have at least one of the following to update: delay, timeout, attempts before deactivation, path, status regex, body regex.");
+
+                //POST EXPECTATIONS
+                //CLB-279 Creating a Load Balancer with empty Health Monitor - creates the Load Balancer in Error state.
+                result(validationTarget().getPath()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a valid path for the health monitor.");
+                result(validationTarget().getStatusRegex()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a status regex for the health monitor.");
+                result(validationTarget().getBodyRegex()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a body regex for the health monitor.");
             }
         });
     }

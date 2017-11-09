@@ -1,28 +1,28 @@
 package org.bouncycastle.asn1.ocsp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 public class CertID
-    extends ASN1Encodable
+    extends ASN1Object
 {
     AlgorithmIdentifier    hashAlgorithm;
     ASN1OctetString        issuerNameHash;
     ASN1OctetString        issuerKeyHash;
-    DERInteger             serialNumber;
+    ASN1Integer             serialNumber;
 
     public CertID(
         AlgorithmIdentifier hashAlgorithm,
         ASN1OctetString     issuerNameHash,
         ASN1OctetString     issuerKeyHash,
-        DERInteger          serialNumber)
+        ASN1Integer         serialNumber)
     {
         this.hashAlgorithm = hashAlgorithm;
         this.issuerNameHash = issuerNameHash;
@@ -30,13 +30,13 @@ public class CertID
         this.serialNumber = serialNumber;
     }
 
-    public CertID(
+    private CertID(
         ASN1Sequence    seq)
     {
         hashAlgorithm = AlgorithmIdentifier.getInstance(seq.getObjectAt(0));
         issuerNameHash = (ASN1OctetString)seq.getObjectAt(1);
         issuerKeyHash = (ASN1OctetString)seq.getObjectAt(2);
-        serialNumber = (DERInteger)seq.getObjectAt(3);
+        serialNumber = (ASN1Integer)seq.getObjectAt(3);
     }
 
     public static CertID getInstance(
@@ -49,16 +49,16 @@ public class CertID
     public static CertID getInstance(
         Object  obj)
     {
-        if (obj == null || obj instanceof CertID)
+        if (obj instanceof CertID)
         {
             return (CertID)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new CertID((ASN1Sequence)obj);
+            return new CertID(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
     public AlgorithmIdentifier getHashAlgorithm()
@@ -76,7 +76,7 @@ public class CertID
         return issuerKeyHash;
     }
 
-    public DERInteger getSerialNumber()
+    public ASN1Integer getSerialNumber()
     {
         return serialNumber;
     }
@@ -91,7 +91,7 @@ public class CertID
      *     serialNumber        CertificateSerialNumber }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector    v = new ASN1EncodableVector();
 

@@ -1,11 +1,13 @@
 package org.bouncycastle.crypto.tls;
 
+/**
+ * RFC 2246
+ * <p>
+ * Note that the values here are implementation-specific and arbitrary. It is recommended not to
+ * depend on the particular values (e.g. serialization).
+ */
 public class EncryptionAlgorithm
 {
-    /*
-     * Note that the values here are implementation-specific and arbitrary.
-     * It is recommended not to depend on the particular values (e.g. serialization).
-     */
     public static final int NULL = 0;
     public static final int RC4_40 = 1;
     public static final int RC4_128 = 2;
@@ -26,4 +28,40 @@ public class EncryptionAlgorithm
      */
     public static final int AES_128_GCM = 10;
     public static final int AES_256_GCM = 11;
+
+    /*
+     * RFC 5932
+     */
+    public static final int CAMELLIA_128_CBC = 12;
+    public static final int CAMELLIA_256_CBC = 13;
+
+    /*
+     * RFC 4162
+     */
+    public static final int SEED_CBC = 14;
+
+    /*
+     * RFC 6655
+     */
+    public static final int AES_128_CCM = 15;
+    public static final int AES_128_CCM_8 = 16;
+    public static final int AES_256_CCM = 17;
+    public static final int AES_256_CCM_8 = 18;
+
+    /*
+     * RFC 6367
+     */
+    public static final int CAMELLIA_128_GCM = 19;
+    public static final int CAMELLIA_256_GCM = 20;
+
+    /*
+     * RFC 7905
+     */
+    public static final int CHACHA20_POLY1305 = 21;
+
+    /*
+     * draft-zauner-tls-aes-ocb-04
+     */
+    public static final int AES_128_OCB_TAGLEN96 = 103;
+    public static final int AES_256_OCB_TAGLEN96 = 104;
 }

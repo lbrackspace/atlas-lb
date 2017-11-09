@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+from cfuploader import clients
+import sys
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        sys.stdout.write("usage is %s <account_id> <n_hours>\n" % sys.argv[0])
+        sys.stdout.write("\n")
+        sys.stdout.write("creates fake zips\n")
+        sys.exit()
+    aid = int(sys.argv[1])
+    n_hours = int(sys.argv[2])
+    clients.create_fake_zips(aid, n_hours)

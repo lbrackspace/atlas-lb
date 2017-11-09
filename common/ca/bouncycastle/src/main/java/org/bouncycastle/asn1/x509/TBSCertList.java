@@ -1,15 +1,19 @@
 package org.bouncycastle.asn1.x509;
 
 import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1UTCTime;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.DERUTCTime;
+import org.bouncycastle.asn1.x500.X500Name;
 
 /**
  * PKIX RFC-2459 - TBSCertList object.
@@ -33,18 +37,16 @@ import org.bouncycastle.asn1.DERUTCTime;
  * </pre>
  */
 public class TBSCertList
-    extends ASN1Encodable
+    extends ASN1Object
 {
     public static class CRLEntry
-        extends ASN1Encodable
+        extends ASN1Object
     {
         ASN1Sequence  seq;
 
-        DERInteger          userCertificate;
-        Time                revocationDate;
-        X509Extensions      crlEntryExtensions;
+        Extensions    crlEntryExtensions;
 
-        public CRLEntry(
+        private CRLEntry(
             ASN1Sequence  seq)
         {
             if (seq.size() < 2 || seq.size() > 3)
@@ -53,34 +55,50 @@ public class TBSCertList
             }
             
             this.seq = seq;
-
-            userCertificate = DERInteger.getInstance(seq.getObjectAt(0));
-            revocationDate = Time.getInstance(seq.getObjectAt(1));
         }
 
-        public DERInteger getUserCertificate()
+        public static CRLEntry getInstance(Object o)
         {
-            return userCertificate;
+            if (o instanceof CRLEntry)
+            {
+                return ((CRLEntry)o);
+            }
+            else if (o != null)
+            {
+                return new CRLEntry(ASN1Sequence.getInstance(o));
+            }
+
+            return null;
+        }
+
+        public ASN1Integer getUserCertificate()
+        {
+            return ASN1Integer.getInstance(seq.getObjectAt(0));
         }
 
         public Time getRevocationDate()
         {
-            return revocationDate;
+            return Time.getInstance(seq.getObjectAt(1));
         }
 
-        public X509Extensions getExtensions()
+        public Extensions getExtensions()
         {
             if (crlEntryExtensions == null && seq.size() == 3)
             {
-                crlEntryExtensions = X509Extensions.getInstance(seq.getObjectAt(2));
+                crlEntryExtensions = Extensions.getInstance(seq.getObjectAt(2));
             }
             
             return crlEntryExtensions;
         }
 
-        public DERObject toASN1Object()
+        public ASN1Primitive toASN1Primitive()
         {
             return seq;
+        }
+
+        public boolean hasExtensions()
+        {
+            return seq.size() == 3;
         }
     }
 
@@ -101,7 +119,7 @@ public class TBSCertList
 
         public Object nextElement()
         {
-            return new CRLEntry(ASN1Sequence.getInstance(en.nextElement()));
+            return CRLEntry.getInstance(en.nextElement());
         }
     }
 
@@ -115,19 +133,17 @@ public class TBSCertList
 
         public Object nextElement()
         {
-            return null;   // TODO: check exception handling
+            throw new NoSuchElementException("Empty Enumeration");
         }
     }
 
-    ASN1Sequence     seq;
-
-    DERInteger              version;
+    ASN1Integer             version;
     AlgorithmIdentifier     signature;
-    X509Name                issuer;
+    X500Name                issuer;
     Time                    thisUpdate;
     Time                    nextUpdate;
     ASN1Sequence            revokedCertificates;
-    X509Extensions          crlExtensions;
+    Extensions              crlExtensions;
 
     public static TBSCertList getInstance(
         ASN1TaggedObject obj,
@@ -143,12 +159,12 @@ public class TBSCertList
         {
             return (TBSCertList)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new TBSCertList((ASN1Sequence)obj);
+            return new TBSCertList(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
     public TBSCertList(
@@ -161,48 +177,50 @@ public class TBSCertList
 
         int seqPos = 0;
 
-        this.seq = seq;
-
-        if (seq.getObjectAt(seqPos) instanceof DERInteger)
+        if (seq.getObjectAt(seqPos) instanceof ASN1Integer)
         {
-            version = DERInteger.getInstance(seq.getObjectAt(seqPos++));
+            version = ASN1Integer.getInstance(seq.getObjectAt(seqPos++));
         }
         else
         {
-            version = new DERInteger(0);
+            version = null;  // version is optional
         }
 
         signature = AlgorithmIdentifier.getInstance(seq.getObjectAt(seqPos++));
-        issuer = X509Name.getInstance(seq.getObjectAt(seqPos++));
+        issuer = X500Name.getInstance(seq.getObjectAt(seqPos++));
         thisUpdate = Time.getInstance(seq.getObjectAt(seqPos++));
 
         if (seqPos < seq.size()
-            && (seq.getObjectAt(seqPos) instanceof DERUTCTime
-               || seq.getObjectAt(seqPos) instanceof DERGeneralizedTime
+            && (seq.getObjectAt(seqPos) instanceof ASN1UTCTime
+               || seq.getObjectAt(seqPos) instanceof ASN1GeneralizedTime
                || seq.getObjectAt(seqPos) instanceof Time))
         {
             nextUpdate = Time.getInstance(seq.getObjectAt(seqPos++));
         }
 
         if (seqPos < seq.size()
-            && !(seq.getObjectAt(seqPos) instanceof DERTaggedObject))
+            && !(seq.getObjectAt(seqPos) instanceof ASN1TaggedObject))
         {
             revokedCertificates = ASN1Sequence.getInstance(seq.getObjectAt(seqPos++));
         }
 
         if (seqPos < seq.size()
-            && seq.getObjectAt(seqPos) instanceof DERTaggedObject)
+            && seq.getObjectAt(seqPos) instanceof ASN1TaggedObject)
         {
-            crlExtensions = X509Extensions.getInstance(seq.getObjectAt(seqPos));
+            crlExtensions = Extensions.getInstance(ASN1Sequence.getInstance((ASN1TaggedObject)seq.getObjectAt(seqPos), true));
         }
     }
 
-    public int getVersion()
+    public int getVersionNumber()
     {
+        if (version == null)
+        {
+            return 1;
+        }
         return version.getValue().intValue() + 1;
     }
 
-    public DERInteger getVersionNumber()
+    public ASN1Integer getVersion()
     {
         return version;
     }
@@ -212,7 +230,7 @@ public class TBSCertList
         return signature;
     }
 
-    public X509Name getIssuer()
+    public X500Name getIssuer()
     {
         return issuer;
     }
@@ -238,7 +256,7 @@ public class TBSCertList
 
         for (int i = 0; i < entries.length; i++)
         {
-            entries[i] = new CRLEntry(ASN1Sequence.getInstance(revokedCertificates.getObjectAt(i)));
+            entries[i] = CRLEntry.getInstance(revokedCertificates.getObjectAt(i));
         }
         
         return entries;
@@ -254,13 +272,39 @@ public class TBSCertList
         return new RevokedCertificatesEnumeration(revokedCertificates.getObjects());
     }
 
-    public X509Extensions getExtensions()
+    public Extensions getExtensions()
     {
         return crlExtensions;
     }
 
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
-        return seq;
+        ASN1EncodableVector v = new ASN1EncodableVector();
+
+        if (version != null)
+        {
+            v.add(version);
+        }
+        v.add(signature);
+        v.add(issuer);
+
+        v.add(thisUpdate);
+        if (nextUpdate != null)
+        {
+            v.add(nextUpdate);
+        }
+
+        // Add CRLEntries if they exist
+        if (revokedCertificates != null)
+        {
+            v.add(revokedCertificates);
+        }
+
+        if (crlExtensions != null)
+        {
+            v.add(new DERTaggedObject(0, crlExtensions));
+        }
+
+        return new DERSequence(v);
     }
 }

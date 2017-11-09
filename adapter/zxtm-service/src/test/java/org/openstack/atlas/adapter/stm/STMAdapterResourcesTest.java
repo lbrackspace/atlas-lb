@@ -758,7 +758,7 @@ public class STMAdapterResourcesTest extends STMTestBase {
 
         @Test
         public void testDeleteErrorFile() throws Exception {
-            adapterResources.deleteErrorFile(config, client, lb, null);
+            adapterResources.deleteErrorFile(config, client, lb);
 
             verify(adapterResources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
             verify(client).deleteExtraFile(errorFileName);

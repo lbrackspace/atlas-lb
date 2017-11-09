@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadBalancerDetails;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
@@ -69,6 +70,10 @@ public interface VirtualIpService {
 
     public void persist(Object obj);
 
+    public void updateCluster(VirtualIp vip, Cluster cluster);
+
+    public void updateCluster(VirtualIpv6 vip, Cluster cluster);
+
     public List<VirtualIp> getVipsByClusterId(Integer clusterId);
 
     public Integer getNextVipOctet(Integer accountId);
@@ -84,6 +89,8 @@ public interface VirtualIpService {
     public String getVirtualIpv6String(VirtualIpv6 vip6) throws IPStringConversionException;
 
     public Map<Integer, List<VirtualIp>> getAllocatedVipsMappedByLbId();
+
+    public VirtualIpLoadBalancerDetails getLoadBalancerDetailsForIp(String ipAddress);
 
     public Account getAccountRecord(Integer aid) throws EntityNotFoundException;
 

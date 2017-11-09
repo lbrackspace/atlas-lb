@@ -5,9 +5,12 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.x509.Certificate;
 import org.bouncycastle.asn1.x509.CertificatePair;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
+import org.bouncycastle.jcajce.util.BCJcaJceHelper;
+import org.bouncycastle.jcajce.util.JcaJceHelper;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 
 /**
@@ -18,9 +21,12 @@ import org.bouncycastle.jce.provider.X509CertificateObject;
  */
 public class X509CertificatePair
 {
+    private final JcaJceHelper bcHelper = new BCJcaJceHelper(); // needed to force provider loading
+
     private X509Certificate forward;
     private X509Certificate reverse;
 
+    // TODO: should get rid of this class
     /**
      * Constructor.
      *
@@ -57,13 +63,13 @@ public class X509CertificatePair
     public byte[] getEncoded()
         throws CertificateEncodingException
     {
-        X509CertificateStructure f = null;
-        X509CertificateStructure r = null;
+        Certificate f = null;
+        Certificate r = null;
         try
         {
             if (forward != null)
             {
-                f = X509CertificateStructure.getInstance(new ASN1InputStream(
+                f = Certificate.getInstance(new ASN1InputStream(
                     forward.getEncoded()).readObject());
                 if (f == null)
                 {
@@ -72,14 +78,14 @@ public class X509CertificatePair
             }
             if (reverse != null)
             {
-                r = X509CertificateStructure.getInstance(new ASN1InputStream(
+                r = Certificate.getInstance(new ASN1InputStream(
                     reverse.getEncoded()).readObject());
                 if (r == null)
                 {
                     throw new CertificateEncodingException("unable to get encoding for reverse");
                 }
             }
-            return new CertificatePair(f, r).getDEREncoded();
+            return new CertificatePair(f, r).getEncoded(ASN1Encoding.DER);
         }
         catch (IllegalArgumentException e)
         {

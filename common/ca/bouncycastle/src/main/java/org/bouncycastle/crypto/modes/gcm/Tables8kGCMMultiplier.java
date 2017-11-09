@@ -1,41 +1,40 @@
 package org.bouncycastle.crypto.modes.gcm;
 
-import org.bouncycastle.crypto.util.Pack;
+import org.bouncycastle.util.Arrays;
+import org.bouncycastle.util.Pack;
 
-public class Tables8kGCMMultiplier implements GCMMultiplier
+public class Tables8kGCMMultiplier  implements GCMMultiplier
 {
-    private final int[][][] M = new int[32][16][];
+    private byte[] H;
+    private int[][][] M;
 
     public void init(byte[] H)
     {
-        M[0][0] = new int[4];
-        M[1][0] = new int[4];
-        M[1][8] = GCMUtil.asInts(H);
+        if (M == null)
+        {
+            M = new int[32][16][4];
+        }
+        else if (Arrays.areEqual(this.H, H))
+        {
+            return;
+        }
+
+        this.H = Arrays.clone(H);
+
+        // M[0][0] is ZEROES;
+        // M[1][0] is ZEROES;
+        GCMUtil.asInts(H, M[1][8]);
 
         for (int j = 4; j >= 1; j >>= 1)
         {
-            int[] tmp = new int[4];
-            System.arraycopy(M[1][j + j], 0, tmp, 0, 4);
-
-            GCMUtil.multiplyP(tmp);
-            M[1][j] = tmp;
+            GCMUtil.multiplyP(M[1][j + j], M[1][j]);
         }
 
-        {
-            int[] tmp = new int[4];
-            System.arraycopy(M[1][1], 0, tmp, 0, 4);
-
-            GCMUtil.multiplyP(tmp);
-            M[0][8] = tmp;
-        }
+        GCMUtil.multiplyP(M[1][1], M[0][8]);
 
         for (int j = 4; j >= 1; j >>= 1)
         {
-            int[] tmp = new int[4];
-            System.arraycopy(M[0][j + j], 0, tmp, 0, 4);
-
-            GCMUtil.multiplyP(tmp);
-            M[0][j] = tmp;
+            GCMUtil.multiplyP(M[0][j + j], M[0][j]);
         }
 
         int i = 0;
@@ -45,11 +44,7 @@ public class Tables8kGCMMultiplier implements GCMMultiplier
             {
                 for (int k = 1; k < j; ++k)
                 {
-                    int[] tmp = new int[4];
-                    System.arraycopy(M[i][j], 0, tmp, 0, 4);
-
-                    GCMUtil.xor(tmp, M[i][k]);
-                    M[i][j + k] = tmp;
+                    GCMUtil.xor(M[i][j], M[i][k], M[i][j + k]);
                 }
             }
 
@@ -60,14 +55,10 @@ public class Tables8kGCMMultiplier implements GCMMultiplier
 
             if (i > 1)
             {
-                M[i][0] = new int[4];
+                // M[i][0] is ZEROES;
                 for(int j = 8; j > 0; j >>= 1)
                 {
-                  int[] tmp = new int[4];
-                  System.arraycopy(M[i - 2][j], 0, tmp, 0, 4);
-
-                  GCMUtil.multiplyP8(tmp);
-                  M[i][j] = tmp;
+                    GCMUtil.multiplyP8(M[i - 2][j], M[i][j]);
                 }
             }
         }
@@ -94,9 +85,6 @@ public class Tables8kGCMMultiplier implements GCMMultiplier
             z[3] ^= m[3];
         }
 
-        Pack.intToBigEndian(z[0], x, 0);
-        Pack.intToBigEndian(z[1], x, 4);
-        Pack.intToBigEndian(z[2], x, 8);
-        Pack.intToBigEndian(z[3], x, 12);
+        Pack.intToBigEndian(z, x, 0);
     }
 }

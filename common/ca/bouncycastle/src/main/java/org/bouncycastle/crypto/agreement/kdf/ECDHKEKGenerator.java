@@ -1,28 +1,32 @@
 package org.bouncycastle.crypto.agreement.kdf;
 
+import java.io.IOException;
+
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.crypto.DataLengthException;
-import org.bouncycastle.crypto.DerivationFunction;
 import org.bouncycastle.crypto.DerivationParameters;
 import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.DigestDerivationFunction;
 import org.bouncycastle.crypto.generators.KDF2BytesGenerator;
 import org.bouncycastle.crypto.params.KDFParameters;
+import org.bouncycastle.util.Pack;
 
 /**
  * X9.63 based key derivation function for ECDH CMS.
  */
 public class ECDHKEKGenerator
-    implements DerivationFunction
+    implements DigestDerivationFunction
 {
-    private DerivationFunction kdf;
+    private DigestDerivationFunction kdf;
 
-    private DERObjectIdentifier algorithm;
+    private ASN1ObjectIdentifier algorithm;
     private int                 keySize;
     private byte[]              z;
 
@@ -53,23 +57,18 @@ public class ECDHKEKGenerator
         // ECC-CMS-SharedInfo
         ASN1EncodableVector v = new ASN1EncodableVector();
 
-        v.add(new AlgorithmIdentifier(algorithm, new DERNull()));
-        v.add(new DERTaggedObject(true, 2, new DEROctetString(integerToBytes(keySize))));
+        v.add(new AlgorithmIdentifier(algorithm, DERNull.INSTANCE));
+        v.add(new DERTaggedObject(true, 2, new DEROctetString(Pack.intToBigEndian(keySize))));
 
-        kdf.init(new KDFParameters(z, new DERSequence(v).getDEREncoded()));
+        try
+        {
+            kdf.init(new KDFParameters(z, new DERSequence(v).getEncoded(ASN1Encoding.DER)));
+        }
+        catch (IOException e)
+        {
+            throw new IllegalArgumentException("unable to initialise kdf: " + e.getMessage());
+        }
 
         return kdf.generateBytes(out, outOff, len);
-    }
-
-    private byte[] integerToBytes(int keySize)
-    {
-        byte[] val = new byte[4];
-
-        val[0] = (byte)(keySize >> 24);
-        val[1] = (byte)(keySize >> 16);
-        val[2] = (byte)(keySize >> 8);
-        val[3] = (byte)keySize;
-
-        return val;
     }
 }

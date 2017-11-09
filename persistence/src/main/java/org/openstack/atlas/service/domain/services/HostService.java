@@ -46,6 +46,8 @@ public interface HostService {
 
     public List<Host> getFailoverHosts(Integer clusterId);
 
+    public Host getFirstAvailableSoapEndPointHost() throws EntityNotFoundException;
+
     public String getEndPoint(Integer clusterId);
 
     public Host getHostsByLoadBalancerId(Integer loadBalancerId);
@@ -78,7 +80,7 @@ public interface HostService {
 
     public void deleteHost(Host queueHost) throws Exception;
 
-    public Host getDefaultActiveHostAndActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
+    public Host getDefaultActiveHostAndActiveCluster(Integer accountId, boolean hasPublicVip) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
 
     public boolean isActiveHost(Host host) throws EntityNotFoundException;
 

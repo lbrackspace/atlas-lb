@@ -1,9 +1,13 @@
 package org.bouncycastle.asn1.esf;
 
-import org.bouncycastle.asn1.*;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERSequence;
 
 public class SigPolicyQualifiers
-    extends ASN1Encodable
+    extends ASN1Object
 {
     ASN1Sequence qualifiers;
 
@@ -16,15 +20,13 @@ public class SigPolicyQualifiers
         }
         else if (obj instanceof ASN1Sequence)
         {
-            return new SigPolicyQualifiers((ASN1Sequence) obj);
+            return new SigPolicyQualifiers(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException(
-                "unknown object in 'SigPolicyQualifiers' factory: "
-                        + obj.getClass().getName() + ".");
+        return null;
     }
 
-    public SigPolicyQualifiers(
+    private SigPolicyQualifiers(
         ASN1Sequence seq)
     {
         qualifiers = seq;
@@ -54,10 +56,10 @@ public class SigPolicyQualifiers
     /**
      * Return the SigPolicyQualifierInfo at index i.
      *
-     * @param i index of the string of interest
-     * @return the string at index i.
+     * @param i index of the info of interest
+     * @return the info at index i.
      */
-    public SigPolicyQualifierInfo getStringAt(
+    public SigPolicyQualifierInfo getInfoAt(
         int i)
     {
         return SigPolicyQualifierInfo.getInstance(qualifiers.getObjectAt(i));
@@ -68,7 +70,7 @@ public class SigPolicyQualifiers
      * SigPolicyQualifiers ::= SEQUENCE SIZE (1..MAX) OF SigPolicyQualifierInfo
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return qualifiers;
     }

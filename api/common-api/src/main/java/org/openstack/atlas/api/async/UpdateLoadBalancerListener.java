@@ -37,7 +37,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
         StringBuilder atomSummary = new StringBuilder("Load balancer successfully updated with ");
 
         try {
-            dbLoadBalancer = loadBalancerService.get(queueLb.getId(), queueLb.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(queueLb.getId(), queueLb.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", queueLb.getId());
             LOG.error(alertDescription, enfe);
@@ -49,7 +49,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
         if (isRestAdapter()) {
             try {
                 LOG.debug(String.format("Updating load balancer '%d' STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb, loadBalancerService.getUserPages(queueLb.getId(), queueLb.getAccountId()));
+                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb);
                 LOG.debug(String.format("Successfully updated load balancer '%d' in STM.", dbLoadBalancer.getId()));
                 atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");
             } catch (Exception e) {

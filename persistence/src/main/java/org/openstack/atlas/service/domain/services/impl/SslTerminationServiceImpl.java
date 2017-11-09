@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
@@ -11,9 +12,11 @@ import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
+import org.openstack.atlas.service.domain.services.SslCipherProfileService;
 import org.openstack.atlas.service.domain.services.SslTerminationService;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
@@ -34,7 +37,8 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     @Autowired
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-
+    @Autowired
+    private SslCipherProfileService sslCipherProfileService;
 
     @Override
     @Transactional
@@ -63,6 +67,15 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                     " Ports taken: '%s'", sslTermination.getSecurePort(), buildPortString(vipPorts, vip6Ports)));
         }
 
+        //Validate that a cipher profile exists with the given name, if not throw an error.
+        String cipherProfileName = sslTermination.getCipherProfile();
+        if (StringUtils.isNotBlank(cipherProfileName) && !cipherProfileName.equalsIgnoreCase(Constants.DEFAUlT_CIPHER_PROFILE_NAME)) {
+            cipherProfileName = cipherProfileName.trim();
+            if (!sslCipherProfileService.isCipherProfileAvailable(cipherProfileName)) {
+                throw new BadRequestException(String.format("No Cipher Profile found with the name: '%s'", cipherProfileName));
+            }
+        }
+
         if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
             //Must be secure-only
             if (sslTermination.isSecureTrafficOnly() != null && !sslTermination.isSecureTrafficOnly()) {
@@ -83,7 +96,23 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         //we wont make it here if no dbTermination and no cert/key values.
+        // If dbTermination is null on input to verifyAttributes then
+        // verifyAttributes creates a new dbTermination instance
         dbTermination = SslTerminationHelper.verifyAttributes(sslTermination, dbTermination);
+
+        //Update the cipher profile. While creating SslTermination if cipherProfileName is empty, the profile to be set is the 'default' profile.
+        if (dbTermination.getId() == null){
+            if (StringUtils.isBlank(cipherProfileName) || Constants.DEFAUlT_CIPHER_PROFILE_NAME.equalsIgnoreCase(cipherProfileName)) {
+                cipherProfileName = Constants.DEFAUlT_CIPHER_PROFILE_NAME;
+            }
+        } else {//Updating SslTermination, if the profile to be set is the 'default' profile then this is a remove profile case.
+            if (cipherProfileName != null && Constants.DEFAUlT_CIPHER_PROFILE_NAME.equalsIgnoreCase(cipherProfileName)) {
+                cipherProfileName = Constants.DEFAUlT_CIPHER_PROFILE_NAME;
+            }
+        }
+        if (StringUtils.isNotEmpty(cipherProfileName)) {
+            sslCipherProfileService.setCipherProfileOnSslTermination(dbTermination, cipherProfileName);
+        }
 
         if (dbTermination != null) {
             if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {

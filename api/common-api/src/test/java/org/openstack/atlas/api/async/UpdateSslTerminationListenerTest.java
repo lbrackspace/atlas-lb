@@ -32,7 +32,6 @@ import javax.jms.ObjectMessage;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
@@ -111,7 +110,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection, times(2)).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
         //TODO: Update for new usage behaviour...
 //        verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_ONLY_ON), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
@@ -140,7 +139,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection, times(2)).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
         verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_MIXED_ON), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveSslTerminationEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, SSL_TERMINATION_ID, EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), EventType.UPDATE_SSL_TERMINATION, CategoryType.UPDATE, EventSeverity.INFO);
@@ -167,7 +166,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection, times(2)).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
         verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_OFF), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveSslTerminationEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, SSL_TERMINATION_ID, EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), EventType.UPDATE_SSL_TERMINATION, CategoryType.UPDATE, EventSeverity.INFO);
@@ -204,7 +203,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         lb.setSslTermination(sslTermination);
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
         when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
@@ -212,7 +211,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(loadBalancerService).get(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination, null);
+        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ERROR);
         verify(loadBalancerService).update(lb);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());

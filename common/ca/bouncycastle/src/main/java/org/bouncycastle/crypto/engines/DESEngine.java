@@ -3,6 +3,7 @@ package org.bouncycastle.crypto.engines;
 import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.OutputLengthException;
 import org.bouncycastle.crypto.params.KeyParameter;
 
 /**
@@ -78,7 +79,7 @@ public class DESEngine
 
         if ((outOff + BLOCK_SIZE) > out.length)
         {
-            throw new DataLengthException("output buffer too short");
+            throw new OutputLengthException("output buffer too short");
         }
 
         desFunc(workingKey, in, inOff, out, outOff);
@@ -300,7 +301,7 @@ public class DESEngine
      * generate an integer based working key based on our secret key
      * and what we processing we are planning to do.
      *
-     * Acknowledgements for this routine go to James Gillogly & Phil Karn.
+     * Acknowledgements for this routine go to James Gillogly &amp; Phil Karn.
      *         (whoever, and wherever they are!).
      */
     protected int[] generateWorkingKey(

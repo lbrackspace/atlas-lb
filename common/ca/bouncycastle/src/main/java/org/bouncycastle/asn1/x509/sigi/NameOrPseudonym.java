@@ -3,11 +3,11 @@ package org.bouncycastle.asn1.x509.sigi;
 import java.util.Enumeration;
 
 import org.bouncycastle.asn1.ASN1Choice;
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x500.DirectoryString;
 
@@ -28,7 +28,7 @@ import org.bouncycastle.asn1.x500.DirectoryString;
  * 
  */
 public class NameOrPseudonym
-    extends ASN1Encodable
+    extends ASN1Object
     implements ASN1Choice
 {
     private DirectoryString pseudonym;
@@ -59,10 +59,9 @@ public class NameOrPseudonym
     }
 
     /**
-     * Constructor from DERString.
-     * <p/>
+     * Constructor from DirectoryString.
+     * <p>
      * The sequence is of type NameOrPseudonym:
-     * <p/>
      * <pre>
      *       NameOrPseudonym ::= CHOICE {
      *            surAndGivenName SEQUENCE {
@@ -81,9 +80,8 @@ public class NameOrPseudonym
 
     /**
      * Constructor from ASN1Sequence.
-     * <p/>
+     * <p>
      * The sequence is of type NameOrPseudonym:
-     * <p/>
      * <pre>
      *       NameOrPseudonym ::= CHOICE {
      *            surAndGivenName SEQUENCE {
@@ -93,7 +91,7 @@ public class NameOrPseudonym
      *            pseudonym DirectoryString
      *       }
      * </pre>
-     *
+     * </p>
      * @param seq The ASN.1 sequence.
      */
     private NameOrPseudonym(ASN1Sequence seq)
@@ -159,9 +157,8 @@ public class NameOrPseudonym
 
     /**
      * Produce an object suitable for an ASN1OutputStream.
-     * <p/>
+     * <p>
      * Returns:
-     * <p/>
      * <pre>
      *       NameOrPseudonym ::= CHOICE {
      *            surAndGivenName SEQUENCE {
@@ -174,11 +171,11 @@ public class NameOrPseudonym
      *
      * @return a DERObject
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         if (pseudonym != null)
         {
-            return pseudonym.toASN1Object();
+            return pseudonym.toASN1Primitive();
         }
         else
         {

@@ -1,6 +1,5 @@
 package org.bouncycastle.tsp.test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.GeneralSecurityException;
@@ -15,20 +14,15 @@ import java.util.Date;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
-import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 
@@ -53,8 +47,10 @@ public class TSPTestUtil
 
     public static final boolean DEBUG = true;
 
-    public static DERObjectIdentifier EuroPKI_TSA_Test_Policy = new DERObjectIdentifier(
+    public static ASN1ObjectIdentifier EuroPKI_TSA_Test_Policy = new ASN1ObjectIdentifier(
             "1.3.6.1.4.1.5255.5.1");
+
+    public static JcaX509ExtensionUtils extUtils;
 
     static
     {
@@ -81,6 +77,9 @@ public class TSPTestUtil
             rc2128kg.init(128, rand);
 
             serialNumber = new BigInteger("1");
+
+            extUtils = new JcaX509ExtensionUtils();
+
         }
         catch (Exception ex)
         {
@@ -177,22 +176,21 @@ public class TSPTestUtil
         _v3CertGen.setPublicKey(_subPub);
         _v3CertGen.setSignatureAlgorithm("MD5WithRSAEncryption");
 
-        _v3CertGen.addExtension(X509Extensions.SubjectKeyIdentifier, false,
+        _v3CertGen.addExtension(Extension.subjectKeyIdentifier, false,
                 createSubjectKeyId(_subPub));
 
-        _v3CertGen.addExtension(X509Extensions.AuthorityKeyIdentifier, false,
+        _v3CertGen.addExtension(Extension.authorityKeyIdentifier, false,
                 createAuthorityKeyId(_issPub));
 
         if (_ca)
         {
-            _v3CertGen.addExtension(X509Extensions.BasicConstraints, false,
+            _v3CertGen.addExtension(Extension.basicConstraints, false,
                     new BasicConstraints(_ca));
         }
         else
         {
-            _v3CertGen.addExtension(X509Extensions.ExtendedKeyUsage, true,
-                    new ExtendedKeyUsage(new DERSequence(
-                            KeyPurposeId.id_kp_timeStamping)));
+            _v3CertGen.addExtension(Extension.extendedKeyUsage, true,
+                    new ExtendedKeyUsage(KeyPurposeId.id_kp_timeStamping));
         }
 
         X509Certificate _cert = _v3CertGen.generate(_issPriv);
@@ -209,43 +207,17 @@ public class TSPTestUtil
      *  
      */
 
+
     private static AuthorityKeyIdentifier createAuthorityKeyId(PublicKey _pubKey)
             throws IOException
     {
-
-        ByteArrayInputStream _bais = new ByteArrayInputStream(_pubKey
-                .getEncoded());
-        SubjectPublicKeyInfo _info = new SubjectPublicKeyInfo(
-                (ASN1Sequence)new ASN1InputStream(_bais).readObject());
-
-        return new AuthorityKeyIdentifier(_info);
-    }
-
-    private static AuthorityKeyIdentifier createAuthorityKeyId(
-            PublicKey _pubKey, X509Name _name, int _sNumber) throws IOException
-    {
-
-        ByteArrayInputStream _bais = new ByteArrayInputStream(_pubKey
-                .getEncoded());
-        SubjectPublicKeyInfo _info = new SubjectPublicKeyInfo(
-                (ASN1Sequence)new ASN1InputStream(_bais).readObject());
-
-        GeneralName _genName = new GeneralName(_name);
-
-        return new AuthorityKeyIdentifier(_info, new GeneralNames(
-                new DERSequence(_genName)), BigInteger.valueOf(_sNumber));
-
+        return extUtils.createAuthorityKeyIdentifier(_pubKey);
     }
 
     private static SubjectKeyIdentifier createSubjectKeyId(PublicKey _pubKey)
             throws IOException
     {
-
-        ByteArrayInputStream _bais = new ByteArrayInputStream(_pubKey
-                .getEncoded());
-        SubjectPublicKeyInfo _info = new SubjectPublicKeyInfo(
-                (ASN1Sequence)new ASN1InputStream(_bais).readObject());
-        return new SubjectKeyIdentifier(_info);
+        return extUtils.createSubjectKeyIdentifier(_pubKey);
     }
 
     private static BigInteger allocateSerialNumber()

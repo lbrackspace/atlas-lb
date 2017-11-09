@@ -586,47 +586,51 @@ public class ClusterRepository {
         return vm;
     }
 
-    public Cluster getDefaultActiveCluster() throws ClusterStatusException {
-        List<Cluster> cls = entityManager.createQuery("SELECT cl FROM Cluster cl where cl.clusterStatus = :status")
+    public Cluster getDefaultActiveCluster(boolean hasPublicVip) throws ClusterStatusException {
+        return getDefaultActiveClusterByType(ClusterType.STANDARD, hasPublicVip);
+    }
+
+    public Cluster getDefaultActiveClusterByType(ClusterType cluster_type, boolean hasPublicVip) throws ClusterStatusException {
+        VirtualIpType vip_type = (hasPublicVip) ? VirtualIpType.PUBLIC : VirtualIpType.SERVICENET;
+        List<Cluster> cls = entityManager.createQuery(
+                "SELECT cl FROM Cluster cl " +
+                        "LEFT JOIN cl.virtualIps vip " +
+                        "WHERE cl.clusterType = :type AND cl.clusterStatus = :status AND vip.vipType = :vip_type AND vip.isAllocated = 0 " +
+                        "GROUP BY cl.id " +
+                        "ORDER BY count(vip.id) DESC, cl.id"
+        )
+                .setParameter("type", cluster_type)
                 .setParameter("status", ClusterStatus.ACTIVE)
+                .setParameter("vip_type", vip_type)
+                .setMaxResults(1)
                 .getResultList();
         if (cls != null && cls.size() > 0) {
             return cls.get(0);
         } else {
-            String errMsg = "No active clusters found. Please contact support.";
+            String errMsg = String.format("No active clusters of type '%s' found. Please contact support.", cluster_type.name());
             LOG.warn(errMsg);
             throw new ClusterStatusException(errMsg);
         }
     }
 
-    public Cluster getActiveCluster(Integer accountId) throws ClusterStatusException, NoAvailableClusterException {
+    public Cluster getActiveCluster(Integer accountId, boolean hasPublicVip) throws ClusterStatusException, NoAvailableClusterException {
         if (accountId == null) {
-            return getDefaultActiveCluster();
+            return getDefaultActiveCluster(hasPublicVip);
         }
 
         List<Account> accountList = entityManager.createQuery("SELECT al FROM Account al where id = :aid")
                 .setParameter("aid", accountId)
                 .getResultList();
-        if (accountList.size() <= 0) {
-           return getDefaultActiveCluster();
+        if (accountList.isEmpty()) {
+           return getDefaultActiveCluster(hasPublicVip);
         }
 
         ClusterType accountClusterType = accountList.get(0).getClusterType();
-        if (accountClusterType != ClusterType.SMOKE && accountClusterType != ClusterType.INTERNAL) {
-            return getDefaultActiveCluster();
+        try {
+            return getDefaultActiveClusterByType(accountClusterType, hasPublicVip);
+        } catch (ClusterStatusException e) {
+            throw new NoAvailableClusterException(e.getMessage());
         }
-
-        List<Cluster> clusterList = entityManager.createQuery("SELECT cl FROM Cluster cl WHERE cl.clusterType = :type AND cl.clusterStatus = :status")
-                .setParameter("type", accountClusterType)
-                .setParameter("status", ClusterStatus.ACTIVE)
-                .getResultList();
-        if (clusterList.size() <= 0) {
-            String message = String.format("Account '%s' is marked as a(n) %s account but no '%s' clusters are available! Please contact support.", accountId, accountClusterType.name(), accountClusterType.name());
-            LOG.error(message);
-            throw new NoAvailableClusterException(message);
-        }
-
-        return clusterList.get(0);
     }
 
     public class VipMap {

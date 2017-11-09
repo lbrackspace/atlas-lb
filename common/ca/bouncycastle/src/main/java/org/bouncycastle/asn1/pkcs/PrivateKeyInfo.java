@@ -6,22 +6,23 @@ import java.util.Enumeration;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 public class PrivateKeyInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERObject               privKey;
+    private ASN1OctetString         privKey;
     private AlgorithmIdentifier     algId;
     private ASN1Set                 attributes;
 
@@ -49,44 +50,40 @@ public class PrivateKeyInfo
         
     public PrivateKeyInfo(
         AlgorithmIdentifier algId,
-        DERObject           privateKey)
+        ASN1Encodable       privateKey)
+        throws IOException
     {
         this(algId, privateKey, null);
     }
 
     public PrivateKeyInfo(
         AlgorithmIdentifier algId,
-        DERObject           privateKey,
+        ASN1Encodable       privateKey,
         ASN1Set             attributes)
+        throws IOException
     {
-        this.privKey = privateKey;
+        this.privKey = new DEROctetString(privateKey.toASN1Primitive().getEncoded(ASN1Encoding.DER));
         this.algId = algId;
         this.attributes = attributes;
     }
 
+    /**
+     * @deprecated use PrivateKeyInfo.getInstance()
+     * @param seq
+     */
     public PrivateKeyInfo(
         ASN1Sequence  seq)
     {
         Enumeration e = seq.getObjects();
 
-        BigInteger  version = ((DERInteger)e.nextElement()).getValue();
+        BigInteger  version = ((ASN1Integer)e.nextElement()).getValue();
         if (version.intValue() != 0)
         {
             throw new IllegalArgumentException("wrong version for private key info");
         }
 
-        algId = new AlgorithmIdentifier((ASN1Sequence)e.nextElement());
-
-        try
-        {
-            ASN1InputStream         aIn = new ASN1InputStream(((ASN1OctetString)e.nextElement()).getOctets());
-
-            privKey = aIn.readObject();
-        }
-        catch (IOException ex)
-        {
-            throw new IllegalArgumentException("Error recoverying private key from sequence");
-        }
+        algId = AlgorithmIdentifier.getInstance(e.nextElement());
+        privKey = ASN1OctetString.getInstance(e.nextElement());
         
         if (e.hasMoreElements())
         {
@@ -94,14 +91,37 @@ public class PrivateKeyInfo
         }
     }
 
+    public AlgorithmIdentifier getPrivateKeyAlgorithm()
+    {
+        return algId;
+    }
+        /**
+          * @deprecated use getPrivateKeyAlgorithm()
+     */
     public AlgorithmIdentifier getAlgorithmId()
     {
         return algId;
     }
 
-    public DERObject getPrivateKey()
+    public ASN1Encodable parsePrivateKey()
+        throws IOException
     {
-        return privKey;
+        return ASN1Primitive.fromByteArray(privKey.getOctets());
+    }
+
+    /**
+          * @deprecated use parsePrivateKey()
+     */
+    public ASN1Primitive getPrivateKey()
+    {
+        try
+        {
+            return parsePrivateKey().toASN1Primitive();
+        }
+        catch (IOException e)
+        {
+            throw new IllegalStateException("unable to parse private key");
+        }
     }
     
     public ASN1Set getAttributes()
@@ -126,13 +146,13 @@ public class PrivateKeyInfo
      *      Attributes ::= SET OF Attribute
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 
-        v.add(new DERInteger(0));
+        v.add(new ASN1Integer(0));
         v.add(algId);
-        v.add(new DEROctetString(privKey));
+        v.add(privKey);
 
         if (attributes != null)
         {

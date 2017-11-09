@@ -31,7 +31,7 @@ public class CallbackHelperTest {
         String mMissingPort = "INFO monitors/12345_62203 monitorok Monitor is working for node '10.1.223.134:'.";
         String mInvalidPort = "INFO monitors/12345_62203 monitorok Monitor is working for node '10.1.223.134:abc'.";
         String mBadIpV6 = "INFO monitors/12345_62203 monitorok Monitor is working for node '[2001:nodnarb:@@@@:1:lihp:egroj:0:3a]:80 (3000001:4801:79f1:1:remmus:1969::3a)'.";
-        String mBadIpV4 = "INFO monitors/12345_62203 monitorok Monitor is working for node '00810.1.@@@.abc:443'.";
+        String mBadIpV4 = "INFO monitors/12345_62203 monitorok Monitor is working for node '00810.1.@@@.abcd:443'.";
         String mBadDomain = "INFO monitors/12345_62203 monitorok Monitor is working for node 'http://www.example test domain.com:443'.";
 
         @Before

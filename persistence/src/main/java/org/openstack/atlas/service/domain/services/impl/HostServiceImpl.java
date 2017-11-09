@@ -39,8 +39,8 @@ public class HostServiceImpl extends BaseService implements HostService {
     }
 
     @Override
-    public Host getDefaultActiveHostAndActiveCluster(Integer accountId) throws ClusterStatusException, EntityNotFoundException, NoAvailableClusterException {
-        return hostRepository.getDefaultActiveHost(clusterRepository.getActiveCluster(accountId).getId());
+    public Host getDefaultActiveHostAndActiveCluster(Integer accountId, boolean hasPublicVip) throws ClusterStatusException, EntityNotFoundException, NoAvailableClusterException {
+        return hostRepository.getDefaultActiveHost(clusterRepository.getActiveCluster(accountId, hasPublicVip).getId());
     }
 
     @Override
@@ -350,5 +350,11 @@ public class HostServiceImpl extends BaseService implements HostService {
     @Override
     public Cluster getClusterById(Integer id) throws EntityNotFoundException {
         return hostRepository.getClusterById(id);
+    }
+
+    @Override
+    public Host getFirstAvailableSoapEndPointHost() throws EntityNotFoundException {
+        Host host = hostRepository.getFirstAvailableSoapEndPointHost();
+        return host;
     }
 }

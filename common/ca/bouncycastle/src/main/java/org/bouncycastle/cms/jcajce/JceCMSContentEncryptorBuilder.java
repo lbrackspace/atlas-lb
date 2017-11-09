@@ -12,47 +12,100 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.jcajce.DefaultJcaJceHelper;
-import org.bouncycastle.jcajce.NamedJcaJceHelper;
-import org.bouncycastle.jcajce.ProviderJcaJceHelper;
+import org.bouncycastle.operator.DefaultSecretKeySizeProvider;
 import org.bouncycastle.operator.GenericKey;
 import org.bouncycastle.operator.OutputEncryptor;
+import org.bouncycastle.operator.SecretKeySizeProvider;
+import org.bouncycastle.operator.jcajce.JceGenericKey;
 
+/**
+ * Builder for the content encryptor in EnvelopedData - used to encrypt the actual transmitted content.
+ */
 public class JceCMSContentEncryptorBuilder
 {
+    private static final SecretKeySizeProvider KEY_SIZE_PROVIDER = DefaultSecretKeySizeProvider.INSTANCE;
+
+
     private final ASN1ObjectIdentifier encryptionOID;
     private final int                  keySize;
 
-    private EnvelopedDataHelper helper = new EnvelopedDataHelper(new DefaultJcaJceHelper());
+    private EnvelopedDataHelper helper = new EnvelopedDataHelper(new DefaultJcaJceExtHelper());
     private SecureRandom random;
+    private AlgorithmParameters algorithmParameters;
 
     public JceCMSContentEncryptorBuilder(ASN1ObjectIdentifier encryptionOID)
     {
-        this(encryptionOID, -1);
+        this(encryptionOID, KEY_SIZE_PROVIDER.getKeySize(encryptionOID));
     }
 
     public JceCMSContentEncryptorBuilder(ASN1ObjectIdentifier encryptionOID, int keySize)
     {
         this.encryptionOID = encryptionOID;
-        this.keySize = keySize;
+
+        int fixedSize = KEY_SIZE_PROVIDER.getKeySize(encryptionOID);
+
+        if (encryptionOID.equals(PKCSObjectIdentifiers.des_EDE3_CBC))
+        {
+            if (keySize != 168 && keySize != fixedSize)
+            {
+                throw new IllegalArgumentException("incorrect keySize for encryptionOID passed to builder.");
+            }
+            this.keySize = 168;
+        }
+        else if (encryptionOID.equals(OIWObjectIdentifiers.desCBC))
+        {
+            if (keySize != 56 && keySize != fixedSize)
+            {
+                throw new IllegalArgumentException("incorrect keySize for encryptionOID passed to builder.");
+            }
+            this.keySize = 56;
+        }
+        else
+        {
+            if (fixedSize > 0 && fixedSize != keySize)
+            {
+                throw new IllegalArgumentException("incorrect keySize for encryptionOID passed to builder.");
+            }
+            this.keySize = keySize;
+        }
     }
 
+    /**
+     * Set the provider to use for content encryption.
+     *
+     * @param provider the provider object to use for cipher and default parameters creation.
+     * @return the current builder instance.
+     */
     public JceCMSContentEncryptorBuilder setProvider(Provider provider)
     {
-        this.helper = new EnvelopedDataHelper(new ProviderJcaJceHelper(provider));
+        this.helper = new EnvelopedDataHelper(new ProviderJcaJceExtHelper(provider));
 
         return this;
     }
 
+    /**
+     * Set the provider to use for content encryption (by name)
+     *
+     * @param providerName the name of the provider to use for cipher and default parameters creation.
+     * @return the current builder instance.
+     */
     public JceCMSContentEncryptorBuilder setProvider(String providerName)
     {
-        this.helper = new EnvelopedDataHelper(new NamedJcaJceHelper(providerName));
+        this.helper = new EnvelopedDataHelper(new NamedJcaJceExtHelper(providerName));
 
         return this;
     }
 
+    /**
+     * Provide a specified source of randomness to be used for session key and IV/nonce generation.
+     *
+     * @param random the secure random to use.
+     * @return the current builder instance.
+     */
     public JceCMSContentEncryptorBuilder setSecureRandom(SecureRandom random)
     {
         this.random = random;
@@ -60,10 +113,23 @@ public class JceCMSContentEncryptorBuilder
         return this;
     }
 
+    /**
+     * Provide a set of algorithm parameters for the content encryption cipher to use.
+     *
+     * @param algorithmParameters algorithmParameters for content encryption.
+     * @return the current builder instance.
+     */
+    public JceCMSContentEncryptorBuilder setAlgorithmParameters(AlgorithmParameters algorithmParameters)
+    {
+        this.algorithmParameters = algorithmParameters;
+
+        return this;
+    }
+
     public OutputEncryptor build()
         throws CMSException
     {
-        return new CMSOutputEncryptor(encryptionOID, keySize, random);
+        return new CMSOutputEncryptor(encryptionOID, keySize, algorithmParameters, random);
     }
 
     private class CMSOutputEncryptor
@@ -73,7 +139,7 @@ public class JceCMSContentEncryptorBuilder
         private AlgorithmIdentifier algorithmIdentifier;
         private Cipher              cipher;
 
-        CMSOutputEncryptor(ASN1ObjectIdentifier encryptionOID, int keySize, SecureRandom random)
+        CMSOutputEncryptor(ASN1ObjectIdentifier encryptionOID, int keySize, AlgorithmParameters params, SecureRandom random)
             throws CMSException
         {
             KeyGenerator keyGen = helper.createKeyGenerator(encryptionOID);
@@ -94,7 +160,11 @@ public class JceCMSContentEncryptorBuilder
 
             cipher = helper.createCipher(encryptionOID);
             encKey = keyGen.generateKey();
-            AlgorithmParameters params = helper.generateParameters(encryptionOID, encKey, random);
+
+            if (params == null)
+            {
+                params = helper.generateParameters(encryptionOID, encKey, random);
+            }
 
             try
             {
@@ -129,7 +199,7 @@ public class JceCMSContentEncryptorBuilder
 
         public GenericKey getKey()
         {
-            return new GenericKey(encKey);
+            return new JceGenericKey(algorithmIdentifier, encKey);
         }
     }
 }

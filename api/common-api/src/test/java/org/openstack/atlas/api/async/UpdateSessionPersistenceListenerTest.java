@@ -67,12 +67,12 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithValidSessionPersistence() throws Exception {
         lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb, null);
+        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(EntryHelper.UPDATE_PERSISTENCE_TITLE), anyString(), eq(EventType.UPDATE_SESSION_PERSISTENCE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
     }
@@ -81,12 +81,12 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithValidNoSessionPersistence() throws Exception {
         lb.setSessionPersistence(SessionPersistence.NONE);
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb, null);
+        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService, never()).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(EntryHelper.UPDATE_PERSISTENCE_TITLE), anyString(), eq(EventType.UPDATE_SESSION_PERSISTENCE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
     }
@@ -95,7 +95,7 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
     public void testUpdateInvalidLoadBalancer() throws Exception {
         EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
@@ -107,13 +107,13 @@ public class UpdateSessionPersistenceListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidNode() throws Exception {
         Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb, null);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        doThrow(exception).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateSessionPersistenceListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb, null);
+        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_SESSION_PERSISTENCE), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));

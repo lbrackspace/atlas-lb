@@ -1,7 +1,8 @@
 
 package org.openstack.atlas.util.ca.primitives;
 
-import org.bouncycastle.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+
 
 @Deprecated
 public class OCSPResponseContainer {

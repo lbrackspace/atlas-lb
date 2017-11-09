@@ -1,12 +1,5 @@
 package org.bouncycastle.openpgp;
 
-import java.security.KeyPair;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.util.Date;
-
-
 /**
  * General class to handle JCA key pairs and convert them into OpenPGP ones.
  * <p>
@@ -18,55 +11,8 @@ import java.util.Date;
  */
 public class PGPKeyPair
 {
-    PGPPublicKey        pub;
-    PGPPrivateKey       priv;
-
-    /**
-     * @deprecated use version without provider.
-     */
-    public PGPKeyPair(
-        int             algorithm,
-        KeyPair         keyPair,
-        Date            time,
-        String          provider)
-        throws PGPException, NoSuchProviderException
-    {
-        this(algorithm, keyPair.getPublic(), keyPair.getPrivate(), time, provider);
-    }
-
-    public PGPKeyPair(
-        int             algorithm,
-        KeyPair         keyPair,
-        Date            time)
-        throws PGPException
-    {
-        this(algorithm, keyPair.getPublic(), keyPair.getPrivate(), time);
-    }
-
-    /**
-     * @deprecated use version without provider.
-     */
-    public PGPKeyPair(
-        int             algorithm,
-        PublicKey       pubKey,
-        PrivateKey      privKey,
-        Date            time,
-        String          provider)
-        throws PGPException, NoSuchProviderException
-    {
-        this(algorithm, pubKey, privKey, time);
-    }
-
-    public PGPKeyPair(
-        int             algorithm,
-        PublicKey       pubKey,
-        PrivateKey      privKey,
-        Date            time)
-        throws PGPException
-    {
-        this.pub = new PGPPublicKey(algorithm, pubKey, time);
-        this.priv = new PGPPrivateKey(privKey, pub.getKeyID());
-    }
+    protected PGPPublicKey        pub;
+    protected PGPPrivateKey       priv;
 
     /**
      * Create a key pair from a PGPPrivateKey and a PGPPublicKey.
@@ -81,7 +27,11 @@ public class PGPKeyPair
         this.pub = pub;
         this.priv = priv;
     }
-    
+
+    protected PGPKeyPair()
+    {
+    }
+
     /**
      * Return the keyID associated with this key pair.
      * 

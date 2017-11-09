@@ -1,12 +1,19 @@
 package org.bouncycastle.asn1.esf;
 
-import org.bouncycastle.asn1.*;
+import java.util.Enumeration;
+
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.DisplayText;
 import org.bouncycastle.asn1.x509.NoticeReference;
 
-import java.util.Enumeration;
-
 public class SPUserNotice
+    extends ASN1Object
 {
     private NoticeReference noticeRef;
     private DisplayText     explicitText;
@@ -14,38 +21,36 @@ public class SPUserNotice
     public static SPUserNotice getInstance(
         Object obj)
     {
-        if (obj == null || obj instanceof SPUserNotice)
+        if (obj instanceof SPUserNotice)
         {
-            return (SPUserNotice) obj;
+            return (SPUserNotice)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new SPUserNotice((ASN1Sequence) obj);
+            return new SPUserNotice(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException(
-                "unknown object in 'SPUserNotice' factory : "
-                        + obj.getClass().getName() + ".");
+        return null;
     }
 
-    public SPUserNotice(
+    private SPUserNotice(
         ASN1Sequence seq)
     {
         Enumeration e = seq.getObjects();
         while (e.hasMoreElements())
         {
-            DEREncodable object = (DEREncodable) e.nextElement();
-            if (object instanceof NoticeReference)
-            {
-                noticeRef = NoticeReference.getInstance(object);
-            }
-            else if (object instanceof DisplayText)
+            ASN1Encodable object = (ASN1Encodable)e.nextElement();
+            if (object instanceof DisplayText || object instanceof ASN1String)
             {
                 explicitText = DisplayText.getInstance(object);
             }
+            else if (object instanceof NoticeReference || object instanceof ASN1Sequence)
+            {
+                noticeRef = NoticeReference.getInstance(object);
+            }
             else
             {
-                throw new IllegalArgumentException("Invalid element in 'SPUserNotice'.");
+                throw new IllegalArgumentException("Invalid element in 'SPUserNotice': " + object.getClass().getName());
             }
         }
     }
@@ -75,7 +80,7 @@ public class SPUserNotice
      *     explicitText DisplayText OPTIONAL }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

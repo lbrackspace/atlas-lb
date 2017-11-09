@@ -374,8 +374,8 @@ public class ManagementDependencyProvider {
 
     public Set<String> intersection(Set<String> a, Set<String> b) {
         Set<String> out = new HashSet<String>(a);
-        a.retainAll(b);
-        return a;
+        out.retainAll(b);
+        return out;
     }
 
     public MossoAuthConfig getMossoAuthConfig() {

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2015 Zeus Technology. All rights reserved.
 
 -->
 
@@ -199,7 +199,7 @@
       
       <operation name="downloadFile">
          <documentation>
-            Download the named from from the conf/extra directory
+            Download the named file from the conf/extra directory
          </documentation>
          
          <input message="zeusns_1_1:downloadFileRequest"/>
@@ -218,7 +218,7 @@
       
       <operation name="uploadFile">
          <documentation>
-            Uploads a new file into the conf/extra, overwriting the file if it already exists.
+            Uploads a new file into the conf/extra directory, overwriting the file if it already exists.
          </documentation>
          
          <input message="zeusns_1_1:uploadFileRequest"/>
@@ -249,7 +249,7 @@
       <operation name="downloadFile">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/downloadFile"/>
          <documentation>
-            Download the named from from the conf/extra directory
+            Download the named file from the conf/extra directory
          </documentation>
          
          <input>
@@ -280,7 +280,7 @@
       <operation name="uploadFile">
          <soap:operation soapAction="http://soap.zeus.com/zxtm/1.1/Conf/Extra/uploadFile"/>
          <documentation>
-            Uploads a new file into the conf/extra, overwriting the file if it already exists.
+            Uploads a new file into the conf/extra directory, overwriting the file if it already exists.
          </documentation>
          
          <input>

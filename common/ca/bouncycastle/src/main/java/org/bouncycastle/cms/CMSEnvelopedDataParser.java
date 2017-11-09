@@ -3,21 +3,19 @@ package org.bouncycastle.cms;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.AlgorithmParameters;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1OctetStringParser;
 import org.bouncycastle.asn1.ASN1SequenceParser;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1SetParser;
-import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.BERTags;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.DERTags;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.EncryptedContentInfoParser;
 import org.bouncycastle.asn1.cms.EnvelopedDataParser;
+import org.bouncycastle.asn1.cms.OriginatorInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 /**
@@ -55,12 +53,13 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 public class CMSEnvelopedDataParser
     extends CMSContentInfoParser
 {
-    RecipientInformationStore   _recipientInfoStore;
-    EnvelopedDataParser         _envelopedData;
+    RecipientInformationStore recipientInfoStore;
+    EnvelopedDataParser envelopedData;
     
-    private AlgorithmIdentifier _encAlg;
-    private AttributeTable      _unprotectedAttributes;
-    private boolean             _attrNotRead;
+    private AlgorithmIdentifier encAlg;
+    private AttributeTable unprotectedAttributes;
+    private boolean attrNotRead;
+    private OriginatorInformation  originatorInfo;
 
     public CMSEnvelopedDataParser(
         byte[]    envelopedData) 
@@ -75,32 +74,39 @@ public class CMSEnvelopedDataParser
     {
         super(envelopedData);
 
-        this._attrNotRead = true;
-        this._envelopedData = new EnvelopedDataParser((ASN1SequenceParser)_contentInfo.getContent(DERTags.SEQUENCE));
+        this.attrNotRead = true;
+        this.envelopedData = new EnvelopedDataParser((ASN1SequenceParser)_contentInfo.getContent(BERTags.SEQUENCE));
 
         // TODO Validate version?
-        //DERInteger version = this._envelopedData.getVersion();
+        //ASN1Integer version = this._envelopedData.getVersion();
+
+        OriginatorInfo info = this.envelopedData.getOriginatorInfo();
+
+        if (info != null)
+        {
+            this.originatorInfo = new OriginatorInformation(info);
+        }
 
         //
         // read the recipients
         //
-        ASN1Set recipientInfos = ASN1Set.getInstance(_envelopedData.getRecipientInfos().getDERObject());
+        ASN1Set recipientInfos = ASN1Set.getInstance(this.envelopedData.getRecipientInfos().toASN1Primitive());
 
         //
         // read the encrypted content info
         //
-        EncryptedContentInfoParser encInfo = _envelopedData.getEncryptedContentInfo();
-        this._encAlg = encInfo.getContentEncryptionAlgorithm();
+        EncryptedContentInfoParser encInfo = this.envelopedData.getEncryptedContentInfo();
+        this.encAlg = encInfo.getContentEncryptionAlgorithm();
         CMSReadable readable = new CMSProcessableInputStream(
-            ((ASN1OctetStringParser)encInfo.getEncryptedContent(DERTags.OCTET_STRING)).getOctetStream());
+            ((ASN1OctetStringParser)encInfo.getEncryptedContent(BERTags.OCTET_STRING)).getOctetStream());
         CMSSecureReadable secureReadable = new CMSEnvelopedHelper.CMSEnvelopedSecureReadable(
-            this._encAlg, readable);
+            this.encAlg, readable);
 
         //
         // build the RecipientInformationStore
         //
-        this._recipientInfoStore = CMSEnvelopedHelper.buildRecipientInformationStore(
-            recipientInfos, this._encAlg, secureReadable);
+        this.recipientInfoStore = CMSEnvelopedHelper.buildRecipientInformationStore(
+            recipientInfos, this.encAlg, secureReadable);
     }
 
     /**
@@ -108,7 +114,7 @@ public class CMSEnvelopedDataParser
      */
     public String getEncryptionAlgOID()
     {
-        return _encAlg.getObjectId().toString();
+        return encAlg.getAlgorithm().toString();
     }
 
     /**
@@ -119,43 +125,32 @@ public class CMSEnvelopedDataParser
     {
         try
         {
-            return encodeObj(_encAlg.getParameters());
+            return encodeObj(encAlg.getParameters());
         }
         catch (Exception e)
         {
             throw new RuntimeException("exception getting encryption parameters " + e);
         }
     }
-    
+
     /**
-     * Return an AlgorithmParameters object giving the encryption parameters
-     * used to encrypt the message content.
-     * 
-     * @param provider the name of the provider to generate the parameters for.
-     * @return the parameters object, null if there is not one.
-     * @throws CMSException if the algorithm cannot be found, or the parameters can't be parsed.
-     * @throws NoSuchProviderException if the provider cannot be found.
+     * Return the content encryption algorithm details for the data in this object.
+     *
+     * @return AlgorithmIdentifier representing the content encryption algorithm.
      */
-    public AlgorithmParameters getEncryptionAlgorithmParameters(
-        String  provider) 
-        throws CMSException, NoSuchProviderException
+    public AlgorithmIdentifier getContentEncryptionAlgorithm()
     {
-        return getEncryptionAlgorithmParameters(CMSUtils.getProvider(provider));
+        return encAlg;
     }
 
     /**
-     * Return an AlgorithmParameters object giving the encryption parameters
-     * used to encrypt the message content.
+     * Return the originator information associated with this message if present.
      *
-     * @param provider the provider to generate the parameters for.
-     * @return the parameters object, null if there is not one.
-     * @throws CMSException if the algorithm cannot be found, or the parameters can't be parsed.
+     * @return OriginatorInformation, null if not present.
      */
-    public AlgorithmParameters getEncryptionAlgorithmParameters(
-        Provider provider)
-        throws CMSException
+    public OriginatorInformation getOriginatorInfo()
     {
-        return CMSEnvelopedHelper.INSTANCE.getEncryptionAlgorithmParameters(getEncryptionAlgOID(), getEncryptionAlgParams(), provider);
+        return originatorInfo;
     }
 
     /**
@@ -163,7 +158,7 @@ public class CMSEnvelopedDataParser
      */
     public RecipientInformationStore getRecipientInfos()
     {
-        return _recipientInfoStore;
+        return recipientInfoStore;
     }
 
     /**
@@ -174,38 +169,38 @@ public class CMSEnvelopedDataParser
     public AttributeTable getUnprotectedAttributes() 
         throws IOException
     {
-        if (_unprotectedAttributes == null && _attrNotRead)
+        if (unprotectedAttributes == null && attrNotRead)
         {
-            ASN1SetParser             set = _envelopedData.getUnprotectedAttrs();
+            ASN1SetParser             set = envelopedData.getUnprotectedAttrs();
             
-            _attrNotRead = false;
+            attrNotRead = false;
             
             if (set != null)
             {
                 ASN1EncodableVector v = new ASN1EncodableVector();
-                DEREncodable        o;
+                ASN1Encodable        o;
                 
                 while ((o = set.readObject()) != null)
                 {
                     ASN1SequenceParser    seq = (ASN1SequenceParser)o;
                     
-                    v.add(seq.getDERObject());
+                    v.add(seq.toASN1Primitive());
                 }
                 
-                _unprotectedAttributes = new AttributeTable(new DERSet(v));
+                unprotectedAttributes = new AttributeTable(new DERSet(v));
             }
         }
 
-        return _unprotectedAttributes;
+        return unprotectedAttributes;
     }
 
     private byte[] encodeObj(
-        DEREncodable    obj)
+        ASN1Encodable obj)
         throws IOException
     {
         if (obj != null)
         {
-            return obj.getDERObject().getEncoded();
+            return obj.toASN1Primitive().getEncoded();
         }
 
         return null;

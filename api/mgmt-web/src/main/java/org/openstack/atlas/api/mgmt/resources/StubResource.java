@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.joda.time.DateTime;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.helpers.StubFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
@@ -12,6 +14,8 @@ import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent;
 import org.openstack.atlas.util.debug.Debug;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
@@ -69,6 +73,16 @@ public class StubResource extends ManagementDependencyProvider {
         host.setIpv4Public("64.23.33.44");
         host.setIpv4Public("ffff::ffff");
         return Response.status(200).entity(host).build();
+    }
+
+    @GET
+    @Path("zeusevent")
+    public Response zeusEvent(){
+        ZeusEvent zev = new ZeusEvent();
+        zev.setCallbackHost("callback.host.com");
+        zev.setEventType("someevent");
+        zev.setParamLine("some param line");
+        return Response.status(200).entity(zev).build();
     }
 
     @GET
@@ -152,6 +166,32 @@ public class StubResource extends ManagementDependencyProvider {
             listOfInts.getInts().add(accountId);
         }
         return Response.status(200).entity(listOfInts).build();
+    }
+
+    @GET
+    @Path("sslTermInfos")
+    public Response getSslTermInfos() {
+        SslTermInfos sslTerms = new SslTermInfos();
+        List<SslTermInfo> sslTermsList = sslTerms.getSslTerms();
+        DateTime now = StaticDateTimeUtils.nowDateTime(true);
+        DateTime notBefore = now.plusHours(-2);
+        DateTime notAfter = now.plusDays(30);
+        sslTerms.setReportDate(StaticDateTimeUtils.toCal(now));
+        int hi = 0;
+        for (int i = 0; i < 5; i++) {
+            SslTermInfo sslTermInfo = new SslTermInfo();
+            sslTermInfo.setLoadbalancerId(i);
+            sslTermInfo.setAccountId(i);
+            sslTermInfo.setApiValid(Boolean.TRUE);
+            sslTerms.getSslTerms().add(sslTermInfo);
+            
+            CertInfo cert = StubFactory.newCertInfo(hi++, notBefore, notAfter);
+            for (int j = 0; j < 3; j++) {
+                CertInfo imd = StubFactory.newCertInfo(hi++, notBefore, notAfter);
+                sslTermInfo.getIntermediates().add(imd);
+            }
+        }
+        return Response.status(200).entity(sslTerms).build();
     }
 
     @GET

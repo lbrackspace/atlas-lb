@@ -11,17 +11,19 @@ import java.security.Security;
 import java.security.Signature;
 
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.BigIntegers;
+import org.bouncycastle.util.Strings;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.test.FixedSecureRandom;
 import org.bouncycastle.util.test.SimpleTest;
+import org.bouncycastle.util.test.TestRandomBigInteger;
 
 public class ECNRTest
     extends SimpleTest
@@ -29,8 +31,9 @@ public class ECNRTest
     byte[] k1 = Hex.decode("d5014e4b60ef2ba8b6211b4062ba3224e0427dd3");
     byte[] k2 = Hex.decode("345e8d05c075c3a508df729a1685690e68fcfb8c8117847e89063bca1f85d968fd281540b6e13bd1af989a1fbf17e06462bf511f9d0b140fb48ac1b1baa5bded");
 
-    SecureRandom    random = new FixedSecureRandom(new byte[][] { k1, k2 });
-    
+    SecureRandom random = new FixedSecureRandom(
+        new FixedSecureRandom.Source[] { new FixedSecureRandom.Data(k1), new FixedSecureRandom.Data(k2) });
+
     /**
      * X9.62 - 1998,<br>
      * J.3.2, Page 155, ECDSA over the field Fp<br>
@@ -44,7 +47,7 @@ public class ECNRTest
 
         byte[] kData = BigIntegers.asUnsignedByteArray(new BigInteger("700000017569056646655505781757157107570501575775705779575555657156756655"));
         
-        SecureRandom    k = new FixedSecureRandom(kData);
+        SecureRandom    k = new TestRandomBigInteger(kData);
 
         ECCurve curve = new ECCurve.Fp(
             new BigInteger("883423532389192164791648750360308885314476597252960362792450860609699839"), // q
@@ -88,7 +91,7 @@ public class ECNRTest
 
         byte[] kData = BigIntegers.asUnsignedByteArray(new BigInteger("dcc5d1f1020906df2782360d36b2de7a17ece37d503784af", 16));
         
-        SecureRandom    k = new FixedSecureRandom(kData);
+        SecureRandom    k = new TestRandomBigInteger(kData);
 
         ECCurve.Fp curve = new ECCurve.Fp(
             new BigInteger("6277101735386680763835789423207666416083908700390324961279"), // q (or p)
@@ -132,7 +135,7 @@ public class ECNRTest
 
         byte[] kData = BigIntegers.asUnsignedByteArray(new BigInteger("cdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef", 16));
         
-        SecureRandom    k = new FixedSecureRandom(kData);
+        SecureRandom    k = new TestRandomBigInteger(kData);
 
         ECCurve.Fp curve = new ECCurve.Fp(
             new BigInteger("6864797660130609714981900799081393217269435300143305409394463459185543183397656052122559640661454554977296311391480858037121987999716643812574028291115057151"), // q (or p)
@@ -141,7 +144,7 @@ public class ECNRTest
         
         ECParameterSpec spec = new ECParameterSpec(
             curve,
-            curve.decodePoint(Hex.decode("02C6858E06B70404E9CD9E3ECB662395B4429C648139053FB521F828AF606B4D3DBAA14B5E77EFE75928FE1DC127A2FFA8DE3348B3C1856A429BF97E7E31C2E5BD66")), // G
+            curve.decodePoint(Hex.decode("0200C6858E06B70404E9CD9E3ECB662395B4429C648139053FB521F828AF606B4D3DBAA14B5E77EFE75928FE1DC127A2FFA8DE3348B3C1856A429BF97E7E31C2E5BD66")), // G
             new BigInteger("01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA51868783BF2F966B7FCC0148F709A5D03BB5C9B8899C47AEBB6FB71E91386409", 16)); // n
         
 
@@ -150,7 +153,7 @@ public class ECNRTest
             spec);
 
         ECPublicKeySpec pubKey = new ECPublicKeySpec(
-            curve.decodePoint(Hex.decode("026BFDD2C9278B63C92D6624F151C9D7A822CC75BD983B17D25D74C26740380022D3D8FAF304781E416175EADF4ED6E2B47142D2454A7AC7801DD803CF44A4D1F0AC")), // Q
+            curve.decodePoint(Hex.decode("02006BFDD2C9278B63C92D6624F151C9D7A822CC75BD983B17D25D74C26740380022D3D8FAF304781E416175EADF4ED6E2B47142D2454A7AC7801DD803CF44A4D1F0AC")), // Q
             spec);
 
         Signature           sgr = Signature.getInstance("SHA512withECNR", "BC");
@@ -194,16 +197,16 @@ public class ECNRTest
         if (!r.equals(sig[0]))
         {
             fail(size + "bit"
-                + ": r component wrong." + System.getProperty("line.separator")
-                + " expecting: " + r + System.getProperty("line.separator")
+                + ": r component wrong." + Strings.lineSeparator()
+                + " expecting: " + r + Strings.lineSeparator()
                 + " got      : " + sig[0]);
         }
 
         if (!s.equals(sig[1]))
         {
             fail(size + "bit"
-                + ": s component wrong." + System.getProperty("line.separator")
-                + " expecting: " + s + System.getProperty("line.separator")
+                + ": s component wrong." + Strings.lineSeparator()
+                + " expecting: " + s + Strings.lineSeparator()
                 + " got      : " + sig[1]);
         }
     }
@@ -218,8 +221,8 @@ public class ECNRTest
 
         BigInteger[]            sig = new BigInteger[2];
 
-        sig[0] = ((DERInteger)s.getObjectAt(0)).getValue();
-        sig[1] = ((DERInteger)s.getObjectAt(1)).getValue();
+        sig[0] = ((ASN1Integer)s.getObjectAt(0)).getValue();
+        sig[1] = ((ASN1Integer)s.getObjectAt(1)).getValue();
 
         return sig;
     }

@@ -3,10 +3,10 @@ package org.bouncycastle.asn1.x509;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 /**
@@ -26,27 +26,27 @@ import org.bouncycastle.asn1.DERSequence;
  *     AttributeValue ::= ANY DEFINED BY AttributeType
  * </pre>
  * 
- * @see org.bouncycastle.asn1.x509.X509Name for AttributeType ObjectIdentifiers.
+ * @see org.bouncycastle.asn1.x500.style.BCStyle for AttributeType ObjectIdentifiers.
  */
 public class SubjectDirectoryAttributes 
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private Vector attributes = new Vector();
 
     public static SubjectDirectoryAttributes getInstance(
         Object obj)
     {
-        if (obj == null || obj instanceof SubjectDirectoryAttributes)
+        if (obj instanceof SubjectDirectoryAttributes)
         {
             return (SubjectDirectoryAttributes)obj;
         }
 
-        if (obj instanceof ASN1Sequence)
+        if (obj != null)
         {
-            return new SubjectDirectoryAttributes((ASN1Sequence)obj);
+            return new SubjectDirectoryAttributes(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("illegal object in getInstance: " + obj.getClass().getName());
+        return null;
     }
 
     /**
@@ -70,14 +70,14 @@ public class SubjectDirectoryAttributes
      * @param seq
      *            The ASN.1 sequence.
      */
-    public SubjectDirectoryAttributes(ASN1Sequence seq)
+    private SubjectDirectoryAttributes(ASN1Sequence seq)
     {
         Enumeration e = seq.getObjects();
 
         while (e.hasMoreElements())
         {
             ASN1Sequence s = ASN1Sequence.getInstance(e.nextElement());
-            attributes.addElement(new Attribute(s));
+            attributes.addElement(Attribute.getInstance(s));
         }
     }
 
@@ -118,9 +118,9 @@ public class SubjectDirectoryAttributes
      *      AttributeValue ::= ANY DEFINED BY AttributeType
      * </pre>
      * 
-     * @return a DERObject
+     * @return a ASN1Primitive
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector vec = new ASN1EncodableVector();
         Enumeration e = attributes.elements();

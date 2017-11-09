@@ -3,38 +3,26 @@ package org.bouncycastle.openpgp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.KeyFactory;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
-import java.security.PublicKey;
-import java.security.interfaces.DSAParams;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.security.spec.DSAPublicKeySpec;
-import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.bouncycastle.asn1.x9.ECNamedCurveTable;
 import org.bouncycastle.bcpg.BCPGKey;
 import org.bouncycastle.bcpg.BCPGOutputStream;
 import org.bouncycastle.bcpg.ContainedPacket;
 import org.bouncycastle.bcpg.DSAPublicBCPGKey;
+import org.bouncycastle.bcpg.ECPublicBCPGKey;
 import org.bouncycastle.bcpg.ElGamalPublicBCPGKey;
-import org.bouncycastle.bcpg.MPInteger;
 import org.bouncycastle.bcpg.PublicKeyAlgorithmTags;
 import org.bouncycastle.bcpg.PublicKeyPacket;
 import org.bouncycastle.bcpg.RSAPublicBCPGKey;
 import org.bouncycastle.bcpg.TrustPacket;
 import org.bouncycastle.bcpg.UserAttributePacket;
 import org.bouncycastle.bcpg.UserIDPacket;
-import org.bouncycastle.jce.interfaces.ElGamalPublicKey;
-import org.bouncycastle.jce.spec.ElGamalParameterSpec;
-import org.bouncycastle.jce.spec.ElGamalPublicKeySpec;
+import org.bouncycastle.openpgp.operator.KeyFingerPrintCalculator;
 import org.bouncycastle.util.Arrays;
 
 /**
@@ -57,57 +45,23 @@ public class PGPPublicKey
     private long    keyID;
     private byte[]  fingerprint;
     private int     keyStrength;
-    
-    private void init()
-        throws IOException
+
+    private void init(KeyFingerPrintCalculator fingerPrintCalculator)
+        throws PGPException
     {
         BCPGKey                key = publicPk.getKey();
-        
+
+        this.fingerprint = fingerPrintCalculator.calculateFingerprint(publicPk);
+
         if (publicPk.getVersion() <= 3)
         {
             RSAPublicBCPGKey    rK = (RSAPublicBCPGKey)key;
             
             this.keyID = rK.getModulus().longValue();
-            
-            try
-            {
-                MessageDigest   digest = MessageDigest.getInstance("MD5");
-            
-                byte[]  bytes = new MPInteger(rK.getModulus()).getEncoded();
-                digest.update(bytes, 2, bytes.length - 2);
-            
-                bytes = new MPInteger(rK.getPublicExponent()).getEncoded();
-                digest.update(bytes, 2, bytes.length - 2);
-            
-                this.fingerprint = digest.digest();
-            }
-            catch (NoSuchAlgorithmException e)
-            {
-                throw new IOException("can't find MD5");
-            }
-
             this.keyStrength = rK.getModulus().bitLength();
         }
         else
         {
-            byte[]             kBytes = publicPk.getEncodedContents();
-
-            try
-            {
-                MessageDigest   digest = MessageDigest.getInstance("SHA1");
-            
-                digest.update((byte)0x99);
-                digest.update((byte)(kBytes.length >> 8));
-                digest.update((byte)kBytes.length);
-                digest.update(kBytes);
-                
-                this.fingerprint = digest.digest();
-            }
-            catch (NoSuchAlgorithmException e)
-            {
-                throw new IOException("can't find SHA1");
-            }
-            
             this.keyID = ((long)(fingerprint[fingerprint.length - 8] & 0xff) << 56)
                             | ((long)(fingerprint[fingerprint.length - 7] & 0xff) << 48)
                             | ((long)(fingerprint[fingerprint.length - 6] & 0xff) << 40)
@@ -129,77 +83,29 @@ public class PGPPublicKey
             {
                 this.keyStrength = ((ElGamalPublicBCPGKey)key).getP().bitLength();
             }
+            else if (key instanceof ECPublicBCPGKey)
+            {
+                this.keyStrength = ECNamedCurveTable.getByOID(((ECPublicBCPGKey)key).getCurveOID()).getCurve().getFieldSize();
+            }
         }
     }
-    
-    /**
-     * Create a PGPPublicKey from the passed in JCA one.
-     * <p>
-     * Note: the time passed in affects the value of the key's keyID, so you probably only want
-     * to do this once for a JCA key, or make sure you keep track of the time you used.
-     * 
-     * @param algorithm asymmetric algorithm type representing the public key.
-     * @param pubKey actual public key to associate.
-     * @param time date of creation.
-     * @param provider provider to use for underlying digest calculations.
-     * @throws PGPException on key creation problem.
-     * @throws NoSuchProviderException if the specified provider is required and cannot be found.
-     */
-    public PGPPublicKey(
-        int            algorithm,
-        PublicKey      pubKey,
-        Date           time,
-        String         provider) 
-        throws PGPException, NoSuchProviderException
-    {
-        this(algorithm, pubKey, time);
-    }
 
-    public PGPPublicKey(
-        int            algorithm,
-        PublicKey      pubKey,
-        Date           time)
+    /**
+     * Create a PGP public key from a packet descriptor using the passed in fingerPrintCalculator to do calculate
+     * the fingerprint and keyID.
+     *
+     * @param publicKeyPacket  packet describing the public key.
+     * @param fingerPrintCalculator calculator providing the digest support ot create the key fingerprint.
+     * @throws PGPException  if the packet is faulty, or the required calculations fail.
+     */
+    public PGPPublicKey(PublicKeyPacket publicKeyPacket, KeyFingerPrintCalculator fingerPrintCalculator)
         throws PGPException
     {
-        BCPGKey bcpgKey;
-
-        if (pubKey instanceof RSAPublicKey)
-        {
-            RSAPublicKey    rK = (RSAPublicKey)pubKey;
-
-            bcpgKey = new RSAPublicBCPGKey(rK.getModulus(), rK.getPublicExponent());
-        }
-        else if (pubKey instanceof DSAPublicKey)
-        {
-            DSAPublicKey    dK = (DSAPublicKey)pubKey;
-            DSAParams       dP = dK.getParams();
-
-            bcpgKey = new DSAPublicBCPGKey(dP.getP(), dP.getQ(), dP.getG(), dK.getY());
-        }
-        else if (pubKey instanceof ElGamalPublicKey)
-        {
-            ElGamalPublicKey        eK = (ElGamalPublicKey)pubKey;
-            ElGamalParameterSpec    eS = eK.getParameters();
-
-            bcpgKey = new ElGamalPublicBCPGKey(eS.getP(), eS.getG(), eK.getY());
-        }
-        else
-        {
-            throw new PGPException("unknown key class");
-        }
-
-        this.publicPk = new PublicKeyPacket(algorithm, time, bcpgKey);
+        this.publicPk = publicKeyPacket;
         this.ids = new ArrayList();
         this.idSigs = new ArrayList();
 
-        try
-        {
-            init();
-        }
-        catch (IOException e)
-        {
-            throw new PGPException("exception calculating keyID", e);
-        }
+        init(fingerPrintCalculator);
     }
 
     /*
@@ -208,14 +114,15 @@ public class PGPPublicKey
     PGPPublicKey(
         PublicKeyPacket publicPk, 
         TrustPacket     trustPk, 
-        List            sigs)
-        throws IOException
+        List            sigs,
+        KeyFingerPrintCalculator fingerPrintCalculator)
+        throws PGPException
      {
         this.publicPk = publicPk;
         this.trustPk = trustPk;
         this.subSigs = sigs;
         
-        init();
+        init(fingerPrintCalculator);
      }
 
     PGPPublicKey(
@@ -270,8 +177,9 @@ public class PGPPublicKey
         List            keySigs,
         List            ids,
         List            idTrusts,
-        List            idSigs)
-        throws IOException
+        List            idSigs,
+        KeyFingerPrintCalculator fingerPrintCalculator)
+        throws PGPException
     {
         this.publicPk = publicPk;
         this.trustPk = trustPk;
@@ -280,20 +188,7 @@ public class PGPPublicKey
         this.idTrusts = idTrusts;
         this.idSigs = idSigs;
     
-        init();
-    }
-    
-    PGPPublicKey(
-        PublicKeyPacket  publicPk,
-        List             ids,
-        List             idSigs)
-        throws IOException
-    {
-        this.publicPk = publicPk;
-        this.ids = ids;
-        this.idSigs = idSigs;
-
-        init();
+        init(fingerPrintCalculator);
     }
     
     /**
@@ -315,12 +210,23 @@ public class PGPPublicKey
     /**
      * @return number of valid days from creation time - zero means no
      * expiry.
+     * @deprecated use getValidSeconds(): greater than version 3 keys may be valid for less than a day.
      */
     public int getValidDays()
     {
         if (publicPk.getVersion() > 3)
         {
-            return (int)(this.getValidSeconds() / (24 * 60 * 60));
+            long delta = this.getValidSeconds() % (24 * 60 * 60);
+            int days = (int)(this.getValidSeconds() / (24 * 60 * 60));
+
+            if (delta > 0 && days == 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return days;
+            }
         }
         else
         {
@@ -385,25 +291,42 @@ public class PGPPublicKey
         int signatureType) 
     {
         Iterator signatures = this.getSignaturesOfType(signatureType);
-        
-        if (signatures.hasNext())
+        long     expiryTime = -1;
+        long     lastDate = -1;
+
+        while (signatures.hasNext())
         {
             PGPSignature sig = (PGPSignature)signatures.next();
 
             if (!selfSigned || sig.getKeyID() == this.getKeyID())
             {
                 PGPSignatureSubpacketVector hashed = sig.getHashedSubPackets();
-                
-                if (hashed != null)
+                if (hashed == null)
                 {
-                    return hashed.getKeyExpirationTime();
+                    continue;
                 }
-                
-                return 0;
+
+                long current = hashed.getKeyExpirationTime();
+
+                if (sig.getKeyID() == this.getKeyID())
+                {
+                    if (sig.getCreationTime().getTime() > lastDate)
+                    {
+                        lastDate = sig.getCreationTime().getTime();
+                        expiryTime = current;
+                    }
+                }
+                else
+                {
+                    if (current == 0 || current > expiryTime)
+                    {
+                        expiryTime = current;
+                    }
+                }
             }
         }
         
-        return -1;
+        return expiryTime;
     }
     
     /**
@@ -443,7 +366,7 @@ public class PGPPublicKey
         int algorithm = publicPk.getAlgorithm();
 
         return ((algorithm == RSA_GENERAL) || (algorithm == RSA_ENCRYPT)
-                || (algorithm == ELGAMAL_ENCRYPT) || (algorithm == ELGAMAL_GENERAL));
+                || (algorithm == ELGAMAL_ENCRYPT) || (algorithm == ELGAMAL_GENERAL) || algorithm == ECDH);
     }
 
     /**
@@ -468,7 +391,7 @@ public class PGPPublicKey
     /**
      * Return the strength of the key in bits.
      * 
-     * @return bit strenght of key.
+     * @return bit strength of key.
      */
     public int getBitStrength()
     {
@@ -476,94 +399,52 @@ public class PGPPublicKey
     }
 
     /**
-     * Return the public key contained in the object.
-     * 
-     * @param provider provider to construct the key for.
-     * @return a JCE/JCA public key.
-     * @throws PGPException if the key algorithm is not recognised.
-     * @throws NoSuchProviderException if the provider cannot be found.
-     */
-    public PublicKey getKey(
-        String provider)
-        throws PGPException, NoSuchProviderException
-    {
-        return getKey(PGPUtil.getProvider(provider));
-    }
-
-    public PublicKey getKey(
-        Provider provider)
-        throws PGPException
-    {
-        KeyFactory                        fact;
-        
-        try
-        {
-            switch (publicPk.getAlgorithm())
-            {
-            case RSA_ENCRYPT:
-            case RSA_GENERAL:
-            case RSA_SIGN:
-                RSAPublicBCPGKey    rsaK = (RSAPublicBCPGKey)publicPk.getKey();
-                RSAPublicKeySpec    rsaSpec = new RSAPublicKeySpec(rsaK.getModulus(), rsaK.getPublicExponent());
-    
-                fact = KeyFactory.getInstance("RSA", provider);
-                
-                return fact.generatePublic(rsaSpec);
-            case DSA:
-                DSAPublicBCPGKey    dsaK = (DSAPublicBCPGKey)publicPk.getKey();
-                DSAPublicKeySpec    dsaSpec = new DSAPublicKeySpec(dsaK.getY(), dsaK.getP(), dsaK.getQ(), dsaK.getG());
-            
-                fact = KeyFactory.getInstance("DSA", provider);
-                
-                return fact.generatePublic(dsaSpec);
-            case ELGAMAL_ENCRYPT:
-            case ELGAMAL_GENERAL:
-                ElGamalPublicBCPGKey    elK = (ElGamalPublicBCPGKey)publicPk.getKey();
-                ElGamalPublicKeySpec    elSpec = new ElGamalPublicKeySpec(elK.getY(), new ElGamalParameterSpec(elK.getP(), elK.getG()));
-                
-                fact = KeyFactory.getInstance("ElGamal", provider);
-                
-                return fact.generatePublic(elSpec);
-            default:
-                throw new PGPException("unknown public key algorithm encountered");
-            }
-        }
-        catch (PGPException e)
-        {
-            throw e;
-        }
-        catch (Exception e)
-        {
-            throw new PGPException("exception constructing public key", e);
-        }
-    }
-    
-    /**
      * Return any userIDs associated with the key.
      * 
      * @return an iterator of Strings.
      */
-    public Iterator getUserIDs()
+    public Iterator<String> getUserIDs()
     {
         List    temp = new ArrayList();
         
         for (int i = 0; i != ids.size(); i++)
         {
-            if (ids.get(i) instanceof String)
+            if (ids.get(i) instanceof UserIDPacket)
             {
-                temp.add(ids.get(i));
+                temp.add(((UserIDPacket)ids.get(i)).getID());
             }
         }
         
         return temp.iterator();
     }
-    
+
+    /**
+     * Return any userIDs associated with the key in raw byte form. No attempt is made
+     * to convert the IDs into Strings.
+     *
+     * @return an iterator of Strings.
+     */
+    public Iterator<byte[]> getRawUserIDs()
+    {
+        List    temp = new ArrayList();
+
+        for (int i = 0; i != ids.size(); i++)
+        {
+            if (ids.get(i) instanceof UserIDPacket)
+            {
+                temp.add(((UserIDPacket)ids.get(i)).getRawID());
+            }
+        }
+
+        return temp.iterator();
+    }
+
     /**
      * Return any user attribute vectors associated with the key.
      * 
      * @return an iterator of PGPUserAttributeSubpacketVector objects.
      */
-    public Iterator getUserAttributes()
+    public Iterator<PGPUserAttributeSubpacketVector> getUserAttributes()
     {
         List    temp = new ArrayList();
         
@@ -584,8 +465,50 @@ public class PGPPublicKey
      * @param id the id to be matched.
      * @return an iterator of PGPSignature objects.
      */
-    public Iterator getSignaturesForID(
+    public Iterator<PGPSignature> getSignaturesForID(
         String   id)
+    {
+        return getSignaturesForID(new UserIDPacket(id));
+    }
+
+    /**
+     * Return any signatures associated with the passed in id.
+     *
+     * @param rawID the id to be matched in raw byte form.
+     * @return an iterator of PGPSignature objects.
+     */
+    public Iterator<PGPSignature> getSignaturesForID(
+        byte[]   rawID)
+    {
+        return getSignaturesForID(new UserIDPacket(rawID));
+    }
+
+    /**
+     * Return any signatures associated with the passed in key identifier keyID.
+     *
+     * @param keyID the key id to be matched.
+     * @return an iterator of PGPSignature objects issued by the key with keyID.
+     */
+    public Iterator<PGPSignature> getSignaturesForKeyID(
+        long   keyID)
+    {
+        List sigs = new ArrayList();
+
+        for (Iterator it = getSignatures(); it.hasNext();)
+        {
+            PGPSignature sig = (PGPSignature)it.next();
+
+            if (sig.getKeyID() == keyID)
+            {
+                sigs.add(sig);
+            }
+        }
+
+        return sigs.iterator();
+    }
+
+    private Iterator getSignaturesForID(
+        UserIDPacket   id)
     {
         for (int i = 0; i != ids.size(); i++)
         {
@@ -594,10 +517,10 @@ public class PGPPublicKey
                 return ((ArrayList)idSigs.get(i)).iterator();
             }
         }
-        
+
         return null;
     }
-    
+
     /**
      * Return an iterator of signatures associated with the passed in user attributes.
      * 
@@ -668,19 +591,76 @@ public class PGPPublicKey
             return subSigs.iterator();
         }
     }
-    
+
+    /**
+     * Return all signatures/certifications directly associated with this key (ie, not to a user id).
+     *
+     * @return an iterator (possibly empty) with all signatures/certifications.
+     */
+    public Iterator getKeySignatures()
+    {
+        if (subSigs == null)
+        {
+            List sigs = new ArrayList();
+            sigs.addAll(keySigs);
+            
+            return sigs.iterator();
+        }
+        else
+        {
+            return subSigs.iterator();
+        }
+    }
+
+    public PublicKeyPacket getPublicKeyPacket()
+    {
+        return publicPk;
+    }
+
     public byte[] getEncoded() 
         throws IOException
     {
         ByteArrayOutputStream    bOut = new ByteArrayOutputStream();
         
-        this.encode(bOut);
+        this.encode(bOut, false);
         
         return bOut.toByteArray();
     }
-    
+
+    /**
+     * Return an encoding of the key, with trust packets stripped out if forTransfer is true.
+     *
+     * @param forTransfer if the purpose of encoding is to send key to other users.
+     * @return a encoded byte array representing the key.
+     * @throws IOException in case of encoding error.
+     */
+    public byte[] getEncoded(boolean forTransfer)
+        throws IOException
+    {
+        ByteArrayOutputStream    bOut = new ByteArrayOutputStream();
+
+        this.encode(bOut, forTransfer);
+
+        return bOut.toByteArray();
+    }
+
     public void encode(
-        OutputStream    outStream) 
+        OutputStream    outStream)
+        throws IOException
+    {
+        encode(outStream, false);
+    }
+
+    /**
+     * Encode the key to outStream, with trust packets stripped out if forTransfer is true.
+     *
+     * @param outStream stream to write the key encoding to.
+     * @param forTransfer if the purpose of encoding is to send key to other users.
+     * @throws IOException in case of encoding error.
+     */
+    public void encode(
+        OutputStream    outStream,
+        boolean         forTransfer)
         throws IOException
     {
         BCPGOutputStream    out;
@@ -695,7 +675,7 @@ public class PGPPublicKey
         }
         
         out.writePacket(publicPk);
-        if (trustPk != null)
+        if (!forTransfer && trustPk != null)
         {
             out.writePacket(trustPk);
         }
@@ -709,11 +689,11 @@ public class PGPPublicKey
             
             for (int i = 0; i != ids.size(); i++)
             {
-                if (ids.get(i) instanceof String)
+                if (ids.get(i) instanceof UserIDPacket)
                 {
-                    String    id = (String)ids.get(i);
+                    UserIDPacket    id = (UserIDPacket)ids.get(i);
                     
-                    out.writePacket(new UserIDPacket(id));
+                    out.writePacket(id);
                 }
                 else
                 {
@@ -722,7 +702,7 @@ public class PGPPublicKey
                     out.writePacket(new UserAttributePacket(v.toSubpacketArray()));
                 }
                 
-                if (idTrusts.get(i) != null)
+                if (!forTransfer && idTrusts.get(i) != null)
                 {
                     out.writePacket((ContainedPacket)idTrusts.get(i));
                 }
@@ -730,7 +710,7 @@ public class PGPPublicKey
                 List    sigs = (List)idSigs.get(i);
                 for (int j = 0; j != sigs.size(); j++)
                 {
-                    ((PGPSignature)sigs.get(j)).encode(out);
+                    ((PGPSignature)sigs.get(j)).encode(out, forTransfer);
                 }
             }
         }
@@ -738,17 +718,28 @@ public class PGPPublicKey
         {
             for (int j = 0; j != subSigs.size(); j++)
             {
-                ((PGPSignature)subSigs.get(j)).encode(out);
+                ((PGPSignature)subSigs.get(j)).encode(out, forTransfer);
             }
         }
     }
-    
+
+    /**
+     * Check whether this (sub)key has a revocation signature on it.
+     *
+     * @return boolean indicating whether this (sub)key has been revoked.
+     * @deprecated this method is poorly named, use hasRevocation().
+     */
+    public boolean isRevoked()
+    {
+        return hasRevocation();
+    }
+
     /**
      * Check whether this (sub)key has a revocation signature on it.
      * 
-     * @return boolean indicating whether this (sub)key has been revoked.
+     * @return boolean indicating whether this (sub)key has had a (possibly invalid) revocation attached..
      */
-    public boolean isRevoked()
+    public boolean hasRevocation()
     {
         int ns = 0;
         boolean revoked = false;
@@ -777,6 +768,21 @@ public class PGPPublicKey
         return revoked;
     }
 
+    /**
+     * Add a certification for an id to the given public key.
+     *
+     * @param key the key the certification is to be added to.
+     * @param rawID the raw bytes making up the user id..
+     * @param certification the new certification.
+     * @return the re-certified key.
+     */
+    public static PGPPublicKey addCertification(
+        PGPPublicKey    key,
+        byte[]          rawID,
+        PGPSignature    certification)
+    {
+        return addCert(key, new UserIDPacket(rawID), certification);
+    }
 
     /**
      * Add a certification for an id to the given public key.
@@ -791,7 +797,7 @@ public class PGPPublicKey
         String          id,
         PGPSignature    certification)
     {
-        return addCert(key, id, certification);
+        return addCert(key, new UserIDPacket(id), certification);
     }
 
     /**
@@ -869,7 +875,21 @@ public class PGPPublicKey
         PGPPublicKey    key,
         String          id)
     {
-        return removeCert(key, id);
+        return removeCert(key, new UserIDPacket(id));
+    }
+
+    /**
+     * Remove any certifications associated with a given id on a key.
+     *
+     * @param key the key the certifications are to be removed from.
+     * @param rawID the id that is to be removed in raw byte form.
+     * @return the re-certified key, null if the id was not found on the key.
+     */
+    public static PGPPublicKey removeCertification(
+        PGPPublicKey    key,
+        byte[]          rawID)
+    {
+        return removeCert(key, new UserIDPacket(rawID));
     }
 
     private static PGPPublicKey removeCert(
@@ -900,6 +920,22 @@ public class PGPPublicKey
 
     /**
      * Remove a certification associated with a given id on a key.
+     *
+     * @param key the key the certifications are to be removed from.
+     * @param id the id that the certification is to be removed from (in its raw byte form)
+     * @param certification the certification to be removed.
+     * @return the re-certified key, null if the certification was not found.
+     */
+    public static PGPPublicKey removeCertification(
+        PGPPublicKey    key,
+        byte[]          id,
+        PGPSignature    certification)
+    {
+        return removeCert(key, new UserIDPacket(id), certification);
+    }
+
+    /**
+     * Remove a certification associated with a given id on a key.
      * 
      * @param key the key the certifications are to be removed from.
      * @param id the id that the certification is to be removed from.
@@ -911,7 +947,7 @@ public class PGPPublicKey
         String          id,
         PGPSignature    certification)
     {
-        return removeCert(key, id, certification);
+        return removeCert(key, new UserIDPacket(id), certification);
     }
 
     /**
@@ -1019,15 +1055,15 @@ public class PGPPublicKey
 
         if (!found)
         {
-            for (Iterator it = key.getUserIDs(); it.hasNext();)
+            for (Iterator it = key.getRawUserIDs(); it.hasNext();)
             {
-                String id = (String)it.next();
-                for (Iterator sIt = key.getSignaturesForID(id); sIt.hasNext();)
+                byte[] rawID = (byte[])it.next();
+                for (Iterator sIt = key.getSignaturesForID(rawID); sIt.hasNext();)
                 {
                     if (certification == sIt.next())
                     {
                         found = true;
-                        returnKey = PGPPublicKey.removeCertification(returnKey, id, certification);
+                        returnKey = PGPPublicKey.removeCertification(returnKey, rawID, certification);
                     }
                 }
             }

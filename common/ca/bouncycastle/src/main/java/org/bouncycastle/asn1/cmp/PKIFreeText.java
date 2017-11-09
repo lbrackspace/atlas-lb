@@ -2,16 +2,16 @@ package org.bouncycastle.asn1.cmp;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 
 public class PKIFreeText
-    extends ASN1Encodable
+    extends ASN1Object
 {
     ASN1Sequence strings;
 
@@ -29,15 +29,15 @@ public class PKIFreeText
         {
             return (PKIFreeText)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new PKIFreeText((ASN1Sequence)obj);
+            return new PKIFreeText(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("Unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
-    public PKIFreeText(
+    private PKIFreeText(
         ASN1Sequence seq)
     {
         Enumeration e = seq.getObjects();
@@ -59,20 +59,23 @@ public class PKIFreeText
     }
 
     public PKIFreeText(
+        String p)
+    {
+        this(new DERUTF8String(p));
+    }
+
+    public PKIFreeText(
         DERUTF8String[] strs)
     {
-        ASN1EncodableVector v = new ASN1EncodableVector();
-        for (int i = 0; i < strs.length; i++) {
-            v.add(strs[i]);
-        }
-        strings = new DERSequence(v);
+        strings = new DERSequence(strs);
     }
 
     public PKIFreeText(
         String[] strs)
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
-        for (int i = 0; i < strs.length; i++) {
+        for (int i = 0; i < strs.length; i++)
+        {
             v.add(new DERUTF8String(strs[i]));
         }
         strings = new DERSequence(v);
@@ -105,7 +108,7 @@ public class PKIFreeText
      * PKIFreeText ::= SEQUENCE SIZE (1..MAX) OF UTF8String
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return strings;
     }

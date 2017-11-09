@@ -1,39 +1,45 @@
 package org.bouncycastle.cert;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
+import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.Certificate;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.TBSCertificateStructure;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.TBSCertificate;
 import org.bouncycastle.operator.ContentVerifier;
 import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.util.Encodable;
 
 /**
  * Holding class for an X.509 Certificate structure.
  */
 public class X509CertificateHolder
+    implements Encodable, Serializable
 {
-    private X509CertificateStructure x509Certificate;
-    private X509Extensions extensions;
+    private static final long serialVersionUID = 20170722001L;
 
-    private static X509CertificateStructure parseBytes(byte[] certEncoding)
+    private transient Certificate x509Certificate;
+    private transient Extensions  extensions;
+
+    private static Certificate parseBytes(byte[] certEncoding)
         throws IOException
     {
         try
         {
-            return X509CertificateStructure.getInstance(ASN1Object.fromByteArray(certEncoding));
+            return Certificate.getInstance(CertUtils.parseNonEmptyASN1(certEncoding));
         }
         catch (ClassCastException e)
         {
@@ -62,15 +68,28 @@ public class X509CertificateHolder
      *
      * @param x509Certificate an ASN.1 Certificate structure.
      */
-    public X509CertificateHolder(X509CertificateStructure x509Certificate)
+    public X509CertificateHolder(Certificate x509Certificate)
+    {
+        init(x509Certificate);
+    }
+
+    private void init(Certificate x509Certificate)
     {
         this.x509Certificate = x509Certificate;
         this.extensions = x509Certificate.getTBSCertificate().getExtensions();
     }
 
+    public int getVersionNumber()
+    {
+        return x509Certificate.getVersionNumber();
+    }
+
+    /**
+     * @deprecated use getVersionNumber
+     */
     public int getVersion()
     {
-        return x509Certificate.getVersion();
+        return x509Certificate.getVersionNumber();
     }
 
     /**
@@ -90,7 +109,7 @@ public class X509CertificateHolder
      *
      * @return the extension if present, null otherwise.
      */
-    public X509Extension getExtension(ASN1ObjectIdentifier oid)
+    public Extension getExtension(ASN1ObjectIdentifier oid)
     {
         if (extensions != null)
         {
@@ -98,6 +117,16 @@ public class X509CertificateHolder
         }
 
         return null;
+    }
+
+    /**
+     * Return the extensions block associated with this certificate if there is one.
+     *
+     * @return the extensions block, null otherwise.
+     */
+    public Extensions getExtensions()
+    {
+        return extensions;
     }
 
     /**
@@ -131,11 +160,6 @@ public class X509CertificateHolder
     public Set getNonCriticalExtensionOIDs()
     {
         return CertUtils.getNonCriticalExtensionOIDs(extensions);
-    }
-
-    public IssuerAndSerialNumber getIssuerAndSerialNumber()
-    {
-        return new IssuerAndSerialNumber(x509Certificate.getIssuer(), x509Certificate.getSerialNumber());
     }
 
     /**
@@ -201,9 +225,9 @@ public class X509CertificateHolder
     /**
      * Return the underlying ASN.1 structure for the certificate in this holder.
      *
-     * @return a X509CertificateStructure object.
+     * @return a Certificate object.
      */
-    public X509CertificateStructure toASN1Structure()
+    public Certificate toASN1Structure()
     {
         return x509Certificate;
     }
@@ -225,7 +249,7 @@ public class X509CertificateHolder
      */
     public byte[] getSignature()
     {
-        return x509Certificate.getSignature().getBytes();
+        return x509Certificate.getSignature().getOctets();
     }
 
     /**
@@ -249,9 +273,9 @@ public class X509CertificateHolder
     public boolean isSignatureValid(ContentVerifierProvider verifierProvider)
         throws CertException
     {
-        TBSCertificateStructure tbsCert = x509Certificate.getTBSCertificate();
+        TBSCertificate tbsCert = x509Certificate.getTBSCertificate();
 
-        if (!tbsCert.getSignature().equals(x509Certificate.getSignatureAlgorithm()))
+        if (!CertUtils.isAlgIdEqual(tbsCert.getSignature(), x509Certificate.getSignatureAlgorithm()))
         {
             throw new CertException("signature invalid - algorithm identifier mismatch");
         }
@@ -263,8 +287,9 @@ public class X509CertificateHolder
             verifier = verifierProvider.get((tbsCert.getSignature()));
 
             OutputStream sOut = verifier.getOutputStream();
+            DEROutputStream dOut = new DEROutputStream(sOut);
 
-            sOut.write(tbsCert.getDEREncoded());
+            dOut.writeObject(tbsCert);
 
             sOut.close();
         }
@@ -273,7 +298,7 @@ public class X509CertificateHolder
             throw new CertException("unable to process signature: " + e.getMessage(), e);
         }
 
-        return verifier.verify(x509Certificate.getSignature().getBytes());
+        return verifier.verify(this.getSignature());
     }
 
     public boolean equals(
@@ -309,5 +334,23 @@ public class X509CertificateHolder
         throws IOException
     {
         return x509Certificate.getEncoded();
+    }
+
+    private void readObject(
+        ObjectInputStream in)
+        throws IOException, ClassNotFoundException
+    {
+        in.defaultReadObject();
+
+        init(Certificate.getInstance(in.readObject()));
+    }
+
+    private void writeObject(
+        ObjectOutputStream out)
+        throws IOException
+    {
+        out.defaultWriteObject();
+
+        out.writeObject(this.getEncoded());
     }
 }

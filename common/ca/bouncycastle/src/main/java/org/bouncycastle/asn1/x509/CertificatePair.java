@@ -1,14 +1,14 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import java.util.Enumeration;
+
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
-
-import java.util.Enumeration;
 
 /**
  * This class helps to support crossCerfificatePairs in a LDAP directory
@@ -44,11 +44,11 @@ import java.util.Enumeration;
  * </pre>
  */
 public class CertificatePair
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private X509CertificateStructure forward;
+    private Certificate forward;
 
-    private X509CertificateStructure reverse;
+    private Certificate reverse;
 
     public static CertificatePair getInstance(Object obj)
     {
@@ -68,16 +68,15 @@ public class CertificatePair
 
     /**
      * Constructor from ASN1Sequence.
-     * <p/>
+     * <p>
      * The sequence is of type CertificatePair:
-     * <p/>
      * <pre>
      *       CertificatePair ::= SEQUENCE {
      *         forward        [0]    Certificate OPTIONAL,
      *         reverse        [1]    Certificate OPTIONAL,
      *         -- at least one of the pair shall be present -- }
      * </pre>
-     *
+     * </p>
      * @param seq The ASN.1 sequence.
      */
     private CertificatePair(ASN1Sequence seq)
@@ -95,11 +94,11 @@ public class CertificatePair
             ASN1TaggedObject o = ASN1TaggedObject.getInstance(e.nextElement());
             if (o.getTagNo() == 0)
             {
-                forward = X509CertificateStructure.getInstance(o, true);
+                forward = Certificate.getInstance(o, true);
             }
             else if (o.getTagNo() == 1)
             {
-                reverse = X509CertificateStructure.getInstance(o, true);
+                reverse = Certificate.getInstance(o, true);
             }
             else
             {
@@ -115,7 +114,7 @@ public class CertificatePair
      * @param forward Certificates issued to this CA.
      * @param reverse Certificates issued by this CA to other CAs.
      */
-    public CertificatePair(X509CertificateStructure forward, X509CertificateStructure reverse)
+    public CertificatePair(Certificate forward, Certificate reverse)
     {
         this.forward = forward;
         this.reverse = reverse;
@@ -123,9 +122,8 @@ public class CertificatePair
 
     /**
      * Produce an object suitable for an ASN1OutputStream.
-     * <p/>
+     * <p>
      * Returns:
-     * <p/>
      * <pre>
      *       CertificatePair ::= SEQUENCE {
      *         forward        [0]    Certificate OPTIONAL,
@@ -133,9 +131,9 @@ public class CertificatePair
      *         -- at least one of the pair shall be present -- }
      * </pre>
      *
-     * @return a DERObject
+     * @return a ASN1Primitive
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector vec = new ASN1EncodableVector();
 
@@ -154,7 +152,7 @@ public class CertificatePair
     /**
      * @return Returns the forward.
      */
-    public X509CertificateStructure getForward()
+    public Certificate getForward()
     {
         return forward;
     }
@@ -162,7 +160,7 @@ public class CertificatePair
     /**
      * @return Returns the reverse.
      */
-    public X509CertificateStructure getReverse()
+    public Certificate getReverse()
     {
         return reverse;
     }

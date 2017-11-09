@@ -1,23 +1,25 @@
 package org.bouncycastle.asn1;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
+/**
+ * Base class for generators for indefinite-length structures.
+ */
 public class BERGenerator
     extends ASN1Generator
 {
     private boolean      _tagged = false;
     private boolean      _isExplicit;
     private int          _tagNo;
-    
+
     protected BERGenerator(
         OutputStream out)
     {
         super(out);
     }
 
-    public BERGenerator(
+    protected BERGenerator(
         OutputStream out,
         int tagNo,
         boolean isExplicit) 
@@ -48,18 +50,18 @@ public class BERGenerator
     {
         if (_tagged)
         {
-            int tagNum = _tagNo | DERTags.TAGGED;
+            int tagNum = _tagNo | BERTags.TAGGED;
 
             if (_isExplicit)
             {
-                writeHdr(tagNum | DERTags.CONSTRUCTED);
+                writeHdr(tagNum | BERTags.CONSTRUCTED);
                 writeHdr(tag);
             }
             else
             {   
-                if ((tag & DERTags.CONSTRUCTED) != 0)
+                if ((tag & BERTags.CONSTRUCTED) != 0)
                 {
-                    writeHdr(tagNum | DERTags.CONSTRUCTED);
+                    writeHdr(tagNum | BERTags.CONSTRUCTED);
                 }
                 else
                 {
@@ -70,18 +72,6 @@ public class BERGenerator
         else
         {
             writeHdr(tag);
-        }
-    }
-    
-    protected void writeBERBody(
-        InputStream contentStream)
-        throws IOException
-    {
-        int ch;
-        
-        while ((ch = contentStream.read()) >= 0)
-        {
-            _out.write(ch);
         }
     }
 

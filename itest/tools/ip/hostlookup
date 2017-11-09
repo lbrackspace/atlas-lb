@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+import socket
+import sys
+
+proto_map = { 6: "TCP", 17: "UDP"}
+af_map = { 2: "IPv4", 10: "IPv6" }
+so_map = { 1: "SOCK_STREAM", 2: "SOCK_DGRAM" }
+
+
+def printf(format,*args): sys.stdout.write(format%args)
+
+def usage(prog):
+    printf("usage is %s host port\n", prog)
+    printf("\n")
+    printf("calls getaddrinfo and shows you all resolutions\n")
+
+def main(*argv):
+    if len(argv) < 3:
+        usage(argv[0])
+        sys.exit()
+
+    if argv[1] == "None":
+        host = None
+    else:
+        host = argv[1]
+
+    if argv[2] == "None":
+        port = None
+    else:
+        port = int(argv[2])
+    hostaddrs = socket.getaddrinfo(host, port)
+    for (family_id, socktype, proto_id, canonname, sockaddr) in hostaddrs:
+        af_family = af_map.get(family_id, family_id)
+        so_type = so_map.get(socktype, socktype)
+        proto_name = proto_map.get(proto_id, proto_id)
+        printf("AF=%s socktype=%s ", af_family, so_type)
+        printf("prot=%s name=%s ", proto_name, canonname)
+        if af_family == "IPv4":
+            ip = sockaddr[0]
+            port = sockaddr[1]
+            printf("ip=%s port=%s ", ip, port)
+        if af_family == "IPv6":
+            ip = sockaddr[0]
+            port = sockaddr[1]
+            flow_info = sockaddr[2]
+            scope_id = sockaddr[3]
+            printf("ip=%s port=%s ", ip, port)
+            printf("flow=%s, scope=%s", flow_info, scope_id)
+        printf("\n")
+
+
+if __name__ == "__main__":
+    main(*sys.argv)

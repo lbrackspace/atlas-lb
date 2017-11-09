@@ -1,9 +1,9 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 /**
@@ -21,10 +21,10 @@ import org.bouncycastle.asn1.DERSequence;
  * @see PolicyInformation
  */
 public class UserNotice 
-    extends ASN1Encodable 
+    extends ASN1Object
 {
-    private NoticeReference noticeRef;
-    private DisplayText     explicitText;
+    private final NoticeReference noticeRef;
+    private final DisplayText     explicitText;
    
     /**
      * Creates a new <code>UserNotice</code> instance.
@@ -50,8 +50,7 @@ public class UserNotice
         NoticeReference noticeRef, 
         String str) 
     {
-        this.noticeRef = noticeRef;
-        this.explicitText = new DisplayText(str);
+        this(noticeRef, new DisplayText(str));
     }
 
     /**
@@ -60,10 +59,10 @@ public class UserNotice
      * from its encodable/encoded form. 
      *
      * @param as an <code>ASN1Sequence</code> value obtained from either
-     * calling @{link toASN1Object()} for a <code>UserNotice</code>
+     * calling @{link toASN1Primitive()} for a <code>UserNotice</code>
      * instance or from parsing it from a DER-encoded stream. 
      */
-    public UserNotice(
+    private UserNotice(
        ASN1Sequence as) 
     {
        if (as.size() == 2)
@@ -73,21 +72,44 @@ public class UserNotice
        }
        else if (as.size() == 1)
        {
-           if (as.getObjectAt(0).getDERObject() instanceof ASN1Sequence)
+           if (as.getObjectAt(0).toASN1Primitive() instanceof ASN1Sequence)
            {
                noticeRef = NoticeReference.getInstance(as.getObjectAt(0));
+               explicitText = null;
            }
            else
            {
+               noticeRef = null;
                explicitText = DisplayText.getInstance(as.getObjectAt(0));
            }
+       }
+       else if (as.size() == 0)       // neither field set!
+       {
+           noticeRef = null;
+           explicitText = null;
        }
        else
        {
            throw new IllegalArgumentException("Bad sequence size: " + as.size());
        }
     }
-   
+
+    public static UserNotice getInstance(
+        Object obj)
+    {
+        if (obj instanceof UserNotice)
+        {
+            return (UserNotice)obj;
+        }
+
+        if (obj != null)
+        {
+            return new UserNotice(ASN1Sequence.getInstance(obj));
+        }
+
+        return null;
+    }
+
     public NoticeReference getNoticeRef()
     {
         return noticeRef;
@@ -98,7 +120,7 @@ public class UserNotice
         return explicitText;
     }
     
-    public DERObject toASN1Object() 
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector av = new ASN1EncodableVector();
       

@@ -2,8 +2,8 @@ package org.bouncycastle.jce.interfaces;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 
 /**
  * allow us to set attributes on objects that can go into a PKCS12 store.
@@ -11,11 +11,11 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
 public interface PKCS12BagAttributeCarrier
 {
     void setBagAttribute(
-        DERObjectIdentifier oid,
-        DEREncodable        attribute);
+        ASN1ObjectIdentifier oid,
+        ASN1Encodable attribute);
 
-    DEREncodable getBagAttribute(
-        DERObjectIdentifier oid);
+    ASN1Encodable getBagAttribute(
+        ASN1ObjectIdentifier oid);
 
     Enumeration getBagAttributeKeys();
 }

@@ -6,12 +6,15 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolName;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolStatus;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
-
 
 @RunWith(Enclosed.class)
 public class SslTerminationValidatorTest {
@@ -76,6 +79,7 @@ public class SslTerminationValidatorTest {
             sslTermination.setSecurePort(443);
             sslTermination.setEnabled(true);
             sslTermination.setSecureTrafficOnly(true);
+            sslTermination.setCipherProfile("I,m,a,cipher,profile");
             assertTrue(validator.validate(sslTermination, PUT).passedValidation());
         }
 
@@ -84,6 +88,7 @@ public class SslTerminationValidatorTest {
             sslTermination.setSecurePort(443);
             sslTermination.setEnabled(true);
             sslTermination.setSecureTrafficOnly(true);
+            sslTermination.setCipherProfile("I,m,a,cipher,profile");
             assertTrue(validator.validate(sslTermination, PUT).passedValidation());
         }
 
@@ -126,6 +131,24 @@ public class SslTerminationValidatorTest {
         @Test
         public void shouldAcceptisSecureTrafficOnly() {
             sslTermination.setSecureTrafficOnly(true);
+            assertTrue(validator.validate(sslTermination, PUT).passedValidation());
+        }
+
+        @Test
+        public void shoulddAcceptSecurityProtocolsOnly() {
+            SecurityProtocol sp = new SecurityProtocol();
+            sp.setSecurityProtocolName(SecurityProtocolName.TLS_10);
+            sp.setSecurityProtocolStatus(SecurityProtocolStatus.DISABLED);
+            sslTermination.getSecurityProtocols().add(sp);
+            assertTrue(validator.validate(sslTermination, PUT).passedValidation());
+        }
+
+        @Test
+        public void shoulddAcceptCipherProfileOnly() {
+            SslCipherProfile sp = new SslCipherProfile();
+            String test_sp = "I,m,a,cipher,profile";
+            sp.setCiphers("I,m,a,cipher,profile");
+            sslTermination.setCipherProfile(test_sp);
             assertTrue(validator.validate(sslTermination, PUT).passedValidation());
         }
     }

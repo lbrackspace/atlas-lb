@@ -1,19 +1,5 @@
 package org.bouncycastle.jce.provider;
 
-import org.bouncycastle.asn1.ASN1Null;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
-import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
-
 import java.io.IOException;
 import java.security.AlgorithmParameters;
 import java.security.GeneralSecurityException;
@@ -23,13 +9,27 @@ import java.security.Signature;
 import java.security.SignatureException;
 import java.security.spec.PSSParameterSpec;
 
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Null;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSASSAPSSparams;
+import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
+
 class X509SignatureUtil
 {
-    private static final ASN1Null       derNull = new DERNull();
+    private static final ASN1Null       derNull = DERNull.INSTANCE;
     
     static void setSignatureParameters(
         Signature signature,
-        DEREncodable params) 
+        ASN1Encodable params)
         throws NoSuchAlgorithmException, SignatureException, InvalidKeyException
     {
         if (params != null && !derNull.equals(params))
@@ -38,7 +38,7 @@ class X509SignatureUtil
             
             try
             {
-                sigParams.init(params.getDERObject().getDEREncoded());
+                sigParams.init(params.toASN1Primitive().getEncoded());
             }
             catch (IOException e)
             {
@@ -62,25 +62,25 @@ class X509SignatureUtil
     static String getSignatureName(
         AlgorithmIdentifier sigAlgId) 
     {
-        DEREncodable params = sigAlgId.getParameters();
+        ASN1Encodable params = sigAlgId.getParameters();
         
         if (params != null && !derNull.equals(params))
         {
-            if (sigAlgId.getObjectId().equals(PKCSObjectIdentifiers.id_RSASSA_PSS))
+            if (sigAlgId.getAlgorithm().equals(PKCSObjectIdentifiers.id_RSASSA_PSS))
             {
                 RSASSAPSSparams rsaParams = RSASSAPSSparams.getInstance(params);
                 
-                return getDigestAlgName(rsaParams.getHashAlgorithm().getObjectId()) + "withRSAandMGF1";
+                return getDigestAlgName(rsaParams.getHashAlgorithm().getAlgorithm()) + "withRSAandMGF1";
             }
-            if (sigAlgId.getObjectId().equals(X9ObjectIdentifiers.ecdsa_with_SHA2))
+            if (sigAlgId.getAlgorithm().equals(X9ObjectIdentifiers.ecdsa_with_SHA2))
             {
                 ASN1Sequence ecDsaParams = ASN1Sequence.getInstance(params);
                 
-                return getDigestAlgName((DERObjectIdentifier)ecDsaParams.getObjectAt(0)) + "withECDSA";
+                return getDigestAlgName(ASN1ObjectIdentifier.getInstance(ecDsaParams.getObjectAt(0))) + "withECDSA";
             }
         }
 
-        return sigAlgId.getObjectId().getId();
+        return sigAlgId.getAlgorithm().getId();
     }
     
     /**
@@ -88,7 +88,7 @@ class X509SignatureUtil
      * representations rather the the algorithm identifier (if possible).
      */
     private static String getDigestAlgName(
-        DERObjectIdentifier digestAlgOID)
+        ASN1ObjectIdentifier digestAlgOID)
     {
         if (PKCSObjectIdentifiers.md5.equals(digestAlgOID))
         {

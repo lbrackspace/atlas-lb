@@ -3,11 +3,10 @@ package org.bouncycastle.cms;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.zip.InflaterInputStream;
 
 import org.bouncycastle.asn1.ASN1OctetStringParser;
 import org.bouncycastle.asn1.ASN1SequenceParser;
-import org.bouncycastle.asn1.DERTags;
+import org.bouncycastle.asn1.BERTags;
 import org.bouncycastle.asn1.cms.CompressedDataParser;
 import org.bouncycastle.asn1.cms.ContentInfoParser;
 import org.bouncycastle.operator.InputExpander;
@@ -45,27 +44,6 @@ public class CMSCompressedDataParser
     }
 
     /**
-     * @deprecated  use getContent(InputExpandedProvider)
-     */
-    public CMSTypedStream  getContent()
-        throws CMSException
-    {
-        try
-        {
-            CompressedDataParser  comData = new CompressedDataParser((ASN1SequenceParser)_contentInfo.getContent(DERTags.SEQUENCE));
-            ContentInfoParser     content = comData.getEncapContentInfo();
-    
-            ASN1OctetStringParser bytes = (ASN1OctetStringParser)content.getContent(DERTags.OCTET_STRING);
-    
-            return new CMSTypedStream(content.getContentType().toString(), new InflaterInputStream(bytes.getOctetStream()));
-        }
-        catch (IOException e)
-        {
-            throw new CMSException("IOException reading compressed content.", e);
-        }
-    }
-
-    /**
      * Return a typed stream which will allow the reading of the compressed content in
      * expanded form.
      *
@@ -78,11 +56,11 @@ public class CMSCompressedDataParser
     {
         try
         {
-            CompressedDataParser  comData = new CompressedDataParser((ASN1SequenceParser)_contentInfo.getContent(DERTags.SEQUENCE));
+            CompressedDataParser  comData = new CompressedDataParser((ASN1SequenceParser)_contentInfo.getContent(BERTags.SEQUENCE));
             ContentInfoParser     content = comData.getEncapContentInfo();
             InputExpander expander = expanderProvider.get(comData.getCompressionAlgorithmIdentifier());
 
-            ASN1OctetStringParser bytes = (ASN1OctetStringParser)content.getContent(DERTags.OCTET_STRING);
+            ASN1OctetStringParser bytes = (ASN1OctetStringParser)content.getContent(BERTags.OCTET_STRING);
 
             return new CMSTypedStream(content.getContentType().getId(), expander.getInputStream(bytes.getOctetStream()));
         }

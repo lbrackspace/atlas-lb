@@ -2,16 +2,18 @@ package org.bouncycastle.cert;
 
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.Locale;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1GeneralizedTime;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.AttCertIssuer;
 import org.bouncycastle.asn1.x509.Attribute;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.V2AttributeCertificateInfoGenerator;
-import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.operator.ContentSigner;
 
 /**
@@ -20,18 +22,50 @@ import org.bouncycastle.operator.ContentSigner;
 public class X509v2AttributeCertificateBuilder
 {
     private V2AttributeCertificateInfoGenerator   acInfoGen;
-    private X509ExtensionsGenerator               extGenerator;
+    private ExtensionsGenerator extGenerator;
 
-    public X509v2AttributeCertificateBuilder(AttributeCertificateHolder     holder, AttributeCertificateIssuer  issuer, BigInteger      serialNumber, Date notBefore, Date notAfter)
+    /**
+     * Base constructor.
+     *
+     * @param holder holder certificate details
+     * @param issuer issuer of this attribute certificate.
+     * @param serialNumber serial number of this attribute certificate.
+     * @param notBefore the date before which the certificate is not valid.
+     * @param notAfter the date after which the certificate is not valid.
+     */
+    public X509v2AttributeCertificateBuilder(AttributeCertificateHolder holder, AttributeCertificateIssuer  issuer, BigInteger serialNumber, Date notBefore, Date notAfter)
     {
         acInfoGen = new V2AttributeCertificateInfoGenerator();
-        extGenerator = new X509ExtensionsGenerator();
+        extGenerator = new ExtensionsGenerator();
 
         acInfoGen.setHolder(holder.holder);
         acInfoGen.setIssuer(AttCertIssuer.getInstance(issuer.form));
-        acInfoGen.setSerialNumber(new DERInteger(serialNumber));
-        acInfoGen.setStartDate(new DERGeneralizedTime(notBefore));
-        acInfoGen.setEndDate(new DERGeneralizedTime(notAfter));
+        acInfoGen.setSerialNumber(new ASN1Integer(serialNumber));
+        acInfoGen.setStartDate(new ASN1GeneralizedTime(notBefore));
+        acInfoGen.setEndDate(new ASN1GeneralizedTime(notAfter));
+    }
+
+    /**
+     * Base constructor with locale for interpreting dates. You may need to use this constructor if the default locale
+     * doesn't use a Gregorian calender so that the GeneralizedTime produced is compatible with other ASN.1 implementations.
+     *
+     * @param holder holder certificate details
+     * @param issuer issuer of this attribute certificate.
+     * @param serialNumber serial number of this attribute certificate.
+     * @param notBefore the date before which the certificate is not valid.
+     * @param notAfter the date after which the certificate is not valid.
+     * @param dateLocale locale to be used for date interpretation.
+     */
+    public X509v2AttributeCertificateBuilder(AttributeCertificateHolder holder, AttributeCertificateIssuer  issuer, BigInteger serialNumber, Date notBefore, Date notAfter, Locale dateLocale)
+    {
+        acInfoGen = new V2AttributeCertificateInfoGenerator();
+        extGenerator = new ExtensionsGenerator();
+
+        acInfoGen.setHolder(holder.holder);
+        acInfoGen.setIssuer(AttCertIssuer.getInstance(issuer.form));
+        acInfoGen.setSerialNumber(new ASN1Integer(serialNumber));
+        acInfoGen.setStartDate(new ASN1GeneralizedTime(notBefore, dateLocale));
+        acInfoGen.setEndDate(new ASN1GeneralizedTime(notAfter, dateLocale));
     }
 
     /**
@@ -69,7 +103,7 @@ public class X509v2AttributeCertificateBuilder
     }
 
     /**
-     * Add a given extension field for the standard extensions tag
+     * Add a given extension field for the standard extensions tag made up of the passed in parameters.
      *
      * @param oid the OID defining the extension type.
      * @param isCritical true if the extension is critical, false otherwise.
@@ -80,8 +114,44 @@ public class X509v2AttributeCertificateBuilder
         ASN1ObjectIdentifier oid,
         boolean isCritical,
         ASN1Encodable value)
+        throws CertIOException
     {
-        extGenerator.addExtension(oid, isCritical, value);
+        CertUtils.addExtension(extGenerator, oid, isCritical, value);
+
+        return this;
+    }
+
+    /**
+     * Add a given extension field for the standard extensions using a byte encoding of the
+     * extension value.
+     *
+     * @param oid the OID defining the extension type.
+     * @param isCritical true if the extension is critical, false otherwise.
+     * @param encodedValue a byte array representing the encoding of the extension value.
+     * @return this builder object.
+     */
+    public X509v2AttributeCertificateBuilder addExtension(
+        ASN1ObjectIdentifier oid,
+        boolean isCritical,
+        byte[] encodedValue)
+        throws CertIOException
+    {
+        extGenerator.addExtension(oid, isCritical, encodedValue);
+
+        return this;
+    }
+
+    /**
+     * Add a given extension field for the standard extensions.
+     *
+     * @param extension the full extension value.
+     * @return this builder object.
+     */
+    public X509v2AttributeCertificateBuilder addExtension(
+        Extension extension)
+        throws CertIOException
+    {
+        extGenerator.addExtension(extension);
 
         return this;
     }

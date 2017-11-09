@@ -41,9 +41,11 @@ import org.bouncycastle.util.encoders.Hex;
  * </ul>
  * <p>
  * When decrypting;
+ * <ul>
  *  <li>the infile is expected to be the 60 character wide base64 
  *    encoded file
  *  <li>the keyfile is expected to be a base64 encoded file
+ * </ul>
  * <p>
  * This example shows how to use the light-weight API, DES and
  * the filesystem for message encryption and decryption.
@@ -269,7 +271,7 @@ public class DESExample extends Object
         }
         catch (IOException closing)
         {
-
+            System.err.println("exception closing resources: " + closing.getMessage());
         }
     }
         

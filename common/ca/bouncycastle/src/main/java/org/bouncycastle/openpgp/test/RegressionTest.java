@@ -8,17 +8,27 @@ import org.bouncycastle.util.test.TestResult;
 public class RegressionTest
 {
     public static Test[]    tests = {
+        new BcPGPKeyRingTest(),
         new PGPKeyRingTest(),
+        new BcPGPRSATest(),
         new PGPRSATest(),
+        new BcPGPDSATest(),
         new PGPDSATest(),
+        new BcPGPDSAElGamalTest(),
         new PGPDSAElGamalTest(),
+        new BcPGPPBETest(),
         new PGPPBETest(),
         new PGPMarkerTest(),
         new PGPPacketTest(),
         new PGPArmoredTest(),
         new PGPSignatureTest(),
         new PGPClearSignedSignatureTest(),
-        new PGPCompressionTest()
+        new PGPCompressionTest(),
+        new PGPNoPrivateKeyTest(),
+        new PGPECDSATest(),
+        new PGPECDHTest(),
+        new PGPECMessageTest(),
+        new PGPParsingTest()
     };
 
     public static void main(
@@ -30,6 +40,10 @@ public class RegressionTest
         {
             TestResult  result = tests[i].perform();
             System.out.println(result);
+            if (result.getException() != null)
+            {
+                result.getException().printStackTrace();
+            }
         }
     }
 }

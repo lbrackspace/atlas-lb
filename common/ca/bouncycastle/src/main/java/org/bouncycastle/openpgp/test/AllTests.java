@@ -1,13 +1,13 @@
 package org.bouncycastle.openpgp.test;
 
+import java.security.Security;
+
+import junit.extensions.TestSetup;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.test.SimpleTestResult;
-
-import java.security.Security;
 
 public class AllTests
     extends TestCase
@@ -40,7 +40,27 @@ public class AllTests
         
         suite.addTestSuite(AllTests.class);
         suite.addTestSuite(DSA2Test.class);
-        
-        return suite;
+        suite.addTestSuite(PGPUnicodeTest.class);
+
+        return new BCTestSetup(suite);
+    }
+
+    static class BCTestSetup
+        extends TestSetup
+    {
+        public BCTestSetup(Test test)
+        {
+            super(test);
+        }
+
+        protected void setUp()
+        {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+
+        protected void tearDown()
+        {
+            Security.removeProvider("BC");
+        }
     }
 }

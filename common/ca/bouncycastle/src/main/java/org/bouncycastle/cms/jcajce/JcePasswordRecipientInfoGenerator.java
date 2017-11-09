@@ -13,15 +13,12 @@ import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.PasswordRecipientInfoGenerator;
-import org.bouncycastle.jcajce.DefaultJcaJceHelper;
-import org.bouncycastle.jcajce.NamedJcaJceHelper;
-import org.bouncycastle.jcajce.ProviderJcaJceHelper;
 import org.bouncycastle.operator.GenericKey;
 
 public class JcePasswordRecipientInfoGenerator
     extends PasswordRecipientInfoGenerator
 {
-    private EnvelopedDataHelper helper = new EnvelopedDataHelper(new DefaultJcaJceHelper());
+    private EnvelopedDataHelper helper = new EnvelopedDataHelper(new DefaultJcaJceExtHelper());
 
     public JcePasswordRecipientInfoGenerator(ASN1ObjectIdentifier kekAlgorithm, char[] password)
     {
@@ -30,22 +27,28 @@ public class JcePasswordRecipientInfoGenerator
 
     public JcePasswordRecipientInfoGenerator setProvider(Provider provider)
     {
-        this.helper = new EnvelopedDataHelper(new ProviderJcaJceHelper(provider));
+        this.helper = new EnvelopedDataHelper(new ProviderJcaJceExtHelper(provider));
 
         return this;
     }
 
     public JcePasswordRecipientInfoGenerator setProvider(String providerName)
     {
-        this.helper = new EnvelopedDataHelper(new NamedJcaJceHelper(providerName));
+        this.helper = new EnvelopedDataHelper(new NamedJcaJceExtHelper(providerName));
 
         return this;
+    }
+
+    protected byte[] calculateDerivedKey(int schemeID, AlgorithmIdentifier derivationAlgorithm, int keySize)
+        throws CMSException
+    {
+        return helper.calculateDerivedKey(schemeID, password, derivationAlgorithm, keySize);
     }
 
     public byte[] generateEncryptedBytes(AlgorithmIdentifier keyEncryptionAlgorithm, byte[] derivedKey, GenericKey contentEncryptionKey)
         throws CMSException
     {
-        Key contentEncryptionKeySpec = CMSUtils.getJceKey(contentEncryptionKey);
+        Key contentEncryptionKeySpec = helper.getJceKey(contentEncryptionKey);
         Cipher keyEncryptionCipher = helper.createRFC3211Wrapper(keyEncryptionAlgorithm.getAlgorithm());
 
         try

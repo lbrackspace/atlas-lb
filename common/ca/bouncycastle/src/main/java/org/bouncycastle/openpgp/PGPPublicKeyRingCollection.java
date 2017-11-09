@@ -1,8 +1,5 @@
 package org.bouncycastle.openpgp;
 
-import org.bouncycastle.bcpg.BCPGOutputStream;
-import org.bouncycastle.util.Strings;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,11 +12,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.bouncycastle.bcpg.BCPGOutputStream;
+import org.bouncycastle.openpgp.operator.KeyFingerPrintCalculator;
+import org.bouncycastle.util.Iterable;
+import org.bouncycastle.util.Strings;
+
 /**
  * Often a PGP key ring file is made up of a succession of master/sub-key key rings.
  * If you want to read an entire public key file in one hit this is the class for you.
  */
-public class PGPPublicKeyRingCollection 
+public class PGPPublicKeyRingCollection
+    implements Iterable<PGPPublicKeyRing>
 {
     private Map   pubRings = new HashMap();
     private List  order = new ArrayList();
@@ -31,12 +34,13 @@ public class PGPPublicKeyRingCollection
         this.pubRings = pubRings;
         this.order = order;
     }
-    
+
     public PGPPublicKeyRingCollection(
-        byte[]    encoding)
+        byte[]    encoding,
+        KeyFingerPrintCalculator fingerPrintCalculator)
         throws IOException, PGPException
     {
-        this(new ByteArrayInputStream(encoding));
+        this(new ByteArrayInputStream(encoding), fingerPrintCalculator);
     }
 
     /**
@@ -47,10 +51,11 @@ public class PGPPublicKeyRingCollection
      * @throws PGPException if an object is encountered which isn't a PGPPublicKeyRing
      */
     public PGPPublicKeyRingCollection(
-        InputStream    in)
+        InputStream    in,
+        KeyFingerPrintCalculator fingerPrintCalculator)
         throws IOException, PGPException
     {
-        PGPObjectFactory    pgpFact = new PGPObjectFactory(in);
+        PGPObjectFactory    pgpFact = new PGPObjectFactory(in, fingerPrintCalculator);
         Object              obj;
 
         while ((obj = pgpFact.nextObject()) != null)
@@ -69,7 +74,7 @@ public class PGPPublicKeyRingCollection
     }
     
     public PGPPublicKeyRingCollection(
-        Collection    collection)
+        Collection<PGPPublicKeyRing>    collection)
         throws IOException, PGPException
     {
         Iterator                    it = collection.iterator();
@@ -98,7 +103,7 @@ public class PGPPublicKeyRingCollection
     /**
      * return the public key rings making up this collection.
      */
-    public Iterator getKeyRings()
+    public Iterator<PGPPublicKeyRing> getKeyRings()
     {
         return pubRings.values().iterator();
     }
@@ -110,7 +115,7 @@ public class PGPPublicKeyRingCollection
      * @return an iterator (possibly empty) of key rings which matched.
      * @throws PGPException
      */
-    public Iterator getKeyRings(
+    public Iterator<PGPPublicKeyRing> getKeyRings(
         String    userID) 
         throws PGPException
     {   
@@ -126,7 +131,7 @@ public class PGPPublicKeyRingCollection
      * @return an iterator (possibly empty) of key rings which matched.
      * @throws PGPException
      */
-    public Iterator getKeyRings(
+    public Iterator<PGPPublicKeyRing> getKeyRings(
         String    userID,
         boolean   matchPartial) 
         throws PGPException
@@ -144,7 +149,7 @@ public class PGPPublicKeyRingCollection
      * @return an iterator (possibly empty) of key rings which matched.
      * @throws PGPException
      */
-    public Iterator getKeyRings(
+    public Iterator<PGPPublicKeyRing> getKeyRings(
         String    userID,
         boolean   matchPartial,
         boolean   ignoreCase) 
@@ -251,7 +256,84 @@ public class PGPPublicKeyRingCollection
     
         return null;
     }
-    
+
+    /**
+     * Return the PGP public key associated with the given key fingerprint.
+     *
+     * @param fingerprint the public key fingerprint to match against.
+     * @return the PGP public key matching fingerprint.
+     * @throws PGPException
+     */
+    public PGPPublicKey getPublicKey(
+        byte[] fingerprint)
+        throws PGPException
+    {
+        Iterator    it = this.getKeyRings();
+
+        while (it.hasNext())
+        {
+            PGPPublicKeyRing    pubRing = (PGPPublicKeyRing)it.next();
+            PGPPublicKey        pub = pubRing.getPublicKey(fingerprint);
+
+            if (pub != null)
+            {
+                return pub;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Return the PGP public key associated with the given key fingerprint.
+     *
+     * @param fingerprint the public key fingerprint to match against.
+     * @return the PGP public key ring containing the PGP public key matching fingerprint.
+     * @throws PGPException
+     */
+    public PGPPublicKeyRing getPublicKeyRing(
+        byte[] fingerprint)
+        throws PGPException
+    {
+        Iterator    it = this.getKeyRings();
+
+        while (it.hasNext())
+        {
+            PGPPublicKeyRing    pubRing = (PGPPublicKeyRing)it.next();
+            PGPPublicKey        pub = pubRing.getPublicKey(fingerprint);
+
+            if (pub != null)
+            {
+                return pubRing;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Return any keys carrying a signature issued by the key represented by keyID.
+     *
+     * @param keyID the key id to be matched against.
+     * @return an iterator (possibly empty) of PGPPublicKey objects carrying signatures from keyID.
+     */
+    public Iterator<PGPPublicKey> getKeysWithSignaturesBy(long keyID)
+    {
+        List keysWithSigs = new ArrayList();
+
+        for (Iterator it = this.iterator(); it.hasNext();)
+        {
+            PGPPublicKeyRing    k = (PGPPublicKeyRing)it.next();
+
+            for (Iterator keyIt = k.getKeysWithSignaturesBy(keyID); keyIt.hasNext();)
+            {
+                keysWithSigs.add(keyIt.next());
+            }
+        }
+
+        return keysWithSigs.iterator();
+    }
+
     /**
      * Return true if a key matching the passed in key ID is present, false otherwise.
      *
@@ -262,6 +344,18 @@ public class PGPPublicKeyRingCollection
         throws PGPException
     {
         return getPublicKey(keyID) != null;
+    }
+
+    /**
+     * Return true if a key matching the passed in fingerprint is present, false otherwise.
+     *
+     * @param fingerprint hte key fingerprint to look for.
+     * @return true if keyID present, false otherwise.
+     */
+    public boolean contains(byte[] fingerprint)
+        throws PGPException
+    {
+        return getPublicKey(fingerprint) != null;
     }
 
     public byte[] getEncoded() 
@@ -365,5 +459,13 @@ public class PGPPublicKeyRingCollection
         }
         
         return new PGPPublicKeyRingCollection(newPubRings, newOrder);
+    }
+
+    /**
+     * Support method for Iterable where available.
+     */
+    public Iterator<PGPPublicKeyRing> iterator()
+    {
+        return pubRings.values().iterator();
     }
 }

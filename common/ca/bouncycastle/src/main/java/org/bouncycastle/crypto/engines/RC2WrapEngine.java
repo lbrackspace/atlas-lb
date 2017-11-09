@@ -6,10 +6,10 @@ import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.Wrapper;
-import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.modes.CBCBlockCipher;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 import org.bouncycastle.crypto.params.ParametersWithRandom;
+import org.bouncycastle.crypto.util.DigestFactory;
 import org.bouncycastle.util.Arrays;
 
 /**
@@ -43,14 +43,14 @@ public class RC2WrapEngine
     //
     // checksum digest
     //
-    Digest  sha1 = new SHA1Digest();
+    Digest  sha1 = DigestFactory.createSHA1();
     byte[]  digest = new byte[20];
 
    /**
     * Method init
     *
-    * @param forWrapping
-    * @param param
+    * @param forWrapping true if for wrapping, false for unwrap.
+    * @param param parameters for wrap/unwrapping (iv required for unwrap).
     */
    public void init(boolean forWrapping, CipherParameters param)
    {
@@ -119,9 +119,9 @@ public class RC2WrapEngine
    /**
     * Method wrap
     *
-    * @param in
-    * @param inOff
-    * @param inLen
+    * @param in byte array containing the key.
+    * @param inOff offset into in array that the key data starts at.
+    * @param inLen length of key data.
     * @return the wrapped bytes.
     */
    public byte[] wrap(byte[] in, int inOff, int inLen)
@@ -218,9 +218,9 @@ public class RC2WrapEngine
    /**
     * Method unwrap
     *
-    * @param in
-    * @param inOff
-    * @param inLen
+    * @param in byte array containing the wrapped key.
+    * @param inOff offset into in array that the wrapped key starts at.
+    * @param inLen length of wrapped key data.
     * @return the unwrapped bytes.
     * @throws InvalidCipherTextException
     */
@@ -342,7 +342,7 @@ public class RC2WrapEngine
         return CEK;
     }
 
-    /**
+    /*
      * Some key wrap algorithms make use of the Key Checksum defined
      * in CMS [CMS-Algorithms]. This is used to provide an integrity
      * check value for the key being wrapped. The algorithm is
@@ -350,10 +350,7 @@ public class RC2WrapEngine
      * - Compute the 20 octet SHA-1 hash on the key being wrapped.
      * - Use the first 8 octets of this hash as the checksum value.
      *
-     * @param key
-     * @return
-     * @throws RuntimeException
-     * @see http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum
+     * For details see  http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum
      */
     private byte[] calculateCMSKeyChecksum(
         byte[] key)
@@ -368,11 +365,8 @@ public class RC2WrapEngine
         return result;
     }
 
-    /**
-     * @param key
-     * @param checksum
-     * @return
-     * @see http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum
+    /*
+     * For details see  http://www.w3.org/TR/xmlenc-core/#sec-CMSKeyChecksum
      */
     private boolean checkCMSKeyChecksum(
         byte[] key,

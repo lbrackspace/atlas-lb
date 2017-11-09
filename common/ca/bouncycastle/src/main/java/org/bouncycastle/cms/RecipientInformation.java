@@ -2,16 +2,9 @@ package org.bouncycastle.cms;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.security.AlgorithmParameters;
-import java.security.Key;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
 
-import javax.crypto.Mac;
-import javax.crypto.SecretKey;
-
-import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.util.io.Streams;
 
@@ -20,7 +13,7 @@ public abstract class RecipientInformation
     protected RecipientId rid;
     protected AlgorithmIdentifier   keyEncAlg;
     protected AlgorithmIdentifier messageAlgorithm;
-    private CMSSecureReadable     secureReadable;
+    protected CMSSecureReadable     secureReadable;
 
     private AuthAttributesProvider additionalData;
 
@@ -39,27 +32,31 @@ public abstract class RecipientInformation
         this.additionalData = additionalData;
     }
 
-    String getContentAlgorithmName()
-    {
-        AlgorithmIdentifier algorithm = secureReadable.getAlgorithm();
-        return CMSEnvelopedHelper.INSTANCE.getSymmetricCipherName(algorithm.getObjectId().getId());
-    }
-
     public RecipientId getRID()
     {
         return rid;
     }
 
     private byte[] encodeObj(
-        DEREncodable obj)
+        ASN1Encodable obj)
         throws IOException
     {
         if (obj != null)
         {
-            return obj.getDERObject().getEncoded();
+            return obj.toASN1Primitive().getEncoded();
         }
 
         return null;
+    }
+
+    /**
+     * Return the key encryption algorithm details for the key in this recipient.
+     *
+     * @return AlgorithmIdentifier representing the key encryption algorithm.
+     */
+    public AlgorithmIdentifier getKeyEncryptionAlgorithm()
+    {
+        return keyEncAlg;
     }
 
     /**
@@ -69,7 +66,7 @@ public abstract class RecipientInformation
      */
     public String getKeyEncryptionAlgOID()
     {
-        return keyEncAlg.getObjectId().getId();
+        return keyEncAlg.getAlgorithm().getId();
     }
 
     /**
@@ -87,104 +84,6 @@ public abstract class RecipientInformation
         catch (Exception e)
         {
             throw new RuntimeException("exception getting encryption parameters " + e);
-        }
-    }
-
-    /**
-     * Return an AlgorithmParameters object giving the encryption parameters
-     * used to encrypt the key this recipient holds.
-     *
-     * @param provider the provider to generate the parameters for.
-     * @return the parameters object, null if there is not one.
-     * @throws CMSException            if the algorithm cannot be found, or the parameters can't be parsed.
-     * @throws NoSuchProviderException if the provider cannot be found.
-     */
-    public AlgorithmParameters getKeyEncryptionAlgorithmParameters(
-        String provider)
-        throws CMSException, NoSuchProviderException
-    {
-        return getKeyEncryptionAlgorithmParameters(CMSUtils.getProvider(provider));
-    }
-
-    /**
-     * Return an AlgorithmParameters object giving the encryption parameters
-     * used to encrypt the key this recipient holds.
-     *
-     * @param provider the provider to generate the parameters for.
-     * @return the parameters object, null if there is not one.
-     * @throws CMSException if the algorithm cannot be found, or the parameters can't be parsed.
-     */
-    public AlgorithmParameters getKeyEncryptionAlgorithmParameters(
-        Provider provider)
-        throws CMSException
-    {
-        try
-        {
-            byte[] enc = this.encodeObj(keyEncAlg.getParameters());
-            if (enc == null)
-            {
-                return null;
-            }
-
-            AlgorithmParameters params = CMSEnvelopedHelper.INSTANCE.createAlgorithmParameters(getKeyEncryptionAlgOID(), provider);
-
-            params.init(enc, "ASN.1");
-
-            return params;
-        }
-        catch (NoSuchAlgorithmException e)
-        {
-            throw new CMSException("can't find parameters for algorithm", e);
-        }
-        catch (IOException e)
-        {
-            throw new CMSException("can't find parse parameters", e);
-        }
-    }
-
-    protected CMSTypedStream getContentFromSessionKey(
-        Key sKey,
-        Provider provider)
-        throws CMSException
-    {
-        CMSReadable readable = secureReadable.getReadable((SecretKey)sKey, provider); 
-
-        try
-        {
-            return new CMSTypedStream(readable.getInputStream());
-        }
-        catch (IOException e)
-        {
-            throw new CMSException("error getting .", e);
-        }
-    }
-
-    /**
-     * @deprecated use getContent(Recipient)
-     */
-    public byte[] getContent(
-        Key key,
-        String provider)
-        throws CMSException, NoSuchProviderException
-    {
-        return getContent(key, CMSUtils.getProvider(provider));
-    }
-
-    /**
-     * @deprecated use getContent(Recipient)
-     */
-    public byte[] getContent(
-        Key key,
-        Provider provider)
-        throws CMSException
-    {
-        try
-        {
-            return CMSUtils.streamToByteArray(getContentStream(key, provider).getContentStream());
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException("unable to parse internal stream: " + e);
         }
     }
 
@@ -214,31 +113,20 @@ public abstract class RecipientInformation
     {
         if (resultMac == null)
         {
-            if (operator != null)
+            if (operator.isMacBased())
             {
-                if (operator.isMacBased())
+                if (additionalData != null)
                 {
-                    if (additionalData != null)
+                    try
                     {
-                        try
-                        {
-                            Streams.drain(operator.getInputStream(new ByteArrayInputStream(additionalData.getAuthAttributes().getDEREncoded())));
-                        }
-                        catch (IOException e)
-                        {
-                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        }
+                        Streams.drain(operator.getInputStream(new ByteArrayInputStream(additionalData.getAuthAttributes().getEncoded(ASN1Encoding.DER))));
                     }
-                    resultMac = operator.getMac();
+                    catch (IOException e)
+                    {
+                        throw new IllegalStateException("unable to drain input: " + e.getMessage());
+                    }
                 }
-            }
-            else
-            {
-                Object cryptoObject = secureReadable.getCryptoObject();
-                if (cryptoObject instanceof Mac)
-                {
-                    resultMac = ((Mac)cryptoObject).doFinal();
-                }
+                resultMac = operator.getMac();
             }
         }
 
@@ -266,24 +154,6 @@ public abstract class RecipientInformation
             throw new CMSException("unable to parse internal stream: " + e.getMessage(), e);
         }
     }
-
-    /**
-     * decrypt the content and return it
-     * @deprecated use getContentStream(Recipient) method
-     */
-    public CMSTypedStream getContentStream(Key key, String provider)
-        throws CMSException, NoSuchProviderException
-    {
-        return getContentStream(key, CMSUtils.getProvider(provider));
-    }
-
-    /**
-     * decrypt the content and return it
-     * @deprecated use getContentStream(Recipient) method
-     */
-    public abstract CMSTypedStream getContentStream(Key key, Provider provider)
-        throws CMSException;
-
 
     /**
      * Return a CMSTypedStream representing the content in the EnvelopedData after recovering the content

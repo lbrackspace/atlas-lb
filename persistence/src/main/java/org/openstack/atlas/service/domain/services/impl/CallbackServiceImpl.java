@@ -41,17 +41,17 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
     //V1-B-34716
     @Override
     @Transactional
-    public void handleZeusEvent(ZeusEvent zeusEvent) throws BadRequestException {
+    public void handleZeusEvent(ZeusEvent zeusEvent, String zeusEventId) throws BadRequestException {
         //Example paramLines::
         //WARN monitors/571432_62203 monitorfail Monitor has detected a failure in node '10.178.224.134:443': Invalid HTTP response received; premature end of headers
         //INFO monitors/571432_62203 monitorok Monitor is working for node '10.178.224.134:443'.
 
 
         if (zeusEvent.getParamLine().contains(MONITOR_FAIL_TAG) || zeusEvent.getParamLine().contains(MONITOR_WORKING_TAG)) {
-            LOG.debug("Node status changed.");
+            LOG.debug(String.format("Node status changed. zeusEvent_ID=%s", zeusEventId));
         } else {
-            LOG.warn("Unsupported callback event triggered. Dropping request...");
-            throw new BadRequestException("We currently do not support this callback request.");
+            LOG.warn(String.format("Unsupported callback event triggered. Dropping request... zeusEventId=%s",zeusEventId));
+            throw new BadRequestException(String.format("We currently do not support this callback request. zeusEvent_ID=%s", zeusEventId));
         }
 
         try {
@@ -69,12 +69,13 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
                 dbNode.setStatus(NodeStatus.ONLINE);
                 status = NodeStatus.ONLINE.name();
             } else {
-                throw new BadRequestException("We currently do not support this callback request.");
+                throw new BadRequestException(String.format("We currently do not support this callback request. zeusEvent_ID=%s", zeusEventId));
             }
 
             nodeService.updateNodeStatus(dbNode);
 
             // Add atom entry
+            LOG.info(String.format("Node '%d' status changed to '%s' for load balancer '%d' zeusEvent_ID=%s", dbNode.getId(), status, loadBalancerId, zeusEventId));
             String atomTitle = "Node Status Updated";
             String atomSummary = String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId);
             String detailedMessage = "";
@@ -83,13 +84,12 @@ public class CallbackServiceImpl extends BaseService implements CallbackService 
 
             notificationService.saveNodeServiceEvent("Rackspace Cloud", dbNode.getLoadbalancer().getAccountId(), loadBalancerId, dbNode.getId(), atomTitle, atomSummary, UPDATE_NODE, UPDATE, INFO, detailedMessage, callbackHost);
 
-            LOG.info(String.format("Node '%d' status changed to '%s' for load balancer '%d'", dbNode.getId(), status, loadBalancerId));
         } catch (Exception e) {
             String message;
             if (e instanceof EntityNotFoundException) {
-                message = String.format("Could not process Zeus event as node could not be found: '%s'", zeusEvent.getParamLine());
+                message = String.format("Could not process Zeus event as node could not be found: '%s' zeusEvent_ID=%s", zeusEvent.getParamLine(), zeusEventId);
             } else {
-                message = String.format("Could not process Zeus event: '%s'", zeusEvent.getParamLine());
+                message = String.format("Could not process Zeus event: '%s' zeusEvent_ID=%s", zeusEvent.getParamLine(), zeusEventId);
             }
             LOG.warn(message);
             throw new BadRequestException(message, e);

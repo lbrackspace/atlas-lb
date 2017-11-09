@@ -2,14 +2,15 @@ package org.bouncycastle.asn1.cmp;
 
 import org.bouncycastle.asn1.ASN1Choice;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 
 public class PKIBody
-    extends ASN1Encodable
+    extends ASN1Object
     implements ASN1Choice
 {
     public static final int TYPE_INIT_REQ = 0;
@@ -45,7 +46,7 @@ public class PKIBody
 
     public static PKIBody getInstance(Object o)
     {
-        if (o instanceof PKIBody)
+        if (o == null || o instanceof PKIBody)
         {
             return (PKIBody)o;
         }
@@ -186,7 +187,7 @@ public class PKIBody
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return new DERTaggedObject(true, tagNo, body);
     }

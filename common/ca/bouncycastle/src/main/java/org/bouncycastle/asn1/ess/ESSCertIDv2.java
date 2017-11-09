@@ -1,18 +1,19 @@
 package org.bouncycastle.asn1.ess;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.IssuerSerial;
+import org.bouncycastle.util.Arrays;
 
 public class ESSCertIDv2
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private AlgorithmIdentifier hashAlgorithm;
     private byte[]              certHash;
@@ -22,21 +23,19 @@ public class ESSCertIDv2
     public static ESSCertIDv2 getInstance(
         Object o)
     {
-        if (o == null || o instanceof ESSCertIDv2)
+        if (o instanceof ESSCertIDv2)
         {
             return (ESSCertIDv2) o;
         }
-        else if (o instanceof ASN1Sequence)
+        else if (o != null)
         {
-            return new ESSCertIDv2((ASN1Sequence) o);
+            return new ESSCertIDv2(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException(
-                "unknown object in 'ESSCertIDv2' factory : "
-                        + o.getClass().getName() + ".");
+        return null;
     }
 
-    public ESSCertIDv2(
+    private ESSCertIDv2(
         ASN1Sequence seq)
     {
         if (seq.size() > 3)
@@ -53,15 +52,21 @@ public class ESSCertIDv2
         }
         else
         {
-            this.hashAlgorithm = AlgorithmIdentifier.getInstance(seq.getObjectAt(count++).getDERObject());
+            this.hashAlgorithm = AlgorithmIdentifier.getInstance(seq.getObjectAt(count++).toASN1Primitive());
         }
 
-        this.certHash = ASN1OctetString.getInstance(seq.getObjectAt(count++).getDERObject()).getOctets();
+        this.certHash = ASN1OctetString.getInstance(seq.getObjectAt(count++).toASN1Primitive()).getOctets();
 
         if (seq.size() > count)
         {
-            this.issuerSerial = new IssuerSerial(ASN1Sequence.getInstance(seq.getObjectAt(count).getDERObject()));
+            this.issuerSerial = IssuerSerial.getInstance(seq.getObjectAt(count));
         }
+    }
+
+    public ESSCertIDv2(
+        byte[]              certHash)
+    {
+        this(null, certHash, null);
     }
 
     public ESSCertIDv2(
@@ -69,6 +74,13 @@ public class ESSCertIDv2
         byte[]              certHash)
     {
         this(algId, certHash, null);
+    }
+
+    public ESSCertIDv2(
+        byte[]              certHash,
+        IssuerSerial        issuerSerial)
+    {
+        this(null, certHash, issuerSerial);
     }
 
     public ESSCertIDv2(
@@ -86,7 +98,7 @@ public class ESSCertIDv2
             this.hashAlgorithm = algId;
         }
 
-        this.certHash = certHash;
+        this.certHash = Arrays.clone(certHash);
         this.issuerSerial = issuerSerial;
     }
 
@@ -97,7 +109,7 @@ public class ESSCertIDv2
 
     public byte[] getCertHash()
     {
-        return certHash;
+        return Arrays.clone(certHash);
     }
 
     public IssuerSerial getIssuerSerial()
@@ -122,7 +134,7 @@ public class ESSCertIDv2
      * }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 
@@ -131,7 +143,7 @@ public class ESSCertIDv2
             v.add(hashAlgorithm);
         }
 
-        v.add(new DEROctetString(certHash).toASN1Object());
+        v.add(new DEROctetString(certHash).toASN1Primitive());
 
         if (issuerSerial != null)
         {

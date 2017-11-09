@@ -5,9 +5,11 @@ import java.math.BigInteger;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.tsp.Accuracy;
 import org.bouncycastle.asn1.tsp.TSTInfo;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 
 public class TimeStampTokenInfo
@@ -55,9 +57,9 @@ public class TimeStampTokenInfo
         return null;
     }
     
-    public String getPolicy()
+    public ASN1ObjectIdentifier getPolicy()
     {
-        return tstInfo.getPolicy().getId();
+        return tstInfo.getPolicy();
     }
     
     public BigInteger getSerialNumber()
@@ -68,6 +70,11 @@ public class TimeStampTokenInfo
     public GeneralName getTsa()
     {
         return tstInfo.getTsa();
+    }
+
+    public Extensions getExtensions()
+    {
+        return tstInfo.getExtensions();
     }
 
     /**
@@ -88,9 +95,9 @@ public class TimeStampTokenInfo
         return tstInfo.getMessageImprint().getHashAlgorithm();
     }
 
-    public String getMessageImprintAlgOID()
+    public ASN1ObjectIdentifier getMessageImprintAlgOID()
     {
-        return tstInfo.getMessageImprint().getHashAlgorithm().getObjectId().getId();
+        return tstInfo.getMessageImprint().getHashAlgorithm().getAlgorithm();
     }
 
     public byte[] getMessageImprintDigest()
@@ -104,7 +111,15 @@ public class TimeStampTokenInfo
         return tstInfo.getEncoded();
     }
 
+    /**
+     * @deprecated use toASN1Structure
+     */
     public TSTInfo toTSTInfo()
+    {
+        return tstInfo;
+    }
+
+    public TSTInfo toASN1Structure()
     {
         return tstInfo;
     }

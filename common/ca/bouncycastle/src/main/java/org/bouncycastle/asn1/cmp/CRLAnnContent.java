@@ -1,12 +1,13 @@
 package org.bouncycastle.asn1.cmp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.CertificateList;
 
 public class CRLAnnContent
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private ASN1Sequence content;
 
@@ -22,15 +23,20 @@ public class CRLAnnContent
             return (CRLAnnContent)o;
         }
 
-        if (o instanceof ASN1Sequence)
+        if (o != null)
         {
-            return new CRLAnnContent((ASN1Sequence)o);
+            return new CRLAnnContent(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
     }
 
-    public CertificateList[] toCertificateListArray()
+    public CRLAnnContent(CertificateList crl)
+    {
+        this.content = new DERSequence(crl);
+    }
+
+    public CertificateList[] getCertificateLists()
     {
         CertificateList[] result = new CertificateList[content.size()];
 
@@ -48,7 +54,7 @@ public class CRLAnnContent
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return content;
     }

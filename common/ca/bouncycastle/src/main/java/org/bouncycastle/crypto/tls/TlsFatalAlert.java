@@ -1,15 +1,19 @@
 package org.bouncycastle.crypto.tls;
 
-import java.io.IOException;
-
-public class TlsFatalAlert extends IOException
+public class TlsFatalAlert
+    extends TlsException
 {
-    private static final long serialVersionUID = 3584313123679111168L;
-
-    private short alertDescription;
+    protected short alertDescription;
 
     public TlsFatalAlert(short alertDescription)
     {
+        this(alertDescription, null);
+    }
+
+    public TlsFatalAlert(short alertDescription, Throwable alertCause)
+    {
+        super(AlertDescription.getText(alertDescription), alertCause);
+
         this.alertDescription = alertDescription;
     }
 

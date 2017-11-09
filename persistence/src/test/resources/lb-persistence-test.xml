@@ -14,6 +14,8 @@
         <class>org.openstack.atlas.service.domain.entities.Entity</class>
         <class>org.openstack.atlas.service.domain.entities.HealthMonitor</class>
         <class>org.openstack.atlas.service.domain.entities.HealthMonitorType</class>
+        <class>org.openstack.atlas.service.domain.entities.HdfsLzo</class>
+        <class>org.openstack.atlas.service.domain.entities.CloudFilesLzo</class>
         <class>org.openstack.atlas.service.domain.entities.Host</class>
         <class>org.openstack.atlas.service.domain.entities.HostStatus</class>
         <class>org.openstack.atlas.service.domain.entities.Backup</class>
@@ -47,6 +49,7 @@
         <class>org.openstack.atlas.service.domain.entities.JobState</class>
         <class>org.openstack.atlas.service.domain.entities.UserPages</class>
         <class>org.openstack.atlas.service.domain.entities.SslTermination</class>
+        <class>org.openstack.atlas.service.domain.entities.SslCipherProfile</class>
         <class>org.openstack.atlas.service.domain.entities.Defaults</class>
         <class>org.openstack.atlas.service.domain.entities.AllowedDomain</class>
         <class>org.openstack.atlas.service.domain.entities.LoadbalancerMeta</class>

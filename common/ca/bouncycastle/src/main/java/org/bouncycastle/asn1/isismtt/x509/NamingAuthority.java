@@ -4,13 +4,13 @@ import java.util.Enumeration;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.isismtt.ISISMTTObjectIdentifiers;
 import org.bouncycastle.asn1.x500.DirectoryString;
@@ -31,7 +31,7 @@ import org.bouncycastle.asn1.x500.DirectoryString;
  * 
  */
 public class NamingAuthority
-    extends ASN1Encodable
+    extends ASN1Object
 {
 
     /**
@@ -40,10 +40,10 @@ public class NamingAuthority
      * �Recht, Wirtschaft, Steuern� (�Law, Economy, Taxes�) is registered as the
      * first naming authority under the OID id-isismtt-at-namingAuthorities.
      */
-    public static final DERObjectIdentifier id_isismtt_at_namingAuthorities_RechtWirtschaftSteuern =
-        new DERObjectIdentifier(ISISMTTObjectIdentifiers.id_isismtt_at_namingAuthorities + ".1");
+    public static final ASN1ObjectIdentifier id_isismtt_at_namingAuthorities_RechtWirtschaftSteuern =
+        new ASN1ObjectIdentifier(ISISMTTObjectIdentifiers.id_isismtt_at_namingAuthorities + ".1");
 
-    private DERObjectIdentifier namingAuthorityId;
+    private ASN1ObjectIdentifier namingAuthorityId;
     private String namingAuthorityUrl;
     private DirectoryString namingAuthorityText;
 
@@ -70,8 +70,6 @@ public class NamingAuthority
 
     /**
      * Constructor from ASN1Sequence.
-     * <p/>
-     * <p/>
      * <pre>
      *             NamingAuthority ::= SEQUENCE
      *             {
@@ -96,10 +94,10 @@ public class NamingAuthority
 
         if (e.hasMoreElements())
         {
-            DEREncodable o = (DEREncodable)e.nextElement();
-            if (o instanceof DERObjectIdentifier)
+            ASN1Encodable o = (ASN1Encodable)e.nextElement();
+            if (o instanceof ASN1ObjectIdentifier)
             {
-                namingAuthorityId = (DERObjectIdentifier)o;
+                namingAuthorityId = (ASN1ObjectIdentifier)o;
             }
             else if (o instanceof DERIA5String)
             {
@@ -117,7 +115,7 @@ public class NamingAuthority
         }
         if (e.hasMoreElements())
         {
-            DEREncodable o = (DEREncodable)e.nextElement();
+            ASN1Encodable o = (ASN1Encodable)e.nextElement();
             if (o instanceof DERIA5String)
             {
                 namingAuthorityUrl = DERIA5String.getInstance(o).getString();
@@ -134,7 +132,7 @@ public class NamingAuthority
         }
         if (e.hasMoreElements())
         {
-            DEREncodable o = (DEREncodable)e.nextElement();
+            ASN1Encodable o = (ASN1Encodable)e.nextElement();
             if (o instanceof ASN1String)
             {
                 namingAuthorityText = DirectoryString.getInstance(o);
@@ -151,7 +149,7 @@ public class NamingAuthority
     /**
      * @return Returns the namingAuthorityId.
      */
-    public DERObjectIdentifier getNamingAuthorityId()
+    public ASN1ObjectIdentifier getNamingAuthorityId()
     {
         return namingAuthorityId;
     }
@@ -174,14 +172,14 @@ public class NamingAuthority
 
     /**
      * Constructor from given details.
-     * <p/>
+     * <p>
      * All parameters can be combined.
      *
      * @param namingAuthorityId   ObjectIdentifier for naming authority.
      * @param namingAuthorityUrl  URL for naming authority.
      * @param namingAuthorityText Textual representation of naming authority.
      */
-    public NamingAuthority(DERObjectIdentifier namingAuthorityId,
+    public NamingAuthority(ASN1ObjectIdentifier namingAuthorityId,
                            String namingAuthorityUrl, DirectoryString namingAuthorityText)
     {
         this.namingAuthorityId = namingAuthorityId;
@@ -191,9 +189,8 @@ public class NamingAuthority
 
     /**
      * Produce an object suitable for an ASN1OutputStream.
-     * <p/>
+     * <p>
      * Returns:
-     * <p/>
      * <pre>
      *             NamingAuthority ::= SEQUENCE
      *             {
@@ -205,7 +202,7 @@ public class NamingAuthority
      *
      * @return a DERObject
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector vec = new ASN1EncodableVector();
         if (namingAuthorityId != null)

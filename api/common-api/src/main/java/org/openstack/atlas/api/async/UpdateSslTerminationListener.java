@@ -1,11 +1,13 @@
 package org.openstack.atlas.api.async;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.helpers.SslTerminationUsage;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -39,7 +41,7 @@ public class UpdateSslTerminationListener extends BaseListener {
 
         try {
             LOG.debug("Grabbing loadbalancer...");
-            dbLoadBalancer = loadBalancerService.get(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
             dbLoadBalancer.setUserName(dataContainer.getUserName());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
@@ -66,12 +68,11 @@ public class UpdateSslTerminationListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.info("Updating load balancer ssl termination in STM...");
-                reverseProxyLoadBalancerStmService.updateSslTermination(dbLoadBalancer, queTermination, loadBalancerService.getUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId()));
+                reverseProxyLoadBalancerStmService.updateSslTermination(dbLoadBalancer, queTermination);
                 LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
             } else {
                 LOG.info("Updating load balancer ssl termination in ZXTM...");
                 reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, queTermination);
-                LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
             }
         } catch (Exception e) {
             dbLoadBalancer.setStatus(LoadBalancerStatus.ERROR);

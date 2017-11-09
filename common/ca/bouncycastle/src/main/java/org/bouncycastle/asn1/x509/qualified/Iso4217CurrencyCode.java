@@ -2,9 +2,9 @@ package org.bouncycastle.asn1.x509.qualified;
 
 import org.bouncycastle.asn1.ASN1Choice;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERPrintableString;
 
 /**
@@ -18,14 +18,14 @@ import org.bouncycastle.asn1.DERPrintableString;
  * </pre>
  */
 public class Iso4217CurrencyCode 
-    extends ASN1Encodable
+    extends ASN1Object
     implements ASN1Choice
 {
     final int ALPHABETIC_MAXSIZE = 3;
     final int NUMERIC_MINSIZE = 1;
     final int NUMERIC_MAXSIZE = 999;
     
-    DEREncodable obj;    
+    ASN1Encodable obj;
     int          numeric;
     
     public static Iso4217CurrencyCode getInstance(
@@ -36,9 +36,9 @@ public class Iso4217CurrencyCode
             return (Iso4217CurrencyCode)obj;
         }
 
-        if (obj instanceof DERInteger)
+        if (obj instanceof ASN1Integer)
         {
-            DERInteger numericobj = DERInteger.getInstance(obj);
+            ASN1Integer numericobj = ASN1Integer.getInstance(obj);
             int numeric = numericobj.getValue().intValue();  
             return new Iso4217CurrencyCode(numeric);            
         }
@@ -58,7 +58,7 @@ public class Iso4217CurrencyCode
         {
             throw new IllegalArgumentException("wrong size in numeric code : not in (" +NUMERIC_MINSIZE +".."+ NUMERIC_MAXSIZE +")");
         }
-        obj = new DERInteger(numeric);
+        obj = new ASN1Integer(numeric);
     }
     
     public Iso4217CurrencyCode(
@@ -83,11 +83,11 @@ public class Iso4217CurrencyCode
     
     public int getNumeric()
     {
-        return ((DERInteger)obj).getValue().intValue();
+        return ((ASN1Integer)obj).getValue().intValue();
     }
     
-    public DERObject toASN1Object() 
+    public ASN1Primitive toASN1Primitive()
     {    
-        return obj.getDERObject();
+        return obj.toASN1Primitive();
     }
 }

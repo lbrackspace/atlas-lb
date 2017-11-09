@@ -1,18 +1,32 @@
 package org.bouncycastle.asn1.cms;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.BERSequence;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 
+/**
+ * <a href="http://tools.ietf.org/html/rfc5544">RFC 5544</a>:
+ * Binding Documents with Time-Stamps; TimeStampedData object.
+ * <p>
+ * <pre>
+ * TimeStampedData ::= SEQUENCE {
+ *   version              INTEGER { v1(1) },
+ *   dataUri              IA5String OPTIONAL,
+ *   metaData             MetaData OPTIONAL,
+ *   content              OCTET STRING OPTIONAL,
+ *   temporalEvidence     Evidence
+ * }
+ * </pre>
+ */
 public class TimeStampedData
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERInteger version;
+    private ASN1Integer version;
     private DERIA5String dataUri;
     private MetaData metaData;
     private ASN1OctetString content;
@@ -20,7 +34,7 @@ public class TimeStampedData
 
     public TimeStampedData(DERIA5String dataUri, MetaData metaData, ASN1OctetString content, Evidence temporalEvidence)
     {
-        this.version = new DERInteger(1);
+        this.version = new ASN1Integer(1);
         this.dataUri = dataUri;
         this.metaData = metaData;
         this.content = content;
@@ -29,7 +43,7 @@ public class TimeStampedData
 
     private TimeStampedData(ASN1Sequence seq)
     {
-        this.version = DERInteger.getInstance(seq.getObjectAt(0));
+        this.version = ASN1Integer.getInstance(seq.getObjectAt(0));
 
         int index = 1;
         if (seq.getObjectAt(index) instanceof DERIA5String)
@@ -47,18 +61,26 @@ public class TimeStampedData
         this.temporalEvidence = Evidence.getInstance(seq.getObjectAt(index));
     }
 
+    /**
+     * Return a TimeStampedData object from the given object.
+     * <p>
+     * Accepted inputs:
+     * <ul>
+     * <li> null &rarr; null
+     * <li> {@link RecipientKeyIdentifier} object
+     * <li> {@link org.bouncycastle.asn1.ASN1Sequence#getInstance(java.lang.Object) ASN1Sequence} input formats with TimeStampedData structure inside
+     * </ul>
+     *
+     * @param obj the object we want converted.
+     * @exception IllegalArgumentException if the object cannot be converted.
+     */
     public static TimeStampedData getInstance(Object obj)
     {
-        if (obj instanceof TimeStampedData)
+        if (obj == null || obj instanceof TimeStampedData)
         {
             return (TimeStampedData)obj;
         }
-        else if (obj != null)
-        {
-            return new TimeStampedData(ASN1Sequence.getInstance(obj));
-        }
-
-        return null;
+        return new TimeStampedData(ASN1Sequence.getInstance(obj));
     }
 
     public DERIA5String getDataUri()
@@ -81,19 +103,7 @@ public class TimeStampedData
         return temporalEvidence;
     }
 
-    /**
-     * <pre>
-     * TimeStampedData ::= SEQUENCE {
-     *   version              INTEGER { v1(1) },
-     *   dataUri              IA5String OPTIONAL,
-     *   metaData             MetaData OPTIONAL,
-     *   content              OCTET STRING OPTIONAL,
-     *   temporalEvidence     Evidence
-     * }
-     * </pre>
-     * @return
-     */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

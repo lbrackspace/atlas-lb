@@ -1,43 +1,45 @@
 package org.bouncycastle.asn1.pkcs;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import java.math.BigInteger;
+
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 public class RSASSAPSSparams
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private AlgorithmIdentifier hashAlgorithm;
     private AlgorithmIdentifier maskGenAlgorithm;
-    private DERInteger          saltLength;
-    private DERInteger          trailerField;
+    private ASN1Integer          saltLength;
+    private ASN1Integer          trailerField;
     
-    public final static AlgorithmIdentifier DEFAULT_HASH_ALGORITHM = new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1, new DERNull());
+    public final static AlgorithmIdentifier DEFAULT_HASH_ALGORITHM = new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1, DERNull.INSTANCE);
     public final static AlgorithmIdentifier DEFAULT_MASK_GEN_FUNCTION = new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1, DEFAULT_HASH_ALGORITHM);
-    public final static DERInteger          DEFAULT_SALT_LENGTH = new DERInteger(20);
-    public final static DERInteger          DEFAULT_TRAILER_FIELD = new DERInteger(1);
+    public final static ASN1Integer          DEFAULT_SALT_LENGTH = new ASN1Integer(20);
+    public final static ASN1Integer          DEFAULT_TRAILER_FIELD = new ASN1Integer(1);
     
     public static RSASSAPSSparams getInstance(
         Object  obj)
     {
-        if (obj == null || obj instanceof RSASSAPSSparams)
+        if (obj instanceof RSASSAPSSparams)
         {
             return (RSASSAPSSparams)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new RSASSAPSSparams((ASN1Sequence)obj);
+            return new RSASSAPSSparams(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
     
     /**
@@ -54,8 +56,8 @@ public class RSASSAPSSparams
     public RSASSAPSSparams(
         AlgorithmIdentifier hashAlgorithm,
         AlgorithmIdentifier maskGenAlgorithm,
-        DERInteger          saltLength,
-        DERInteger          trailerField)
+        ASN1Integer          saltLength,
+        ASN1Integer          trailerField)
     {
         this.hashAlgorithm = hashAlgorithm;
         this.maskGenAlgorithm = maskGenAlgorithm;
@@ -63,7 +65,7 @@ public class RSASSAPSSparams
         this.trailerField = trailerField;
     }
     
-    public RSASSAPSSparams(
+    private RSASSAPSSparams(
         ASN1Sequence seq)
     {
         hashAlgorithm = DEFAULT_HASH_ALGORITHM;
@@ -84,10 +86,10 @@ public class RSASSAPSSparams
                 maskGenAlgorithm = AlgorithmIdentifier.getInstance(o, true);
                 break;
             case 2:
-                saltLength = DERInteger.getInstance(o, true);
+                saltLength = ASN1Integer.getInstance(o, true);
                 break;
             case 3:
-                trailerField = DERInteger.getInstance(o, true);
+                trailerField = ASN1Integer.getInstance(o, true);
                 break;
             default:
                 throw new IllegalArgumentException("unknown tag");
@@ -105,14 +107,14 @@ public class RSASSAPSSparams
         return maskGenAlgorithm;
     }
     
-    public DERInteger getSaltLength()
+    public BigInteger getSaltLength()
     {
-        return saltLength;
+        return saltLength.getValue();
     }
     
-    public DERInteger getTrailerField()
+    public BigInteger getTrailerField()
     {
-        return trailerField;
+        return trailerField.getValue();
     }
     
     /**
@@ -141,7 +143,7 @@ public class RSASSAPSSparams
      * </pre>
      * @return the asn1 primitive representing the parameters.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
         

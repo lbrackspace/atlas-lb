@@ -21,10 +21,10 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERInteger;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
@@ -111,19 +111,19 @@ class X509Util
         //
         // explicit params
         //
-        AlgorithmIdentifier sha1AlgId = new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1, new DERNull());
+        AlgorithmIdentifier sha1AlgId = new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1, DERNull.INSTANCE);
         params.put("SHA1WITHRSAANDMGF1", creatPSSParams(sha1AlgId, 20));
 
-        AlgorithmIdentifier sha224AlgId = new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha224, new DERNull());
+        AlgorithmIdentifier sha224AlgId = new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha224, DERNull.INSTANCE);
         params.put("SHA224WITHRSAANDMGF1", creatPSSParams(sha224AlgId, 28));
 
-        AlgorithmIdentifier sha256AlgId = new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, new DERNull());
+        AlgorithmIdentifier sha256AlgId = new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256, DERNull.INSTANCE);
         params.put("SHA256WITHRSAANDMGF1", creatPSSParams(sha256AlgId, 32));
 
-        AlgorithmIdentifier sha384AlgId = new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha384, new DERNull());
+        AlgorithmIdentifier sha384AlgId = new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha384, DERNull.INSTANCE);
         params.put("SHA384WITHRSAANDMGF1", creatPSSParams(sha384AlgId, 48));
 
-        AlgorithmIdentifier sha512AlgId = new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha512, new DERNull());
+        AlgorithmIdentifier sha512AlgId = new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha512, DERNull.INSTANCE);
         params.put("SHA512WITHRSAANDMGF1", creatPSSParams(sha512AlgId, 64));
     }
 
@@ -132,25 +132,25 @@ class X509Util
         return new RSASSAPSSparams(
             hashAlgId,
             new AlgorithmIdentifier(PKCSObjectIdentifiers.id_mgf1, hashAlgId),
-            new DERInteger(saltSize),
-            new DERInteger(1));
+            new ASN1Integer(saltSize),
+            new ASN1Integer(1));
     }
 
-    static DERObjectIdentifier getAlgorithmOID(
+    static ASN1ObjectIdentifier getAlgorithmOID(
         String algorithmName)
     {
         algorithmName = Strings.toUpperCase(algorithmName);
         
         if (algorithms.containsKey(algorithmName))
         {
-            return (DERObjectIdentifier)algorithms.get(algorithmName);
+            return (ASN1ObjectIdentifier)algorithms.get(algorithmName);
         }
         
-        return new DERObjectIdentifier(algorithmName);
+        return new ASN1ObjectIdentifier(algorithmName);
     }
     
     static AlgorithmIdentifier getSigAlgID(
-        DERObjectIdentifier sigOid,
+        ASN1ObjectIdentifier sigOid,
         String              algorithmName)
     {
         if (noParams.contains(sigOid))
@@ -162,11 +162,11 @@ class X509Util
 
         if (params.containsKey(algorithmName))
         {
-            return new AlgorithmIdentifier(sigOid, (DEREncodable)params.get(algorithmName));
+            return new AlgorithmIdentifier(sigOid, (ASN1Encodable)params.get(algorithmName));
         }
         else
         {
-            return new AlgorithmIdentifier(sigOid, new DERNull());
+            return new AlgorithmIdentifier(sigOid, DERNull.INSTANCE);
         }
     }
     
@@ -206,7 +206,7 @@ class X509Util
     }
 
     static byte[] calculateSignature(
-        DERObjectIdentifier sigOid,
+        ASN1ObjectIdentifier sigOid,
         String              sigName,
         PrivateKey          key,
         SecureRandom        random,
@@ -231,13 +231,13 @@ class X509Util
             sig.initSign(key);
         }
 
-        sig.update(object.getEncoded(ASN1Encodable.DER));
+        sig.update(object.toASN1Primitive().getEncoded(ASN1Encoding.DER));
 
         return sig.sign();
     }
 
     static byte[] calculateSignature(
-        DERObjectIdentifier sigOid,
+        ASN1ObjectIdentifier sigOid,
         String              sigName,
         String              provider,
         PrivateKey          key,
@@ -263,7 +263,7 @@ class X509Util
             sig.initSign(key);
         }
 
-        sig.update(object.getEncoded(ASN1Encodable.DER));
+        sig.update(object.toASN1Primitive().getEncoded(ASN1Encoding.DER));
 
         return sig.sign();
     }

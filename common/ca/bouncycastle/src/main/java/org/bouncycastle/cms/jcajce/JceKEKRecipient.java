@@ -8,9 +8,6 @@ import javax.crypto.SecretKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.KEKRecipient;
-import org.bouncycastle.jcajce.DefaultJcaJceHelper;
-import org.bouncycastle.jcajce.NamedJcaJceHelper;
-import org.bouncycastle.jcajce.ProviderJcaJceHelper;
 import org.bouncycastle.operator.OperatorException;
 import org.bouncycastle.operator.SymmetricKeyUnwrapper;
 
@@ -19,8 +16,9 @@ public abstract class JceKEKRecipient
 {
     private SecretKey recipientKey;
 
-    protected EnvelopedDataHelper helper = new EnvelopedDataHelper(new DefaultJcaJceHelper());
+    protected EnvelopedDataHelper helper = new EnvelopedDataHelper(new DefaultJcaJceExtHelper());
     protected EnvelopedDataHelper contentHelper = helper;
+    protected boolean validateKeySize = false;
 
     public JceKEKRecipient(SecretKey recipientKey)
     {
@@ -35,7 +33,7 @@ public abstract class JceKEKRecipient
      */
     public JceKEKRecipient setProvider(Provider provider)
     {
-        this.helper = new EnvelopedDataHelper(new ProviderJcaJceHelper(provider));
+        this.helper = new EnvelopedDataHelper(new ProviderJcaJceExtHelper(provider));
         this.contentHelper = helper;
 
         return this;
@@ -49,7 +47,7 @@ public abstract class JceKEKRecipient
      */
     public JceKEKRecipient setProvider(String providerName)
     {
-        this.helper = new EnvelopedDataHelper(new NamedJcaJceHelper(providerName));
+        this.helper = new EnvelopedDataHelper(new NamedJcaJceExtHelper(providerName));
         this.contentHelper = helper;
 
         return this;
@@ -63,7 +61,7 @@ public abstract class JceKEKRecipient
      */
     public JceKEKRecipient setContentProvider(Provider provider)
     {
-        this.contentHelper = new EnvelopedDataHelper(new ProviderJcaJceHelper(provider));
+        this.contentHelper = new EnvelopedDataHelper(new ProviderJcaJceExtHelper(provider));
 
         return this;
     }
@@ -76,19 +74,42 @@ public abstract class JceKEKRecipient
      */
     public JceKEKRecipient setContentProvider(String providerName)
     {
-        this.contentHelper = new EnvelopedDataHelper(new NamedJcaJceHelper(providerName));
+        this.contentHelper = new EnvelopedDataHelper(new NamedJcaJceExtHelper(providerName));
 
         return this;
     }
 
-    protected Key extractSecretKey(AlgorithmIdentifier keyEncryptionAlgorithm, AlgorithmIdentifier contentEncryptionAlgorithm, byte[] encryptedContentEncryptionKey)
+    /**
+     * Set validation of retrieved key sizes against the algorithm parameters for the encrypted key where possible - default is off.
+     * <p>
+     * This setting will not have any affect if the encryption algorithm in the recipient does not specify a particular key size, or
+     * if the unwrapper is a HSM and the byte encoding of the unwrapped secret key is not available.
+     * </p>
+     * @param doValidate true if unwrapped key's should be validated against the content encryption algorithm, false otherwise.
+     * @return this recipient.
+     */
+    public JceKEKRecipient setKeySizeValidation(boolean doValidate)
+    {
+        this.validateKeySize = doValidate;
+
+        return this;
+    }
+
+    protected Key extractSecretKey(AlgorithmIdentifier keyEncryptionAlgorithm, AlgorithmIdentifier encryptedKeyAlgorithm, byte[] encryptedContentEncryptionKey)
         throws CMSException
     {
         SymmetricKeyUnwrapper unwrapper = helper.createSymmetricUnwrapper(keyEncryptionAlgorithm, recipientKey);
 
         try
         {
-            return CMSUtils.getJceKey(unwrapper.generateUnwrappedKey(contentEncryptionAlgorithm, encryptedContentEncryptionKey));
+            Key key =  helper.getJceKey(encryptedKeyAlgorithm.getAlgorithm(), unwrapper.generateUnwrappedKey(encryptedKeyAlgorithm, encryptedContentEncryptionKey));
+
+            if (validateKeySize)
+            {
+                helper.keySizeCheck(encryptedKeyAlgorithm, key);
+            }
+
+            return key;
         }
         catch (OperatorException e)
         {

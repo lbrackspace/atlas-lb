@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <Properties>
@@ -186,7 +186,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="csrOptionsPanel" alignment="0" min="0" max="32767" attributes="1"/>
-                          <Component id="csrSubjectPanel" alignment="0" min="-2" pref="734" max="-2" attributes="1"/>
+                          <Component id="csrSubjectPanel" alignment="0" min="-2" max="-2" attributes="1"/>
                       </Group>
                       <EmptySpace pref="487" max="32767" attributes="0"/>
                   </Group>
@@ -341,25 +341,23 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="lsRSAPanel" max="32767" attributes="0"/>
-                              </Group>
                               <Component id="caCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="GenerateCsrButton" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                              <Group type="102" alignment="0" attributes="0">
+                              <Group type="102" attributes="0">
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="csrFnButton1" pref="312" max="32767" attributes="1"/>
-                                      <Component id="keyFnButton1" alignment="0" pref="312" max="32767" attributes="1"/>
-                                  </Group>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                                      <Component id="keyFN2" max="32767" attributes="1"/>
-                                      <Component id="csrFN1" alignment="0" min="-2" pref="447" max="-2" attributes="1"/>
+                                      <Component id="lsRSAPanel" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="GenerateCsrButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                                      <Group type="102" alignment="0" attributes="0">
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Component id="csrFnButton1" pref="312" max="32767" attributes="1"/>
+                                              <Component id="keyFnButton1" alignment="0" pref="312" max="32767" attributes="1"/>
+                                          </Group>
+                                          <EmptySpace max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                              <Component id="keyFN2" max="32767" attributes="1"/>
+                                              <Component id="csrFN1" alignment="0" min="-2" pref="447" max="-2" attributes="1"/>
+                                          </Group>
+                                      </Group>
                                   </Group>
                               </Group>
                           </Group>
@@ -811,12 +809,11 @@
                               <Component id="keycertandchainPanel" max="32767" attributes="1"/>
                               <EmptySpace min="-2" pref="518" max="-2" attributes="0"/>
                           </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="verifyKeyCertPanel" min="-2" max="-2" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                          </Group>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="verifyKeyCrtPanel" min="-2" max="-2" attributes="1"/>
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="verifyKeyCertPanel" alignment="0" min="-2" max="-2" attributes="1"/>
+                                  <Component id="verifyKeyCrtPanel" alignment="0" min="-2" max="-2" attributes="1"/>
+                              </Group>
                               <EmptySpace max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -1095,7 +1092,7 @@
                                   <Component id="lbaasValidationRadio" min="-2" max="-2" attributes="0"/>
                               </Group>
                           </Group>
-                          <EmptySpace pref="12" max="32767" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -1322,7 +1319,7 @@
                                       </Group>
                                       <Group type="102" attributes="1">
                                           <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-                                          <Component id="displayRootImdHashCodes" max="32767" attributes="1"/>
+                                          <Component id="displayRootImdHashCodes" pref="192" max="32767" attributes="1"/>
                                       </Group>
                                   </Group>
                                   <EmptySpace max="-2" attributes="0"/>

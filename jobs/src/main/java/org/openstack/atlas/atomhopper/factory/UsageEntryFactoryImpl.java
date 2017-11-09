@@ -203,15 +203,13 @@ public class UsageEntryFactoryImpl implements UsageEntryFactory {
      * @throws javax.xml.datatype.DatatypeConfigurationException
      */
     public static EventType mapEventType(Usage usageRecord) throws DatatypeConfigurationException {
+        // There is a bug on the billing side where it can;t handle suspension events so suspend events are no
+        // longer transmitted to atom hopper anymore.
         if (usageRecord.getEventType() != null) {
             if (usageRecord.getEventType().equals(UsageEvent.CREATE_LOADBALANCER.name())) {
                 return EventType.CREATE;
             } else if (usageRecord.getEventType().equals(UsageEvent.DELETE_LOADBALANCER.name())) {
                 return EventType.DELETE;
-            } else if (usageRecord.getEventType().equals(UsageEvent.SUSPEND_LOADBALANCER.name())) {
-                return EventType.SUSPEND;
-            } else if (usageRecord.getEventType().equals(UsageEvent.SUSPENDED_LOADBALANCER.name())) {
-                return EventType.SUSPEND;
             } else if (usageRecord.getEventType().equals(UsageEvent.UNSUSPEND_LOADBALANCER.name())) {
                 return EventType.UNSUSPEND;
             }

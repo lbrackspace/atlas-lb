@@ -1,13 +1,14 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Boolean;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERBoolean;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.util.Strings;
 
 /**
  * <pre>
@@ -21,7 +22,7 @@ import org.bouncycastle.asn1.DERTaggedObject;
  * </pre>
  */
 public class IssuingDistributionPoint
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private DistributionPointName distributionPoint;
 
@@ -47,16 +48,16 @@ public class IssuingDistributionPoint
     public static IssuingDistributionPoint getInstance(
         Object obj)
     {
-        if (obj == null || obj instanceof IssuingDistributionPoint)
+        if (obj instanceof IssuingDistributionPoint)
         {
             return (IssuingDistributionPoint)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new IssuingDistributionPoint((ASN1Sequence)obj);
+            return new IssuingDistributionPoint(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
     /**
@@ -96,11 +97,11 @@ public class IssuingDistributionPoint
         }
         if (onlyContainsUserCerts)
         {
-            vec.add(new DERTaggedObject(false, 1, new DERBoolean(true)));
+            vec.add(new DERTaggedObject(false, 1, ASN1Boolean.getInstance(true)));
         }
         if (onlyContainsCACerts)
         {
-            vec.add(new DERTaggedObject(false, 2, new DERBoolean(true)));
+            vec.add(new DERTaggedObject(false, 2, ASN1Boolean.getInstance(true)));
         }
         if (onlySomeReasons != null)
         {
@@ -108,20 +109,38 @@ public class IssuingDistributionPoint
         }
         if (indirectCRL)
         {
-            vec.add(new DERTaggedObject(false, 4, new DERBoolean(true)));
+            vec.add(new DERTaggedObject(false, 4, ASN1Boolean.getInstance(true)));
         }
         if (onlyContainsAttributeCerts)
         {
-            vec.add(new DERTaggedObject(false, 5, new DERBoolean(true)));
+            vec.add(new DERTaggedObject(false, 5, ASN1Boolean.getInstance(true)));
         }
 
         seq = new DERSequence(vec);
     }
 
     /**
-     * Constructor from ASN1Sequence
+     * Shorthand Constructor from given details.
+     *
+     * @param distributionPoint
+     *            May contain an URI as pointer to most current CRL.
+     * @param indirectCRL
+     *            If <code>true</code> then the CRL contains revocation
+     *            information about certificates ssued by other CAs.
+     * @param onlyContainsAttributeCerts Covers revocation information for attribute certificates.
      */
     public IssuingDistributionPoint(
+        DistributionPointName distributionPoint,
+        boolean indirectCRL,
+        boolean onlyContainsAttributeCerts)
+    {
+        this(distributionPoint, false, false, null, indirectCRL, onlyContainsAttributeCerts);
+    }
+
+    /**
+     * Constructor from ASN1Sequence
+     */
+    private IssuingDistributionPoint(
         ASN1Sequence seq)
     {
         this.seq = seq;
@@ -137,19 +156,19 @@ public class IssuingDistributionPoint
                 distributionPoint = DistributionPointName.getInstance(o, true);
                 break;
             case 1:
-                onlyContainsUserCerts = DERBoolean.getInstance(o, false).isTrue();
+                onlyContainsUserCerts = ASN1Boolean.getInstance(o, false).isTrue();
                 break;
             case 2:
-                onlyContainsCACerts = DERBoolean.getInstance(o, false).isTrue();
+                onlyContainsCACerts = ASN1Boolean.getInstance(o, false).isTrue();
                 break;
             case 3:
                 onlySomeReasons = new ReasonFlags(ReasonFlags.getInstance(o, false));
                 break;
             case 4:
-                indirectCRL = DERBoolean.getInstance(o, false).isTrue();
+                indirectCRL = ASN1Boolean.getInstance(o, false).isTrue();
                 break;
             case 5:
-                onlyContainsAttributeCerts = DERBoolean.getInstance(o, false).isTrue();
+                onlyContainsAttributeCerts = ASN1Boolean.getInstance(o, false).isTrue();
                 break;
             default:
                 throw new IllegalArgumentException(
@@ -194,14 +213,14 @@ public class IssuingDistributionPoint
         return onlySomeReasons;
     }
 
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return seq;
     }
 
     public String toString()
     {
-        String       sep = System.getProperty("line.separator");
+        String       sep = Strings.lineSeparator();
         StringBuffer buf = new StringBuffer();
 
         buf.append("IssuingDistributionPoint: [");

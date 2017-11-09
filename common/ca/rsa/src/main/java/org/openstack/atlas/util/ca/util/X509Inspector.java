@@ -8,29 +8,45 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.x500.X500Principal;
+import org.bouncycastle.asn1.pkcs.RSAPublicKey;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPublicKey;
 import org.bouncycastle.jce.provider.JCERSAPublicKey;
 import org.bouncycastle.jce.provider.X509CertificateObject;
+import org.bouncycastle.openssl.PEMException;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import sun.security.util.ObjectIdentifier;
 import sun.security.x509.AuthorityInfoAccessExtension;
-import sun.security.x509.X500Name;
-import org.bouncycastle.x509.extension.AuthorityKeyIdentifierStructure;
-import org.bouncycastle.x509.extension.SubjectKeyIdentifierStructure;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
+import org.openstack.atlas.util.ca.exceptions.RsaException;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.exceptions.X509ReaderDecodeException;
 import org.openstack.atlas.util.ca.exceptions.X509ReaderNoSuchExtensionException;
+import org.openstack.atlas.util.ca.primitives.Debug;
 import sun.security.provider.certpath.OCSP;
 import sun.security.x509.AccessDescription;
 import sun.security.x509.GeneralNameInterface;
@@ -42,67 +58,79 @@ public class X509Inspector {
     private static final String X500NameFormat = "RFC2253";
     private static final String SubjKeyIdOid = "2.5.29.14";
     private static final String AuthKeyIdOid = "2.5.29.35";
-    private X509CertificateObject x509obj;
+    private X509CertificateHolder x509holder;
 
     static {
         RsaConst.init();
     }
 
-    public X509Inspector(X509CertificateObject x509obj) throws NotAnX509CertificateException {
-        if (x509obj == null) {
-            String msg = "Resusing to accept null object in "
-                    + "call to X509Inspector(X509CertificateObject) constructor";
-            throw new NotAnX509CertificateException();
-        }
-        this.x509obj = x509obj;
+    public X509Inspector(X509CertificateHolder x509holder) {
+        this.x509holder = x509holder;
     }
 
+    public X509Inspector(X509Certificate x509) throws NotAnX509CertificateException {
+        x509holder = CertUtils.getX509CertificateHolder(x509);
+    }
+
+    @Deprecated
+    public X509Inspector(X509CertificateObject x509obj) throws NotAnX509CertificateException {
+        x509holder = CertUtils.getX509CertificateHolder(x509obj);
+    }
+    
+    public X509CertificateHolder getX509CertificateHolder(){
+        return x509holder;
+    }
+
+    public static X509Inspector newX509Inspector(X509CertificateHolder xh){
+        return new X509Inspector(xh);
+    }
+    
     public static X509Inspector newX509Inspector(String x509PemString) throws X509ReaderDecodeException, NotAnX509CertificateException {
         String msg;
         Object obj;
-        X509CertificateObject x509obj;
+        X509Certificate x509;
         try {
             obj = PemUtils.fromPemString(x509PemString);
         } catch (PemException ex) {
             throw new X509ReaderDecodeException("Error decoding pemString", ex);
         }
-        try {
-            x509obj = (X509CertificateObject) obj;
-        } catch (ClassCastException ex) {
-            msg = String.format("Error casting %s to %s", obj.getClass().getName(), "X509CertificateObject");
-            throw new X509ReaderDecodeException(msg, ex);
+        if(obj == null){
+            throw new X509ReaderDecodeException("Pem object decoded to null");
         }
-        return new X509Inspector(x509obj);
+        if (!(obj instanceof X509CertificateHolder)) {
+            msg = Debug.castExceptionMessage(obj.getClass(), X509CertificateHolder.class);
+            throw new X509ReaderDecodeException(msg);
+        }
+        X509CertificateHolder x509holder = (X509CertificateHolder) obj;
+        return new X509Inspector(x509holder);
+
     }
 
     public static X509Inspector newX509Inspector(X509Certificate x509Cert) throws CertificateEncodingException, CertificateParsingException, NotAnX509CertificateException {
-        byte[] encoded = x509Cert.getEncoded();
-        X509CertificateStructure x509Struct = X509CertificateStructure.getInstance(encoded);
-        X509CertificateObject x509obj = new X509CertificateObject(x509Struct);
-        X509Inspector x509Reader = new X509Inspector(x509obj);
-        return x509Reader;
+        return new X509Inspector(x509Cert);
     }
 
-    // Acts as a don't repeat your self base method. <Rolls Eyes>
-    private String getCN(X500Principal x500principal) throws IOException {
-        X500Name x500name = new X500Name(x500principal.getName(X500NameFormat));
-        String commonName = x500name.getCommonName();
-        return commonName;
+    public String getIssuerCN() {
+        try {
+            String cn = IETFUtils.valueToString(x509holder.getIssuer().getRDNs(BCStyle.CN)[0].getFirst().getValue());
+            return cn;
+        } catch (Exception ex) {
+            return null;
+        }
+
     }
 
     public String getSubjectCN() {
-        X500Principal x500p = x509obj.getSubjectX500Principal();
-        String cn;
         try {
-            cn = getCN(x500p);
-        } catch (IOException ex) {
+            String cn = IETFUtils.valueToString(x509holder.getSubject().getRDNs(BCStyle.CN)[0].getFirst().getValue());
+            return cn;
+        } catch (Exception ex) {
             return null;
         }
-        return cn;
     }
 
-    public URI getOCSPUri() {
-        URI uri = OCSP.getResponderURI((X509Certificate) x509obj);
+    public URI getOCSPUri() throws NotAnX509CertificateException {
+        URI uri = OCSP.getResponderURI((X509Certificate) getX509Certificate());
         if (uri == null) {
             return null;
         }
@@ -110,11 +138,16 @@ public class X509Inspector {
     }
 
     public URI getOCSPCaUri() {
+        X509CertificateObject obj;
         X509CertImpl x509i;
+        X509Certificate x509cert;
         ObjectIdentifier caOid = AccessDescription.Ad_CAISSUERS_Id;
         try {
-            x509i = X509CertImpl.toImpl((X509Certificate) x509obj);
+            x509cert = getX509Certificate();
+            x509i = X509CertImpl.toImpl(x509cert);
         } catch (CertificateException ex) {
+            return null;
+        } catch (NotAnX509CertificateException ex) {
             return null;
         }
         AuthorityInfoAccessExtension aiae = x509i.getAuthorityInfoAccessExtension();
@@ -134,198 +167,141 @@ public class X509Inspector {
     }
 
     public String getIssuerName() {
-        String issuer = x509obj.getIssuerX500Principal().getName(X500NameFormat);
-        return issuer;
+        return x509holder.getIssuer().toString();
     }
 
     public String getSubjectName() {
-        String subject = x509obj.getSubjectX500Principal().getName(X500NameFormat);
-        return subject;
+        return x509holder.getSubject().toString();
     }
 
-    public String getIssuerCN() {
-        X500Principal x500p = x509obj.getIssuerX500Principal();
-        String cn;
+    public X509Certificate getX509Certificate() throws NotAnX509CertificateException {
+        return CertUtils.getX509Certificate(x509holder);
+    }
+
+    public BigInteger getPubModulus() throws RsaException {
         try {
-            cn = getCN(x500p);
-        } catch (IOException ex) {
-            return null;
+            JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider(RsaConst.BC);
+            SubjectPublicKeyInfo pubKeyInfo = x509holder.getSubjectPublicKeyInfo();
+            BCRSAPublicKey pubKey = (BCRSAPublicKey) converter.getPublicKey(x509holder.getSubjectPublicKeyInfo());
+            BigInteger pubMod = pubKey.getModulus();
+            return pubMod;
+        } catch (PEMException ex) {
+            throw new RsaException("Unable to retrieve modulus");
         }
-        return cn;
     }
 
-    public X509CertificateObject getX509CertificateObject() {
-        return x509obj;
-    }
-
-    public X509Certificate getX509Certificate() {
-        X509Certificate x509Certificate = (X509Certificate) x509obj;
-        return x509Certificate;
-    }
-
-    public BigInteger getPubModulus() {
-        JCERSAPublicKey pubKey = (JCERSAPublicKey) x509obj.getPublicKey();
-        BigInteger pubMod = pubKey.getModulus();
-        return pubMod;
-    }
-
-    public int getPubModulusSize() {
-        JCERSAPublicKey pubKey = (JCERSAPublicKey) x509obj.getPublicKey();
-        BigInteger pubMod = pubKey.getModulus();
+    public int getPubModulusSize() throws RsaException {
+        BigInteger pubMod;
+        pubMod = getPubModulus();
         return pubMod.bitLength();
     }
 
     public BigInteger getSerial() {
-        BigInteger serial = x509obj.getSerialNumber();
-        return serial;
+        return x509holder.getSerialNumber();
     }
 
     public String getSubjKeyId() {
-        SubjectKeyIdentifierStructure subjKIS;
-        byte[] keyIdBytes;
-        try {
-            subjKIS = getSubjectKeyIdentifierStructure();
-        } catch (X509ReaderNoSuchExtensionException ex) {
-            return null;
-        } catch (X509ReaderDecodeException ex) {
+        Extensions exts = x509holder.getExtensions();
+        SubjectKeyIdentifier subjKeyId = SubjectKeyIdentifier.fromExtensions(exts);
+        if (subjKeyId == null) {
             return null;
         }
-        keyIdBytes = subjKIS.getKeyIdentifier();
-        String out = StaticHelpers.bytes2hex(keyIdBytes);
+        byte[] octets = subjKeyId.getKeyIdentifier();
+        String out = StaticHelpers.bytes2hex(octets);
+        return out;
+    }
+
+    public String getAuthKeyId() {
+        Extensions exts = x509holder.getExtensions();
+        AuthorityKeyIdentifier authKeyId = AuthorityKeyIdentifier.fromExtensions(exts);
+
+        if (authKeyId == null) {
+            return null;
+        }
+        byte[] octets = authKeyId.getKeyIdentifier();
+        String out = StaticHelpers.bytes2hex(octets);
         return out;
     }
 
     public BigInteger getAuthKeyIdSerial() {
-        BigInteger serial = BigInteger.ZERO;
-        AuthorityKeyIdentifierStructure authKIS = getAKISNoExcept();
-        if (authKIS == null) {
+        Extensions exts = x509holder.getExtensions();
+        AuthorityKeyIdentifier authKeyId = AuthorityKeyIdentifier.fromExtensions(exts);
+        if(authKeyId == null){
             return null;
         }
-        serial = authKIS.getAuthorityCertSerialNumber();
+        BigInteger serial = authKeyId.getAuthorityCertSerialNumber();
         return serial;
     }
 
-    public String getAuthKeyIdDirname() {
-        String dirName = null;
-        AuthorityKeyIdentifierStructure authKIS = getAKISNoExcept();
-        if (authKIS == null) {
+    public List<String> getAuthKeyIdDirname() {
+        List<String> dirNames = new ArrayList<String>();
+        AuthorityKeyIdentifier authKeyId = AuthorityKeyIdentifier.fromExtensions(x509holder.getExtensions());
+        if (authKeyId == null) {
             return null;
         }
-        GeneralNames genNames = authKIS.getAuthorityCertIssuer();
+        GeneralNames genNames = authKeyId.getAuthorityCertIssuer();
         if (genNames == null) {
             return null;
         }
         GeneralName[] nameObjs = genNames.getNames();
         for (int i = 0; i < nameObjs.length; i++) {
             if (nameObjs[i].getTagNo() == 4) {
-                X509Name name = (X509Name) nameObjs[i].getName();
-                dirName = name.toString();
-                break;
+                dirNames.add(nameObjs[i].toString());
             }
         }
-        return dirName;
+        return dirNames;
     }
 
-    public String getAuthKeyId() {
-        AuthorityKeyIdentifierStructure authKIS = getAKISNoExcept();
-        if (authKIS == null) {
-            return null;
-        }
-        byte[] authIdBytes;
-        authIdBytes = authKIS.getKeyIdentifier();
-        if (authIdBytes == null) {
-            return null;
-        }
-        String out = StaticHelpers.bytes2hex(authIdBytes);
-        return out;
-    }
-
-    private AuthorityKeyIdentifierStructure getAKISNoExcept() {
-        AuthorityKeyIdentifierStructure authKIS;
+    public PublicKey getPublicKey() throws RsaException {
+        JcaPEMKeyConverter conv = new JcaPEMKeyConverter().setProvider("BC");
         try {
-            authKIS = getAuthorityKeyIdentifierStructure();
-        } catch (X509ReaderNoSuchExtensionException ex) {
-            return null;
-        } catch (X509ReaderDecodeException ex) {
-            return null;
+            return conv.getPublicKey(x509holder.getSubjectPublicKeyInfo());
+        } catch (PEMException ex) {
+            throw new RsaException("Unable to get public key from x509 certificate", ex);
         }
-        return authKIS;
-    }
-
-    private SubjectKeyIdentifierStructure getSubjectKeyIdentifierStructure() throws X509ReaderNoSuchExtensionException, X509ReaderDecodeException {
-        byte[] subjKeyIdBytes = x509obj.getExtensionValue(SubjKeyIdOid);
-        if (subjKeyIdBytes == null) {
-            throw new X509ReaderNoSuchExtensionException("SubjectKeyIdentifier");
-        }
-        SubjectKeyIdentifierStructure subjKeyId;
-        try {
-            subjKeyId = new SubjectKeyIdentifierStructure(subjKeyIdBytes);
-        } catch (IOException ex) {
-            throw new X509ReaderDecodeException("Unable to decode SubjectKeyIdentifier extension from Cert", ex);
-        }
-        return subjKeyId;
-    }
-
-    public PublicKey getPublicKey() {
-        PublicKey pubKey = x509obj.getPublicKey();
-        return pubKey;
-    }
-
-    private AuthorityKeyIdentifierStructure getAuthorityKeyIdentifierStructure() throws X509ReaderNoSuchExtensionException, X509ReaderDecodeException {
-        byte[] authKeyIdBytes = x509obj.getExtensionValue(AuthKeyIdOid);
-        if (authKeyIdBytes == null) {
-            throw new X509ReaderNoSuchExtensionException("AuthorityKeyIdentifier");
-        }
-        AuthorityKeyIdentifierStructure authKeyId;
-        try {
-            authKeyId = new AuthorityKeyIdentifierStructure(authKeyIdBytes);
-        } catch (IOException ex) {
-            throw new X509ReaderDecodeException("Unable to decode AuthorityKeyIdentifier from Cert", ex);
-        }
-        return authKeyId;
     }
 
     public Calendar getNotBefore() {
-        Date nb = x509obj.getNotBefore();
-        if (nb == null) {
-            return null;
-        }
-        return StaticHelpers.dateToCalendar(nb);
+        return StaticHelpers.dateToCalendar(x509holder.getNotBefore());
     }
 
     public Calendar getNotAfter() {
-        Date na = x509obj.getNotAfter();
-        if (na == null) {
-            return null;
-        }
-        return StaticHelpers.dateToCalendar(na);
+        return StaticHelpers.dateToCalendar(x509holder.getNotAfter());
     }
 
-    public boolean isExpired() {
+    public boolean isExpired() throws NotAnX509CertificateException {
         return isExpired(null);
     }
 
-    public boolean isPremature() {
+    public boolean isPremature() throws NotAnX509CertificateException {
         return isPremature(null);
     }
 
-    public boolean isExpired(Date date) {
+    public boolean isExpired(Date date) throws NotAnX509CertificateException {
+        X509Certificate x509 = getX509Certificate();
         Date dateObj = (date == null) ? new Date(System.currentTimeMillis()) : date;
-        return CertUtils.isCertExpired(x509obj, date);
+        return CertUtils.isCertExpired(x509, date);
     }
 
-    public boolean isPremature(Date date) {
+    public boolean isPremature(Date date) throws NotAnX509CertificateException {
+        X509Certificate x509 = getX509Certificate();
         Date dateObj = (date == null) ? new Date(System.currentTimeMillis()) : date;
-        return CertUtils.isCertPremature(x509obj, date);
+        return CertUtils.isCertPremature(x509, date);
     }
 
-    public boolean isDateValid() {
+    public boolean isDateValid() throws NotAnX509CertificateException {
         return isDateValid(null);
     }
 
-    public boolean isDateValid(Date date) {
+    public boolean isDateValid(Date date) throws NotAnX509CertificateException {
         Date dateObj = (date == null) ? new Date(System.currentTimeMillis()) : date;
-        return CertUtils.isCertDateValid(x509obj, date);
-
+        X509Certificate x509 = getX509Certificate();
+        return CertUtils.isCertDateValid(x509, date);
     }
+    
+    @Deprecated
+    public X509CertificateObject getX509CertificateObject() throws NotAnX509CertificateException{
+        return CertUtils.getX509CertificateObject(x509holder);
+    }
+
 }

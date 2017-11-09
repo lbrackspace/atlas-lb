@@ -6,15 +6,18 @@ import utils
 import db
 
 def getZeusTest(hid=None):
+    stubs = getZeusStubs()
+    stubs.endpoint = stubs.endpoints[default_ep_key]
+    return ZeusTest(stubs)
+
+def getZeusStubs():
     conf = utils.load_json(utils.conf_file)
     endpoints = conf["zxtm"]["end_points"]
     user = conf["zxtm"]["user"]
     passwd = conf["zxtm"]["passwd"]
     default_ep_key = conf["zxtm"]["default_endpoint"]
     stubs = ZxtmStubs(endpoints,user,passwd)
-    stubs.endpoint = stubs.endpoints[default_ep_key]
-    return ZeusTest(stubs)
-
+    return stubs
 
 class ZeusTest(object):
     def __init__(self,zxtmStubs):
@@ -126,7 +129,9 @@ class ZxtmStubs(object):
                            "tg":"TrafficIPGroupsBindingStub",
                            "vs":"VirtualServerBindingStub",
                            "cert":"CatalogSSLCertificatesBindingStub",
-                           "ca":"CatalogSSLCertificateAuthoritiesBindingStub"
+                           "ca":"CatalogSSLCertificateAuthoritiesBindingStub",
+                           "gs":"GlobalSettingsBindingStub",
+                           "cr": "CatalogRuleBindingStub"
                          }
 
     def __init__(self,endpoints,user,passwd,*args,**kw):

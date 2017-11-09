@@ -58,6 +58,7 @@ public class CommonDependencyProvider {
     protected UsageService usageService;
     protected ProtocolsService protocolsService;
     protected SslTerminationService sslTerminationService;
+    protected SslCipherProfileService sslCipherProfileService;
     protected CertificateMappingService certificateMappingService;
     protected AllowedDomainsService allowedDomainsService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
@@ -155,6 +156,10 @@ public class CommonDependencyProvider {
 
     public void setSslTerminationService(SslTerminationService sslTerminationService) {
         this.sslTerminationService = sslTerminationService;
+    }
+
+    public void setSslCipherProfileService(SslCipherProfileService sslCipherProfileService) {
+        this.sslCipherProfileService = sslCipherProfileService;
     }
 
     public void setCertificateMappingService(CertificateMappingService certificateMappingService) {

@@ -2,14 +2,16 @@ package org.bouncycastle.asn1.cmp;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 public class Challenge
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private AlgorithmIdentifier owf;
     private ASN1OctetString witness;
@@ -35,17 +37,39 @@ public class Challenge
             return (Challenge)o;
         }
 
-        if (o instanceof ASN1Sequence)
+        if (o != null)
         {
-            return new Challenge((ASN1Sequence)o);
+            return new Challenge(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
+    }
+
+    public Challenge(byte[] witness, byte[] challenge)
+    {
+        this(null, witness, challenge);
+    }
+
+    public Challenge(AlgorithmIdentifier owf, byte[] witness, byte[] challenge)
+    {
+        this.owf = owf;
+        this.witness = new DEROctetString(witness);
+        this.challenge = new DEROctetString(challenge);
     }
 
     public AlgorithmIdentifier getOwf()
     {
         return owf;
+    }
+
+    public byte[] getWitness()
+    {
+        return witness.getOctets();
+    }
+
+    public byte[] getChallenge()
+    {
+        return challenge.getOctets();
     }
 
     /**
@@ -75,7 +99,7 @@ public class Challenge
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

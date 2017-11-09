@@ -81,6 +81,7 @@
     <bean id="suspensionService" class="org.openstack.atlas.service.domain.services.impl.SuspensionServiceImpl" parent="baseService"/>
     <bean id="blackListService" class="org.openstack.atlas.service.domain.services.impl.BlackListServiceImpl" parent="baseService"/>
     <bean id="sslTerminationService" class="org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl" parent="baseService"/>
+    <bean id="sslCipherProfileService" class="org.openstack.atlas.service.domain.services.impl.SslCipherProfileServiceImpl" parent="baseService"/>
 
     <bean id="baseService" class="org.openstack.atlas.service.domain.services.impl.BaseService">
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
@@ -94,6 +95,7 @@
         <property name="groupRepository" ref="groupRepository" />
         <property name="clusterRepository" ref="clusterRepository" />
         <property name="sslTerminationRepository" ref="sslTerminationRepository" />
+        <property name="sslCipherProfileRepository" ref="sslCipherProfileRepository" />
     </bean>
 
     <bean id="accountUsageRepository" class="org.openstack.atlas.service.domain.repository.AccountUsageRepository" depends-on="entityManagerFactory1"/>
@@ -109,6 +111,7 @@
     <bean id="virtualIpRepository" class="org.openstack.atlas.service.domain.repository.VirtualIpRepository" depends-on="entityManagerFactory1"/>
     <bean id="virtualIpv6Repository" class="org.openstack.atlas.service.domain.repository.VirtualIpv6Repository" depends-on="entityManagerFactory1"/>
     <bean id="sslTerminationRepository" class="org.openstack.atlas.service.domain.repository.SslTerminationRepository" depends-on="entityManagerFactory1"/>
+    <bean id="sslCipherProfileRepository" class="org.openstack.atlas.service.domain.repository.SslCipherProfileRepository" depends-on="entityManagerFactory1"/>
 
 </beans>
 

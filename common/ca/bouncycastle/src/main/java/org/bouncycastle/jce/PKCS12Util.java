@@ -10,12 +10,10 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.PBEParameterSpec;
 
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.pkcs.ContentInfo;
@@ -42,7 +40,7 @@ public class PKCS12Util
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
 
-        Pfx pfx = new Pfx(ASN1Sequence.getInstance(ASN1Object.fromByteArray(berPKCS12File)));
+        Pfx pfx = Pfx.getInstance(berPKCS12File);
 
         bOut.reset();
 
@@ -63,7 +61,7 @@ public class PKCS12Util
     public static byte[] convertToDefiniteLength(byte[] berPKCS12File, char[] passwd, String provider)
         throws IOException
     {
-        Pfx pfx = new Pfx(ASN1Sequence.getInstance(ASN1Object.fromByteArray(berPKCS12File)));
+        Pfx pfx = Pfx.getInstance(berPKCS12File);
 
         ContentInfo info = pfx.getAuthSafe();
 
@@ -73,7 +71,7 @@ public class PKCS12Util
         DEROutputStream dOut = new DEROutputStream(bOut);
 
         ASN1InputStream contentIn = new ASN1InputStream(content.getOctets());
-        DERObject obj = contentIn.readObject();
+        ASN1Primitive obj = contentIn.readObject();
 
         dOut.writeObject(obj);
 
@@ -84,9 +82,9 @@ public class PKCS12Util
         {
             int itCount = mData.getIterationCount().intValue();
             byte[] data = ASN1OctetString.getInstance(info.getContent()).getOctets();
-            byte[] res = calculatePbeMac(mData.getMac().getAlgorithmId().getObjectId(), mData.getSalt(), itCount, passwd, data, provider);
+            byte[] res = calculatePbeMac(mData.getMac().getAlgorithmId().getAlgorithm(), mData.getSalt(), itCount, passwd, data, provider);
 
-            AlgorithmIdentifier algId = new AlgorithmIdentifier(mData.getMac().getAlgorithmId().getObjectId(), new DERNull());
+            AlgorithmIdentifier algId = new AlgorithmIdentifier(mData.getMac().getAlgorithmId().getAlgorithm(), DERNull.INSTANCE);
             DigestInfo dInfo = new DigestInfo(algId, res);
 
             mData = new MacData(dInfo, mData.getSalt(), itCount);
@@ -106,7 +104,7 @@ public class PKCS12Util
     }
 
     private static byte[] calculatePbeMac(
-        DERObjectIdentifier oid,
+        ASN1ObjectIdentifier oid,
         byte[]              salt,
         int                 itCount,
         char[]              password,

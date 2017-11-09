@@ -2,18 +2,18 @@ package org.bouncycastle.asn1.ocsp;
 
 import org.bouncycastle.asn1.ASN1Choice;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERTaggedObject;
 
 public class CertStatus
-    extends ASN1Encodable
+    extends ASN1Object
     implements ASN1Choice
 {
     private int             tagNo;
-    private DEREncodable    value;
+    private ASN1Encodable   value;
 
     /**
      * create a CertStatus object with a tag of zero.
@@ -21,7 +21,7 @@ public class CertStatus
     public CertStatus()
     {
         tagNo = 0;
-        value = new DERNull();
+        value = DERNull.INSTANCE;
     }
 
     public CertStatus(
@@ -33,13 +33,13 @@ public class CertStatus
 
     public CertStatus(
         int tagNo,
-        DEREncodable    value)
+        ASN1Encodable    value)
     {
         this.tagNo = tagNo;
         this.value = value;
     }
 
-    public CertStatus(
+    private CertStatus(
         ASN1TaggedObject    choice)
     {
         this.tagNo = choice.getTagNo();
@@ -47,13 +47,16 @@ public class CertStatus
         switch (choice.getTagNo())
         {
         case 0:
-            value = new DERNull();
+            value = DERNull.INSTANCE;
             break;
         case 1:
             value = RevokedInfo.getInstance(choice, false);
             break;
         case 2:
-            value = new DERNull();
+            value = DERNull.INSTANCE;
+            break;
+        default:
+            throw new IllegalArgumentException("Unknown tag encountered: " + choice.getTagNo());
         }
     }
 
@@ -84,7 +87,7 @@ public class CertStatus
         return tagNo;
     }
 
-    public DEREncodable getStatus()
+    public ASN1Encodable getStatus()
     {
         return value;
     }
@@ -98,7 +101,7 @@ public class CertStatus
      *                  unknown     [2]     IMPLICIT UnknownInfo }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return new DERTaggedObject(false, tagNo, value);
     }

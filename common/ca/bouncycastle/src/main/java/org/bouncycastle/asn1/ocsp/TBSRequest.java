@@ -1,32 +1,50 @@
 package org.bouncycastle.asn1.ocsp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.X509Extensions;
 
 public class TBSRequest
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private static final DERInteger V1 = new DERInteger(0);
+    private static final ASN1Integer V1 = new ASN1Integer(0);
     
-    DERInteger      version;
+    ASN1Integer      version;
     GeneralName     requestorName;
     ASN1Sequence    requestList;
-    X509Extensions  requestExtensions;
+    Extensions  requestExtensions;
 
     boolean         versionSet;
+
+    /**
+     * @deprecated use method taking Extensions
+     * @param requestorName
+     * @param requestList
+     * @param requestExtensions
+     */
+    public TBSRequest(
+        GeneralName     requestorName,
+        ASN1Sequence    requestList,
+        X509Extensions requestExtensions)
+    {
+        this.version = V1;
+        this.requestorName = requestorName;
+        this.requestList = requestList;
+        this.requestExtensions = Extensions.getInstance(requestExtensions);
+    }
 
     public TBSRequest(
         GeneralName     requestorName,
         ASN1Sequence    requestList,
-        X509Extensions  requestExtensions)
+        Extensions  requestExtensions)
     {
         this.version = V1;
         this.requestorName = requestorName;
@@ -34,7 +52,7 @@ public class TBSRequest
         this.requestExtensions = requestExtensions;
     }
 
-    public TBSRequest(
+    private TBSRequest(
         ASN1Sequence    seq)
     {
         int    index = 0;
@@ -46,7 +64,7 @@ public class TBSRequest
             if (o.getTagNo() == 0)
             {
                 versionSet = true;
-                version = DERInteger.getInstance((ASN1TaggedObject)seq.getObjectAt(0), true);
+                version = ASN1Integer.getInstance((ASN1TaggedObject)seq.getObjectAt(0), true);
                 index++;
             }
             else
@@ -68,7 +86,7 @@ public class TBSRequest
 
         if (seq.size() == (index + 1))
         {
-            requestExtensions = X509Extensions.getInstance((ASN1TaggedObject)seq.getObjectAt(index), true);
+            requestExtensions = Extensions.getInstance((ASN1TaggedObject)seq.getObjectAt(index), true);
         }
     }
 
@@ -82,19 +100,19 @@ public class TBSRequest
     public static TBSRequest getInstance(
         Object  obj)
     {
-        if (obj == null || obj instanceof TBSRequest)
+        if (obj instanceof TBSRequest)
         {
             return (TBSRequest)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new TBSRequest((ASN1Sequence)obj);
+            return new TBSRequest(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
 
-    public DERInteger getVersion()
+    public ASN1Integer getVersion()
     {
         return version;
     }
@@ -109,7 +127,7 @@ public class TBSRequest
         return requestList;
     }
 
-    public X509Extensions getRequestExtensions()
+    public Extensions getRequestExtensions()
     {
         return requestExtensions;
     }
@@ -124,7 +142,7 @@ public class TBSRequest
      *     requestExtensions   [2]     EXPLICIT Extensions OPTIONAL }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector    v = new ASN1EncodableVector();
 

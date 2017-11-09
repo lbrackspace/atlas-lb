@@ -183,6 +183,20 @@ public class HostRepository {
         return host;
     }
 
+    public Host getFirstAvailableSoapEndPointHost() throws EntityNotFoundException {
+        String hqlStr = "from Host h where h.soapEndpointActive = 1 "
+                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','SOAP_API_ENDPOINT') "
+                + "order by h.hostStatus desc, h.id asc";
+        Query q = entityManager.createQuery(hqlStr);
+        List<Host> hosts = q.getResultList();
+        if (hosts.size() < 1) {
+            String errMsg = "Error no soap endpoints found";
+            LOG.error(errMsg);
+            throw new EntityNotFoundException(errMsg);
+        }
+        return hosts.get(0);
+    }
+
     public Host getEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.soapEndpointActive = 1 "
                 + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','SOAP_API_ENDPOINT') "
@@ -197,9 +211,9 @@ public class HostRepository {
         return results.get(0);
     }
 
-     public Host getRestEndPointHost(Integer clusterId) {
+    public Host getRestEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.restEndpointActive  = 1 "
-                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER', 'REST_API_ENDPOINT') "
+                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER', 'SOAP_API_ENDPOINT') "
                 + "and h.cluster.id = :clusterId "
                 + "order by h.hostStatus desc, h.id asc";
         Query q = entityManager.createQuery(hqlStr).setParameter("clusterId", clusterId).setMaxResults(1);
@@ -417,7 +431,7 @@ public class HostRepository {
                 long count = 0;
                 //fewest number
                 for (Host h : hosts) {
-                    String query = "select count(*) from LoadBalancer lb where lb.host.id = :id";
+                    String query = "select count(*) from LoadBalancer lb where lb.host.id = :id and lb.status != 'DELETED'";
                     List<Long> lst = entityManager.createQuery(query).setParameter("id", h.getId()).getResultList();
                     count = lst.get(0).longValue();
                     if (count == 0) {

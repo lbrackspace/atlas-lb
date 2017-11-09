@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 
 <!--
-    Copyright (c) 2005-2013 Zeus Technology. All rights reserved.
+    Copyright (c) 2005-2015 Zeus Technology. All rights reserved.
 
 -->
 
@@ -104,6 +104,18 @@
                   <xsd:enumeration value="dns">
                      <xsd:annotation>
                         <xsd:documentation>DNS Lookup</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="dnsserver">
+                     <xsd:annotation>
+                        <xsd:documentation>Built-in DNS servers</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="dnsserver/zones">
+                     <xsd:annotation>
+                        <xsd:documentation>DNS Server Zones</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -469,7 +481,7 @@
                
                   <xsd:enumeration value="faulttolerance_dropec2ipwarn">
                      <xsd:annotation>
-                        <xsd:documentation>Fault Tolerance - Removing EC2 Elastic IP Address from all machines; it is no longer a part of any Traffic IP Groups</xsd:documentation>
+                        <xsd:documentation>Fault Tolerance - Removing EC2 IP Address from all machines; it is no longer a part of any Traffic IP Groups</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -487,19 +499,19 @@
                
                   <xsd:enumeration value="faulttolerance_ec2flipperraiselocalworking">
                      <xsd:annotation>
-                        <xsd:documentation>Fault Tolerance - Moving EC2 Elastic IP Address; local machine is working</xsd:documentation>
+                        <xsd:documentation>Fault Tolerance - Moving EC2 IP Address; local machine is working</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
                   <xsd:enumeration value="faulttolerance_ec2flipperraiseothersdead">
                      <xsd:annotation>
-                        <xsd:documentation>Fault Tolerance - Moving EC2 Elastic IP Address; other machines have failed</xsd:documentation>
+                        <xsd:documentation>Fault Tolerance - Moving EC2 IP Address; other machines have failed</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
                   <xsd:enumeration value="faulttolerance_ec2iperr">
                      <xsd:annotation>
-                        <xsd:documentation>Fault Tolerance - Problem occurred when managing an Elastic IP address</xsd:documentation>
+                        <xsd:documentation>Fault Tolerance - Problem occurred when managing an EC2 IP address</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -511,7 +523,7 @@
                
                   <xsd:enumeration value="faulttolerance_ec2nosecondaryprivateip">
                      <xsd:annotation>
-                        <xsd:documentation>Fault Tolerance - Cannot raise Elastic IP on this machine until it has a secondary private IP address with no EIP association assigned to primary network interface</xsd:documentation>
+                        <xsd:documentation>Fault Tolerance - Cannot raise Elastic IP on this machine as no suitable secondary IP is available on the allowed network card(s)</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -599,6 +611,24 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="faulttolerance_ospfneighborsdegraded">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - Some of the monitored OSPF neighbors are not peered</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="faulttolerance_ospfneighborsfailed">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - None of the monitored OSPF neighbors are peered</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="faulttolerance_ospfneighborsok">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - All monitored OSPF neighbors are peered</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="faulttolerance_pingbackendfail">
                      <xsd:annotation>
                         <xsd:documentation>Fault Tolerance - Failed to ping back-end nodes</xsd:documentation>
@@ -614,6 +644,36 @@
                   <xsd:enumeration value="faulttolerance_pinggwfail">
                      <xsd:annotation>
                         <xsd:documentation>Fault Tolerance - Failed to ping default gateway</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="faulttolerance_pingsendfail">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - Failed to send ping packets</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="faulttolerance_routingswfailed">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - Routing software had a major failure and will be restarted</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="faulttolerance_routingswfailurelimitreached">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - Routing software has failed and reached its failure limit</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="faulttolerance_routingswoperational">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - Routing software is now operational</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="faulttolerance_routingswstartfailed">
+                     <xsd:annotation>
+                        <xsd:documentation>Fault Tolerance - Routing software failed to start</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -665,9 +725,51 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="general_appfirewallcontrolerror">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Application firewall control command failed</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_appfirewallcontrolrestarted">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Application firewall restarted</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_appfirewallcontrolstarted">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Application firewall started</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_appfirewallcontrolstopped">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Application firewall stopped</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_appfirewallcontroltimeout">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Application firewall control command timed out</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_appliance">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Appliance notification</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="general_autherror">
                      <xsd:annotation>
                         <xsd:documentation>General - An error occurred during user authentication</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_autoscaleresolvefailure">
+                     <xsd:annotation>
+                        <xsd:documentation>General - A hostname used for DNS-derived Autoscaling doesn't resolve</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -695,6 +797,36 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="general_dnszonecreaterecord">
+                     <xsd:annotation>
+                        <xsd:documentation>General - The built-in DNS server has failed to create a DNS record</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_dnszoneparse">
+                     <xsd:annotation>
+                        <xsd:documentation>General - The built-in DNS server has failed to parse a DNS zone file</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_dnszonevalidate">
+                     <xsd:annotation>
+                        <xsd:documentation>General - The built-in DNS server has failed to validate a DNS zone file</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_ec2dataretrievalfailed">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Traffic manager failed to get the required data from Amazon servers</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_ec2dataretrievalsuccessful">
+                     <xsd:annotation>
+                        <xsd:documentation>General - Traffic manager has now successfully retrieved the required data from Amazon servers</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="general_fewfreefds">
                      <xsd:annotation>
                         <xsd:documentation>General - Running out of free file descriptors</xsd:documentation>
@@ -719,12 +851,6 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
-                  <xsd:enumeration value="general_hardware">
-                     <xsd:annotation>
-                        <xsd:documentation>General - Appliance hardware notification</xsd:documentation>
-                     </xsd:annotation>
-                  </xsd:enumeration>
-               
                   <xsd:enumeration value="general_licensetoomanylocations">
                      <xsd:annotation>
                         <xsd:documentation>General - A location has been disabled because you have exceeded the licence limit</xsd:documentation>
@@ -740,6 +866,18 @@
                   <xsd:enumeration value="general_logdiskoverload">
                      <xsd:annotation>
                         <xsd:documentation>General - Log disk partition usage has exceeded threshold</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_nameserveravailable">
+                     <xsd:annotation>
+                        <xsd:documentation>General - DNS-derived Autoscaling will resume updating, as the DNS server is now responding</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_nameserverunavailable">
+                     <xsd:annotation>
+                        <xsd:documentation>General - DNS-derived Autoscaling will not update, as the DNS server is unavailable</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -779,6 +917,24 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="general_ocspstaplingrevoked">
+                     <xsd:annotation>
+                        <xsd:documentation>General - An OCSP request (for OCSP stapling) reported that a certificate was revoked</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_ocspstaplingunknown">
+                     <xsd:annotation>
+                        <xsd:documentation>General - An OCSP request (for OCSP stapling) reported that a certificate was unknown</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="general_ocspstaplingunrevoked">
+                     <xsd:annotation>
+                        <xsd:documentation>General - An old but good OCSP response was returned for a revoked certificate</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="general_restartrequired">
                      <xsd:annotation>
                         <xsd:documentation>General - Software must be restarted to apply configuration changes</xsd:documentation>
@@ -811,7 +967,7 @@
                
                   <xsd:enumeration value="general_zxtmswerror">
                      <xsd:annotation>
-                        <xsd:documentation>General - Stingray Traffic Manager software problem</xsd:documentation>
+                        <xsd:documentation>General - Internal software error</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1007,6 +1163,18 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="licensekeys_licensestate-malformed">
+                     <xsd:annotation>
+                        <xsd:documentation>License Keys - Error detected in LicenseStateFile format</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="licensekeys_licensestate-write-failed">
+                     <xsd:annotation>
+                        <xsd:documentation>License Keys - Unable to preserve license state</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="licensekeys_morememallowed">
                      <xsd:annotation>
                         <xsd:documentation>License Keys - License allows more memory for caching</xsd:documentation>
@@ -1043,6 +1211,30 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="locations_locationavailable">
+                     <xsd:annotation>
+                        <xsd:documentation>Locations - Location is now available for GLB Service</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="locations_locationdisabled">
+                     <xsd:annotation>
+                        <xsd:documentation>Locations - Location has been disabled for GLB Service</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="locations_locationdraining">
+                     <xsd:annotation>
+                        <xsd:documentation>Locations - Location is being drained for GLB Service</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="locations_locationenabled">
+                     <xsd:annotation>
+                        <xsd:documentation>Locations - Location has just been enabled for GLB Service</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="locations_locationfail">
                      <xsd:annotation>
                         <xsd:documentation>Locations - Location has failed for GLB Service</xsd:documentation>
@@ -1061,9 +1253,15 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="locations_locationnotdraining">
+                     <xsd:annotation>
+                        <xsd:documentation>Locations - Location is not being drained for GLB Service</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="locations_locationok">
                      <xsd:annotation>
-                        <xsd:documentation>Locations - Location is now working for GLB Service</xsd:documentation>
+                        <xsd:documentation>Locations - Location is now healthy for GLB Service</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1076,6 +1274,12 @@
                   <xsd:enumeration value="locations_locationsoapok">
                      <xsd:annotation>
                         <xsd:documentation>Locations - An external SOAP agent indicates this location is now working</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="locations_locationunavailable">
+                     <xsd:annotation>
+                        <xsd:documentation>Locations - Location has become unavailable for GLB Service</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1100,18 +1304,6 @@
                   <xsd:enumeration value="monitors_monitorok">
                      <xsd:annotation>
                         <xsd:documentation>Monitors - Monitor is working</xsd:documentation>
-                     </xsd:annotation>
-                  </xsd:enumeration>
-               
-                  <xsd:enumeration value="pids_childhung">
-                     <xsd:annotation>
-                        <xsd:documentation>Processes - The child process did not respond within the configured time</xsd:documentation>
-                     </xsd:annotation>
-                  </xsd:enumeration>
-               
-                  <xsd:enumeration value="pids_childkilled">
-                     <xsd:annotation>
-                        <xsd:documentation>Processes - The child process has been killed because it did not respond to control requests within the configured time</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1154,6 +1346,18 @@
                   <xsd:enumeration value="pools_autonodeexisted">
                      <xsd:annotation>
                         <xsd:documentation>Pools - IP address of newly created instance already existed in pool's node list</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="pools_autonodenopublicip">
+                     <xsd:annotation>
+                        <xsd:documentation>Pools - Node has no public IP address</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="pools_autonoderemoved">
+                     <xsd:annotation>
+                        <xsd:documentation>Pools - A node in an DNS-derived autoscaled pool has been removed</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1451,6 +1655,12 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="rules_ruleoverrun">
+                     <xsd:annotation>
+                        <xsd:documentation>Rules - Rule exceeded execution time warning threshold</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="rules_rulesinvalidrequestbody">
                      <xsd:annotation>
                         <xsd:documentation>Rules - Client sent invalid HTTP request body</xsd:documentation>
@@ -1529,6 +1739,12 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="services_glbactivedcmismatch">
+                     <xsd:annotation>
+                        <xsd:documentation>GLB Services - Active datacentre mismatches among cluster members</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="services_glbdeadlocmissingips">
                      <xsd:annotation>
                         <xsd:documentation>GLB Services - A DNS Query returned IP addresses that are not configured for any location that is currently alive</xsd:documentation>
@@ -1547,6 +1763,12 @@
                      </xsd:annotation>
                   </xsd:enumeration>
                
+                  <xsd:enumeration value="services_glbmanualfailback">
+                     <xsd:annotation>
+                        <xsd:documentation>GLB Services - Manual failback triggered</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
                   <xsd:enumeration value="services_glbmissingips">
                      <xsd:annotation>
                         <xsd:documentation>GLB Services - A DNS Query returned IP addresses that are not configured in any location</xsd:documentation>
@@ -1555,7 +1777,7 @@
                
                   <xsd:enumeration value="services_glbnewmaster">
                      <xsd:annotation>
-                        <xsd:documentation>GLB Services - A location has been set as master for a GLB service</xsd:documentation>
+                        <xsd:documentation>GLB Services - A location has been set as active for a GLB service</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1574,6 +1796,12 @@
                   <xsd:enumeration value="services_glbserviceok">
                      <xsd:annotation>
                         <xsd:documentation>GLB Services - GLB Service has recovered</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="services_glbtoomanylocations">
+                     <xsd:annotation>
+                        <xsd:documentation>GLB Services - There are too many Data Centers configured and the Global Load Balancing feature is not guaranteed to work reliably with more than 255 Data Centres</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                
@@ -1646,6 +1874,42 @@
                   <xsd:enumeration value="vservers_connfail">
                      <xsd:annotation>
                         <xsd:documentation>Virtual Servers - A socket connection failure has occurred</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="vservers_dnsaddzone">
+                     <xsd:annotation>
+                        <xsd:documentation>Virtual Servers - The built-in DNS server has successfully added a DNS zone</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="vservers_dnserroraddzone">
+                     <xsd:annotation>
+                        <xsd:documentation>Virtual Servers - The built-in DNS server has failed to add a DNS zone</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="vservers_dnserrordeletezone">
+                     <xsd:annotation>
+                        <xsd:documentation>Virtual Servers - The built-in DNS server has failed to delete a DNS zone</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="vservers_dnssecexpired">
+                     <xsd:annotation>
+                        <xsd:documentation>Virtual Servers - DNSSEC zone contains expired signatures</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="vservers_dnssecexpires">
+                     <xsd:annotation>
+                        <xsd:documentation>Virtual Servers - DNSSEC zone contains signatures that are about to expire</xsd:documentation>
+                     </xsd:annotation>
+                  </xsd:enumeration>
+               
+                  <xsd:enumeration value="vservers_dnszonedelete">
+                     <xsd:annotation>
+                        <xsd:documentation>Virtual Servers - DNS zone has been deleted</xsd:documentation>
                      </xsd:annotation>
                   </xsd:enumeration>
                

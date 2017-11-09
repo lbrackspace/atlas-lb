@@ -20,7 +20,6 @@ import org.bouncycastle.openpgp.PGPCompressedDataGenerator;
 import org.bouncycastle.openpgp.PGPException;
 import org.bouncycastle.openpgp.PGPLiteralData;
 import org.bouncycastle.openpgp.PGPLiteralDataGenerator;
-import org.bouncycastle.openpgp.PGPObjectFactory;
 import org.bouncycastle.openpgp.PGPOnePassSignature;
 import org.bouncycastle.openpgp.PGPOnePassSignatureList;
 import org.bouncycastle.openpgp.PGPPrivateKey;
@@ -32,6 +31,11 @@ import org.bouncycastle.openpgp.PGPSignatureGenerator;
 import org.bouncycastle.openpgp.PGPSignatureList;
 import org.bouncycastle.openpgp.PGPSignatureSubpacketGenerator;
 import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory;
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
 /**
  * A simple utility class that signs and verifies files.
@@ -50,7 +54,7 @@ import org.bouncycastle.openpgp.PGPUtil;
  */
 public class SignedFileProcessor
 {
-    /**
+    /*
      * verify the passed in file as being correctly signed.
      */
     private static void verifyFile(
@@ -60,11 +64,11 @@ public class SignedFileProcessor
     {
         in = PGPUtil.getDecoderStream(in);
         
-        PGPObjectFactory            pgpFact = new PGPObjectFactory(in);
+        JcaPGPObjectFactory            pgpFact = new JcaPGPObjectFactory(in);
 
         PGPCompressedData           c1 = (PGPCompressedData)pgpFact.nextObject();
 
-        pgpFact = new PGPObjectFactory(c1.getDataStream());
+        pgpFact = new JcaPGPObjectFactory(c1.getDataStream());
             
         PGPOnePassSignatureList     p1 = (PGPOnePassSignatureList)pgpFact.nextObject();
             
@@ -74,12 +78,12 @@ public class SignedFileProcessor
 
         InputStream                 dIn = p2.getInputStream();
         int                         ch;
-        PGPPublicKeyRingCollection  pgpRing = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(keyIn));
+        PGPPublicKeyRingCollection  pgpRing = new PGPPublicKeyRingCollection(PGPUtil.getDecoderStream(keyIn), new JcaKeyFingerprintCalculator());
 
         PGPPublicKey                key = pgpRing.getPublicKey(ops.getKeyID());
         FileOutputStream            out = new FileOutputStream(p2.getFileName());
 
-        ops.initVerify(key, "BC");
+        ops.init(new JcaPGPContentVerifierBuilderProvider().setProvider("BC"), key);
             
         while ((ch = dIn.read()) >= 0)
         {
@@ -129,10 +133,10 @@ public class SignedFileProcessor
         }
 
         PGPSecretKey                pgpSec = PGPExampleUtil.readSecretKey(keyIn);
-        PGPPrivateKey               pgpPrivKey = pgpSec.extractPrivateKey(pass, "BC");        
-        PGPSignatureGenerator       sGen = new PGPSignatureGenerator(pgpSec.getPublicKey().getAlgorithm(), PGPUtil.SHA1, "BC");
+        PGPPrivateKey               pgpPrivKey = pgpSec.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(pass));
+        PGPSignatureGenerator       sGen = new PGPSignatureGenerator(new JcaPGPContentSignerBuilder(pgpSec.getPublicKey().getAlgorithm(), PGPUtil.SHA1).setProvider("BC"));
         
-        sGen.initSign(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
+        sGen.init(PGPSignature.BINARY_DOCUMENT, pgpPrivKey);
         
         Iterator    it = pgpSec.getPublicKey().getUserIDs();
         if (it.hasNext())
@@ -154,7 +158,7 @@ public class SignedFileProcessor
         PGPLiteralDataGenerator     lGen = new PGPLiteralDataGenerator();
         OutputStream                lOut = lGen.open(bOut, PGPLiteralData.BINARY, file);
         FileInputStream             fIn = new FileInputStream(file);
-        int                         ch = 0;
+        int                         ch;
         
         while ((ch = fIn.read()) >= 0)
         {

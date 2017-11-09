@@ -1,16 +1,5 @@
 package org.bouncycastle.jce.provider;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.SignedData;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
-import org.bouncycastle.x509.X509StreamParserSpi;
-import org.bouncycastle.x509.util.StreamParsingException;
-
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +9,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.SignedData;
+import org.bouncycastle.x509.X509StreamParserSpi;
+import org.bouncycastle.x509.util.StreamParsingException;
+
+/**
+ * @deprecated use CertificateFactory or the PEMParser in the openssl package (pkix jar).
+ */
 public class X509CertParser
     extends X509StreamParserSpi
 {
@@ -33,11 +35,11 @@ public class X509CertParser
         InputStream in)
         throws IOException, CertificateParsingException
     {
-        ASN1InputStream dIn = new ASN1InputStream(in, ProviderUtil.getReadLimit(in));
+        ASN1InputStream dIn = new ASN1InputStream(in);
         ASN1Sequence seq = (ASN1Sequence)dIn.readObject();
 
         if (seq.size() > 1
-                && seq.getObjectAt(0) instanceof DERObjectIdentifier)
+                && seq.getObjectAt(0) instanceof ASN1ObjectIdentifier)
         {
             if (seq.getObjectAt(0).equals(PKCSObjectIdentifiers.signedData))
             {
@@ -49,7 +51,7 @@ public class X509CertParser
         }
 
         return new X509CertificateObject(
-                            X509CertificateStructure.getInstance(seq));
+                            org.bouncycastle.asn1.x509.Certificate.getInstance(seq));
     }
 
     private Certificate getCertificate()
@@ -64,7 +66,7 @@ public class X509CertParser
                 if (obj instanceof ASN1Sequence)
                 {
                    return new X509CertificateObject(
-                                    X509CertificateStructure.getInstance(obj));
+                                    org.bouncycastle.asn1.x509.Certificate.getInstance(obj));
                 }
             }
         }
@@ -81,7 +83,7 @@ public class X509CertParser
         if (seq != null)
         {
             return new X509CertificateObject(
-                            X509CertificateStructure.getInstance(seq));
+                            org.bouncycastle.asn1.x509.Certificate.getInstance(seq));
         }
 
         return null;

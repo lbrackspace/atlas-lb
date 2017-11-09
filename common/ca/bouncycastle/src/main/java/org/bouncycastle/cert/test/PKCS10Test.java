@@ -11,9 +11,10 @@ import java.security.Security;
 import java.security.Signature;
 import java.security.spec.RSAPrivateCrtKeySpec;
 import java.security.spec.RSAPublicKeySpec;
-import java.util.Vector;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import javax.security.auth.x500.X500Principal;
+
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.Attribute;
@@ -22,11 +23,11 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.ECPointEncoder;
@@ -40,15 +41,14 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
-import org.bouncycastle.pkcs.PKCS10CertificationRequestHolder;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestHolder;
 import org.bouncycastle.util.Arrays;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.test.SimpleTest;
-import org.bouncycastle.x509.extension.SubjectKeyIdentifierStructure;
 
 /**
  **/
@@ -124,9 +124,9 @@ public class PKCS10Test
 
         PKCS10CertificationRequestBuilder requestBuilder = new JcaPKCS10CertificationRequestBuilder(subject, kp.getPublic());
                             
-        PKCS10CertificationRequestHolder req1 = requestBuilder.build(new JcaContentSignerBuilder(sigName).setProvider(provider).build(kp.getPrivate()));
+        PKCS10CertificationRequest req1 = requestBuilder.build(new JcaContentSignerBuilder(sigName).setProvider(provider).build(kp.getPrivate()));
 
-        JcaPKCS10CertificationRequestHolder req2 = new JcaPKCS10CertificationRequestHolder(req1.getEncoded()).setProvider(provider);
+        JcaPKCS10CertificationRequest req2 = new JcaPKCS10CertificationRequest(req1.getEncoded()).setProvider(provider);
 
         if (!req2.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(provider).build(kp.getPublic())))
         {
@@ -138,11 +138,53 @@ public class PKCS10Test
             fail(keyName + ": Failed public key check.");
         }
     }
-    
+
+    private void generationTestX500Principal(int keySize, String keyName, String sigName, String provider)
+        throws Exception
+    {
+        KeyPairGenerator kpg = KeyPairGenerator.getInstance(keyName, "BC");
+
+        kpg.initialize(keySize);
+
+        KeyPair kp = kpg.genKeyPair();
+
+
+        X500NameBuilder x500NameBld = new X500NameBuilder(BCStyle.INSTANCE);
+
+        x500NameBld.addRDN(BCStyle.C, "AU");
+        x500NameBld.addRDN(BCStyle.O, "The Legion of the Bouncy Castle");
+        x500NameBld.addRDN(BCStyle.L, "Melbourne");
+        x500NameBld.addRDN(BCStyle.ST, "Victoria");
+        x500NameBld.addRDN(BCStyle.EmailAddress, "feedback-crypto@bouncycastle.org");
+
+        X500Name    subject = x500NameBld.build();
+
+        PKCS10CertificationRequestBuilder requestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Principal(subject.getEncoded()), kp.getPublic());
+
+        PKCS10CertificationRequest req1 = requestBuilder.build(new JcaContentSignerBuilder(sigName).setProvider(provider).build(kp.getPrivate()));
+
+        JcaPKCS10CertificationRequest req2 = new JcaPKCS10CertificationRequest(req1.getEncoded()).setProvider(provider);
+
+        if (!req2.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(provider).build(kp.getPublic())))
+        {
+            fail(sigName + ": Failed verify check.");
+        }
+
+        if (!Arrays.areEqual(req2.getPublicKey().getEncoded(), req1.getSubjectPublicKeyInfo().getEncoded()))
+        {
+            fail(keyName + ": Failed public key check.");
+        }
+
+        if (!Arrays.areEqual(req2.getSubject().getEncoded(), req1.getSubject().getEncoded()))
+        {
+            fail(keyName + ": Failed subject key check.");
+        }
+    }
+
     /*
      * we generate a self signed certificate for the sake of testing - SHA224withECDSA
      */
-    private void createECRequest(String algorithm, DERObjectIdentifier algOid, DERObjectIdentifier curveOid)
+    private void createECRequest(String algorithm, ASN1ObjectIdentifier algOid, ASN1ObjectIdentifier curveOid)
         throws Exception
     {
         ECNamedCurveParameterSpec spec = ECNamedCurveTable.getParameterSpec(curveOid.getId());
@@ -164,7 +206,7 @@ public class PKCS10Test
         ContentSigner signer = new JcaContentSignerBuilder(algorithm).setProvider(BC).build(privKey);
 
         PKCS10CertificationRequestBuilder reqBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Name("CN=XXX"), pubKey);
-        PKCS10CertificationRequestHolder  req = reqBuilder.build(signer);
+        PKCS10CertificationRequest req = reqBuilder.build(signer);
 
         ContentVerifierProvider verifier = new JcaContentVerifierProviderBuilder().setProvider(BC).build(pubKey);
 
@@ -173,7 +215,7 @@ public class PKCS10Test
             fail("Failed verify check EC.");
         }
 
-        req = new PKCS10CertificationRequestHolder(req.getEncoded());
+        req = new PKCS10CertificationRequest(req.getEncoded());
         if (!req.isSignatureValid(verifier))
         {
             fail("Failed verify check EC encoded.");
@@ -192,7 +234,7 @@ public class PKCS10Test
             fail("Failed verify check EC uncompressed.");
         }
         
-        req = new PKCS10CertificationRequestHolder(req.getEncoded());
+        req = new PKCS10CertificationRequest(req.getEncoded());
         if (!req.isSignatureValid(verifier))
         {
             fail("Failed verify check EC uncompressed encoded.");
@@ -220,7 +262,7 @@ public class PKCS10Test
         }
     }
 
-    private void createECRequest(String algorithm, DERObjectIdentifier algOid)
+    private void createECRequest(String algorithm, ASN1ObjectIdentifier algOid)
         throws Exception
     {
         ECCurve.Fp curve = new ECCurve.Fp(
@@ -230,7 +272,7 @@ public class PKCS10Test
 
         ECParameterSpec spec = new ECParameterSpec(
             curve,
-            curve.decodePoint(Hex.decode("02C6858E06B70404E9CD9E3ECB662395B4429C648139053FB521F828AF606B4D3DBAA14B5E77EFE75928FE1DC127A2FFA8DE3348B3C1856A429BF97E7E31C2E5BD66")), // G
+            curve.decodePoint(Hex.decode("0200C6858E06B70404E9CD9E3ECB662395B4429C648139053FB521F828AF606B4D3DBAA14B5E77EFE75928FE1DC127A2FFA8DE3348B3C1856A429BF97E7E31C2E5BD66")), // G
             new BigInteger("01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA51868783BF2F966B7FCC0148F709A5D03BB5C9B8899C47AEBB6FB71E91386409", 16)); // n
 
         ECPrivateKeySpec privKeySpec = new ECPrivateKeySpec(
@@ -238,7 +280,7 @@ public class PKCS10Test
             spec);
 
         ECPublicKeySpec pubKeySpec = new ECPublicKeySpec(
-            curve.decodePoint(Hex.decode("026BFDD2C9278B63C92D6624F151C9D7A822CC75BD983B17D25D74C26740380022D3D8FAF304781E416175EADF4ED6E2B47142D2454A7AC7801DD803CF44A4D1F0AC")), // Q
+            curve.decodePoint(Hex.decode("02006BFDD2C9278B63C92D6624F151C9D7A822CC75BD983B17D25D74C26740380022D3D8FAF304781E416175EADF4ED6E2B47142D2454A7AC7801DD803CF44A4D1F0AC")), // Q
             spec);
 
         //
@@ -252,14 +294,14 @@ public class PKCS10Test
         privKey = fact.generatePrivate(privKeySpec);
         pubKey = fact.generatePublic(pubKeySpec);
 
-        PKCS10CertificationRequestHolder req = new JcaPKCS10CertificationRequestBuilder(
+        PKCS10CertificationRequest req = new JcaPKCS10CertificationRequestBuilder(
                         new X500Name("CN=XXX"), pubKey).build(new JcaContentSignerBuilder(algorithm).setProvider(BC).build(privKey));
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(pubKey)))
         {
             fail("Failed verify check EC.");
         }
 
-        req = new PKCS10CertificationRequestHolder(req.getEncoded());
+        req = new PKCS10CertificationRequest(req.getEncoded());
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(pubKey)))
         {
             fail("Failed verify check EC encoded.");
@@ -277,7 +319,7 @@ public class PKCS10Test
             fail("Failed verify check EC uncompressed.");
         }
 
-        JcaPKCS10CertificationRequestHolder jcaReq = new JcaPKCS10CertificationRequestHolder(new PKCS10CertificationRequestHolder(req.getEncoded()));
+        JcaPKCS10CertificationRequest jcaReq = new JcaPKCS10CertificationRequest(new PKCS10CertificationRequest(req.getEncoded()));
         if (!jcaReq.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(jcaReq.getPublicKey())))
         {
             fail("Failed verify check EC uncompressed encoded.");
@@ -320,14 +362,14 @@ public class PKCS10Test
         PrivateKey          privKey = pair.getPrivate();
         PublicKey           pubKey = pair.getPublic();
 
-        PKCS10CertificationRequestHolder req = new JcaPKCS10CertificationRequestBuilder(
+        PKCS10CertificationRequest req = new JcaPKCS10CertificationRequestBuilder(
                         new X500Name("CN=XXX"), pubKey).build(new JcaContentSignerBuilder(algorithm).setProvider(BC).build(privKey));
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(pubKey)))
         {
             fail("Failed verify check EC.");
         }
 
-        req = new PKCS10CertificationRequestHolder(req.getEncoded());
+        req = new PKCS10CertificationRequest(req.getEncoded());
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(pubKey)))
         {
             fail("Failed verify check EC encoded.");
@@ -377,14 +419,14 @@ public class PKCS10Test
         PrivateKey privKey = fact.generatePrivate(privKeySpec);
         PublicKey pubKey = fact.generatePublic(pubKeySpec);
 
-        PKCS10CertificationRequestHolder req = new JcaPKCS10CertificationRequestBuilder(
+        PKCS10CertificationRequest req = new JcaPKCS10CertificationRequestBuilder(
                         new X500Name("CN=XXX"), pubKey).build(new JcaContentSignerBuilder(algorithm).setProvider(BC).build(privKey));
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(pubKey)))
         {
             fail("Failed verify check PSS.");
         }
 
-        JcaPKCS10CertificationRequestHolder jcaReq = new JcaPKCS10CertificationRequestHolder(req.getEncoded()).setProvider(BC);
+        JcaPKCS10CertificationRequest jcaReq = new JcaPKCS10CertificationRequest(req.getEncoded()).setProvider(BC);
         if (!jcaReq.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(jcaReq.getPublicKey())))
         {
             fail("Failed verify check PSS encoded.");
@@ -419,28 +461,23 @@ public class PKCS10Test
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA", "BC");
         keyGen.initialize(1024, new SecureRandom());
         KeyPair pair = keyGen.generateKeyPair();
+        JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
 
-        Vector oids = new Vector();
-        Vector values = new Vector();
-        oids.add(X509Extension.basicConstraints);
-        values.add(new X509Extension(true, new DEROctetString(new BasicConstraints(true))));
-        oids.add(X509Extension.keyUsage);
-        values.add(new X509Extension(true, new DEROctetString(
-            new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign))));
-        SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifierStructure(pair.getPublic());
-        X509Extension ski = new X509Extension(false, new DEROctetString(subjectKeyIdentifier));
-        oids.add(X509Extension.subjectKeyIdentifier);
-        values.add(ski);
+        Extension[] ext = new Extension[] {
+            new Extension(Extension.basicConstraints, true, new DEROctetString(new BasicConstraints(true))),
+            new Extension(Extension.keyUsage, true, new DEROctetString(new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign))),
+            new Extension(Extension.subjectKeyIdentifier, false, new DEROctetString(extUtils.createSubjectKeyIdentifier(pair.getPublic())))
+        };
 
-        PKCS10CertificationRequestHolder p1 = new JcaPKCS10CertificationRequestBuilder(
+        PKCS10CertificationRequest p1 = new JcaPKCS10CertificationRequestBuilder(
             new X500Name("cn=csr"),
             pair.getPublic())
-            .addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, new X509Extensions(oids, values))
+            .addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, new Extensions(ext))
             .build(new JcaContentSignerBuilder("SHA1withRSA").setProvider(BC).build(pair.getPrivate()));
-        PKCS10CertificationRequestHolder p2 = new JcaPKCS10CertificationRequestBuilder(
+        PKCS10CertificationRequest p2 = new JcaPKCS10CertificationRequestBuilder(
             new X500Name("cn=csr"),
             pair.getPublic())
-            .addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, new X509Extensions(oids, values))
+            .addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, new Extensions(ext))
             .build(new JcaContentSignerBuilder("SHA1withRSA").setProvider(BC).build(pair.getPrivate()));
 
         if (!p1.equals(p2))
@@ -483,7 +520,8 @@ public class PKCS10Test
     public void performTest()
         throws Exception
     {
-        generationTest(512, "RSA", "SHA1withRSA", "BC");       
+        generationTest(512, "RSA", "SHA1withRSA", "BC");
+        generationTestX500Principal(512, "RSA", "SHA1withRSA", "BC");
         generationTest(512, "GOST3410", "GOST3411withGOST3410", "BC");
         
         if (Security.getProvider("SunRsaSign") != null)
@@ -492,35 +530,35 @@ public class PKCS10Test
         }
         
         // elliptic curve GOST A parameter set
-        JcaPKCS10CertificationRequestHolder req = new JcaPKCS10CertificationRequestHolder(gost3410EC_A).setProvider(BC);
+        JcaPKCS10CertificationRequest req = new JcaPKCS10CertificationRequest(gost3410EC_A).setProvider(BC);
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(req.getPublicKey())))
         {
             fail("Failed verify check gost3410EC_A.");
         }
 
         // elliptic curve GOST B parameter set
-        req = new JcaPKCS10CertificationRequestHolder(gost3410EC_B).setProvider(BC);
+        req = new JcaPKCS10CertificationRequest(gost3410EC_B).setProvider(BC);
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(req.getPublicKey())))
         {
             fail("Failed verify check gost3410EC_B.");
         }
 
         // elliptic curve GOST C parameter set
-        req = new JcaPKCS10CertificationRequestHolder(gost3410EC_C).setProvider(BC);
+        req = new JcaPKCS10CertificationRequest(gost3410EC_C).setProvider(BC);
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(req.getPublicKey())))
         {
             fail("Failed verify check gost3410EC_C.");
         }
         
         // elliptic curve GOST ExA parameter set
-        req = new JcaPKCS10CertificationRequestHolder(gost3410EC_ExA).setProvider(BC);
+        req = new JcaPKCS10CertificationRequest(gost3410EC_ExA).setProvider(BC);
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(req.getPublicKey())))
         {
             fail("Failed verify check gost3410EC_ExA.");
         }
 
         // elliptic curve GOST ExB parameter set
-        req = new JcaPKCS10CertificationRequestHolder(gost3410EC_ExB).setProvider(BC);
+        req = new JcaPKCS10CertificationRequest(gost3410EC_ExB).setProvider(BC);
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(req.getPublicKey())))
         {
             fail("Failed verify check gost3410EC_ExA.");
@@ -543,7 +581,7 @@ public class PKCS10Test
 
         KeyPair kp = g.generateKeyPair();
 
-        req = new JcaPKCS10CertificationRequestHolder(new JcaPKCS10CertificationRequestBuilder(
+        req = new JcaPKCS10CertificationRequest(new JcaPKCS10CertificationRequestBuilder(
                new X500Name("CN=XXX"), kp.getPublic()).build(new JcaContentSignerBuilder( "ECDSAWITHSHA1").setProvider(BC).build(kp.getPrivate())));
         if (!req.isSignatureValid(new JcaContentVerifierProviderBuilder().setProvider(BC).build(req.getPublicKey())))
         {
@@ -556,7 +594,7 @@ public class PKCS10Test
         createECRequest("SHA384withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA384);
         createECRequest("SHA512withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA512);
 
-        createECRequest("SHA1withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA1, new DERObjectIdentifier("1.3.132.0.34"));
+        createECRequest("SHA1withECDSA", X9ObjectIdentifiers.ecdsa_with_SHA1, new ASN1ObjectIdentifier("1.3.132.0.34"));
 
         createECGOSTRequest();
 

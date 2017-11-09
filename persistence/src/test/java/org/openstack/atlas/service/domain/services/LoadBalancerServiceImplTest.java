@@ -184,8 +184,8 @@ public class LoadBalancerServiceImplTest {
             lbService.addDefaultValues(lb);
 
             Assert.assertEquals(NodeStatus.ONLINE, node1.getStatus());
-            Assert.assertEquals(NodeStatus.OFFLINE, node2.getStatus());
-            Assert.assertEquals(NodeStatus.OFFLINE, node3.getStatus());
+            Assert.assertEquals(NodeStatus.ONLINE, node2.getStatus());
+            Assert.assertEquals(NodeStatus.ONLINE, node3.getStatus());
 
             Assert.assertEquals(1, node1.getWeight().intValue());
             Assert.assertEquals(0, node2.getWeight().intValue());
@@ -307,7 +307,7 @@ public class LoadBalancerServiceImplTest {
 
             when(hostRepository.getById(Matchers.<Integer>any())).thenReturn(host);
             when(hostRepository.getDefaultActiveHost(Matchers.<Integer>any())).thenReturn(host);
-            when(clusterRepository.getActiveCluster(null)).thenReturn(cluster);
+            when(clusterRepository.getActiveCluster(null, false)).thenReturn(cluster);
             when(hostService.getById(Matchers.<Integer>any())).thenReturn(host);
             when(loadBalancerStatusHistoryRepository.save(Matchers.<LoadBalancerStatusHistory>anyObject())).thenReturn(new LoadBalancerStatusHistory());
 

@@ -7,13 +7,34 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.util.*;
+import org.bouncycastle.util.Iterable;
+
 public class RecipientInformationStore
+    implements Iterable<RecipientInformation>
 {
-    private final List      all; //ArrayList[RecipientInformation]
-    private final Map       table = new HashMap(); // HashMap[RecipientID, ArrayList[RecipientInformation]]
+    private final List all; //ArrayList[RecipientInformation]
+    private final Map table = new HashMap(); // HashMap[RecipientID, ArrayList[RecipientInformation]]
+
+    /**
+     * Create a store containing a single RecipientInformation object.
+     *
+     * @param recipientInformation the signer information to contain.
+     */
+    public RecipientInformationStore(
+        RecipientInformation  recipientInformation)
+    {
+        this.all = new ArrayList(1);
+        this.all.add(recipientInformation);
+
+        RecipientId sid = recipientInformation.getRID();
+
+        table.put(sid, all);
+    }
 
     public RecipientInformationStore(
-        Collection  recipientInfos)
+        Collection<RecipientInformation> recipientInfos)
     {
         Iterator it = recipientInfos.iterator();
 
@@ -45,9 +66,9 @@ public class RecipientInformationStore
     public RecipientInformation get(
         RecipientId selector)
     {
-        List list = (ArrayList)table.get(selector);
+        Collection list = getRecipients(selector);
 
-        return list == null ? null : (RecipientInformation) list.get(0);
+        return list.size() == 0 ? null : (RecipientInformation)list.iterator().next();
     }
 
     /**
@@ -65,7 +86,7 @@ public class RecipientInformationStore
      *
      * @return a collection of recipients.
      */
-    public Collection getRecipients()
+    public Collection<RecipientInformation> getRecipients()
     {
         return new ArrayList(all);
     }
@@ -76,11 +97,47 @@ public class RecipientInformationStore
      * @param selector a recipient id to select against.
      * @return a collection of RecipientInformation objects.
      */
-    public Collection getRecipients(
+    public Collection<Recipient> getRecipients(
         RecipientId selector)
     {
+        if (selector instanceof KeyTransRecipientId)
+        {
+            KeyTransRecipientId keyTrans = (KeyTransRecipientId)selector;
+
+            X500Name issuer = keyTrans.getIssuer();
+            byte[] subjectKeyId = keyTrans.getSubjectKeyIdentifier();
+
+            if (issuer != null && subjectKeyId != null)
+            {
+                List results = new ArrayList();
+
+                Collection match1 = getRecipients(new KeyTransRecipientId(issuer, keyTrans.getSerialNumber()));
+                if (match1 != null)
+                {
+                    results.addAll(match1);
+                }
+
+                Collection match2 = getRecipients(new KeyTransRecipientId(subjectKeyId));
+                if (match2 != null)
+                {
+                    results.addAll(match2);
+                }
+
+                return results;
+            }
+        }
+
         List list = (ArrayList)table.get(selector);
 
         return list == null ? new ArrayList() : new ArrayList(list);
+    }
+
+
+    /**
+     * Support method for Iterable where available.
+     */
+    public Iterator<RecipientInformation> iterator()
+    {
+        return getRecipients().iterator();
     }
 }

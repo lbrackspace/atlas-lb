@@ -1,16 +1,18 @@
 package org.bouncycastle.asn1.cms;
 
+import java.io.IOException;
+
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1SequenceParser;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1SetParser;
 import org.bouncycastle.asn1.ASN1TaggedObjectParser;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERTags;
-
-import java.io.IOException;
+import org.bouncycastle.asn1.BERTags;
 
 /**
+ * Parser for <a href="http://tools.ietf.org/html/rfc5652#section-5.1">RFC 5652</a>: {@link SignedData} object.
+ * <p>
  * <pre>
  * SignedData ::= SEQUENCE {
  *     version CMSVersion,
@@ -25,7 +27,7 @@ import java.io.IOException;
 public class SignedDataParser
 {
     private ASN1SequenceParser _seq;
-    private DERInteger         _version;
+    private ASN1Integer         _version;
     private Object             _nextObject;
     private boolean            _certsCalled;
     private boolean            _crlsCalled;
@@ -51,10 +53,10 @@ public class SignedDataParser
         throws IOException
     {
         this._seq = seq;
-        this._version = (DERInteger)seq.readObject();
+        this._version = (ASN1Integer)seq.readObject();
     }
 
-    public DERInteger getVersion()
+    public ASN1Integer getVersion()
     {
         return _version;
     }
@@ -86,7 +88,7 @@ public class SignedDataParser
 
         if (_nextObject instanceof ASN1TaggedObjectParser && ((ASN1TaggedObjectParser)_nextObject).getTagNo() == 0)
         {
-            ASN1SetParser certs = (ASN1SetParser)((ASN1TaggedObjectParser)_nextObject).getObjectParser(DERTags.SET, false);
+            ASN1SetParser certs = (ASN1SetParser)((ASN1TaggedObjectParser)_nextObject).getObjectParser(BERTags.SET, false);
             _nextObject = null;
 
             return certs;
@@ -112,7 +114,7 @@ public class SignedDataParser
 
         if (_nextObject instanceof ASN1TaggedObjectParser && ((ASN1TaggedObjectParser)_nextObject).getTagNo() == 1)
         {
-            ASN1SetParser crls = (ASN1SetParser)((ASN1TaggedObjectParser)_nextObject).getObjectParser(DERTags.SET, false);
+            ASN1SetParser crls = (ASN1SetParser)((ASN1TaggedObjectParser)_nextObject).getObjectParser(BERTags.SET, false);
             _nextObject = null;
 
             return crls;

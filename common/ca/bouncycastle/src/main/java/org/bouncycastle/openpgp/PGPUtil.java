@@ -6,90 +6,37 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Provider;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.util.Date;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.bcpg.ArmoredInputStream;
 import org.bouncycastle.bcpg.HashAlgorithmTags;
 import org.bouncycastle.bcpg.MPInteger;
 import org.bouncycastle.bcpg.PublicKeyAlgorithmTags;
-import org.bouncycastle.bcpg.S2K;
 import org.bouncycastle.bcpg.SymmetricKeyAlgorithmTags;
 import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.util.encoders.DecoderException;
 
 /**
- * Basic utility class
+ * PGP utilities.
  */
 public class PGPUtil
     implements HashAlgorithmTags
 {
-    private    static String    defProvider = "BC";
+    private static String defProvider = "BC";
 
     /**
-     * Return the provider that will be used by factory classes in situations
-     * where a provider must be determined on the fly.
-     * 
-     * @return String
+     * Return an appropriate name for the hash algorithm represented by the passed
+     * in hash algorithm ID number.
+     *
+     * @param hashAlgorithm the algorithm ID for a hash algorithm.
+     * @return a String representation of the hash name.
      */
-    public static String getDefaultProvider()
-    {
-        return defProvider;
-    }
-    
-    /**
-     * Set the provider to be used by the package when it is necessary to 
-     * find one on the fly.
-     * 
-     * @param provider
-     */
-    public static void setDefaultProvider(
-        String    provider)
-    {
-        defProvider = provider;
-    }
-    
-    static MPInteger[] dsaSigToMpi(
-        byte[] encoding) 
-        throws PGPException
-    {
-        ASN1InputStream aIn = new ASN1InputStream(encoding);
-
-        DERInteger i1;
-        DERInteger i2;
-
-        try
-        {
-            ASN1Sequence s = (ASN1Sequence)aIn.readObject();
-
-            i1 = (DERInteger)s.getObjectAt(0);
-            i2 = (DERInteger)s.getObjectAt(1);
-        }
-        catch (IOException e)
-        {
-            throw new PGPException("exception encoding signature", e);
-        }
-
-        MPInteger[] values = new MPInteger[2];
-        
-        values[0] = new MPInteger(i1.getValue());
-        values[1] = new MPInteger(i2.getValue());
-        
-        return values;
-    }
-    
-    static String getDigestName(
-        int        hashAlgorithm)
+    public static String getDigestName(
+        int hashAlgorithm)
         throws PGPException
     {
         switch (hashAlgorithm)
@@ -110,18 +57,28 @@ public class PGPUtil
             return "SHA512";
         case HashAlgorithmTags.SHA224:
             return "SHA224";
+        case HashAlgorithmTags.TIGER_192:
+            return "TIGER";
         default:
             throw new PGPException("unknown hash algorithm tag in getDigestName: " + hashAlgorithm);
         }
     }
-    
-    static String getSignatureName(
-        int        keyAlgorithm,
-        int        hashAlgorithm)
+
+    /**
+     * Return an appropriate name for the signature algorithm represented by the passed
+     * in public key and hash algorithm ID numbers.
+     *
+     * @param keyAlgorithm the algorithm ID for the public key algorithm used in the signature.
+     * @param hashAlgorithm the algorithm ID for the hash algorithm used.
+     * @return a String representation of the signature name.
+     */
+    public static String getSignatureName(
+        int keyAlgorithm,
+        int hashAlgorithm)
         throws PGPException
     {
-        String     encAlg;
-                
+        String encAlg;
+
         switch (keyAlgorithm)
         {
         case PublicKeyAlgorithmTags.RSA_GENERAL:
@@ -141,10 +98,16 @@ public class PGPUtil
 
         return getDigestName(hashAlgorithm) + "with" + encAlg;
     }
-    
-    static String getSymmetricCipherName(
-        int    algorithm) 
-        throws PGPException
+
+    /**
+     * Return an appropriate name for the symmetric algorithm represented by the passed
+     * in symmetric algorithm ID number.
+     *
+     * @param algorithm the algorithm ID for a symmetric cipher.
+     * @return a String representation of the cipher name.
+     */
+    public static String getSymmetricCipherName(
+        int algorithm)
     {
         switch (algorithm)
         {
@@ -168,325 +131,176 @@ public class PGPUtil
             return "AES";
         case SymmetricKeyAlgorithmTags.AES_256:
             return "AES";
+        case SymmetricKeyAlgorithmTags.CAMELLIA_128:
+            return "Camellia";
+        case SymmetricKeyAlgorithmTags.CAMELLIA_192:
+            return "Camellia";
+        case SymmetricKeyAlgorithmTags.CAMELLIA_256:
+            return "Camellia";
         case SymmetricKeyAlgorithmTags.TWOFISH:
             return "Twofish";
         default:
-            throw new PGPException("unknown symmetric algorithm: " + algorithm);
-        }
-    }
-    
-    public static SecretKey makeRandomKey(
-        int             algorithm,
-        SecureRandom    random) 
-        throws PGPException
-    {
-        String    algName = null;
-        int        keySize = 0;
-        
-        switch (algorithm)
-        {
-        case SymmetricKeyAlgorithmTags.TRIPLE_DES:
-            keySize = 192;
-            algName = "DES_EDE";
-            break;
-        case SymmetricKeyAlgorithmTags.IDEA:
-            keySize = 128;
-            algName = "IDEA";
-            break;
-        case SymmetricKeyAlgorithmTags.CAST5:
-            keySize = 128;
-            algName = "CAST5";
-            break;
-        case SymmetricKeyAlgorithmTags.BLOWFISH:
-            keySize = 128;
-            algName = "Blowfish";
-            break;
-        case SymmetricKeyAlgorithmTags.SAFER:
-            keySize = 128;
-            algName = "SAFER";
-            break;
-        case SymmetricKeyAlgorithmTags.DES:
-            keySize = 64;
-            algName = "DES";
-            break;
-        case SymmetricKeyAlgorithmTags.AES_128:
-            keySize = 128;
-            algName = "AES";
-            break;
-        case SymmetricKeyAlgorithmTags.AES_192:
-            keySize = 192;
-            algName = "AES";
-            break;
-        case SymmetricKeyAlgorithmTags.AES_256:
-            keySize = 256;
-            algName = "AES";
-            break;
-        case SymmetricKeyAlgorithmTags.TWOFISH:
-            keySize = 256;
-            algName = "Twofish";
-            break;
-        default:
-            throw new PGPException("unknown symmetric algorithm: " + algorithm);
-        }
-        
-        byte[]    keyBytes = new byte[(keySize + 7) / 8];
-        
-        random.nextBytes(keyBytes);
-        
-        return new SecretKeySpec(keyBytes, algName);
-    }
-    
-    public static SecretKey makeKeyFromPassPhrase(
-        int       algorithm,
-        char[]    passPhrase,
-        String    provider) 
-        throws NoSuchProviderException, PGPException
-    {
-        return makeKeyFromPassPhrase(algorithm, null, passPhrase, provider);
-    }
-    
-    public static SecretKey makeKeyFromPassPhrase(
-        int     algorithm,
-        S2K     s2k,
-        char[]  passPhrase,
-        String  provider) 
-        throws PGPException, NoSuchProviderException
-    {
-        Provider prov = getProvider(provider);
-
-        return makeKeyFromPassPhrase(algorithm, s2k, passPhrase, prov);
-    }
-
-    public static SecretKey makeKeyFromPassPhrase(
-        int     algorithm,
-        S2K     s2k,
-        char[]  passPhrase,
-        Provider provider)
-        throws PGPException, NoSuchProviderException
-    {
-        String    algName = null;
-        int        keySize = 0;
-        
-        switch (algorithm)
-        {
-        case SymmetricKeyAlgorithmTags.TRIPLE_DES:
-            keySize = 192;
-            algName = "DES_EDE";
-            break;
-        case SymmetricKeyAlgorithmTags.IDEA:
-            keySize = 128;
-            algName = "IDEA";
-            break;
-        case SymmetricKeyAlgorithmTags.CAST5:
-            keySize = 128;
-            algName = "CAST5";
-            break;
-        case SymmetricKeyAlgorithmTags.BLOWFISH:
-            keySize = 128;
-            algName = "Blowfish";
-            break;
-        case SymmetricKeyAlgorithmTags.SAFER:
-            keySize = 128;
-            algName = "SAFER";
-            break;
-        case SymmetricKeyAlgorithmTags.DES:
-            keySize = 64;
-            algName = "DES";
-            break;
-        case SymmetricKeyAlgorithmTags.AES_128:
-            keySize = 128;
-            algName = "AES";
-            break;
-        case SymmetricKeyAlgorithmTags.AES_192:
-            keySize = 192;
-            algName = "AES";
-            break;
-        case SymmetricKeyAlgorithmTags.AES_256:
-            keySize = 256;
-            algName = "AES";
-            break;
-        case SymmetricKeyAlgorithmTags.TWOFISH:
-            keySize = 256;
-            algName = "Twofish";
-            break;
-        default:
-            throw new PGPException("unknown symmetric algorithm: " + algorithm);
-        }
-        
-        byte[]           pBytes = new byte[passPhrase.length];
-        MessageDigest    digest;
-                    
-        for (int i = 0; i != passPhrase.length; i++)
-        {
-            pBytes[i] = (byte)passPhrase[i];
-        }
-        
-        byte[]    keyBytes = new byte[(keySize + 7) / 8];
-        
-        int    generatedBytes = 0;
-        int    loopCount = 0;
-        
-        while (generatedBytes < keyBytes.length)
-        {
-            if (s2k != null)
-            {     
-                String digestName = getDigestName(s2k.getHashAlgorithm());
-
-                try
-                {
-                    digest = getDigestInstance(digestName, provider);
-                }
-                catch (NoSuchAlgorithmException e)
-                {
-                    throw new PGPException("can't find S2K digest", e);
-                }
-
-                for (int i = 0; i != loopCount; i++)
-                {
-                    digest.update((byte)0);
-                }
-                
-                byte[]    iv = s2k.getIV();
-                            
-                switch (s2k.getType())
-                {
-                case S2K.SIMPLE:
-                    digest.update(pBytes);
-                    break;
-                case S2K.SALTED:
-                    digest.update(iv);
-                    digest.update(pBytes);
-                    break;
-                case S2K.SALTED_AND_ITERATED:
-                    long    count = s2k.getIterationCount();
-                    digest.update(iv);
-                    digest.update(pBytes);
-        
-                    count -= iv.length + pBytes.length;
-                                
-                    while (count > 0)
-                    {
-                        if (count < iv.length)
-                        {
-                            digest.update(iv, 0, (int)count);
-                            break;
-                        }
-                        else
-                        {
-                            digest.update(iv);
-                            count -= iv.length;
-                        }
-        
-                        if (count < pBytes.length)
-                        {
-                            digest.update(pBytes, 0, (int)count);
-                            count = 0;
-                        }
-                        else
-                        {
-                            digest.update(pBytes);
-                            count -= pBytes.length;
-                        }
-                    }
-                    break;
-                default:
-                    throw new PGPException("unknown S2K type: " + s2k.getType());
-                }
-            }
-            else
-            {
-                try
-                {
-                    digest = getDigestInstance("MD5", provider);
-                }
-                catch (NoSuchAlgorithmException e)
-                {
-                    throw new PGPException("can't find MD5 digest", e);
-                }
-                
-                for (int i = 0; i != loopCount; i++)
-                {
-                    digest.update((byte)0);
-                }
-                
-                digest.update(pBytes);
-            }
-                                
-            byte[]    dig = digest.digest();
-            
-            if (dig.length > (keyBytes.length - generatedBytes))
-            {
-                System.arraycopy(dig, 0, keyBytes, generatedBytes, keyBytes.length - generatedBytes);
-            }
-            else
-            {
-                System.arraycopy(dig, 0, keyBytes, generatedBytes, dig.length);
-            }
-            
-            generatedBytes += dig.length;
-            
-            loopCount++;
-        }
-        
-        for (int i = 0; i != pBytes.length; i++)
-        {
-            pBytes[i] = 0;
-        }
-
-        return new SecretKeySpec(keyBytes, algName);
-    }
-
-    static MessageDigest getDigestInstance(
-        String digestName, 
-        Provider provider)
-        throws NoSuchAlgorithmException
-    {
-        try
-        {       
-            return MessageDigest.getInstance(digestName, provider);
-        }
-        catch (NoSuchAlgorithmException e)
-        {
-            // try falling back
-            return MessageDigest.getInstance(digestName);
+            throw new IllegalArgumentException("unknown symmetric algorithm: " + algorithm);
         }
     }
 
     /**
-     * write out the passed in file as a literal data packet.
-     * 
-     * @param out
-     * @param fileType the LiteralData type for the file.
-     * @param file
-     * 
-     * @throws IOException
+     * Return the JCA/JCE provider that will be used by factory classes in situations where a
+     * provider must be determined on the fly.
+     *
+     * @return the name of the default provider.
+     * @deprecated unused
+     */
+    public static String getDefaultProvider()
+    {
+        // TODO: no longer used.
+        return defProvider;
+    }
+
+    /**
+     * Set the provider to be used by the package when it is necessary to find one on the fly.
+     *
+     * @param provider the name of the JCA/JCE provider to use by default.
+     * @deprecated unused
+     */
+    public static void setDefaultProvider(
+        String provider)
+    {
+        defProvider = provider;
+    }
+
+    static MPInteger[] dsaSigToMpi(
+        byte[] encoding)
+        throws PGPException
+    {
+        ASN1InputStream aIn = new ASN1InputStream(encoding);
+
+        ASN1Integer i1;
+        ASN1Integer i2;
+
+        try
+        {
+            ASN1Sequence s = (ASN1Sequence)aIn.readObject();
+
+            i1 = (ASN1Integer)s.getObjectAt(0);
+            i2 = (ASN1Integer)s.getObjectAt(1);
+        }
+        catch (IOException e)
+        {
+            throw new PGPException("exception encoding signature", e);
+        }
+
+        MPInteger[] values = new MPInteger[2];
+
+        values[0] = new MPInteger(i1.getValue());
+        values[1] = new MPInteger(i2.getValue());
+
+        return values;
+    }
+
+    /**
+     * Generates a random key for a {@link SymmetricKeyAlgorithmTags symmetric encryption algorithm}
+     * .
+     *
+     * @param algorithm the symmetric key algorithm identifier.
+     * @param random    a source of random data.
+     * @return a key of the length required by the specified encryption algorithm.
+     * @throws PGPException if the encryption algorithm is unknown.
+     */
+    public static byte[] makeRandomKey(
+        int algorithm,
+        SecureRandom random)
+        throws PGPException
+    {
+        int keySize = 0;
+
+        switch (algorithm)
+        {
+        case SymmetricKeyAlgorithmTags.TRIPLE_DES:
+            keySize = 192;
+            break;
+        case SymmetricKeyAlgorithmTags.IDEA:
+            keySize = 128;
+            break;
+        case SymmetricKeyAlgorithmTags.CAST5:
+            keySize = 128;
+            break;
+        case SymmetricKeyAlgorithmTags.BLOWFISH:
+            keySize = 128;
+            break;
+        case SymmetricKeyAlgorithmTags.SAFER:
+            keySize = 128;
+            break;
+        case SymmetricKeyAlgorithmTags.DES:
+            keySize = 64;
+            break;
+        case SymmetricKeyAlgorithmTags.AES_128:
+            keySize = 128;
+            break;
+        case SymmetricKeyAlgorithmTags.AES_192:
+            keySize = 192;
+            break;
+        case SymmetricKeyAlgorithmTags.AES_256:
+            keySize = 256;
+            break;
+        case SymmetricKeyAlgorithmTags.CAMELLIA_128:
+            keySize = 128;
+            break;
+        case SymmetricKeyAlgorithmTags.CAMELLIA_192:
+            keySize = 192;
+            break;
+        case SymmetricKeyAlgorithmTags.CAMELLIA_256:
+            keySize = 256;
+            break;
+        case SymmetricKeyAlgorithmTags.TWOFISH:
+            keySize = 256;
+            break;
+        default:
+            throw new PGPException("unknown symmetric algorithm: " + algorithm);
+        }
+
+        byte[] keyBytes = new byte[(keySize + 7) / 8];
+
+        random.nextBytes(keyBytes);
+
+        return keyBytes;
+    }
+
+    /**
+     * Write out the contents of the provided file as a literal data packet.
+     *
+     * @param out      the stream to write the literal data to.
+     * @param fileType the {@link PGPLiteralData} type to use for the file data.
+     * @param file     the file to write the contents of.
+     * @throws IOException if an error occurs reading the file or writing to the output stream.
      */
     public static void writeFileToLiteralData(
-        OutputStream    out,
-        char            fileType,
-        File            file)
+        OutputStream out,
+        char fileType,
+        File file)
         throws IOException
     {
         PGPLiteralDataGenerator lData = new PGPLiteralDataGenerator();
-        OutputStream pOut = lData.open(out, fileType, file.getName(), file.length(), new Date(file.lastModified()));
+        OutputStream pOut = lData.open(out, fileType, file);
         pipeFileContents(file, pOut, 4096);
     }
-    
+
     /**
-     * write out the passed in file as a literal data packet in partial packet format.
-     * 
-     * @param out
-     * @param fileType the LiteralData type for the file.
-     * @param file
-     * @param buffer buffer to be used to chunk the file into partial packets.
-     * 
-     * @throws IOException
+     * Write out the contents of the provided file as a literal data packet in partial packet
+     * format.
+     *
+     * @param out      the stream to write the literal data to.
+     * @param fileType the {@link PGPLiteralData} type to use for the file data.
+     * @param file     the file to write the contents of.
+     * @param buffer   buffer to be used to chunk the file into partial packets.
+     * @throws IOException if an error occurs reading the file or writing to the output stream.
+     * @see PGPLiteralDataGenerator#open(OutputStream, char, String, Date, byte[]).
      */
     public static void writeFileToLiteralData(
-        OutputStream    out,
-        char            fileType,
-        File            file,
-        byte[]          buffer)
+        OutputStream out,
+        char fileType,
+        File file,
+        byte[] buffer)
         throws IOException
     {
         PGPLiteralDataGenerator lData = new PGPLiteralDataGenerator();
@@ -494,7 +308,8 @@ public class PGPUtil
         pipeFileContents(file, pOut, buffer.length);
     }
 
-    private static void pipeFileContents(File file, OutputStream pOut, int bufSize) throws IOException
+    private static void pipeFileContents(File file, OutputStream pOut, int bufSize)
+        throws IOException
     {
         FileInputStream in = new FileInputStream(file);
         byte[] buf = new byte[bufSize];
@@ -510,41 +325,46 @@ public class PGPUtil
     }
 
     private static final int READ_AHEAD = 60;
-    
+
     private static boolean isPossiblyBase64(
-        int    ch)
+        int ch)
     {
-        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') 
-                || (ch >= '0' && ch <= '9') || (ch == '+') || (ch == '/')
-                || (ch == '\r') || (ch == '\n');
+        return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')
+            || (ch >= '0' && ch <= '9') || (ch == '+') || (ch == '/')
+            || (ch == '\r') || (ch == '\n');
     }
-    
+
     /**
-     * Return either an ArmoredInputStream or a BCPGInputStream based on
-     * whether the initial characters of the stream are binary PGP encodings or not.
-     * 
-     * @param in the stream to be wrapped
-     * @return a BCPGInputStream
-     * @throws IOException
+     * Obtains a stream that can be used to read PGP data from the provided stream.
+     * <p>
+     * If the initial bytes of the underlying stream are binary PGP encodings, then the stream will
+     * be returned directly, otherwise an {@link ArmoredInputStream} is used to wrap the provided
+     * stream and remove ASCII-Armored encoding.
+     * </p>
+     *
+     * @param in the stream to be checked and possibly wrapped.
+     * @return a stream that will return PGP binary encoded data.
+     * @throws IOException if an error occurs reading the stream, or initialising the
+     * {@link ArmoredInputStream}.
      */
     public static InputStream getDecoderStream(
-        InputStream    in) 
+        InputStream in)
         throws IOException
     {
         if (!in.markSupported())
         {
             in = new BufferedInputStreamExt(in);
         }
-        
+
         in.mark(READ_AHEAD);
-        
-        int    ch = in.read();
-        
+
+        int ch = in.read();
+
 
         if ((ch & 0x80) != 0)
         {
             in.reset();
-        
+
             return in;
         }
         else
@@ -552,34 +372,34 @@ public class PGPUtil
             if (!isPossiblyBase64(ch))
             {
                 in.reset();
-        
+
                 return new ArmoredInputStream(in);
             }
-            
-            byte[]  buf = new byte[READ_AHEAD];
-            int     count = 1;
-            int     index = 1;
-            
+
+            byte[] buf = new byte[READ_AHEAD];
+            int count = 1;
+            int index = 1;
+
             buf[0] = (byte)ch;
             while (count != READ_AHEAD && (ch = in.read()) >= 0)
             {
                 if (!isPossiblyBase64(ch))
                 {
                     in.reset();
-                    
+
                     return new ArmoredInputStream(in);
                 }
-                
+
                 if (ch != '\n' && ch != '\r')
                 {
                     buf[index++] = (byte)ch;
                 }
-                
+
                 count++;
             }
-            
+
             in.reset();
-        
+
             //
             // nothing but new lines, little else, assume regular armoring
             //
@@ -587,49 +407,45 @@ public class PGPUtil
             {
                 return new ArmoredInputStream(in);
             }
-            
+
             //
             // test our non-blank data
             //
-            byte[]    firstBlock = new byte[8];
-            
+            byte[] firstBlock = new byte[8];
+
             System.arraycopy(buf, 0, firstBlock, 0, firstBlock.length);
 
-            byte[]    decoded = Base64.decode(firstBlock);
-            
-            //
-            // it's a base64 PGP block.
-            //
-            if ((decoded[0] & 0x80) != 0)
+            try
             {
-                return new ArmoredInputStream(in, false);
+                byte[] decoded = Base64.decode(firstBlock);
+
+                //
+                // it's a base64 PGP block.
+                //
+                if ((decoded[0] & 0x80) != 0)
+                {
+                    return new ArmoredInputStream(in, false);
+                }
+
+                return new ArmoredInputStream(in);
             }
-            
-            return new ArmoredInputStream(in);
+            catch (DecoderException e)
+            {
+                 throw new IOException(e.getMessage());
+            }
         }
     }
 
-    static Provider getProvider(String providerName)
-        throws NoSuchProviderException
-    {
-        Provider prov = Security.getProvider(providerName);
-
-        if (prov == null)
-        {
-            throw new NoSuchProviderException("provider " + providerName + " not found.");
-        }
-
-        return prov;
-    }
-    
-    static class BufferedInputStreamExt extends BufferedInputStream
+    static class BufferedInputStreamExt
+        extends BufferedInputStream
     {
         BufferedInputStreamExt(InputStream input)
         {
             super(input);
         }
 
-        public synchronized int available() throws IOException
+        public synchronized int available()
+            throws IOException
         {
             int result = super.available();
             if (result < 0)

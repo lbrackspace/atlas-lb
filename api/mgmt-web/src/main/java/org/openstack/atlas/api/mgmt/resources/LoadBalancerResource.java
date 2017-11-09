@@ -1,5 +1,9 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import java.net.MalformedURLException;
+import java.rmi.RemoteException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
@@ -7,10 +11,13 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Ticket;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mapper.UsageMapper;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
+import org.openstack.atlas.util.debug.Debug;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -18,6 +25,7 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfStrings;
 
 public class LoadBalancerResource extends ManagementDependencyProvider {
 
@@ -26,6 +34,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
     private LoadbalancerVipResource loadbalancerVipResource;
     private HostsResource hostsResource;
     private SyncResource syncResource;
+    private ChangeHostResource changeHostResource;
     private TicketsResource ticketsResource;
     private int id;
     private ErrorpageResource errorPageResource;
@@ -49,6 +58,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
     }
+
 
     @DELETE
     @Path("suspended")
@@ -145,7 +155,16 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
         }
         try {
             org.openstack.atlas.service.domain.entities.LoadBalancer dLb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
-            loadBalancerService.get(id);
+            dLb = loadBalancerService.get(id);
+//          NOTE: Suspension should be removed prior to making this call as it was intended for load balancers
+//            in ERROR status. A suspended load balancer needs to have it usage and event records updated
+//            correctly, thus, removing suspension is the right way to go.
+            if (dLb.getStatus() == LoadBalancerStatus.SUSPENDED) {
+                BadRequestException e = new BadRequestException();
+                format = "Invalid LoadBalancer Status '%s', Please remove suspension prior to updating status";
+                msg = String.format(format, statusStr);
+                return ResponseFactory.getErrorResponse(e, msg, null);
+            }
             dLb.setId(id);
             dLb.setStatus(status);
             loadBalancerService.setLoadBalancerAttrs(dLb);
@@ -269,8 +288,18 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
         }
     }
 
+    @Path("changeHost")
+    public ChangeHostResource retrieveChangeHostResource() {
+        changeHostResource.setLoadBalancerId(id);
+        return changeHostResource;
+    }
+
     public void setSyncResource(SyncResource syncResource) {
         this.syncResource = syncResource;
+    }
+
+    public void setChangeHostResource(ChangeHostResource changeHostResource) {
+        this.changeHostResource = changeHostResource;
     }
 
     public void setLoadBalancerSuspensionResource(LoadBalancerSuspensionResource loadBalancerSuspensionResource) {

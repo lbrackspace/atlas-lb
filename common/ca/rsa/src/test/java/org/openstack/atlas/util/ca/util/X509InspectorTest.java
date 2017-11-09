@@ -2,7 +2,6 @@ package org.openstack.atlas.util.ca.util;
 
 import org.openstack.atlas.util.ca.util.X509Inspector;
 import org.openstack.atlas.util.ca.util.StaticHelpers;
-import org.openstack.atlas.util.ca.util.PrivKeyReader;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
@@ -15,10 +14,13 @@ import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.PrivKeyDecodeException;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
-import org.openstack.atlas.util.ca.util.PrivKeyReaderTest;
+
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateKey;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -27,9 +29,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.Assert;
 import org.openstack.atlas.util.ca.CertUtils;
+import org.openstack.atlas.util.ca.PemUtils;
+import org.openstack.atlas.util.ca.RSAKeyUtils;
 import org.openstack.atlas.util.ca.exceptions.CapManUtilException;
 import org.openstack.atlas.util.ca.exceptions.X509ReaderDecodeException;
 import org.openstack.atlas.util.ca.exceptions.X509ReaderNoSuchExtensionException;
+import org.openstack.atlas.util.ca.primitives.Debug;
 
 public class X509InspectorTest {
 
@@ -37,6 +42,67 @@ public class X509InspectorTest {
     public static final String caSubjId = "a72ad48c3632e4f3f0381b48474abe7126530dd8";
     public static final BigInteger testMod = new BigInteger("92769520113997379614084710552346480125314109559245447551856686347298813937630358936531128096799589632829885895580345157680107273222950724084624729121336709416739678416576244399370216587550882915851315377147000246928233006530724331354867197205185517189113923758771082160421912659909039341373309420290932945177");
     public static final String testCrtSubjKeyId = "607cc6865330a280efdf3d1ca865e79acd745b55";
+
+    public static final String key2048bit = "-----BEGIN RSA PRIVATE KEY-----\n"
+            + "MIIEpQIBAAKCAQEAo5ZrBNCUIeKU8gfptbq9CpkUeZwRasJmij4lGJBaRrTeOpeX\n"
+            + "z6lMEqiN49+UvE3NF6LuMCx/sb+/gAU+BGS/pAauJ/TbIESHF4dDzfUMr5nOk0Ae\n"
+            + "slfST3QX4wAgVDkuuxxHP0K+jL85qaYBGsLL4HETKMDZKXvOcCORSq0ZCy7D1sP0\n"
+            + "wCHomtX7k1RE7EgWsKDOumj+7SH/9jnBMKrHNqtj3xBZt18tugSyfeZVwQgGOW+m\n"
+            + "f7A96tLmw1XQgoAxQqTTZkjFIMjM5JEFOeX8Bia0CzixTMGN2BjnuafkoUxslaF4\n"
+            + "APmRu6n4xGlDuDuKpAFHEYg2nyPkezpsBX5s7QIDAQABAoIBAQCWoBG6RTOgX7k1\n"
+            + "ggO3yVH3SCyKLSH8YzN3ZvFRRNla8X8OBDdMhl39cCX2BBA3sot9kBAxW0fYqu3x\n"
+            + "OuJ3uSycI2qIb/S0KWUaTPop0dD0f3KuMwQQwrxrXEICSkN6SYy1zLvti89YWVsG\n"
+            + "0kuCEIsZBgTWKXvLrqvOpXFKiUfd+qBKJjPqV+7Thna5ffoznnE+fTPaKozKwknm\n"
+            + "tdMd6pG7vdhht8/vEf6s0qCNRkStpZhbs0OjGCziqp6Zs0IzrmUdDP4QLiNlt1Fh\n"
+            + "HLSkN9fuD3z6PanQ3DLcqeZTZEaZ6dSiJljS7VeUfYQbR8jhydqNzL8wbzIhH8l+\n"
+            + "ZzL7KS0hAoGBANRcfXQpi/YAcdBeo2s/ugI2PxTlg/r2kaNFa03iJKYXvOHWS9eF\n"
+            + "kNtEW5LfvJYWWQNz99e71pFksYqTqeEerJvB37xrluyIPjyOo2oxuRvQNCeTX5jR\n"
+            + "XY4NFVwTWVaPYCC1zTK6y4jiOL+We44Kip6sgLS9kGZAA+gQnLRX1EmHAoGBAMU0\n"
+            + "IWGq7sKqujGnhQUKfqay/4f6cAh0WEaGP5guqk9AMYT9IDQ98qVpMxh9uP7yJiTx\n"
+            + "Mx5TDj7BBCIqpAt2OAFhMqovAqxKGOgiJU8BVacRF6ow8FOTXBwPcrdXHeDas+4n\n"
+            + "DdFvjxa4+aeUK2SGNW8kPImEEOrxu3LEwSTIDSLrAoGBAKaiQKrC4xlQdf5cFH1W\n"
+            + "jv2nVU5vXmWxzsu/8Bg4CCvwWn0Xa4GdQ/JaLEUOnOtkc8p62BKHSTHjQlEL13RX\n"
+            + "XngF5Cr0fYPy0GsyPdZZV/gUIqifQpcmSfPqHkWWxTZf4L0qCu7wlj89y+vCCAeI\n"
+            + "DAfAMmogiUtClg4l4uC8Pk7HAoGBAKkoBlpY3WVuPTjKkXe5gNpNQJPLZr5Zzj7w\n"
+            + "eSx5Gu3QCqog1rb5TGJG0uV3MnC+Faoqm8avR9DckEcefIi4Z2IHlgYVPR28kZDN\n"
+            + "eWNDqc0dBEegowWNqb0II0bRG3f9IcpvBZNZNkwvbzcoCfC4jq0/UA5Fkp11rWzN\n"
+            + "CUAbuejxAoGAC+A33jMXrI8i+a/rHCtnyfG+mqbMV8+XOrXVH6jpVns8WmTGovPK\n"
+            + "fQHzylx4AGlmn3X+zvahzEJZUvaClsQVaEJh0jykl4/48swkv3LNWrQVxPJGehk2\n"
+            + "NYdiC1EDRLo2B+3mFOu8UbVz6e0q3KiWkLBxxDbMwzn7diCJdap6rDo=\n"
+            + "-----END RSA PRIVATE KEY-----\n";
+
+    public static final String testKeyPem = "-----BEGIN RSA PRIVATE KEY-----\n"
+            + "MIICXgIBAAKBgQCEG7HNhuX0VLKIYOQaghsA6HJSZ4nRACfxyzXSX3KyDlRYM9pG\n"
+            + "FjJtoMg2usNEnKesfhOmCXfYehXMwj334T388You+LcdPEj2FKRE0kpo3c8VxgjC\n"
+            + "VLgTHnQm77wt/MEGbChjAkJrzz2gk6YwQ6nJX51rjwvIx3Rr+tfb/i8xGQIDAQAB\n"
+            + "AoGAcyxx5u0krc7pl1xhgXrMcA43HQCHdl7cdEDlu3LbW8CCaCNMuK3BaTIzWwOY\n"
+            + "Gck5pXiFSMwYX/KP7uOpguIsV4gBrJhy3l6wQmhH5QGshqIBEDtbI21gTisv1fhx\n"
+            + "DYceEqwp9WapRf719cyMMMAQ+8Nm1YDudUxeDnUvWfcoxcECQQDFjSdeVMxexFgE\n"
+            + "0vKlPw0oP4+6sMvvaObEOFfW/e73LM0ome2XXSixQyA30z8y/1145rD/sNK4KiaQ\n"
+            + "l9Ea0DOfAkEAqzHFmqxW860LffT2XyXYhpHzdQiJdm0WXUDkx/2FPXGyljqBGZtL\n"
+            + "ZWYDUpE3HyOYCrCYZsMGbYusodGS/uMgRwJBAJLIocLWcQ/NBbV34/DiW21XZP0L\n"
+            + "Vkwp/qU3VBUbks43jKypSr8X6h9jx/GS1beXxKULi+JASSGruAHhu+4XWvMCQQCA\n"
+            + "+p7GSdG5BUcDPuvgA8N+n7etFSF79/RBjgLQKlGYWXETfkCF6lqDqrgWHRJKg6ap\n"
+            + "ZyNrSMQvBGyr/hmhr71BAkEArMvC4eVA9MRXfpPclDgSpSGUpiklbaeZB/jbpi4Q\n"
+            + "V0ozFm1Kecdu1Le+mp5Mad3qktlMB7Euifsj8QlT2KN5AQ==\n"
+            + "-----END RSA PRIVATE KEY-----\n";
+
+    public static final String caKeyPem = "-----BEGIN RSA PRIVATE KEY-----\n"
+            + "MIICXQIBAAKBgQCDwGVJ6fe+iXCVzCcGWc4XcNgoa3R/2YW9fsV8FKfan/6UfeDx\n"
+            + "Ywb7MeDtHg7VFawLLUMrStOEN2ZKcYsQxsMS65P4lrxrSMSU7F6HtVZMB+XVYe4U\n"
+            + "eUSVo03MN8t6l9a3/A0bga16/SdBqZ91P9BO0IAtxcIyk2m/cYKopDrCwwIDAQAB\n"
+            + "AoGAW1RlYmVzvXsctlp8uuRJ/unUjcBfU7kAAqn8T9Upvl2mZl0UL4CL+FlNKFHr\n"
+            + "yj5psp2/sCUAluioWfZ3hjuiQV6R8ZnZW712YhXnov6Ph/r4NcMGnHJYer0HM1zq\n"
+            + "VFlyPWQCkS34u+aQhPpKAdddBrLmjSv1DgxRMaWs6RYtMrECQQC+Nl/7afabGRKw\n"
+            + "QihMzjSv1ZBsue3IH7uqNlQf0nW0u+YiDGheSxikzZulBK/lO9XxMGVtYhrwq/TG\n"
+            + "lPAnU65/AkEAsVHURZAGzTydFv0dnMm8g/tknqt+OKlZBgHuBe5Zt+RV3jIIkt5V\n"
+            + "UiNUS0YTUuZwa4+SJP5nN6J+58AHBeORvQJBAIka2o53L6lWJlFkLnZGQFXp44Nr\n"
+            + "dYjFzth+9p5FblCLC/PI68Xj7WyFQ8ZrnXnnamvCjamNiIun9vTY0E4YlHMCQQCP\n"
+            + "ri7C7yGTzDm+FvuXwB/xEhNGPs/YOeDY7VdhlvE8ANlTYldwKpgYJmh3ViDyW6dc\n"
+            + "gMl7EGmyuwj54K/QJcZBAkBuUPuLnWSfMYw6fyguxH7oqzmSt8mMZBlbu7ocrBC1\n"
+            + "pdzb+eyYlzihca/Wa0nBtn43wqUq415AAJKfnGUzqtSd\n"
+            + "-----END RSA PRIVATE KEY-----\n";
+
     public static final String pkcs8CrtPem = "-----BEGIN CERTIFICATE-----\n"
             + "MIIDOzCCAqSgAwIBAgIGATbnee+RMA0GCSqGSIb3DQEBBQUAMHYxEDAOBgNVBAMT\n"
             + "B1Rlc3QgQ0ExGzAZBgNVBAsTElJhY2tzcGFjZSBQbGF0Zm9ybTESMBAGA1UEChMJ\n"
@@ -73,6 +139,7 @@ public class X509InspectorTest {
             + "E/vlASKYy/hCX8ZKv1c9yXKc2hejJ7IUiKRzk5R8WS0yJ6VDlMNDmsDCpGfaEMj1\n"
             + "M08azGyscfqJooKQc57Q9fn22PVt/vVdOVr9rQEIBKrPMj3tZKu6dw==\n"
             + "-----END CERTIFICATE-----\n";
+
     public static final String testCrtPem = "-----BEGIN CERTIFICATE-----\n"
             + "MIIDQzCCAqygAwIBAgIGATbmZcRlMA0GCSqGSIb3DQEBBQUAMHYxEDAOBgNVBAMT\n"
             + "B1Rlc3QgQ0ExGzAZBgNVBAsTElJhY2tzcGFjZSBQbGF0Zm9ybTESMBAGA1UEChMJ\n"
@@ -93,14 +160,15 @@ public class X509InspectorTest {
             + "kEnLnXeZT36K/uRHIbgBrzYRAE1ZNnYRcqnUKJjzBC5i+hIYAme1+TGC0D5bP3nK\n"
             + "HHt/1nKUQmnEVy+LhqdDCwDCNmGvPZI=\n"
             + "-----END CERTIFICATE-----\n";
+
     private static final String caSubj = "CN=TestCa,OU=someOrgUnit,O=SomeOrg"
             + ",L=San Antonio,ST=Texas,C=US";
     private X509Inspector caCrtReader;
     private X509Inspector testCrtReader;
     private X509Inspector pkcs8CrtReader;
-    private PrivKeyReader caKeyReader;
-    private PrivKeyReader testKeyReader;
-    private PrivKeyReader key2048bitReader;
+    private BCRSAPrivateKey caKey;
+    private BCRSAPrivateKey testKey;
+    private BCRSAPrivateKey key2048bitKey;
 
     public X509InspectorTest() {
     }
@@ -114,16 +182,15 @@ public class X509InspectorTest {
     }
 
     @Before
-    public void setUp() throws X509ReaderDecodeException, NotAnX509CertificateException, PrivKeyDecodeException {
+    public void setUp() throws X509ReaderDecodeException, NotAnX509CertificateException, PrivKeyDecodeException, PemException {
         RsaConst.init();
         caCrtReader = X509Inspector.newX509Inspector(caCrtPem);
-        caKeyReader = PrivKeyReader.newPrivKeyReader(PrivKeyReaderTest.caKeyPem);
-
+        caKey = (BCRSAPrivateKey) ((KeyPair) PemUtils.fromPemString(caKeyPem)).getPrivate();
         testCrtReader = X509Inspector.newX509Inspector(testCrtPem);
-        testKeyReader = PrivKeyReader.newPrivKeyReader(PrivKeyReaderTest.testKeyPem);
+        testKey = (BCRSAPrivateKey) ((KeyPair) PemUtils.fromPemString(testKeyPem)).getPrivate();
 
         pkcs8CrtReader = X509Inspector.newX509Inspector(pkcs8CrtPem);
-        key2048bitReader = PrivKeyReader.newPrivKeyReader(PrivKeyReaderTest.key2048bit);
+        key2048bitKey = (BCRSAPrivateKey) ((KeyPair) PemUtils.fromPemString(key2048bit)).getPrivate();
     }
 
     @After
@@ -131,17 +198,17 @@ public class X509InspectorTest {
     }
 
     @Test
-    public void caCrtShouldModMatchCaKey() {
+    public void caCrtShouldModMatchCaKey() throws RsaException {
         BigInteger crtMod = caCrtReader.getPubModulus();
-        BigInteger keyMod = caKeyReader.getN();
+        BigInteger keyMod = caKey.getModulus();
         Assert.assertEquals(keyMod, crtMod);
         Assert.assertEquals(keyMod, caMod);
     }
 
     @Test
-    public void keyShouldModMatchWithTestCrt() {
+    public void keyShouldModMatchWithTestCrt() throws RsaException {
         BigInteger crtMod = testCrtReader.getPubModulus();
-        BigInteger keyMod = testKeyReader.getN();
+        BigInteger keyMod = testKey.getModulus();
         Assert.assertEquals(crtMod, keyMod);
         Assert.assertEquals(crtMod, testMod);
     }
@@ -164,9 +231,10 @@ public class X509InspectorTest {
 
     @Test
     public void shouldGetCorrectKeyIds() throws X509ReaderNoSuchExtensionException, X509ReaderDecodeException {
-        Assert.assertEquals(caCrtReader.getSubjKeyId(), caSubjId);
+        Assert.assertEquals(caSubjId, caCrtReader.getSubjKeyId());
         Assert.assertEquals(testCrtSubjKeyId, testCrtReader.getSubjKeyId());
-        Assert.assertEquals(testCrtReader.getAuthKeyId(), caCrtReader.getSubjKeyId()); // They should match since CA signed testCrt;
+        Assert.assertEquals(testCrtReader.getAuthKeyId(), caCrtReader.getSubjKeyId());
+        Debug.nop();
     }
 
     @Test
@@ -237,19 +305,10 @@ public class X509InspectorTest {
     }
 
     private X509Inspector qXR(Date notBefore, Date notAfter) throws CapManUtilException, InvalidKeySpecException {
-        KeyPair kp = key2048bitReader.toKeyPair();
-        X509Certificate x509 = CertUtils.quickSelfSign(kp, caSubj, notBefore, notAfter);
+        KeyPair kp = RSAKeyUtils.genKeyPair(1024);
+        X509CertificateHolder x509 = CertUtils.quickSelfSign(kp, caSubj, notBefore, notAfter);
         X509Inspector xr;
-        try {
-            xr = X509Inspector.newX509Inspector(x509);
-        } catch (CertificateEncodingException ex) {
-            throw new CapManUtilException(ex);
-        } catch (CertificateParsingException ex) {
-            throw new CapManUtilException(ex);
-
-        } catch (NotAnX509CertificateException ex) {
-            throw new CapManUtilException(ex);
-        }
+        xr = X509Inspector.newX509Inspector(x509);
         return xr;
     }
 }

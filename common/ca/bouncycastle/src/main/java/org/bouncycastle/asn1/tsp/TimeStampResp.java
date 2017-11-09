@@ -2,17 +2,17 @@ package org.bouncycastle.asn1.tsp;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.cmp.PKIStatusInfo;
 import org.bouncycastle.asn1.cms.ContentInfo;
 
 
 public class TimeStampResp
-    extends ASN1Encodable
+    extends ASN1Object
 {
     PKIStatusInfo pkiStatusInfo;
 
@@ -20,21 +20,19 @@ public class TimeStampResp
 
     public static TimeStampResp getInstance(Object o)
     {
-        if (o == null || o instanceof TimeStampResp)
+        if (o instanceof TimeStampResp)
         {
             return (TimeStampResp) o;
         }
-        else if (o instanceof ASN1Sequence)
+        else if (o != null)
         {
-            return new TimeStampResp((ASN1Sequence) o);
+            return new TimeStampResp(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException(
-                "unknown object in 'TimeStampResp' factory : "
-                        + o.getClass().getName() + ".");
+        return null;
     }
 
-    public TimeStampResp(ASN1Sequence seq)
+    private TimeStampResp(ASN1Sequence seq)
     {
 
         Enumeration e = seq.getObjects();
@@ -71,7 +69,7 @@ public class TimeStampResp
      *   timeStampToken          TimeStampToken     OPTIONAL  }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
         

@@ -2,11 +2,11 @@ package org.bouncycastle.asn1.x509.qualified;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.GeneralName;
 
@@ -24,27 +24,28 @@ import org.bouncycastle.asn1.x509.GeneralName;
  *         GeneralName
  * </pre>
  */
-public class SemanticsInformation extends ASN1Encodable
+public class SemanticsInformation
+    extends ASN1Object
 {
-    DERObjectIdentifier semanticsIdentifier;
-    GeneralName[] nameRegistrationAuthorities;    
+    private ASN1ObjectIdentifier semanticsIdentifier;
+    private GeneralName[] nameRegistrationAuthorities;
     
     public static SemanticsInformation getInstance(Object obj)
     {
-        if (obj == null || obj instanceof SemanticsInformation)
+        if (obj instanceof SemanticsInformation)
         {
             return (SemanticsInformation)obj;
         }
 
-        if (obj instanceof ASN1Sequence)
+        if (obj != null)
         {
             return new SemanticsInformation(ASN1Sequence.getInstance(obj));            
         }
         
-        throw new IllegalArgumentException("unknown object in getInstance");
+        return null;
     }
         
-    public SemanticsInformation(ASN1Sequence seq)
+    private SemanticsInformation(ASN1Sequence seq)
     {
         Enumeration e = seq.getObjects();
         if (seq.size() < 1)
@@ -53,9 +54,9 @@ public class SemanticsInformation extends ASN1Encodable
         }
         
         Object object = e.nextElement();
-        if (object instanceof DERObjectIdentifier)
+        if (object instanceof ASN1ObjectIdentifier)
         {
-            semanticsIdentifier = DERObjectIdentifier.getInstance(object);
+            semanticsIdentifier = ASN1ObjectIdentifier.getInstance(object);
             if (e.hasMoreElements())
             {
                 object = e.nextElement();
@@ -78,14 +79,14 @@ public class SemanticsInformation extends ASN1Encodable
     }
         
     public SemanticsInformation(
-        DERObjectIdentifier semanticsIdentifier,
+        ASN1ObjectIdentifier semanticsIdentifier,
         GeneralName[] generalNames)
     {
         this.semanticsIdentifier = semanticsIdentifier;
-        this.nameRegistrationAuthorities = generalNames;
+        this.nameRegistrationAuthorities = cloneNames(generalNames);
     }
 
-    public SemanticsInformation(DERObjectIdentifier semanticsIdentifier)
+    public SemanticsInformation(ASN1ObjectIdentifier semanticsIdentifier)
     {
         this.semanticsIdentifier = semanticsIdentifier;
         this.nameRegistrationAuthorities = null;
@@ -94,20 +95,20 @@ public class SemanticsInformation extends ASN1Encodable
     public SemanticsInformation(GeneralName[] generalNames)
     {
         this.semanticsIdentifier = null;
-        this.nameRegistrationAuthorities = generalNames;
+        this.nameRegistrationAuthorities = cloneNames(generalNames);
     }        
     
-    public DERObjectIdentifier getSemanticsIdentifier()
+    public ASN1ObjectIdentifier getSemanticsIdentifier()
     {
         return semanticsIdentifier;
     }
         
     public GeneralName[] getNameRegistrationAuthorities()
     {
-        return nameRegistrationAuthorities;
+        return cloneNames(nameRegistrationAuthorities);
     } 
     
-    public DERObject toASN1Object() 
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector seq = new ASN1EncodableVector();
         
@@ -126,5 +127,18 @@ public class SemanticsInformation extends ASN1Encodable
         }            
         
         return new DERSequence(seq);
-    }                   
+    }
+
+    private static GeneralName[] cloneNames(GeneralName[] names)
+    {
+        if (names != null)
+        {
+            GeneralName[] tmp = new GeneralName[names.length];
+
+            System.arraycopy(names, 0, tmp, 0, names.length);
+
+            return tmp;
+        }
+        return null;
+    }
 }

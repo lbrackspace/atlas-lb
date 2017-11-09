@@ -1,21 +1,21 @@
 package org.bouncycastle.asn1.crmf;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 public class POPOSigningKey
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private POPOSigningKeyInput poposkInput;
     private AlgorithmIdentifier algorithmIdentifier;
-    private DERBitString        signature;
+    private DERBitString signature;
 
     private POPOSigningKey(ASN1Sequence seq)
     {
@@ -24,7 +24,7 @@ public class POPOSigningKey
         if (seq.getObjectAt(index) instanceof ASN1TaggedObject)
         {
             ASN1TaggedObject tagObj
-                = (ASN1TaggedObject) seq.getObjectAt(index++);
+                = (ASN1TaggedObject)seq.getObjectAt(index++);
             if (tagObj.getTagNo() != 0)
             {
                 throw new IllegalArgumentException(
@@ -43,12 +43,12 @@ public class POPOSigningKey
             return (POPOSigningKey)o;
         }
 
-        if (o instanceof ASN1Sequence)
+        if (o != null)
         {
-            return new POPOSigningKey((ASN1Sequence)o);
+            return new POPOSigningKey(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
     }
 
     public static POPOSigningKey getInstance(ASN1TaggedObject obj, boolean explicit)
@@ -58,11 +58,12 @@ public class POPOSigningKey
 
     /**
      * Creates a new Proof of Possession object for a signing key.
-     * @param poposkIn the POPOSigningKeyInput structure, or null if the
-     *     CertTemplate includes both subject and publicKey values.
-     * @param aid the AlgorithmIdentifier used to sign the proof of possession.
+     *
+     * @param poposkIn  the POPOSigningKeyInput structure, or null if the
+     *                  CertTemplate includes both subject and publicKey values.
+     * @param aid       the AlgorithmIdentifier used to sign the proof of possession.
      * @param signature a signature over the DER-encoded value of poposkIn,
-     *     or the DER-encoded value of certReq if poposkIn is null.
+     *                  or the DER-encoded value of certReq if poposkIn is null.
      */
     public POPOSigningKey(
         POPOSigningKeyInput poposkIn,
@@ -74,15 +75,18 @@ public class POPOSigningKey
         this.signature = signature;
     }
 
-    public POPOSigningKeyInput getPoposkInput() {
+    public POPOSigningKeyInput getPoposkInput()
+    {
         return poposkInput;
     }
 
-    public AlgorithmIdentifier getAlgorithmIdentifier() {
+    public AlgorithmIdentifier getAlgorithmIdentifier()
+    {
         return algorithmIdentifier;
     }
 
-    public DERBitString getSignature() {
+    public DERBitString getSignature()
+    {
         return signature;
     }
 
@@ -103,9 +107,10 @@ public class POPOSigningKey
      *  -- not present in both the poposkInput and CertReqMsg certReq
      *  -- CertTemplate fields.
      * </pre>
+     *
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

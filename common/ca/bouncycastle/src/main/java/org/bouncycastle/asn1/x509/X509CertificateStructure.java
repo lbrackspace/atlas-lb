@@ -1,12 +1,13 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
 
 /**
  * an X509Certificate structure.
@@ -17,9 +18,10 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
  *      signature               BIT STRING
  *  }
  * </pre>
+ * @deprecated use org.bouncycastle.asn1.x509.Certificate
  */
 public class X509CertificateStructure
-    extends ASN1Encodable
+    extends ASN1Object
     implements X509ObjectIdentifiers, PKCSObjectIdentifiers
 {
     ASN1Sequence  seq;
@@ -80,12 +82,12 @@ public class X509CertificateStructure
         return tbsCert.getVersion();
     }
 
-    public DERInteger getSerialNumber()
+    public ASN1Integer getSerialNumber()
     {
         return tbsCert.getSerialNumber();
     }
 
-    public X509Name getIssuer()
+    public X500Name getIssuer()
     {
         return tbsCert.getIssuer();
     }
@@ -100,7 +102,7 @@ public class X509CertificateStructure
         return tbsCert.getEndDate();
     }
 
-    public X509Name getSubject()
+    public X500Name getSubject()
     {
         return tbsCert.getSubject();
     }
@@ -120,7 +122,7 @@ public class X509CertificateStructure
         return sig;
     }
 
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return seq;
     }

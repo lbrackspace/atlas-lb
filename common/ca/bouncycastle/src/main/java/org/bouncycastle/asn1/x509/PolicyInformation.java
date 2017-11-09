@@ -1,19 +1,19 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 
 public class PolicyInformation
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERObjectIdentifier   policyIdentifier;
+    private ASN1ObjectIdentifier   policyIdentifier;
     private ASN1Sequence          policyQualifiers;
 
-    public PolicyInformation(
+    private PolicyInformation(
         ASN1Sequence seq)
     {
         if (seq.size() < 1 || seq.size() > 2)
@@ -22,7 +22,7 @@ public class PolicyInformation
                     + seq.size());
         }
 
-        policyIdentifier = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+        policyIdentifier = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
 
         if (seq.size() > 1)
         {
@@ -31,13 +31,13 @@ public class PolicyInformation
     }
 
     public PolicyInformation(
-        DERObjectIdentifier policyIdentifier)
+        ASN1ObjectIdentifier policyIdentifier)
     {
         this.policyIdentifier = policyIdentifier;
     }
 
     public PolicyInformation(
-        DERObjectIdentifier policyIdentifier,
+        ASN1ObjectIdentifier policyIdentifier,
         ASN1Sequence        policyQualifiers)
     {
         this.policyIdentifier = policyIdentifier;
@@ -55,7 +55,7 @@ public class PolicyInformation
         return new PolicyInformation(ASN1Sequence.getInstance(obj));
     }
 
-    public DERObjectIdentifier getPolicyIdentifier()
+    public ASN1ObjectIdentifier getPolicyIdentifier()
     {
         return policyIdentifier;
     }
@@ -65,13 +65,15 @@ public class PolicyInformation
         return policyQualifiers;
     }
     
-    /* 
+    /*
+     * <pre>
      * PolicyInformation ::= SEQUENCE {
      *      policyIdentifier   CertPolicyId,
      *      policyQualifiers   SEQUENCE SIZE (1..MAX) OF
      *              PolicyQualifierInfo OPTIONAL }
+     * </pre>
      */ 
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
         
@@ -83,5 +85,32 @@ public class PolicyInformation
         }
         
         return new DERSequence(v);
+    }
+
+    public String toString()
+    {
+        StringBuffer sb = new StringBuffer();
+
+        sb.append("Policy information: ");
+        sb.append(policyIdentifier);
+
+        if (policyQualifiers != null)
+        {
+            StringBuffer p = new StringBuffer();
+            for (int i = 0; i < policyQualifiers.size(); i++)
+            {
+                if (p.length() != 0)
+                {
+                    p.append(", ");
+                }
+                p.append(PolicyQualifierInfo.getInstance(policyQualifiers.getObjectAt(i)));
+            }
+
+            sb.append("[");
+            sb.append(p);
+            sb.append("]");
+        }
+
+        return sb.toString();
     }
 }

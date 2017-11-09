@@ -1,13 +1,13 @@
 package org.bouncycastle.asn1.cmp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 public class GenMsgContent
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private ASN1Sequence content;
 
@@ -23,12 +23,12 @@ public class GenMsgContent
             return (GenMsgContent)o;
         }
 
-        if (o instanceof ASN1Sequence)
+        if (o != null)
         {
-            return new GenMsgContent((ASN1Sequence)o);
+            return new GenMsgContent(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
     }
 
     public GenMsgContent(InfoTypeAndValue itv)
@@ -64,7 +64,7 @@ public class GenMsgContent
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return content;
     }

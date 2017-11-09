@@ -2,12 +2,12 @@ package org.bouncycastle.asn1.x509.qualified;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
@@ -22,32 +22,30 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
  * </pre>
  */
 public class BiometricData 
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    TypeOfBiometricData typeOfBiometricData;
-    AlgorithmIdentifier hashAlgorithm;
-    ASN1OctetString     biometricDataHash;
-    DERIA5String        sourceDataUri;    
+    private TypeOfBiometricData typeOfBiometricData;
+    private AlgorithmIdentifier hashAlgorithm;
+    private ASN1OctetString     biometricDataHash;
+    private DERIA5String        sourceDataUri;
     
     public static BiometricData getInstance(
         Object obj)
     {
-        if (obj == null || obj instanceof BiometricData)
+        if (obj instanceof BiometricData)
         {
             return (BiometricData)obj;
         }
 
-        if (obj instanceof ASN1Sequence)
+        if (obj != null)
         {
             return new BiometricData(ASN1Sequence.getInstance(obj));            
         }
-        else
-        {
-            throw new IllegalArgumentException("unknown object in getInstance");
-        }
+
+        return null;
     }                
             
-    public BiometricData(ASN1Sequence seq)
+    private BiometricData(ASN1Sequence seq)
     {
         Enumeration e = seq.getObjects();
 
@@ -107,7 +105,7 @@ public class BiometricData
         return sourceDataUri;
     }
     
-    public DERObject toASN1Object() 
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector seq = new ASN1EncodableVector();
         seq.add(typeOfBiometricData);

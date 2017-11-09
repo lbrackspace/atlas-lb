@@ -32,8 +32,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.bouncycastle.cert.X509CertificateHolder;
 
-import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
@@ -66,10 +66,10 @@ public class X509ReaderWriter {
         END_CRT = asciiString(PemUtils.END_CRT);
     }
 
-    public static ResponseWithExcpetions<String> writeSet(Collection<X509CertificateObject> x509objs) {
+    public static ResponseWithExcpetions<String> writeSet(Collection<X509CertificateHolder> x509objs) {
         StringBuilder sb = new StringBuilder(PAGESIZE * 4);
         List<Exception> exceptions = new ArrayList<Exception>();
-        for (X509CertificateObject x509obj : x509objs) {
+        for (X509CertificateHolder x509obj : x509objs) {
             try {
                 String pem = PemUtils.toPemString(x509obj);
                 sb.append(pem);
@@ -83,11 +83,11 @@ public class X509ReaderWriter {
         return new ResponseWithExcpetions<String>(exceptions, sb.toString());
     }
 
-    public static ResponseWithExcpetions<Set<X509CertificateObject>> readSet(String pemString) {
-        ResponseWithExcpetions<Set<X509CertificateObject>> resp;
+    public static ResponseWithExcpetions<Set<X509CertificateHolder>> readSet(String pemString) {
+        ResponseWithExcpetions<Set<X509CertificateHolder>> resp;
         List<Exception> exceptions = new ArrayList<Exception>();
         byte[] pemBytes = StringUtils.asciiBytes(pemString);
-        Set<X509CertificateObject> x509objs = new HashSet<X509CertificateObject>();
+        Set<X509CertificateHolder> x509objs = new HashSet<X509CertificateHolder>();
         List<PemBlock> blocks = PemUtils.parseMultiPem(pemBytes);
         for (PemBlock block : blocks) {
             if (!StringUtils.strEquals(block.getStartLine(), BEG_CRT)) {
@@ -97,14 +97,14 @@ public class X509ReaderWriter {
                 exceptions.add(buildNotX509ObjectException(null, block.getLineNum(), asciiString(block.getPemData()), null));
                 continue;
             }
-            if (!(block.getDecodedObject() instanceof X509CertificateObject)) {
+            if (!(block.getDecodedObject() instanceof X509CertificateHolder)) {
                 exceptions.add(buildNotX509ObjectException(null, block.getLineNum(), asciiString(block.getPemData()), null));
                 continue;
             }
-            X509CertificateObject x509obj = (X509CertificateObject) block.getDecodedObject();
+            X509CertificateHolder x509obj = (X509CertificateHolder) block.getDecodedObject();
             x509objs.add(x509obj);
         }
-        return new ResponseWithExcpetions<Set<X509CertificateObject>>(exceptions, x509objs);
+        return new ResponseWithExcpetions<Set<X509CertificateHolder>>(exceptions, x509objs);
     }
 
     private static NotAnX509CertificateException buildNotX509ObjectException(String msg, Integer lineNum, String pemString, Throwable th) {
@@ -130,15 +130,7 @@ public class X509ReaderWriter {
         return ex;
     }
 
-    public static Collection<X509Certificate> nonPemUtilRead(String pem) throws CertificateException, NoSuchProviderException, UnsupportedEncodingException {
-        Collection x509s;
-        CertificateFactory cf = CertificateFactory.getInstance("X.509", "BC");
-        ByteArrayInputStream bais = new ByteArrayInputStream(pem.getBytes("US-ASCII"));
-        x509s = cf.generateCertificates(bais);
-        return x509s;
-    }
-
-    public static List<X509CertificateObject> getX509CertificateObjectsFromSSLServer(String uriStr) throws X509ReaderException {
+    public static List<X509CertificateHolder> getX509CertificateHolderFromSSLServer(String uriStr) throws X509ReaderException {
         URI uri;
         String fmt;
         String msg;
@@ -150,14 +142,14 @@ public class X509ReaderWriter {
             msg = String.format(fmt, uriStr);
             throw new X509ReaderException(msg, ex);
         }
-        return getX509CertificateObjectsFromSSLServer(uri);
+        return getX509CertificateHolderFromSSLServer(uri);
     }
 
-    public static List<X509CertificateObject> getX509CertificateObjectsFromSSLServer(URI uri) throws X509ReaderException {
+    public static List<X509CertificateHolder> getX509CertificateHolderFromSSLServer(URI uri) throws X509ReaderException {
         int i;
         String fmt;
         String msg;
-        List<X509CertificateObject> x509certObjs = new ArrayList<X509CertificateObject>();
+        List<X509CertificateHolder> x509certObjs = new ArrayList<X509CertificateHolder>();
         URL url;
         try {
             url = uri.toURL();
@@ -210,7 +202,7 @@ public class X509ReaderWriter {
                 String exMsg;
                 try {
                     X509Inspector xi = X509Inspector.newX509Inspector(x509);
-                    X509CertificateObject x509obj = xi.getX509CertificateObject();
+                    X509CertificateHolder x509obj = xi.getX509CertificateHolder();
                     x509certObjs.add(x509obj);
                 } catch (CertificateEncodingException ex) {
                     logEx(ex);
@@ -238,7 +230,7 @@ public class X509ReaderWriter {
         return newEx;
     }
 
-    public static List<X509CertificateObject> getCaX509CertificateObjectFromUriString(String uriStr) throws X509ReaderException {
+    public static List<X509CertificateHolder> getCaX509CertificateObjectFromUriString(String uriStr) throws X509ReaderException {
         String fmt;
         String msg;
         URI uri;
@@ -253,7 +245,7 @@ public class X509ReaderWriter {
         return getCaX509CertificateObjectFromUri(uri);
     }
 
-    public static List<X509CertificateObject> getCaX509CertificateObjectFromUri(URI uri) throws X509ReaderException {
+    public static List<X509CertificateHolder> getCaX509CertificateObjectFromUri(URI uri) throws X509ReaderException {
         String fmt;
         String msg;
         URL url;
@@ -315,7 +307,7 @@ public class X509ReaderWriter {
             msg = String.format(fmt, url.toString(), StringUtils.getEST(ex));
             throw new X509ReaderException(msg);
         }
-        List<X509CertificateObject> x509objs;
+        List<X509CertificateHolder> x509objs;
         x509objs = decodeAsPem(pemBytes);
         if (x509objs.size() > 0) {
             return x509objs;
@@ -331,11 +323,11 @@ public class X509ReaderWriter {
         }
     }
 
-    private static List<X509CertificateObject> decodeAsDer(byte[] pemBytes) throws X509ReaderException {
+    private static List<X509CertificateHolder> decodeAsDer(byte[] pemBytes) throws X509ReaderException {
         InputStream is;
         is = new ByteArrayInputStream(pemBytes);
         CertificateFactory cf;
-        List<X509CertificateObject> x509objs = new ArrayList<X509CertificateObject>();
+        List<X509CertificateHolder> x509objs = new ArrayList<X509CertificateHolder>();
         try {
             cf = CertificateFactory.getInstance("X.509", "BC");
         } catch (CertificateException ex) {
@@ -354,26 +346,26 @@ public class X509ReaderWriter {
             if (obj == null) {
                 break;
             }
-            if (!(obj instanceof X509CertificateObject)) {
+            if (!(obj instanceof X509CertificateHolder)) {
                 continue;
             }
-            x509objs.add((X509CertificateObject)obj);
+            x509objs.add((X509CertificateHolder)obj);
         }
         return x509objs;
     }
 
-    private static List<X509CertificateObject> decodeAsPem(byte[] pemBytes) {
+    private static List<X509CertificateHolder> decodeAsPem(byte[] pemBytes) {
         String msg;
-        List<X509CertificateObject> x509ObjList = new ArrayList<X509CertificateObject>();
+        List<X509CertificateHolder> x509ObjList = new ArrayList<X509CertificateHolder>();
         List<PemBlock> blocks = PemUtils.parseMultiPem(pemBytes);
         for (PemBlock block : blocks) {
             if (block.getDecodedObject() == null) {
                 continue;
             }
-            if (!(block.getDecodedObject() instanceof X509CertificateObject)) {
+            if (!(block.getDecodedObject() instanceof X509CertificateHolder)) {
                 continue;
             }
-            x509ObjList.add((X509CertificateObject) block.getDecodedObject());
+            x509ObjList.add((X509CertificateHolder) block.getDecodedObject());
         }
 
         return x509ObjList;
@@ -388,11 +380,5 @@ public class X509ReaderWriter {
     private static void logEx(String msg, Throwable th) {
         String exMsg = String.format("%s:%s", msg, StringUtils.getEST(th));
         LOG.severe(msg);
-    }
-
-    public static int nop() {
-        X509CertificateObject blah;
-
-        return nopCount++;
     }
 }

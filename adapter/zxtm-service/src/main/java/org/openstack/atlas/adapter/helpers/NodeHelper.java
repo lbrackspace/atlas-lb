@@ -36,7 +36,7 @@ public class NodeHelper {
 
         Set<String> nodeVals = new HashSet<String>();
         for (Node node : nodes) {
-            nodeVals.add(node.getIpAddress() + ":" + Integer.toString(node.getPort()));
+            nodeVals.add(IpHelper.createZeusIpString(node.getIpAddress(), node.getPort()));
         }
         return nodeVals;
     }

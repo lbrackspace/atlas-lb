@@ -13,7 +13,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.HashMap;
@@ -27,12 +26,11 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.RC2ParameterSpec;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Null;
-import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.iana.IANAObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
@@ -43,8 +41,8 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.crmf.CRMFException;
 import org.bouncycastle.cms.CMSAlgorithm;
-import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
-import org.bouncycastle.jcajce.JcaJceHelper;
+import org.bouncycastle.jcajce.util.AlgorithmParametersUtils;
+import org.bouncycastle.jcajce.util.JcaJceHelper;
 
 class CRMFHelper
 {
@@ -94,14 +92,14 @@ class CRMFHelper
     PublicKey toPublicKey(SubjectPublicKeyInfo subjectPublicKeyInfo)
         throws CRMFException
     {
-        X509EncodedKeySpec xspec = new X509EncodedKeySpec(new DERBitString(subjectPublicKeyInfo).getBytes());
-        AlgorithmIdentifier keyAlg = subjectPublicKeyInfo.getAlgorithmId();
-
         try
         {
+            X509EncodedKeySpec xspec = new X509EncodedKeySpec(subjectPublicKeyInfo.getEncoded());
+            AlgorithmIdentifier keyAlg = subjectPublicKeyInfo.getAlgorithm();
+
             return createKeyFactory(keyAlg.getAlgorithm()).generatePublic(xspec);
         }
-        catch (InvalidKeySpecException e)
+        catch (Exception e)
         {
             throw new CRMFException("invalid key: " + e.getMessage(), e);
         }
@@ -160,7 +158,9 @@ class CRMFHelper
             throw new CRMFException("cannot create key generator: " + e.getMessage(), e);
         }
     }
-    
+
+
+
     Cipher createContentCipher(final Key sKey, final AlgorithmIdentifier encryptionAlgID)
         throws CRMFException
     {
@@ -172,8 +172,8 @@ class CRMFHelper
                 NoSuchPaddingException, NoSuchProviderException
             {
                 Cipher cipher = createCipher(encryptionAlgID.getAlgorithm());
-                ASN1Object sParams = (ASN1Object)encryptionAlgID.getParameters();
-                String encAlg = encryptionAlgID.getAlgorithm().getId();
+                ASN1Primitive sParams = (ASN1Primitive)encryptionAlgID.getParameters();
+                ASN1ObjectIdentifier encAlg = encryptionAlgID.getAlgorithm();
 
                 if (sParams != null && !(sParams instanceof ASN1Null))
                 {
@@ -183,7 +183,7 @@ class CRMFHelper
 
                         try
                         {
-                            params.init(sParams.getEncoded(), "ASN.1");
+                            AlgorithmParametersUtils.loadParameters(params, sParams);
                         }
                         catch (IOException e)
                         {
@@ -194,11 +194,11 @@ class CRMFHelper
                     }
                     catch (NoSuchAlgorithmException e)
                     {
-                        if (encAlg.equals(CMSEnvelopedDataGenerator.DES_EDE3_CBC)
-                            || encAlg.equals(CMSEnvelopedDataGenerator.IDEA_CBC)
-                            || encAlg.equals(CMSEnvelopedDataGenerator.AES128_CBC)
-                            || encAlg.equals(CMSEnvelopedDataGenerator.AES192_CBC)
-                            || encAlg.equals(CMSEnvelopedDataGenerator.AES256_CBC))
+                        if (encAlg.equals(CMSAlgorithm.DES_EDE3_CBC)
+                            || encAlg.equals(CMSAlgorithm.IDEA_CBC)
+                            || encAlg.equals(CMSAlgorithm.AES128_CBC)
+                            || encAlg.equals(CMSAlgorithm.AES192_CBC)
+                            || encAlg.equals(CMSAlgorithm.AES256_CBC))
                         {
                             cipher.init(Cipher.DECRYPT_MODE, sKey, new IvParameterSpec(
                                 ASN1OctetString.getInstance(sParams).getOctets()));
@@ -211,9 +211,9 @@ class CRMFHelper
                 }
                 else
                 {
-                    if (encAlg.equals(CMSEnvelopedDataGenerator.DES_EDE3_CBC)
-                        || encAlg.equals(CMSEnvelopedDataGenerator.IDEA_CBC)
-                        || encAlg.equals(CMSEnvelopedDataGenerator.CAST5_CBC))
+                    if (encAlg.equals(CMSAlgorithm.DES_EDE3_CBC)
+                        || encAlg.equals(CMSAlgorithm.IDEA_CBC)
+                        || encAlg.equals(CMSAlgorithm.CAST5_CBC))
                     {
                         cipher.init(Cipher.DECRYPT_MODE, sKey, new IvParameterSpec(new byte[8]));
                     }
@@ -356,7 +356,7 @@ class CRMFHelper
         {
             AlgorithmParameterGenerator pGen = createAlgorithmParameterGenerator(encryptionOID);
 
-            if (encryptionOID.equals(CMSEnvelopedDataGenerator.RC2_CBC))
+            if (encryptionOID.equals(CMSAlgorithm.RC2_CBC))
             {
                 byte[]  iv = new byte[8];
 
@@ -387,12 +387,12 @@ class CRMFHelper
     AlgorithmIdentifier getAlgorithmIdentifier(ASN1ObjectIdentifier encryptionOID, AlgorithmParameters params)
         throws CRMFException
     {
-        DEREncodable asn1Params;
+        ASN1Encodable asn1Params;
         if (params != null)
         {
             try
             {
-                asn1Params = ASN1Object.fromByteArray(params.getEncoded("ASN.1"));
+                asn1Params = AlgorithmParametersUtils.extractParameters(params);
             }
             catch (IOException e)
             {

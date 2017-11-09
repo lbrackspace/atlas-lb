@@ -1,17 +1,15 @@
 package org.bouncycastle.openpgp;
 
-import org.bouncycastle.bcpg.BCPGInputStream;
-import org.bouncycastle.bcpg.BCPGOutputStream;
-import org.bouncycastle.bcpg.OnePassSignaturePacket;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.security.InvalidKeyException;
-import java.security.NoSuchProviderException;
-import java.security.Signature;
-import java.security.SignatureException;
-import java.security.Provider;
+
+import org.bouncycastle.bcpg.BCPGInputStream;
+import org.bouncycastle.bcpg.BCPGOutputStream;
+import org.bouncycastle.bcpg.OnePassSignaturePacket;
+import org.bouncycastle.openpgp.operator.PGPContentVerifier;
+import org.bouncycastle.openpgp.operator.PGPContentVerifierBuilder;
+import org.bouncycastle.openpgp.operator.PGPContentVerifierBuilderProvider;
 
 /**
  * A one pass signature object.
@@ -20,10 +18,10 @@ public class PGPOnePassSignature
 {
     private OnePassSignaturePacket sigPack;
     private int                    signatureType;
-    
-    private Signature              sig;
 
-    private byte lastb;
+    private PGPContentVerifier verifier;
+    private byte               lastb;
+    private OutputStream       sigOut;
 
     PGPOnePassSignature(
         BCPGInputStream    pIn)
@@ -39,93 +37,58 @@ public class PGPOnePassSignature
         this.sigPack = sigPack;
         this.signatureType = sigPack.getSignatureType();
     }
-    
-    /**
-     * Initialise the signature object for verification.
-     * 
-     * @param pubKey
-     * @param provider
-     * @throws NoSuchProviderException
-     * @throws PGPException
-     */
-    public void initVerify(
-        PGPPublicKey    pubKey,
-        String          provider)
-        throws NoSuchProviderException, PGPException
-    {
-        initVerify(pubKey, PGPUtil.getProvider(provider));
-    }
 
     /**
      * Initialise the signature object for verification.
      *
-     * @param pubKey
-     * @param provider
-     * @throws PGPException
+     * @param verifierBuilderProvider   provider for a content verifier builder for the signature type of interest.
+     * @param pubKey  the public key to use for verification
+     * @throws PGPException if there's an issue with creating the verifier.
      */
-    public void initVerify(
-        PGPPublicKey    pubKey,
-        Provider        provider)
+    public void init(PGPContentVerifierBuilderProvider verifierBuilderProvider, PGPPublicKey pubKey)
         throws PGPException
     {
+        PGPContentVerifierBuilder verifierBuilder = verifierBuilderProvider.get(sigPack.getKeyAlgorithm(), sigPack.getHashAlgorithm());
+
+        verifier = verifierBuilder.build(pubKey);
+
         lastb = 0;
-
-        try
-        {
-            sig = Signature.getInstance(
-                PGPUtil.getSignatureName(sigPack.getKeyAlgorithm(), sigPack.getHashAlgorithm()),
-                provider);
-        }
-        catch (Exception e)
-        {    
-            throw new PGPException("can't set up signature object.",  e);
-        }
-
-        try
-        {
-            sig.initVerify(pubKey.getKey(provider));
-        }
-        catch (InvalidKeyException e)
-        {
-            throw new PGPException("invalid key.", e);
-        }
+        sigOut = verifier.getOutputStream();
     }
 
     public void update(
         byte    b)
-        throws SignatureException
     {
         if (signatureType == PGPSignature.CANONICAL_TEXT_DOCUMENT)
         {
             if (b == '\r')
             {
-                sig.update((byte)'\r');
-                sig.update((byte)'\n');
+                byteUpdate((byte)'\r');
+                byteUpdate((byte)'\n');
             }
             else if (b == '\n')
             {
                 if (lastb != '\r')
                 {
-                    sig.update((byte)'\r');
-                    sig.update((byte)'\n');
+                    byteUpdate((byte)'\r');
+                    byteUpdate((byte)'\n');
                 }
             }
             else
             {
-                sig.update(b);
+                byteUpdate(b);
             }
 
             lastb = b;
         }
         else
         {
-            sig.update(b);
+            byteUpdate(b);
         }
     }
 
     public void update(
         byte[]    bytes)
-        throws SignatureException
     {
         if (signatureType == PGPSignature.CANONICAL_TEXT_DOCUMENT)
         {
@@ -136,7 +99,7 @@ public class PGPOnePassSignature
         }
         else
         {
-            sig.update(bytes);
+            blockUpdate(bytes, 0, bytes.length);
         }
     }
     
@@ -144,7 +107,6 @@ public class PGPOnePassSignature
         byte[]    bytes,
         int       off,
         int       length)
-        throws SignatureException
     {
         if (signatureType == PGPSignature.CANONICAL_TEXT_DOCUMENT)
         {
@@ -157,7 +119,31 @@ public class PGPOnePassSignature
         }
         else
         {
-            sig.update(bytes, off, length);
+            blockUpdate(bytes, off, length);
+        }
+    }
+
+    private void byteUpdate(byte b)
+    {
+        try
+        {
+            sigOut.write(b);
+        }
+        catch (IOException e)
+        {
+            throw new PGPRuntimeOperationException(e.getMessage(), e);
+        }
+    }
+
+    private void blockUpdate(byte[] block, int off, int len)
+    {
+        try
+        {
+            sigOut.write(block, off, len);
+        }
+        catch (IOException e)
+        {
+            throw new PGPRuntimeOperationException(e.getMessage(), e);
         }
     }
 
@@ -167,15 +153,23 @@ public class PGPOnePassSignature
      * @param pgpSig
      * @return boolean
      * @throws PGPException
-     * @throws SignatureException
      */
     public boolean verify(
         PGPSignature    pgpSig)
-        throws PGPException, SignatureException
+        throws PGPException
     {
-        sig.update(pgpSig.getSignatureTrailer());
-        
-        return sig.verify(pgpSig.getSignature());
+        try
+        {
+            sigOut.write(pgpSig.getSignatureTrailer());
+
+            sigOut.close();
+        }
+        catch (IOException e)
+        {
+            throw new PGPException("unable to add trailer: " + e.getMessage(), e);
+        }
+
+        return verifier.verify(pgpSig.getSignature());
     }
     
     public long getKeyID()

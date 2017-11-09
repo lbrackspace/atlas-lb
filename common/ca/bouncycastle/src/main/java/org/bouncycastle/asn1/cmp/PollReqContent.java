@@ -1,12 +1,13 @@
 package org.bouncycastle.asn1.cmp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.DERSequence;
 
 public class PollReqContent
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private ASN1Sequence content;
 
@@ -22,33 +23,43 @@ public class PollReqContent
             return (PollReqContent)o;
         }
 
-        if (o instanceof ASN1Sequence)
+        if (o != null)
         {
-            return new PollReqContent((ASN1Sequence)o);
+            return new PollReqContent(ASN1Sequence.getInstance(o));
         }
 
-        throw new IllegalArgumentException("Invalid object: " + o.getClass().getName());
+        return null;
     }
 
-    public DERInteger[][] getCertReqIds()
+    /**
+     * Create a pollReqContent for a single certReqId.
+     *
+     * @param certReqId the certificate request ID.
+     */
+    public PollReqContent(ASN1Integer certReqId)
     {
-        DERInteger[][] result = new DERInteger[content.size()][];
+        this(new DERSequence(new DERSequence(certReqId)));
+    }
+
+    public ASN1Integer[][] getCertReqIds()
+    {
+        ASN1Integer[][] result = new ASN1Integer[content.size()][];
 
         for (int i = 0; i != result.length; i++)
         {
-            result[i] = seqenceToDERIntegerArray((ASN1Sequence)content.getObjectAt(i));
+            result[i] = sequenceToASN1IntegerArray((ASN1Sequence)content.getObjectAt(i));
         }
 
         return result;
     }
 
-    private DERInteger[] seqenceToDERIntegerArray(ASN1Sequence seq)
+    private static ASN1Integer[] sequenceToASN1IntegerArray(ASN1Sequence seq)
     {
-         DERInteger[] result = new DERInteger[seq.size()];
+         ASN1Integer[] result = new ASN1Integer[seq.size()];
 
         for (int i = 0; i != result.length; i++)
         {
-            result[i] = DERInteger.getInstance(seq.getObjectAt(i));
+            result[i] = ASN1Integer.getInstance(seq.getObjectAt(i));
         }
 
         return result;
@@ -62,7 +73,7 @@ public class PollReqContent
      * </pre>
      * @return a basic ASN.1 object representation.
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return content;
     }

@@ -8,9 +8,11 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSet;
 
+/**
+ * This is helper tool to construct {@link Attributes} sets.
+ */
 public class AttributeTable
 {
     private Hashtable attributes = new Hashtable();
@@ -44,13 +46,19 @@ public class AttributeTable
     }
 
     public AttributeTable(
+        Attribute    attr)
+    {
+        addAttribute(attr.getAttrType(), attr);
+    }
+
+    public AttributeTable(
         Attributes    attrs)
     {
-        this(ASN1Set.getInstance(attrs.getDERObject()));
+        this(ASN1Set.getInstance(attrs.toASN1Primitive()));
     }
 
     private void addAttribute(
-        DERObjectIdentifier oid,
+        ASN1ObjectIdentifier oid,
         Attribute           a)
     {
         Object value = attributes.get(oid);
@@ -88,7 +96,7 @@ public class AttributeTable
      * @return first attribute found of type oid.
      */
     public Attribute get(
-        DERObjectIdentifier oid)
+        ASN1ObjectIdentifier oid)
     {
         Object value = attributes.get(oid);
         
@@ -108,7 +116,7 @@ public class AttributeTable
      * @return a vector of all the attributes found of type oid.
      */
     public ASN1EncodableVector getAll(
-        DERObjectIdentifier oid)
+        ASN1ObjectIdentifier oid)
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
         
@@ -184,7 +192,7 @@ public class AttributeTable
         return v;
     }
 
-    public Attributes toAttributes()
+    public Attributes toASN1Structure()
     {
         return new Attributes(this.toASN1EncodableVector());
     }
@@ -208,9 +216,9 @@ public class AttributeTable
     /**
      * Return a new table with the passed in attribute added.
      *
-     * @param attrType
-     * @param attrValue
-     * @return
+     * @param attrType the type of the attribute to add.
+     * @param attrValue the value corresponding to the attribute (will be wrapped in a SET).
+     * @return a new table with the extra attribute in it.
      */
     public AttributeTable add(ASN1ObjectIdentifier attrType, ASN1Encodable attrValue)
     {

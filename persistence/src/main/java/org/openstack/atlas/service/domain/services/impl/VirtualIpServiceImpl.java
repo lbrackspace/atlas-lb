@@ -1,9 +1,8 @@
 package org.openstack.atlas.service.domain.services.impl;
 
 import com.sun.jersey.api.client.ClientResponse;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.TrafficType;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadBalancerDetails;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
@@ -24,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.lang.reflect.Field;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import org.openstack.atlas.restclients.dns.StaticDNSClientUtils;
@@ -74,7 +74,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     @Override
     public List<org.openstack.atlas.service.domain.entities.LoadBalancer> getLoadBalancerByVipAddress(String address) {
-        return virtualIpRepository.getLoadBalancerByVipAddress(address);
+        return virtualIpRepository.getLoadBalancersByVipAddress(address);
     }
 
     @Override
@@ -488,6 +488,20 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         virtualIpRepository.persist(obj);
     }
 
+    @Override
+    @Transactional
+    public void updateCluster(VirtualIp vip, Cluster cluster) {
+        vip.setCluster(cluster);
+        virtualIpRepository.merge(vip);
+    }
+
+    @Override
+    @Transactional
+    public void updateCluster(VirtualIpv6 vip, Cluster cluster) {
+        vip.setCluster(cluster);
+        virtualIpRepository.merge(vip);
+    }
+
     private void reclaimVirtualIp(LoadBalancer lb, VirtualIp virtualIp) {
         if (!isVipAllocatedToAnotherLoadBalancer(lb, virtualIp)) {
             delPtrRecord(lb.getAccountId(), lb.getId(), virtualIp.getIpAddress());
@@ -776,6 +790,79 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             }
         }
         return vipMap;
+    }
+
+    @Override
+    public VirtualIpLoadBalancerDetails getLoadBalancerDetailsForIp(String ipAddress) {
+        VirtualIpLoadBalancerDetails rLbDetails = new VirtualIpLoadBalancerDetails();
+        TrafficType rProtocol;
+        List<LoadBalancer> lbsByIp;
+        ArrayList<LoadBalancerProtocol> udpProtocols = new ArrayList<LoadBalancerProtocol>();
+        udpProtocols.add(LoadBalancerProtocol.DNS_UDP);
+        udpProtocols.add(LoadBalancerProtocol.UDP);
+        udpProtocols.add(LoadBalancerProtocol.UDP_STREAM);
+
+        lbsByIp = virtualIpRepository.getLoadBalancersByVipAddress(ipAddress);
+        for (LoadBalancer lb : lbsByIp) {
+            // Just set the top-level attributes once
+            if (rLbDetails.getAccountId() == null) {
+                rLbDetails.setAccountId(lb.getAccountId());
+                Set<LoadBalancerJoinVip> vipSet = lb.getLoadBalancerJoinVipSet();
+                for (LoadBalancerJoinVip vip : vipSet) {
+                    if (vip.getVirtualIp().getIpAddress().equals(ipAddress)) {
+                        rLbDetails.setVirtualIpId(vip.getVirtualIp().getId());
+                    }
+                }
+            }
+
+            if (lb.isHttpsRedirect()) {
+                // In case of HTTPS Redirect, add 80/443 since they are always static
+                rProtocol = new TrafficType();
+                rProtocol.setProtocol(LoadBalancerProtocolType.TCP.name());
+                rProtocol.setPort(80);
+                rLbDetails.getProtocols().add(rProtocol);
+
+                rProtocol = new TrafficType();
+                rProtocol.setProtocol(LoadBalancerProtocolType.TCP.name());
+                rProtocol.setPort(443);
+                rLbDetails.getProtocols().add(rProtocol);
+            } else if (!lb.hasSsl()) {
+                // If no HTTPS Redirect or SSL, add the main VS config
+                rProtocol = new TrafficType();
+                LoadBalancerProtocol lbProtocol = lb.getProtocol();
+                rProtocol.setProtocol(udpProtocols.contains(lbProtocol) ? LoadBalancerProtocolType.UDP.name() : LoadBalancerProtocolType.TCP.name());
+                rProtocol.setPort(lb.getPort());
+                rLbDetails.getProtocols().add(rProtocol);
+            } else {
+                // For SSL term, add HTTPS and whatever port, as long as SSL is enabled
+                if (lb.getSslTermination().isEnabled()) {
+                    rProtocol = new TrafficType();
+                    rProtocol.setProtocol(LoadBalancerProtocolType.TCP.name());
+                    rProtocol.setPort(lb.getSslTermination().getSecurePort());
+                    rLbDetails.getProtocols().add(rProtocol);
+                }
+
+                // If SSL is disabled or in mixed mode, add the main VS config too
+                if (!lb.getSslTermination().isSecureTrafficOnly() || !lb.getSslTermination().isEnabled()) {
+                    rProtocol = new TrafficType();
+                    LoadBalancerProtocol lbProtocol = lb.getProtocol();
+                    rProtocol.setProtocol(udpProtocols.contains(lbProtocol) ? LoadBalancerProtocolType.UDP.name() : LoadBalancerProtocolType.TCP.name());
+                    rProtocol.setPort(lb.getPort());
+                    rLbDetails.getProtocols().add(rProtocol);
+                }
+            }
+        }
+
+        // Remove protocols object when empty, so the JSON result doesn't include an empty element
+        if (rLbDetails.getProtocols().isEmpty()) {
+            try {
+                Field protocolsField = VirtualIpLoadBalancerDetails.class.getDeclaredField("protocols");
+                protocolsField.setAccessible(true);
+                protocolsField.set(rLbDetails, null);
+            } catch (Exception e) {}
+        }
+
+        return rLbDetails;
     }
 
     @Override

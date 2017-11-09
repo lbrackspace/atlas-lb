@@ -8,6 +8,9 @@ import java.util.List;
 
 import org.bouncycastle.util.encoders.Base64;
 
+/**
+ * A generic PEM reader, based on the format outlined in RFC 1421
+ */
 public class PemReader
     extends BufferedReader
 {
@@ -24,7 +27,12 @@ public class PemReader
     {
         String line = readLine();
 
-        if (line != null && line.startsWith(BEGIN))
+        while (line != null && !line.startsWith(BEGIN))
+        {
+            line = readLine();
+        }
+
+        if (line != null)
         {
             line = line.substring(BEGIN.length());
             int index = line.indexOf('-');

@@ -9,7 +9,6 @@ import org.openstack.atlas.util.ca.primitives.RsaConst;
 public class StringUtils {
 
     private static final String USASCII = "US-ASCII";
-    private static final int PAGESIZE = 4096;
 
     public static String displayParsedInt(String strIn) {
         try {
@@ -24,7 +23,7 @@ public class StringUtils {
     // It iterates the string character per caracher and builds a new one so
     // Its like really slow. :(
     public static String escape_html(String html) {
-        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
+        StringBuilder sb = new StringBuilder();
         char ch;
         int len = html.length();
         int i;
@@ -64,7 +63,7 @@ public class StringUtils {
 
     public static String getExtendedStackTrace(Throwable th) {
         Throwable t;
-        StringBuilder sb = new StringBuilder(RsaConst.PAGESIZE);
+        StringBuilder sb = new StringBuilder(4096);
         Exception currEx;
         String msg;
 
@@ -136,7 +135,7 @@ public class StringUtils {
 
     // LineWrapper for jython encodeing of Strings
     public static String lineWrap(String strIn,int cols){
-        StringBuilder sb = new StringBuilder(PAGESIZE);
+        StringBuilder sb = new StringBuilder();
         char[] strArray = strIn.toCharArray();
         int chrsLeftToWrite = strArray.length;
         int offset = 0;

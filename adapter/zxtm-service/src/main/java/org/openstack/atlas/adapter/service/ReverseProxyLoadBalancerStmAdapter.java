@@ -1,5 +1,6 @@
 package org.openstack.atlas.adapter.service;
 
+import org.apache.axis.AxisFault;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
@@ -7,24 +8,18 @@ import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-import org.rackspace.stingray.client.StingrayRestClient;
-import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
-import java.net.URI;
+import java.rmi.RemoteException;
 import java.util.List;
-import java.util.Set;
 
 public interface ReverseProxyLoadBalancerStmAdapter {
-
-//    public StingrayRestClient loadSTMRestClient(LoadBalancerEndpointConfiguration config)
-//            throws RollBackException, InsufficientRequestException;
 
     public void createLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, RollBackException;
 
-    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb, UserPages up)
+    public void updateLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb)
             throws InsufficientRequestException, StmRollBackException;
 
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
@@ -36,10 +31,13 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws InsufficientRequestException, RollBackException;
 
-    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination, UserPages up)
+    public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination)
             throws InsufficientRequestException, RollBackException;
 
     public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
+            throws InsufficientRequestException, RollBackException;
+
+    public void disableEnabledTLS_10(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws InsufficientRequestException, RollBackException;
 
     public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
@@ -54,11 +52,11 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void updateVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, RollBackException;
 
-    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId, UserPages up)
+    public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipId)
             throws InsufficientRequestException, RollBackException;
 
-    public void changeHostForLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, Host newHost)
-            throws InsufficientRequestException, RollBackException;
+    public void changeHostForLoadBalancers(LoadBalancerEndpointConfiguration configOld, LoadBalancerEndpointConfiguration configNew, List<LoadBalancer> loadBalancers, Integer retryCount)
+            throws InsufficientRequestException, RollBackException, RemoteException;
 
     public void updateProtection(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, RollBackException;
@@ -87,7 +85,7 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void setErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, String content)
             throws InsufficientRequestException, StmRollBackException;
 
-    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, UserPages up)
+    public void deleteErrorFile(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException;
 
     public void uploadDefaultErrorFile(LoadBalancerEndpointConfiguration config, String content)

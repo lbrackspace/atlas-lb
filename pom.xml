@@ -5,7 +5,7 @@
     <name>Openstack :: Atlas :: Parent</name>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-parent</artifactId>
-    <version>1.23.8</version>
+    <version>1.25.57-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <scm>
@@ -40,7 +40,6 @@
         <module>persistence</module>
         <module>adapter</module>
         <module>api</module>
-        <module>logs</module>
         <module>jobs</module>
         <module>migration</module>
         <module>itest</module>
@@ -54,9 +53,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
-                        <source>1.6</source>
-                        <target>1.6</target>
-                        <optimize>true</optimize>
+                        <source>1.8</source>
+                        <target>1.8</target>
+                        <optimize>false</optimize>
                         <debug>true</debug>
                     </configuration>
                 </plugin>
@@ -75,6 +74,8 @@
     </build>
 
     <properties>
+        <hadoop.version>1.2.0.1.3.10.0-24</hadoop.version>
+        <!--  <hadoop.version>1.2.0</hadoop.version> -->
         <hibernate.version>3.5.1-Final</hibernate.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <camel.version>2.5.0</camel.version>
@@ -474,20 +475,20 @@
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-core</artifactId>
-                <version>1.2.0</version>
+                <version>${hadoop.version}</version>
                 <!--<classifier>core</classifier>-->
                 <scope>compile</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-test</artifactId>
-                <version>1.2.0</version>
+                <version>${hadoop.version}</version>
                 <!--<classifier>test</classifier>-->
             </dependency>
             <dependency>
                 <groupId>org.apache.hadoop</groupId>
                 <artifactId>hadoop-tools</artifactId>
-                <version>1.2.0</version>
+                <version>${hadoop.version}</version>
                 <!--<classifier>tools</classifier>-->
             </dependency>
             <dependency>

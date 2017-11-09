@@ -1,7 +1,14 @@
 package org.bouncycastle.openpgp;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.bouncycastle.bcpg.SignaturePacket;
 import org.bouncycastle.bcpg.SignatureSubpacket;
 import org.bouncycastle.bcpg.SignatureSubpacketTags;
+import org.bouncycastle.bcpg.sig.Features;
 import org.bouncycastle.bcpg.sig.IssuerKeyID;
 import org.bouncycastle.bcpg.sig.KeyExpirationTime;
 import org.bouncycastle.bcpg.sig.KeyFlags;
@@ -10,11 +17,8 @@ import org.bouncycastle.bcpg.sig.PreferredAlgorithms;
 import org.bouncycastle.bcpg.sig.PrimaryUserID;
 import org.bouncycastle.bcpg.sig.SignatureCreationTime;
 import org.bouncycastle.bcpg.sig.SignatureExpirationTime;
+import org.bouncycastle.bcpg.sig.SignatureTarget;
 import org.bouncycastle.bcpg.sig.SignerUserID;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Container for a list of signature subpackets.
@@ -76,7 +80,28 @@ public class PGPSignatureSubpacketVector
         return (SignatureSubpacket[])list.toArray(new SignatureSubpacket[]{});
     }
 
-    public NotationData[] getNotationDataOccurences()
+    public PGPSignatureList getEmbeddedSignatures()
+        throws PGPException
+    {
+        SignatureSubpacket[] sigs = getSubpackets(SignatureSubpacketTags.EMBEDDED_SIGNATURE);
+        ArrayList l = new ArrayList();
+
+        for (int i = 0; i < sigs.length; i++)
+        {
+            try
+            {
+                l.add(new PGPSignature(SignaturePacket.fromByteArray(sigs[i].getData())));
+            }
+            catch (IOException e)
+            {
+                throw new PGPException("Unable to parse signature packet: " + e.getMessage(), e);
+            }
+        }
+
+        return new PGPSignatureList((PGPSignature[])l.toArray(new PGPSignature[l.size()]));
+    }
+
+    public NotationData[] getNotationDataOccurrences()
     {
         SignatureSubpacket[] notations = getSubpackets(SignatureSubpacketTags.NOTATION_DATA);
         NotationData[] vals = new NotationData[notations.length];
@@ -86,6 +111,14 @@ public class PGPSignatureSubpacketVector
         }
 
         return vals;
+    }
+
+    /**
+     * @deprecated use  getNotationDataOccurrences()
+     */
+    public NotationData[] getNotationDataOccurences()
+    {
+        return getNotationDataOccurrences();
     }
 
     public long getIssuerKeyID()
@@ -246,7 +279,31 @@ public class PGPSignatureSubpacketVector
         
         return list;
     }
-    
+
+    public SignatureTarget getSignatureTarget()
+    {
+        SignatureSubpacket    p = this.getSubpacket(SignatureSubpacketTags.SIGNATURE_TARGET);
+
+        if (p == null)
+        {
+            return null;
+        }
+
+        return new SignatureTarget(p.isCritical(), p.isLongLength(), p.getData());
+    }
+
+    public Features getFeatures()
+    {
+        SignatureSubpacket    p = this.getSubpacket(SignatureSubpacketTags.FEATURES);
+
+        if (p == null)
+        {
+            return null;
+        }
+
+        return new Features(p.isCritical(), p.isLongLength(), p.getData());
+    }
+
     /**
      * Return the number of packets this vector contains.
      * 

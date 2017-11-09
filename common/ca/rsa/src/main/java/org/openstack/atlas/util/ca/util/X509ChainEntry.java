@@ -1,12 +1,15 @@
 package org.openstack.atlas.util.ca.util;
 
-
 import java.security.KeyPair;
 import java.security.PrivateKey;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.bouncycastle.jce.provider.X509CertificateObject;
+import java.security.PublicKey;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.openstack.atlas.util.ca.RSAKeyUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
+import org.openstack.atlas.util.ca.exceptions.RsaException;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 
 // Used for the ChainBuilder
@@ -17,15 +20,15 @@ public class X509ChainEntry {
     }
     private KeyPair key;
     private PKCS10CertificationRequest csr;
-    private X509CertificateObject x509obj;
+    private X509CertificateHolder x509Holder;
 
     public X509ChainEntry() {
     }
 
-    public X509ChainEntry(KeyPair key, PKCS10CertificationRequest csr, X509CertificateObject x509obj) {
+    public X509ChainEntry(KeyPair key, PKCS10CertificationRequest csr, X509CertificateHolder x509holder) {
         this.key = key;
         this.csr = csr;
-        this.x509obj = x509obj;
+        this.x509Holder = x509holder;
     }
 
     public KeyPair getKey() {
@@ -44,28 +47,15 @@ public class X509ChainEntry {
         this.csr = csr;
     }
 
-    public X509CertificateObject getX509obj() {
-        return x509obj;
+    public X509CertificateHolder getX509Holder() {
+        return x509Holder;
     }
 
-    public void setX509obj(X509CertificateObject x509obj) {
-        this.x509obj = x509obj;
+    public void getX509Holder(X509CertificateHolder x509obj) {
+        this.setX509Holder(x509obj);
     }
 
-    public String shortEntry() {
-        X509Inspector xi;
-        try {
-            xi = new X509Inspector(x509obj);
-        } catch (NotAnX509CertificateException ex) {
-            return "null";
-        }
-        String subjName = xi.getSubjectName();
-        String issuerName = xi.getIssuerName();
-        String shortCrtKey = RSAKeyUtils.shortKey(x509obj.getPublicKey());
-        String shortPrivKey = RSAKeyUtils.shortKey(key.getPrivate());
-        PrivateKey privKey = key.getPrivate();
-        String fmt = "{issuer=\"%s\" subj=\"%s\" privKey=\"%s\" crtKey=\"%s\"}";
-        String msg = String.format(fmt,issuerName,subjName,shortPrivKey,shortCrtKey);
-        return msg;
+    public void setX509Holder(X509CertificateHolder x509Holder) {
+        this.x509Holder = x509Holder;
     }
 }

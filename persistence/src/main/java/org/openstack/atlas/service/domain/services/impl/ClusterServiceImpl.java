@@ -46,8 +46,8 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
     }
 
     @Override
-    public Cluster getActiveCluster(Integer accountId) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException {
-        return clusterRepository.getActiveCluster(accountId);
+    public Cluster getActiveCluster(Integer accountId, boolean hasPublicVip) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException {
+        return clusterRepository.getActiveCluster(accountId, hasPublicVip);
     }
 
     @Override

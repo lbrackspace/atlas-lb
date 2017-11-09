@@ -36,7 +36,7 @@ public class HostsResource extends ManagementDependencyProvider {
         try {
             domainHosts = hostService.getAll(offset, limit);
             for (org.openstack.atlas.service.domain.entities.Host domainHost : domainHosts) {
-                dataModelHosts.getHosts().add(getDozerMapper().map(domainHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class, "SIMPLE_HOST"));
+                dataModelHosts.getHosts().add(getDozerMapper().map(domainHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class));
             }
             return Response.status(200).entity(dataModelHosts).build();
         } catch (Exception e) {

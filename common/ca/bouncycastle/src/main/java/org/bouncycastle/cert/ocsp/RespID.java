@@ -48,7 +48,7 @@ public class RespID
         {
             if (!digCalc.getAlgorithmIdentifier().equals(HASH_SHA1))
             {
-                throw new IllegalArgumentException("only SHA-1 can be used with RespID");
+                throw new IllegalArgumentException("only SHA-1 can be used with RespID - found: " + digCalc.getAlgorithmIdentifier().getAlgorithm());
             }
 
             OutputStream     digOut = digCalc.getOutputStream();
@@ -64,7 +64,7 @@ public class RespID
         }
     }
 
-    public ResponderID toASN1Object()
+    public ResponderID toASN1Primitive()
     {
         return id;
     }

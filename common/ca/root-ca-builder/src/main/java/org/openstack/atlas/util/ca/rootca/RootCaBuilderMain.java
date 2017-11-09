@@ -1,14 +1,13 @@
 package org.openstack.atlas.util.ca.rootca;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyPair;
-import java.security.cert.X509Certificate;
 import java.util.Date;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.json.simple.parser.ParseException;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.CsrUtils;
@@ -68,7 +67,7 @@ public class RootCaBuilderMain {
         String csrPem = PemUtils.toPemString(csr);
         System.out.printf("%s\n", csrPem);
         System.out.printf("Self signing CSR with rootKey\n");
-        X509Certificate crt = CertUtils.selfSignCsrCA(csr, rootKey, notBefore, notAfter);
+        X509CertificateHolder crt = CertUtils.selfSignCsrCA(csr, rootKey, notBefore, notAfter);
         System.out.printf("cert generated with self signature\n");
         String crtPem = PemUtils.toPemString(crt);
         System.out.printf("%s\n", crtPem);

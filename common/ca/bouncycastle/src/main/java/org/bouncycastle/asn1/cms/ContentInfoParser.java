@@ -2,18 +2,18 @@ package org.bouncycastle.asn1.cms;
 
 import java.io.IOException;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1SequenceParser;
 import org.bouncycastle.asn1.ASN1TaggedObjectParser;
-import org.bouncycastle.asn1.DEREncodable;
 
 /**
- * Produce an object suitable for an ASN1OutputStream.
+ * <a href="http://tools.ietf.org/html/rfc5652#section-3">RFC 5652</a> {@link ContentInfo} object parser.
+ *
  * <pre>
  * ContentInfo ::= SEQUENCE {
- *          contentType ContentType,
- *          content
- *          [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL }
+ *     contentType ContentType,
+ *     content [0] EXPLICIT ANY DEFINED BY contentType OPTIONAL }
  * </pre>
  */
 public class ContentInfoParser
@@ -34,7 +34,7 @@ public class ContentInfoParser
         return contentType;
     }
 
-    public DEREncodable getContent(
+    public ASN1Encodable getContent(
         int  tag)
         throws IOException
     {

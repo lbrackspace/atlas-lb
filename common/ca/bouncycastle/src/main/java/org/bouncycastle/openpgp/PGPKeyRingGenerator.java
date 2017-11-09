@@ -1,13 +1,13 @@
 package org.bouncycastle.openpgp;
 
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
-import java.security.Provider;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.bouncycastle.bcpg.*;
+import org.bouncycastle.bcpg.PublicSubkeyPacket;
+import org.bouncycastle.openpgp.operator.PBESecretKeyEncryptor;
+import org.bouncycastle.openpgp.operator.PGPContentSignerBuilder;
+import org.bouncycastle.openpgp.operator.PGPDigestCalculator;
 
 /**
  * Generator for a PGP master and subkey ring. This class will generate
@@ -16,125 +16,46 @@ import org.bouncycastle.bcpg.*;
 public class PGPKeyRingGenerator
 {    
     List                                keys = new ArrayList();
-    
-    private String                      id;
-    private int                         encAlgorithm;
-    private int                         certificationLevel;
-    private char[]                      passPhrase;
-    private boolean                     useSHA1;
+
+    private PBESecretKeyEncryptor       keyEncryptor;
+    private PGPDigestCalculator checksumCalculator;
     private PGPKeyPair                  masterKey;
     private PGPSignatureSubpacketVector hashedPcks;
     private PGPSignatureSubpacketVector unhashedPcks;
-    private SecureRandom                rand;
-    private Provider                    provider;
-    
-    /**
-     * Create a new key ring generator using old style checksumming. It is recommended to use
-     * SHA1 checksumming where possible.
-     * 
-     * @param certificationLevel the certification level for keys on this ring.
-     * @param masterKey the master key pair.
-     * @param id the id to be associated with the ring.
-     * @param encAlgorithm the algorithm to be used to protect secret keys.
-     * @param passPhrase the passPhrase to be used to protect secret keys.
-     * @param hashedPcks packets to be included in the certification hash.
-     * @param unhashedPcks packets to be attached unhashed to the certification.
-     * @param rand input secured random
-     * @param provider the provider to use for encryption.
-     * 
-     * @throws PGPException
-     * @throws NoSuchProviderException
-     */
-    public PGPKeyRingGenerator(
-        int                            certificationLevel,
-        PGPKeyPair                     masterKey,
-        String                         id,
-        int                            encAlgorithm,
-        char[]                         passPhrase,
-        PGPSignatureSubpacketVector    hashedPcks,
-        PGPSignatureSubpacketVector    unhashedPcks,
-        SecureRandom                   rand,
-        String                         provider)
-        throws PGPException, NoSuchProviderException
-    {
-        this(certificationLevel, masterKey, id, encAlgorithm, passPhrase, false, hashedPcks, unhashedPcks, rand, provider);
-    }
-
-    /**
-     * Create a new key ring generator.
-     * 
-     * @param certificationLevel the certification level for keys on this ring.
-     * @param masterKey the master key pair.
-     * @param id the id to be associated with the ring.
-     * @param encAlgorithm the algorithm to be used to protect secret keys.
-     * @param passPhrase the passPhrase to be used to protect secret keys.
-     * @param useSHA1 checksum the secret keys with SHA1 rather than the older 16 bit checksum.
-     * @param hashedPcks packets to be included in the certification hash.
-     * @param unhashedPcks packets to be attached unhashed to the certification.
-     * @param rand input secured random
-     * @param provider the provider to use for encryption.
-     * 
-     * @throws PGPException
-     * @throws NoSuchProviderException
-     */
-    public PGPKeyRingGenerator(
-        int                            certificationLevel,
-        PGPKeyPair                     masterKey,
-        String                         id,
-        int                            encAlgorithm,
-        char[]                         passPhrase,
-        boolean                        useSHA1,
-        PGPSignatureSubpacketVector    hashedPcks,
-        PGPSignatureSubpacketVector    unhashedPcks,
-        SecureRandom                   rand,
-        String                         provider)
-        throws PGPException, NoSuchProviderException
-    {
-        this(certificationLevel, masterKey, id, encAlgorithm, passPhrase, useSHA1, hashedPcks, unhashedPcks, rand, PGPUtil.getProvider(provider));
-    }
+    private PGPContentSignerBuilder     keySignerBuilder;
 
     /**
      * Create a new key ring generator.
      *
-     * @param certificationLevel the certification level for keys on this ring.
-     * @param masterKey the master key pair.
-     * @param id the id to be associated with the ring.
-     * @param encAlgorithm the algorithm to be used to protect secret keys.
-     * @param passPhrase the passPhrase to be used to protect secret keys.
-     * @param useSHA1 checksum the secret keys with SHA1 rather than the older 16 bit checksum.
-     * @param hashedPcks packets to be included in the certification hash.
-     * @param unhashedPcks packets to be attached unhashed to the certification.
-     * @param rand input secured random
-     * @param provider the provider to use for encryption.
-     *
+     * @param certificationLevel
+     * @param masterKey
+     * @param id
+     * @param checksumCalculator
+     * @param hashedPcks
+     * @param unhashedPcks
+     * @param keySignerBuilder
+     * @param keyEncryptor
      * @throws PGPException
-     * @throws NoSuchProviderException
      */
     public PGPKeyRingGenerator(
         int                            certificationLevel,
         PGPKeyPair                     masterKey,
         String                         id,
-        int                            encAlgorithm,
-        char[]                         passPhrase,
-        boolean                        useSHA1,
+        PGPDigestCalculator checksumCalculator,
         PGPSignatureSubpacketVector    hashedPcks,
         PGPSignatureSubpacketVector    unhashedPcks,
-        SecureRandom                   rand,
-        Provider                       provider)
-        throws PGPException, NoSuchProviderException
+        PGPContentSignerBuilder        keySignerBuilder,
+        PBESecretKeyEncryptor          keyEncryptor)
+        throws PGPException
     {
-        this.certificationLevel = certificationLevel;
         this.masterKey = masterKey;
-        this.id = id;
-        this.encAlgorithm = encAlgorithm;
-        this.passPhrase = passPhrase;
-        this.useSHA1 = useSHA1;
+        this.keyEncryptor = keyEncryptor;
+        this.checksumCalculator = checksumCalculator;
+        this.keySignerBuilder = keySignerBuilder;
         this.hashedPcks = hashedPcks;
         this.unhashedPcks = unhashedPcks;
-        this.rand = rand;
-        this.provider = provider;
 
-        keys.add(new PGPSecretKey(certificationLevel, masterKey, id, encAlgorithm, passPhrase, useSHA1, hashedPcks, unhashedPcks, rand, provider));
+        keys.add(new PGPSecretKey(certificationLevel, masterKey, id, checksumCalculator, hashedPcks, unhashedPcks, keySignerBuilder, keyEncryptor));
     }
 
     /**
@@ -168,12 +89,12 @@ public class PGPKeyRingGenerator
     {
         try
         {
-            PGPSignatureGenerator    sGen = new PGPSignatureGenerator(masterKey.getPublicKey().getAlgorithm(), HashAlgorithmTags.SHA1, provider);
-
             //
             // generate the certification
             //
-            sGen.initSign(PGPSignature.SUBKEY_BINDING, masterKey.getPrivateKey());
+            PGPSignatureGenerator  sGen = new PGPSignatureGenerator(keySignerBuilder);
+
+            sGen.init(PGPSignature.SUBKEY_BINDING, masterKey.getPrivateKey());
 
             sGen.setHashedSubpackets(hashedPcks);
             sGen.setUnhashedSubpackets(unhashedPcks);
@@ -182,7 +103,7 @@ public class PGPKeyRingGenerator
             
             subSigs.add(sGen.generateCertification(masterKey.getPublicKey(), keyPair.getPublicKey()));
             
-            keys.add(new PGPSecretKey(keyPair.getPrivateKey(), new PGPPublicKey(keyPair.getPublicKey(), null, subSigs), encAlgorithm, passPhrase, useSHA1, rand, provider));
+            keys.add(new PGPSecretKey(keyPair.getPrivateKey(), new PGPPublicKey(keyPair.getPublicKey(), null, subSigs), checksumCalculator, keyEncryptor));
         }
         catch (PGPException e)
         {

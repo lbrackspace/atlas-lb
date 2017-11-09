@@ -1,15 +1,15 @@
 package org.bouncycastle.asn1.x509;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 
 public class V2Form
-    extends ASN1Encodable
+    extends ASN1Object
 {
     GeneralNames        issuerName;
     IssuerSerial        baseCertificateID;
@@ -25,24 +25,51 @@ public class V2Form
     public static V2Form getInstance(
         Object  obj)
     {
-        if (obj == null || obj instanceof V2Form)
+        if (obj instanceof V2Form)
         {
             return (V2Form)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new V2Form((ASN1Sequence)obj);
+            return new V2Form(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
     
     public V2Form(
         GeneralNames    issuerName)
     {
-        this.issuerName = issuerName;
+        this(issuerName, null, null);
     }
-    
+
+    public V2Form(
+        GeneralNames    issuerName,
+        IssuerSerial    baseCertificateID)
+    {
+        this(issuerName, baseCertificateID, null);
+    }
+
+    public V2Form(
+        GeneralNames    issuerName,
+        ObjectDigestInfo objectDigestInfo)
+    {
+        this(issuerName, null, objectDigestInfo);
+    }
+
+    public V2Form(
+        GeneralNames    issuerName,
+        IssuerSerial    baseCertificateID,
+        ObjectDigestInfo objectDigestInfo)
+    {
+        this.issuerName = issuerName;
+        this.baseCertificateID = baseCertificateID;
+        this.objectDigestInfo = objectDigestInfo;
+    }
+
+    /**
+     * @deprecated use getInstance().
+     */
     public V2Form(
         ASN1Sequence seq)
     {
@@ -106,7 +133,7 @@ public class V2Form
      *  }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

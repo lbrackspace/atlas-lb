@@ -20,6 +20,8 @@ import org.bouncycastle.openpgp.PGPSecretKey;
 import org.bouncycastle.openpgp.PGPSecretKeyRing;
 import org.bouncycastle.openpgp.PGPSecretKeyRingCollection;
 import org.bouncycastle.openpgp.PGPUtil;
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator;
+import org.bouncycastle.openpgp.operator.jcajce.JcePBESecretKeyDecryptorBuilder;
 
 class PGPExampleUtil
 {
@@ -40,7 +42,7 @@ class PGPExampleUtil
      * @param pgpSec a secret key ring collection.
      * @param keyID keyID we want.
      * @param pass passphrase to decrypt secret key with.
-     * @return
+     * @return the private key.
      * @throws PGPException
      * @throws NoSuchProviderException
      */
@@ -54,7 +56,7 @@ class PGPExampleUtil
             return null;
         }
 
-        return pgpSecKey.extractPrivateKey(pass, "BC");
+        return pgpSecKey.extractPrivateKey(new JcePBESecretKeyDecryptorBuilder().setProvider("BC").build(pass));
     }
 
     static PGPPublicKey readPublicKey(String fileName) throws IOException, PGPException
@@ -69,15 +71,15 @@ class PGPExampleUtil
      * A simple routine that opens a key ring file and loads the first available key
      * suitable for encryption.
      * 
-     * @param input
-     * @return
+     * @param input data stream containing the public key data
+     * @return the first public key found.
      * @throws IOException
      * @throws PGPException
      */
     static PGPPublicKey readPublicKey(InputStream input) throws IOException, PGPException
     {
         PGPPublicKeyRingCollection pgpPub = new PGPPublicKeyRingCollection(
-            PGPUtil.getDecoderStream(input));
+            PGPUtil.getDecoderStream(input), new JcaKeyFingerprintCalculator());
 
         //
         // we just loop through the collection till we find a key suitable for encryption, in the real
@@ -124,7 +126,7 @@ class PGPExampleUtil
     static PGPSecretKey readSecretKey(InputStream input) throws IOException, PGPException
     {
         PGPSecretKeyRingCollection pgpSec = new PGPSecretKeyRingCollection(
-            PGPUtil.getDecoderStream(input));
+            PGPUtil.getDecoderStream(input), new JcaKeyFingerprintCalculator());
 
         //
         // we just loop through the collection till we find a key suitable for encryption, in the real

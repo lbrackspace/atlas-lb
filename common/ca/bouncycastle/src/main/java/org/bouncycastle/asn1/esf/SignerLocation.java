@@ -2,10 +2,11 @@ package org.bouncycastle.asn1.esf;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -24,30 +25,28 @@ import org.bouncycastle.asn1.x500.DirectoryString;
  * </pre>
  */
 public class SignerLocation
-    extends ASN1Encodable 
+    extends ASN1Object
 {
-    private DERUTF8String   countryName;
-    private DERUTF8String   localityName;
-    private ASN1Sequence    postalAddress;
+    private DirectoryString   countryName;
+    private DirectoryString   localityName;
+    private ASN1Sequence      postalAddress;
     
-    public SignerLocation(
+    private SignerLocation(
         ASN1Sequence seq)
     {
         Enumeration     e = seq.getObjects();
 
         while (e.hasMoreElements())
         {
-            DERTaggedObject o = (DERTaggedObject)e.nextElement();
+            ASN1TaggedObject o = (ASN1TaggedObject)e.nextElement();
 
             switch (o.getTagNo())
             {
             case 0:
-                DirectoryString countryNameDirectoryString = DirectoryString.getInstance(o, true);
-                this.countryName = new DERUTF8String(countryNameDirectoryString.getString());
+                this.countryName = DirectoryString.getInstance(o, true);;
                 break;
             case 1:
-                DirectoryString localityNameDirectoryString = DirectoryString.getInstance(o, true);
-                this.localityName = new DERUTF8String(localityNameDirectoryString.getString());
+                this.localityName = DirectoryString.getInstance(o, true);
                 break;
             case 2:
                 if (o.isExplicit())
@@ -69,30 +68,35 @@ public class SignerLocation
         }
     }
 
-    public SignerLocation(
-        DERUTF8String   countryName,
-        DERUTF8String   localityName,
-        ASN1Sequence    postalAddress)
+    private SignerLocation(
+        DirectoryString   countryName,
+        DirectoryString   localityName,
+        ASN1Sequence      postalAddress)
     {
         if (postalAddress != null && postalAddress.size() > 6)
         {
             throw new IllegalArgumentException("postal address must contain less than 6 strings");
         }
 
-        if (countryName != null)
-        {
-            this.countryName = DERUTF8String.getInstance(countryName.toASN1Object());
-        }
+        this.countryName = countryName;
+        this.localityName = localityName;
+        this.postalAddress = postalAddress;
+    }
 
-        if (localityName != null)
-        {
-            this.localityName = DERUTF8String.getInstance(localityName.toASN1Object());
-        }
+    public SignerLocation(
+        DirectoryString   countryName,
+        DirectoryString   localityName,
+        DirectoryString[] postalAddress)
+    {
+        this(countryName, localityName, new DERSequence(postalAddress));
+    }
 
-        if (postalAddress != null)
-        {
-            this.postalAddress = ASN1Sequence.getInstance(postalAddress.toASN1Object());
-        }
+    public SignerLocation(
+        DERUTF8String   countryName,
+        DERUTF8String   localityName,
+        ASN1Sequence    postalAddress)
+    {
+        this(DirectoryString.getInstance(countryName), DirectoryString.getInstance(localityName), postalAddress);
     }
 
     public static SignerLocation getInstance(
@@ -106,14 +110,69 @@ public class SignerLocation
         return new SignerLocation(ASN1Sequence.getInstance(obj));
     }
 
-    public DERUTF8String getCountryName()
+    /**
+     * Return the countryName DirectoryString
+     *
+     * @return the countryName, null if absent.
+     */
+    public DirectoryString getCountry()
     {
         return countryName;
     }
 
-    public DERUTF8String getLocalityName()
+    /**
+     * Return the localityName DirectoryString
+     *
+     * @return the localityName, null if absent.
+     */
+    public DirectoryString getLocality()
     {
         return localityName;
+    }
+
+    /**
+     * Return the postalAddress DirectoryStrings
+     *
+     * @return the postalAddress, null if absent.
+     */
+    public DirectoryString[] getPostal()
+    {
+        if (postalAddress == null)
+        {
+            return null;
+        }
+
+        DirectoryString[] dirStrings = new DirectoryString[postalAddress.size()];
+        for (int i = 0; i != dirStrings.length; i++)
+        {
+            dirStrings[i] = DirectoryString.getInstance(postalAddress.getObjectAt(i));
+        }
+
+        return dirStrings;
+    }
+
+    /**
+     * @deprecated use getCountry()
+     */
+    public DERUTF8String getCountryName()
+    {
+        if (countryName == null)
+        {
+            return null;
+        }
+        return new DERUTF8String(getCountry().getString());
+    }
+
+    /**
+     * @deprecated use getLocality()
+     */
+    public DERUTF8String getLocalityName()
+    {
+        if (localityName == null)
+        {
+            return null;
+        }
+        return new DERUTF8String(getLocality().getString());
     }
 
     public ASN1Sequence getPostalAddress()
@@ -138,7 +197,7 @@ public class SignerLocation
      *         bmpString               BMPString (SIZE (1..MAX)) }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

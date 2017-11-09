@@ -1,8 +1,13 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import javax.ws.rs.GET;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Response;
+import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Ciphers;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 public class ManagementResource extends ManagementDependencyProvider {
 
@@ -33,7 +38,7 @@ public class ManagementResource extends ManagementDependencyProvider {
     public AuditResource retrieveAuditResource() {
         return auditResource;
     }
-    
+
     @Path("hosts")
     public HostsResource retrieveHostsResource() {
         return hostsResource;
@@ -65,17 +70,17 @@ public class ManagementResource extends ManagementDependencyProvider {
     }
 
     @Path("alerts")
-    public AlertsResource retrieveAlertsResource(){
+    public AlertsResource retrieveAlertsResource() {
         return alertsResource;
     }
 
     @Path("groups")
-    public GroupsResource retrieveGroupsResource(){
+    public GroupsResource retrieveGroupsResource() {
         return groupsResource;
     }
 
     @Path("blacklist")
-    public BlackListResource retrieveBlackListResource(){
+    public BlackListResource retrieveBlackListResource() {
         return blackListResource;
     }
 
@@ -102,6 +107,22 @@ public class ManagementResource extends ManagementDependencyProvider {
     @Path("alloweddomains")
     public AllowedDomainsResource retrieveAllowedDomainsResource() {
         return allowedDomainsResource;
+    }
+
+    @GET
+    @Path("ciphers")
+    public Response getGlobalCiphers() {       
+        String cipherList;
+        try {
+            cipherList = reverseProxyLoadBalancerService.getSsl3Ciphers();
+        } catch (EntityNotFoundException ex) {
+            return ResponseFactory.getErrorResponse(ex, "No soap end points available", "");
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, "", "");
+        }
+        Ciphers ciphers = dozerMapper.map(cipherList, Ciphers.class);
+        Response wtf = Response.status(200).entity(ciphers).build();
+        return wtf;
     }
 
     public void setHealthCheckResource(HealthCheckResource healthCheckResource) {

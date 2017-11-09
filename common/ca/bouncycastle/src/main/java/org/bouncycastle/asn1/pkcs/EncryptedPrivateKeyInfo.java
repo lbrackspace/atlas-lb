@@ -2,28 +2,28 @@ package org.bouncycastle.asn1.pkcs;
 
 import java.util.Enumeration;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 
 public class EncryptedPrivateKeyInfo
-    extends ASN1Encodable
+    extends ASN1Object
 {
     private AlgorithmIdentifier algId;
     private ASN1OctetString     data;
 
-    public EncryptedPrivateKeyInfo(
+    private EncryptedPrivateKeyInfo(
         ASN1Sequence  seq)
     {
         Enumeration e = seq.getObjects();
 
         algId = AlgorithmIdentifier.getInstance(e.nextElement());
-        data = (ASN1OctetString)e.nextElement();
+        data = ASN1OctetString.getInstance(e.nextElement());
     }
 
     public EncryptedPrivateKeyInfo(
@@ -37,16 +37,16 @@ public class EncryptedPrivateKeyInfo
     public static EncryptedPrivateKeyInfo getInstance(
         Object  obj)
     {
-        if (obj instanceof EncryptedData)
+        if (obj instanceof EncryptedPrivateKeyInfo)
         {
             return (EncryptedPrivateKeyInfo)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         { 
-            return new EncryptedPrivateKeyInfo((ASN1Sequence)obj);
+            return new EncryptedPrivateKeyInfo(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException("unknown object in factory: " + obj.getClass().getName());
+        return null;
     }
     
     public AlgorithmIdentifier getEncryptionAlgorithm()
@@ -74,7 +74,7 @@ public class EncryptedPrivateKeyInfo
      * }
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector v = new ASN1EncodableVector();
 

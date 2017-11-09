@@ -1,17 +1,16 @@
 package org.bouncycastle.asn1.esf;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 
 public class SignaturePolicyId
-    extends ASN1Encodable
+    extends ASN1Object
 {
-    private DERObjectIdentifier  sigPolicyId;
+    private ASN1ObjectIdentifier  sigPolicyId;
     private OtherHashAlgAndValue sigPolicyHash;
     private SigPolicyQualifiers  sigPolicyQualifiers;
 
@@ -19,21 +18,19 @@ public class SignaturePolicyId
     public static SignaturePolicyId getInstance(
         Object obj)
     {
-        if (obj == null || obj instanceof SignaturePolicyId)
+        if (obj instanceof SignaturePolicyId)
         {
-            return (SignaturePolicyId) obj;
+            return (SignaturePolicyId)obj;
         }
-        else if (obj instanceof ASN1Sequence)
+        else if (obj != null)
         {
-            return new SignaturePolicyId((ASN1Sequence) obj);
+            return new SignaturePolicyId(ASN1Sequence.getInstance(obj));
         }
 
-        throw new IllegalArgumentException(
-                "Unknown object in 'SignaturePolicyId' factory : "
-                        + obj.getClass().getName() + ".");
+        return null;
     }
 
-    public SignaturePolicyId(
+    private SignaturePolicyId(
         ASN1Sequence seq)
     {
         if (seq.size() != 2 && seq.size() != 3)
@@ -41,7 +38,7 @@ public class SignaturePolicyId
             throw new IllegalArgumentException("Bad sequence size: " + seq.size());
         }
 
-        sigPolicyId = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+        sigPolicyId = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
         sigPolicyHash = OtherHashAlgAndValue.getInstance(seq.getObjectAt(1));
 
         if (seq.size() == 3)
@@ -51,14 +48,14 @@ public class SignaturePolicyId
     }
 
     public SignaturePolicyId(
-        DERObjectIdentifier   sigPolicyIdentifier,
+        ASN1ObjectIdentifier   sigPolicyIdentifier,
         OtherHashAlgAndValue  sigPolicyHash)
     {
         this(sigPolicyIdentifier, sigPolicyHash, null);
     }
 
     public SignaturePolicyId(
-        DERObjectIdentifier   sigPolicyId,
+        ASN1ObjectIdentifier   sigPolicyId,
         OtherHashAlgAndValue  sigPolicyHash,
         SigPolicyQualifiers   sigPolicyQualifiers)
     {
@@ -90,7 +87,7 @@ public class SignaturePolicyId
      *     sigPolicyQualifiers SEQUENCE SIZE (1..MAX) OF SigPolicyQualifierInfo OPTIONAL}
      * </pre>
      */
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

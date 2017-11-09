@@ -2,21 +2,19 @@ package org.bouncycastle.openssl;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
 
+import org.bouncycastle.openssl.jcajce.JcaMiscPEMGenerator;
 import org.bouncycastle.util.io.pem.PemGenerationException;
 import org.bouncycastle.util.io.pem.PemObjectGenerator;
 import org.bouncycastle.util.io.pem.PemWriter;
 
 /**
  * General purpose writer for OpenSSL PEM objects.
+ * @deprecated use JcaPEMWriter
  */
 public class PEMWriter
     extends PemWriter
 {
-    private String provider;
-
     /**
      * Base constructor.
      * 
@@ -24,25 +22,32 @@ public class PEMWriter
      */
     public PEMWriter(Writer out)
     {
-        this(out, "BC");
-    }
-
-    public PEMWriter(
-        Writer  out,
-        String  provider)
-    {
         super(out);
-
-        this.provider = provider;
     }
 
+    /**
+     * @throws IOException
+     */
     public void writeObject(
         Object  obj)
         throws IOException
     {
+        writeObject(obj, null);
+    }
+
+    /**
+     * @param obj
+     * @param encryptor
+     * @throws IOException
+     */
+    public void writeObject(
+        Object  obj,
+        PEMEncryptor encryptor)
+        throws IOException
+    {
         try
         {
-            super.writeObject(new MiscPEMGenerator(obj));
+            super.writeObject(new JcaMiscPEMGenerator(obj, encryptor));
         }
         catch (PemGenerationException e)
         {
@@ -60,22 +65,5 @@ public class PEMWriter
         throws IOException
     {
         super.writeObject(obj);
-    }
-
-    public void writeObject(
-        Object       obj,
-        String       algorithm,
-        char[]       password,
-        SecureRandom random)
-        throws IOException
-    {
-        try
-        {
-            super.writeObject(new MiscPEMGenerator(obj, algorithm, password, random, provider));
-        }
-        catch (NoSuchProviderException e)
-        {
-            throw new EncryptionException(e.getMessage(), e);
-        }
     }
 }

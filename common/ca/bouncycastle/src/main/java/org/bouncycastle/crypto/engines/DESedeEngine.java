@@ -2,6 +2,7 @@ package org.bouncycastle.crypto.engines;
 
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
+import org.bouncycastle.crypto.OutputLengthException;
 import org.bouncycastle.crypto.params.KeyParameter;
 
 /**
@@ -44,9 +45,9 @@ public class DESedeEngine
 
         byte[] keyMaster = ((KeyParameter)params).getKey();
 
-        if (keyMaster.length > 24)
+        if (keyMaster.length != 24 && keyMaster.length != 16)
         {
-            throw new IllegalArgumentException("key size greater than 24 bytes");
+            throw new IllegalArgumentException("key size must be 16 or 24 bytes.");
         }
 
         this.forEncryption = encrypting;
@@ -99,7 +100,7 @@ public class DESedeEngine
 
         if ((outOff + BLOCK_SIZE) > out.length)
         {
-            throw new DataLengthException("output buffer too short");
+            throw new OutputLengthException("output buffer too short");
         }
 
         byte[] temp = new byte[BLOCK_SIZE];

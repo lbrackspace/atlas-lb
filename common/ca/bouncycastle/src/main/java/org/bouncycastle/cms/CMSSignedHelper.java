@@ -1,43 +1,37 @@
 package org.bouncycastle.cms;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.Provider;
-import java.security.Signature;
-import java.security.cert.CRLException;
-import java.security.cert.CertStore;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.CollectionCertStoreParameters;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.cms.OtherRevocationInfoFormat;
 import org.bouncycastle.asn1.cryptopro.CryptoProObjectIdentifiers;
 import org.bouncycastle.asn1.eac.EACObjectIdentifiers;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.rosstandart.RosstandartObjectIdentifiers;
 import org.bouncycastle.asn1.teletrust.TeleTrusTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.AttributeCertificate;
+import org.bouncycastle.asn1.x509.Certificate;
+import org.bouncycastle.asn1.x509.CertificateList;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
-import org.bouncycastle.x509.NoSuchStoreException;
-import org.bouncycastle.x509.X509CollectionStoreParameters;
-import org.bouncycastle.x509.X509Store;
-import org.bouncycastle.x509.X509V2AttributeCertificate;
+import org.bouncycastle.cert.X509AttributeCertificateHolder;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.util.CollectionStore;
+import org.bouncycastle.util.Store;
 
 class CMSSignedHelper
 {
@@ -47,7 +41,7 @@ class CMSSignedHelper
     private static final Map     digestAlgs = new HashMap();
     private static final Map     digestAliases = new HashMap();
 
-    private static void addEntries(DERObjectIdentifier alias, String digest, String encryption)
+    private static void addEntries(ASN1ObjectIdentifier alias, String digest, String encryption)
     {
         digestAlgs.put(alias.getId(), digest);
         encryptionAlgs.put(alias.getId(), encryption);
@@ -97,8 +91,12 @@ class CMSSignedHelper
         encryptionAlgs.put(CryptoProObjectIdentifiers.gostR3410_2001.getId(), "ECGOST3410");
         encryptionAlgs.put("1.3.6.1.4.1.5849.1.6.2", "ECGOST3410");
         encryptionAlgs.put("1.3.6.1.4.1.5849.1.1.5", "GOST3410");
+        encryptionAlgs.put(RosstandartObjectIdentifiers.id_tc26_gost_3410_12_256, "ECGOST3410-2012-256");
+        encryptionAlgs.put(RosstandartObjectIdentifiers.id_tc26_gost_3410_12_512, "ECGOST3410-2012-512");
         encryptionAlgs.put(CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_2001.getId(), "ECGOST3410");
         encryptionAlgs.put(CryptoProObjectIdentifiers.gostR3411_94_with_gostR3410_94.getId(), "GOST3410");
+        encryptionAlgs.put(RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_256, "ECGOST3410-2012-256");
+        encryptionAlgs.put(RosstandartObjectIdentifiers.id_tc26_signwithdigest_gost_3410_12_512, "ECGOST3410-2012-512");
 
         digestAlgs.put(PKCSObjectIdentifiers.md2.getId(), "MD2");
         digestAlgs.put(PKCSObjectIdentifiers.md4.getId(), "MD4");
@@ -113,6 +111,8 @@ class CMSSignedHelper
         digestAlgs.put(TeleTrusTObjectIdentifiers.ripemd256.getId(), "RIPEMD256");
         digestAlgs.put(CryptoProObjectIdentifiers.gostR3411.getId(),  "GOST3411");
         digestAlgs.put("1.3.6.1.4.1.5849.1.2.1",  "GOST3411");
+        digestAlgs.put(RosstandartObjectIdentifiers.id_tc26_gost_3411_12_256,  "GOST3411-2012-256");
+        digestAlgs.put(RosstandartObjectIdentifiers.id_tc26_gost_3411_12_512,  "GOST3411-2012-512");
 
         digestAliases.put("SHA1", new String[] { "SHA-1" });
         digestAliases.put("SHA224", new String[] { "SHA-224" });
@@ -120,36 +120,7 @@ class CMSSignedHelper
         digestAliases.put("SHA384", new String[] { "SHA-384" });
         digestAliases.put("SHA512", new String[] { "SHA-512" });
     }
-    
-    /**
-     * Return the digest algorithm using one of the standard JCA string
-     * representations rather than the algorithm identifier (if possible).
-     */
-    String getDigestAlgName(
-        String digestAlgOID)
-    {
-        String algName = (String)digestAlgs.get(digestAlgOID);
 
-        if (algName != null)
-        {
-            return algName;
-        }
-
-        return digestAlgOID;
-    }
-
-    String[] getDigestAliases(
-        String algName)
-    {
-        String[] aliases = (String[])digestAliases.get(algName);
-
-        if (aliases != null)
-        {
-            return aliases;
-        }
-
-        return new String[0];
-    }
 
     /**
      * Return the digest encryption algorithm using one of the standard
@@ -168,309 +139,122 @@ class CMSSignedHelper
 
         return encryptionAlgOID;
     }
-    
-    MessageDigest getDigestInstance(
-        String algorithm, 
-        Provider provider)
-        throws NoSuchAlgorithmException
-    {
-        try
-        {
-            return createDigestInstance(algorithm, provider);
-        }
-        catch (NoSuchAlgorithmException e)
-        {
-            String[] aliases = getDigestAliases(algorithm);
-            for (int i = 0; i != aliases.length; i++)
-            {
-                try
-                {
-                    return createDigestInstance(aliases[i], provider);
-                }
-                catch (NoSuchAlgorithmException ex)
-                {
-                    // continue
-                }
-            }
-            if (provider != null)
-            {
-                return getDigestInstance(algorithm, null); // try rolling back
-            }
-            throw e;
-        }
-    }
-
-    private MessageDigest createDigestInstance(
-        String algorithm,
-        Provider provider)
-        throws NoSuchAlgorithmException
-    {
-        if (provider != null)
-        {
-            return MessageDigest.getInstance(algorithm, provider);
-        }
-        else
-        {
-            return MessageDigest.getInstance(algorithm);
-        }
-    }
-
-    Signature getSignatureInstance(
-        String algorithm, 
-        Provider provider)
-        throws NoSuchAlgorithmException
-    {
-        if (provider != null)
-        {
-            return Signature.getInstance(algorithm, provider);
-        }
-        else
-        {
-            return Signature.getInstance(algorithm);
-        }
-    }
-
-    X509Store createAttributeStore(
-        String type,
-        Provider provider,
-        ASN1Set certSet)
-        throws NoSuchStoreException, CMSException
-    {
-        List certs = new ArrayList();
-
-        if (certSet != null)
-        {
-            Enumeration e = certSet.getObjects();
-
-            while (e.hasMoreElements())
-            {
-                try
-                {
-                    DERObject obj = ((DEREncodable)e.nextElement()).getDERObject();
-
-                    if (obj instanceof ASN1TaggedObject)
-                    {
-                        ASN1TaggedObject tagged = (ASN1TaggedObject)obj;
-
-                        if (tagged.getTagNo() == 2)
-                        {
-                            certs.add(new X509V2AttributeCertificate(ASN1Sequence.getInstance(tagged, false).getEncoded()));
-                        }
-                    }
-                }
-                catch (IOException ex)
-                {
-                    throw new CMSException(
-                            "can't re-encode attribute certificate!", ex);
-                }
-            }
-        }
-
-        try
-        {
-            return X509Store.getInstance(
-                         "AttributeCertificate/" +type, new X509CollectionStoreParameters(certs), provider);
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new CMSException("can't setup the X509Store", e);
-        }
-    }
-
-    X509Store createCertificateStore(
-        String type,
-        Provider provider,
-        ASN1Set certSet)
-        throws NoSuchStoreException, CMSException
-    {
-        List certs = new ArrayList();
-
-        if (certSet != null)
-        {
-            addCertsFromSet(certs, certSet, provider);
-        }
-
-        try
-        {
-            return X509Store.getInstance(
-                         "Certificate/" +type, new X509CollectionStoreParameters(certs), provider);
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new CMSException("can't setup the X509Store", e);
-        }
-    }
-
-    X509Store createCRLsStore(
-        String type,
-        Provider provider,
-        ASN1Set crlSet)
-        throws NoSuchStoreException, CMSException
-    {
-        List crls = new ArrayList();
-
-        if (crlSet != null)
-        {
-            addCRLsFromSet(crls, crlSet, provider);
-        }
-
-        try
-        {
-            return X509Store.getInstance(
-                         "CRL/" +type, new X509CollectionStoreParameters(crls), provider);
-        }
-        catch (IllegalArgumentException e)
-        {
-            throw new CMSException("can't setup the X509Store", e);
-        }
-    }
-
-    CertStore createCertStore(
-        String type,
-        Provider provider,
-        ASN1Set certSet,
-        ASN1Set crlSet)
-        throws CMSException, NoSuchAlgorithmException
-    {
-        List certsAndcrls = new ArrayList();
-
-        //
-        // load the certificates and revocation lists if we have any
-        //
-
-        if (certSet != null)
-        {
-            addCertsFromSet(certsAndcrls, certSet, provider);
-        }
-
-        if (crlSet != null)
-        {
-            addCRLsFromSet(certsAndcrls, crlSet, provider);
-        }
-
-        try
-        {
-            if (provider != null)
-            {
-                return CertStore.getInstance(type, new CollectionCertStoreParameters(certsAndcrls), provider);
-            }
-            else
-            {
-                return CertStore.getInstance(type, new CollectionCertStoreParameters(certsAndcrls));
-            }
-        }
-        catch (InvalidAlgorithmParameterException e)
-        {
-            throw new CMSException("can't setup the CertStore", e);
-        }
-    }
-
-    private void addCertsFromSet(List certs, ASN1Set certSet, Provider provider)
-        throws CMSException
-    {
-        CertificateFactory cf;
-
-        try
-        {
-            if (provider != null)
-            {
-                cf = CertificateFactory.getInstance("X.509", provider);
-            }
-            else
-            {
-                cf = CertificateFactory.getInstance("X.509");
-            }
-        }
-        catch (CertificateException ex)
-        {
-            throw new CMSException("can't get certificate factory.", ex);
-        }
-        Enumeration e = certSet.getObjects();
-
-        while (e.hasMoreElements())
-        {
-            try
-            {
-                DERObject obj = ((DEREncodable)e.nextElement()).getDERObject();
-
-                if (obj instanceof ASN1Sequence)
-                {
-                    certs.add(cf.generateCertificate(
-                        new ByteArrayInputStream(obj.getEncoded())));
-                }
-            }
-            catch (IOException ex)
-            {
-                throw new CMSException(
-                        "can't re-encode certificate!", ex);
-            }
-            catch (CertificateException ex)
-            {
-                throw new CMSException(
-                        "can't re-encode certificate!", ex);
-            }
-        }
-    }
-
-    private void addCRLsFromSet(List crls, ASN1Set certSet, Provider provider)
-        throws CMSException
-    {
-        CertificateFactory cf;
-
-        try
-        {
-            if (provider != null)
-            {
-                cf = CertificateFactory.getInstance("X.509", provider);
-            }
-            else
-            {
-                cf = CertificateFactory.getInstance("X.509");
-            }
-        }
-        catch (CertificateException ex)
-        {
-            throw new CMSException("can't get certificate factory.", ex);
-        }
-        Enumeration e = certSet.getObjects();
-
-        while (e.hasMoreElements())
-        {
-            try
-            {
-                DERObject obj = ((DEREncodable)e.nextElement()).getDERObject();
-
-                crls.add(cf.generateCRL(
-                    new ByteArrayInputStream(obj.getEncoded())));
-            }
-            catch (IOException ex)
-            {
-                throw new CMSException("can't re-encode CRL!", ex);
-            }
-            catch (CRLException ex)
-            {
-                throw new CMSException("can't re-encode CRL!", ex);
-            }
-        }
-    }
 
     AlgorithmIdentifier fixAlgID(AlgorithmIdentifier algId)
     {
         if (algId.getParameters() == null)
         {
-            return new AlgorithmIdentifier(algId.getObjectId(), DERNull.INSTANCE);
+            return new AlgorithmIdentifier(algId.getAlgorithm(), DERNull.INSTANCE);
         }
 
         return algId;
     }
 
-    void setSigningEncryptionAlgorithmMapping(DERObjectIdentifier oid, String algorithmName)
+    void setSigningEncryptionAlgorithmMapping(ASN1ObjectIdentifier oid, String algorithmName)
     {
         encryptionAlgs.put(oid.getId(), algorithmName);
     }
 
-    void setSigningDigestAlgorithmMapping(DERObjectIdentifier oid, String algorithmName)
+    void setSigningDigestAlgorithmMapping(ASN1ObjectIdentifier oid, String algorithmName)
     {
         digestAlgs.put(oid.getId(), algorithmName);
+    }
+
+    Store getCertificates(ASN1Set certSet)
+    {
+        if (certSet != null)
+        {
+            List certList = new ArrayList(certSet.size());
+
+            for (Enumeration en = certSet.getObjects(); en.hasMoreElements();)
+            {
+                ASN1Primitive obj = ((ASN1Encodable)en.nextElement()).toASN1Primitive();
+
+                if (obj instanceof ASN1Sequence)
+                {
+                    certList.add(new X509CertificateHolder(Certificate.getInstance(obj)));
+                }
+            }
+
+            return new CollectionStore(certList);
+        }
+
+        return new CollectionStore(new ArrayList());
+    }
+
+    Store getAttributeCertificates(ASN1Set certSet)
+    {
+        if (certSet != null)
+        {
+            List certList = new ArrayList(certSet.size());
+
+            for (Enumeration en = certSet.getObjects(); en.hasMoreElements();)
+            {
+                ASN1Primitive obj = ((ASN1Encodable)en.nextElement()).toASN1Primitive();
+
+                if (obj instanceof ASN1TaggedObject)
+                {
+                    certList.add(new X509AttributeCertificateHolder(AttributeCertificate.getInstance(((ASN1TaggedObject)obj).getObject())));
+                }
+            }
+
+            return new CollectionStore(certList);
+        }
+
+        return new CollectionStore(new ArrayList());
+    }
+
+    Store getCRLs(ASN1Set crlSet)
+    {
+        if (crlSet != null)
+        {
+            List crlList = new ArrayList(crlSet.size());
+
+            for (Enumeration en = crlSet.getObjects(); en.hasMoreElements();)
+            {
+                ASN1Primitive obj = ((ASN1Encodable)en.nextElement()).toASN1Primitive();
+
+                if (obj instanceof ASN1Sequence)
+                {
+                    crlList.add(new X509CRLHolder(CertificateList.getInstance(obj)));
+                }
+            }
+
+            return new CollectionStore(crlList);
+        }
+
+        return new CollectionStore(new ArrayList());
+    }
+
+    Store getOtherRevocationInfo(ASN1ObjectIdentifier otherRevocationInfoFormat, ASN1Set crlSet)
+    {
+        if (crlSet != null)
+        {
+            List    crlList = new ArrayList(crlSet.size());
+
+            for (Enumeration en = crlSet.getObjects(); en.hasMoreElements();)
+            {
+                ASN1Primitive obj = ((ASN1Encodable)en.nextElement()).toASN1Primitive();
+
+                if (obj instanceof ASN1TaggedObject)
+                {
+                    ASN1TaggedObject tObj = ASN1TaggedObject.getInstance(obj);
+
+                    if (tObj.getTagNo() == 1)
+                    {
+                        OtherRevocationInfoFormat other = OtherRevocationInfoFormat.getInstance(tObj, false);
+
+                        if (otherRevocationInfoFormat.equals(other.getInfoFormat()))
+                        {
+                            crlList.add(other.getInfo());
+                        }
+                    }
+                }
+            }
+
+            return new CollectionStore(crlList);
+        }
+
+        return new CollectionStore(new ArrayList());
     }
 }

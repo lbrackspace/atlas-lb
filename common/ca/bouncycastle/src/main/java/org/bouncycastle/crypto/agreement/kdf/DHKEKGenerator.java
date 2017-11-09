@@ -1,7 +1,10 @@
 package org.bouncycastle.crypto.agreement.kdf;
 
+import java.io.IOException;
+
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Encoding;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -9,6 +12,8 @@ import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.crypto.DerivationFunction;
 import org.bouncycastle.crypto.DerivationParameters;
 import org.bouncycastle.crypto.Digest;
+import org.bouncycastle.crypto.OutputLengthException;
+import org.bouncycastle.util.Pack;
 
 /**
  * RFC 2631 Diffie-hellman KEK derivation function.
@@ -18,7 +23,7 @@ public class DHKEKGenerator
 {
     private final Digest digest;
 
-    private DERObjectIdentifier algorithm;
+    private ASN1ObjectIdentifier algorithm;
     private int                 keySize;
     private byte[]              z;
     private byte[]              partyAInfo;
@@ -49,7 +54,7 @@ public class DHKEKGenerator
     {
         if ((out.length - len) < outOff)
         {
-            throw new DataLengthException("output buffer too small");
+            throw new OutputLengthException("output buffer too small");
         }
 
         long    oBytes = len;
@@ -82,7 +87,7 @@ public class DHKEKGenerator
             ASN1EncodableVector v2 = new ASN1EncodableVector();
 
             v2.add(algorithm);
-            v2.add(new DEROctetString(integerToBytes(counter)));
+            v2.add(new DEROctetString(Pack.intToBigEndian(counter)));
 
             v1.add(new DERSequence(v2));
 
@@ -91,11 +96,18 @@ public class DHKEKGenerator
                 v1.add(new DERTaggedObject(true, 0, new DEROctetString(partyAInfo)));
             }
 
-            v1.add(new DERTaggedObject(true, 2, new DEROctetString(integerToBytes(keySize))));
+            v1.add(new DERTaggedObject(true, 2, new DEROctetString(Pack.intToBigEndian(keySize))));
 
-            byte[] other = new DERSequence(v1).getDEREncoded();
+            try
+            {
+                byte[] other = new DERSequence(v1).getEncoded(ASN1Encoding.DER);
 
-            digest.update(other, 0, other.length);
+                digest.update(other, 0, other.length);
+            }
+            catch (IOException e)
+            {
+                throw new IllegalArgumentException("unable to encode parameter info: " + e.getMessage());
+            }
 
             digest.doFinal(dig, 0);
 
@@ -115,18 +127,6 @@ public class DHKEKGenerator
 
         digest.reset();
 
-        return len;
-    }
-
-    private byte[] integerToBytes(int keySize)
-    {
-        byte[] val = new byte[4];
-
-        val[0] = (byte)(keySize >> 24);
-        val[1] = (byte)(keySize >> 16);
-        val[2] = (byte)(keySize >> 8);
-        val[3] = (byte)keySize;
-
-        return val;
+        return (int)oBytes;
     }
 }
