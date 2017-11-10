@@ -23,7 +23,7 @@ import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+//import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -35,7 +35,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @RunWith(Enclosed.class)
 public class UsageEventProcessorDBTest {
 
-    @RunWith(SpringJUnit4ClassRunner.class)
+    @RunWith(Enclosed.class)
     @ContextConfiguration(locations = {"classpath:context.xml"})
     @Transactional
     public static class WhenTestingProcessingUsageRecords {

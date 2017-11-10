@@ -40,10 +40,10 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.rackspace.cloud.jee.filters</groupId>
-            <artifactId>rate-limiting</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.rackspace.cloud.jee.filters</groupId>-->
+            <!--<artifactId>rate-limiting</artifactId>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -109,10 +109,22 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
+<<<<<<< Updated upstream
          <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
         </dependency>
+=======
+        <dependency>
+            <groupId>org.apache.xmlrpc</groupId>
+            <artifactId>xmlrpc-client</artifactId>
+        </dependency>
+
+        <!--<dependency>-->
+            <!--<groupId>org.mockito</groupId>-->
+            <!--<artifactId>mockito-all</artifactId>-->
+        <!--</dependency>-->
+>>>>>>> Stashed changes
 
         <dependency>
             <groupId>org.mockito</groupId>
@@ -128,7 +140,7 @@
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-core</artifactId>
-            <version>1.5.1</version>
+            <version>1.7.3</version>
         </dependency>
 
         <dependency>

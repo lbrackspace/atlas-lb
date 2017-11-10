@@ -6,7 +6,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.*;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.repository.*;
@@ -14,12 +15,14 @@ import org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.HostServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.LoadBalancerStatusHistoryServiceImpl;
+import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -249,45 +252,50 @@ public class LoadBalancerServiceImplTest {
 
     public static class WhenVerifyingReassignHosts {
         private LoadBalancer lb;
+        @Mock
         LoadBalancerRepository lbRepository;
-        LoadBalancerServiceImpl lbService;
-        HostServiceImpl hostService;
-        ClusterServiceImpl clusterService;
+        @Mock
         ClusterRepository clusterRepository;
+        @Mock
         HostRepository hostRepository;
+        @Mock
         VirtualIpRepository virtualIpRepository;
+        @Mock
         LoadBalancerProtocolObject defaultProtocol;
-
-        LoadBalancerStatusHistoryServiceImpl loadBalancerStatusHistoryService;
+        @Mock
         LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
+
+        @InjectMocks
+        LoadBalancerServiceImpl lbService;
+        @InjectMocks
+        HostServiceImpl hostService;
+        @InjectMocks
+        ClusterServiceImpl clusterService;
+        @InjectMocks
+        LoadBalancerStatusHistoryServiceImpl loadBalancerStatusHistoryService;
 
         @Before
         public void standUp() throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, NoAvailableClusterException {
+            MockitoAnnotations.initMocks(this);
             lb = new LoadBalancer();
-            lbRepository = mock(LoadBalancerRepository.class);
             lbService = new LoadBalancerServiceImpl();
             lbService.setLoadBalancerRepository(lbRepository);
+            lbService.setVirtualIpRepository(virtualIpRepository);
+
 
             hostService = new HostServiceImpl();
             hostService.setLoadBalancerRepository(lbRepository);
-            hostRepository = mock(HostRepository.class);
             hostService.setHostRepository(hostRepository);
 
             clusterService = new ClusterServiceImpl();
             clusterService.setLoadBalancerRepository(lbRepository);
-            clusterRepository = mock(ClusterRepository.class);
             clusterService.setClusterRepository(clusterRepository);
 
-            virtualIpRepository = mock(VirtualIpRepository.class);
-
-            loadBalancerStatusHistoryRepository = mock(LoadBalancerStatusHistoryRepository.class);
-            loadBalancerStatusHistoryService = new LoadBalancerStatusHistoryServiceImpl();
             loadBalancerStatusHistoryService.setLoadBalancerStatusHistoryRepository(loadBalancerStatusHistoryRepository);
 
             hostService.setClusterRepository(clusterRepository);
 //            lbService.setHostService(hostService);
 //            lbService.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
-            lbService.setVirtualIpRepository(virtualIpRepository);
 
             lb.setStatus(LoadBalancerStatus.ACTIVE);
 
@@ -308,7 +316,7 @@ public class LoadBalancerServiceImplTest {
             when(hostRepository.getById(Matchers.<Integer>any())).thenReturn(host);
             when(hostRepository.getDefaultActiveHost(Matchers.<Integer>any())).thenReturn(host);
             when(clusterRepository.getActiveCluster(null, false)).thenReturn(cluster);
-            when(hostService.getById(Matchers.<Integer>any())).thenReturn(host);
+            when(hostService.getById(ArgumentMatchers.<Integer>any())).thenReturn(host);
             when(loadBalancerStatusHistoryRepository.save(Matchers.<LoadBalancerStatusHistory>anyObject())).thenReturn(new LoadBalancerStatusHistory());
 
 //            when(loadBalancerStatusHistoryService.save(lb.getAccountId(), lb.getId(), status);)
@@ -376,11 +384,12 @@ public class LoadBalancerServiceImplTest {
             LoadBalancer sharedlb = new LoadBalancer();
             sharedlb.setId(9844);
             sharedlbs.add(sharedlb);
-            when(virtualIpRepository.getLoadBalancersByVipId(Matchers.anyInt())).thenReturn(sharedlbs);
+//            doReturn(sharedlbs).when(virtualIpRepository).getLoadBalancersByVipId(ArgumentMatchers.anyInt());
+//            doReturn(loadBalancer).when(lbRepository).getById(ArgumentMatchers.anyInt());
+            when(lbRepository.getById(ArgumentMatchers.anyInt())).thenReturn(loadBalancer);
+            when(virtualIpRepository.getLoadBalancersByVipId((Integer) ArgumentMatchers.any())).thenReturn(sharedlbs);
 
             lbs.add(loadBalancer);
-
-            when(lbRepository.getById(Matchers.anyInt())).thenReturn(loadBalancer);
             List<LoadBalancer> newLbs;
             newLbs = lbService.reassignLoadBalancerHost(lbs);
 

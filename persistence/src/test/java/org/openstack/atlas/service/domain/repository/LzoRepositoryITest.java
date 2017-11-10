@@ -36,7 +36,7 @@ public class LzoRepositoryITest {
 
     private static final long sixteenGigs = 16L * 1024L * 1024L * 1024L;
 
-    @RunWith(SpringJUnit4ClassRunner.class)
+    @RunWith(Enclosed.class)
     public static class WhenTestingWhatever extends Base {
 
         @Before
