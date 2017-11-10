@@ -52,19 +52,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.openstack.client.identity</groupId>
-            <artifactId>java-identityclient</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.rackspace.cloud.powerapi</groupId>
             <artifactId>filterlet</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.javassist</groupId>
-            <artifactId>javassist</artifactId>
         </dependency>
 
         <dependency>
@@ -120,12 +109,7 @@
             <artifactId>slf4j-api</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.xmlrpc</groupId>
-            <artifactId>xmlrpc-client</artifactId>
-        </dependency>
-
-        <dependency>
+         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
         </dependency>
@@ -148,11 +132,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.mosso.nast.auth</groupId>
-            <artifactId>client</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
@@ -163,18 +142,8 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-jms</artifactId>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-jaxb</artifactId>
         </dependency>
 
         <dependency>
