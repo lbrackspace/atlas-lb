@@ -6,6 +6,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -41,6 +42,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -112,7 +114,7 @@ public class UsageEventCollectionTest {
         @Test
         public void shouldNotFailWhenCollectingUsageRecords() throws EntityNotFoundException, DeletedStatusException, InterruptedException, UsageEventCollectionException {
             mock(ExecutorService.class);
-            PowerMockito.when(executorService.invokeAll(Matchers.anyCollection())).thenReturn(new ArrayList<java.util.concurrent.Future<Object>>());
+            PowerMockito.when(executorService.invokeAll(ArgumentMatchers.<Callable<Object>>anyCollection())).thenReturn(new ArrayList<java.util.concurrent.Future<Object>>());
 
             List<Host> hosts = new ArrayList<Host>();
             Host host = new Host();

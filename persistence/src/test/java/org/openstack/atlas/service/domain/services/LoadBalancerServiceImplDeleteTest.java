@@ -18,7 +18,7 @@ import java.util.Set;
 @RunWith(Enclosed.class)
 public class LoadBalancerServiceImplDeleteTest {
 
-    @RunWith(SpringJUnit4ClassRunner.class)
+    @RunWith(Enclosed.class)
     public static class WhenPseudoDeletingALoadBalancer extends Base {
 
         @Autowired

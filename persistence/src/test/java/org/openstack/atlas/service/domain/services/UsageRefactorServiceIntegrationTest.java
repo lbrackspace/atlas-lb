@@ -11,7 +11,7 @@ import org.openstack.atlas.service.domain.usage.repository.LoadBalancerMergedHos
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+//import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 @RunWith(Enclosed.class)
 public class UsageRefactorServiceIntegrationTest {
 
-    @RunWith(SpringJUnit4ClassRunner.class)
+    @RunWith(Enclosed.class)
     @ContextConfiguration(locations = {"classpath:context.xml"})
     @Transactional
     public static class WhenTestingProcessRecordsNoEvents {
