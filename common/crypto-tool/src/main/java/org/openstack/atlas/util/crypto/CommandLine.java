@@ -28,9 +28,10 @@ public class CommandLine {
         mode = args[0];
         val = args[1];
 
+        System.out.printf("maxKeySize is %d\n", CryptoUtil.getMaxKeySize());
         if (mode.toLowerCase().equals("encrypt")) {
             try {
-                result = org.openstack.atlas.util.crypto.CryptoUtil.encrypt(val);
+                result = CryptoUtil.encrypt(val);
                 System.out.printf("\n\n\nencrypted =\"%s\"\n", result);
                 return;
             } catch (EncryptException ex) {

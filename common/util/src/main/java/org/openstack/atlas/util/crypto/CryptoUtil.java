@@ -9,8 +9,14 @@ import org.apache.log4j.Logger;
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * A utility class providing static encryption and decryption methods.
@@ -20,13 +26,46 @@ public final class CryptoUtil {
     public static final String ENCODING = "UTF-8";
 
     private static final Logger LOGGER = Logger.getLogger(CryptoUtil.class);
+    private static int maxKeySize = -1;
+
+    static {
+        try {
+            Class c = Class.forName("javax.crypto.CryptoAllPermissionCollection");
+            Constructor con = c.getDeclaredConstructor();
+            con.setAccessible(true);
+            Object allPermissionCollection = con.newInstance();
+            Field f = c.getDeclaredField("all_allowed");
+            f.setAccessible(true);
+            f.setBoolean(allPermissionCollection, true);
+
+            c = Class.forName("javax.crypto.CryptoPermissions");
+            con = c.getDeclaredConstructor();
+            con.setAccessible(true);
+            Object allPermissions = con.newInstance();
+            f = c.getDeclaredField("perms");
+            f.setAccessible(true);
+            ((Map) f.get(allPermissions)).put("*", allPermissionCollection);
+
+            c = Class.forName("javax.crypto.JceSecurityManager");
+            f = c.getDeclaredField("defaultPolicy");
+            f.setAccessible(true);
+            Field mf = Field.class.getDeclaredField("modifiers");
+            mf.setAccessible(true);
+            mf.setInt(f, f.getModifiers() & ~Modifier.FINAL);
+            f.set(null, allPermissions);
+
+            maxKeySize = Cipher.getMaxAllowedKeyLength("AES");
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | NoSuchFieldException | SecurityException | NoSuchAlgorithmException ex) {
+            java.util.logging.Logger.getLogger(CryptoUtil.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
 
     private CryptoUtil() {
     }
 
-
     /**
-     * Decrypts an encrypted String containing sensitive data using an AES/ECB/NoPadding transformation.
+     * Decrypts an encrypted String containing sensitive data using an
+     * AES/ECB/NoPadding transformation.
      *
      * @param encrypted The encrypted input string
      * @return A plaintext string
@@ -53,7 +92,8 @@ public final class CryptoUtil {
     }
 
     /**
-     * Encrypts a String containing sensitive data using an AES/ECB/NoPadding transformation
+     * Encrypts a String containing sensitive data using an AES/ECB/NoPadding
+     * transformation
      *
      * @param decrypted The plaintext string to be encrypted
      * @return An encrypted string, or null if "decrypted" is null
@@ -72,7 +112,7 @@ public final class CryptoUtil {
      * Transforms a hex string into a byte array, and removes any padding.
      *
      * @param hexString The hex string to transform
-     * @param padByte   The padding byte to remove
+     * @param padByte The padding byte to remove
      * @return A byte array
      */
     protected static byte[] asBytes(String hexString, byte padByte) throws DecryptException {
@@ -112,12 +152,13 @@ public final class CryptoUtil {
     }
 
     /**
-     * Decrypts an encrypted byte array using a random key spec with the specified key length.
+     * Decrypts an encrypted byte array using a random key spec with the
+     * specified key length.
      *
-     * @param keySize       The key size
-     * @param cipherMode    The mode to use for the transformation
+     * @param keySize The key size
+     * @param cipherMode The mode to use for the transformation
      * @param cipherPadding The paddint to use for the transformation
-     * @param encrypted     The encrypted bytes
+     * @param encrypted The encrypted bytes
      * @return The decrypted bytes
      * @throws DecryptException
      */
@@ -145,15 +186,15 @@ public final class CryptoUtil {
     /**
      * Decrypts an encrypted byte array using the given key spec.
      *
-     * @param key           The key spec to use
-     * @param cipherMode    The mode to use for the transformation
+     * @param key The key spec to use
+     * @param cipherMode The mode to use for the transformation
      * @param cipherPadding The paddint to use for the transformation
      * @param encrypted
      * @return The unencrypted bytes
      * @throws DecryptException
      */
     protected static byte[] decryptAES(SecretKeySpec key, String cipherMode, String cipherPadding,
-                                       byte[] encrypted) throws DecryptException {
+            byte[] encrypted) throws DecryptException {
         try {
             // Build the transformation string
             StringBuilder transformation = new StringBuilder(CryptoUtilValues.TRANSFORMATION_ALG_AES);
@@ -197,12 +238,13 @@ public final class CryptoUtil {
     }
 
     /**
-     * Performs AES (Rijndael) encryption with a random key spec and specified key size on a string.
+     * Performs AES (Rijndael) encryption with a random key spec and specified
+     * key size on a string.
      *
-     * @param keySize       The key size to use
+     * @param keySize The key size to use
      * @param cipherMode
      * @param cipherPadding
-     * @param decrypted     The bytes to encrypt
+     * @param decrypted The bytes to encrypt
      * @return An encrypted byte[]
      * @throws EncryptException If there are any errors
      */
@@ -233,17 +275,18 @@ public final class CryptoUtil {
     }
 
     /**
-     * Performs AES (Rijndael) encryption with the specified key spec on a string.
+     * Performs AES (Rijndael) encryption with the specified key spec on a
+     * string.
      *
      * @param key
      * @param cipherMode
      * @param cipherPadding
-     * @param decrypted     The bytes to encrypt
+     * @param decrypted The bytes to encrypt
      * @return An encrypted byte[]
      * @throws EncryptException Thrown if anything goes wrong during encryption
      */
     protected static byte[] encryptAES(SecretKeySpec key, String cipherMode, String cipherPadding,
-                                       byte[] decrypted) throws EncryptException {
+            byte[] decrypted) throws EncryptException {
 
         try {
             // Build the transformation string
@@ -292,8 +335,8 @@ public final class CryptoUtil {
     }
 
     /**
-     * Pads a string for AES encryption so that compatibility with PHP is preserved, returning the result to
-     * the caller as a byte array.
+     * Pads a string for AES encryption so that compatibility with PHP is
+     * preserved, returning the result to the caller as a byte array.
      *
      * @param in The input string to be padded
      * @return A byte array
@@ -339,5 +382,12 @@ public final class CryptoUtil {
 
         return ret;
     }
-}
 
+    public static int getMaxKeySize() {
+        int keySize;
+        synchronized (CryptoUtil.class) {
+            keySize = maxKeySize;
+        }
+        return keySize;
+    }
+}
