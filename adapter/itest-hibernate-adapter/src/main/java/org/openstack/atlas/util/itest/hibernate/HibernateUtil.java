@@ -7,7 +7,6 @@ import java.util.Properties;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.cfg.Configuration;
 
 public class HibernateUtil {
@@ -24,8 +23,8 @@ public class HibernateUtil {
 
     public void setDbMap(String db_key, String url, String user, String passwd, String hbm2ddl, String packageName, String driverClass, String dialect, List<String> classList) {
         try {
-            AnnotationConfiguration ac;
-            ac = new AnnotationConfiguration().setProperty("hibernate.connection.url", url).
+            Configuration ac;
+            ac = new Configuration().setProperty("hibernate.connection.url", url).
                     setProperty("hibernate.connection.username", user).
                     setProperty("hibernate.connection.password", passwd).
                     setProperty("hibernate.hbm2ddl.auto", hbm2ddl).
@@ -38,11 +37,11 @@ public class HibernateUtil {
                     setProperty("hibernate.jdbc.batch_size", "50");
 
             if (packageName != null && !packageName.equals("")) {
-                ac = ac.addPackage(packageName);
+                //ac = ac.addPackage(packageName);
             }
 
             for (String mappedClassName : classList) {
-                ac = ac.addAnnotatedClass(Class.forName(mappedClassName));
+                //ac = ac.addAnnotatedClass(Class.forName(mappedClassName));
             }
             getSfm().put(db_key, ac.buildSessionFactory());
         } catch (Throwable t) {

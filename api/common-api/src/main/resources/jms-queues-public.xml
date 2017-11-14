@@ -20,7 +20,7 @@
     </bean>
     <bean id="jmsPooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
         <property name="maxConnections" value="${jms.pool.max.connections}"/>
-        <property name="maximumActive" value="${jms.pool.max.active.connections}"/>
+        <property name="maximumActiveSessionPerConnection" value="${jms.pool.max.active.connections}"/>
         <property name="connectionFactory" ref="jmsActiveMQConnectionFactory"/>
     </bean>
     <bean id="jmsTemplate" class="org.springframework.jms.core.JmsTemplate" scope="singleton">

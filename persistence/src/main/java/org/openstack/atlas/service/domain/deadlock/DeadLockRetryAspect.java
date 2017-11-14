@@ -7,7 +7,7 @@ import org.hibernate.JDBCException;
 import org.hibernate.SessionFactory;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.openstack.atlas.service.domain.util.DeepCopy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
