@@ -628,15 +628,6 @@
             <a>trafficManagerName</a>
             <b>trafficManagerName</b>
         </field>
-        <field>
-            <a get-method="isSoapEndpointActive">soapEndpointActive</a>
-            <b get-method="isSoapEndpointActive">soapEndpointActive</b>
-        </field>
-        <field>
-            <a get-method="isRestEndpointActive">restEndpointActive</a>
-            <b get-method="isRestEndpointActive">restEndpointActive</b>
-        </field>
-
     </mapping>
 
     <mapping map-id="SIMPLE_HOST" type="one-way" wildcard="false" map-null="false">

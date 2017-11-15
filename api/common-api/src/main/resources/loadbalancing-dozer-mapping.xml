@@ -181,10 +181,6 @@
             <a>protocol</a>
             <b>protocol</b>
         </field>
-        <field>
-            <a get-method="isHalfClosed">halfClosed</a>
-            <b get-method="isHalfClosed">halfClosed</b>
-        </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ConnectionLoggingConverter">
             <a>connectionLogging</a>
             <b get-method="isConnectionLogging">connectionLogging</b>
@@ -192,10 +188,6 @@
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.ContentCachingConverter">
             <a>contentCaching</a>
             <b get-method="isContentCaching">contentCaching</b>
-        </field>
-        <field>
-            <a get-method="isHttpsRedirect">httpsRedirect</a>
-            <b get-method="isHttpsRedirect">httpsRedirect</b>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.SourceAddressesConverter">
             <a>sourceAddresses</a>

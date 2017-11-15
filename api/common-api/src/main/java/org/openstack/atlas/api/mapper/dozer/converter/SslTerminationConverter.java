@@ -68,8 +68,8 @@ public class SslTerminationConverter implements CustomConverter {
             String key = null;  // We hide this field now from the customer
             String imd = dbSslTerm.getIntermediateCertificate();
             Integer securePort = dbSslTerm.getSecurePort();
-            Boolean isEnabled = dbSslTerm.isEnabled();
-            Boolean isSecureTrafficOnly = dbSslTerm.isSecureTrafficOnly();
+            Boolean isEnabled = dbSslTerm.getEnabled();
+            Boolean isSecureTrafficOnly = dbSslTerm.getSecureTrafficOnly();
             Boolean isTls10Enabled = dbSslTerm.isTls10Enabled();
             apiSslTerm.setCertificate(crt);
             apiSslTerm.setPrivatekey(key);

@@ -110,14 +110,14 @@ public class HostServiceImpl extends BaseService implements HostService {
             dbHost.setTrafficManagerName(queueHost.getTrafficManagerName());
         }
 
-        if (queueHost.isSoapEndpointActive() != null) {
+        if (queueHost.getSoapEndpointActive() != null) {
 
-            dbHost.setSoapEndpointActive(queueHost.isSoapEndpointActive());
+            dbHost.setSoapEndpointActive(queueHost.getSoapEndpointActive());
         }
 
-        if (queueHost.isRestEndpointActive() != null) {
+        if (queueHost.getRestEndpointActive() != null) {
 
-            dbHost.setRestEndpointActive(queueHost.isRestEndpointActive());
+            dbHost.setRestEndpointActive(queueHost.getRestEndpointActive());
         }
 
         if (queueHost.getIpv4Public() != null) {

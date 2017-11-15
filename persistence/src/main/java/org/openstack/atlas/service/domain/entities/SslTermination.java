@@ -65,7 +65,7 @@ public class SslTermination extends Entity implements Serializable {
         this.certificate = certificate;
     }
 
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return enabled;
     }
 
@@ -81,7 +81,7 @@ public class SslTermination extends Entity implements Serializable {
         this.intermediateCertificate = intermediateCertificate;
     }
 
-    public boolean isSecureTrafficOnly() {
+    public boolean getSecureTrafficOnly() {
         return secureTrafficOnly;
     }
 
