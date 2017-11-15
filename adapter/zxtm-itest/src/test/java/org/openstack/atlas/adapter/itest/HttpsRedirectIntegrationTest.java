@@ -2,7 +2,6 @@ package org.openstack.atlas.adapter.itest;
 
 import com.zxtm.service.client.VirtualServerBasicInfo;
 import com.zxtm.service.client.VirtualServerRule;
-import org.apache.axis.AxisFault;
 import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -187,7 +186,7 @@ public class HttpsRedirectIntegrationTest extends ZeusTestBase {
                 Assert.assertEquals(true, vsEnabled[0]);
 
                 boolean[] vsNonSecureEnabled = getServiceStubs().getVirtualServerBinding().getSSLDecrypt(new String[]{sVs});
-                Assert.assertEquals(sslTermination.isEnabled(), vsNonSecureEnabled[0]);
+                Assert.assertEquals(sslTermination.getEnabled(), vsNonSecureEnabled[0]);
 
                 String[] vsSecureInfo = getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getRawCertificate(new String[]{sVs});
                 Assert.assertEquals(sslTermination.getCertificate(), vsSecureInfo[0]);

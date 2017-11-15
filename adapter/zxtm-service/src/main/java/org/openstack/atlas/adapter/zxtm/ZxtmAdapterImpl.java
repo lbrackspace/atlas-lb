@@ -16,7 +16,6 @@ import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
-import org.openstack.atlas.util.converters.StringConverter;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.springframework.stereotype.Component;
@@ -171,7 +170,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             serviceStubs.getPoolBinding().setPassiveMonitoring(new String[]{name}, new boolean[]{false});
         }
 
-        if (!(loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect() && loadBalancer.hasSsl())
+        if (!(loadBalancer.getHttpsRedirect() != null && loadBalancer.getHttpsRedirect() && loadBalancer.hasSsl())
                 && !Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(name)) {
             LOG.debug(String.format("Adding virtual server '%s'...", name));
             VirtualServerBasicInfo vsInfo = new VirtualServerBasicInfo(loadBalancer.getPort(), ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol()), name);
@@ -311,7 +310,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         poolName = vsName;
         String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(vsName);
 
-        boolean isRedirectServer = lb.isHttpsRedirect() != null && lb.isHttpsRedirect() == true;
+        boolean isRedirectServer = lb.getHttpsRedirect() != null && lb.getHttpsRedirect() == true;
         String vsNameAltered = isRedirectServer ? vsRedirectName : vsName;
 
         LOG.debug(String.format("Adding virtual server '%s'...", secureVsName));
@@ -381,7 +380,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 
     private void repurposeVirtualServerForHttpsRedirect(LoadBalancer lb, ZxtmServiceStubs serviceStubs)
             throws InsufficientRequestException {
-        if (lb.getSslTermination().isSecureTrafficOnly() != true) {
+        if (lb.getSslTermination().getSecureTrafficOnly() != true) {
             return;
         }
         String virtualServerName = ZxtmNameBuilder.genVSName(lb);
@@ -456,13 +455,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             deleteAccessList(config, virtualServerName);
         }
 
-        if (lb.isHalfClosed() == null) {
+        if (lb.getHalfClosed() == null) {
             lb.setHalfClosed(false);
         }
         updateHalfClosed(config, lb);
 
-        if ((lb.isHttpsRedirect() != null && !virtualServerName.equals(redirectName))
-                || (lb.isHttpsRedirect() == null && Arrays.asList(
+        if ((lb.getHttpsRedirect() != null && !virtualServerName.equals(redirectName))
+                || (lb.getHttpsRedirect() == null && Arrays.asList(
                 serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(redirectName))) {
             updateHttpsRedirect(config, lb);
         }
@@ -497,11 +496,11 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             updateAccessList(config, lb);
         }
 
-        if (lb.isHalfClosed() != null) {
+        if (lb.getHalfClosed() != null) {
             updateHalfClosed(config, lb);
         }
 
-        if (lb.isHttpsRedirect() != null && !virtualServerName.equals(ZxtmNameBuilder.genRedirectVSName(lb))) {
+        if (lb.getHttpsRedirect() != null && !virtualServerName.equals(ZxtmNameBuilder.genRedirectVSName(lb))) {
             updateHttpsRedirect(config, lb);
         }
     }
@@ -1501,15 +1500,15 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             virtualServerService.setSSLCertificate(new String[]{sslVirtualServerName}, new String[]{sslVirtualServerName});
             LOG.debug(String.format("Succesfullly attached certificate and key for load balancer: %s", loadBalancer.getId()));
 
-            LOG.info(String.format("Ssl termination virtual server will be enabled:'%s' for load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
-            enableDisableSslTermination(conf, loadBalancer, zeusSslTermination.getSslTermination().isEnabled());
-            LOG.debug(String.format("Successfully enabled:'%s' load balancer: %s ssl termination", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
+            LOG.info(String.format("Ssl termination virtual server will be enabled:'%s' for load balancer: %s", zeusSslTermination.getSslTermination().getEnabled(), loadBalancer.getId()));
+            enableDisableSslTermination(conf, loadBalancer, zeusSslTermination.getSslTermination().getEnabled());
+            LOG.debug(String.format("Successfully enabled:'%s' load balancer: %s ssl termination", zeusSslTermination.getSslTermination().getEnabled(), loadBalancer.getId()));
 
-            boolean isRedirectServer = loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect();
+            boolean isRedirectServer = loadBalancer.getHttpsRedirect() != null && loadBalancer.getHttpsRedirect();
             if (!isRedirectServer) {
-                LOG.info(String.format("Non-secure virtual server will be enabled:'%s' load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
-                suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, zeusSslTermination.getSslTermination().isSecureTrafficOnly());
-                LOG.debug(String.format("Successfully enabled:'%s' non-secure server for load balancer: %s", zeusSslTermination.getSslTermination().isEnabled(), loadBalancer.getId()));
+                LOG.info(String.format("Non-secure virtual server will be enabled:'%s' load balancer: %s", zeusSslTermination.getSslTermination().getEnabled(), loadBalancer.getId()));
+                suspendUnsuspendVirtualServer(conf, virtualServerNameNonSecure, zeusSslTermination.getSslTermination().getSecureTrafficOnly());
+                LOG.debug(String.format("Successfully enabled:'%s' non-secure server for load balancer: %s", zeusSslTermination.getSslTermination().getEnabled(), loadBalancer.getId()));
             }
         } catch (AxisFault af) {
             LOG.error("there was a error setting ssl termination in zxtm adapter for load balancer " + loadBalancer.getId());
@@ -1621,7 +1620,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             }
 
             //Returning the non-secure VS to default state if HTTPS Redirect was turned on
-            if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect() == true) {
+            if (loadBalancer.getHttpsRedirect() != null && loadBalancer.getHttpsRedirect() == true) {
                 restoreVirtualServerFromHttpsRedirect(loadBalancer, serviceStubs);
             }
 
@@ -2598,24 +2597,24 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             virtualServerName = virtualRedirectServerName;
         } else if (isRedirectServer) {
             try {
-                LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualRedirectServerName, loadBalancer.isHalfClosed()));
-                serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualRedirectServerName}, new boolean[]{loadBalancer.isHalfClosed()});
+                LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualRedirectServerName, loadBalancer.getHalfClosed()));
+                serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualRedirectServerName}, new boolean[]{loadBalancer.getHalfClosed()});
             } catch (Exception e) {
                 LOG.error("Could not update half close support for virtual server: " + virtualRedirectServerName);
                 LOG.error(String.format("Operation Failure, Full details: %s", Debug.getExtendedStackTrace(e)));
             }
         }
         try {
-            LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualServerName, loadBalancer.isHalfClosed()));
-            serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualServerName}, new boolean[]{loadBalancer.isHalfClosed()});
+            LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualServerName, loadBalancer.getHalfClosed()));
+            serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualServerName}, new boolean[]{loadBalancer.getHalfClosed()});
         } catch (Exception e) {
             LOG.error("Could not update half close support for virtual server: " + virtualServerName);
             LOG.error(String.format("Operation Failure, Full details: %s", Debug.getExtendedStackTrace(e)));
         }
         if (loadBalancer.hasSsl()) {
             try {
-                LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualSecureServerName, loadBalancer.isHalfClosed()));
-                serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualSecureServerName}, new boolean[]{loadBalancer.isHalfClosed()});
+                LOG.debug(String.format("Updating half close support for virtual server '%s': Value: '%s'...", virtualSecureServerName, loadBalancer.getHalfClosed()));
+                serviceStubs.getVirtualServerBinding().setProxyClose(new String[]{virtualSecureServerName}, new boolean[]{loadBalancer.getHalfClosed()});
             } catch (Exception e) {
                 LOG.error("Could not update half close support for virtual server: " + virtualSecureServerName);
                 LOG.error(String.format("Operation Failure, Full details: %s", Debug.getExtendedStackTrace(e)));
@@ -2629,18 +2628,18 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         String vsRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
 
         try {
-            LOG.debug(String.format("Updating HTTPS Redirect for virtual server '%s': Value: '%s'...", vsName, loadBalancer.isHttpsRedirect()));
+            LOG.debug(String.format("Updating HTTPS Redirect for virtual server '%s': Value: '%s'...", vsName, loadBalancer.getHttpsRedirect()));
             ZxtmServiceStubs serviceStubs = getServiceStubs(config);
 
             boolean redirectExists = Arrays.asList(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).contains(vsRedirectName);
 
-            if (!redirectExists && loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
+            if (!redirectExists && loadBalancer.getHttpsRedirect() != null && loadBalancer.getHttpsRedirect()) {
                 if (loadBalancer.hasSsl() == true) {
                     repurposeVirtualServerForHttpsRedirect(loadBalancer, serviceStubs);
                 } else {
                     createRedirectVirtualServer(config, loadBalancer);
                 }
-            } else if (redirectExists && loadBalancer.isHttpsRedirect() == null || !loadBalancer.isHttpsRedirect()) {
+            } else if (redirectExists && loadBalancer.getHttpsRedirect() == null || !loadBalancer.getHttpsRedirect()) {
                 if (loadBalancer.hasSsl()) {
                     restoreVirtualServerFromHttpsRedirect(loadBalancer, serviceStubs);
                 } else {
@@ -2766,7 +2765,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         boolean[] isEnabled;
 
         // boolean isSecureServer = lb.isUsingSsl();
-        // boolean isRedirectServer = lb.isHttpsRedirect();
+        // boolean isRedirectServer = lb.getHttpsRedirect();
         // Why was I doing this? >_> The above should work fine... But since I can't remember, I'll stick with the old inefficient way.
         boolean isSecureServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualSecureServerName);
         boolean isRedirectServer = arrayElementSearch(serviceStubs.getVirtualServerBinding().getVirtualServerNames(), virtualRedirectServerName);
@@ -2835,7 +2834,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             vsNames[0] = virtualServerName;
             vsNames[1] = virtualSecureServerName;
             isEnabled = new boolean[]{true, true};
-            if (lb.isUsingSsl() && lb.getSslTermination().isSecureTrafficOnly()) {
+            if (lb.isUsingSsl() && lb.getSslTermination().getSecureTrafficOnly()) {
                 isEnabled[0] = false;
             }
         } else if (isRedirectServer) {
@@ -2980,7 +2979,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
 //        ZxtmServiceStubs serviceStubs = getServiceStubs(config);
         Stats stats = new Stats();
         String virtualServerName;
-        if (loadBalancer.isSecureOnly() && loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
+        if (loadBalancer.isSecureOnly() && loadBalancer.getHttpsRedirect() != null && loadBalancer.getHttpsRedirect()) {
             virtualServerName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
         } else {
             virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
@@ -3001,7 +3000,7 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         int[] maxConnectionsSsl = new int[1];
         int[] currentConnectionsSsl = new int[1];
 
-        if (!loadBalancer.isSecureOnly() && (loadBalancer.isHttpsRedirect() == null || !loadBalancer.isHttpsRedirect())) {
+        if (!loadBalancer.isSecureOnly() && (loadBalancer.getHttpsRedirect() == null || !loadBalancer.getHttpsRedirect())) {
             for (ZxtmServiceStubs serviceStubs : allStubs) {
                 connectionTimedOut[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName})[0];
                 connectionError[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName})[0];

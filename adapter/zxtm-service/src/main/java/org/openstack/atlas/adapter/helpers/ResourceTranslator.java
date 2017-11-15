@@ -9,7 +9,6 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
-import org.openstack.atlas.util.ip.IPUtils;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
@@ -71,7 +70,7 @@ public class ResourceTranslator {
 
         translatePoolResource(vsName, loadBalancer, queLb);
         translateVirtualServerResource(config, vsName, loadBalancer);
-        if (loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) {
+        if (loadBalancer.getHttpsRedirect() != null && loadBalancer.getHttpsRedirect()) {
             translateRedirectVirtualServerResource(config, vsName, loadBalancer);
         }
     }
@@ -223,7 +222,7 @@ public class ResourceTranslator {
         basic.setRequest_rules(rules);
 
         //Half closed proxy settings
-        tcp.setProxy_close(loadBalancer.isHalfClosed());
+        tcp.setProxy_close(loadBalancer.getHalfClosed());
         properties.setTcp(tcp);
 
         //trafficIpGroup settings

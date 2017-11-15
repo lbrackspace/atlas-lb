@@ -23,7 +23,7 @@ public class StmAdapterUtils {
         Map<VSType, String> vsNamesMap = new HashMap<VSType, String>();
 
         boolean isSecureServer = loadBalancer.isUsingSsl();
-        boolean isRedirectServer = loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect();
+        boolean isRedirectServer = loadBalancer.getHttpsRedirect() != null && loadBalancer.getHttpsRedirect();
 
         if (isSecureServer && isRedirectServer) {
             vsNames = new String[2];

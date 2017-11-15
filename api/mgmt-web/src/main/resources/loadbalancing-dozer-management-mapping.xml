@@ -68,8 +68,8 @@
             <b>connectionLogging</b>
         </field>
         <field>
-            <a get-method="isSticky">sticky</a>
-            <b get-method="isSticky">isSticky</b>
+            <a get-method="getSticky">sticky</a>
+            <b get-method="getIsSticky">isSticky</b>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
             <a>created</a>
@@ -195,7 +195,7 @@
         </field>
         <field>
             <a set-method="setDefault" get-method="getDefault">isDefault</a>
-            <b set-method="setIsDefault" get-method="isIsDefault">isDefault</b>
+            <b set-method="setIsDefault" get-method="getIsDefault">isDefault</b>
         </field>
     </mapping>
 
@@ -628,15 +628,6 @@
             <a>trafficManagerName</a>
             <b>trafficManagerName</b>
         </field>
-        <field>
-            <a get-method="isSoapEndpointActive">soapEndpointActive</a>
-            <b get-method="isSoapEndpointActive">soapEndpointActive</b>
-        </field>
-        <field>
-            <a get-method="isRestEndpointActive">restEndpointActive</a>
-            <b get-method="isRestEndpointActive">restEndpointActive</b>
-        </field>
-
     </mapping>
 
     <mapping map-id="SIMPLE_HOST" type="one-way" wildcard="false" map-null="false">

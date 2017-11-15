@@ -18,13 +18,13 @@ public class SslTerminationUsage {
                                              Map<Integer, SnmpUsage> firstPass, Map<Integer, SnmpUsage> secondPass){
         List<SnmpUsage> retUsages;
 
-        if (fromSslTerm.isEnabled()){
+        if (fromSslTerm.getEnabled()){
             LOG.debug(String.format("SSL Termination was previoiusly enabled for load balancer: %s", loadbalancerId));
-            if (fromSslTerm.isSecureTrafficOnly()) {
+            if (fromSslTerm.getSecureTrafficOnly()) {
                 LOG.debug(String.format("Secure Traffic only was previously enabled for load balancer: %s", loadbalancerId));
-                if (toSslTerm.isEnabled()) {
+                if (toSslTerm.getEnabled()) {
                     LOG.debug(String.format("SSL Termination is now enabled for load balancer: %s", loadbalancerId));
-                    if (toSslTerm.isSecureTrafficOnly()) {
+                    if (toSslTerm.getSecureTrafficOnly()) {
                         //FROM SSL ONLY TO SSL ONLY
                         LOG.debug(String.format("Secure Traffic Only is now enabled for load balancer: %s", loadbalancerId));
                         retUsages = getUsagesToInsertByStates(UsageEvent.SSL_ONLY_ON, UsageEvent.SSL_ONLY_ON, firstPass, secondPass);
@@ -40,9 +40,9 @@ public class SslTerminationUsage {
                 }
             } else {
                 LOG.debug(String.format("Secure Traffic only was previously NOT enabled for load balancer: %s", loadbalancerId));
-                if (toSslTerm.isEnabled()) {
+                if (toSslTerm.getEnabled()) {
                     LOG.debug(String.format("SSL Termination is now enabled for load balancer: %s", loadbalancerId));
-                    if (toSslTerm.isSecureTrafficOnly()) {
+                    if (toSslTerm.getSecureTrafficOnly()) {
                         //FROM SSL MIXED TO SSL ONLY
                         LOG.debug(String.format("Secure Traffic Only is now enabled for load balancer: %s", loadbalancerId));
                         retUsages = getUsagesToInsertByStates(UsageEvent.SSL_MIXED_ON, UsageEvent.SSL_ONLY_ON, firstPass, secondPass);
@@ -59,9 +59,9 @@ public class SslTerminationUsage {
             }
         } else {
             LOG.debug(String.format("SSL Termination was previoiusly NOT enabled for load balancer: %s", loadbalancerId));
-            if (toSslTerm.isEnabled()) {
+            if (toSslTerm.getEnabled()) {
                     LOG.debug(String.format("SSL Termination is now enabled for load balancer: %s", loadbalancerId));
-                    if (toSslTerm.isSecureTrafficOnly()) {
+                    if (toSslTerm.getSecureTrafficOnly()) {
                         //FROM SSL OFF TO SSL ONLY
                         LOG.debug(String.format("Secure Traffic Only is now enabled for load balancer: %s", loadbalancerId));
                         retUsages = getUsagesToInsertByStates(UsageEvent.SSL_OFF, UsageEvent.SSL_ONLY_ON, firstPass, secondPass);

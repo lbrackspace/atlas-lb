@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.repository.*;
@@ -15,7 +14,6 @@ import org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.HostServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.LoadBalancerStatusHistoryServiceImpl;
-import org.powermock.core.classloader.annotations.PrepareForTest;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -137,7 +135,7 @@ public class LoadBalancerServiceImplTest {
             Assert.assertEquals(defaultProtocol.getPort(), lb.getPort());
             Assert.assertEquals(SessionPersistence.NONE, lb.getSessionPersistence());
             Assert.assertEquals(LoadBalancerStatus.BUILD, lb.getStatus());
-            Assert.assertEquals(false, lb.isHalfClosed());
+            Assert.assertEquals(false, lb.getHalfClosed());
         }
 
         @Test
@@ -350,7 +348,7 @@ public class LoadBalancerServiceImplTest {
             List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
             LoadBalancer loadBalancer = new LoadBalancer();
             loadBalancer.setId(3333);
-            lb.setSticky(true);
+            lb.setIsSticky(true);
             lbs.add(loadBalancer);
 
             List<LoadBalancer> newLbs;

@@ -260,7 +260,7 @@ public class LoadBalancer extends Entity implements Serializable {
         this.contentCaching = contentCaching;
     }
 
-    public Boolean isHttpsRedirect() {
+    public Boolean getHttpsRedirect() {
         return httpsRedirect;
     }
 
@@ -332,7 +332,7 @@ public class LoadBalancer extends Entity implements Serializable {
         this.protocol = protocol;
     }
 
-    public Boolean isHalfClosed() {
+    public Boolean getHalfClosed() {
         return halfClosed;
     }
 
@@ -388,11 +388,11 @@ public class LoadBalancer extends Entity implements Serializable {
         loadbalancerMetadata.add(loadbalancerMeta);
     }
 
-    public boolean isSticky() {
+    public boolean getIsSticky() {
         return isSticky;
     }
 
-    public void setSticky(boolean sticky) {
+    public void setIsSticky(boolean sticky) {
         isSticky = sticky;
     }
 
@@ -405,7 +405,7 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public boolean isUsingSsl() {
-        return (sslTermination != null && sslTermination.isEnabled());
+        return (sslTermination != null && sslTermination.getEnabled());
     }
 
     public boolean hasSsl() {
@@ -413,7 +413,7 @@ public class LoadBalancer extends Entity implements Serializable {
     }
 
     public boolean isSecureOnly() {
-        return (sslTermination != null && sslTermination.isSecureTrafficOnly());
+        return (sslTermination != null && sslTermination.getSecureTrafficOnly());
     }
 
     public Set<LoadBalancerJoinVip6> getLoadBalancerJoinVip6Set() {

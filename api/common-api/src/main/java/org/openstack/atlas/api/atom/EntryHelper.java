@@ -35,8 +35,8 @@ public final class EntryHelper {
         atomSummary.append("SslTermination successfully created with ");
 //        atomSummary.append("key: '").append(ssl.getPrivatekey()).append("', ");
 //        atomSummary.append("cert: '").append(ssl.getCertificate()).append("', ");
-        atomSummary.append("isEnabled: '").append(ssl.isEnabled()).append("'");
-        atomSummary.append("isSecureTrafficOnly: '").append(ssl.isSecureTrafficOnly()).append("'");
+        atomSummary.append("getEnabled: '").append(ssl.getEnabled()).append("'");
+        atomSummary.append("isSecureTrafficOnly: '").append(ssl.getSecureTrafficOnly()).append("'");
         atomSummary.append("securePort: '").append(ssl.getSecurePort()).append("'");
         return atomSummary.toString();
     }

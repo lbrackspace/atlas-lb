@@ -8,7 +8,6 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.pojos.SslDetails;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
-import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -94,7 +93,7 @@ public final class SslTerminationHelper {
 
 
         if (apiSslTermination.getSecureTrafficOnly() != null) {
-            if ((apiSslTermination.getEnabled() != null && !apiSslTermination.getEnabled()) || (!dbTermination.isEnabled()) && (apiSslTermination.getSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
+            if ((apiSslTermination.getEnabled() != null && !apiSslTermination.getEnabled()) || (!dbTermination.getEnabled()) && (apiSslTermination.getSecureTrafficOnly() || dbTermination.getSecureTrafficOnly())) {
                 dbTermination.setSecureTrafficOnly(false);
             } else {
                 dbTermination.setSecureTrafficOnly(apiSslTermination.getSecureTrafficOnly());

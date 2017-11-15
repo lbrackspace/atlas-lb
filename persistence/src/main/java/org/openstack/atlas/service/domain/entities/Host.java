@@ -142,7 +142,7 @@ public class Host extends Entity implements Serializable {
         this.endpoint = endpoint;
     }
 
-    public Boolean isSoapEndpointActive() {
+    public Boolean getSoapEndpointActive() {
         return soapEndpointActive;
     }
 
@@ -158,7 +158,7 @@ public class Host extends Entity implements Serializable {
         this.restEndpoint = restEndpoint;
     }
 
-    public Boolean isRestEndpointActive() {
+    public Boolean getRestEndpointActive() {
         return restEndpointActive;
     }
 
@@ -186,7 +186,7 @@ public class Host extends Entity implements Serializable {
         sb.append(String.format("trafficManagerName = \"%s\", ", vorn(this.getTrafficManagerName())));
         sb.append(String.format("coreid= %s,", vorn(this.getCoreDeviceId())));
         sb.append(String.format("endpoint=\"%s\",", vorn(this.getEndpoint())));
-        sb.append(String.format("endpointActive=\"%s\"", vorn(this.isSoapEndpointActive())));
+        sb.append(String.format("endpointActive=\"%s\"", vorn(this.getSoapEndpointActive())));
         sb.append("}");
 
         return sb.toString();

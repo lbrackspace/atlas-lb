@@ -16,7 +16,7 @@ public class ConnectionLoggingValidator implements ResourceValidator<ConnectionL
             {
 
                 result(validationTarget().getEnabled()).must().exist().withMessage("Must specify whether connection logging is enabled or not.");
-//                result(validationTarget().isEnabled()).must().adhereTo(new Verifier() {
+//                result(validationTarget().getEnabled()).must().adhereTo(new Verifier() {
 //                    @Override
 //                    public VerifierResult verify(Object obj) {
 //                        if (obj instanceof Boolean){

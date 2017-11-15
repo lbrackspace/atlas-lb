@@ -215,7 +215,7 @@ public class StmAdapterImplTestHelper {
         termination.setLoadbalancer(loadBalancer);
         loadBalancer.setSslTermination(termination);
         loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
-        loadBalancer.setSticky(inactive);
+        loadBalancer.setIsSticky(inactive);
         Suspension suspension = new Suspension();
         suspension.setUserName(username);
         suspension.setId(id);

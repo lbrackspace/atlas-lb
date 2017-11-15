@@ -78,7 +78,7 @@ public class UpdateLoadBalancerListenerTest extends STMTestBase {
         if (lb.getProtocol() != null) atomSummary.append("protocol: '").append(lb.getProtocol().name()).append("', ");
         if (lb.getPort() != null) atomSummary.append("port: '").append(lb.getPort()).append("', ");
         if (lb.getTimeout() != null) atomSummary.append("timeout: '").append(lb.getTimeout()).append("', ");
-        if (lb.isHalfClosed() != null) atomSummary.append("half-close: '").append(lb.isHalfClosed()).append("', ");
+        if (lb.getHalfClosed() != null) atomSummary.append("half-close: '").append(lb.getHalfClosed()).append("', ");
         if (lb.getName() != null) updateStrList.add(String.format("%s: '%s'", "name", lb.getName()));
         atomSummary.append(StringConverter.commaSeperatedStringList(updateStrList));
         return atomSummary.toString();

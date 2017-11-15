@@ -93,8 +93,8 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getZeusSslTermination()).thenReturn(queTermination);
-        when(sslTermination.isEnabled()).thenReturn(true);
-        when(sslTermination.isSecureTrafficOnly()).thenReturn(true);
+        when(sslTermination.getEnabled()).thenReturn(true);
+        when(sslTermination.getSecureTrafficOnly()).thenReturn(true);
         when(sslTermination.getSecurePort()).thenReturn(80);
         when(sslTermination.getId()).thenReturn(SSL_TERMINATION_ID);
         when(queTermination.getSslTermination()).thenReturn(sslTermination);
@@ -124,8 +124,8 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getZeusSslTermination()).thenReturn(queTermination);
-        when(sslTermination.isEnabled()).thenReturn(true);
-        when(sslTermination.isSecureTrafficOnly()).thenReturn(false);
+        when(sslTermination.getEnabled()).thenReturn(true);
+        when(sslTermination.getSecureTrafficOnly()).thenReturn(false);
         when(sslTermination.getSecurePort()).thenReturn(80);
         when(sslTermination.getId()).thenReturn(SSL_TERMINATION_ID);
         when(queTermination.getSslTermination()).thenReturn(sslTermination);
@@ -152,7 +152,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getZeusSslTermination()).thenReturn(queTermination);
-        when(sslTermination.isEnabled()).thenReturn(false);
+        when(sslTermination.getEnabled()).thenReturn(false);
         when(sslTermination.getSecurePort()).thenReturn(80);
         when(sslTermination.getId()).thenReturn(SSL_TERMINATION_ID);
         when(queTermination.getSslTermination()).thenReturn(sslTermination);
@@ -195,8 +195,8 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getZeusSslTermination()).thenReturn(queTermination);
-        when(sslTermination.isEnabled()).thenReturn(true);
-        when(sslTermination.isSecureTrafficOnly()).thenReturn(true);
+        when(sslTermination.getEnabled()).thenReturn(true);
+        when(sslTermination.getSecureTrafficOnly()).thenReturn(true);
         when(sslTermination.getSecurePort()).thenReturn(80);
         when(sslTermination.getId()).thenReturn(SSL_TERMINATION_ID);
         when(queTermination.getSslTermination()).thenReturn(sslTermination);

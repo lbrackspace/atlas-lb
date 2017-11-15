@@ -47,7 +47,7 @@ public class HostServiceImpl extends BaseService implements HostService {
     @Transactional
     public void updateLoadBalancerSticky(LoadBalancer lb) throws EntityNotFoundException {
         LoadBalancer dbLb = loadBalancerRepository.getById(lb.getId());
-        dbLb.setSticky(true);
+        dbLb.setIsSticky(true);
         loadBalancerRepository.update(dbLb);
     }
 
@@ -110,14 +110,14 @@ public class HostServiceImpl extends BaseService implements HostService {
             dbHost.setTrafficManagerName(queueHost.getTrafficManagerName());
         }
 
-        if (queueHost.isSoapEndpointActive() != null) {
+        if (queueHost.getSoapEndpointActive() != null) {
 
-            dbHost.setSoapEndpointActive(queueHost.isSoapEndpointActive());
+            dbHost.setSoapEndpointActive(queueHost.getSoapEndpointActive());
         }
 
-        if (queueHost.isRestEndpointActive() != null) {
+        if (queueHost.getRestEndpointActive() != null) {
 
-            dbHost.setRestEndpointActive(queueHost.isRestEndpointActive());
+            dbHost.setRestEndpointActive(queueHost.getRestEndpointActive());
         }
 
         if (queueHost.getIpv4Public() != null) {
@@ -147,7 +147,7 @@ public class HostServiceImpl extends BaseService implements HostService {
     @Transactional
     public void deleteLoadBalancerSticky(LoadBalancer lb) throws EntityNotFoundException {
         LoadBalancer dbLb = loadBalancerRepository.getById(lb.getId());
-        dbLb.setSticky(false);
+        dbLb.setIsSticky(false);
         loadBalancerRepository.update(dbLb);
     }
 

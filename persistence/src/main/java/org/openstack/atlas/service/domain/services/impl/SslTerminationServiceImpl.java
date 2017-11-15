@@ -76,7 +76,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             }
         }
 
-        if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
+        if (dbLoadBalancer.getHttpsRedirect() != null && dbLoadBalancer.getHttpsRedirect()) {
             //Must be secure-only
             if (sslTermination.getSecureTrafficOnly() != null && !sslTermination.getSecureTrafficOnly()) {
                 throw new BadRequestException("Cannot use 'mixed-mode' SSL termination while HTTPS Redirect is enabled.");
@@ -163,7 +163,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     public void pseudoDeleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancerId, accountId);
 
-        if (dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect()) {
+        if (dbLoadBalancer.getHttpsRedirect() != null && dbLoadBalancer.getHttpsRedirect()) {
             //Must not have HTTPS Redirect Enabled
             throw new BadRequestException("Cannot delete SSL Termination while HTTPS Redirect is enabled. Please disable HTTPS Redirect and retry the operation.");
         }
