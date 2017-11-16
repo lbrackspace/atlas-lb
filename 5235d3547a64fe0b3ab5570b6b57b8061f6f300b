@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a51632b5_42386254",
+        "filename": "itest/snmp-test/pom.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2017-11-16T17:51:12Z",
+      "side": 1,
+      "message": "I think we should do a \u0027clean up\u0027 sprint along with a whole \u0027fix all tests\u0027 sprint.. but point here is we should stop using versions unless absolutely required that arent defined in a parent. Will make changes easier, clean up our structure and ensure less failures in the future.",
+      "revId": "5235d3547a64fe0b3ab5570b6b57b8061f6f300b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
