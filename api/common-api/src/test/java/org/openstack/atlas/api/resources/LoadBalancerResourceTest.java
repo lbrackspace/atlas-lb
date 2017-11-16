@@ -8,6 +8,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
@@ -41,8 +42,8 @@ public class LoadBalancerResourceTest {
             AccessListResource accessListResource = mock(AccessListResource.class);
             loadBalancerResource.setAccessListResource(accessListResource);
             loadBalancerResource.retrieveAccessListResource();
-            verify(accessListResource).setAccountId(anyInt());
-            verify(accessListResource).setLoadBalancerId(anyInt());
+            verify(accessListResource).setAccountId(ArgumentMatchers.<Integer>any());
+            verify(accessListResource).setLoadBalancerId(ArgumentMatchers.<Integer>any());
         }
 
         @Test
@@ -50,8 +51,8 @@ public class LoadBalancerResourceTest {
             HealthMonitorResource healthMonitorResource = mock(HealthMonitorResource.class);
             loadBalancerResource.setHealthMonitorResource(healthMonitorResource);
             loadBalancerResource.retrieveHealthMonitorResource();
-            verify(healthMonitorResource).setAccountId(anyInt());
-            verify(healthMonitorResource).setLoadBalancerId(anyInt());
+            verify(healthMonitorResource).setAccountId(ArgumentMatchers.<Integer>any());
+            verify(healthMonitorResource).setLoadBalancerId(ArgumentMatchers.<Integer>any());
         }
 
         @Test
@@ -59,8 +60,8 @@ public class LoadBalancerResourceTest {
             NodesResource nodesResource = mock(NodesResource.class);
             loadBalancerResource.setNodesResource(nodesResource);
             loadBalancerResource.retrieveNodesResource();
-            verify(nodesResource).setAccountId(anyInt());
-            verify(nodesResource).setLoadBalancerId(anyInt());
+            verify(nodesResource).setAccountId(ArgumentMatchers.<Integer>any());
+            verify(nodesResource).setLoadBalancerId(ArgumentMatchers.<Integer>any());
         }
 
         @Test
@@ -68,8 +69,8 @@ public class LoadBalancerResourceTest {
             SessionPersistenceResource persistenceResource = mock(SessionPersistenceResource.class);
             loadBalancerResource.setSessionPersistenceResource(persistenceResource);
             loadBalancerResource.retrieveSessionPersistenceResource();
-            verify(persistenceResource).setAccountId(anyInt());
-            verify(persistenceResource).setLoadBalancerId(anyInt());
+            verify(persistenceResource).setAccountId(ArgumentMatchers.<Integer>any());
+            verify(persistenceResource).setLoadBalancerId(ArgumentMatchers.<Integer>any());
         }
 
         @Test
@@ -77,8 +78,8 @@ public class LoadBalancerResourceTest {
             ConnectionThrottleResource throttleResource = mock(ConnectionThrottleResource.class);
             loadBalancerResource.setConnectionThrottleResource(throttleResource);
             loadBalancerResource.retrieveConnectionThrottleResource();
-            verify(throttleResource).setAccountId(anyInt());
-            verify(throttleResource).setLoadBalancerId(anyInt());
+            verify(throttleResource).setAccountId(ArgumentMatchers.<Integer>any());
+            verify(throttleResource).setLoadBalancerId(ArgumentMatchers.<Integer>any());
         }
 
         @Test
@@ -86,8 +87,8 @@ public class LoadBalancerResourceTest {
             VirtualIpsResource virtualIpsResource = mock(VirtualIpsResource.class);
             loadBalancerResource.setVirtualIpsResource(virtualIpsResource);
             loadBalancerResource.retrieveVirtualIpsResource();
-            verify(virtualIpsResource).setAccountId(anyInt());
-            verify(virtualIpsResource).setLoadBalancerId(anyInt());
+            verify(virtualIpsResource).setAccountId(ArgumentMatchers.<Integer>any());
+            verify(virtualIpsResource).setLoadBalancerId(ArgumentMatchers.<Integer>any());
         }
     }
 
@@ -112,7 +113,7 @@ public class LoadBalancerResourceTest {
 
         @Test
         public void shouldReturnA202OnSuccess() throws Exception {
-            when(loadBalancerService.get(anyInt())).thenReturn(null);
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
             doNothing().when(loadBalancerService).prepareForDelete(Matchers.<LoadBalancer>any());
             doNothing().when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.DELETE_LOADBALANCER), Matchers.<LoadBalancer>any());
             response = loadBalancerResource.deleteLoadBalancer();
@@ -121,7 +122,7 @@ public class LoadBalancerResourceTest {
 
         @Test
         public void shouldReturnA404WhenEntityNotFoundIsThrown() throws Exception {
-            when(loadBalancerService.get(anyInt())).thenReturn(null);
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
             doThrow(new EntityNotFoundException("Exception")).when(loadBalancerService).prepareForDelete(Matchers.<LoadBalancer>any());
             response = loadBalancerResource.deleteLoadBalancer();
             Assert.assertEquals(404, response.getStatus());
@@ -129,7 +130,7 @@ public class LoadBalancerResourceTest {
 
         @Test
         public void shouldReturnA500WhenDeletionFails() throws Exception {
-            when(loadBalancerService.get(anyInt())).thenReturn(null);
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
             doThrow(new Exception("Exception")).when(loadBalancerService).prepareForDelete(Matchers.<LoadBalancer>any());
             response = loadBalancerResource.deleteLoadBalancer();
             Assert.assertEquals(500, response.getStatus());
@@ -137,7 +138,7 @@ public class LoadBalancerResourceTest {
 
         @Test
         public void shouldReturn500OnJmsException() throws Exception {
-            when(loadBalancerService.get(anyInt())).thenReturn(null);
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
             doNothing().when(loadBalancerService).prepareForDelete(Matchers.<LoadBalancer>any());
             doThrow(new JMSException("Exception")).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.DELETE_LOADBALANCER), Matchers.<LoadBalancer>any());
             response = loadBalancerResource.deleteLoadBalancer();
@@ -194,7 +195,7 @@ public class LoadBalancerResourceTest {
             doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
 
 
-            when(loadBalancerService.get(anyInt(), anyInt())).thenReturn(null);
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(null);
             doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.any(LoadBalancer.class));
             response = loadBalancerResource.retrieveLoadBalancerStats();
             Assert.assertEquals(200, response.getStatus());
@@ -205,7 +206,7 @@ public class LoadBalancerResourceTest {
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
             doReturn("false").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
 
-            when(loadBalancerService.get(anyInt())).thenReturn(null);
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
             doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.any(LoadBalancer.class));
             response = loadBalancerResource.retrieveLoadBalancerStats();
             Assert.assertEquals(400, response.getStatus());

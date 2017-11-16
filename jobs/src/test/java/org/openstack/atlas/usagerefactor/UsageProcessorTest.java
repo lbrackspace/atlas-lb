@@ -32,8 +32,8 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
-import static org.mockito.Matchers.anyMap;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -128,13 +128,7 @@ public class UsageProcessorTest {
         }
 
         private Calendar anyCalendar(){
-            ArgumentMatcher<Calendar> t = new ArgumentMatcher<Calendar>(){
-
-                @Override
-                public boolean matches(Object o) {
-                    return o instanceof Calendar;
-                }
-            };
+            ArgumentMatcher<Calendar> t = o -> o instanceof Calendar;
             return argThat(t);
         }
 

@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources;
 
+import org.mockito.*;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
@@ -11,8 +12,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.openstack.atlas.service.domain.services.AccessListService;
 
+import javax.jms.JMSException;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,20 +22,23 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
-@Ignore
 public class NetworkItemResourceTest {
 
     public static class WhenDeletingAccessListItem {
-        private AsyncService esbService;
-        private NetworkItemResource networkItemResource;
-        private OperationResponse operationResponse;
+        @Mock
+        AsyncService asyncService;
+        @Mock
+        AccessListService accessListService;
+
+        @InjectMocks
+        NetworkItemResource networkItemResource;
 
         @Before
         public void setUp() {
-            esbService = mock(AsyncService.class);
+            MockitoAnnotations.initMocks(this);
             networkItemResource = new NetworkItemResource();
-            networkItemResource.setAsyncService(esbService);
-            operationResponse = new OperationResponse();
+            networkItemResource.setAsyncService(asyncService);
+            networkItemResource.setAccessListService(accessListService);
             List<String> mappingFiles = new ArrayList<String>();
             mappingFiles.add("loadbalancing-dozer-mapping.xml");
             networkItemResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
@@ -41,27 +46,15 @@ public class NetworkItemResourceTest {
 
         @Test
         public void shouldProduceAcceptResponseWhenEsbResponseIsNormal() throws Exception {
-            operationResponse.setExecutedOkay(true);           
             Response response = networkItemResource.deleteNetworkItem();
             Assert.assertEquals(202, response.getStatus());
         }
 
-        @Test
-        public void shouldProduceInternalServerErrorWhenEsbResponseHasError() throws Exception {
-            operationResponse.setExecutedOkay(false);            
-            Response response = networkItemResource.deleteNetworkItem();
-            Assert.assertEquals(500, response.getStatus());
-        }
 
         @Test
-        public void shouldProduceInternalServerErrorWhenEsbResponseIsNull() throws Exception {            
-            Response response = networkItemResource.deleteNetworkItem();
-            Assert.assertEquals(500, response.getStatus());
-        }
-
-        @Test
-        public void shouldProduceInternalServerErrorWhenEsbServiceThrowsRuntimeException() throws Exception {
-            doThrow(new Exception()).when(esbService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.DELETE_ACCESS_LIST_ITEM), Matchers.<LoadBalancer>any());
+        public void shouldProduceInternalServerErrorWhenAsyncServiceThrowsRuntimeException() throws Exception {
+            doThrow(new JMSException("fail")).when(asyncService).callAsyncLoadBalancingOperation(
+                    ArgumentMatchers.eq(Operation.APPEND_TO_ACCESS_LIST), ArgumentMatchers.<LoadBalancer>any());
             Response response = networkItemResource.deleteNetworkItem();
             Assert.assertEquals(500, response.getStatus());
         }
