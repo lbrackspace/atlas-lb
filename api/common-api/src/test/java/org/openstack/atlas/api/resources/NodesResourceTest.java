@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.resources;
 
 import org.junit.Ignore;
+import org.mockito.ArgumentMatchers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
@@ -220,8 +221,8 @@ public class NodesResourceTest {
             this.nodesResource.setNodeResource(nodeResource);
             this.nodesResource.retrieveNodeResource(anyInt());
             verify(nodeResource).setId(anyInt());
-            verify(nodeResource).setAccountId(anyInt());
-            verify(nodeResource).setLoadBalancerId(anyInt());
+            verify(nodeResource).setAccountId(ArgumentMatchers.<Integer>any());
+            verify(nodeResource).setLoadBalancerId(ArgumentMatchers.<Integer>any());
         }
     }
 }

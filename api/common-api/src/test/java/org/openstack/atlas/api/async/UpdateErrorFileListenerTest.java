@@ -4,6 +4,7 @@ import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -166,7 +167,9 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
 
         updateErrorFileListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(anyInt(), anyInt(), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(ArgumentMatchers.<Integer>any(),
+                ArgumentMatchers.<Integer>any(), eq(exception),
+                eq(AlertType.ZEUS_FAILURE.name()), ArgumentMatchers.<String>any());
         verify(reverseProxyLoadBalancerStmService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
     }
 

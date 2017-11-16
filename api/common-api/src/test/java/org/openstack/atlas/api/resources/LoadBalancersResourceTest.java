@@ -5,7 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.*;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
@@ -100,20 +100,26 @@ public class LoadBalancersResourceTest {
 
     public static class WhenRetrievingResources {
 
+        @Mock
+        LoadBalancerResource loadBalancerResource;
+        Integer lbId;
+
+        @InjectMocks
         private LoadBalancersResource loadBalancersResource;
 
         @Before
         public void setUp() {
+            MockitoAnnotations.initMocks(this);
+            lbId = 42;
             loadBalancersResource = new LoadBalancersResource();
+            loadBalancersResource.setLoadBalancerResource(loadBalancerResource);
         }
 
         @Test
         public void shouldSetAccountIdAndLbIdForLoadBalancerResource() {
-            LoadBalancerResource mockedLoadBalancerResource = mock(LoadBalancerResource.class);
-            loadBalancersResource.setLoadBalancerResource(mockedLoadBalancerResource);
-            loadBalancersResource.retrieveLoadBalancerResource(anyInt());
-            verify(mockedLoadBalancerResource).setId(anyInt());
-            verify(mockedLoadBalancerResource).setAccountId(anyInt());
+            loadBalancersResource.retrieveLoadBalancerResource(lbId);
+            verify(loadBalancerResource).setId(lbId);
+            verify(loadBalancerResource).setAccountId(ArgumentMatchers.<Integer>any());
         }
     }
 }
