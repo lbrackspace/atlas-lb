@@ -1,14 +1,12 @@
 package org.openstack.atlas.api.helpers.JsonSerializer;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.JsonSerializer;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.introspect.BasicBeanDescription;
-import org.codehaus.jackson.map.ser.CustomSerializerFactory;
-import org.codehaus.jackson.map.type.TypeFactory;
-import org.codehaus.jackson.type.JavaType;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionToolsException;
 
@@ -58,22 +56,22 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         } catch (ClassReflectionToolsException ex) {
             String format = "Error Failed to dynamically invoke %s.%s() during serialization of %s";
             String errMsg = String.format(format, valClassName, getterName, value.toString());
-            throw new org.codehaus.jackson.JsonGenerationException(errMsg, ex);
+            throw new JsonGenerationException(errMsg, ex);
         }
 
-        CustomSerializerFactory csf = new CustomSerializerFactory();
-        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
+//        CustomSerializerFactory casf = new CustomSerializerFactory();
+//        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
 
         if (this.wrapperFieldName != null) {
             jgen.writeStartObject();
             jgen.writeFieldName(this.wrapperFieldName);
-            writeJsonArray(jgen, propList, true);
+            writeJsonArray(jgen, propList, true, sp);
         } else {
-            writeJsonArray(jgen, propList, false);
+            writeJsonArray(jgen, propList, false, sp);
         }
 
         if (hasLinks) {
-            writeLinks(value, jgen, valClassName);
+            writeLinks(value, jgen, valClassName, sp);
         }
 
         if (wrapperFieldName != null) {
@@ -81,7 +79,7 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         }
     }
 
-    private void writeLinks(Object value, JsonGenerator jgen, String valClassName) throws IOException {
+    private void writeLinks(Object value, JsonGenerator jgen, String valClassName, SerializerProvider sp) throws IOException {
         List propList;
         String format;
         String errMsg;
@@ -92,17 +90,17 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         } catch (ClassReflectionToolsException ex) {
             format = "Error Failed to dynamically invoke %s.%s() during serialization of %s";
             errMsg = String.format(format, valClassName, linksGetMethod, value.toString());
-            throw new org.codehaus.jackson.JsonGenerationException(errMsg, ex);
+            throw new JsonGenerationException(errMsg, ex);
         }
 
-        writeJsonArrayWithFieldName(jgen, propList, false, "links");
+        writeJsonArrayWithFieldName(jgen, propList, false, "links", sp);
     }
 
-    private void writeJsonArray(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty) throws IOException {
+    private void writeJsonArray(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty, SerializerProvider sp) throws IOException {
         if (propList != null && !propList.isEmpty()) {
             jgen.writeStartArray();
             for (Object childObj : propList) {
-                childSerialize(childObj, jgen);
+                childSerialize(childObj, jgen, sp);
             }
             jgen.writeEndArray();
         } else if (writeWhenNullOrEmpty) {
@@ -111,22 +109,26 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         }
     }
 
-    private void writeJsonArrayWithFieldName(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty, String fieldName) throws IOException {
+    private void writeJsonArrayWithFieldName(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty, String fieldName, SerializerProvider sp) throws IOException {
         if (writeWhenNullOrEmpty || !propList.isEmpty()) jgen.writeFieldName(fieldName);
-        writeJsonArray(jgen, propList, writeWhenNullOrEmpty);
+        writeJsonArray(jgen, propList, writeWhenNullOrEmpty, sp);
     }
 
     // Cause I kept getting confused when this was done in the serializer method directly
-    private void childSerialize(Object obj, JsonGenerator jgen) throws JsonProcessingException, IOException {
+    private void childSerialize(Object obj, JsonGenerator jgen, SerializerProvider sp) throws JsonProcessingException, IOException {
         SerializerProviderBuilder providerBuilder = new SerializerProviderBuilder();
         //BeanSerializerFactory csf = BeanSerializerFactory.instance;
-        CustomSerializerFactory csf = new CustomSerializerFactory();
-        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
+//        CustomSerializerFactory csf = new CustomSerializerFactory();
+//        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
         SerializerProvider childProvider;
-        JavaType childType = TypeFactory.type(obj.getClass());
-        BasicBeanDescription childBeanDesc = this.config.introspect(childType);
-        JsonSerializer<Object> childSerializer = csf.findBeanSerializer(childType, config, childBeanDesc);
-        childProvider = providerBuilder.createProvider(config, csf);
-        childSerializer.serialize(obj, jgen, childProvider);
+//        JavaType childType = TypeFactory.defaultInstance().uncheckedSimpleType(obj.getClass());
+//        BeanDescription childBeanDesc = this.config.introspect(childType);
+//        JsonSerializer<Object> childSerializer = csf.findBeanSerializer(childType, config, childBeanDesc);
+
+        JavaType type = TypeFactory.defaultInstance().uncheckedSimpleType(obj.getClass());
+        BeanDescription beanDesc = this.config.introspect(type);
+        JsonSerializer<Object> childSerializer = BeanSerializerFactory.instance.findBeanSerializer(sp, type, beanDesc);
+//        childProvider = providerBuilder.createProvider(config, );
+        childSerializer.serialize(obj, jgen, sp);
     }
 }

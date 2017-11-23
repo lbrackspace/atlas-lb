@@ -1,5 +1,10 @@
 package org.openstack.atlas.api.helpers.JsonSerializer;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import org.openstack.atlas.api.helpers.JsonSerializeException;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 
@@ -10,11 +15,6 @@ import java.util.Calendar;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.JsonSerializer;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.map.SerializerProvider;
 
 public class DateTimeSerializer extends JsonSerializer<Object> {
 
