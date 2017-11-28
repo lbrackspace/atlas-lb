@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.openstack.atlas.api.resources.providers.RequestStateContainer;
 
@@ -32,11 +33,11 @@ public class RootResourceTest {
             rootResource.setOrigContainer(mockedRequestStateContainer);
             rootResource.setLoadBalancersResource(mockedLoadBalancersResource);
             rootResource.retrieveLoadBalancersResource();
-            verify(mockedRequestStateContainer).setHttpHeaders(Matchers.<HttpHeaders>any());
-            verify(mockedRequestStateContainer).setSecurityContext(Matchers.<SecurityContext>any());
-            verify(mockedRequestStateContainer).setUriInfo(Matchers.<UriInfo>any());
-            verify(mockedLoadBalancersResource).setRequestHeaders(Matchers.<HttpHeaders>anyObject());
-            verify(mockedLoadBalancersResource).setAccountId(anyInt());
+            verify(mockedRequestStateContainer).setHttpHeaders(ArgumentMatchers.<HttpHeaders>any());
+            verify(mockedRequestStateContainer).setSecurityContext(ArgumentMatchers.<SecurityContext>any());
+            verify(mockedRequestStateContainer).setUriInfo(ArgumentMatchers.<UriInfo>any());
+            verify(mockedLoadBalancersResource).setRequestHeaders(ArgumentMatchers.<HttpHeaders>any());
+            verify(mockedLoadBalancersResource).setAccountId(ArgumentMatchers.<Integer>any());
         }
     }
 }
