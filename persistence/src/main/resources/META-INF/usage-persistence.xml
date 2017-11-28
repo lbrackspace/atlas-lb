@@ -3,13 +3,13 @@
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.0">
 
     <persistence-unit name="loadbalancingUsage" transaction-type="RESOURCE_LOCAL">
-        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <jta-data-source>jdbc/loadBalancerUsageDB</jta-data-source>
         <class>org.openstack.atlas.service.domain.usage.entities.Entity</class>
         <class>org.openstack.atlas.service.domain.usage.entities.HostUsage</class>
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerHostUsage</class>
         <class>org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostUsage</class>
-
+        <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <!-- Hibernate Properties -->
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
