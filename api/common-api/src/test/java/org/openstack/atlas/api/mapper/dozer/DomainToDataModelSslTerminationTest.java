@@ -75,8 +75,8 @@ public class DomainToDataModelSslTerminationTest {
             Assert.assertEquals(sslTermination.getCertificate(), dataModelSslTermination.getCertificate());
             Assert.assertEquals(sslTermination.getIntermediateCertificate(), dataModelSslTermination.getIntermediateCertificate());
             Assert.assertEquals(sslTermination.getSecurePort(), (long) dataModelSslTermination.getSecurePort());
-            Assert.assertEquals(true, dataModelSslTermination.isEnabled());
-            Assert.assertEquals(false, dataModelSslTermination.isSecureTrafficOnly());
+            Assert.assertEquals(true, dataModelSslTermination.getEnabled());
+            Assert.assertEquals(false, dataModelSslTermination.getSecureTrafficOnly());
         }
 
         @Test

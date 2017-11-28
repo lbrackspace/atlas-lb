@@ -88,16 +88,16 @@ public final class SslTerminationHelper {
         convertApiSslTermToDbTlsProtocols(apiSslTermination, dbTermination, isNewDbSslTerm);
 
         //Set fields to updated values
-        if (apiSslTermination.isEnabled() != null) {
-            dbTermination.setEnabled(apiSslTermination.isEnabled());
+        if (apiSslTermination.getEnabled() != null) {
+            dbTermination.setEnabled(apiSslTermination.getEnabled());
         }
 
 
-        if (apiSslTermination.isSecureTrafficOnly() != null) {
-            if ((apiSslTermination.isEnabled() != null && !apiSslTermination.isEnabled()) || (!dbTermination.isEnabled()) && (apiSslTermination.isSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
+        if (apiSslTermination.getSecureTrafficOnly() != null) {
+            if ((apiSslTermination.getEnabled() != null && !apiSslTermination.getEnabled()) || (!dbTermination.isEnabled()) && (apiSslTermination.getSecureTrafficOnly() || dbTermination.isSecureTrafficOnly())) {
                 dbTermination.setSecureTrafficOnly(false);
             } else {
-                dbTermination.setSecureTrafficOnly(apiSslTermination.isSecureTrafficOnly());
+                dbTermination.setSecureTrafficOnly(apiSslTermination.getSecureTrafficOnly());
             }
         }
 

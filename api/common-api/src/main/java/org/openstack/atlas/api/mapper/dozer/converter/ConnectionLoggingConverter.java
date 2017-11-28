@@ -13,7 +13,7 @@ public class ConnectionLoggingConverter implements CustomConverter {
         }
 
         if (sourceFieldValue instanceof ConnectionLogging && destinationClass.equals(Boolean.class)) {
-            return ((ConnectionLogging)sourceFieldValue).isEnabled();
+            return ((ConnectionLogging)sourceFieldValue).getEnabled();
         }
 
         if (sourceFieldValue instanceof Boolean) {

@@ -69,8 +69,8 @@ public class HostMachineDetailsTest {
             Assert.assertEquals(host.getManagementIp(), dHostMD.getHost().getManagementIp());
             Assert.assertEquals(host.getName(), dHostMD.getHost().getName());
             Assert.assertEquals(host.getTrafficManagerName(), dHostMD.getHost().getTrafficManagerName());
-            Assert.assertEquals(host.isSoapEndpointActive(), dHostMD.getHost().isSoapEndpointActive());
-            Assert.assertEquals(host.isRestEndpointActive(), dHostMD.getHost().isRestEndpointActive());
+            Assert.assertEquals(host.isSoapEndpointActive(), dHostMD.getHost().getSoapEndpointActive());
+            Assert.assertEquals(host.isRestEndpointActive(), dHostMD.getHost().getRestEndpointActive());
         }
         //TODO:more test
     }

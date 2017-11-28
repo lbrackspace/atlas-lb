@@ -21,13 +21,13 @@ public class LoadBalancerLimitGroupValidator implements ResourceValidator<LoadBa
                     // POST EXPECTATIONS
                     result(validationTarget().getLimit()).must().exist().forContext(POST).withMessage("Must provide a limit for the load balancer limit group.");
                     result(validationTarget().getName()).must().exist().forContext(POST).withMessage("Must provide a name for the load balancer limit group.");
-                    result(validationTarget().isIsDefault()).must().exist().forContext(POST).withMessage("Must provide the default value for the load balancer limit group.");
+                    result(validationTarget().getIsDefault()).must().exist().forContext(POST).withMessage("Must provide the default value for the load balancer limit group.");
 
                     //Shared EXPECTATIONS
                     result(validationTarget().getId()).must().not().exist().withMessage("load balancer limit id not allowed for this request.");
                     result(validationTarget().getLimit()).if_().exist().then().must().not().beEmptyOrNull().withMessage("Must provide a limit for load balancer limit group update.");
                     result(validationTarget().getName()).if_().exist().then().must().not().beEmptyOrNull().withMessage("Must provide a name for load balancer limit group update.");
-                    result(validationTarget().isIsDefault()).if_().exist().then().must().not().beEmptyOrNull().withMessage("Must provide the default value for load balancer limit group update.");
+                    result(validationTarget().getIsDefault()).if_().exist().then().must().not().beEmptyOrNull().withMessage("Must provide the default value for load balancer limit group update.");
 
                     //PUT EXPECTATIONS
 

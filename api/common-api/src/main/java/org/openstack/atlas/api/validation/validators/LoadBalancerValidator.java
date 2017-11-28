@@ -38,8 +38,8 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                 result(validationTarget().getCreated()).must().not().exist().withMessage("Load balancer created field cannot be modified.");
                 result(validationTarget().getUpdated()).must().not().exist().withMessage("Load balancer updated field cannot be modified.");
                 result(validationTarget().getName()).if_().exist().then().must().adhereTo(new MustHaveLengthVerifier(LB_NAME_LENGTH)).withMessage("Load Balancer name must be less than or equal to " + LB_NAME_LENGTH);
-                result(validationTarget().isHalfClosed()).if_().exist().then().must().adhereTo(new MustBeBooleanVerifier()).withMessage("Must provide valid boolean value of either true or false. ");
-                result(validationTarget().isHttpsRedirect()).if_().exist().then().must().adhereTo(new MustBeBooleanVerifier()).withMessage("Must provide valid boolean value of either true or false. ");
+                result(validationTarget().getHalfClosed()).if_().exist().then().must().adhereTo(new MustBeBooleanVerifier()).withMessage("Must provide valid boolean value of either true or false. ");
+                result(validationTarget().getHttpsRedirect()).if_().exist().then().must().adhereTo(new MustBeBooleanVerifier()).withMessage("Must provide valid boolean value of either true or false. ");
 
                 // POST EXPECTATIONS
                 result(validationTarget().getName()).must().exist().forContext(POST).withMessage("Must provide a name for the load balancer.");
@@ -70,7 +70,7 @@ public class LoadBalancerValidator implements ResourceValidator<LoadBalancer> {
                     @Override
                     public VerifierResult verify(LoadBalancer obj) {
                         return new VerifierResult(obj.getName() != null || obj.getAlgorithm() != null || obj.getPort() != null || obj.getProtocol() != null
-                                || obj.getConnectionLogging() != null || obj.getTimeout() != null || obj.isHalfClosed() != null || obj.isHttpsRedirect() != null);
+                                || obj.getConnectionLogging() != null || obj.getTimeout() != null || obj.getHalfClosed() != null || obj.getHttpsRedirect() != null);
                     }
                 }).forContext(PUT).withMessage("The load balancer must have at least one of the following to update: name, algorithm, protocol, port, timeout, halfClosed, or httpsRedirect.");
                 result(validationTarget().getNodes()).must().beEmptyOrNull().forContext(PUT).withMessage("Please visit {account id}/loadbalancers/{load balancer id}/nodes to configure nodes.");
