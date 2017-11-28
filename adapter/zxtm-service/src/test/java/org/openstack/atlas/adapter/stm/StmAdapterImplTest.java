@@ -133,7 +133,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*"})
-    @PrepareForTest(ResourceTranslator.class)
+    @PrepareForTest({ResourceTranslator.class, TrafficScriptHelper.class})
     public static class WhenModifyingVirtualIpResources {
         private String vsName;
         private LoadBalancer loadBalancer;
@@ -150,7 +150,7 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
 
         @Before
         public void standUp() throws Exception {
-            MockitoAnnotations.initMocks(this);
+//            MockitoAnnotations.initMocks(this);
 
             loadBalancer = generateLoadBalancer();
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);

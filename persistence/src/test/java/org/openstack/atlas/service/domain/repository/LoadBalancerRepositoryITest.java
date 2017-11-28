@@ -12,7 +12,7 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.LbIdAccountId;
 import org.openstack.atlas.util.common.CalendarUtils;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+//import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Calendar;
 import java.util.Set;
@@ -21,7 +21,7 @@ import org.openstack.atlas.util.debug.Debug;
 @RunWith(Enclosed.class)
 public class LoadBalancerRepositoryITest {
 
-    @RunWith(SpringJUnit4ClassRunner.class)
+    @RunWith(Enclosed.class)
     public static class WhenGettingLoadBalancersActiveDuringPeriod extends Base {
 
         @Before

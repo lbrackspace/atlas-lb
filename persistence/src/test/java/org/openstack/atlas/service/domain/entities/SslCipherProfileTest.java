@@ -25,7 +25,7 @@ public class SslCipherProfileTest{
 
     private static Logger logger = Logger.getLogger(SslCipherProfileTest.class.getName());
 
-   @RunWith(SpringJUnit4ClassRunner.class)
+   @RunWith(Enclosed.class)
    @ContextConfiguration(locations = {"classpath:context.xml"})
    @Transactional
    public static class WhenCreatingLoadBalancer {

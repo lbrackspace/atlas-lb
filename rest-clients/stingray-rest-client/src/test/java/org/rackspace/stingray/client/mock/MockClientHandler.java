@@ -64,7 +64,7 @@ public final class MockClientHandler implements ClientHandler {
 
             ClientResponse clientResponse = Mockito.mock(ClientResponse.class);
             Mockito.when(clientResponse.getStatus()).thenReturn(status.getStatusCode());
-            Mockito.when(clientResponse.getClientResponseStatus()).thenReturn(Status.fromStatusCode(status.getStatusCode()));
+//            Mockito.when(clientResponse.getClientResponseStatus()).thenReturn(Status.fromStatusCode(status.getStatusCode()));
             Mockito.when(clientResponse.getEntity(Mockito.<Class>any())).thenReturn(response);
 
             //Failed attempts to update for bad requests...
