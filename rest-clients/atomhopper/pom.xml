@@ -20,21 +20,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openstack.client.identity</groupId>
-            <artifactId>java-identityclient</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
-            <version>1.6</version>
-        </dependency>
-        <dependency>
             <groupId>ru.hh.jersey</groupId>
             <artifactId>jersey-hc-httpclient</artifactId>
             <version>1.4+2</version>
