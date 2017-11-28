@@ -242,7 +242,7 @@ public class StubFactory {
 //            l = new LoadBalancer();
 //            l.setHosts(new Hosts());
 //            l.getHosts().getHosts().add(rndHostPost());
-//            l.getHosts().setSticky((Boolean) rndChoice(new Boolean[]{true, false}));
+//            l.getHosts().setIsSticky((Boolean) rndChoice(new Boolean[]{true, false}));
 //            l.setName(String.format("rndLB.%d", ri));
 //            l.setId(rndInt(0, 10000));
 //            c.getLoadBalancers().add(l);

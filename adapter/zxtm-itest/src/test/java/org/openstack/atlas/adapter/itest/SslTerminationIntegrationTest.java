@@ -133,7 +133,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             Assert.assertEquals(true, vsEnabled[0]);
 
             boolean[] vsNonSecureEnabled = getServiceStubs().getVirtualServerBinding().getSSLDecrypt(new String[]{sVs});
-            Assert.assertEquals(sslTermination.isEnabled(), vsNonSecureEnabled[0]);
+            Assert.assertEquals(sslTermination.getEnabled(), vsNonSecureEnabled[0]);
 
             String[] vsSecureInfo = getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getRawCertificate(new String[]{sVs});
             Assert.assertEquals(sslTermination.getCertificate(), vsSecureInfo[0]);
@@ -201,7 +201,7 @@ public class SslTerminationIntegrationTest extends ZeusTestBase {
             Assert.assertEquals(false, vsEnabled[0]);
 
             boolean[] vsNonSecureEnabled = getServiceStubs().getVirtualServerBinding().getSSLDecrypt(new String[]{sVs});
-            Assert.assertEquals(sslTermination.isEnabled(), vsNonSecureEnabled[0]);
+            Assert.assertEquals(sslTermination.getEnabled(), vsNonSecureEnabled[0]);
 
             String[] vsSecureInfo = getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getRawCertificate(new String[]{sVs});
             Assert.assertEquals(sslTermination.getCertificate(), vsSecureInfo[0]);

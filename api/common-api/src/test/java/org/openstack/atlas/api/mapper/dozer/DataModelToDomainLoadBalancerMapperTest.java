@@ -144,14 +144,14 @@ public class DataModelToDomainLoadBalancerMapperTest {
 
         @Test
         public void should_map_half_close() {
-            Assert.assertEquals(true, domainLoadBalancer.isHalfClosed());
+            Assert.assertEquals(true, domainLoadBalancer.getHalfClosed());
         }
 
         @Test
         public void should_map_half_close_false() {
             loadBalancer.setHalfClosed(false);
             domainLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
-            Assert.assertEquals(false, domainLoadBalancer.isHalfClosed());
+            Assert.assertEquals(false, domainLoadBalancer.getHalfClosed());
         }
 
         @Test

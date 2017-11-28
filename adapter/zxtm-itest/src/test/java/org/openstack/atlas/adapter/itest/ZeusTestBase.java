@@ -25,7 +25,6 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm.ROUND_ROBIN;
-import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.HTTP;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 
@@ -531,7 +530,7 @@ public class ZeusTestBase {
             Assert.assertEquals(true, vsEnabled[0]);
 
             boolean[] vsNonSecureEnabled = getServiceStubs().getVirtualServerBinding().getSSLDecrypt(new String[]{sVs});
-            Assert.assertEquals(sslTermination.isEnabled(), vsNonSecureEnabled[0]);
+            Assert.assertEquals(sslTermination.getEnabled(), vsNonSecureEnabled[0]);
 
             String[] vsSecureInfo = getServiceStubs().getZxtmCatalogSSLCertificatesBinding().getRawCertificate(new String[]{sVs});
             Assert.assertEquals(sslTermination.getCertificate(), vsSecureInfo[0]);

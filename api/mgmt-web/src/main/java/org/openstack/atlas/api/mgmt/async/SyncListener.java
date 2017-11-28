@@ -3,15 +3,12 @@ package org.openstack.atlas.api.mgmt.async;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.helpers.NodesHelper;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.entities.UserPages;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
-import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.util.debug.Debug;
@@ -163,7 +160,7 @@ public class SyncListener extends BaseListener {
 
                     try {
                         if (dbLoadBalancer.isUsingSsl()) {
-                            if (dbLoadBalancer.getSslTermination().isSecureTrafficOnly()) {
+                            if (dbLoadBalancer.getSslTermination().getSecureTrafficOnly()) {
                                 usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_ONLY_ON, eventTime);
                             } else {
                                 usageEventCollection.collectUsageAndProcessUsageRecords(dbLoadBalancer, UsageEvent.SSL_MIXED_ON, eventTime);

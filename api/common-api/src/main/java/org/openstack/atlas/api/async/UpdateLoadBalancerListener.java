@@ -95,16 +95,16 @@ public class UpdateLoadBalancerListener extends BaseListener {
                 }
             }
 
-            if (queueLb.isHttpsRedirect() != null) { // This needs to be before Protocol/Port updates!
-                LOG.debug("Updating loadbalancer HTTPS Redirect to " + dbLoadBalancer.isHttpsRedirect() + " in zeus...");
+            if (queueLb.getHttpsRedirect() != null) { // This needs to be before Protocol/Port updates!
+                LOG.debug("Updating loadbalancer HTTPS Redirect to " + dbLoadBalancer.getHttpsRedirect() + " in zeus...");
                 try {
-                    LOG.debug(String.format("Updating HTTPS Redirect for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.isHttpsRedirect()));
+                    LOG.debug(String.format("Updating HTTPS Redirect for load balancer '%d' to '%s' in Zeus...", dbLoadBalancer.getId(), dbLoadBalancer.getHttpsRedirect()));
                     reverseProxyLoadBalancerService.updateHttpsRedirect(dbLoadBalancer);
-                    LOG.debug(String.format("Successfully updated HTTPS Redirect for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.isHttpsRedirect()));
-                    atomSummary.append("HTTPS Redirect: '").append(dbLoadBalancer.isHttpsRedirect()).append("', ");
+                    LOG.debug(String.format("Successfully updated HTTPS Redirect for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getHttpsRedirect()));
+                    atomSummary.append("HTTPS Redirect: '").append(dbLoadBalancer.getHttpsRedirect()).append("', ");
                 } catch (Exception e) {
                     loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-                    String alertDescription = String.format("Error updating HTTPS Redirect for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.isHttpsRedirect());
+                    String alertDescription = String.format("Error updating HTTPS Redirect for load balancer '%d' to '%s' in Zeus.", dbLoadBalancer.getId(), dbLoadBalancer.getHttpsRedirect());
                     LOG.error(alertDescription, e);
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
                     sendErrorToEventResource(queueLb);
@@ -165,16 +165,16 @@ public class UpdateLoadBalancerListener extends BaseListener {
                 }
             }
 
-            if (queueLb.isHalfClosed() != null) {
-                LOG.debug("Updating loadbalancer half close support to " + dbLoadBalancer.isHalfClosed() + " in ZXTM...");
+            if (queueLb.getHalfClosed() != null) {
+                LOG.debug("Updating loadbalancer half close support to " + dbLoadBalancer.getHalfClosed() + " in ZXTM...");
                 try {
-                    LOG.debug(String.format("Updating timeout for load balancer '%d' to '%s' in ZXTM...", dbLoadBalancer.getId(), dbLoadBalancer.isHalfClosed()));
+                    LOG.debug(String.format("Updating timeout for load balancer '%d' to '%s' in ZXTM...", dbLoadBalancer.getId(), dbLoadBalancer.getHalfClosed()));
                     reverseProxyLoadBalancerService.updateHalfClosed(dbLoadBalancer);
-                    LOG.debug(String.format("Successfully updated half close support for load balancer '%d' to '%s' in ZXTM.", dbLoadBalancer.getId(), dbLoadBalancer.isHalfClosed()));
-                    atomSummary.append("half-close: '").append(dbLoadBalancer.isHalfClosed()).append("', ");
+                    LOG.debug(String.format("Successfully updated half close support for load balancer '%d' to '%s' in ZXTM.", dbLoadBalancer.getId(), dbLoadBalancer.getHalfClosed()));
+                    atomSummary.append("half-close: '").append(dbLoadBalancer.getHalfClosed()).append("', ");
                 } catch (Exception e) {
                     loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-                    String alertDescription = String.format("Error updating half close support for load balancer '%d' to '%s' in ZXTM.", dbLoadBalancer.getId(), dbLoadBalancer.isHalfClosed());
+                    String alertDescription = String.format("Error updating half close support for load balancer '%d' to '%s' in ZXTM.", dbLoadBalancer.getId(), dbLoadBalancer.getHalfClosed());
                     LOG.error(alertDescription, e);
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
                     sendErrorToEventResource(queueLb);
@@ -196,8 +196,8 @@ public class UpdateLoadBalancerListener extends BaseListener {
         if (queueLb.getPort() != null) atomSummary.append("port: '").append(dbLoadBalancer.getPort()).append("', ");
         if (queueLb.getTimeout() != null)
             atomSummary.append("timeout: '").append(dbLoadBalancer.getTimeout()).append("', ");
-        if (queueLb.isHalfClosed() != null)
-            atomSummary.append("half-close: '").append(dbLoadBalancer.isHalfClosed()).append("', ");
+        if (queueLb.getHalfClosed() != null)
+            atomSummary.append("half-close: '").append(dbLoadBalancer.getHalfClosed()).append("', ");
         if (queueLb.getName() != null) updateStrList.add(String.format("%s: '%s'", "name", queueLb.getName()));
 
         // Update load balancer status in DB

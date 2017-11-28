@@ -126,8 +126,8 @@ public class SslTerminationHelperTest {
             org.openstack.atlas.service.domain.entities.SslTermination sslTermination = new org.openstack.atlas.service.domain.entities.SslTermination();
             sslTermination.setEnabled(true);
             sslTermination.setSecureTrafficOnly(true);
-            Assert.assertEquals(ssl1.getSecureTrafficOnly(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).isSecureTrafficOnly());
-            Assert.assertEquals(ssl1.getEnabled(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).isEnabled());
+            Assert.assertEquals(ssl1.getSecureTrafficOnly(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).getSecureTrafficOnly());
+            Assert.assertEquals(ssl1.getEnabled(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).getEnabled());
             Assert.assertEquals((Object) ssl1.getSecurePort(), SslTerminationHelper.verifyAttributes(ssl1, sslTermination).getSecurePort());
         }
 

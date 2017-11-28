@@ -815,7 +815,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
                 }
             }
 
-            if (lb.isHttpsRedirect()) {
+            if (lb.getHttpsRedirect()) {
                 // In case of HTTPS Redirect, add 80/443 since they are always static
                 rProtocol = new TrafficType();
                 rProtocol.setProtocol(LoadBalancerProtocolType.TCP.name());
@@ -835,7 +835,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
                 rLbDetails.getProtocols().add(rProtocol);
             } else {
                 // For SSL term, add HTTPS and whatever port, as long as SSL is enabled
-                if (lb.getSslTermination().isEnabled()) {
+                if (lb.getSslTermination().getEnabled()) {
                     rProtocol = new TrafficType();
                     rProtocol.setProtocol(LoadBalancerProtocolType.TCP.name());
                     rProtocol.setPort(lb.getSslTermination().getSecurePort());
@@ -843,7 +843,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
                 }
 
                 // If SSL is disabled or in mixed mode, add the main VS config too
-                if (!lb.getSslTermination().isSecureTrafficOnly() || !lb.getSslTermination().isEnabled()) {
+                if (!lb.getSslTermination().getSecureTrafficOnly() || !lb.getSslTermination().getEnabled()) {
                     rProtocol = new TrafficType();
                     LoadBalancerProtocol lbProtocol = lb.getProtocol();
                     rProtocol.setProtocol(udpProtocols.contains(lbProtocol) ? LoadBalancerProtocolType.UDP.name() : LoadBalancerProtocolType.TCP.name());

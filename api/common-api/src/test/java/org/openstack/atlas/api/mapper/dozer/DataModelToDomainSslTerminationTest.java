@@ -1,7 +1,6 @@
 package org.openstack.atlas.api.mapper.dozer;
 
 import org.dozer.DozerBeanMapper;
-import org.dozer.MappingException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,8 +43,8 @@ public class DataModelToDomainSslTerminationTest {
             Assert.assertEquals(sslTermination.getCertificate(), domainSsltermination.getCertificate());
             Assert.assertEquals(sslTermination.getIntermediateCertificate(), domainSsltermination.getIntermediateCertificate());
             Assert.assertEquals((long)sslTermination.getSecurePort(), domainSsltermination.getSecurePort());
-            Assert.assertEquals(true, domainSsltermination.isEnabled());
-            Assert.assertEquals(false, domainSsltermination.isSecureTrafficOnly());
+            Assert.assertEquals(true, domainSsltermination.getEnabled());
+            Assert.assertEquals(false, domainSsltermination.getSecureTrafficOnly());
         }
     }
 }

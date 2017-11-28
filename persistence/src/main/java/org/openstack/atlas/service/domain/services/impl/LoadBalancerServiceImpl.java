@@ -87,7 +87,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
 
         // HTTPS Redirect is only valid for HTTPS LBs or LBs with SSL Termination
-        if (lb.isHttpsRedirect() != null && lb.isHttpsRedirect()) {
+        if (lb.getHttpsRedirect() != null && lb.getHttpsRedirect()) {
             if (!lb.getProtocol().equals(LoadBalancerProtocol.HTTPS)) {
                 throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
                         "or for load balancers with a 'Secure Only' SSL Termination.");
@@ -236,9 +236,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
             //Validation for HTTPS redirect
             LOG.info("Verifying HTTPS redirect status.");
-            if ((loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) ||
-                (loadBalancer.isHttpsRedirect() == null && dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect())) {
-                if (!ssl.isSecureTrafficOnly()) {
+            if ((loadBalancer.getHttpsRedirect() != null && loadBalancer.getHttpsRedirect()) ||
+                (loadBalancer.getHttpsRedirect() == null && dbLoadBalancer.getHttpsRedirect() != null && dbLoadBalancer.getHttpsRedirect())) {
+                if (!ssl.getSecureTrafficOnly()) {
                     LOG.error("Cannot use HTTPS Redirect on a load balancer with a mixed-mode SSL termination.");
                     throw new BadRequestException("HTTPS Redirect is only valid for load balancers using the HTTPS protocol, " +
                             "or for load balancers with a 'Secure Only' SSL Termination.");
@@ -251,8 +251,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 }
             }
         } else {
-            if ((loadBalancer.isHttpsRedirect() != null && loadBalancer.isHttpsRedirect()) ||
-                    (loadBalancer.isHttpsRedirect() == null && dbLoadBalancer.isHttpsRedirect() != null && dbLoadBalancer.isHttpsRedirect())) {
+            if ((loadBalancer.getHttpsRedirect() != null && loadBalancer.getHttpsRedirect()) ||
+                    (loadBalancer.getHttpsRedirect() == null && dbLoadBalancer.getHttpsRedirect() != null && dbLoadBalancer.getHttpsRedirect())) {
                 if ((loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS))
                   || loadBalancer.getProtocol() == null && !dbLoadBalancer.getProtocol().equals(LoadBalancerProtocol.HTTPS)) {
                     LOG.error("HTTPS Redirect can only be enabled for HTTPS or SSL load balancers.");
@@ -303,10 +303,10 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
             verifyTCPUDPProtocolandPort(loadBalancer, dbLoadBalancer);
 
-            if (loadBalancer.isHalfClosed() != null) {
+            if (loadBalancer.getHalfClosed() != null) {
                 verifyHalfCloseSupport(loadBalancer);
             } else {
-                verifyHalfCloseSupport(loadBalancer, dbLoadBalancer.isHalfClosed());
+                verifyHalfCloseSupport(loadBalancer, dbLoadBalancer.getHalfClosed());
             }
 
             boolean isValidProto = true;
@@ -407,14 +407,14 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         verifyProtocolLoggingAndCaching(loadBalancer, dbLoadBalancer);
 
         LOG.debug("Update half close support in load balancer service impl");
-        if (loadBalancer.isHalfClosed() != null) {
-            verifyHalfCloseSupport(dbLoadBalancer, loadBalancer.isHalfClosed());
-            dbLoadBalancer.setHalfClosed(loadBalancer.isHalfClosed());
+        if (loadBalancer.getHalfClosed() != null) {
+            verifyHalfCloseSupport(dbLoadBalancer, loadBalancer.getHalfClosed());
+            dbLoadBalancer.setHalfClosed(loadBalancer.getHalfClosed());
         }
 
-        LOG.debug("Updating loadbalancer httpsRedirect to " + loadBalancer.isHttpsRedirect());
-        if (loadBalancer.isHttpsRedirect() != null) {
-            dbLoadBalancer.setHttpsRedirect(loadBalancer.isHttpsRedirect());
+        LOG.debug("Updating loadbalancer httpsRedirect to " + loadBalancer.getHttpsRedirect());
+        if (loadBalancer.getHttpsRedirect() != null) {
+            dbLoadBalancer.setHttpsRedirect(loadBalancer.getHttpsRedirect());
         }
 
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
@@ -776,11 +776,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             loadBalancer.setTimeout(TIMEOUT_DEFAULT);
         }
 
-        if (loadBalancer.isHalfClosed() == null) {
+        if (loadBalancer.getHalfClosed() == null) {
             loadBalancer.setHalfClosed(false);
         }
 
-        if (loadBalancer.isHttpsRedirect() == null) {
+        if (loadBalancer.getHttpsRedirect() == null) {
             loadBalancer.setHttpsRedirect(false);
         }
     }
@@ -861,8 +861,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     private void verifyHalfCloseSupport(LoadBalancer lb) throws BadRequestException {
-        if (lb.isHalfClosed() != null) {
-            verifyHalfCloseSupport(lb, lb.isHalfClosed());
+        if (lb.getHalfClosed() != null) {
+            verifyHalfCloseSupport(lb, lb.getHalfClosed());
         }
     }
 
@@ -1100,7 +1100,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         for (LoadBalancer lb : lbs) {
             dbLb = loadBalancerRepository.getById(lb.getId());
-            if (dbLb.isSticky()) {
+            if (dbLb.getIsSticky()) {
                 invalidLbs.add(dbLb);
             } else {
                 processSpecifiedOrDefaultHost(lb);
@@ -1128,7 +1128,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (lb.getHost() != null) {
             hostId = lb.getHost().getId();
         }
-        if (!lb.isSticky()) {
+        if (!lb.getIsSticky()) {
             if (hostId != null) {
                 specifiedHost = hostService.getById(hostId);
                 if (!(specifiedHost.getHostStatus().equals(HostStatus.ACTIVE) || specifiedHost.getHostStatus().equals(HostStatus.ACTIVE_TARGET))) {
@@ -1217,9 +1217,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         try {
             SslTermination sslTerm = sslTerminationRepository.getSslTerminationByLbId(lbId);
 
-            if (sslTerm.isEnabled()) {
+            if (sslTerm.getEnabled()) {
                 bitTags.flipTagOn(BitTag.SSL);
-                if (!sslTerm.isSecureTrafficOnly()) {
+                if (!sslTerm.getSecureTrafficOnly()) {
                     bitTags.flipTagOn(BitTag.SSL_MIXED_MODE);
                 }
             }

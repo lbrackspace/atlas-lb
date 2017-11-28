@@ -131,7 +131,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         List<Host> accessibleHosts = new ArrayList<Host>();
         for (Host host : hostList) {
             try {
-                if (host.isSoapEndpointActive() || host.isRestEndpointActive()) {
+                if (host.getSoapEndpointActive() || host.getRestEndpointActive()) {
                     LOG.info("Host: " + host.getName() + " is accessible.");
                     accessibleHosts.add(host);
                 } else {

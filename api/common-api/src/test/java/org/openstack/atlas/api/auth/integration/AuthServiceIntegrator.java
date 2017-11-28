@@ -98,7 +98,7 @@ public class AuthServiceIntegrator {
 //            String user = authTokenValidator.validate(accountId, authToken).getUserId();
 //            Assert.assertNotNull(user);
 //            keyStoneAdminClient = new KeyStoneAdminClient(auth_callback_uri, auth_password,auth_username);
-//            Assert.assertTrue(keyStoneAdminClient.listUser(user).isEnabled());
+//            Assert.assertTrue(keyStoneAdminClient.listUser(user).getEnabled());
 //        }
 //
 //        @Test(expected = KeyStoneException.class)

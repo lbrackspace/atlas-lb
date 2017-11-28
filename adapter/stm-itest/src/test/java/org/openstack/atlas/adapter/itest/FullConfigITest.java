@@ -377,7 +377,7 @@ public class FullConfigITest extends STMTestBase {
         Assert.assertEquals(true, vs.getProperties().getBasic().getEnabled());
         Assert.assertEquals(lb.getPort(), vs.getProperties().getBasic().getPort());
         Assert.assertEquals(poolName(), vs.getProperties().getBasic().getPool());
-        Assert.assertEquals(lb.isHalfClosed(), vs.getProperties().getTcp().getProxy_close());
+        Assert.assertEquals(lb.getHalfClosed(), vs.getProperties().getTcp().getProxy_close());
         Assert.assertEquals(lb.isContentCaching(), vs.getProperties().getWeb_cache().getEnabled());
 
         if (lb.getUserPages() != null) {
@@ -512,7 +512,7 @@ public class FullConfigITest extends STMTestBase {
         VirtualServerBasic secureBasic = createdSecureVs.getProperties().getBasic();
         Assert.assertEquals(StmTestConstants.LB_SECURE_PORT, (int) secureBasic.getPort());
         Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(secureBasic.getProtocol().toString()));
-        Assert.assertEquals(lb.getSslTermination().isEnabled(), secureBasic.getEnabled());
+        Assert.assertEquals(lb.getSslTermination().getEnabled(), secureBasic.getEnabled());
         Assert.assertEquals(vsName, secureBasic.getPool().toString());
         Assert.assertEquals(true, secureBasic.getSsl_decrypt());
 
