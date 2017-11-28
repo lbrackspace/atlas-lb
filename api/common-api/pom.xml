@@ -51,10 +51,10 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.rackspace.cloud.powerapi</groupId>
-            <artifactId>filterlet</artifactId>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.rackspace.cloud.powerapi</groupId>-->
+            <!--<artifactId>filterlet</artifactId>-->
+        <!--</dependency>-->
 
         <dependency>
             <groupId>com.sun.grizzly</groupId>

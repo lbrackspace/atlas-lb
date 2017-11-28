@@ -89,54 +89,54 @@
     <dependencyManagement>
         <dependencies>
 
-            <dependency>
-                <groupId>com.rackspace.cloud.powerapi</groupId>
-                <artifactId>filterlet</artifactId>
-                <version>1.0.4</version>
-                <scope>compile</scope>
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>org.springframework.core</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>org.springframework.beans</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>org.springframework.asm</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>org.springframework.aop</artifactId>
-                    </exclusion>
+            <!--<dependency>-->
+                <!--<groupId>com.rackspace.cloud.powerapi</groupId>-->
+                <!--<artifactId>filterlet</artifactId>-->
+                <!--<version>1.0.8-SNAPSHOT</version>-->
+                <!--<scope>compile</scope>-->
+                <!--<exclusions>-->
                     <!--<exclusion>-->
-                    <!--<groupId>org.springframework</groupId>-->
-                    <!--<artifactId>org.springframework.context</artifactId>-->
+                        <!--<groupId>org.springframework</groupId>-->
+                        <!--<artifactId>org.springframework.core</artifactId>-->
                     <!--</exclusion>-->
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>org.springframework.servlet</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>org.springframework.web.servlet</artifactId>
-                    </exclusion>
                     <!--<exclusion>-->
-                    <!--<groupId>org.springframework</groupId>-->
-                    <!--<artifactId>org.springframework.context.support</artifactId>-->
+                        <!--<groupId>org.springframework</groupId>-->
+                        <!--<artifactId>org.springframework.beans</artifactId>-->
                     <!--</exclusion>-->
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>org.springframework.expression</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.springframework</groupId>
-                        <artifactId>org.springframework.web</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
+                    <!--<exclusion>-->
+                        <!--<groupId>org.springframework</groupId>-->
+                        <!--<artifactId>org.springframework.asm</artifactId>-->
+                    <!--</exclusion>-->
+                    <!--<exclusion>-->
+                        <!--<groupId>org.springframework</groupId>-->
+                        <!--<artifactId>org.springframework.aop</artifactId>-->
+                    <!--</exclusion>-->
+                    <!--&lt;!&ndash;<exclusion>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<groupId>org.springframework</groupId>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<artifactId>org.springframework.context</artifactId>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</exclusion>&ndash;&gt;-->
+                    <!--<exclusion>-->
+                        <!--<groupId>org.springframework</groupId>-->
+                        <!--<artifactId>org.springframework.servlet</artifactId>-->
+                    <!--</exclusion>-->
+                    <!--<exclusion>-->
+                        <!--<groupId>org.springframework</groupId>-->
+                        <!--<artifactId>org.springframework.web.servlet</artifactId>-->
+                    <!--</exclusion>-->
+                    <!--&lt;!&ndash;<exclusion>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<groupId>org.springframework</groupId>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<artifactId>org.springframework.context.support</artifactId>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</exclusion>&ndash;&gt;-->
+                    <!--<exclusion>-->
+                        <!--<groupId>org.springframework</groupId>-->
+                        <!--<artifactId>org.springframework.expression</artifactId>-->
+                    <!--</exclusion>-->
+                    <!--<exclusion>-->
+                        <!--<groupId>org.springframework</groupId>-->
+                        <!--<artifactId>org.springframework.web</artifactId>-->
+                    <!--</exclusion>-->
+                <!--</exclusions>-->
+            <!--</dependency>-->
 
             <dependency>
                 <groupId>net.sf.dozer</groupId>
