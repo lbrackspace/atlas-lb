@@ -1,7 +1,7 @@
 package org.openstack.atlas.adapter.helpers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zxtm.service.client.VirtualServerProtocol;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;

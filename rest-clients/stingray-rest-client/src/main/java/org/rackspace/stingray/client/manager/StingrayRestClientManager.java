@@ -1,12 +1,10 @@
 package org.rackspace.stingray.client.manager;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.openstack.atlas.util.crypto.CryptoUtil;
-import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
@@ -16,7 +14,8 @@ import org.rackspace.stingray.client.util.ClientConstants;
 import org.rackspace.stingray.client.util.StingrayRestClientUtil;
 
 
-
+import javax.ws.rs.client.Client;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 
 public class StingrayRestClientManager {
@@ -165,26 +164,26 @@ public class StingrayRestClientManager {
         } catch (Exception e) {
             this.connect_timeout = 5000;
         }
-        client.setConnectTimeout(this.connect_timeout);
-        client.setReadTimeout(this.read_timeout);
+        client.property(ClientProperties.CONNECT_TIMEOUT, this.connect_timeout);
+        client.property(ClientProperties.READ_TIMEOUT, this.read_timeout);
 
-        this.client.addFilter(new HTTPBasicAuthFilter(this.adminUser, this.adminKey));
+        this.client.target(endpoint).register(HttpAuthenticationFeature.basic(this.adminUser, this.adminKey));
     }
 
     /**
      * Retrieves and interprets the response entity.
      *
+     * @param <T>       Generic object for the declaration of the returned entity
      * @param response  Holds all the values from the REST api response
      * @param clazz     Specific class to map the entity needed
-     * @param <T>       Generic object for the declaration of the returned entity
      * @return          Returns an object of the passed type
      */
-    public synchronized <T> T interpretResponse(ClientResponse response, Class<T> clazz)  throws StingrayRestClientException {
-        T t = null;
+    public synchronized <T> Object interpretResponse(Response response, Class<T> clazz)  throws StingrayRestClientException {
+        Object t = null;
         String s;
         RequestManagerUtil rmu = new RequestManagerUtil();
         try {
-            t = response.getEntity(clazz);
+            t = response.getEntity();
 //              s = response.getEntity(String.class);
         } catch (Exception ex) {
             LOG.error("Could not retrieve object of type: " + clazz + " Exception: " + ex);

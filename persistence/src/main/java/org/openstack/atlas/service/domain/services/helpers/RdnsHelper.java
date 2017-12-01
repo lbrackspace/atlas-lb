@@ -18,6 +18,7 @@ import org.openstack.client.keystone.KeyStoneException;
 import org.openstack.client.keystone.auth.AuthData;
 import org.openstack.client.keystone.user.User;
 
+import javax.ws.rs.core.Response;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -109,12 +110,12 @@ public class RdnsHelper {
         return sb.toString();
     }
 
-    public ClientResponse delPtrManRecord(int lid, String ip) throws UnsupportedEncodingException {
+    public Response delPtrManRecord(int lid, String ip) throws UnsupportedEncodingException {
         DnsClient1_0 dns = new DnsClient1_0("", rdnsAdminUrl, rdnsAdminUser, rdnsPasswd, "", accountId);
         return dns.delPtrRecordMan(buildDeviceUri(accountId, lid), LB_SERVICE_NAME, ip);
     }
 
-    public ClientResponse delPtrPubRecord(int lid, String ip) throws RdnsException {
+    public Response delPtrPubRecord(int lid, String ip) throws RdnsException {
         String tokenStr;
         if (useAdminAuth) {
             tokenStr = getLbaasToken2();

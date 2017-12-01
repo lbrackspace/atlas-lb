@@ -1,14 +1,14 @@
 package org.openstack.atlas.restclients.dns;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import java.util.Map.Entry;
-import com.sun.jersey.api.client.ClientResponse;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import org.openstack.atlas.util.b64aes.Base64;
 
 public class StaticDNSClientUtils {
     private static final int SB_INIT_SIZE = 1024 * 4;
-    public static String clientResponseToString(ClientResponse resp) {
+    public static String clientResponseToString(Response resp) {
         StringBuilder sb = new StringBuilder(SB_INIT_SIZE);
         sb.append("ClientResponse: ");
         if (resp == null) {
@@ -16,17 +16,17 @@ public class StaticDNSClientUtils {
             return sb.toString();
         }
         sb.append("\nStatus code: ").append(Integer.valueOf(resp.getStatus()).toString()).append("\n");
-        MultivaluedMap<String, String> headers = resp.getHeaders();
+        MultivaluedMap<String, Object> headers = resp.getHeaders();
         if (headers == null) {
             sb.append("Headers: null\n");
         } else {
             sb.append("Headers: \n");
-            for (Entry<String, List<String>> entry : headers.entrySet()) {
+            for (Entry<String, List<Object>> entry : headers.entrySet()) {
                 String key = entry.getKey();
                 if(key == null){
                     key = "null";
                 }
-                for (String value : entry.getValue()) {
+                for (Object value : entry.getValue()) {
                     if(value==null){
                         value="null";
                     }
@@ -34,7 +34,7 @@ public class StaticDNSClientUtils {
                 }
             }
         }
-        String body = resp.getEntity(String.class);
+        Object body = resp.getEntity();
         if(body == null){
             body = "null";
         }

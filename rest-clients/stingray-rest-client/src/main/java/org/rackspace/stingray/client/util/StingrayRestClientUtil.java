@@ -1,17 +1,15 @@
 package org.rackspace.stingray.client.util;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.LoggingFilter;
-import com.sun.jersey.api.json.JSONConfiguration;
-import com.sun.jersey.client.urlconnection.HTTPSProperties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJsonProvider;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.rackspace.stingray.client.pool.Pool;
 
 import javax.net.ssl.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -23,7 +21,7 @@ public class StingrayRestClientUtil {
 
     public static class ClientHelper {
 
-        public static ClientConfig configureClient(boolean isDebugging) {
+        public static Client configureClient(boolean isDebugging) {
             TrustManager[] certs = new TrustManager[]{
                     new X509TrustManager() {
                         @Override
@@ -50,29 +48,23 @@ public class StingrayRestClientUtil {
             }
             HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
 
-            ClientConfig config = new DefaultClientConfig();
-            config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+            ClientConfig config = new ClientConfig();
+//            config..getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
             config.getClasses().add(JacksonJsonProvider.class);
+            config.property(LoggingFeature.LOGGING_FEATURE_LOGGER_NAME, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
-            try {
-                config.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, new HTTPSProperties(
-                        new HostnameVerifier() {
-                            @Override
-                            public boolean verify(String hostname, SSLSession session) {
-                                return true;
-                            }
-                        },
-                        ctx
-                ));
-            } catch (Exception e) {
-            }
-            return config;
+            Client client = ClientBuilder.newBuilder().withConfig(config)
+                    .sslContext(ctx).hostnameVerifier(new HostnameVerifier() {
+                        @Override
+                        public boolean verify(String hostname, SSLSession session) {
+                            return true;
+                        }
+                    }).build();
+            return client;
         }
 
         public static Client createClient(boolean isDebugging) {
-            Client client = Client.create(ClientHelper.configureClient(isDebugging));
-            if (isDebugging) client.addFilter(new LoggingFilter());
-            return client;
+            return ClientHelper.configureClient(isDebugging);
         }
 
 

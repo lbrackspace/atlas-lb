@@ -164,11 +164,11 @@
             <artifactId>atlas-b64aes</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-bundle</artifactId>
-            <version>1.8</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>org.glassfish.jersey</groupId>-->
+            <!--<artifactId>jersey-bundle</artifactId>-->
+            <!--<version>2.26</version>-->
+        <!--</dependency>-->
 
 
         <!--Added for odd javassit error 4/15/2013-->

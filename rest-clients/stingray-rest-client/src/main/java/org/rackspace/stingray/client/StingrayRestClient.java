@@ -1,7 +1,6 @@
 package org.rackspace.stingray.client;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
+import org.glassfish.jersey.client.ClientResponse;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
@@ -28,7 +27,9 @@ import org.rackspace.stingray.client.util.ClientConstants;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
+import javax.ws.rs.client.Client;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -104,8 +105,8 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     private List<Child> getItems(String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
-            ClientResponse response = requestManager.getList(endpoint, client, path);
-            Children children = interpretResponse(response, Children.class);
+            Response response = requestManager.getList(endpoint, client, path);
+            Children children = (Children) interpretResponse(response, Children.class);
 
             return children.getChildren();
         } else {
@@ -171,8 +172,8 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     private <T> T getItem(String name, Class<T> clazz, String path, URI endpoint, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
-            ClientResponse response = requestManager.getItem(endpoint, client, path + name, cType);
-            T obj = interpretResponse(response, clazz);
+            Response response = requestManager.getItem(endpoint, client, path + name, cType);
+            T obj = (T) interpretResponse(response, clazz);
             return obj;
         } else {
             throw new StingrayRestClientException("There was an error communicating with the resource endpoint: " + path);
@@ -232,8 +233,8 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     private <T> T updateItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
-            ClientResponse response = requestManager.updateItem(endpoint, client, path + name, obj, cType);
-            return interpretResponse(response, clazz);
+            Response response = requestManager.updateItem(endpoint, client, path + name, obj, cType);
+            return (T) interpretResponse(response, clazz);
         } else {
             throw new StingrayRestClientException("There was an error communicating with the resource endpoint: " + path);
         }
@@ -1125,7 +1126,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * Destroy the StingrayRestClient
      */
     public void destroy() {
-        client.destroy();
+        client.close();
     }
 
     private VirtualServerStatsProperties getZeroStats() {

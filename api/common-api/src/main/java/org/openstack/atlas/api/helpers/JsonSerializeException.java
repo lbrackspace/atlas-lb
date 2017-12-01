@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.helpers;
 
-import org.codehaus.jackson.JsonProcessingException;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class JsonSerializeException extends JsonProcessingException {
 

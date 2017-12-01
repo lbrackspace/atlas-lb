@@ -34,6 +34,8 @@ import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEve
 import org.openstack.atlas.service.domain.services.helpers.RdnsHelper;
 import org.openstack.atlas.util.debug.Debug;
 
+import javax.ws.rs.core.Response;
+
 @Service
 public class VirtualIpServiceImpl extends BaseService implements VirtualIpService {
 
@@ -559,7 +561,7 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     @Transactional
     private void delPtrRecord(int aid, int lid, String ip) {
         RdnsHelper rdns = RdnsHelper.newRdnsHelper(aid);
-        ClientResponse resp;
+        Response resp;
         String msg;
         String fmt;
         String respStr;

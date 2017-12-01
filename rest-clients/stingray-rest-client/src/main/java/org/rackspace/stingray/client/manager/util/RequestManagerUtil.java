@@ -1,13 +1,14 @@
 package org.rackspace.stingray.client.manager.util;
 
-import com.sun.jersey.api.client.ClientResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.glassfish.jersey.client.ClientResponse;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.util.ClientConstants;
 
+import javax.ws.rs.core.Response;
 import java.io.IOException;
 
 public class RequestManagerUtil {
@@ -19,7 +20,7 @@ public class RequestManagerUtil {
      * @param response Holds all the details from the response of the Stingray REST api
      * @return Boolean result for the validity check
      */
-    public boolean isResponseValid(ClientResponse response) {
+    public boolean isResponseValid(Response response) {
         return (response != null && (response.getStatus() == ClientConstants.ACCEPTED
                 || response.getStatus() == ClientConstants.NON_AUTHORATIVE
                 || response.getStatus() == ClientConstants.OK
@@ -44,7 +45,7 @@ public class RequestManagerUtil {
      * @throws org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException
      *
      */
-    public void buildFaultMessage(ClientResponse response)
+    public void buildFaultMessage(Response response)
             throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
 
         String objectNotFoundMessage = "does not exist";
@@ -56,7 +57,7 @@ public class RequestManagerUtil {
         logger.info("ResponseWrapper, response status code is: " + response.getStatus());
 
         try {
-            error = response.getEntity(String.class); //Too many permutations of errors, catch all and pull out what we want...
+            error = (String) response.getEntity(); //Too many permutations of errors, catch all and pull out what we want...
             logger.debug(String.format("Client Request failed: %s", error));
         } catch (Exception ex) {
             logger.debug(String.format("Client Request failed: %s", ex));

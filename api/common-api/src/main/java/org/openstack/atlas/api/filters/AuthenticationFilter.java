@@ -1,11 +1,11 @@
 package org.openstack.atlas.api.filters;
 
+import com.fasterxml.jackson.databind.AnnotationIntrospector;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
 import org.openstack.atlas.util.debug.Debug;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.jackson.map.AnnotationIntrospector;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.introspect.JacksonAnnotationIntrospector;
 import org.openstack.atlas.api.auth.AuthInfo;
 import org.openstack.atlas.api.auth.AuthTokenValidator;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
@@ -302,8 +302,8 @@ public class AuthenticationFilter implements Filter {
             httpServletResponse.setContentType("application/json; charset=UTF-8");
             ObjectMapper mapper = new ObjectMapper();
             AnnotationIntrospector introspector = new JacksonAnnotationIntrospector();
-            mapper.getDeserializationConfig().setAnnotationIntrospector(introspector);
-            mapper.getSerializationConfig().setAnnotationIntrospector(introspector);
+            mapper.setAnnotationIntrospector(introspector);
+            mapper.setAnnotationIntrospector(introspector);
             mapper.writeValue(httpServletResponse.getWriter(), unauthorized);
         }
     }

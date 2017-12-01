@@ -1,26 +1,20 @@
 package org.openstack.atlas.restclients.dns;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource.Builder;
-import com.sun.jersey.api.client.WebResource;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
 
+import javax.ws.rs.client.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import java.util.Map.Entry;
+import javax.ws.rs.core.Response;
 import javax.xml.bind.JAXBException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.glassfish.jersey.client.ClientResponse;
 import org.openstack.atlas.restclients.dns.exp.JaxbExp;
 import org.openstack.atlas.restclients.dns.pub.objects.Record;
 import org.openstack.atlas.restclients.dns.pub.objects.Rdns;
 import org.openstack.atlas.restclients.dns.pub.objects.RecordType;
 import org.openstack.atlas.restclients.dns.pub.objects.RecordsList;
 
-import org.openstack.atlas.util.b64aes.Base64;
-import org.openstack.atlas.util.debug.Debug;
 import org.w3._2005.atom.Link;
 
 public class DnsClient1_0 {
@@ -50,12 +44,12 @@ public class DnsClient1_0 {
         this.token = token;
     }
 
-    public ClientResponse getDomain(Integer domainId, Boolean showRecords,
-            Boolean showSubDomains,
-            Integer limit, Integer offset) {
+    public Response getDomain(Integer domainId, Boolean showRecords,
+                                    Boolean showSubDomains,
+                                    Integer limit, Integer offset) {
         String url = String.format("/%d/domains/%d", accountId, domainId);
-        Client client = new Client();
-        WebResource wr = client.resource(endPoint).path(url);
+        Client client = ClientBuilder.newClient();
+        WebTarget wr = client.target(endPoint).path(url);
         wr = addLimitOffsetParams(wr, limit, offset);
         if (showRecords != null) {
             wr.queryParam("showRecords", showRecords ? "true" : "false");
@@ -64,48 +58,48 @@ public class DnsClient1_0 {
             wr.queryParam("showSubDomains", showSubDomains ? "true" : "false");
         }
 
-        Builder rb = wr.accept(MediaType.APPLICATION_XML);
-        rb = rb.type(MediaType.APPLICATION_XML);
+        Invocation.Builder rb = wr.request(MediaType.APPLICATION_XML);
+//        rb = rb.type(MediaType.APPLICATION_XML);
         rb.header("x-auth-token", this.token);
-        ClientResponse resp = rb.get(ClientResponse.class);
+        Response resp = rb.get();
         return resp;
     }
 
-    public ClientResponse getDomains(String name, Integer limit, Integer offset) {
-        Client client = new Client();
+    public Response getDomains(String name, Integer limit, Integer offset) {
+        Client client = ClientBuilder.newClient();
         String url = String.format("/%d/domains", accountId);
-        WebResource wr = client.resource(endPoint).path(url);
+        WebTarget wr = client.target(endPoint).path(url);
         wr = addLimitOffsetParams(wr, limit, offset);
         if (name != null) {
             wr = wr.queryParam("name", name);
         }
-        Builder rb = wr.accept(MediaType.APPLICATION_XML);
-        rb = rb.type(MediaType.APPLICATION_XML);
+        Invocation.Builder rb = wr.request(MediaType.APPLICATION_XML);
+//        rb = rb.type(MediaType.APPLICATION_XML);
         rb = rb.header("x-auth-token", this.token);
-        ClientResponse resp = rb.get(ClientResponse.class);
+        Response resp = rb.get();
         return resp;
     }
 
-    public ClientResponse getPtrRecords(String deviceUrl, String serviceName, Integer limit, Integer offset) {
-        Client client = new Client();
+    public Response getPtrRecords(String deviceUrl, String serviceName, Integer limit, Integer offset) {
+        Client client = ClientBuilder.newClient();
         String authKey = "x-auth-token";
         String url = String.format("/%d/rdns/%s", accountId, serviceName);
-        WebResource wr = client.resource(endPoint).path(url);
+        WebTarget wr = client.target(endPoint).path(url);
         wr = addLimitOffsetParams(wr, limit, offset);
         wr = wr.queryParam("href", deviceUrl);
 
         String logMsg = String.format("USEING CRED %s CALLING GET %s",authKey,wr.toString());
         LOG.info(logMsg);
         System.out.printf("%s\n", logMsg);
-        Builder rb = wr.accept(MediaType.APPLICATION_XML);
-        rb = rb.type(MediaType.APPLICATION_XML);
+        Invocation.Builder rb = wr.request(MediaType.APPLICATION_XML);
+//        rb = rb.type(MediaType.APPLICATION_XML);
         rb = rb.header(authKey, this.token);
-        ClientResponse resp = rb.get(ClientResponse.class);
+        Response resp = rb.get();
         return resp;
     }
 
-    public ClientResponse addPtrRecord(String deviceUrl,
-            String serviceName, String name, String ip, Integer ttl) {
+    public Response addPtrRecord(String deviceUrl,
+                                 String serviceName, String name, String ip, Integer ttl) {
         Rdns rdnsRequest = new Rdns();
         String fmt;
         String msg;
@@ -133,32 +127,32 @@ public class DnsClient1_0 {
         } catch (JAXBException ex) {
             xml = "ERROR";
         }
-        Client client = new Client();
-        WebResource wr = client.resource(endPoint).path(url);
-        Builder rb = wr.accept(MediaType.APPLICATION_XML);
+        Client client = ClientBuilder.newClient();
+        WebTarget wr = client.target(endPoint).path(url);
+        Invocation.Builder rb = wr.request(MediaType.APPLICATION_XML);
         fmt = "USEING CRED %s CALLING POST %s\nbody=%s";
         msg = String.format(fmt,authKey,wr.toString(),xml);
         LOG.info(msg);
         System.out.printf("%s\n", msg);
-        rb = rb.type(MediaType.APPLICATION_XML);
+//        rb = rb.type(MediaType.APPLICATION_XML);
         rb = rb.header(authKey, token);
-        ClientResponse resp = rb.post(ClientResponse.class, rdnsRequest);
+        Response resp = wr.request().post(Entity.entity(rdnsRequest, MediaType.APPLICATION_XML));
         return resp;
     }
 
-    public ClientResponse delPtrRecordPub(String deviceUrl, String serviceName, String ip) {
+    public Response delPtrRecordPub(String deviceUrl, String serviceName, String ip) {
         return delPtrRecordBaseMethod(deviceUrl, serviceName, ip, "x-auth-token", token, endPoint);
     }
 
-    public ClientResponse delPtrRecordMan(String deviceUrl, String serviceName, String ip) throws UnsupportedEncodingException {
+    public Response delPtrRecordMan(String deviceUrl, String serviceName, String ip) throws UnsupportedEncodingException {
         return delPtrRecordBaseMethod(deviceUrl, serviceName, ip, "authorization", encodeBasicAuth(), adminEndPoint);
     }
 
-    private ClientResponse delPtrRecordBaseMethod(String deviceUrl, String serviceName, String ip,
+    private Response delPtrRecordBaseMethod(String deviceUrl, String serviceName, String ip,
             String authKey, String authValue, String endPoint) {
         String url = String.format("/%d/rdns/%s", accountId, serviceName);
-        Client client = new Client();
-        WebResource wr = client.resource(endPoint).path(url);
+        Client client = ClientBuilder.newClient();
+        WebTarget wr = client.target(endPoint).path(url);
         wr = wr.queryParam("href", deviceUrl);
         if (ip != null) {
             wr = wr.queryParam("ip", ip);
@@ -166,18 +160,18 @@ public class DnsClient1_0 {
         String logMsg = String.format("USEING CRED %s CALLING DELETE %s",authKey,wr.toString());
         LOG.info(logMsg);
         System.out.printf("%s\n", logMsg);
-        Builder rb = wr.accept(MediaType.APPLICATION_XML);
-        rb = rb.type(MediaType.APPLICATION_XML);
+        Invocation.Builder rb = wr.request(MediaType.APPLICATION_XML);
+//        rb = rb.type(MediaType.APPLICATION_XML);
         rb.header(authKey, authValue);
-        ClientResponse resp = rb.delete(ClientResponse.class);
+        Response resp = rb.delete();
         return resp;
     }
 
-    public ClientResponse getDomains() {
+    public Response getDomains() {
         return getDomains(null, null, null);
     }
 
-    private WebResource addLimitOffsetParams(WebResource wr, Integer limit, Integer offset) {
+    private WebTarget addLimitOffsetParams(WebTarget wr, Integer limit, Integer offset) {
         if (limit != null) {
             wr = wr.queryParam("limit", limit.toString());
         }
