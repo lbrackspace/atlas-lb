@@ -1,15 +1,15 @@
 package org.openstack.atlas.api.resources.integration;
 
+import org.glassfish.grizzly.http.server.HttpServer;
 import org.junit.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
-import com.sun.grizzly.http.SelectorThread;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.DefaultClientConfig;import javax.ws.rs.core.UriBuilder;import java.io.IOException;import java.net.URI;import java.util.HashMap;import java.util.Map;
 
 public class LoadBalancersIntegrationTest {
 
-    private SelectorThread threadSelector;
+    private HttpServer threadSelector;
     private WebResource webResource;
 
     @Before
@@ -39,6 +39,6 @@ public class LoadBalancersIntegrationTest {
 
     @After
     public void tearDown() throws Exception {
-        threadSelector.stopEndpoint();
+        threadSelector.shutdown();
     }
 }

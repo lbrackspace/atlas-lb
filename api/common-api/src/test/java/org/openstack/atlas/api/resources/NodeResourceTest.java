@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.resources;
 
-import com.sun.org.apache.xpath.internal.Arg;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;

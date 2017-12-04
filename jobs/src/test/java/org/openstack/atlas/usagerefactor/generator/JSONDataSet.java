@@ -1,5 +1,5 @@
 package org.openstack.atlas.usagerefactor.generator;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dbunit.dataset.*;
 import org.dbunit.dataset.datatype.DataType;
 
