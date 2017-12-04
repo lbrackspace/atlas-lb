@@ -1,7 +1,8 @@
 package org.openstack.atlas.api.resources.integration;
 
-import com.sun.grizzly.http.SelectorThread;
-import com.sun.jersey.api.container.grizzly.GrizzlyWebContainerFactory;
+
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.grizzly2.servlet.GrizzlyWebContainerFactory;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -27,13 +28,12 @@ public class Helper {
 
     public static final URI BASE_URI = getBaseURI();
 
-    public static SelectorThread startServer() throws IOException {
+    public static HttpServer startServer() throws IOException {
         final Map<String, String> initParams = new HashMap<String, String>();
 
         initParams.put("com.sun.jersey.config.property.packages",
                 "org.openstack.atlas.api.resources");
 
-        SelectorThread threadSelector = GrizzlyWebContainerFactory.create(BASE_URI, initParams);
-        return threadSelector;
+        return GrizzlyWebContainerFactory.create(BASE_URI, initParams);
     }
 }
