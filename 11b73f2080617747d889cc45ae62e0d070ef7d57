@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a6041f2a_3ccf606e",
+        "filename": "pom.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2017-12-04T16:05:03Z",
+      "side": 1,
+      "message": "Why\u0027d we downgrade version here again? I had to update in the changes im currently working on which led to others im trying to get past also.",
+      "revId": "11b73f2080617747d889cc45ae62e0d070ef7d57",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
