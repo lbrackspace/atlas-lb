@@ -200,13 +200,6 @@
             </dependency>
 
             <dependency>
-                <groupId>net.sf.ehcache</groupId>
-                <artifactId>ehcache-core</artifactId>
-                <version>2.4.0</version>
-                <!--<type>pom</type>-->
-            </dependency>
-
-            <dependency>
                 <groupId>spy</groupId>
                 <artifactId>spymemcached</artifactId>
                 <version>2.7</version>
