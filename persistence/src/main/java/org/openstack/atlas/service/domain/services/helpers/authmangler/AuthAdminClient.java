@@ -1,8 +1,9 @@
 package org.openstack.atlas.service.domain.services.helpers.authmangler;
 
-import com.sun.jersey.api.client.Client;
 import org.openstack.client.keystone.KeyStoneAdminClient;
 import org.openstack.client.keystone.KeyStoneException;
+
+import javax.ws.rs.client.Client;
 
 public class AuthAdminClient extends KeyStoneAdminClient{
 

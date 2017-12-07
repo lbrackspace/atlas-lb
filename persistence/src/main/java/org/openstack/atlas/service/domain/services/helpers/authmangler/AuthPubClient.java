@@ -1,10 +1,11 @@
 package org.openstack.atlas.service.domain.services.helpers.authmangler;
 
-import com.sun.jersey.api.client.Client;
 import java.net.URISyntaxException;
 import org.openstack.client.keystone.KeyStoneClient;
 import org.openstack.client.keystone.KeyStoneException;
 import org.openstack.client.keystone.auth.AuthData;
+
+import javax.ws.rs.client.Client;
 
 public class AuthPubClient extends KeyStoneClient {
 

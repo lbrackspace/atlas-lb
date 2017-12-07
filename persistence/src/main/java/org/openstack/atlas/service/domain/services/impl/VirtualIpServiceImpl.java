@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.services.impl;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.TrafficType;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadBalancerDetails;
 import org.openstack.atlas.service.domain.entities.*;

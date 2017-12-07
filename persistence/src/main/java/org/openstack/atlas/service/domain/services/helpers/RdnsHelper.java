@@ -1,6 +1,5 @@
 package org.openstack.atlas.service.domain.services.helpers;
 
-import com.sun.jersey.api.client.ClientResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.restclients.auth.IdentityClientImpl;

@@ -22,7 +22,7 @@
         <dependency>
             <groupId>org.openstack.client.identity</groupId>
             <artifactId>java-identityclient</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
 
     </dependencies>
