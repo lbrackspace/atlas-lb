@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -158,8 +161,8 @@ public class ChainBuilderMain {
     public static String inspectCrt(X509CertificateHolder crt) throws NotAnX509CertificateException {
         StringBuilder sb = new StringBuilder();
         X509Inspector xi = new X509Inspector(crt);
-        String notBefore = StaticDateTimeUtils.toSqlTime(StaticDateTimeUtils.toDate(xi.getNotBefore()));
-        String notAfter = StaticDateTimeUtils.toSqlTime(StaticDateTimeUtils.toDate(xi.getNotAfter()));
+        String notBefore = StaticDateTimeUtils.toSqlTime(LocalDate.from(ZonedDateTime.ofInstant(xi.getNotBefore().toInstant(), ZoneId.systemDefault())));
+        String notAfter = StaticDateTimeUtils.toSqlTime(LocalDate.from(ZonedDateTime.ofInstant(xi.getNotAfter().toInstant(), ZoneId.systemDefault())));
         String serial = xi.getSerial().toString(16);
         sb.append("issuer=").append(xi.getIssuerName()).append("\n").
                 append("subj=").append(xi.getSubjectName()).append("\n").

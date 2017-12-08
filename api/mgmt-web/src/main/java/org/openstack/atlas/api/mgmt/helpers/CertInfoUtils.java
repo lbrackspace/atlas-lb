@@ -1,17 +1,9 @@
 package org.openstack.atlas.api.mgmt.helpers;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.bouncycastle.jce.provider.X509CertificateObject;
-import org.openstack.atlas.util.ca.StringUtils;
-import org.joda.time.DateTime;
+
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.CertInfo;
 import org.openstack.atlas.util.ca.PemUtils;
+import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
 import org.openstack.atlas.util.ca.exceptions.X509ReaderDecodeException;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
@@ -19,6 +11,11 @@ import org.openstack.atlas.util.ca.util.X509Inspector;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
+
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 public class CertInfoUtils {
 
@@ -50,8 +47,8 @@ public class CertInfoUtils {
         Calendar na = xi.getNotAfter();
         certInfo.setNotAfter(na);
         if (na != null) {
-            DateTime now = StaticDateTimeUtils.nowDateTime(true);
-            DateTime naDr = StaticDateTimeUtils.toDateTime(na, true);
+            ZonedDateTime now = StaticDateTimeUtils.nowDateTime(true);
+            ZonedDateTime naDr = StaticDateTimeUtils.toDateTime(na, true);
             double secs = StaticDateTimeUtils.secondsBetween(now, naDr);
             certInfo.setDaysTillExpires(secs / (24.0 * 60.0 * 60.0));
         }

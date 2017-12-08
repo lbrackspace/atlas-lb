@@ -1,12 +1,13 @@
 package org.openstack.atlas.service.domain.entities;
 
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import javax.persistence.Column;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import org.joda.time.DateTime;
+
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 
 @javax.persistence.Entity
@@ -17,7 +18,7 @@ public class CloudFilesLzo extends Entity implements Serializable {
     }
 
     public CloudFilesLzo(int hourKey, int frag, String md5) {
-        DateTime now = StaticDateTimeUtils.nowDateTime(true);
+        ZonedDateTime now = StaticDateTimeUtils.nowDateTime(true);
         this.hourKey = hourKey;
         this.frag = frag;
         this.md5 = md5;
@@ -25,7 +26,7 @@ public class CloudFilesLzo extends Entity implements Serializable {
     }
 
     public void bumpStartTime(){
-        DateTime now = StaticDateTimeUtils.nowDateTime(true);
+        ZonedDateTime now = StaticDateTimeUtils.nowDateTime(true);
         this.startTime = StaticDateTimeUtils.toCal(now);
     }
 
@@ -72,7 +73,7 @@ public class CloudFilesLzo extends Entity implements Serializable {
     public void setFinished(boolean finished) {
         this.finished = finished;
         if (finished) {
-            DateTime now = StaticDateTimeUtils.nowDateTime(true);
+            ZonedDateTime now = StaticDateTimeUtils.nowDateTime(true);
             this.endTime = StaticDateTimeUtils.toCal(now);
         } else {
             this.endTime = null;

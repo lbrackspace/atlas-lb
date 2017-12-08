@@ -1,7 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.joda.time.DateTime;
-import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
+
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.helpers.StubFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
@@ -13,13 +12,13 @@ import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.events.entities.LoadBalancerServiceEvent;
 import org.openstack.atlas.util.debug.Debug;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import java.security.NoSuchAlgorithmException;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.List;
 import java.util.logging.Level;
@@ -173,9 +172,9 @@ public class StubResource extends ManagementDependencyProvider {
     public Response getSslTermInfos() {
         SslTermInfos sslTerms = new SslTermInfos();
         List<SslTermInfo> sslTermsList = sslTerms.getSslTerms();
-        DateTime now = StaticDateTimeUtils.nowDateTime(true);
-        DateTime notBefore = now.plusHours(-2);
-        DateTime notAfter = now.plusDays(30);
+        ZonedDateTime now = StaticDateTimeUtils.nowDateTime(true);
+        ZonedDateTime notBefore = now.plusHours(-2);
+        ZonedDateTime notAfter = now.plusDays(30);
         sslTerms.setReportDate(StaticDateTimeUtils.toCal(now));
         int hi = 0;
         for (int i = 0; i < 5; i++) {

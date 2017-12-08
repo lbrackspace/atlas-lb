@@ -1,52 +1,39 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import java.util.Collections;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.api.mgmt.helpers.CertInfoUtils;
 import org.openstack.atlas.api.mgmt.helpers.SslTermInfoComparator;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.CertInfo;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.SslTermInfo;
-import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
-import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
-import org.joda.time.DateTime;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.SslTermInfos;
-import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
-import org.openstack.atlas.service.domain.services.helpers.RdnsHelper;
-import org.openstack.atlas.util.config.MossoConfigValues;
+import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.osgi.cfg.commons.ApacheCommonsConfiguration;
-import org.openstack.atlas.util.config.LbConfiguration;
-import org.openstack.atlas.util.debug.Debug;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Alerts;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudit;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerAudits;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfStrings;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.api.helpers.ResponseFactory;
-import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import org.openstack.atlas.cfg.RestApiConfiguration;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.util.b64aes.Aes;
+import org.openstack.atlas.service.domain.pojos.SslTermInfoDb;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.config.LbConfiguration;
+import org.openstack.atlas.util.config.MossoConfigValues;
+import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
-import org.openstack.atlas.api.mgmt.helpers.CertInfoUtils;
-import org.openstack.atlas.service.domain.pojos.SslTermInfoDb;
-import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
-
+import static javax.ws.rs.core.MediaType.*;
 import static org.openstack.atlas.util.converters.DateTimeConverters.isoTocal;
-import static javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
 public class AuditResource extends ManagementDependencyProvider {
 
@@ -155,7 +142,7 @@ public class AuditResource extends ManagementDependencyProvider {
     @Path("sslexpireaudit")
     @Produces({APPLICATION_XML, APPLICATION_JSON})
     public Response runExpiredCertCheck() {
-        DateTime now = StaticDateTimeUtils.nowDateTime(true);
+        ZonedDateTime now = StaticDateTimeUtils.nowDateTime(true);
         SslTermInfos sslTermElement = new SslTermInfos();
         if (!isUserInRole("ops,support")) {
             return ResponseFactory.accessDenied();

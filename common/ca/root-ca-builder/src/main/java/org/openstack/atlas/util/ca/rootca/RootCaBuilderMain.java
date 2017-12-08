@@ -60,8 +60,8 @@ public class RootCaBuilderMain {
         Date notBefore = secsFromDate(now, conf.getNotBefore());
         Date notAfter = secsFromDate(now, conf.getNotAfter());
         System.out.printf("Generating CSR for subj: %s\n", conf.getSubjName());
-        System.out.printf("Setting notBefore in CSR to: %s\n", StaticDateTimeUtils.toSqlTime(notBefore));
-        System.out.printf("Setting notAfter in CSR to: %s\n", StaticDateTimeUtils.toSqlTime(notAfter));
+        System.out.printf("Setting notBefore in CSR to: %s\n", StaticDateTimeUtils.toSqlTime(new java.sql.Date(notBefore.getTime()).toLocalDate()));
+        System.out.printf("Setting notAfter in CSR to: %s\n", StaticDateTimeUtils.toSqlTime(new java.sql.Date(notAfter.getTime()).toLocalDate()));
         PKCS10CertificationRequest csr = CsrUtils.newCsr(conf.getSubjName(), rootKey, true);
         System.out.printf("Csr generated\n");
         String csrPem = PemUtils.toPemString(csr);
