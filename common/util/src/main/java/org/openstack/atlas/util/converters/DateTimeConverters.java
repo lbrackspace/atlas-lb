@@ -1,13 +1,17 @@
 package org.openstack.atlas.util.converters;
 
 import org.openstack.atlas.util.common.exceptions.ConverterException;
+
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.Locale;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.ISODateTimeFormat;
 
 
 public class DateTimeConverters {
@@ -27,7 +31,7 @@ public class DateTimeConverters {
         Calendar out;
         Matcher tzMatcher;
         String tzStr;
-        DateTimeZone dtZone;
+        ZoneOffset dtZone;
         if(isoStr == null){
             throw new ConverterException(new NullPointerException());
         }
@@ -35,12 +39,13 @@ public class DateTimeConverters {
             tzMatcher = tzPattern.matcher(isoStr);
             if(tzMatcher.find()) {
                 tzStr = String.format("%s%s",tzMatcher.group(1),tzMatcher.group(2));
-                dtZone = DateTimeZone.forID(tzStr);
+                dtZone = ZoneOffset.of(tzStr);
             }else{
-                dtZone = DateTimeZone.UTC;
+                dtZone = ZoneOffset.UTC;
             }
-            DateTime dateTime = new DateTime(isoStr,dtZone);
-            out = dateTime.toCalendar(Locale.ROOT);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            OffsetDateTime dateTime =  OffsetDateTime.of(LocalDateTime.parse(isoStr, formatter),dtZone);
+            out = GregorianCalendar.from(ZonedDateTime.from(dateTime));
         } catch (Exception ex) {
             throw new ConverterException(ex);
         }
@@ -51,8 +56,9 @@ public class DateTimeConverters {
         String out;
         String msg;
         try {
-            DateTime dateTime = new DateTime(cal);
-            out = ISODateTimeFormat.dateTimeNoMillis().print(dateTime);
+            ZonedDateTime dateTime = ZonedDateTime.of(cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.HOUR),cal.get(Calendar.MINUTE),cal.get(Calendar.SECOND), cal.get(Calendar.MILLISECOND)*1000000, TimeZone.getDefault().toZoneId());
+            DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
+            out =  dtf.format(dateTime);
         } catch (Exception ex) {
             throw new ConverterException(ex);
         }

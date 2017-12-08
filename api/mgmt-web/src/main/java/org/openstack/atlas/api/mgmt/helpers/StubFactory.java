@@ -11,11 +11,11 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
 
 import java.text.ParseException;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
+
 import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
 
 public class StubFactory {
@@ -445,8 +445,8 @@ public class StubFactory {
         return iface;
     }
 
-    public static CertInfo newCertInfo(int i,DateTime notBefore, DateTime notAfter){
-        DateTime now = StaticDateTimeUtils.nowDateTime(true);
+    public static CertInfo newCertInfo(int i, ZonedDateTime notBefore, ZonedDateTime notAfter){
+        ZonedDateTime now = StaticDateTimeUtils.nowDateTime(true);
         CertInfo certInfo = new CertInfo();
         certInfo.setIssuerName(String.format("issuer %d",i));
         certInfo.setSubjectName(String.format("subject %d", i));

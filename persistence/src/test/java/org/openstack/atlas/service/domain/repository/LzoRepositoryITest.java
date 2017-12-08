@@ -1,35 +1,13 @@
 package org.openstack.atlas.service.domain.repository;
 
-import java.io.UnsupportedEncodingException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.joda.time.DateTime;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.service.domain.Base;
-import org.openstack.atlas.service.domain.entities.CloudFilesLzo;
-import org.openstack.atlas.service.domain.entities.HdfsLzo;
-import org.openstack.atlas.util.common.CloudFilesSegment;
-import org.openstack.atlas.util.common.CloudFilesSegmentContainer;
-import org.openstack.atlas.util.crypto.HashUtil;
-import org.openstack.atlas.util.staticutils.StaticDateTimeUtils;
-import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
-import static org.openstack.atlas.service.domain.entities.HdfsLzo.NEEDS_REUPLOAD;
-import static org.openstack.atlas.service.domain.entities.HdfsLzo.NEEDS_MD5;
-import static org.openstack.atlas.service.domain.entities.HdfsLzo.NEEDS_CF;
-import static org.openstack.atlas.service.domain.entities.HdfsLzo.NEEDS_HDFS;
-import static org.openstack.atlas.service.domain.entities.HdfsLzo.NEEDS_MASK;
+import static org.openstack.atlas.service.domain.entities.HdfsLzo.*;
 
 @RunWith(Enclosed.class)
 public class LzoRepositoryITest {
