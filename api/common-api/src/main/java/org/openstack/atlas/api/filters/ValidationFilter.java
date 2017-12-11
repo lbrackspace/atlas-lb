@@ -45,10 +45,12 @@ import java.util.regex.Pattern;
 import javax.xml.stream.XMLStreamReader;
 
 import static org.openstack.atlas.api.filters.helpers.StringUtilities.logId;
+import org.openstack.atlas.util.debug.Debug;
 
 public class ValidationFilter implements Filter {
 
     private final Log LOG = LogFactory.getLog(ValidationFilter.class);
+    private static int init_count = 0;
     protected static final String XML = "application/xml";
     protected static final String JSON = "application/json";
     protected static final String VFAIL = "Validation Failure";
@@ -68,6 +70,28 @@ public class ValidationFilter implements Filter {
     public static final String dashline = "--------------------------------------\n";
     public static final Pattern jsonUriPattern = Pattern.compile(".*\\.json$", Pattern.CASE_INSENSITIVE);
     public static final Pattern xmlUriPattern = Pattern.compile(".*\\.xml$", Pattern.CASE_INSENSITIVE);
+
+    public ValidationFilter() {
+        int count = incInitCount();
+        LOG.info(String.format("ValidationFilter init_count: %d", count));
+    }
+
+    public static int incInitCount() {
+        int count;
+        synchronized (ValidationFilter.class) {
+            init_count++;
+            count = init_count;
+        }
+        return count;
+    }
+
+    public static int getInitCount() {
+        int count;
+        synchronized (ValidationFilter.class) {
+            count = init_count;
+        }
+        return count;
+    }
 
     @Override
     public void init(FilterConfig config) throws ServletException {
@@ -343,24 +367,7 @@ public class ValidationFilter implements Filter {
     }
 
     public static String getExtendedStackTrace(Throwable th) {
-        Throwable t;
-        StringBuilder sb = new StringBuilder(PAGESIZE);
-        Throwable currThrowable;
-        String msg;
-
-        t = th;
-        while (t != null) {
-            if (t instanceof Throwable) {
-                currThrowable = (Throwable) t;
-                sb.append(String.format("\"%s\":\"%s\"\n", currThrowable.getClass().getName(), currThrowable.getMessage()));
-                for (StackTraceElement se : currThrowable.getStackTrace()) {
-                    sb.append(String.format("%s\n", se.toString()));
-                }
-                sb.append("\n");
-                t = t.getCause();
-            }
-        }
-        return sb.toString();
+        return Debug.getExtendedStackTrace(th);
     }
 
     public FilterConfig getConfig() {

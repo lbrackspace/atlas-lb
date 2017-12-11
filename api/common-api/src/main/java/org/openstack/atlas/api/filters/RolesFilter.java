@@ -13,13 +13,10 @@ import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtende
 public class RolesFilter implements Filter {
     private final Log LOG = LogFactory.getLog(RolesFilter.class);
 
-    private FilterConfig filterConfig = null;
-
     private static final String X_ROLES = "X-Roles";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        this.filterConfig = filterConfig;
     }
 
     @Override
@@ -45,6 +42,5 @@ public class RolesFilter implements Filter {
 
     @Override
     public void destroy() {
-        this.filterConfig = null;
     }
 }

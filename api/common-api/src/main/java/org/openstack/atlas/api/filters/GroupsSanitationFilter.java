@@ -18,13 +18,10 @@ import static org.openstack.atlas.api.filters.helpers.StringUtilities.getExtende
 public class GroupsSanitationFilter implements Filter {
     private final Log LOG = LogFactory.getLog(GroupsSanitationFilter.class);
 
-    private FilterConfig filterConfig = null;
-
     private static final String X_PP_GROUPS = "X-PP-Groups";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        this.filterConfig = filterConfig;
     }
 
     @Override
@@ -55,7 +52,6 @@ public class GroupsSanitationFilter implements Filter {
 
     @Override
     public void destroy() {
-        this.filterConfig = null;
     }
 
     //Groups now come from auth, and  handled in Repose But need to clean them up a bit for us...

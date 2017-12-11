@@ -40,7 +40,8 @@ public class AuthenticationFilter implements Filter {
     private static final String X_AUTH_USER_NAME = "X-PP-User";
     private static final String X_AUTH_TOKEN = "X-Auth-Token";
     private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String BYPASS_AUTH = "bypass_auth";
+
+    private static int init_count = 0;
     private UrlAccountIdExtractor accountIdExtractor;
     private AuthTokenValidator authTokenValidator;
     private RestApiConfiguration configuration;
@@ -48,6 +49,25 @@ public class AuthenticationFilter implements Filter {
     private SimpleCache<AuthInfo> userCache;
 
     public AuthenticationFilter(UrlAccountIdExtractor urlAccountIdExtractor) {
+        int count = incInitCount();
+        LOG.info(String.format("AuthenticationFilter init_count: %d", count));
+    }
+
+    public static int incInitCount() {
+        int count;
+        synchronized (AuthenticationFilter.class) {
+            init_count++;
+            count = init_count;
+        }
+        return count;
+    }
+
+    public static int getInitCount() {
+        int count;
+        synchronized (AuthenticationFilter.class) {
+            count = init_count;
+        }
+        return count;
     }
 
     @Override

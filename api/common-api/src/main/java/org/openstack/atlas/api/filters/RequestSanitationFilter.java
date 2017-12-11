@@ -16,14 +16,12 @@ public class RequestSanitationFilter implements Filter {
 
     private final Log LOG = LogFactory.getLog(RequestSanitationFilter.class);
 
-    private FilterConfig filterConfig = null;
     private static final String DEFAULT_ACCEPT_HEADER = "application/json";
     private static final String X_PP_GROUPS = "x-pp-groups";
     private static final String X_WADL = "x-wadl";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        this.filterConfig = filterConfig;
     }
 
     @Override
@@ -57,7 +55,6 @@ public class RequestSanitationFilter implements Filter {
 
     @Override
     public void destroy() {
-        this.filterConfig = null;
     }
 
     private boolean verifyWADLRequest(String uri) {
