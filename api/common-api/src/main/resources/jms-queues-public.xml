@@ -17,6 +17,7 @@
     <!--JMS SETTINGS-->
     <bean id="jmsActiveMQConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
         <property name="brokerURL" value="${activemq_broker_uri}"/>
+        <property name="trustAllPackages" value="true"/>
     </bean>
     <bean id="jmsPooledConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
         <property name="maxConnections" value="${jms.pool.max.connections}"/>
