@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bca82cc7_8a13fa05",
+        "filename": "api/common-api/src/main/resources/jms-queues-public.xml",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2017-12-12T18:51:02Z",
+      "side": 1,
+      "message": "i suppose I\u0027m not totally sure what this does. But trusting ALL sounds scary. Is this what we want or do we want to be explicit? spring.activemq.packages.trusted\u003d\u003cpackage1\u003e,\u003cpackage2\u003e,\u003cpackage3\u003e",
+      "revId": "70c424747ca086d972ba07de6df6231898a726d6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
