@@ -43,8 +43,7 @@ public class DateTimeConverters {
             }else{
                 dtZone = ZoneOffset.UTC;
             }
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            OffsetDateTime dateTime =  OffsetDateTime.of(LocalDateTime.parse(isoStr, formatter),dtZone);
+            OffsetDateTime dateTime =  OffsetDateTime.of(LocalDateTime.parse(isoStr, DateTimeFormatter.ISO_DATE_TIME),dtZone);
             out = GregorianCalendar.from(ZonedDateTime.from(dateTime));
         } catch (Exception ex) {
             throw new ConverterException(ex);
@@ -56,9 +55,9 @@ public class DateTimeConverters {
         String out;
         String msg;
         try {
-            ZonedDateTime dateTime = ZonedDateTime.of(cal.get(Calendar.YEAR),cal.get(Calendar.MONTH),cal.get(Calendar.DAY_OF_MONTH),cal.get(Calendar.HOUR),cal.get(Calendar.MINUTE),cal.get(Calendar.SECOND), cal.get(Calendar.MILLISECOND)*1000000, TimeZone.getDefault().toZoneId());
-            DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME;
-            out =  dtf.format(dateTime);
+            ZonedDateTime dateTime =ZonedDateTime.ofInstant(cal.toInstant(),ZoneOffset.UTC);
+            DateTimeFormatter dtf = DateTimeFormatter.ISO_INSTANT;
+            out =  dtf.format(dateTime.withNano(0));
         } catch (Exception ex) {
             throw new ConverterException(ex);
         }
