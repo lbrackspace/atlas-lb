@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.junit.Ignore;
 import org.mockito.ArgumentMatchers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
@@ -13,7 +14,6 @@ import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.api.integration.AsyncService;
 import junit.framework.Assert;
-import org.dozer.DozerBeanMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class NodesResourceTest {
-
+    static final String mappingFile = "loadbalancing-dozer-mapping.xml";
     public static class WhenGettingLoadBalancerNodes {
 
         private HttpHeaders requestHeaders;
@@ -51,9 +51,9 @@ public class NodesResourceTest {
             nodesResource.setAsyncService(asyncService);
             nodesResource.setNodeService(nodeService);
 
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            nodesResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            nodesResource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
 
             List<String> acceptHeaders = new ArrayList<String>();
             acceptHeaders.add(APPLICATION_XML);
@@ -111,9 +111,9 @@ public class NodesResourceTest {
             nodesResource.setAsyncService(asyncService);
             nodesResource.setNodeService(nodeService);
 
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            nodesResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            nodesResource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
 
             when(loadBalancerService.get(anyInt())).thenReturn(null);
         }

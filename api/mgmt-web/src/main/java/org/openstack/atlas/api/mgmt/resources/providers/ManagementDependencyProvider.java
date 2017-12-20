@@ -14,7 +14,7 @@ import org.openstack.atlas.api.mgmt.helpers.LDAPTools.MossoAuthConfig;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
 import org.openstack.atlas.api.resources.providers.RequestStateContainer;
 import org.openstack.atlas.util.ip.IPv6;
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.openstack.atlas.cfg.Configuration;
 
 import javax.ws.rs.Produces;
@@ -31,7 +31,7 @@ public class ManagementDependencyProvider {
     private RequestStateContainer requestStateContainer;
     protected ManagementAsyncService managementAsyncService;
     protected AsyncService esbService;
-    protected DozerBeanMapper dozerMapper;
+    protected Mapper dozerMapper;
     protected ClusterRepository clusterRepository;
     protected HostRepository hostRepository;
     protected LoadBalancerRepository loadBalancerRepository;
@@ -195,11 +195,11 @@ public class ManagementDependencyProvider {
         this.alertRepository = alertRepository;
     }
 
-    public DozerBeanMapper getDozerMapper() {
+    public Mapper getDozerMapper() {
         return dozerMapper;
     }
 
-    public void setDozerMapper(DozerBeanMapper dozerMapper) {
+    public void setDozerMapper(Mapper dozerMapper) {
         this.dozerMapper = dozerMapper;
     }
 

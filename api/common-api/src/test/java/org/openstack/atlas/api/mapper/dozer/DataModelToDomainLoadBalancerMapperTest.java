@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.mapper.dozer;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +17,7 @@ import java.util.GregorianCalendar;
 public class DataModelToDomainLoadBalancerMapperTest {
     private static final String publicDozerConfigFile = "loadbalancing-dozer-mapping.xml";
     public static class Wnen_mapping_a_load_balancer_from_datamodel_to_domain {
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private LoadBalancer loadBalancer;
         private org.openstack.atlas.service.domain.entities.LoadBalancer domainLoadBalancer;
 
@@ -259,7 +259,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
     }
 
     public static class Wnen_mapping_a_load_balancer_from_datamodel_to_domain_with_ipv6_vips {
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private LoadBalancer loadBalancer;
         private org.openstack.atlas.service.domain.entities.LoadBalancer domainLoadBalancer;
 
@@ -382,7 +382,7 @@ public class DataModelToDomainLoadBalancerMapperTest {
 
     public static class Wnen_mapping_an_access_list_from_datamodel_to_domain {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private AccessList accessList;
         private org.openstack.atlas.service.domain.entities.LoadBalancer domainLoadBalancer;
         @Before

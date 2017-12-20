@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.mgmt.mapper.dozer;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class ExtendedAccountLoadBalancerMapperTest {
         private Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set;
 
         private LoadBalancer loadBalancer;
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
 
         @Before
         public void setUp() {

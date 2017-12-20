@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.mapper.dozer;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +12,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 public class DataModelToDomainSslTerminationTest {
     private static final String publicDozerConfigFile = "loadbalancing-dozer-mapping.xml";
     public static class When_mapping_session_persistence_from_datamodel_to_domain {
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private SslTermination sslTermination;
         private org.openstack.atlas.service.domain.entities.SslTermination domainSsltermination;
 

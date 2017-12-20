@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.mgmt.resources;
 
 import junit.framework.Assert;
-import org.dozer.DozerBeanMapper;
+import org.dozer.DozerBeanMapperBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 
 @RunWith(Enclosed.class)
 public class CallbackResourceTest {
+    static final String mappingFile = "loadbalancing-dozer-management-mapping.xml";
     public static class whenRetrievingAccountDetails {
         private ManagementAsyncService asyncService;
         private CallbackResource callbackResource;
@@ -38,9 +39,9 @@ public class CallbackResourceTest {
 
             operationResponse = new OperationResponse();
             operationResponse.setExecutedOkay(true);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-management-mapping.xml");
-            callbackResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            callbackResource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test

@@ -4,7 +4,7 @@ import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.Ticket;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
 import org.openstack.atlas.service.domain.entities.VirtualIpType;
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +17,7 @@ public class VirtualIpTest {
     private static final String managementDozerConfigFile = "loadbalancing-dozer-management-mapping.xml";
 
     public static class WhenMappingAVirtualIpFromDomainToDataModel {
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp dataModelVip;
         private VirtualIp vip;
         private Ticket ticket;

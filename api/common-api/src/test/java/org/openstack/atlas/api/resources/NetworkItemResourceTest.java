@@ -1,12 +1,12 @@
 package org.openstack.atlas.api.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.mockito.*;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.api.integration.AsyncService;
 import junit.framework.Assert;
-import org.dozer.DozerBeanMapper;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class NetworkItemResourceTest {
-
+    static final String mappingFile = "loadbalancing-dozer-mapping.xml";
     public static class WhenDeletingAccessListItem {
         @Mock
         AsyncService asyncService;
@@ -39,9 +39,9 @@ public class NetworkItemResourceTest {
             networkItemResource = new NetworkItemResource();
             networkItemResource.setAsyncService(asyncService);
             networkItemResource.setAccessListService(accessListService);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            networkItemResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            networkItemResource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test

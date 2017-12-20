@@ -2,7 +2,7 @@ package org.openstack.atlas.api.mgmt.mapper.dozer;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,8 +17,8 @@ public class MiscDomainDataModelDozerTests {
 
     private static final String publicDozerConfigFile = "loadbalancing-dozer-mapping.xml";
     private static final String managementDozerConfigFile = "loadbalancing-dozer-management-mapping.xml";
-    private static final DozerBeanMapper pubMapper;
-    private static final DozerBeanMapper mgmtMapper;
+    private static final Mapper pubMapper;
+    private static final Mapper mgmtMapper;
 
     static {
         pubMapper = MapperBuilder.getConfiguredMapper(publicDozerConfigFile);

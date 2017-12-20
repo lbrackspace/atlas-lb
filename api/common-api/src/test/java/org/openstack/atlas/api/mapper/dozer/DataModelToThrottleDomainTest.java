@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.mapper.dozer;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +18,7 @@ public class DataModelToThrottleDomainTest {
 
     public static class When_mapping_connection_throtal{
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private ConnectionThrottle apiConnectionThrottle;
         private ConnectionLimit dbConnectionLimit;
 

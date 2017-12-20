@@ -1,7 +1,6 @@
 package org.openstack.atlas.api.mapper.dozer;
 
 
-import org.dozer.DozerBeanMapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,6 @@ public class DomainToRestModelTest {
 
     private static final String publicDozerConfigFile = "loadbalancing-dozer-mapping.xml";
     private static final String managementDozerConfigFile = "loadbalancing-dozer-management-mapping.xml";
-    private DozerBeanMapper mapper;
     private Limits rLimits;
     private List<LimitType> dLimitList;
     private LimitTypes rLimitTypes;

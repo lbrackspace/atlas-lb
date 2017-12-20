@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mapper.dozer;
 
+import org.dozer.Mapper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
@@ -16,7 +17,6 @@ import org.openstack.atlas.service.domain.entities.NodeCondition;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.entities.VirtualIp;
-import org.dozer.DozerBeanMapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
     public static class When_mapping_a_domain_protocolobject_to_a_datamodel_protocol {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private org.openstack.atlas.docs.loadbalancers.api.v1.Protocol expected_prot;
         private org.openstack.atlas.docs.loadbalancers.api.v1.Protocol actual_prot;
         private org.openstack.atlas.service.domain.entities.LoadBalancerProtocolObject dprot;
@@ -78,7 +78,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
     public static class When_mapping_a_domain_algo_to_a_datamodel_algo {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private org.openstack.atlas.docs.loadbalancers.api.v1.Algorithm expected_algo;
         private org.openstack.atlas.docs.loadbalancers.api.v1.Algorithm actual_algo;
         private org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithmObject dalgo;
@@ -125,7 +125,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
     public static class When_mapping_a_load_balancer_from_domain_to_datamodel {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private LoadBalancer loadBalancer;
         private org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer dataModelLoadBalancer;
 
@@ -282,7 +282,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
     public static class When_mapping_a_load_balancer_with_empty_collections_from_domain_to_datamodel {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private LoadBalancer loadBalancer;
         private org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer dataModelLoadBalancer;
 
@@ -332,7 +332,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
     public static class When_mapping_a_load_balancer_from_domain_to_an_access_list_in_datamodel {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private LoadBalancer loadBalancer;
         private AccessList dataModelAccessList;
 
@@ -393,7 +393,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
     public static class When_mapping_a_deleted_domain_loadbalancer_to_a_datamodel_loadbalancer {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private LoadBalancer loadBalancer;
         private org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer dataModelLb;
 
@@ -455,7 +455,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
     public static class When_mapping_a_hydrated_domain_loadbalancer_to_a_simple_datamodel_loadbalancer {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private LoadBalancer loadBalancer;
         private org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer dataModelLb;
 
@@ -517,7 +517,7 @@ public class DomainToDataModelLoadBalancerMapperTest {
 
     public static class When_mapping_a_deleted_domain_loadbalancer_to_a_simple_datamodel_loadbalancer {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private LoadBalancer loadBalancer;
         private org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer dataModelLb;
 

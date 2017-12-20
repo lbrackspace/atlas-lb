@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.mapper.dozer;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class DomainToDataModelNodeServiceEventTest {
 
     public static class When_mapping_node_service_event_from_domain_to_datamodel {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private NodeServiceEvent nodeServiceEvent;
         private org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvent dataNodeServiceEvent;
 
@@ -61,7 +61,7 @@ public class DomainToDataModelNodeServiceEventTest {
 
     public static class When_mapping_node_service_events_from_domain_to_datamodel {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private NodeServiceEvent nodeServiceEvent;
         private org.openstack.atlas.service.domain.events.pojos.NodeServiceEvents nodeServiceEvents;
         private org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvent dataNodeServiceEvent;

@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.mgmt.mapper.dozer;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
+import org.dozer.DozerBeanMapperBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +17,7 @@ public class HostMachineDetailsTest {
     private static final String managementDozerConfigFile = "loadbalancing-dozer-management-mapping.xml";
 
     public static class WhenMappingHostDataModeToRestMachineDetails {
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private org.openstack.atlas.service.domain.pojos.HostMachineDetails hostMachine;
         private org.openstack.atlas.service.domain.entities.Host host;
         private List<org.openstack.atlas.service.domain.entities.Host> hosts;
@@ -24,9 +25,9 @@ public class HostMachineDetailsTest {
 
         @Before
         public void setUp() {
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add(managementDozerConfigFile);
-            mapper = new DozerBeanMapper(mappingFiles);
+            mapper = DozerBeanMapperBuilder.create()
+                    .withMappingFiles(managementDozerConfigFile)
+                    .build();
             host = new org.openstack.atlas.service.domain.entities.Host();
             host.setId(1);
             host.setManagementIp("10.0.0.0");

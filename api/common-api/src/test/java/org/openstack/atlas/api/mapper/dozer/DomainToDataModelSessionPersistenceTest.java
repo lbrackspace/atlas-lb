@@ -1,8 +1,8 @@
 package org.openstack.atlas.api.mapper.dozer;
 
+import org.dozer.Mapper;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
-import org.dozer.DozerBeanMapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class DomainToDataModelSessionPersistenceTest {
 
     public static class When_mapping_session_persistence_from_domain_to_datamodel {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private SessionPersistence sessionPersistence;
         private org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence dataModelSessionPersistence;
 

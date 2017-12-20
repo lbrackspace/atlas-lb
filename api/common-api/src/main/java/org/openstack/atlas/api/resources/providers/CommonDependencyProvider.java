@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.resources.providers;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.openstack.atlas.api.atom.AtomFeedAdapter;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.cfg.RestApiConfiguration;
@@ -40,7 +40,7 @@ public class CommonDependencyProvider {
     protected RestApiConfiguration restApiConfiguration;
     protected AsyncService asyncService;
     protected LoadBalancerRepository lbRepository;
-    protected DozerBeanMapper dozerMapper;
+    protected Mapper dozerMapper;
     protected AtomFeedAdapter atomFeedAdapter;
     protected LoadBalancerService loadBalancerService;
     protected HealthMonitorService healthMonitorService;
@@ -142,7 +142,7 @@ public class CommonDependencyProvider {
         this.lbRepository = lbRepository;
     }
 
-    public void setDozerMapper(DozerBeanMapper dozerMapper) {
+    public void setDozerMapper(Mapper dozerMapper) {
         this.dozerMapper = dozerMapper;
     }
 

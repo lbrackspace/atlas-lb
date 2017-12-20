@@ -1,9 +1,9 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
 import junit.framework.Assert;
-import org.dozer.DozerBeanMapper;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import static org.mockito.Mockito.mock;
 
 @RunWith(Enclosed.class)
 public class VirtualIpResourceTest {
-
+    static final String mappingFile = "loadbalancing-dozer-management-mapping.xml";
     public static class WhenGettingALoadBalancerVirtualIps {
 
         private ManagementAsyncService asyncService;
@@ -33,9 +33,9 @@ public class VirtualIpResourceTest {
             virtualIpsResource.setManagementAsyncService(asyncService);
             virtualIpsResource.setId(12);
             operationResponse = new OperationResponse();
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-management-mapping.xml");
-            virtualIpsResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            virtualIpsResource.setDozerMapper( DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test

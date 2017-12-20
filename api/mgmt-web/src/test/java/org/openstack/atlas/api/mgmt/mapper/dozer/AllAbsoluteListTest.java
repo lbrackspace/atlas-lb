@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.mgmt.mapper.dozer;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +22,7 @@ public class AllAbsoluteListTest {
     public static class When_mapping_a_load_balancer_from_datamodel_to_domain {
 
         private org.openstack.atlas.service.domain.pojos.AllAbsoluteLimits limits;
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
 
         @Before
         public void setUp() {

@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.mapper.dozer;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,7 @@ public class DomainToDataModelCertificateMappingTest {
     private static final String publicDozerConfigFile = "loadbalancing-dozer-mapping.xml";
 
     public static class DefaultMapping {
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private CertificateMapping certificateMapping;
         private org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMapping dataModelCertificateMapping;
 
@@ -47,7 +47,7 @@ public class DomainToDataModelCertificateMappingTest {
     }
 
     public static class HideKeysAndCertificatesMapping {
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private CertificateMapping certificateMapping;
 
         private org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMapping dataModelCertificateMapping;

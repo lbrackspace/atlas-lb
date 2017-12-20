@@ -3,7 +3,7 @@ package org.openstack.atlas.api.mgmt.mapper.dozer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.BlacklistItem;
 import org.openstack.atlas.service.domain.entities.BlacklistType;
 import org.openstack.atlas.service.domain.entities.IpVersion;
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +16,7 @@ public class BlacklistItemTest {
 
     public static class WhenMappingABlacklistItemFromDomainToDataModel {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private BlacklistItem dataModelBlacklistItem;
         private org.openstack.atlas.service.domain.entities.BlacklistItem domainBlacklistItem;
 
@@ -67,7 +67,7 @@ public class BlacklistItemTest {
 
     public static class WhenMappingABlacklistItemFromDataModelToDomain {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private BlacklistItem dataModelBlacklistItem;
         private org.openstack.atlas.service.domain.entities.BlacklistItem domainBlacklistItem;
 

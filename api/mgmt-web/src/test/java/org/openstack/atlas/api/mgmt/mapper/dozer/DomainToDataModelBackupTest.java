@@ -12,7 +12,7 @@ import org.openstack.atlas.service.domain.pojos.HostUsage;
 import org.openstack.atlas.service.domain.pojos.HostUsageList;
 import org.openstack.atlas.service.domain.pojos.HostUsageRecord;
 import org.openstack.atlas.api.helpers.CalendarHelper;
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class DomainToDataModelBackupTest {
 
     public static class WhenMappingABackupFromDomainToDataModel {
     
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private Backup backup;
         private org.openstack.atlas.service.domain.entities.Backup domainBackup;
 
@@ -83,7 +83,7 @@ public class DomainToDataModelBackupTest {
 
     public static class When_mapping_Host_UsageList {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private HostUsageList dae;
         private org.openstack.atlas.docs.loadbalancers.api.management.v1.HostUsageList rae;
 
@@ -146,7 +146,7 @@ public class DomainToDataModelBackupTest {
 
     public static class When_mapping_Account_LoadBalancerEvents {
 
-        private DozerBeanMapper mapper;
+        private Mapper mapper;
         private AccountLoadBalancerServiceEvents dae;
         private org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountLoadBalancerServiceEvents rae;
 

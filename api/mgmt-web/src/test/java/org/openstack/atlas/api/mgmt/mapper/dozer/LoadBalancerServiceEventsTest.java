@@ -4,7 +4,7 @@ import java.util.Calendar;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.BlacklistItem;
 import org.openstack.atlas.service.domain.entities.BlacklistType;
 import org.openstack.atlas.service.domain.entities.IpVersion;
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +19,7 @@ import org.openstack.atlas.util.debug.Debug;
 public class LoadBalancerServiceEventsTest {
 
     private static final String managementDozerConfigFile = "loadbalancing-dozer-management-mapping.xml";
-    private DozerBeanMapper dozerMapper;
+    private Mapper dozerMapper;
     org.openstack.atlas.service.domain.events.pojos.LoadBalancerServiceEvents dEvents;
     org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerServiceEvents rEvents;
     LoadBalancerServiceEvent lbSe;

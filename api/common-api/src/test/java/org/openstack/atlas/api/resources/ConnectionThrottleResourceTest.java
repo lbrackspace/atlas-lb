@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -12,7 +13,6 @@ import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import junit.framework.Assert;
-import org.dozer.DozerBeanMapper;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class ConnectionThrottleResourceTest {
-
+    static final String mappingFile = "loadbalancing-dozer-mapping.xml";
     @Ignore
     public static class WhenCreatingThrottles {
 
@@ -56,9 +56,9 @@ public class ConnectionThrottleResourceTest {
             ct.setMaxConnections(2);
             ct.setMinConnections(3);
             ct.setRateInterval(4);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            resource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            resource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test
@@ -162,9 +162,9 @@ public class ConnectionThrottleResourceTest {
             resource.setLbRepository(lbRepo);
             operationResponse = new OperationResponse();
             operationResponse.setExecutedOkay(true);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            resource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            resource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test
@@ -222,9 +222,9 @@ public class ConnectionThrottleResourceTest {
             cl.setMaxConnections(2);
             cl.setMinConnections(3);
             cl.setRateInterval(4);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            resource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            resource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test

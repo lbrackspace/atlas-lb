@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.resources;
 
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -32,7 +32,7 @@ public class SslTerminationResourceTest {
         @Mock
         SslTerminationService sslTerminationService;
         @Mock
-        DozerBeanMapper dozerBeanMapper;
+        Mapper dozerBeanMapper;
         private Response response;
 
         @InjectMocks
@@ -42,7 +42,7 @@ public class SslTerminationResourceTest {
         public void standUp() {
             MockitoAnnotations.initMocks(this);
 
-            dozerBeanMapper = mock(DozerBeanMapper.class);
+            dozerBeanMapper = mock(Mapper.class);
             sslTermResource = new SslTerminationResource();
             sslTermResource.setId(1);
             sslTermResource.setAccountId(1234);

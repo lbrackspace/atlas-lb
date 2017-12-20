@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.resources;
 
 import net.spy.memcached.MemcachedClient;
-import org.dozer.DozerBeanMapper;
+import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -153,7 +153,7 @@ public class LoadBalancerResourceTest {
         private LoadBalancerResource loadBalancerResource;
         private RestApiConfiguration restApiConfiguration;
         private MemcachedClient memcachedClient;
-        private DozerBeanMapper dozerBeanMapper;
+        private Mapper dozerBeanMapper;
         private Stats stats;
         org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer lb;
 
@@ -166,7 +166,7 @@ public class LoadBalancerResourceTest {
             reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             asyncService = mock(AsyncService.class);
             memcachedClient = mock(MemcachedClient.class);
-            dozerBeanMapper = mock(DozerBeanMapper.class);
+            dozerBeanMapper = mock(Mapper.class);
             loadBalancerResource = new LoadBalancerResource();
             loadBalancerResource.setId(1);
             loadBalancerResource.setAccountId(1234);

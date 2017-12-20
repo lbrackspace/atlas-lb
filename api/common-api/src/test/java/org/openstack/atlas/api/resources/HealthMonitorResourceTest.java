@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -13,7 +14,6 @@ import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.api.integration.AsyncService;
 import junit.framework.Assert;
-import org.dozer.DozerBeanMapper;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class HealthMonitorResourceTest {
-
+    static final String mappingFile = "loadbalancing-dozer-mapping.xml";
     public static class WhenCreatingAConnectHealthMonitor {
         @Mock
         AsyncService es;
@@ -57,9 +57,9 @@ public class HealthMonitorResourceTest {
             hmr.setLbRepository(lbr);
             hmr.setLoadBalancerService(lbs);
             hmr.setHealthMonitorService(hms);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            hmr.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            hmr.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
             when(lbr.getByIdAndAccountId(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(new LoadBalancer());
         }
@@ -125,9 +125,9 @@ public class HealthMonitorResourceTest {
             hmr.setLbRepository(lbr);
             hmr.setLoadBalancerService(lbs);
             hmr.setHealthMonitorService(hms);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            hmr.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            hmr.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
             when(lbr.getByIdAndAccountId(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(new LoadBalancer());
         }
@@ -196,9 +196,9 @@ public class HealthMonitorResourceTest {
             hmr.setLbRepository(lbr);
             hmr.setLoadBalancerService(lbs);
             hmr.setHealthMonitorService(hms);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            hmr.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            hmr.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
             when(lbr.getByIdAndAccountId(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(new LoadBalancer());
         }
@@ -255,7 +255,7 @@ public class HealthMonitorResourceTest {
 //            or = new OperationResponse();
 //            List<String> mappingFiles = new ArrayList<String>();
 //            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-//            hmr.setDozerMapper(new DozerBeanMapper(mappingFiles));
+//            hmr.setDozerMapper(DozerBeanMapperBuilder.create()                    .withMappingFiles(mappingFile)                    .build());
 //            when(lbr.getByIdAndAccountId(anyInt(),anyInt())).thenReturn(new LoadBalancer());
 //        }
 //
@@ -338,9 +338,9 @@ public class HealthMonitorResourceTest {
             hmr.setLoadBalancerService(lbs);
             hmr.setHealthMonitorService(hms);
             hmr.setLbRepository(lbr);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            hmr.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            hmr.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
             when(lbr.getByIdAndAccountId(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(new LoadBalancer());
         }
