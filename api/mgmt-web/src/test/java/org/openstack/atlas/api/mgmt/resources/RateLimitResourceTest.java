@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.mock;
 @RunWith(Enclosed.class)
 @Ignore
 public class RateLimitResourceTest {
+    static final String mappingFile = "loadbalancing-dozer-management-mapping.xml";
     public static class WhenCreatingRateLimit {
         private RateLimitResource rateLimitResource;
         private RateLimit rateLimit;
@@ -43,9 +45,9 @@ public class RateLimitResourceTest {
             lbRepository = mock(LoadBalancerRepository.class);
             rateLimitResource.setLoadBalancerRepository(lbRepository);
             operationResponse = new OperationResponse();
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-management-mapping.xml");
-            rateLimitResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            rateLimitResource.setDozerMapper((DozerBeanMapper) DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
 
         }
 

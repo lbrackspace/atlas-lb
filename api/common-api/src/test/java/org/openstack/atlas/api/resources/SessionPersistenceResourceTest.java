@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.mockito.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
@@ -33,7 +34,7 @@ import static org.mockito.Mockito.*;
 @RunWith(Enclosed.class)
 @Ignore
 public class SessionPersistenceResourceTest {
-
+    static final String mappingFile = "loadbalancing-dozer-mapping.xml";
     public static class WhenEnablingSessionPersistence {
         @Mock
         LoadBalancerRepository lbRepo;
@@ -61,9 +62,10 @@ public class SessionPersistenceResourceTest {
 
             dlb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
             dlb.setSessionPersistence(org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            persistenceResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+
+            persistenceResource.setDozerMapper((DozerBeanMapper)DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Before
@@ -120,9 +122,9 @@ public class SessionPersistenceResourceTest {
 
             dlb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
             dlb.setSessionPersistence(org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            persistenceResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            persistenceResource.setDozerMapper((DozerBeanMapper)DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test
@@ -169,9 +171,9 @@ public class SessionPersistenceResourceTest {
 
             dlb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
             dlb.setSessionPersistence(org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            persistenceResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            persistenceResource.setDozerMapper((DozerBeanMapper)DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test

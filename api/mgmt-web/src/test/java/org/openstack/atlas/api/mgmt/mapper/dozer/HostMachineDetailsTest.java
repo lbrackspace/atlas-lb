@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.mgmt.mapper.dozer;
 
 import org.dozer.DozerBeanMapper;
+import org.dozer.DozerBeanMapperBuilder;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,9 +25,9 @@ public class HostMachineDetailsTest {
 
         @Before
         public void setUp() {
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add(managementDozerConfigFile);
-            mapper = new DozerBeanMapper(mappingFiles);
+            mapper = (DozerBeanMapper) DozerBeanMapperBuilder.create()
+                    .withMappingFiles(managementDozerConfigFile)
+                    .build();
             host = new org.openstack.atlas.service.domain.entities.Host();
             host.setId(1);
             host.setManagementIp("10.0.0.0");

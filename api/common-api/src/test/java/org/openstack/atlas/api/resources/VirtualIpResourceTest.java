@@ -2,6 +2,7 @@ package org.openstack.atlas.api.resources;
 
 import junit.framework.Assert;
 import org.dozer.DozerBeanMapper;
+import org.dozer.DozerBeanMapperBuilder;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -25,7 +26,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class VirtualIpResourceTest {
-
+    static final String mappingFile = "loadbalancing-dozer-mapping.xml";
     public static class whenRemovingVirtualIpFromLoadBalancer {
 
         private VirtualIpResource vipResource;
@@ -41,9 +42,9 @@ public class VirtualIpResourceTest {
             vipResource.setAsyncService(asyncService);
             vipResource.setLoadBalancerId(1234);
             vipResource.setAccountId(80);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            vipResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            vipResource.setDozerMapper((DozerBeanMapper) DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test

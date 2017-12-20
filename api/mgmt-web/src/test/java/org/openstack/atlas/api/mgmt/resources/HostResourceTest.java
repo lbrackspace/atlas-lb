@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cidr;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.when;
 @RunWith(Enclosed.class)
 @Ignore
 public class HostResourceTest {
+    static final String mappingFile = "loadbalancing-dozer-management-mapping.xml";
     public static class whenRetrievingHostDetails {
         private ManagementAsyncService asyncService;
         private HostResource hostResource;
@@ -42,9 +44,9 @@ public class HostResourceTest {
             hostResource.setHostRepository(hrepo);
             operationResponse = new OperationResponse();
             operationResponse.setExecutedOkay(true);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-management-mapping.xml");
-            hostResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            hostResource.setDozerMapper((DozerBeanMapper) DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test
@@ -132,9 +134,9 @@ public class HostResourceTest {
                 hostResource.setHostRepository(hrepo);
                 operationResponse = new OperationResponse();
                 operationResponse.setExecutedOkay(true);
-                List<String> mappingFiles = new ArrayList<String>();
-                mappingFiles.add("loadbalancing-dozer-management-mapping.xml");
-                hostResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+                hostResource.setDozerMapper((DozerBeanMapper)DozerBeanMapperBuilder.create()
+                        .withMappingFiles(mappingFile)
+                        .build());
             }
             @Before
             public void standUpSubnet() {

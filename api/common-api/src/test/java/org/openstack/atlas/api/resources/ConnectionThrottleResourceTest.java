@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class ConnectionThrottleResourceTest {
-
+    static final String mappingFile = "loadbalancing-dozer-mapping.xml";
     @Ignore
     public static class WhenCreatingThrottles {
 
@@ -56,9 +57,9 @@ public class ConnectionThrottleResourceTest {
             ct.setMaxConnections(2);
             ct.setMinConnections(3);
             ct.setRateInterval(4);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            resource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            resource.setDozerMapper((DozerBeanMapper) DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test
@@ -162,9 +163,9 @@ public class ConnectionThrottleResourceTest {
             resource.setLbRepository(lbRepo);
             operationResponse = new OperationResponse();
             operationResponse.setExecutedOkay(true);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            resource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            resource.setDozerMapper((DozerBeanMapper)DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test
@@ -222,9 +223,9 @@ public class ConnectionThrottleResourceTest {
             cl.setMaxConnections(2);
             cl.setMinConnections(3);
             cl.setRateInterval(4);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            resource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            resource.setDozerMapper((DozerBeanMapper)DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test

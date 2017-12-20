@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -35,7 +36,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class NodeResourceTest {
-
+    static final String mappingFile = "loadbalancing-dozer-mapping.xml";
     public static class WhenGettingLoadBalancerNode {
 
         @Mock
@@ -62,9 +63,9 @@ public class NodeResourceTest {
             nodeResource.setAccountId(31337);
             nodeResource.setLoadBalancerId(32);
             nodeResource.setRequestHeaders(requestHeaders);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            nodeResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            nodeResource.setDozerMapper((DozerBeanMapper) DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
             headers = new ArrayList<>();
             headers.add("APPLICATION_JSON");
             // Also test headers! ..
@@ -114,9 +115,9 @@ public class NodeResourceTest {
             nodeResource.setId(12);
             nodeResource.setAccountId(31337);
             nodeResource.setLoadBalancerId(32);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            nodeResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            nodeResource.setDozerMapper((DozerBeanMapper)DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test
@@ -162,9 +163,9 @@ public class NodeResourceTest {
             nodeResource.setId(42);
             nodeResource.setLoadBalancerId(12);
             nodeResource.setAccountId(12345);
-            List<String> mappingFiles = new ArrayList<String>();
-            mappingFiles.add("loadbalancing-dozer-mapping.xml");
-            nodeResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+            nodeResource.setDozerMapper((DozerBeanMapper)DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
         }
 
         @Test

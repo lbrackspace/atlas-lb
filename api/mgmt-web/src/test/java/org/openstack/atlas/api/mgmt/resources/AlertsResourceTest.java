@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.dozer.DozerBeanMapperBuilder;
 import org.openstack.atlas.service.domain.events.entities.Alert;
 import org.openstack.atlas.service.domain.events.entities.AlertStatus;
 import org.openstack.atlas.service.domain.events.repository.AlertRepository;
@@ -22,6 +23,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class AlertsResourceTest {
+    static final String mappingFile = "loadbalancing-dozer-management-mapping.xml";
     private AlertService alertService;
     private AlertsResource alertsResource;
     private OperationResponse operationResponse;
@@ -37,9 +39,9 @@ public class AlertsResourceTest {
         alertsResource.setAlertRepository(arepo);
         operationResponse = new OperationResponse();
         operationResponse.setExecutedOkay(true);
-        List<String> mappingFiles = new ArrayList<String>();
-        mappingFiles.add("loadbalancing-dozer-management-mapping.xml");
-        alertsResource.setDozerMapper(new DozerBeanMapper(mappingFiles));
+        alertsResource.setDozerMapper((DozerBeanMapper) DozerBeanMapperBuilder.create()
+                .withMappingFiles(mappingFile)
+                .build());
 
         Alert alert1 = new Alert();
         alert1.setAccountId(548939);
