@@ -8,7 +8,7 @@ import java.util.concurrent.Callable;
 
 import org.bouncycastle.util.Strings;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 class TestProtocolUtil
 {

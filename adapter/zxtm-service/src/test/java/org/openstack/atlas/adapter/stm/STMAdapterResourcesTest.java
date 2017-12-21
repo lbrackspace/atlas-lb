@@ -1,6 +1,6 @@
 //package org.openstack.atlas.adapter.stm;
 //
-//import junit.framework.Assert;
+//import org.junit.Assert;
 //import org.junit.Before;
 //import org.junit.Test;
 //import org.junit.experimental.runners.Enclosed;

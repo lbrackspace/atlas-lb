@@ -12,7 +12,7 @@ import org.openstack.atlas.service.domain.services.ConnectionThrottleService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;

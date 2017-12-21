@@ -1,6 +1,6 @@
 package org.openstack.atlas.api.resources;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.dozer.DozerBeanMapperBuilder;
 import org.dozer.Mapper;
 import org.junit.Before;

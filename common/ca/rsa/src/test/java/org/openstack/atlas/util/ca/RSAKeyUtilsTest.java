@@ -7,7 +7,7 @@ import java.security.KeyPair;
 import org.openstack.atlas.util.ca.RSAKeyUtils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;

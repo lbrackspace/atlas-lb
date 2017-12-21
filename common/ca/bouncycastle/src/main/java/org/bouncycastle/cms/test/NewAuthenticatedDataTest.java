@@ -13,7 +13,7 @@ import java.util.Iterator;
 
 import javax.crypto.SecretKey;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;

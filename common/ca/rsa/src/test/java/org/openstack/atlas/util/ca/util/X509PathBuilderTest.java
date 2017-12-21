@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;

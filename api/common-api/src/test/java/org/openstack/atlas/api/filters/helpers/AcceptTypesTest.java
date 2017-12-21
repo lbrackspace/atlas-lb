@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.filters.helpers;
 
 import org.junit.Ignore;
-import junit.framework.Assert;
+import org.junit.Assert;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.Before;

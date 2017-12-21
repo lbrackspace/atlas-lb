@@ -4,7 +4,7 @@
  */
 package org.openstack.atlas.api.filters.helpers;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class AcceptTypeTest {
         AcceptType at = AcceptType.newInstance("text/html ; level = 1; q = 0.5 ; tp1 ; tp=2 ");
         Assert.assertEquals("type Mismatch","text",at.getMediaType().getType());
         Assert.assertEquals("subtype Mismatch","html",at.getMediaType().getSubtype());
-        Assert.assertEquals("Q mismatch",0.5,at.getQ());
+        Assert.assertEquals("Q mismatch",0.5,at.getQ(),0.0);
         Assert.assertEquals("mediaParametersize mismatch",1,at.getMediaType().getParameters().size());
         Assert.assertEquals("etra parameters mismatch","level = 1",at.getMediaType().getParameters().get(0));
         Assert.assertEquals("expected 2 extensions",2,at.getAcceptExtensions().size());
@@ -37,13 +37,13 @@ public class AcceptTypeTest {
     @Test
     public void qParameterShouldDefaultToOneWhenNotSpecified(){
         AcceptType at = AcceptType.newInstance("text/html;UTF-8");
-        Assert.assertEquals("Q should be 1.0",1.0, at.getQ());
+        Assert.assertEquals("Q should be 1.0",1.0, at.getQ(),0.0);
 
     }
 
     @Test
     public void qParamShouldReturnValidDoublsWhenInputStringIsValid() {
-        Assert.assertEquals(3.141, AcceptType.getQfromString("q = 3.141"));
-        Assert.assertEquals(3.141, AcceptType.getQfromString(" q =   3.141   "));
+        Assert.assertEquals(3.141, AcceptType.getQfromString("q = 3.141"), 0.0);
+        Assert.assertEquals(3.141, AcceptType.getQfromString(" q =   3.141   "), 0.0);
     }
 }

@@ -13,7 +13,7 @@ import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.NodeService;
 import org.openstack.atlas.api.integration.AsyncService;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
