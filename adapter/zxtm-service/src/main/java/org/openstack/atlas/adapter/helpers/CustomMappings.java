@@ -12,20 +12,20 @@ public class CustomMappings {
         Stats stats = new Stats();
         VirtualServerStatsProperties properties = virtualServerStats.getStatistics();
         VirtualServerStatsProperties propertiesSsl = virtualServerStatsSsl.getStatistics();
-        stats.setConnectError(new int[]{properties.getConnection_errors()});
-        stats.setConnectFailure(new int[]{properties.getConnection_failures()});
-        stats.setConnectTimeOut(new int[]{properties.getConnect_timed_out()});
-        stats.setCurrentConn(new int[]{properties.getCurrent_conn()});
-        stats.setDataTimedOut(new int[]{properties.getData_timed_out()});
-        stats.setKeepAliveTimedOut(new int[]{properties.getKeepalive_timed_out()});
-        stats.setMaxConn(new int[]{properties.getMax_conn()});
-        stats.setConnectErrorSsl(new int[]{propertiesSsl.getConnection_errors()});
-        stats.setConnectFailureSsl(new int[]{propertiesSsl.getConnection_failures()});
-        stats.setConnectTimeOutSsl(new int[]{propertiesSsl.getConnect_timed_out()});
-        stats.setCurrentConnSsl(new int[]{propertiesSsl.getCurrent_conn()});
-        stats.setDataTimedOutSsl(new int[]{propertiesSsl.getData_timed_out()});
-        stats.setKeepAliveTimedOutSsl(new int[]{propertiesSsl.getKeepalive_timed_out()});
-        stats.setMaxConnSsl(new int[]{propertiesSsl.getMax_conn()});
+        stats.setConnectError(new int[]{properties.getConnectionErrors()});
+        stats.setConnectFailure(new int[]{properties.getConnectionFailures()});
+        stats.setConnectTimeOut(new int[]{properties.getConnectTimedOut()});
+        stats.setCurrentConn(new int[]{properties.getCurrentConn()});
+        stats.setDataTimedOut(new int[]{properties.getDataTimedOut()});
+        stats.setKeepAliveTimedOut(new int[]{properties.getKeepaliveTimedOut()});
+        stats.setMaxConn(new int[]{properties.getMaxConn()});
+        stats.setConnectErrorSsl(new int[]{propertiesSsl.getConnectionErrors()});
+        stats.setConnectFailureSsl(new int[]{propertiesSsl.getConnectionFailures()});
+        stats.setConnectTimeOutSsl(new int[]{propertiesSsl.getConnectTimedOut()});
+        stats.setCurrentConnSsl(new int[]{propertiesSsl.getCurrentConn()});
+        stats.setDataTimedOutSsl(new int[]{propertiesSsl.getDataTimedOut()});
+        stats.setKeepAliveTimedOutSsl(new int[]{propertiesSsl.getKeepaliveTimedOut()});
+        stats.setMaxConnSsl(new int[]{propertiesSsl.getMaxConn()});
         return stats;
     }
 
@@ -49,13 +49,13 @@ public class CustomMappings {
 
         for (VirtualServerStats vss : virtualServerStats) {
             VirtualServerStatsProperties properties = vss.getStatistics();
-            connectionError[0] += properties.getConnection_errors();
-            connectionFailure[0] += properties.getConnection_failures();
-            connectionTimedOut[0] += properties.getConnect_timed_out();
-            currentConnections[0] += properties.getCurrent_conn();
-            dataTimedOut[0] += properties.getData_timed_out();
-            keepaliveTimedOut[0] += properties.getKeepalive_timed_out();
-            Integer max = properties.getMax_conn();
+            connectionError[0] += properties.getConnectionErrors();
+            connectionFailure[0] += properties.getConnectionFailures();
+            connectionTimedOut[0] += properties.getConnectTimedOut();
+            currentConnections[0] += properties.getCurrentConn();
+            dataTimedOut[0] += properties.getDataTimedOut();
+            keepaliveTimedOut[0] += properties.getKeepaliveTimedOut();
+            Integer max = properties.getMaxConn();
             if (max > maxConnections[0]) {
                 maxConnections[0] = max;
             }
@@ -64,13 +64,13 @@ public class CustomMappings {
 
         for (VirtualServerStats vsss : virtualServerStatsSsl) {
             VirtualServerStatsProperties propertiesSsl = vsss.getStatistics();
-            connectionErrorSsl[0] += propertiesSsl.getConnection_errors();
-            connectionFailureSsl[0] += propertiesSsl.getConnection_failures();
-            connectionTimedOutSsl[0] += propertiesSsl.getConnect_timed_out();
-            currentConnections[0] += propertiesSsl.getCurrent_conn();
-            dataTimedOutSsl[0] += propertiesSsl.getData_timed_out();
-            keepaliveTimedOutSsl[0] += propertiesSsl.getKeepalive_timed_out();
-            Integer maxSsl = propertiesSsl.getMax_conn();
+            connectionErrorSsl[0] += propertiesSsl.getConnectionErrors();
+            connectionFailureSsl[0] += propertiesSsl.getConnectionFailures();
+            connectionTimedOutSsl[0] += propertiesSsl.getConnectTimedOut();
+            currentConnections[0] += propertiesSsl.getCurrentConn();
+            dataTimedOutSsl[0] += propertiesSsl.getDataTimedOut();
+            keepaliveTimedOutSsl[0] += propertiesSsl.getKeepaliveTimedOut();
+            Integer maxSsl = propertiesSsl.getMaxConn();
             if (maxSsl > maxConnectionsSsl[0]) {
                 maxConnectionsSsl[0] = maxSsl;
             }

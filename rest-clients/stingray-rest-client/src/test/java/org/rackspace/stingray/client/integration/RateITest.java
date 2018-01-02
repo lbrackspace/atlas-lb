@@ -59,10 +59,10 @@ public class RateITest extends StingrayTestBase {
     @Test
     public void testUpdateRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         int updatePerMin = 17;
-        rate.getProperties().getBasic().setMax_rate_per_minute(updatePerMin);
+        rate.getProperties().getBasic().setMaxRatePerMinute(updatePerMin);
         Rate updatedRate = client.updateRate(vsName, rate);
         Assert.assertNotNull(updatedRate);
-        int retrievedPerMin = updatedRate.getProperties().getBasic().getMax_rate_per_minute();
+        int retrievedPerMin = updatedRate.getProperties().getBasic().getMaxRatePerMinute();
         Assert.assertEquals(updatePerMin, retrievedPerMin);
     }
 

@@ -72,7 +72,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             expectedTcp = new VirtualServerTcp();
             expectedError = new VirtualServerConnectionError();
             errorFile = "Default";
-            expectedError.setError_file(errorFile);
+            expectedError.setErrorFile(errorFile);
             rules = new ArrayList<String>();
 
             if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
@@ -106,7 +106,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             UserPages userPages = new UserPages();
             userPages.setErrorpage(this.errorFile);
             lb.setUserPages(userPages);
-            expectedError.setError_file(this.errorFile);
+            expectedError.setErrorFile(this.errorFile);
             lb.setConnectionLimit(null);
 
             ipAddressAllowed = "10.1.1.1";
@@ -186,9 +186,9 @@ public class ResourceTranslatorTest extends STMTestBase {
             VirtualServerProperties createdProperties = createdServer.getProperties();
             VirtualServerBasic createdBasic = createdServer.getProperties().getBasic();
             VirtualServerTcp createdTcp = createdProperties.getTcp();
-            expectedTcp.setProxy_close(isHalfClosed);
+            expectedTcp.setProxyClose(isHalfClosed);
             VirtualServerLog log = createdProperties.getLog();
-            Boolean cacheEnabled = createdProperties.getWeb_cache().getEnabled();
+            Boolean cacheEnabled = createdProperties.getWebCache().getEnabled();
             Assert.assertNotNull(log);
             Assert.assertEquals(logFormat, log.getFormat());
             Assert.assertTrue(cacheEnabled);
@@ -196,15 +196,15 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(lb.getPort(), createdBasic.getPort());
             Assert.assertEquals(vsName, createdBasic.getPool());
             Assert.assertTrue(createdBasic.getEnabled());
-            Assert.assertEquals(vsName, createdBasic.getProtection_class());
+            Assert.assertEquals(vsName, createdBasic.getProtectionClass());
             Assert.assertEquals(expectedTcp, createdTcp);
-            Assert.assertFalse(createdBasic.getListen_on_any());
+            Assert.assertFalse(createdBasic.getListenOnAny());
             if (lb.isContentCaching() == true)
                 rules.add(StmConstants.CONTENT_CACHING);
-            Assert.assertTrue(rules.size() == createdBasic.getRequest_rules().size());
+            Assert.assertTrue(rules.size() == createdBasic.getRequestRules().size());
 //            Assert.assertTrue(rules.containsAll(createdBasic.getRequest_rules()));
 
-//            Assert.assertEquals(expectedError, createdProperties.getConnection_errors());
+//            Assert.assertEquals(expectedError, createdProperties.getConnectionErrors());
         }
 
         @Test
@@ -216,21 +216,21 @@ public class ResourceTranslatorTest extends STMTestBase {
             VirtualServerLog log = createdProperties.getLog();
             Assert.assertNotNull(createdServer.getProperties().getLog());
             Assert.assertEquals(logFormat, log.getFormat());
-//            Assert.assertEquals(expectedError, createdProperties.getConnection_errors());
-            Assert.assertEquals(vsName, createdBasic.getProtection_class());
+//            Assert.assertEquals(expectedError, createdProperties.getConnectionErrors());
+            Assert.assertEquals(vsName, createdBasic.getProtectionClass());
             pathOne();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
-            Assert.assertEquals(null, createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertEquals(null, createdServer.getProperties().getBasic().getProtectionClass());
             pathTwo();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
-            Assert.assertEquals(vsName, createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertEquals(vsName, createdServer.getProperties().getBasic().getProtectionClass());
             pathThree();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
-            Assert.assertEquals(vsName, createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertEquals(vsName, createdServer.getProperties().getBasic().getProtectionClass());
             pathFour();
             createdServer = translator.translateVirtualServerResource(config, vsName, lb);
             //TODO:  Intern will handle this bug
-            Assert.assertEquals(null, createdServer.getProperties().getBasic().getProtection_class());
+            Assert.assertEquals(null, createdServer.getProperties().getBasic().getProtectionClass());
 
         }
     }
@@ -427,16 +427,16 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdProperties);
             PoolBasic createdBasic = createdPool.getProperties().getBasic();
             Assert.assertTrue(createdBasic.getMonitors().contains(vsName));
-            Assert.assertFalse(createdBasic.getPassive_monitoring());
-            Assert.assertEquals(SessionPersistence.HTTP_COOKIE.toString(), createdBasic.getPersistence_class());
+            Assert.assertFalse(createdBasic.getPassiveMonitoring());
+            Assert.assertEquals(SessionPersistence.HTTP_COOKIE.toString(), createdBasic.getPersistenceClass());
             Assert.assertTrue(createdBasic.getNodes().contains(nodeEnabledName));
             Assert.assertTrue(createdBasic.getDraining().contains(nodeDrainingName));
             Assert.assertTrue(createdBasic.getDisabled().contains(nodeDisabledName));
-            Assert.assertEquals(expectedTimeout, (int) createdProperties.getConnection().getMax_reply_time());
-            Assert.assertEquals(container.getPriorityValuesSet(), createdProperties.getLoad_balancing().getPriority_values());
-            Assert.assertEquals(container.hasSecondary(), createdProperties.getLoad_balancing().getPriority_enabled());
-            Assert.assertEquals(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN.toString().toLowerCase(), createdProperties.getLoad_balancing().getAlgorithm());
-            List<PoolNodeWeight> weights = createdProperties.getLoad_balancing().getNode_weighting();
+            Assert.assertEquals(expectedTimeout, (int) createdProperties.getConnection().getMaxReplyTime());
+            Assert.assertEquals(container.getPriorityValuesSet(), createdProperties.getLoadBalancing().getPriorityValues());
+            Assert.assertEquals(container.hasSecondary(), createdProperties.getLoadBalancing().getPriorityEnabled());
+            Assert.assertEquals(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN.toString().toLowerCase(), createdProperties.getLoadBalancing().getAlgorithm());
+            List<PoolNodeWeight> weights = createdProperties.getLoadBalancing().getNodeWeighting();
             Assert.assertNotNull(weights);
             Assert.assertTrue(weights.contains(poolNodeEnabledWeight));
             Assert.assertTrue(weights.contains(poolNodeDrainingWeight));
@@ -451,20 +451,20 @@ public class ResourceTranslatorTest extends STMTestBase {
             Pool createdPool = translator.translatePoolResource(vsName, lb, lb);
             PoolProperties createdProperties = createdPool.getProperties();
             Assert.assertNotNull(createdProperties);
-            Assert.assertEquals(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS.toString().toLowerCase(), createdProperties.getLoad_balancing().getAlgorithm());
-            List<PoolNodeWeight> weights = createdProperties.getLoad_balancing().getNode_weighting();
+            Assert.assertEquals(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS.toString().toLowerCase(), createdProperties.getLoadBalancing().getAlgorithm());
+            List<PoolNodeWeight> weights = createdProperties.getLoadBalancing().getNodeWeighting();
             Assert.assertNotNull(weights);
             Assert.assertTrue(weights.contains(poolNodeEnabledWeight));
             Assert.assertTrue(weights.contains(poolNodeDrainingWeight));
             Assert.assertTrue(weights.contains(poolNodeDisabledWeight));
             standUp(LoadBalancerAlgorithm.RANDOM);
             createdPool = translator.translatePoolResource(vsName, lb, lb);
-            Assert.assertTrue(createdPool.getProperties().getLoad_balancing().getNode_weighting().size() == 0);
+            Assert.assertTrue(createdPool.getProperties().getLoadBalancing().getNodeWeighting().size() == 0);
             tearDown();
             createdPool = translator.translatePoolResource(vsName, lb, lb);
             createdProperties = createdPool.getProperties();
             PoolBasic createdBasic = createdProperties.getBasic();
-            Assert.assertEquals("", createdBasic.getPersistence_class());
+            Assert.assertEquals("", createdBasic.getPersistenceClass());
             Assert.assertTrue(createdBasic.getMonitors().size() == 0);
 
         }
@@ -532,7 +532,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
             Assert.assertEquals(createdBasic.getType(), HealthMonitorType.HTTP.toString().toLowerCase()); //The REST API does not use HTTPS as a type
-            Assert.assertTrue(createdBasic.getUse_ssl());
+            Assert.assertTrue(createdBasic.getUseSsl());
 
             // Test MonitorType HTTP
             monitorType = HealthMonitorType.HTTP;
@@ -550,7 +550,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
             Assert.assertEquals(createdBasic.getType(), monitorType.toString().toLowerCase());
-            Assert.assertFalse(createdBasic.getUse_ssl());
+            Assert.assertFalse(createdBasic.getUseSsl());
 
             // Test MonitorType CONNECT
             monitorType = HealthMonitorType.CONNECT;
@@ -683,7 +683,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
-            Assert.assertEquals(createdHttp.getHost_header(), hostHeader);
+            Assert.assertEquals(createdHttp.getHostHeader(), hostHeader);
 
             hostHeader = "host456";
             monitorType = HealthMonitorType.HTTP;
@@ -701,7 +701,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
-            Assert.assertEquals(createdHttp.getHost_header(), hostHeader);
+            Assert.assertEquals(createdHttp.getHostHeader(), hostHeader);
 
             // Test Path (must be HTTP or HTTPS)
             path = "path123";
@@ -757,7 +757,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
-            Assert.assertEquals(createdHttp.getBody_regex(), bodyRegex);
+            Assert.assertEquals(createdHttp.getBodyRegex(), bodyRegex);
 
             bodyRegex = "br456";
             monitorType = HealthMonitorType.HTTP;
@@ -775,7 +775,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
-            Assert.assertEquals(createdHttp.getBody_regex(), bodyRegex);
+            Assert.assertEquals(createdHttp.getBodyRegex(), bodyRegex);
 
             // Test Status Regex (must be HTTP or HTTPS)
             statusRegex = "sr123";
@@ -794,7 +794,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
-            Assert.assertEquals(createdHttp.getStatus_regex(), statusRegex);
+            Assert.assertEquals(createdHttp.getStatusRegex(), statusRegex);
 
             statusRegex = "sr456";
             monitorType = HealthMonitorType.HTTP;
@@ -812,7 +812,7 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertNotNull(createdProperties);
             Assert.assertNotNull(createdBasic);
             Assert.assertNotNull(createdHttp);
-            Assert.assertEquals(createdHttp.getStatus_regex(), statusRegex);
+            Assert.assertEquals(createdHttp.getStatusRegex(), statusRegex);
         }
 
     }
@@ -909,18 +909,18 @@ public class ResourceTranslatorTest extends STMTestBase {
         public void shouldCreateAValidProtection() {
             ResourceTranslator translator = new ResourceTranslator();
             Protection createdProtection = translator.translateProtectionResource(lb);
-            ProtectionConnectionLimiting createdLimiting = createdProtection.getProperties().getConnection_limiting();
+            ProtectionConnectionLimiting createdLimiting = createdProtection.getProperties().getConnectionLimiting();
             Assert.assertNotNull(createdLimiting);
-            Assert.assertEquals(maxConnections, (int) createdLimiting.getMax_1_connections());
+            Assert.assertEquals(maxConnections, (int) createdLimiting.getMax1Connections());
             /* Due to a Zeus bug, this all has to be ignored and set to static values */
-            // Assert.assertEquals(maxRateInterval, (int) createdLimiting.getMax_connection_rate());
-            // Assert.assertEquals(minConnections, (int) createdLimiting.getMin_connections());
-            // Assert.assertEquals(rateTiming, (int) createdLimiting.getRate_timer());
-            Assert.assertFalse(createdProtection.getProperties().getBasic().getPer_process_connection_count());
-            Assert.assertEquals(0, (int) createdLimiting.getMax_connection_rate());
-            Assert.assertEquals(0, (int) createdLimiting.getMin_connections());
-            Assert.assertEquals(1, (int) createdLimiting.getRate_timer());
-            ProtectionAccessRestriction createdRestriction = createdProtection.getProperties().getAccess_restriction();
+            // Assert.assertEquals(maxRateInterval, (int) createdLimiting.getMaxConnectionRate());
+            // Assert.assertEquals(minConnections, (int) createdLimiting.getMinConnections());
+            // Assert.assertEquals(rateTiming, (int) createdLimiting.getRateTimer());
+            Assert.assertFalse(createdProtection.getProperties().getBasic().getPerProcessConnectionCount());
+            Assert.assertEquals(0, (int) createdLimiting.getMaxConnectionRate());
+            Assert.assertEquals(0, (int) createdLimiting.getMinConnections());
+            Assert.assertEquals(1, (int) createdLimiting.getRateTimer());
+            ProtectionAccessRestriction createdRestriction = createdProtection.getProperties().getAccessRestriction();
             Assert.assertNotNull(createdRestriction);
             Assert.assertTrue(createdRestriction.getAllowed().contains(accessListAllowed.getIpAddress()));
             Assert.assertTrue(createdRestriction.getBanned().contains(accessListBanned.getIpAddress()));

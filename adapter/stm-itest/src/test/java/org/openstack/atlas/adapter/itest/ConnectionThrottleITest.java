@@ -114,25 +114,25 @@ public class ConnectionThrottleITest extends STMTestBase {
     private void verifyConnectionThrottle() throws Exception {
         Protection protection = stmClient.getProtection(vsName);
         Assert.assertNotNull(protection);
-        ProtectionConnectionLimiting retrievedLimit = protection.getProperties().getConnection_limiting();
-        Assert.assertEquals(rateInterval, (int) retrievedLimit.getRate_timer());
-        Assert.assertEquals(maxConnections, (int) retrievedLimit.getMax_1_connections());
-        Assert.assertEquals(minConnections, (int) retrievedLimit.getMin_connections());
-        Assert.assertEquals(maxConnectionRate, (int) retrievedLimit.getMax_connection_rate());
-        Assert.assertEquals(expectedMax10Connections, (int) retrievedLimit.getMax_10_connections());
+        ProtectionConnectionLimiting retrievedLimit = protection.getProperties().getConnectionLimiting();
+        Assert.assertEquals(rateInterval, (int) retrievedLimit.getRateTimer());
+        Assert.assertEquals(maxConnections, (int) retrievedLimit.getMax1Connections());
+        Assert.assertEquals(minConnections, (int) retrievedLimit.getMinConnections());
+        Assert.assertEquals(maxConnectionRate, (int) retrievedLimit.getMaxConnectionRate());
+        Assert.assertEquals(expectedMax10Connections, (int) retrievedLimit.getMax10Connections());
     }
 
     private void verifyEmptyConnectionThrottle() throws Exception {
         Protection protection = stmClient.getProtection(vsName);
         Assert.assertNotNull(protection);
-        ProtectionConnectionLimiting retrievedLimit = protection.getProperties().getConnection_limiting();
+        ProtectionConnectionLimiting retrievedLimit = protection.getProperties().getConnectionLimiting();
         //Their default is 1 now for rate_timer...........
-        Assert.assertEquals(1, (int) retrievedLimit.getRate_timer());
-        Assert.assertEquals(0, (int) retrievedLimit.getMax_1_connections());
-        Assert.assertEquals(0, (int) retrievedLimit.getMin_connections());
-        Assert.assertEquals(0, (int) retrievedLimit.getMax_connection_rate());
+        Assert.assertEquals(1, (int) retrievedLimit.getRateTimer());
+        Assert.assertEquals(0, (int) retrievedLimit.getMax1Connections());
+        Assert.assertEquals(0, (int) retrievedLimit.getMinConnections());
+        Assert.assertEquals(0, (int) retrievedLimit.getMaxConnectionRate());
         //The following might need to be changed when we figure out what to do about max10
-        Assert.assertEquals(0, (int) retrievedLimit.getMax_10_connections());
+        Assert.assertEquals(0, (int) retrievedLimit.getMax10Connections());
     }
 
 

@@ -148,7 +148,7 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(secureBasic.getProtocol().toString()));
             Assert.assertEquals(isVsEnabled, secureBasic.getEnabled());
             Assert.assertEquals(normalName, secureBasic.getPool().toString());
-            Assert.assertEquals(isSslTermEnabled, secureBasic.getSsl_decrypt());
+            Assert.assertEquals(isSslTermEnabled, secureBasic.getSslDecrypt());
 
             VirtualServerBasic normalBasic = createdNormalVs.getProperties().getBasic();
             Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());
@@ -242,8 +242,8 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(ticketComment, createdNormalBandwidth.getProperties().getBasic().getNote());
 
             VirtualServer createdServer = stmClient.getVirtualServer(normalName);
-            Assert.assertTrue(createdServer.getProperties().getBasic().getAdd_x_forwarded_for());
-            Assert.assertTrue(createdServer.getProperties().getBasic().getAdd_x_forwarded_proto());
+            Assert.assertTrue(createdServer.getProperties().getBasic().getAddXForwardedFor());
+            Assert.assertTrue(createdServer.getProperties().getBasic().getAddXForwardedProto());
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -297,12 +297,12 @@ public class SslTerminationITest extends STMTestBase {
             Protection protection = stmClient.getProtection(vsName);
 
             Assert.assertNotNull(protection);
-            ProtectionConnectionLimiting createdThrottle = protection.getProperties().getConnection_limiting();
-            Assert.assertEquals(maxConnectionRate, (int) createdThrottle.getMax_connection_rate());
-            Assert.assertEquals(expectedMax10, (int) createdThrottle.getMax_10_connections());
-            Assert.assertEquals(maxConnections, (int) createdThrottle.getMax_1_connections());
-            Assert.assertEquals(rateInterval, (int) createdThrottle.getRate_timer());
-            Assert.assertEquals(minConnections, (int) createdThrottle.getMin_connections());
+            ProtectionConnectionLimiting createdThrottle = protection.getProperties().getConnectionLimiting();
+            Assert.assertEquals(maxConnectionRate, (int) createdThrottle.getMaxConnectionRate());
+            Assert.assertEquals(expectedMax10, (int) createdThrottle.getMax10Connections());
+            Assert.assertEquals(maxConnections, (int) createdThrottle.getMax1Connections());
+            Assert.assertEquals(rateInterval, (int) createdThrottle.getRateTimer());
+            Assert.assertEquals(minConnections, (int) createdThrottle.getMinConnections());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -312,7 +312,7 @@ public class SslTerminationITest extends STMTestBase {
 
     private void errorPageHelper(String expectedContent) {
         try {
-            String normalErrorFileName = stmClient.getVirtualServer(normalName).getProperties().getConnection_errors().getError_file();
+            String normalErrorFileName = stmClient.getVirtualServer(normalName).getProperties().getConnectionErrors().getErrorFile();
 //            Assert.assertEquals(normalName + "_error.html", normalErrorFileName);
             File normalFile = stmClient.getExtraFile(normalErrorFileName);
             Scanner reader = new Scanner(normalFile);
@@ -336,8 +336,8 @@ public class SslTerminationITest extends STMTestBase {
             createdVs = stmClient.getVirtualServer(ZxtmNameBuilder.genSslVSName(lb));
 
 
-            Assert.assertEquals(EnumFactory.Accept_from.NEVER.toString(),
-                    createdVs.getProperties().getHttp().getLocation_rewrite().toString());
+            Assert.assertEquals(EnumFactory.AcceptFrom.NEVER.toString(),
+                    createdVs.getProperties().getHttp().getLocationRewrite().toString());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -460,8 +460,8 @@ public class SslTerminationITest extends STMTestBase {
             stmAdapter.updateAccessList(config, lb);
 
             Protection normalProtection = stmClient.getProtection(normalName);
-            Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getBanned().contains(ipAddressOne));
-            Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getAllowed().contains(ipAddressTwo));
+            Assert.assertTrue(normalProtection.getProperties().getAccessRestriction().getBanned().contains(ipAddressOne));
+            Assert.assertTrue(normalProtection.getProperties().getAccessRestriction().getAllowed().contains(ipAddressTwo));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -479,8 +479,8 @@ public class SslTerminationITest extends STMTestBase {
             stmAdapter.deleteAccessList(config, lb, deletionList);
             Protection protection = stmClient.getProtection(normalName);
             ProtectionProperties properties = protection.getProperties();
-            Assert.assertTrue(properties.getAccess_restriction().getAllowed().isEmpty());
-            Assert.assertTrue(properties.getAccess_restriction().getBanned().isEmpty());
+            Assert.assertTrue(properties.getAccessRestriction().getAllowed().isEmpty());
+            Assert.assertTrue(properties.getAccessRestriction().getBanned().isEmpty());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -505,8 +505,8 @@ public class SslTerminationITest extends STMTestBase {
             lb.setAccessLists(networkItems);
             stmAdapter.updateAccessList(config, lb);
             Protection normalProtection = stmClient.getProtection(normalName);
-            Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getBanned().contains(ipAddressOne));
-            Assert.assertTrue(normalProtection.getProperties().getAccess_restriction().getAllowed().contains(ipAddressTwo));
+            Assert.assertTrue(normalProtection.getProperties().getAccessRestriction().getBanned().contains(ipAddressOne));
+            Assert.assertTrue(normalProtection.getProperties().getAccessRestriction().getAllowed().contains(ipAddressTwo));
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());

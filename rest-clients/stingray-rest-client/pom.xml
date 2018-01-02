@@ -77,9 +77,9 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>com.googlecode.jsonschema2pojo</groupId>
+                <groupId>org.jsonschema2pojo</groupId>
                 <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-                <version>0.3.7</version>
+                <version>0.5.1</version>
                 <configuration>
                     <annotationStyle>jackson2</annotationStyle>
                     <sourcePaths>

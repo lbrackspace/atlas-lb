@@ -528,7 +528,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
         VirtualServer createdServer = translator.getcVServer();
         VirtualServerHttp http = new VirtualServerHttp();
-        http.setLocation_rewrite(EnumFactory.Accept_from.NEVER.toString());
+        http.setLocationRewrite(EnumFactory.AcceptFrom.NEVER.toString());
         createdServer.getProperties().setHttp(http);
         if (loadBalancer.isSecureOnly()) {
             VirtualServer virtualServer;

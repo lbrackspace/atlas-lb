@@ -542,7 +542,7 @@ public class StmAdapterResources {
             rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             Bandwidth bandwidth = rt.getcBandwidth();
             VirtualServer virtualServer = rt.getcVServer();
-            virtualServer.getProperties().getBasic().setBandwidth_class(vsName);
+            virtualServer.getProperties().getBasic().setBandwidthClass(vsName);
 
             client.createBandwidth(vsName, bandwidth);
             updateVirtualServer(client, vsName, virtualServer);
@@ -603,7 +603,7 @@ public class StmAdapterResources {
         VirtualServer virtualServer = rt.getcVServer();
         VirtualServerProperties properties = virtualServer.getProperties();
         VirtualServerBasic basic = properties.getBasic();
-        basic.setBandwidth_class("");
+        basic.setBandwidthClass("");
 
         try {
             client.deleteBandwidth(vsName);
