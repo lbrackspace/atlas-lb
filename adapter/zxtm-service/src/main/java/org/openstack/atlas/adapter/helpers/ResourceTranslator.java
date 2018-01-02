@@ -93,7 +93,7 @@ public class ResourceTranslator {
 
         //protection class settings
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
-            basic.setProtection_class(ZxtmNameBuilder.genVSName(loadBalancer));
+            basic.setProtectionClass(ZxtmNameBuilder.genVSName(loadBalancer));
         }
 
         // Redirection specific
@@ -107,22 +107,22 @@ public class ResourceTranslator {
 
         //error file settings
         if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
-            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genRedirectVSName(loadBalancer)));
+            ce.setErrorFile(ZxtmNameBuilder.generateErrorPageName(ZxtmNameBuilder.genRedirectVSName(loadBalancer)));
         } else {
-            ce.setError_file("Default");
+            ce.setErrorFile("Default");
         }
-        properties.setConnection_errors(ce);
+        properties.setConnectionErrors(ce);
 
         //trafficscript or rule settings
         rules.add(StmConstants.HTTPS_REDIRECT);
-        basic.setRequest_rules(rules);
+        basic.setRequestRules(rules);
 
         //trafficIpGroup settings
-        basic.setListen_on_any(false);
-        basic.setListen_on_traffic_ips(genGroupNameSet(loadBalancer));
+        basic.setListenOnAny(false);
+        basic.setListenOnTrafficIps(genGroupNameSet(loadBalancer));
 
         //ssl settings
-        ssl.setServer_cert_default(vsName);
+        ssl.setServerCertDefault(vsName);
 
         return cRedirectVServer;
     }
@@ -145,12 +145,12 @@ public class ResourceTranslator {
         //basic virtual server settings
         if (vsName.equals(ZxtmNameBuilder.genSslVSName(loadBalancer))) {
             basic.setPort(loadBalancer.getSslTermination().getSecurePort());
-            basic.setSsl_decrypt(true);
+            basic.setSslDecrypt(true);
             basic.setEnabled(loadBalancer.isUsingSsl());
             if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
-                ssl.setAdd_http_headers(true);
+                ssl.setAddHttpHeaders(true);
                 VirtualServerHttp virtualServerHttp = new VirtualServerHttp();
-                virtualServerHttp.setLocation_rewrite("never");
+                virtualServerHttp.setLocationRewrite("never");
                 properties.setHttp(virtualServerHttp);
             }
         } else {
@@ -167,7 +167,7 @@ public class ResourceTranslator {
 
         //protection class settings
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
-            basic.setProtection_class(ZxtmNameBuilder.genVSName(loadBalancer));
+            basic.setProtectionClass(ZxtmNameBuilder.genVSName(loadBalancer));
         }
         // Dumbing this down for SOAP compatibility, this isn't deleted now
         // else {
@@ -199,38 +199,38 @@ public class ResourceTranslator {
         if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) {
             VirtualServerWebcache cache = new VirtualServerWebcache();
             cache.setEnabled(true);
-            properties.setWeb_cache(cache);
+            properties.setWebCache(cache);
             rules.add(StmConstants.CONTENT_CACHING);
         }
 
         //error file settings
         if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
-            ce.setError_file(ZxtmNameBuilder.generateErrorPageName(vsName));
+            ce.setErrorFile(ZxtmNameBuilder.generateErrorPageName(vsName));
         } else {
-            ce.setError_file("Default");
+            ce.setErrorFile("Default");
         }
-        properties.setConnection_errors(ce);
+        properties.setConnectionErrors(ce);
 
         //X_forwarded headers
         if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
-            basic.setAdd_x_forwarded_for(true);
-            basic.setAdd_x_forwarded_proto(true);
+            basic.setAddXForwardedFor(true);
+            basic.setAddXForwardedProto(true);
             rules.add(StmConstants.XFPORT);
         }
 
         //trafficscript or rule settings
-        basic.setRequest_rules(rules);
+        basic.setRequestRules(rules);
 
         //Half closed proxy settings
-        tcp.setProxy_close(loadBalancer.getHalfClosed());
+        tcp.setProxyClose(loadBalancer.getHalfClosed());
         properties.setTcp(tcp);
 
         //trafficIpGroup settings
-        basic.setListen_on_any(false);
-        basic.setListen_on_traffic_ips(genGroupNameSet(loadBalancer));
+        basic.setListenOnAny(false);
+        basic.setListenOnTrafficIps(genGroupNameSet(loadBalancer));
 
         //ssl settings
-        ssl.setServer_cert_default(vsName);
+        ssl.setServerCertDefault(vsName);
 
         return cVServer;
     }
@@ -271,7 +271,7 @@ public class ResourceTranslator {
 //        List<TrafficIpIpMapping> mappings = new ArrayList<TrafficIpIpMapping>(Arrays.asList(mapping));
 //        basic.setIp_mapping(mappings);
 
-        basic.setHash_source_port(false);
+        basic.setHashSourcePort(false);
         basic.setKeeptogether(false);
 
         basic.setEnabled(isEnabled);
@@ -320,14 +320,14 @@ public class ResourceTranslator {
         basic.setNodes(NodeHelper.getNodeStrValue(enabledNodes));
         basic.setDraining(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING)));
         basic.setDisabled(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DISABLED)));
-        basic.setPassive_monitoring(false);
+        basic.setPassiveMonitoring(false);
 
 
         String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
 
         if (queLb.getNodes() != null && !queLb.getNodes().isEmpty()) {
-            if (lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString())
-                    || lbAlgo.equals(EnumFactory.Accept_from.WEIGHTED_LEAST_CONNECTIONS.toString())) {
+            if (lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_ROUND_ROBIN.toString())
+                    || lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_LEAST_CONNECTIONS.toString())) {
                 PoolNodeWeight nw;
                 for (Node n : nodes) {
                     nw = new PoolNodeWeight();
@@ -335,38 +335,38 @@ public class ResourceTranslator {
                     nw.setWeight(n.getWeight());
                     weights.add(nw);
                 }
-                poollb.setNode_weighting(weights);
+                poollb.setNodeWeighting(weights);
             }
         }
 
         ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
-        poollb.setPriority_enabled(znpc.hasSecondary());
-        poollb.setPriority_values(znpc.getPriorityValuesSet());
+        poollb.setPriorityEnabled(znpc.hasSecondary());
+        poollb.setPriorityValues(znpc.getPriorityValuesSet());
         poollb.setAlgorithm(lbAlgo);
 
         PoolConnection connection = null;
         if (queLb.getTimeout() != null) {
             connection = new PoolConnection();
-            connection.setMax_reply_time(loadBalancer.getTimeout());
+            connection.setMaxReplyTime(loadBalancer.getTimeout());
         }
 
         if (queLb.getHealthMonitor() != null)
             basic.setMonitors(new HashSet<String>(Arrays.asList(vsName)));
 
         if ((queLb.getSessionPersistence() != null) && !(queLb.getSessionPersistence().name().equals(SessionPersistence.NONE.name()))) {
-            basic.setPersistence_class(loadBalancer.getSessionPersistence().name());
+            basic.setPersistenceClass(loadBalancer.getSessionPersistence().name());
         } else {
-            basic.setPersistence_class("");
+            basic.setPersistenceClass("");
         }
 
         if (queLb.getRateLimit() != null) {
-            basic.setBandwidth_class(vsName);
+            basic.setBandwidthClass(vsName);
         } else {
-            basic.setBandwidth_class(null);
+            basic.setBandwidthClass(null);
         }
 
         properties.setBasic(basic);
-        properties.setLoad_balancing(poollb);
+        properties.setLoadBalancing(poollb);
         properties.setConnection(connection);
         cPool.setProperties(properties);
 
@@ -386,18 +386,18 @@ public class ResourceTranslator {
         basic.setFailures(hm.getAttemptsBeforeDeactivation());
 
         if (hm.getType().equals(HealthMonitorType.CONNECT)) {
-            basic.setType(EnumFactory.Accept_from.CONNECT.toString());
+            basic.setType(EnumFactory.AcceptFrom.CONNECT.toString());
         } else if (hm.getType().equals(HealthMonitorType.HTTP) || hm.getType().equals(HealthMonitorType.HTTPS)) {
-            basic.setType(EnumFactory.Accept_from.HTTP.toString());
+            basic.setType(EnumFactory.AcceptFrom.HTTP.toString());
             http = new MonitorHttp();
             http.setPath(hm.getPath());
-            http.setStatus_regex(hm.getStatusRegex());
-            http.setBody_regex(hm.getBodyRegex());
-            http.setHost_header(hm.getHostHeader());
+            http.setStatusRegex(hm.getStatusRegex());
+            http.setBodyRegex(hm.getBodyRegex());
+            http.setHostHeader(hm.getHostHeader());
             if (hm.getType().equals(HealthMonitorType.HTTPS)) {
-                basic.setUse_ssl(true);
+                basic.setUseSsl(true);
             } else {
-                basic.setUse_ssl(false);
+                basic.setUseSsl(false);
             }
             properties.setHttp(http);
         }
@@ -431,35 +431,35 @@ public class ResourceTranslator {
             pac.setAllowed(allowed);
             pac.setBanned(banned);
         }
-        properties.setAccess_restriction(pac);
+        properties.setAccessRestriction(pac);
 
         ProtectionConnectionLimiting limiting = new ProtectionConnectionLimiting();
         if (limits != null) {
             Integer maxConnections = limits.getMaxConnections();
             if (maxConnections == null) maxConnections = 0;
-            limiting.setMax_1_connections(maxConnections);
+            limiting.setMax1Connections(maxConnections);
 
             /* Zeus bug requires us to set per-process to false and ignore most of these settings */
-            basic.setPer_process_connection_count(false);
-            limiting.setMin_connections(0);
-            limiting.setRate_timer(1);
-            limiting.setMax_connection_rate(0);
-            limiting.setMax_10_connections(0);
+            basic.setPerProcessConnectionCount(false);
+            limiting.setMinConnections(0);
+            limiting.setRateTimer(1);
+            limiting.setMaxConnectionRate(0);
+            limiting.setMax10Connections(0);
             //limiting.setMin_connections(limits.getMinConnections());
             //limiting.setRate_timer(limits.getRateInterval());
             //limiting.setMax_connection_rate(limits.getMaxConnectionRate());
             //limiting.setMax_10_connections(maxConnections * 10);
         } else {
-            limiting.setMax_1_connections(0);
+            limiting.setMax1Connections(0);
 
             /* Zeus bug requires us to set per-process to false */
-            basic.setPer_process_connection_count(false);
-            limiting.setMin_connections(0);
-            limiting.setRate_timer(1);
-            limiting.setMax_connection_rate(0);
-            limiting.setMax_10_connections(0);
+            basic.setPerProcessConnectionCount(false);
+            limiting.setMinConnections(0);
+            limiting.setRateTimer(1);
+            limiting.setMaxConnectionRate(0);
+            limiting.setMax10Connections(0);
         }
-        properties.setConnection_limiting(limiting);
+        properties.setConnectionLimiting(limiting);
 
         properties.setBasic(basic);
         cProtection.setProperties(properties);
