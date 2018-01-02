@@ -377,31 +377,31 @@ public class FullConfigITest extends STMTestBase {
         Assert.assertEquals(true, vs.getProperties().getBasic().getEnabled());
         Assert.assertEquals(lb.getPort(), vs.getProperties().getBasic().getPort());
         Assert.assertEquals(poolName(), vs.getProperties().getBasic().getPool());
-        Assert.assertEquals(lb.getHalfClosed(), vs.getProperties().getTcp().getProxy_close());
-        Assert.assertEquals(lb.isContentCaching(), vs.getProperties().getWeb_cache().getEnabled());
+        Assert.assertEquals(lb.getHalfClosed(), vs.getProperties().getTcp().getProxyClose());
+        Assert.assertEquals(lb.isContentCaching(), vs.getProperties().getWebCache().getEnabled());
 
         if (lb.getUserPages() != null) {
-            Assert.assertEquals(errorFileName(), vs.getProperties().getConnection_errors().getError_file());
+            Assert.assertEquals(errorFileName(), vs.getProperties().getConnectionErrors().getErrorFile());
             File ef = client.getExtraFile(errorFileName());
             String content = readFile(ef);
             Assert.assertEquals(lb.getUserPages().getErrorpage(), content);
             ef.delete();
         } else {
-            Assert.assertEquals("Default", vs.getProperties().getConnection_errors().getError_file());
+            Assert.assertEquals("Default", vs.getProperties().getConnectionErrors().getErrorFile());
         }
 
         if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
-            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_for());
-            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_proto());
+            Assert.assertTrue(vs.getProperties().getBasic().getAddXForwardedFor());
+            Assert.assertTrue(vs.getProperties().getBasic().getAddXForwardedProto());
         } else {
-            Assert.assertFalse(vs.getProperties().getBasic().getAdd_x_forwarded_for());
-            Assert.assertFalse(vs.getProperties().getBasic().getAdd_x_forwarded_proto());
+            Assert.assertFalse(vs.getProperties().getBasic().getAddXForwardedFor());
+            Assert.assertFalse(vs.getProperties().getBasic().getAddXForwardedProto());
         }
 
-        Assert.assertEquals(false, vs.getProperties().getBasic().getListen_on_any());
-        Assert.assertEquals(vs.getProperties().getBasic().getListen_on_traffic_ips(), translator.genGroupNameSet(lb));
+        Assert.assertEquals(false, vs.getProperties().getBasic().getListenOnAny());
+        Assert.assertEquals(vs.getProperties().getBasic().getListenOnTrafficIps(), translator.genGroupNameSet(lb));
 
-        Assert.assertEquals(protectionClassName(), vs.getProperties().getBasic().getProtection_class());
+        Assert.assertEquals(protectionClassName(), vs.getProperties().getBasic().getProtectionClass());
 
 
         return vs;
@@ -411,12 +411,12 @@ public class FullConfigITest extends STMTestBase {
         Pool pool = client.getPool(loadBalancerName());
         Assert.assertNotNull(pool);
         Assert.assertEquals(1, pool.getProperties().getBasic().getMonitors().size());
-        Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoad_balancing().getAlgorithm());
+        Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoadBalancing().getAlgorithm());
         Assert.assertEquals(2, pool.getProperties().getBasic().getNodes().size()); // List contains ACTIVE and DRAINING nodes
         Assert.assertEquals(1, pool.getProperties().getBasic().getDisabled().size()); // List contains DISABLED nodes
         Assert.assertEquals(1, pool.getProperties().getBasic().getDraining().size()); // List contains DRAINING nodes
 
-        List<PoolNodeWeight> pws = pool.getProperties().getLoad_balancing().getNode_weighting();
+        List<PoolNodeWeight> pws = pool.getProperties().getLoadBalancing().getNodeWeighting();
         for (PoolNodeWeight pnw : pws) {
             Node lbn = lb.getNodes().iterator().next();
             // Marking this as a possible place for IpHelper.createZeusIpString(node.getIpAddress(), node.getPort())
@@ -427,15 +427,15 @@ public class FullConfigITest extends STMTestBase {
         }
 
         ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(lb.getNodes());
-        Assert.assertEquals(znpc.getPriorityValuesSet(), pool.getProperties().getLoad_balancing().getPriority_values());
-        Assert.assertEquals(znpc.hasSecondary(), pool.getProperties().getLoad_balancing().getPriority_enabled());
+        Assert.assertEquals(znpc.getPriorityValuesSet(), pool.getProperties().getLoadBalancing().getPriorityValues());
+        Assert.assertEquals(znpc.hasSecondary(), pool.getProperties().getLoadBalancing().getPriorityEnabled());
 
-        Assert.assertEquals(lb.getTimeout(), pool.getProperties().getConnection().getMax_reply_time());
+        Assert.assertEquals(lb.getTimeout(), pool.getProperties().getConnection().getMaxReplyTime());
 
         Assert.assertEquals(new HashSet<String>(Arrays.asList(loadBalancerName())), pool.getProperties().getBasic().getMonitors());
 
-        Assert.assertEquals(lb.getSessionPersistence().name(), pool.getProperties().getBasic().getPersistence_class());
-        Assert.assertEquals("", pool.getProperties().getBasic().getBandwidth_class());
+        Assert.assertEquals(lb.getSessionPersistence().name(), pool.getProperties().getBasic().getPersistenceClass());
+        Assert.assertEquals("", pool.getProperties().getBasic().getBandwidthClass());
 
         return pool;
     }
@@ -450,9 +450,9 @@ public class FullConfigITest extends STMTestBase {
             MonitorHttp http = monitor.getProperties().getHttp();
             HealthMonitor hm = lb.getHealthMonitor();
             Assert.assertEquals(hm.getPath(), http.getPath());
-            Assert.assertEquals(hm.getStatusRegex(), http.getStatus_regex());
-            Assert.assertEquals(hm.getBodyRegex(), http.getBody_regex());
-            Assert.assertEquals(hm.getHostHeader(), http.getHost_header());
+            Assert.assertEquals(hm.getStatusRegex(), http.getStatusRegex());
+            Assert.assertEquals(hm.getBodyRegex(), http.getBodyRegex());
+            Assert.assertEquals(hm.getHostHeader(), http.getHostHeader());
         }
 
         return monitor;
@@ -461,7 +461,7 @@ public class FullConfigITest extends STMTestBase {
     private Protection verifyProtection(LoadBalancer lb) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Protection protection = client.getProtection(loadBalancerName());
         if (lb.getAccessLists() != null && !lb.getAccessLists().isEmpty()) {
-            ProtectionAccessRestriction pal = protection.getProperties().getAccess_restriction();
+            ProtectionAccessRestriction pal = protection.getProperties().getAccessRestriction();
             for (AccessList al : lb.getAccessLists()) {
                 if (al.getType().equals(AccessListType.ALLOW)) {
                     Assert.assertTrue(pal.getAllowed().contains(al.getIpAddress()));
@@ -472,11 +472,11 @@ public class FullConfigITest extends STMTestBase {
         }
 
         if (lb.getConnectionLimit() != null) {
-            ProtectionConnectionLimiting cl = protection.getProperties().getConnection_limiting();
-            Assert.assertEquals(lb.getConnectionLimit().getMinConnections(), cl.getMin_connections());
-            Assert.assertEquals(lb.getConnectionLimit().getMaxConnectionRate(), cl.getMax_connection_rate());
-            Assert.assertEquals(lb.getConnectionLimit().getMaxConnections(), cl.getMax_1_connections());
-            Assert.assertEquals(lb.getConnectionLimit().getRateInterval(), cl.getRate_timer());
+            ProtectionConnectionLimiting cl = protection.getProperties().getConnectionLimiting();
+            Assert.assertEquals(lb.getConnectionLimit().getMinConnections(), cl.getMinConnections());
+            Assert.assertEquals(lb.getConnectionLimit().getMaxConnectionRate(), cl.getMaxConnectionRate());
+            Assert.assertEquals(lb.getConnectionLimit().getMaxConnections(), cl.getMax1Connections());
+            Assert.assertEquals(lb.getConnectionLimit().getRateInterval(), cl.getRateTimer());
         }
 
         return protection;
@@ -514,7 +514,7 @@ public class FullConfigITest extends STMTestBase {
         Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(secureBasic.getProtocol().toString()));
         Assert.assertEquals(lb.getSslTermination().getEnabled(), secureBasic.getEnabled());
         Assert.assertEquals(vsName, secureBasic.getPool().toString());
-        Assert.assertEquals(true, secureBasic.getSsl_decrypt());
+        Assert.assertEquals(true, secureBasic.getSslDecrypt());
 
         VirtualServerBasic normalBasic = createdVs.getProperties().getBasic();
         Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());

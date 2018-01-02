@@ -101,13 +101,13 @@ public class VirtualServerStatsITest extends StingrayTestBase {
         }
         statsProperties = stats.getStatistics();
         Assert.assertNotNull(statsProperties);
-        Assert.assertNotNull(statsProperties.getConnect_timed_out());
-        Assert.assertNotNull(statsProperties.getConnection_errors());
-        Assert.assertNotNull(statsProperties.getConnection_failures());
-        Assert.assertNotNull(statsProperties.getData_timed_out());
-        Assert.assertNotNull(statsProperties.getKeepalive_timed_out());
-        Assert.assertNotNull(statsProperties.getMax_conn());
-        Assert.assertNotNull(statsProperties.getCurrent_conn());
+        Assert.assertNotNull(statsProperties.getConnectTimedOut());
+        Assert.assertNotNull(statsProperties.getConnectionErrors());
+        Assert.assertNotNull(statsProperties.getConnectionFailures());
+        Assert.assertNotNull(statsProperties.getDataTimedOut());
+        Assert.assertNotNull(statsProperties.getKeepaliveTimedOut());
+        Assert.assertNotNull(statsProperties.getMaxConn());
+        Assert.assertNotNull(statsProperties.getCurrentConn());
     }
 
     /**

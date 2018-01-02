@@ -31,7 +31,7 @@
 //        poolBasic.setPassive_monitoring(false);
 //
 //        PoolLoadbalancing lbalgo = new PoolLoadbalancing();
-//        lbalgo.setAlgorithm(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString());
+//        lbalgo.setAlgorithm(EnumFactory.AcceptFrom.WEIGHTED_ROUND_ROBIN.toString());
 //
 //        poolProperties.setBasic(poolBasic);
 //        poolProperties.setLoad_balancing(lbalgo);
@@ -41,7 +41,7 @@
 //        Pool rpool = client.createPool("ctest_001", pool);
 //
 //        Assert.assertNotNull(rpool);
-//        Assert.assertEquals(EnumFactory.Accept_from.WEIGHTED_ROUND_ROBIN.toString(), rpool.getProperties().getLoad_balancing().getAlgorithm());
+//        Assert.assertEquals(EnumFactory.AcceptFrom.WEIGHTED_ROUND_ROBIN.toString(), rpool.getProperties().getLoadBalancing().getAlgorithm());
 //
 //        rpool.getProperties().getBasic().getNodes().add("10.2.2.2:8080");
 //        Pool upool = client.updatePool("ctest_001", rpool);
@@ -96,7 +96,7 @@
 ////
 ////        read.getProperties().getBasic().getNodes().add("10.1.1.2:9090");
 ////
-//////        String jsonstring = "{\"properties\":{\"basic\":{\"bandwidth_class\":\"\",\"disabled\":[],\"draining\":[],\"failure_pool\":\"\",\"max_idle_connections_pernode\":50,\"monitors\":[],\"node_connection_attempts\":3,\"nodes\":[\"50.57.174.153:9090\",\"50.57.174.150:9090\"],\"note\":\"\",\"passive_monitoring\":false,\"persistence_class\":\"\",\"transparent\":false},\"auto_scaling\":{\"cloud_credentials\":\"\",\"cluster\":\"\",\"data_center\":\"\",\"data_store\":\"\",\"enabled\":false,\"external\":true,\"hysteresis\":20,\"imageid\":\"\",\"ips_to_use\":\"publicips\",\"last_node_idle_time\":3600,\"max_nodes\":4,\"min_nodes\":1,\"name\":\"\",\"port\":80,\"refractory\":180,\"response_time\":1000,\"scale_down_level\":95,\"scale_up_level\":40,\"size_id\":\"\"},\"connection\":{\"max_connect_time\":4,\"max_connections_per_node\":0,\"max_queue_size\":0,\"max_reply_time\":30,\"queue_timeout\":10},\"ftp\":{\"support_rfc_2428\":false},\"http\":{\"keepalive\":true,\"keepalive_non_idempotent\":false},\"load_balancing\":{\"algorithm\":\"random\",\"node_weighting\":[],\"priority_enabled\":false,\"priority_nodes\":1,\"priority_values\":[\"50.57.174.153:9090:2\",\"50.57.174.150:9090:2\"]},\"node\":{\"close_on_death\":false,\"retry_fail_time\":60},\"smtp\":{\"send_starttls\":true},\"ssl\":{\"client_auth\":false,\"enable\":false,\"enhance\":false,\"send_close_alerts\":false,\"server_name\":false,\"strict_verify\":false},\"tcp\":{\"nagle\":true},\"udp\":{\"accept_from\":\"dest_only\",\"accept_from_mask\":\"\"}}}";
+//////        String jsonstring = "{\"properties\":{\"basic\":{\"bandwidth_class\":\"\",\"disabled\":[],\"draining\":[],\"failure_pool\":\"\",\"max_idle_connections_pernode\":50,\"monitors\":[],\"node_connection_attempts\":3,\"nodes\":[\"50.57.174.153:9090\",\"50.57.174.150:9090\"],\"note\":\"\",\"passive_monitoring\":false,\"persistence_class\":\"\",\"transparent\":false},\"auto_scaling\":{\"cloud_credentials\":\"\",\"cluster\":\"\",\"data_center\":\"\",\"data_store\":\"\",\"enabled\":false,\"external\":true,\"hysteresis\":20,\"imageid\":\"\",\"ips_to_use\":\"publicips\",\"last_node_idle_time\":3600,\"max_nodes\":4,\"min_nodes\":1,\"name\":\"\",\"port\":80,\"refractory\":180,\"response_time\":1000,\"scale_down_level\":95,\"scale_up_level\":40,\"size_id\":\"\"},\"connection\":{\"max_connect_time\":4,\"max_connections_per_node\":0,\"max_queue_size\":0,\"max_reply_time\":30,\"queue_timeout\":10},\"ftp\":{\"support_rfc_2428\":false},\"http\":{\"keepalive\":true,\"keepalive_non_idempotent\":false},\"load_balancing\":{\"algorithm\":\"random\",\"node_weighting\":[],\"priority_enabled\":false,\"priority_nodes\":1,\"priority_values\":[\"50.57.174.153:9090:2\",\"50.57.174.150:9090:2\"]},\"node\":{\"close_on_death\":false,\"retry_fail_time\":60},\"smtp\":{\"send_starttls\":true},\"ssl\":{\"client_auth\":false,\"enable\":false,\"enhance\":false,\"send_close_alerts\":false,\"server_name\":false,\"strict_verify\":false},\"tcp\":{\"nagle\":true},\"udp\":{\"AcceptFrom\":\"dest_only\",\"AcceptFrom_mask\":\"\"}}}";
 ////        ClientResponse response2 = client.updatePool("pools/528830_770", read);
 //////        System.out.print("AFTER UPDATE: " + response2.getEntity(String.class));
 ////        Pool updatedpool = response2.getEntity(Pool.class);

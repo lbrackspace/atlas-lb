@@ -40,7 +40,7 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
         stmAdapter.updateLoadBalancer(config, lb, lb);
 
         Assert.assertEquals(SessionPersistence.HTTP_COOKIE.name(),
-                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+                client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
     }
 
     @Test
@@ -51,7 +51,7 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
         stmAdapter.updateLoadBalancer(config, lb, lb);
 
         Assert.assertEquals(SessionPersistence.SOURCE_IP.name(),
-                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+                client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
         stmAdapter.updateLoadBalancer(config, lb, lb);
 
         Assert.assertEquals(SessionPersistence.SSL_ID.name(),
-                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+                client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
     }
 
     @Test
@@ -74,21 +74,21 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
         lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
         stmAdapter.updateLoadBalancer(config, lb, lb);
         Assert.assertEquals(SessionPersistence.HTTP_COOKIE.name(),
-                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+                client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
 
         lb.setSessionPersistence(SessionPersistence.NONE);
         stmAdapter.updateLoadBalancer(config, lb, lb);
-        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
 
         //Set as Null
         lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
         stmAdapter.updateLoadBalancer(config, lb, lb);
         Assert.assertEquals(SessionPersistence.HTTP_COOKIE.name(),
-                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+                client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
 
         lb.setSessionPersistence(null);
         stmAdapter.updateLoadBalancer(config, lb, lb);
-        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
     }
 
     @Test
@@ -100,21 +100,21 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
         lb.setSessionPersistence(SessionPersistence.SOURCE_IP);
         stmAdapter.updateLoadBalancer(config, lb, lb);
         Assert.assertEquals(SessionPersistence.SOURCE_IP.name(),
-                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+                client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
 
         lb.setSessionPersistence(SessionPersistence.NONE);
         stmAdapter.updateLoadBalancer(config, lb, lb);
-        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
 
         //Set as Null
         lb.setSessionPersistence(SessionPersistence.SOURCE_IP);
         stmAdapter.updateLoadBalancer(config, lb, lb);
         Assert.assertEquals(SessionPersistence.SOURCE_IP.name(),
-                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+                client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
 
         lb.setSessionPersistence(null);
         stmAdapter.updateLoadBalancer(config, lb, lb);
-        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
     }
 
     @Test
@@ -126,20 +126,20 @@ public class UpdateSessionPersistenceITest extends STMTestBase {
         lb.setSessionPersistence(SessionPersistence.SSL_ID);
         stmAdapter.updateLoadBalancer(config, lb, lb);
         Assert.assertEquals(SessionPersistence.SSL_ID.name(),
-                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+                client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
 
         lb.setSessionPersistence(SessionPersistence.NONE);
         stmAdapter.updateLoadBalancer(config, lb, lb);
-        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
 
         //Set as Null
         lb.setSessionPersistence(SessionPersistence.SSL_ID);
         stmAdapter.updateLoadBalancer(config, lb, lb);
         Assert.assertEquals(SessionPersistence.SSL_ID.name(),
-                client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+                client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
 
         lb.setSessionPersistence(null);
         stmAdapter.updateLoadBalancer(config, lb, lb);
-        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistence_class());
+        Assert.assertEquals("", client.getPool(poolName()).getProperties().getBasic().getPersistenceClass());
     }
 }

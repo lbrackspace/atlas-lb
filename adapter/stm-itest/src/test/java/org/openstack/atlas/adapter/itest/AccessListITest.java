@@ -115,8 +115,8 @@ public class AccessListITest extends STMTestBase {
         if (lb.getConnectionLimit() != null) {
             Assert.assertNotNull(protection);
         }
-        Set<String> allowed = protection.getProperties().getAccess_restriction().getAllowed();
-        Set<String> banned = protection.getProperties().getAccess_restriction().getBanned();
+        Set<String> allowed = protection.getProperties().getAccessRestriction().getAllowed();
+        Set<String> banned = protection.getProperties().getAccessRestriction().getBanned();
         Assert.assertTrue(allowed.contains(item1.getIpAddress()));
         Assert.assertTrue(banned.contains(item2.getIpAddress()));
     }
@@ -133,8 +133,8 @@ public class AccessListITest extends STMTestBase {
         if (lb.getConnectionLimit() != null) {
             Assert.assertNotNull(protection);
         }
-        Set<String> allowed = protection.getProperties().getAccess_restriction().getAllowed();
-        Set<String> banned = protection.getProperties().getAccess_restriction().getBanned();
+        Set<String> allowed = protection.getProperties().getAccessRestriction().getAllowed();
+        Set<String> banned = protection.getProperties().getAccessRestriction().getBanned();
         Assert.assertTrue(allowed.contains(item1.getIpAddress()));
         Assert.assertTrue(banned.isEmpty());
     }

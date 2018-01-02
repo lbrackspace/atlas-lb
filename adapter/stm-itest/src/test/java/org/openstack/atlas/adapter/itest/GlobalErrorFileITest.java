@@ -95,7 +95,7 @@ public class GlobalErrorFileITest extends STMTestBase {
         Assert.assertNotNull(errorFile);
 
         stmAdapter.deleteErrorFile(config, lb);
-        String errorFileNameLocal = stmClient.getVirtualServer(vsName).getProperties().getConnection_errors().getError_file();
+        String errorFileNameLocal = stmClient.getVirtualServer(vsName).getProperties().getConnectionErrors().getErrorFile();
         Assert.assertEquals("Default", errorFileNameLocal);
         stmClient.getExtraFile(errorFileName); //expect ONFException
     }

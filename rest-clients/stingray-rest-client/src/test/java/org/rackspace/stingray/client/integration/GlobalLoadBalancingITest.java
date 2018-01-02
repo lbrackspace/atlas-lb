@@ -58,10 +58,10 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
     @Test
     public void testUpdateGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         int testInt = 1;
-        glb.getProperties().getBasic().setGeo_effect(testInt);
+        glb.getProperties().getBasic().setGeoEffect(testInt);
         GlobalLoadBalancing updatedGlb = client.updateGlb(vsName, glb);
         Assert.assertNotNull(updatedGlb);
-        Assert.assertEquals((int) testInt, (int) updatedGlb.getProperties().getBasic().getGeo_effect());
+        Assert.assertEquals((int) testInt, (int) updatedGlb.getProperties().getBasic().getGeoEffect());
     }
 
 

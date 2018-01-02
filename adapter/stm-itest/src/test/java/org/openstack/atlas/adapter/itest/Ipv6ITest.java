@@ -115,23 +115,23 @@ public class Ipv6ITest extends STMTestBase {
             Assert.assertEquals(true, vs.getProperties().getBasic().getEnabled());
             Assert.assertEquals(lb.getPort(), vs.getProperties().getBasic().getPort());
             Assert.assertEquals(poolName(), vs.getProperties().getBasic().getPool());
-            Assert.assertEquals("Default", vs.getProperties().getConnection_errors().getError_file());
-            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_for());
-            Assert.assertTrue(vs.getProperties().getBasic().getAdd_x_forwarded_proto());
-            Assert.assertEquals(false, vs.getProperties().getBasic().getListen_on_any());
-            Assert.assertEquals(false, vs.getProperties().getTcp().getProxy_close());
-            Assert.assertEquals(vs.getProperties().getBasic().getListen_on_traffic_ips(), translator.genGroupNameSet(lb));
+            Assert.assertEquals("Default", vs.getProperties().getConnectionErrors().getErrorFile());
+            Assert.assertTrue(vs.getProperties().getBasic().getAddXForwardedFor());
+            Assert.assertTrue(vs.getProperties().getBasic().getAddXForwardedProto());
+            Assert.assertEquals(false, vs.getProperties().getBasic().getListenOnAny());
+            Assert.assertEquals(false, vs.getProperties().getTcp().getProxyClose());
+            Assert.assertEquals(vs.getProperties().getBasic().getListenOnTrafficIps(), translator.genGroupNameSet(lb));
 
-            Assert.assertEquals("", vs.getProperties().getBasic().getProtection_class());
-            Assert.assertEquals("", vs.getProperties().getBasic().getBandwidth_class());
+            Assert.assertEquals("", vs.getProperties().getBasic().getProtectionClass());
+            Assert.assertEquals("", vs.getProperties().getBasic().getBandwidthClass());
 
             pool = tclient.getPool(loadBalancerName());
             Assert.assertNotNull(pool);
             Assert.assertEquals(0, pool.getProperties().getBasic().getMonitors().size());
-            Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoad_balancing().getAlgorithm());
+            Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoadBalancing().getAlgorithm());
 
             TrafficIp vip;
-            for (String v : vs.getProperties().getBasic().getListen_on_traffic_ips()) {
+            for (String v : vs.getProperties().getBasic().getListenOnTrafficIps()) {
                 vip = tclient.getTrafficIp(v);
                 Assert.assertNotNull(vip);
                 Assert.assertEquals(1, vip.getProperties().getBasic().getIpaddresses().size());
