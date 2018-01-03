@@ -82,6 +82,7 @@
                 <version>0.5.1</version>
                 <configuration>
                     <annotationStyle>jackson2</annotationStyle>
+                    <useCommonsLang3>true</useCommonsLang3>
                     <sourcePaths>
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/config-action-script</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/config-bandwidth</sourcePath>
