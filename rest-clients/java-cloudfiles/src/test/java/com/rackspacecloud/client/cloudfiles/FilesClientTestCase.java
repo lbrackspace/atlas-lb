@@ -19,7 +19,7 @@ import org.apache.http.HttpException;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.SystemUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.log4j.Logger;
 
 import com.rackspacecloud.client.cloudfiles.FilesAccountInfo;

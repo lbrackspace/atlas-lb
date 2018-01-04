@@ -79,7 +79,7 @@ public class SslTerminationConverter implements CustomConverter {
             apiSslTerm.setSecureTrafficOnly(isSecureTrafficOnly);
 
             SslCipherProfile cipherProfile = dbSslTerm.getCipherProfile();
-            if(cipherProfile == null || org.apache.commons.lang.StringUtils.isEmpty(cipherProfile.getName())) {
+            if(cipherProfile == null || org.apache.commons.lang3.StringUtils.isEmpty(cipherProfile.getName())) {
                 apiSslTerm.setCipherProfile(Constants.DEFAUlT_CIPHER_PROFILE_NAME);
             } else {
                 apiSslTerm.setCipherProfile(cipherProfile.getName());

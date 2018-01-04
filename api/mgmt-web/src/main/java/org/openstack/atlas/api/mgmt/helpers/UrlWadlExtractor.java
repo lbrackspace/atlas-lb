@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.mgmt.helpers;
 
 import org.openstack.atlas.api.exceptions.MalformedUrlException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

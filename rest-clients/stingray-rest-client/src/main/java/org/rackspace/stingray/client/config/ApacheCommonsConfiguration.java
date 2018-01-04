@@ -1,7 +1,9 @@
 package org.rackspace.stingray.client.config;
 
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
+import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.ex.ConfigurationException;
+import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.rackspace.stingray.client.config.exception.ConfigurationAccessException;
 import org.rackspace.stingray.client.config.exception.ConfigurationInitializationException;
 
@@ -44,7 +46,13 @@ public class ApacheCommonsConfiguration implements Configuration {
             }
 
             try {
-                configuration = new PropertiesConfiguration(configurationFile);
+                FileBasedConfigurationBuilder<PropertiesConfiguration> builder =
+                        new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
+                                .configure(new Parameters().properties()
+                                        .setFile(configurationFile)
+                                        .setThrowExceptionOnMissing(true)
+                                        .setIncludesAllowed(false));
+                configuration = builder.getConfiguration();
             } catch (ConfigurationException ce) {
                 throw new ConfigurationInitializationException(ce.getMessage(), ce.getCause());
             }

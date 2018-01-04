@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.rmi.RemoteException;
 import java.util.*;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.openstack.atlas.util.debug.Debug;
 
 @Component

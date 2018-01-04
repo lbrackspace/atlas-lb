@@ -3,7 +3,7 @@ package org.openstack.atlas.util.crypto;
 import org.openstack.atlas.util.config.MossoConfig;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.openstack.atlas.util.crypto.exception.EncryptException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.crypto.*;

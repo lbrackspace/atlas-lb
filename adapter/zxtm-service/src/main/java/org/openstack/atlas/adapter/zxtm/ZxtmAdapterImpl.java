@@ -29,7 +29,7 @@ import java.util.*;
 import org.openstack.atlas.util.constants.ConnectionThrottleDefaultConstants;
 import static org.openstack.atlas.service.domain.entities.SessionPersistence.NONE;
 
-import static org.apache.commons.lang.StringUtils.EMPTY;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 
 
 @Component

@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.resources;
 
 import org.apache.abdera.model.Feed;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
