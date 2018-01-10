@@ -44,6 +44,7 @@ import org.springframework.test.context.support.DependencyInjectionTestExecution
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -134,10 +135,10 @@ public class UsagePollerHelperTest {
             List<LoadBalancerMergedHostUsage> mergedUsages = usagePollerHelper.processExistingEvents(lbHostMap);
 
             Assert.assertEquals(2, mergedUsages.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:00", mergedUsages.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:00", mergedUsages);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages);
         }
 
         @Test
@@ -146,10 +147,10 @@ public class UsagePollerHelperTest {
             List<LoadBalancerMergedHostUsage> mergedUsages = usagePollerHelper.processExistingEvents(lbHostMap);
 
             Assert.assertEquals(2, mergedUsages.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 575L, 775L, 175L, 375L, 7, 15, 2, 3,
-                    UsageEvent.CREATE_VIRTUAL_IP, "2013-04-10 20:03:00", mergedUsages.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 475L, 675L, 75L, 275L, 3, 11, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 575L, 775L, 175L, 375L, 7, 15, 2, 3,
+                    UsageEvent.CREATE_VIRTUAL_IP, "2013-04-10 20:03:00", mergedUsages);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 475L, 675L, 75L, 275L, 3, 11, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages);
         }
 
         @Test
@@ -158,10 +159,10 @@ public class UsagePollerHelperTest {
             List<LoadBalancerMergedHostUsage> mergedUsages = usagePollerHelper.processExistingEvents(lbHostMap);
 
             Assert.assertEquals(2, mergedUsages.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 10L, 6L, 18L, 14L, 12, 24, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:00", mergedUsages.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 1L, 0L, 6L, 3L, 8, 20, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 10L, 6L, 18L, 14L, 12, 24, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:00", mergedUsages);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 1L, 0L, 6L, 3L, 8, 20, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages);
         }
 
         @Test
@@ -170,14 +171,14 @@ public class UsagePollerHelperTest {
             List<LoadBalancerMergedHostUsage> mergedUsages = usagePollerHelper.processExistingEvents(lbHostMap);
 
             Assert.assertEquals(4, mergedUsages.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 575L, 775L, 175L, 375L, 7, 15, 2, 0,
-                    UsageEvent.CREATE_VIRTUAL_IP, "2013-04-10 20:03:00", mergedUsages.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 7, 15, 1, 0,
-                    UsageEvent.DELETE_VIRTUAL_IP, "2013-04-10 20:03:30", mergedUsages.get(1));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 475L, 675L, 75L, 275L, 3, 11, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages.get(2));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 250L, 200L, 125L, 150L, 3, 11, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedUsages.get(3));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 575L, 775L, 175L, 375L, 7, 15, 2, 0,
+                    UsageEvent.CREATE_VIRTUAL_IP, "2013-04-10 20:03:00", mergedUsages);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 7, 15, 1, 0,
+                    UsageEvent.DELETE_VIRTUAL_IP, "2013-04-10 20:03:30", mergedUsages);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 475L, 675L, 75L, 275L, 3, 11, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 250L, 200L, 125L, 150L, 3, 11, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedUsages);
         }
 
         @Test
@@ -186,10 +187,10 @@ public class UsagePollerHelperTest {
             List<LoadBalancerMergedHostUsage> mergedUsages = usagePollerHelper.processExistingEvents(lbHostMap);
 
             Assert.assertEquals(2, mergedUsages.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 150L, 0, 0, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:00", mergedUsages.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 10L, 0L, 0L, 50L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 150L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:00", mergedUsages);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 10L, 0L, 0L, 50L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:02:00", mergedUsages);
         }
 
 
@@ -200,10 +201,10 @@ public class UsagePollerHelperTest {
             List<LoadBalancerMergedHostUsage> mergedRecords = usagePollerHelper.processExistingEvents(lbHostMap);
 
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 2, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-08-27 21:56:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 30L, 70L, 110L, 150L, 3, 7, 2, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-08-27 21:57:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 2, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-08-27 21:56:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 30L, 70L, 110L, 150L, 3, 7, 2, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-08-27 21:57:00", mergedRecords);
         }
 
         @Test
@@ -214,8 +215,8 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-08-27 21:56:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-08-27 21:56:00", mergedRecords);
         }
 
         @Test
@@ -226,8 +227,8 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-08-27 21:55:58", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-08-27 21:55:58", mergedRecords);
         }
     }
 
@@ -270,10 +271,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -284,10 +285,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -298,10 +299,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 700L, 400L, 300L, 300L, 0, 0, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 400L, 450L, 200L, 400L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 700L, 400L, 300L, 300L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 400L, 450L, 200L, 400L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -312,10 +313,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 200L, 100L, 200L, 100L, 0, 0, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 300L, 50L, 100L, 200L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 200L, 100L, 200L, 100L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 300L, 50L, 100L, 200L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -326,10 +327,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 700L, 400L, 300L, 300L, 28, 16, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 400L, 450L, 200L, 400L, 9, 22, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 700L, 400L, 300L, 300L, 28, 16, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 400L, 450L, 200L, 400L, 9, 22, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -340,10 +341,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 200L, 100L, 200L, 100L, 28, 16, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 300L, 50L, 100L, 200L, 9, 22, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 200L, 100L, 200L, 100L, 28, 16, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 300L, 50L, 100L, 200L, 9, 22, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -354,10 +355,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 200L, 400L, 700L, 200L, 28, 16, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 100L, 50L, 50L, 200L, 9, 10, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 200L, 400L, 700L, 200L, 28, 16, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 100L, 50L, 50L, 200L, 9, 10, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -368,10 +369,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -382,8 +383,8 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -394,8 +395,8 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -406,8 +407,8 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
         }
 
         @Test
@@ -418,10 +419,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
         @Test
@@ -432,10 +433,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 25L, 0L, 50L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
         @Test
@@ -446,10 +447,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 30, 70, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 30, 70, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:00", mergedRecords);
         }
     }
 
@@ -490,21 +491,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -540,21 +541,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 10L, 0L, 100L, 30L, 6, 5, 2, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 30L, 30L, 70L, 20L, 26, 45, 3, 3,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 10L, 0L, 100L, 30L, 6, 5, 2, 5,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 30L, 30L, 70L, 20L, 26, 45, 3, 3,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 35L, 40L, 100L, 70L, 1, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 45L, 50L, 110L, 90L, 5, 5, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 40L, 40L, 60L, 50L, 11, 20, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 20L, 40L, 80L, 60L, 15, 25, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 35L, 40L, 100L, 70L, 1, 0, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 45L, 50L, 110L, 90L, 5, 5, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 40L, 40L, 60L, 50L, 11, 20, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 20L, 40L, 80L, 60L, 15, 25, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -588,21 +589,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 30L, 5, 0, 2, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 20L, 40L, 10L, 26, 45, 3, 3,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 30L, 5, 0, 2, 5,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 20L, 40L, 10L, 26, 45, 3, 3,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 35L, 40L, 10L, 70L, 0, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 35L, 50L, 110L, 90L, 5, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 5L, 40L, 60L, 50L, 11, 20, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 20L, 10L, 80L, 49L, 15, 25, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 35L, 40L, 10L, 70L, 0, 0, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 35L, 50L, 110L, 90L, 5, 0, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 5L, 40L, 60L, 50L, 11, 20, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 20L, 10L, 80L, 49L, 15, 25, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -612,21 +613,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 3, 3,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 2, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 3, 3,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 2, 5,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -662,21 +663,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 8L, 0L, 98L, 28L, 6, 5, 3, 3,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 29L, 28L, 68L, 18L, 26, 45, 2, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 8L, 0L, 98L, 28L, 6, 5, 3, 3,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 29L, 28L, 68L, 18L, 26, 45, 2, 5,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 35L, 41L, 100L, 70L, 1, 0, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 45L, 51L, 110L, 90L, 5, 5, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 40L, 40L, 60L, 50L, 11, 20, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 21L, 40L, 80L, 60L, 15, 25, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 35L, 41L, 100L, 70L, 1, 0, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 45L, 51L, 110L, 90L, 5, 5, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 40L, 40L, 60L, 50L, 11, 20, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 21L, 40L, 80L, 60L, 15, 25, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -710,21 +711,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 30L, 5, 0, 2, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 20L, 40L, 10L, 26, 45, 3, 3,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 30L, 5, 0, 2, 5,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 20L, 40L, 10L, 26, 45, 3, 3,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 35L, 40L, 10L, 70L, 0, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 35L, 50L, 110L, 90L, 5, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 5L, 40L, 60L, 50L, 11, 20, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 20L, 10L, 80L, 49L, 15, 25, 3, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 35L, 40L, 10L, 70L, 0, 0, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 35L, 50L, 110L, 90L, 5, 0, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 5L, 40L, 60L, 50L, 11, 20, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 20L, 10L, 80L, 49L, 15, 25, 3, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -760,21 +761,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 6L, 0L, 96L, 26L, 6, 5, 2, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 28L, 26L, 66L, 16L, 26, 45, 2, 3,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 6L, 0L, 96L, 26L, 6, 5, 2, 5,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 28L, 26L, 66L, 16L, 26, 45, 2, 3,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 35L, 42L, 100L, 70L, 1, 0, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 45L, 52L, 110L, 90L, 5, 5, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 40L, 40L, 60L, 50L, 11, 20, 2, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 22L, 40L, 80L, 60L, 15, 25, 2, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 35L, 42L, 100L, 70L, 1, 0, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 45L, 52L, 110L, 90L, 5, 5, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 40L, 40L, 60L, 50L, 11, 20, 2, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 22L, 40L, 80L, 60L, 15, 25, 2, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -784,21 +785,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 3,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 3,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 3, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 3, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -822,15 +823,15 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 32L, 0L, 30L, 40L, 26, 45, 2, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 32L, 0L, 30L, 40L, 26, 45, 2, 5,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(2, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 40L, 40L, 60L, 90L, 11, 20, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 22L, 40L, 80L, 100L, 15, 25, 2, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 40L, 40L, 60L, 90L, 11, 20, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 22L, 40L, 80L, 100L, 15, 25, 2, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -854,15 +855,15 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 50L, 125L, 200L, 275L, 0, 0, 1, 1,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 50L, 125L, 200L, 275L, 0, 0, 1, 1,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(2, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 100L, 200L, 300L, 400L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 100L, 200L, 300L, 400L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -886,15 +887,15 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(2, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, -1L, -1L, -1L, -1L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, -1L, -1L, -1L, -1L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -918,15 +919,15 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 150L, 0L, 300L, 0, 0, 1, 1,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 150L, 0L, 300L, 0, 0, 1, 1,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(2, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 100L, 200L, 300L, 400L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 100L, 200L, 300L, 400L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -950,15 +951,15 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 150L, 0L, 300L, 0, 0, 1, 1,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 150L, 0L, 300L, 0, 0, 1, 1,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(2, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, -1L, 200L, -1L, 400L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, -1L, 200L, -1L, 400L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 1, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -988,21 +989,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 3, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 4, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 3, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 4, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 3, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 4, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 3, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 4, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
     }
@@ -1047,21 +1048,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -1091,21 +1092,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 5500L, 6600L, 7700L, 8800L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 1100L, 2200L, 3300L, 4400L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 5500L, 6600L, 7700L, 8800L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 1100L, 2200L, 3300L, 4400L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 5000L, 6000L, 7000L, 8000L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 500L, 600L, 700L, 800L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 1000L, 2000L, 3000L, 4000L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 100L, 200L, 300L, 400L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 5000L, 6000L, 7000L, 8000L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 500L, 600L, 700L, 800L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 1000L, 2000L, 3000L, 4000L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 100L, 200L, 300L, 400L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -1135,21 +1136,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 6000L, 8000L, 2000L, 4000L, 0, 0, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 5000L, 7000L, 1000L, 3000L, 0, 0, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 6000L, 8000L, 2000L, 4000L, 0, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 5000L, 7000L, 1000L, 3000L, 0, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 6000L, 8000L, 2000L, 4000L, 0, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 6600L, 8800L, 2200L, 4400L, 0, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 5000L, 7000L, 1000L, 3000L, 0, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 5500L, 7700L, 1100L, 3300L, 0, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 6000L, 8000L, 2000L, 4000L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 6600L, 8800L, 2200L, 4400L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 5000L, 7000L, 1000L, 3000L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 5500L, 7700L, 1100L, 3300L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -1179,21 +1180,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 1L, 0L, 1800L, 0L, 0, 0, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 700L, 0L, 300L, 0, 0, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 1L, 0L, 1800L, 0L, 0, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 700L, 0L, 300L, 0, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 601L, 10L, 2000L, 4000L, 0, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 6001L, 1000L, 1999L, 4400L, 0, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 499L, 699L, 1000L, 3000L, 0, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 4999L, 7700L, 1100L, 3300L, 0, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 601L, 10L, 2000L, 4000L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 6001L, 1000L, 1999L, 4400L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 499L, 699L, 1000L, 3000L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 4999L, 7700L, 1100L, 3300L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -1229,21 +1230,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 6000L, 8000L, 2000L, 4000L, 23, 11, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 5000L, 7000L, 1000L, 3000L, 10, 7, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 6000L, 8000L, 2000L, 4000L, 23, 11, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 5000L, 7000L, 1000L, 3000L, 10, 7, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 6000L, 8000L, 2000L, 4000L, 12, 8, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 6600L, 8800L, 2200L, 4400L, 11, 3, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 5000L, 7000L, 1000L, 3000L, 10, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 5500L, 7700L, 1100L, 3300L, 0, 7, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 6000L, 8000L, 2000L, 4000L, 12, 8, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 6600L, 8800L, 2200L, 4400L, 11, 3, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 5000L, 7000L, 1000L, 3000L, 10, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 5500L, 7700L, 1100L, 3300L, 0, 7, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -1279,21 +1280,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 1L, 0L, 1800L, 0L, 23, 11, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 700L, 0L, 300L, 10, 7, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 1L, 0L, 1800L, 0L, 23, 11, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 700L, 0L, 300L, 10, 7, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 601L, 10L, 2000L, 4000L, 12, 8, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 6001L, 1000L, 1999L, 4400L, 11, 3, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 499L, 699L, 1000L, 3000L, 10, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 4999L, 7700L, 1100L, 3300L, 0, 7, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 601L, 10L, 2000L, 4000L, 12, 8, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 6001L, 1000L, 1999L, 4400L, 11, 3, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 499L, 699L, 1000L, 3000L, 10, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 4999L, 7700L, 1100L, 3300L, 0, 7, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -1324,21 +1325,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 1L, 0L, 1800L, 0L, 23, 11, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 10, 0, 1, 5,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 1L, 0L, 1800L, 0L, 23, 11, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 10, 0, 1, 5,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 601L, 10L, 2000L, 4000L, 12, 8, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 6001L, 1000L, 1999L, 4400L, 11, 3, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 499L, 699L, 1000L, 3000L, 10, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 5, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 601L, 10L, 2000L, 4000L, 12, 8, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 6001L, 1000L, 1999L, 4400L, 11, 3, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 499L, 699L, 1000L, 3000L, 10, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 5, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
     }
 
@@ -1667,8 +1668,8 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.CREATE_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.CREATE_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords);
         }
 
         @Test
@@ -1679,8 +1680,8 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.CREATE_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.CREATE_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords);
         }
 
         @Test
@@ -1691,12 +1692,12 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(3, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.CREATE_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(2));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.CREATE_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
         @Test
@@ -1707,12 +1708,12 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(3, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.CREATE_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 30L, 0L, 150L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 40L, 110L, 40L, 230L, 0, 0, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(2));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.CREATE_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 30L, 0L, 150L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 40L, 110L, 40L, 230L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
         @Test
@@ -1723,10 +1724,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.CREATE_LOADBALANCER, "2013-06-24 12:30:54", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.DELETE_LOADBALANCER, "2013-06-24 12:31:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.CREATE_LOADBALANCER, "2013-06-24 12:30:54", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.DELETE_LOADBALANCER, "2013-06-24 12:31:00", mergedRecords);
         }
     }
 
@@ -1804,17 +1805,18 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(2, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -1826,21 +1828,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -1852,21 +1854,21 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(4, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(2));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(3));
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 124, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
 
         @Test
@@ -1879,15 +1881,15 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, result.getMergedUsages().size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    null, pollTimeStr, result.getMergedUsages().get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    null, pollTimeStr, result.getMergedUsages());
 
             //New lb_host_usage records assertions
             Assert.assertEquals(2, result.getLbHostUsages().size());
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(0));
-            AssertLoadBalancerHostUsage.hasValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
-                    result.getLbHostUsages().get(1));
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 1, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
+            AssertLoadBalancerHostUsage.containsValues(1234, 123, 2, 0L, 0L, 0L, 0L, 0, 0, 1, 0, null, pollTimeStr,
+                    result.getLbHostUsages());
         }
     }
 
@@ -1934,14 +1936,14 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(4, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:01", mergedRecords.get(1));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(2));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(3));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
         @Test
@@ -1952,14 +1954,14 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(4, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:01", mergedRecords.get(1));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 200L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(2));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 300L, 0L, 0, 0, 1, 1,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(3));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:03:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 124, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:04:01", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 200L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 300L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
         @Test
@@ -1970,10 +1972,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
         @Test
@@ -1984,10 +1986,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 200L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 250L, 0L, 0, 0, 1, 1,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 200L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 250L, 0L, 0, 0, 1, 1,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
     }
@@ -2035,8 +2037,8 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords);
         }
 
         @Test
@@ -2047,8 +2049,8 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(1, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords);
         }
 
         @Test
@@ -2059,12 +2061,12 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(3, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(2));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
         @Test
@@ -2075,12 +2077,12 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(3, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 30L, 0L, 150L, 0L, 0, 0, 1, 5,
-                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords.get(1));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 40L, 110L, 40L, 230L, 0, 0, 1, 3,
-                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords.get(2));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-04-10 20:02:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 30L, 0L, 150L, 0L, 0, 0, 1, 5,
+                    UsageEvent.SSL_MIXED_ON, "2013-04-10 20:03:00", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 40L, 110L, 40L, 230L, 0, 0, 1, 3,
+                    UsageEvent.SSL_ONLY_ON, "2013-04-10 20:04:00", mergedRecords);
         }
 
         @Test
@@ -2091,10 +2093,10 @@ public class UsagePollerHelperTest {
 
             //new lb_merged_host_usage records assertions
             Assert.assertEquals(2, mergedRecords.size());
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-06-24 12:30:54", mergedRecords.get(0));
-            AssertLoadBalancerMergedHostUsage.hasValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
-                    UsageEvent.DELETE_LOADBALANCER, "2013-06-24 12:31:00", mergedRecords.get(1));
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.UNSUSPEND_LOADBALANCER, "2013-06-24 12:30:54", mergedRecords);
+            AssertLoadBalancerMergedHostUsage.containsValues(1234, 123, 0L, 0L, 0L, 0L, 0, 0, 1, 0,
+                    UsageEvent.DELETE_LOADBALANCER, "2013-06-24 12:31:00", mergedRecords);
         }
     }
 
