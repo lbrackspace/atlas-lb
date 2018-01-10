@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.helpers.StubFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
@@ -19,8 +18,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 import java.security.NoSuchAlgorithmException;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,7 +80,7 @@ public class StubResource extends ManagementDependencyProvider {
 
     @GET
     @Path("zeusevent")
-    public Response zeusEvent(){
+    public Response zeusEvent() {
         ZeusEvent zev = new ZeusEvent();
         zev.setCallbackHost("callback.host.com");
         zev.setEventType("someevent");
@@ -151,6 +155,40 @@ public class StubResource extends ManagementDependencyProvider {
     }
 
     @GET
+    @Path("sysprops")
+    public Response getSystemProperties() {
+        String keyStr = null;
+        String valStr = null;
+
+        if (!isUserInRole("ops")) {
+            return ResponseFactory.accessDenied();
+        }
+
+        ListOfStrings los = new ListOfStrings();
+        Set<Map.Entry<Object, Object>> entrySet = System.getProperties().entrySet();
+        for (Map.Entry<Object, Object> es : entrySet) {
+            Object key = es.getKey();
+            Object val = es.getValue();
+
+            if (key instanceof String) {
+                keyStr = (String) key;
+            } else {
+                keyStr = key.toString();
+            }
+
+            if (val instanceof String) {
+                valStr = (String) val;
+            } else {
+                valStr = val.toString();
+            }
+            String losElement = keyStr + ":" + valStr;
+            los.getStrings().add(losElement);
+        }
+        Collections.sort(los.getStrings());
+        return Response.status(200).entity(los).build();
+    }
+
+    @GET
     @Path("gensha1sums")
     public Response gensha1sum() {
         ListOfInts listOfInts = new ListOfInts();
@@ -183,7 +221,7 @@ public class StubResource extends ManagementDependencyProvider {
             sslTermInfo.setAccountId(i);
             sslTermInfo.setApiValid(Boolean.TRUE);
             sslTerms.getSslTerms().add(sslTermInfo);
-            
+
             CertInfo cert = StubFactory.newCertInfo(hi++, notBefore, notAfter);
             for (int j = 0; j < 3; j++) {
                 CertInfo imd = StubFactory.newCertInfo(hi++, notBefore, notAfter);

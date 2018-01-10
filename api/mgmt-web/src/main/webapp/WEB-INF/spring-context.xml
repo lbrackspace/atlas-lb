@@ -53,7 +53,7 @@
 
     <!--FILTERS-->
     <bean id="headerEnhancerFilter"
-          class="org.openstack.atlas.api.mgmt.filters.HeaderEnhancerFilter" scope="request"/>
+          class="org.openstack.atlas.api.mgmt.filters.HeaderEnhancerFilter" scope="singleton"/>
     <!--Use for RBAC in mgmt, not complete-->
     <!--<bean id="manageIdentityAuthFilter"-->
           <!--class="org.openstack.atlas.api.mgmt.filters.ManageIdentityAuthFilter"-->
@@ -65,7 +65,7 @@
     <bean id="manageAuthFilter"
           class="org.openstack.atlas.api.mgmt.filters.ManageAuthFilter"
           init-method="startConfig"
-          scope="request">
+          scope="singleton">
         <property name="xmlJsonConfig" ref="xmlJsonConfig"/>
         <property name="mossoAuth" ref="mossoAuth"/>
         <property name="ldapCache" ref="ldapCache"/>

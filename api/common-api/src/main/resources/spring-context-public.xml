@@ -40,10 +40,10 @@
     <!--FILTERS-->
     <bean id="requestSanitationFilter"
           class="org.openstack.atlas.api.filters.RequestSanitationFilter"
-          scope="request"/>
+          scope="singleton"/>
     <bean id="authenticationFilter"
           class="org.openstack.atlas.api.filters.AuthenticationFilter"
-          scope="request" init-method="startConfig">
+          scope="singleton" init-method="startConfig">
         <constructor-arg index="0">
             <bean class="org.openstack.atlas.api.auth.AuthTokenValidator">
                 <constructor-arg index="0" ref="configuration"/>
@@ -58,11 +58,11 @@
     </bean>
     <bean id="groupsSanitationFilter"
           class="org.openstack.atlas.api.filters.GroupsSanitationFilter"
-          scope="request">
+          scope="singleton">
     </bean>
     <bean id="validationFilter"
           class="org.openstack.atlas.api.filters.ValidationFilter"
-          scope="request">
+          scope="singleton">
         <property name="fPkg" value="org.openstack.atlas.docs.loadbalancers.api.v1.faults"/>
         <property name="pPkg" value="org.openstack.atlas.docs.loadbalancers.api.v1"/>
         <property name="pXSD" value="META-INF/xsd/LoadBalancerApi.xsd"/>
@@ -71,12 +71,12 @@
     <bean id="jsonValidationFilter"
           class="org.openstack.atlas.api.filters.JsonValidationFilter"
           init-method="startConfig"
-          scope="request"
+          scope="singleton"
           parent="validationFilter"/>
     <bean id="xmlValidationFilter"
           class="org.openstack.atlas.api.filters.XmlValidationFilter"
           init-method="startConfig"
-          scope="request"
+          scope="singleton"
           parent="validationFilter"/>
 
     <bean id="objectMapper" class="org.openstack.atlas.api.helpers.JsonObjectMapper"
