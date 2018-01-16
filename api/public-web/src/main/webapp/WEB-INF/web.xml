@@ -10,26 +10,26 @@
         <param-value>/WEB-INF/spring-context.xml</param-value>
     </context-param>
     <context-param>
-        <param-name>log4jConfigLocation</param-name>
+        <param-name>log4jConfiguration</param-name>
         <param-value>file:/etc/openstack/atlas/log4j.public.properties</param-value>
-    </context-param>
-    <context-param>
-        <param-name>log4jExposeWebAppRoot</param-name>
-        <param-value>false</param-value>
     </context-param>
 
     <!--LISTENER CONFIGURATIONS-->
+    <listener>
+        <listener-class>org.apache.logging.log4j.web.Log4jServletContextListener</listener-class>
+    </listener>
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
     <listener>
         <listener-class>org.springframework.web.context.request.RequestContextListener</listener-class>
     </listener>
-    <listener>
-        <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
-    </listener>
 
     <!--FILTER CONFIGURATIONS-->
+    <filter>
+        <filter-name>log4jServletFilter</filter-name>
+        <filter-class>org.apache.logging.log4j.web.Log4jServletFilter</filter-class>
+    </filter>
     <filter>
         <filter-name>requestSanitationFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
@@ -72,6 +72,10 @@
     </filter>
 
     <!--FILTER MAPPINGS-->
+    <filter-mapping>
+        <filter-name>log4jServletFilter</filter-name>
+        <servlet-name>CXFServlet</servlet-name>
+    </filter-mapping>
     <filter-mapping>
         <filter-name>requestSanitationFilter</filter-name>
         <servlet-name>CXFServlet</servlet-name>
