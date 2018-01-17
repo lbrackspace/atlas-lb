@@ -92,8 +92,8 @@ public class AtomHopperUsagePusher extends AbstractJob {
             ahuslClient = new AtomHopperClientImpl();
             identityClient = new IdentityClientImpl();
         } catch (Exception e) {
-            System.out.printf("Exception: %s\n", AtomHopperUtil.getExtendedStackTrace(e));
-            LOG.error(String.format("Exception: %s\n", AtomHopperUtil.getExtendedStackTrace(e)));
+            System.out.printf("Exception: %s\n", new AtomHopperUtil().getExtendedStackTrace(e));
+            LOG.error(String.format("Exception: %s\n", new AtomHopperUtil().getExtendedStackTrace(e)));
             throw new JobExecutionException(e);
         }
     }
@@ -115,13 +115,13 @@ public class AtomHopperUsagePusher extends AbstractJob {
     }
 
     private void pushUsage() throws Exception {
-        final List<Usage> allUsages = loadBalancerRepository.getUsageNeedsPushed(AtomHopperUtil.getStartCal(), AtomHopperUtil.getNow(), NUM_ATTEMPTS);
+        final List<Usage> allUsages = loadBalancerRepository.getUsageNeedsPushed(new AtomHopperUtil().getStartCal(), new AtomHopperUtil().getNow(), NUM_ATTEMPTS);
         LOG.info(String.format("Pushing %d records marked for push", allUsages.size()));
         push(allUsages);
     }
 
     private void pushFailedUsage() throws Exception {
-        final List<Usage> allUsages = loadBalancerRepository.getUsageRetryNeedsPushed(AtomHopperUtil.getStartCal(), AtomHopperUtil.getNow(), NUM_ATTEMPTS);
+        final List<Usage> allUsages = loadBalancerRepository.getUsageRetryNeedsPushed(new AtomHopperUtil().getStartCal(), new AtomHopperUtil().getNow(), NUM_ATTEMPTS);
         LOG.info(String.format("Pushing %d records marked for retry", allUsages.size()));
         push(allUsages);
     }

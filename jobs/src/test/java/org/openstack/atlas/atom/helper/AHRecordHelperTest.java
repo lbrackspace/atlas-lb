@@ -8,8 +8,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.Spy;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openstack.atlas.atomhopper.factory.UsageEntryFactoryImpl;
 import org.openstack.atlas.atomhopper.util.AHUSLServiceUtil;
 import org.openstack.atlas.restclients.atomhopper.AtomHopperClient;
@@ -30,12 +33,12 @@ import java.util.Map;
 
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.initMocks;
-import static org.powermock.api.mockito.PowerMockito.mockStatic;
+//import static org.powermock.api.mockito.PowerMockito.mockStatic;
 
 @RunWith(Enclosed.class)
 public class AHRecordHelperTest {
 
-    @RunWith(PowerMockRunner.class)
+    @RunWith(MockitoJUnitRunner.class)
     @PrepareForTest(AtomHopperUtil.class)
     public static class WhenVerifyingAHrecordHelper {
 
@@ -54,9 +57,7 @@ public class AHRecordHelperTest {
         @Mock
         public AHUSLServiceUtil ahsutil;
 
-        public AtomHopperUtil ahutil;
-
-        public AHRecordHelper ahelper;
+        AHRecordHelper ahelper;
 
         private Usage baseUsage;
         private Calendar cal;
@@ -68,7 +69,6 @@ public class AHRecordHelperTest {
         @Before
         public void standUp() throws Exception {
             initMocks(this);
-            mockStatic(AtomHopperUtil.class);
             ahelper = new AHRecordHelper(true, client, loadBalancerEventRepository, alertRepository);
 
             baseUsage = new Usage();
@@ -101,7 +101,6 @@ public class AHRecordHelperTest {
             emap = entryFactory.createEntry(baseUsage);
 
             doNothing().when(response).close();
-            when(AtomHopperUtil.processResponseBody(Matchers.<ClientResponse>any())).thenReturn("test");
         }
 
         @Test
@@ -111,7 +110,7 @@ public class AHRecordHelperTest {
 
         @Test
         public void shouldFailAndAlertForClientFailure() throws Exception {
-            when(client.postEntryWithToken(Matchers.any(), Matchers.<String>any())).thenReturn(null);
+            when(client.postEntryWithToken(ArgumentMatchers.<Object>any(), ArgumentMatchers.<String>any())).thenReturn(null);
             ahelper.handleUsageRecord(baseUsage, token, emap);
             Assert.assertEquals(1, ahelper.getFailedRecords().size());
             verify(alertRepository, times(1)).save(Matchers.<Alert>any());

@@ -9,17 +9,17 @@ import java.io.InputStream;
 import java.util.Calendar;
 
 public class AtomHopperUtil {
-    private static final Log LOG = LogFactory.getLog(AtomHopperUtil.class);
+    private final Log LOG = LogFactory.getLog(AtomHopperUtil.class);
 
-    public static final int PAGESIZE = 4096;
-    public static final int FRAGSIZE = 4;
+    public final int PAGESIZE = 4096;
+    public final int FRAGSIZE = 4;
 
 
     /**
      * @param throwable the throwable exception used to parse the extended stack trace.
      * @return the string based off the throwables stack trace
      */
-    public static String getExtendedStackTrace(Throwable throwable) {
+    public String getExtendedStackTrace(Throwable throwable) {
         Throwable t;
         StringBuilder sb;
         Exception currEx;
@@ -43,7 +43,7 @@ public class AtomHopperUtil {
      * @return string with response body
      * @throws java.io.IOException
      */
-    public static String processResponseBody(ClientResponse response) throws IOException {
+    public String processResponseBody(ClientResponse response) throws IOException {
         final int PAGESIZE = 4096;
         final int FRAGSIZE = 4;
         InputStream is = response.getEntityInputStream();
@@ -64,7 +64,7 @@ public class AtomHopperUtil {
      * @param ex the exception used to parse the stack trace
      * @return the string parsed from the exceptions stack trace
      */
-    public static String getStackTrace(Exception ex) {
+    public String getStackTrace(Exception ex) {
         StringBuilder sb = new StringBuilder(PAGESIZE);
         sb.append(String.format("Exception: %s:%s\n", ex.getMessage(), ex.getClass().getName()));
         for (StackTraceElement se : ex.getStackTrace()) {
@@ -76,14 +76,14 @@ public class AtomHopperUtil {
     /**
      * @return the Calendar
      */
-    public static Calendar getNow() {
+    public Calendar getNow() {
         return Calendar.getInstance();
     }
 
     /**
      * @return the Calendar minus a month
      */
-    public static Calendar getStartCal() {
+    public Calendar getStartCal() {
         Calendar c = getNow();
         c.add(Calendar.MONTH, -6);
         return c;

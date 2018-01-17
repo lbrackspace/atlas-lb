@@ -63,9 +63,9 @@ public class AtomHopperClientImpl implements AtomHopperClient {
                     .type(MediaType.APPLICATION_ATOM_XML)
                     .post(ClientResponse.class, entry);
         } catch (ClientHandlerException cpe) {
-            throw new ClientHandlerException(AtomHopperUtil.getStackTrace(cpe));
+            throw new ClientHandlerException(new AtomHopperUtil().getStackTrace(cpe));
         } catch (Exception ex) {
-            throw new Exception(AtomHopperUtil.getStackTrace(ex));
+            throw new Exception(new AtomHopperUtil().getStackTrace(ex));
         }
         return response;
     }
@@ -87,9 +87,9 @@ public class AtomHopperClientImpl implements AtomHopperClient {
                     .type(MediaType.APPLICATION_ATOM_XML)
                     .post(ClientResponse.class, entry);
         } catch (ClientHandlerException cpe) {
-            throw new ClientHandlerException(AtomHopperUtil.getStackTrace(cpe));
+            throw new ClientHandlerException(new AtomHopperUtil().getStackTrace(cpe));
         } catch (Exception ex) {
-            throw new Exception(AtomHopperUtil.getStackTrace(ex));
+            throw new Exception(new AtomHopperUtil().getStackTrace(ex));
         }
         return response;
     }
@@ -106,9 +106,9 @@ public class AtomHopperClientImpl implements AtomHopperClient {
                     .type(MediaType.APPLICATION_ATOM_XML)
                     .get(ClientResponse.class);
         } catch (ClientHandlerException cpe) {
-            throw new ClientHandlerException(AtomHopperUtil.getStackTrace(cpe));
+            throw new ClientHandlerException(new AtomHopperUtil().getStackTrace(cpe));
         } catch (Exception ex) {
-            throw new Exception(AtomHopperUtil.getStackTrace(ex));
+            throw new Exception(new AtomHopperUtil().getStackTrace(ex));
         }
         return response;
     }

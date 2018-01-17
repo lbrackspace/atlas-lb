@@ -23,9 +23,6 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 
-import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getExtendedStackTrace;
-import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getStackTrace;
-
 @Deprecated
 public class AtomHopperLBTask implements Runnable {
     private final Log LOG = LogFactory.getLog(AtomHopperLBTask.class);
@@ -49,6 +46,7 @@ public class AtomHopperLBTask implements Runnable {
 
     @Override
     public void run() {
+        AtomHopperUtil ahutil = new AtomHopperUtil();
         Calendar startTime = Calendar.getInstance();
         LOG.info(String.format("Load Balancer AHUSL Task Started at %s (Timezone: %s)", startTime.getTime(), startTime.getTimeZone().getDisplayName()));
 
@@ -68,10 +66,10 @@ public class AtomHopperLBTask implements Runnable {
                         response = ahclient.postEntryWithToken(entrystring, validationToken);
                     } catch (ClientHandlerException che) {
                         LOG.warn("Could not post entry because client handler exception for load balancer: "
-                                + usageRecord.getLoadbalancer().getId() + "Exception: " + getStackTrace(che));
+                                + usageRecord.getLoadbalancer().getId() + "Exception: " + ahutil.getStackTrace(che));
                     } catch (ConnectionPoolTimeoutException cpe) {
                         LOG.warn("Could not post entry because of limited connections for load balancer: "
-                                + usageRecord.getLoadbalancer().getId() + "Exception: " + getStackTrace(cpe));
+                                + usageRecord.getLoadbalancer().getId() + "Exception: " + ahutil.getStackTrace(cpe));
                     }
 
                     //Notify usage if the record was uploaded or not...
@@ -109,12 +107,12 @@ public class AtomHopperLBTask implements Runnable {
             LOG.debug("Batch updating: " + lbusages.size() + " usage rows in the database...");
             usageRepository.batchUpdate(lbusages, false);
         } catch (ConcurrentModificationException cme) {
-            System.out.printf("Exception: %s\n", getExtendedStackTrace(cme));
-            LOG.warn(String.format("Warning: %s\n", getExtendedStackTrace(cme)));
+            System.out.printf("Exception: %s\n", ahutil.getExtendedStackTrace(cme));
+            LOG.warn(String.format("Warning: %s\n", ahutil.getExtendedStackTrace(cme)));
             LOG.warn(String.format("Job attempted to access usage already being processed, continue processing next data set..."));
         } catch (Throwable t) {
-            System.out.printf("Exception: %s\n", getExtendedStackTrace(t));
-            LOG.error(String.format("Exception: %s\n", getExtendedStackTrace(t)));
+            System.out.printf("Exception: %s\n", ahutil.getExtendedStackTrace(t));
+            LOG.error(String.format("Exception: %s\n", ahutil.getExtendedStackTrace(t)));
         }
 
         logElapsedTime(startTime);

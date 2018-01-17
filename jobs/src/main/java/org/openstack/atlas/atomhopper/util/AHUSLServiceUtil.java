@@ -58,7 +58,7 @@ public class AHUSLServiceUtil {
             taskExecutor.awaitTermination(300, TimeUnit.SECONDS);
             threadPoolMonitorService.shutDown();
         } catch (InterruptedException e) {
-            LOG.error("There was an error shutting down threadPool: " + AtomHopperUtil.getStackTrace(e));
+            LOG.error("There was an error shutting down threadPool: " + new AtomHopperUtil().getStackTrace(e));
             throw new AtomHopperUSLJobExecutionException("There was an error destroying thread monitors and task executors: " + e);
         }
 
