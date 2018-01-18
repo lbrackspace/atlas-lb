@@ -23,7 +23,7 @@ public class ApacheCommonsConfiguration implements Configuration {
     }
 
     private boolean fileIsDifferentAndExists() {
-        return configurationFile.length() != 0 && configurationFileLastModifiedTimestamp != configurationFile.length();
+        return configurationFile.length() != 0 && configurationFileLastModifiedTimestamp != configurationFile.lastModified();
     }
 
     //TODO: Behavior for non-existent configurations should be passive?
