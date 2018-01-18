@@ -6,6 +6,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.conn.ConnectionPoolTimeoutException;
 import org.openstack.atlas.restclients.atomhopper.AtomHopperClient;
+import org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.entities.*;
 import org.openstack.atlas.service.domain.events.repository.AlertRepository;
@@ -17,9 +18,6 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
-
-import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getExtendedStackTrace;
-import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getStackTrace;
 
 public class AHRecordHelper {
     private final Log LOG = LogFactory.getLog(AHRecordHelper.class);
@@ -44,6 +42,7 @@ public class AHRecordHelper {
         String responseBody = null;
         String entryString = null;
         ClientResponse response = null;
+        AtomHopperUtil ahutil = new AtomHopperUtil();
 
         try {
             if (usageRecord.isNeedsPushed()) {
@@ -64,22 +63,22 @@ public class AHRecordHelper {
         } catch (ClientHandlerException che) {
             LOG.error(String.format("Could not post entry because " +
                     "client handler exception for load balancer: %d :\n: Exception: %s ",
-                    usageRecord.getLoadbalancer().getId(), getStackTrace(che)));
-            logAndAlert(getStackTrace(che), usageRecord, entryString);
+                    usageRecord.getLoadbalancer().getId(), ahutil.getStackTrace(che)));
+            logAndAlert(ahutil.getStackTrace(che), usageRecord, entryString);
             failedRecords.add(usageRecord);
         } catch (ConnectionPoolTimeoutException cpe) {
             LOG.error(String.format("Could not post entry because " +
                     "of limited connections for load balancer: %d :\n: Exception: %s ",
-                    usageRecord.getLoadbalancer().getId(), getStackTrace(cpe)));
-            logAndAlert(getStackTrace(cpe), usageRecord, entryString);
+                    usageRecord.getLoadbalancer().getId(), ahutil.getStackTrace(cpe)));
+            logAndAlert(ahutil.getStackTrace(cpe), usageRecord, entryString);
             failedRecords.add(usageRecord);
         } catch (ConcurrentModificationException cme) {
-            LOG.warn(String.format("Warning: %s\n", getExtendedStackTrace(cme)));
+            LOG.warn(String.format("Warning: %s\n", ahutil.getExtendedStackTrace(cme)));
             LOG.warn(String.format("Job attempted to access usage already being processed, " +
                     "continue processing next data set..."));
         } catch (Exception t) {
-            LOG.error(String.format("Exception during Atom-Hopper processing: %s\n", getExtendedStackTrace(t)));
-            generateSevereAlert("Severe Failure processing Atom Hopper requests: ", getExtendedStackTrace(t));
+            LOG.error(String.format("Exception during Atom-Hopper processing: %s\n", ahutil.getExtendedStackTrace(t)));
+            generateSevereAlert("Severe Failure processing Atom Hopper requests: ", ahutil.getExtendedStackTrace(t));
             generateServiceEventRecord(usageRecord, entryString, buildMessage(responseBody));
             failedRecords.add(usageRecord);
         } finally {
@@ -89,8 +88,8 @@ public class AHRecordHelper {
                 } catch (ClientHandlerException che) {
                     LOG.error(String.format("Could not post entry because " +
                             "client handler exception for load balancer: %d :\n: Exception: %s ",
-                            usageRecord.getLoadbalancer().getId(), getStackTrace(che)));
-                    logAndAlert(getStackTrace(che), usageRecord, entryString);
+                            usageRecord.getLoadbalancer().getId(), ahutil.getStackTrace(che)));
+                    logAndAlert(ahutil.getStackTrace(che), usageRecord, entryString);
                     failedRecords.add(usageRecord);
                 }
             }

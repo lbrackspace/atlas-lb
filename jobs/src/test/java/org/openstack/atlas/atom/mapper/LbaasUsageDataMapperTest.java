@@ -34,8 +34,8 @@ public class LbaasUsageDataMapperTest {
         public void standUp() {
             usageRecord1 = new Usage();
             usageRecord1.setEventType("CREATE_LOADBALANCER");
-            usageRecord1.setStartTime(AtomHopperUtil.getStartCal());
-            usageRecord1.setEndTime(AtomHopperUtil.getNow());
+            usageRecord1.setStartTime(new AtomHopperUtil().getStartCal());
+            usageRecord1.setEndTime(new AtomHopperUtil().getNow());
             usageRecord1.setAccountId(12345);
             usageRecord1.setAverageConcurrentConnections((double) 2345556);
             usageRecord1.setAverageConcurrentConnectionsSsl((double) 234892357);

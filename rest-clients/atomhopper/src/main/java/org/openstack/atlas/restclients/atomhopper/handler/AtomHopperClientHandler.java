@@ -80,7 +80,7 @@ public class AtomHopperClientHandler {
             httpClient = new DefaultHttpClient(connManager, params);
         } catch (Exception ex) {
             LOG.error("ERROR: ", ex);
-            throw new Exception(AtomHopperUtil.getStackTrace(ex));
+            throw new Exception(new AtomHopperUtil().getStackTrace(ex));
         }
 
         return new ApacheHttpClient(new ApacheHttpClientHandler(httpClient));

@@ -19,8 +19,6 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 
-import static org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil.getExtendedStackTrace;
-
 public abstract class AbstractAtomHopperThread implements Runnable {
     private final Log LOG = LogFactory.getLog(AbstractAtomHopperThread.class);
     private Configuration configuration = new AtomHopperConfiguration();
@@ -52,7 +50,8 @@ public abstract class AbstractAtomHopperThread implements Runnable {
 
     @Override
     public void run() {
-        Calendar startTime = AtomHopperUtil.getNow();
+        AtomHopperUtil ahutil = new AtomHopperUtil();
+        Calendar startTime = ahutil.getNow();
         LOG.info(String.format("Load Balancer Atom Hopper USL Task Started at %s (Timezone: %s)",
                 startTime.getTime().toString(), startTime.getTimeZone().getDisplayName()));
 
@@ -75,19 +74,19 @@ public abstract class AbstractAtomHopperThread implements Runnable {
                     "Atom Hopper entries in the database...", usages.size()));
 
         } catch (ConcurrentModificationException cme) {
-            System.out.printf("Exception: %s\n", getExtendedStackTrace(cme));
-            LOG.warn(String.format("Warning: %s\n", getExtendedStackTrace(cme)));
+            System.out.printf("Exception: %s\n", ahutil.getExtendedStackTrace(cme));
+            LOG.warn(String.format("Warning: %s\n", ahutil.getExtendedStackTrace(cme)));
             LOG.warn(String.format("Job attempted to access usage already being processed, " +
                     "continue processing next data set..."));
         } catch (Throwable t) {
-            LOG.error(String.format("Exception during Atom-Hopper processing: %s\n", getExtendedStackTrace(t)));
-            ahelper.generateSevereAlert("Severe Failure processing Atom Hopper requests: ", getExtendedStackTrace(t));
+            LOG.error(String.format("Exception during Atom-Hopper processing: %s\n", ahutil.getExtendedStackTrace(t)));
+            ahelper.generateSevereAlert("Severe Failure processing Atom Hopper requests: ", ahutil.getExtendedStackTrace(t));
         }
 
-        Double elapsedMins = ((AtomHopperUtil.getNow()
+        Double elapsedMins = ((ahutil.getNow()
                 .getTimeInMillis() - startTime.getTimeInMillis()) / 1000.0) / 60.0;
         LOG.info(String.format("Load Balancer Atom Hopper USL Task: %s Completed at '%s' (Total Time: %f mins)",
-                getThreadName(), AtomHopperUtil.getNow().getTime().toString(), elapsedMins));
+                getThreadName(), ahutil.getNow().getTime().toString(), elapsedMins));
         LOG.debug(String.format("Load Balancer Atom Hopper USL Task: %s Failed tasks count: %d out of %d",
                 getThreadName(), failedRecords.size(), usages.size()));
     }
