@@ -5,8 +5,8 @@
 package com.rackspacecloud.client.cloudfiles.sample;
 
 import org.apache.commons.cli.*;
-import org.apache.commons.lang.SystemUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.http.HttpException;
 

@@ -5,7 +5,7 @@
 package com.rackspacecloud.client.cloudfiles.sample;
 
 //import org.apache.log4j.Logger;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.cli.*;
 import org.apache.http.HttpException;
 

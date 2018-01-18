@@ -1,7 +1,7 @@
 //package org.rackspace.stingray.client.mock;
 //
-//import org.apache.commons.lang.builder.EqualsBuilder;
-//import org.apache.commons.lang.builder.HashCodeBuilder;
+//import org.apache.commons.lang3.builder.EqualsBuilder;
+//import org.apache.commons.lang3.builder.HashCodeBuilder;
 //import org.mockito.Mockito;
 //import org.rackspace.stingray.client.exception.StingrayRestClientException;
 //import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
