@@ -32,6 +32,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -104,9 +105,9 @@ public class UsageProcessorTest {
             newLBHostUsages.add(hostUsage4);
 
             initMocks(this);
-            when(usagePollerHelper.processExistingEvents(anyMap())).thenReturn(mergedExistingUsages);
+            when(usagePollerHelper.processExistingEvents((Map)any())).thenReturn(mergedExistingUsages);
             processorResult = new UsageProcessorResult(mergedCurrentUsages, newLBHostUsages);
-            when(usagePollerHelper.processCurrentUsage(anyMap(), anyMap(), anyCalendar())).thenReturn(processorResult);
+            when(usagePollerHelper.processCurrentUsage((Map)any(), (Map)any(), anyCalendar())).thenReturn(processorResult);
 
             int mergedExistingUsagesSize = mergedExistingUsages.size();
             int mergedCurrentUsagesSize = mergedCurrentUsages.size();
