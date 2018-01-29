@@ -9,8 +9,7 @@ import org.hibernate.dialect.Dialect;
 import org.hibernate.ejb.HibernateEntityManagerFactory;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.openstack.atlas.service.domain.util.DeepCopy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 import org.springframework.core.Ordered;
 import org.springframework.orm.jpa.JpaSystemException;
 import org.springframework.stereotype.Component;
@@ -33,7 +32,7 @@ import org.openstack.atlas.util.debug.Debug;
 @Component
 public class DeadLockRetryAspect implements Ordered {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeadLockRetryAspect.class);
+    private static final Logger LOGGER = Logger.getLogger(DeadLockRetryAspect.class);
     private int order = 99; // Transaction manager order should be set to 100
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
@@ -105,7 +104,7 @@ public class DeadLockRetryAspect implements Ordered {
     private Integer handleException(final PersistenceException exception, Integer deadlockCounter, final Integer retryCount) {
         if (isDeadlock(exception)) {
             deadlockCounter++;
-            LOGGER.error("Deadlocked ", exception.getMessage());
+            LOGGER.error("Deadlocked "+" "+ exception.getMessage());
             if (deadlockCounter == (retryCount - 1)) {
                 throw exception;
             }
