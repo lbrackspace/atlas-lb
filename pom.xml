@@ -294,7 +294,7 @@
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.6</version>
+                <version>8.0.8-dmr</version>
             </dependency>
 
             <dependency>
@@ -377,7 +377,7 @@
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.6</version>
+                <version>8.0.8-dmr</version>
             </dependency>
             <dependency>
                 <groupId>com.rackspacecloud</groupId>
@@ -523,7 +523,7 @@
             <dependency>
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
-                <version>5.1.6</version>
+                <version>8.0.8-dmr</version>
                 <scope>runtime</scope>
             </dependency>
             <dependency>
