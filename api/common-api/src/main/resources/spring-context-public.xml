@@ -87,11 +87,12 @@
 
     <bean id="commonDependencyProvider"
           class="org.openstack.atlas.api.resources.providers.CommonDependencyProvider"
+          init-method="init"
           scope="request">
         <property name="asyncService" ref="loadBalancingAsyncService"/>
         <property name="lbRepository" ref="loadBalancerRepository"/>
         <property name="loadBalancerEventRepository" ref="loadBalancerEventRepository"/>
-        <property name="dozerMapper" ref="dozerBeanMapper"/>
+        <property name="dozerMapperBuilderBean" ref="dozerMapperBuilderBean"/>
         <property name="atomFeedAdapter" ref="atomFeedAdapter"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
         <property name="healthMonitorService" ref="healthMonitorService"/>
@@ -120,7 +121,20 @@
     </bean>
 
     <!--DOZER SETTINGS-->
-    <bean id="dozerBeanMapper" class="org.dozer.DozerBeanMapper">
+    <!--<bean id="dozerBeanMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>loadbalancing-dozer-mapping.xml</value>
+            </list>
+        </property>
+        <property name="eventListeners">
+            <list>
+                <ref bean="dozerEventListener"/>
+            </list>
+        </property>
+    </bean>-->
+    <bean id="dozerMapperBuilderBean" class="org.openstack.atlas.api.resources.providers.DozerMapperBuilderBean"
+          init-method="init">
         <property name="mappingFiles">
             <list>
                 <value>loadbalancing-dozer-mapping.xml</value>
