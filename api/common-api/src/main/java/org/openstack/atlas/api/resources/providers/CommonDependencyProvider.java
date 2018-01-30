@@ -41,6 +41,7 @@ public class CommonDependencyProvider {
     protected AsyncService asyncService;
     protected LoadBalancerRepository lbRepository;
     protected Mapper dozerMapper;
+    protected DozerMapperBuilderBean dozerMapperBuilderBean;
     protected AtomFeedAdapter atomFeedAdapter;
     protected LoadBalancerService loadBalancerService;
     protected HealthMonitorService healthMonitorService;
@@ -65,6 +66,10 @@ public class CommonDependencyProvider {
     protected LoadBalancerEventRepository loadBalancerEventRepository;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+
+    public void init() throws Exception{
+        dozerMapper = dozerMapperBuilderBean.getDozerMapperObject();
+    }
 
     public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
         this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
@@ -172,6 +177,14 @@ public class CommonDependencyProvider {
 
     public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
         this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
+
+    public DozerMapperBuilderBean getDozerMapperBuilderBean() {
+        return dozerMapperBuilderBean;
+    }
+
+    public void setDozerMapperBuilderBean(DozerMapperBuilderBean dozerMapperBuilderBean) {
+        this.dozerMapperBuilderBean = dozerMapperBuilderBean;
     }
 
     public String getUserName(HttpHeaders headers) {
