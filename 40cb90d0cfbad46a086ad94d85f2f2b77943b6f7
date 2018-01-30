@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0022c91b_85534361",
+        "filename": "pom.xml",
+        "patchSetId": 2
+      },
+      "lineNbr": 297,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2018-01-30T20:01:53Z",
+      "side": 1,
+      "message": "Isn\u0027t DMR the dev releases? We should probably stick to prod releases. Also did carlos mention something about not requiring this one?",
+      "range": {
+        "startLine": 297,
+        "startChar": 25,
+        "endLine": 297,
+        "endChar": 34
+      },
+      "revId": "40cb90d0cfbad46a086ad94d85f2f2b77943b6f7",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
