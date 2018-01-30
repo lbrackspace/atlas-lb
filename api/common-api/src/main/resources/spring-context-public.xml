@@ -40,10 +40,10 @@
     <!--FILTERS-->
     <bean id="requestSanitationFilter"
           class="org.openstack.atlas.api.filters.RequestSanitationFilter"
-          scope="singleton"/>
+          scope="request"/>
     <bean id="authenticationFilter"
           class="org.openstack.atlas.api.filters.AuthenticationFilter"
-          scope="singleton" init-method="startConfig">
+          scope="request" init-method="startConfig">
         <constructor-arg index="0">
             <bean class="org.openstack.atlas.api.auth.AuthTokenValidator">
                 <constructor-arg index="0" ref="configuration"/>
@@ -58,11 +58,11 @@
     </bean>
     <bean id="groupsSanitationFilter"
           class="org.openstack.atlas.api.filters.GroupsSanitationFilter"
-          scope="singleton">
+          scope="request">
     </bean>
     <bean id="validationFilter"
           class="org.openstack.atlas.api.filters.ValidationFilter"
-          scope="singleton">
+          scope="request">
         <property name="fPkg" value="org.openstack.atlas.docs.loadbalancers.api.v1.faults"/>
         <property name="pPkg" value="org.openstack.atlas.docs.loadbalancers.api.v1"/>
         <property name="pXSD" value="META-INF/xsd/LoadBalancerApi.xsd"/>
@@ -71,12 +71,12 @@
     <bean id="jsonValidationFilter"
           class="org.openstack.atlas.api.filters.JsonValidationFilter"
           init-method="startConfig"
-          scope="singleton"
+          scope="request"
           parent="validationFilter"/>
     <bean id="xmlValidationFilter"
           class="org.openstack.atlas.api.filters.XmlValidationFilter"
           init-method="startConfig"
-          scope="singleton"
+          scope="request"
           parent="validationFilter"/>
 
     <bean id="objectMapper" class="org.openstack.atlas.api.helpers.JsonObjectMapper"
@@ -87,11 +87,12 @@
 
     <bean id="commonDependencyProvider"
           class="org.openstack.atlas.api.resources.providers.CommonDependencyProvider"
+          init-method="init"
           scope="request">
         <property name="asyncService" ref="loadBalancingAsyncService"/>
         <property name="lbRepository" ref="loadBalancerRepository"/>
         <property name="loadBalancerEventRepository" ref="loadBalancerEventRepository"/>
-        <property name="dozerMapper" ref="dozerBeanMapper"/>
+        <property name="dozerMapperBuilderBean" ref="dozerMapperBuilderBean"/>
         <property name="atomFeedAdapter" ref="atomFeedAdapter"/>
         <property name="loadBalancerService" ref="loadBalancerService"/>
         <property name="healthMonitorService" ref="healthMonitorService"/>
@@ -120,7 +121,20 @@
     </bean>
 
     <!--DOZER SETTINGS-->
-    <bean id="dozerBeanMapper" class="org.dozer.DozerBeanMapper">
+    <!--<bean id="dozerBeanMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>loadbalancing-dozer-mapping.xml</value>
+            </list>
+        </property>
+        <property name="eventListeners">
+            <list>
+                <ref bean="dozerEventListener"/>
+            </list>
+        </property>
+    </bean>-->
+    <bean id="dozerMapperBuilderBean" class="org.openstack.atlas.api.resources.providers.DozerMapperBuilderBean"
+          init-method="init">
         <property name="mappingFiles">
             <list>
                 <value>loadbalancing-dozer-mapping.xml</value>

@@ -32,7 +32,20 @@
     </bean>
 
     <!--DOZER SETTINGS-->
-    <bean id="dozerManagementBeanMapper" class="org.dozer.DozerBeanMapper">
+    <!--<bean id="dozerManagementBeanMapper" class="org.dozer.DozerBeanMapper">
+        <property name="mappingFiles">
+            <list>
+                <value>loadbalancing-dozer-management-mapping.xml</value>
+            </list>
+        </property>
+        <property name="eventListeners">
+            <list>
+                <ref bean="dozerEventListener"/>
+            </list>
+        </property>
+    </bean>-->
+    <bean id="mgmtDozerMapperBuilderBean" class="org.openstack.atlas.api.mgmt.resources.providers.MgmtDozerMapperBuilderBean"
+    init-method="init">
         <property name="mappingFiles">
             <list>
                 <value>loadbalancing-dozer-management-mapping.xml</value>
@@ -89,6 +102,7 @@
     <!--RESOURCES-->
     <bean id="managementDependencyProvider"
           class="org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider"
+          init-method="init"
           scope="request">
         <property name="configuration" ref="configuration"/>
         <property name="mossoAuthConfig" ref="mossoAuthConfig"/>
@@ -108,7 +122,7 @@
         <property name="callbackService" ref="callbackService"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
 
-        <property name="dozerMapper" ref="dozerManagementBeanMapper"/>
+        <property name="mgmtDozerMapperBuilderBean" ref="mgmtDozerMapperBuilderBean"/>
 
         <property name="clusterRepository" ref="clusterRepository"/>
         <property name="hostRepository" ref="hostRepository"/>
