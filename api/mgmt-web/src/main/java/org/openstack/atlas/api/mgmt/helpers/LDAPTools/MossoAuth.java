@@ -21,8 +21,8 @@ public class MossoAuth {
     private Map<String, ClassConfig> classMap;
 
     static {
-        Security.addProvider(new OverTrustingTrustProvider());
-        Security.setProperty("ssl.TrustManagerFactory.algorithm", "TrustAllCertificates");
+        //Security.addProvider(new OverTrustingTrustProvider());
+        //Security.setProperty("ssl.TrustManagerFactory.algorithm", "TrustAllCertificates");
     }
 
     public MossoAuth() {
