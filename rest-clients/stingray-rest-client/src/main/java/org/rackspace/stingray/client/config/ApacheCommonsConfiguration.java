@@ -49,9 +49,7 @@ public class ApacheCommonsConfiguration implements Configuration {
                 FileBasedConfigurationBuilder<PropertiesConfiguration> builder =
                         new FileBasedConfigurationBuilder<PropertiesConfiguration>(PropertiesConfiguration.class)
                                 .configure(new Parameters().properties()
-                                        .setFile(configurationFile)
-                                        .setThrowExceptionOnMissing(true)
-                                        .setIncludesAllowed(false));
+                                        .setFile(configurationFile));
                 configuration = builder.getConfiguration();
             } catch (ConfigurationException ce) {
                 throw new ConfigurationInitializationException(ce.getMessage(), ce.getCause());
