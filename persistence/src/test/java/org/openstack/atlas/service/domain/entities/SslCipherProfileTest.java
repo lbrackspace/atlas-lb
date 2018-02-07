@@ -25,7 +25,7 @@ public class SslCipherProfileTest{
 
     private static Logger logger = Logger.getLogger(SslCipherProfileTest.class.getName());
 
-   @RunWith(Enclosed.class)
+   @RunWith(SpringJUnit4ClassRunner.class)
    @ContextConfiguration(locations = {"classpath:context.xml"})
    @Transactional
    public static class WhenCreatingLoadBalancer {
@@ -37,8 +37,8 @@ public class SslCipherProfileTest{
        @Before
        public void setUp() throws Exception {
            try {
-               Class.forName("org.hsqldb.jdbcDriver");
-               connection = DriverManager.getConnection("jdbc:hsqldb:mem:unit-testing-jpa", "sa", "");
+               Class.forName("org.h2.Driver");
+               connection = DriverManager.getConnection("jdbc:h2:mem:unit-testing-jpa", "sa", "");
            } catch (Exception ex) {
                ex.printStackTrace();
            }
@@ -50,7 +50,7 @@ public class SslCipherProfileTest{
            }
        }
 
-     @After
+       @After
        public void tearDown() throws Exception {
            if (em != null) {
                em.close();
@@ -63,7 +63,7 @@ public class SslCipherProfileTest{
            } catch (Exception ex) {
            }
        }
-     @Test
+       @Test
        public void testPersistence() {
            try {
                em.getTransaction().begin();
