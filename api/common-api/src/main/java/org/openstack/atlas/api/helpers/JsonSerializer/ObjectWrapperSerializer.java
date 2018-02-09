@@ -31,11 +31,9 @@ public class ObjectWrapperSerializer extends JsonSerializer<Object> {
 
     @Override
     public void serialize(Object object, JsonGenerator jgen, SerializerProvider sp) throws IOException {
-        //BeanSerializerFactory bsf = BeanSerializerFactory.instance;
-//        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
 
-        JavaType type = TypeFactory.defaultInstance().uncheckedSimpleType(object.getClass());
-        BeanDescription beanDesc = config.introspect(type);
+        JavaType type = TypeFactory.defaultInstance().constructType(object.getClass());
+        BeanDescription beanDesc = sp.getConfig().introspect(type);
         JsonSerializer<Object> serializer = BeanSerializerFactory.instance.findBeanSerializer(sp, type, beanDesc);
 
         if (wrapperFieldName != null) {
@@ -43,7 +41,6 @@ public class ObjectWrapperSerializer extends JsonSerializer<Object> {
             jgen.writeFieldName(wrapperFieldName);
         }
 
-//        SerializerProviderBuilder provider = new SerializerProviderBuilder();
         serializer.serialize(object, jgen, sp);
         if (wrapperFieldName != null) {
             jgen.writeEndObject();

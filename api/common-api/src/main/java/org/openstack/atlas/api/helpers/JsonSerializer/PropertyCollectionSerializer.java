@@ -4,9 +4,13 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.cfg.SerializerFactoryConfig;
+import com.fasterxml.jackson.databind.jsontype.impl.StdSubtypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionToolsException;
 
@@ -114,21 +118,11 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         writeJsonArray(jgen, propList, writeWhenNullOrEmpty, sp);
     }
 
-    // Cause I kept getting confused when this was done in the serializer method directly
-    private void childSerialize(Object obj, JsonGenerator jgen, SerializerProvider sp) throws JsonProcessingException, IOException {
-        SerializerProviderBuilder providerBuilder = new SerializerProviderBuilder();
-        //BeanSerializerFactory csf = BeanSerializerFactory.instance;
-//        CustomSerializerFactory csf = new CustomSerializerFactory();
-//        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
-        SerializerProvider childProvider;
-//        JavaType childType = TypeFactory.defaultInstance().uncheckedSimpleType(obj.getClass());
-//        BeanDescription childBeanDesc = this.config.introspect(childType);
-//        JsonSerializer<Object> childSerializer = csf.findBeanSerializer(childType, config, childBeanDesc);
+    private void childSerialize(Object obj, JsonGenerator jgen, SerializerProvider sp) throws IOException {
 
-        JavaType type = TypeFactory.defaultInstance().uncheckedSimpleType(obj.getClass());
-        BeanDescription beanDesc = this.config.introspect(type);
-        JsonSerializer<Object> childSerializer = BeanSerializerFactory.instance.findBeanSerializer(sp, type, beanDesc);
-//        childProvider = providerBuilder.createProvider(config, );
-        childSerializer.serialize(obj, jgen, sp);
+        JavaType type = TypeFactory.defaultInstance().constructType(obj.getClass());
+        BeanDescription beanDesc = sp.getConfig().introspect(type);
+        JsonSerializer<Object> serializer = BeanSerializerFactory.instance.findBeanSerializer(sp, type, beanDesc);
+        serializer.serialize(obj, jgen, sp);
     }
 }

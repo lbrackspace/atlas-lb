@@ -6,10 +6,13 @@ package org.openstack.atlas.api.helpers;
 
 import org.junit.*;
 import org.openstack.atlas.api.resources.StubResource;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
+import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.openstack.atlas.util.debug.Debug;
 
 import java.io.IOException;
@@ -243,6 +246,63 @@ public class JsonObjectMapperTest {
         String lbsStr = mapper.writeValueAsString(loadbalancers);
         String ctStr = mapper.writeValueAsString(ct);
         nop();
+    }
+
+    @Test
+    public void shouldSerializeSimpleLoadBalancers() throws IOException {
+        // TODO: Cafe tests will validate the outputs for the mostpart,
+        // we should build these tests out a bit more here...
+
+        StubResource stub = new StubResource();
+        LoadBalancer loadBalancer = null;
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer loadBalancerman = null;
+        String exMsg;
+        LoadBalancer loadbalancer = (LoadBalancer) stub.stubLoadBalancer().getEntity();
+        LoadBalancers loadbalancers = (LoadBalancers) stub.stubLoadBalancers().getEntity();
+
+        loadBalancerman = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer();
+        loadBalancerman.setId(1);
+        loadBalancerman.setName("testsimplelbmgmt");
+        loadBalancerman.setStatus("ACTIVE");
+        loadBalancerman.setCreated(loadbalancer.getCreated());
+        loadBalancerman.setNodes(loadbalancer.getNodes());
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers loadbalancersman = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers();
+        loadbalancersman.getLoadBalancers().add(loadBalancerman);
+
+        // Validate loadbalancers is mapped, we don't want root tags on the children
+        String lbsStr = mapper.writeValueAsString(loadbalancers);
+        // Very rough asserts...
+        Assert.assertFalse(lbsStr.contains("\"loadBalancer\""));
+        Assert.assertFalse(lbsStr.contains("\"node\""));
+        Assert.assertTrue(lbsStr.contains("\"loadBalancers\""));
+        Assert.assertTrue(lbsStr.contains("LB1"));
+        Assert.assertTrue(lbsStr.contains("LB2"));
+        Assert.assertTrue(lbsStr.contains("\"address\" : \"127.0.0.20\""));
+
+        // Ensure the management loadbalancer is mapped too
+        String lbsmanStr = mapper.writeValueAsString(loadbalancersman);
+        Assert.assertFalse(lbsmanStr.contains("\"loadBalancer\""));
+        Assert.assertFalse(lbsmanStr.contains("\"node\""));
+        Assert.assertTrue(lbsmanStr.contains("\"loadBalancers\""));
+        Assert.assertTrue(lbsmanStr.contains("\"name\" : \"testsimplelbmgmt\""));
+        Assert.assertTrue(lbsmanStr.contains("\"address\" : \"127.0.0.20\""));
+        // We didn't add vips and we don't want to map empty arrays.
+        Assert.assertFalse(lbsmanStr.contains("\"virtualIps\" : [ ]"));
+    }
+
+    @Test
+    public void shouldMapEmptyLoadbalancersWithRoot() throws IOException {
+
+        LoadBalancers loadbalancers = new LoadBalancers();
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers loadbalancersman = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers();
+
+        // Validate empty loadbalancers are created with a root tag
+        String lbsStr = mapper.writeValueAsString(loadbalancers);
+        String lbsmanStr = mapper.writeValueAsString(loadbalancersman);
+
+        String expected = "{\n  \"loadBalancers\" : [ ]\n}";
+        Assert.assertEquals(lbsStr, expected);
+        Assert.assertEquals(lbsmanStr, expected);
     }
 
     public void nop() {

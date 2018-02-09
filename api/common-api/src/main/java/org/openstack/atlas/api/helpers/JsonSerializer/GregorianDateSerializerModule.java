@@ -8,7 +8,7 @@ import java.util.GregorianCalendar;
 
 
 public class GregorianDateSerializerModule extends SimpleModule {
-    private static final String NAME = "ObjectWrapperSerializerModule";
+    private static final String NAME = "GregorianCalendarSerializerModule";
     private static final VersionUtil VERSION_UTIL = new VersionUtil() {};
 
     public GregorianDateSerializerModule(SerializationConfig config, Class someClass) {
