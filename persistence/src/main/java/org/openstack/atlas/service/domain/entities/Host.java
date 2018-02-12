@@ -69,9 +69,8 @@ public class Host extends Entity implements Serializable {
     @Column(name = "rest_endpoint_active")
     private Boolean restEndpointActive;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "host")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "host", orphanRemoval = true)
     @OrderBy("id")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<Backup> backups = new HashSet<Backup>();
 
     public String getName() {
