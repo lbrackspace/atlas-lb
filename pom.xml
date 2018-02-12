@@ -76,7 +76,7 @@
     <properties>
         <hadoop.version>1.2.0.1.3.10.0-24</hadoop.version>
         <!--  <hadoop.version>1.2.0</hadoop.version> -->
-        <hibernate.version>4.3.11.Final</hibernate.version>
+        <hibernate.version>5.2.12.Final</hibernate.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!--<camel.version>2.5.0</camel.version>-->
         <spring.version>4.3.11.RELEASE</spring.version>
@@ -483,7 +483,7 @@
             <dependency>
                 <groupId>org.hibernate</groupId>
                 <artifactId>hibernate-jpamodelgen</artifactId>
-                <version>4.3.11.Final</version>
+                <version>5.2.12.Final</version>
             </dependency>
             <dependency>
                 <groupId>org.hibernate</groupId>
