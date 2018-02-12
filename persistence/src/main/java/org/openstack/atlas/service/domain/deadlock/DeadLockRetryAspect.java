@@ -6,7 +6,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.hibernate.JDBCException;
 import org.hibernate.SessionFactory;
 import org.hibernate.dialect.Dialect;
-import org.hibernate.ejb.HibernateEntityManagerFactory;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
 import org.openstack.atlas.service.domain.util.DeepCopy;
 import org.apache.log4j.Logger;
@@ -137,8 +137,8 @@ public class DeadLockRetryAspect implements Ordered {
      * @return the dialect
      */
     private Dialect getDialect() {
-        final SessionFactory sessionFactory = ((HibernateEntityManagerFactory) entityManager.getEntityManagerFactory()).getSessionFactory();
-        Dialect dialect = ((SessionFactoryImplementor) sessionFactory).getDialect();
+        final SessionFactory sessionFactory = ((SessionFactoryImplementor) entityManager.getEntityManagerFactory());
+        Dialect dialect = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService( JdbcServices.class ).getDialect();
 
         if (dialect instanceof org.hibernate.dialect.MySQL5InnoDBDialect) {
             return new MySQL5InnoDBDialect();

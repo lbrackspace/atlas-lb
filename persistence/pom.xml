@@ -174,6 +174,7 @@
             <!-- The antrun plug installs the instrumentation bytecode so that Hibernate can honor LAZY fetchtype operations on the domain classes -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
                 <executions>
                     <execution>
                         <phase>process-classes</phase>
@@ -183,20 +184,17 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <tasks>
-                        <taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask">
-                            <classpath>
-                                <path refid="maven.runtime.classpath" />
-                                <path refid="maven.plugin.classpath" />
-                            </classpath>
+                    <target name="enhance">
+                        <taskdef name="enhance" classname="org.hibernate.tool.enhance.EnhancementTask">
+                            <classpath refid="maven.runtime.classpath"/>
+                            <classpath refid="maven.plugin.classpath"/>
                         </taskdef>
-                        <instrument verbose="true">
-                            <fileset dir="${project.build.outputDirectory}/org/openstack/atlas/service/domain">
-                                <include name="usage/entities/*.class" />
-                                <include name="entities/*.class" />
-                            </fileset>
-                        </instrument>
-                    </tasks>
+                        <enhance dir="${project.build.outputDirectory}/org/openstack/atlas/service/domain/"
+                                 base="${project.build.outputDirectory}/org/openstack/atlas/service/domain"
+                                 failOnError="true"
+                                 enableLazyInitialization="true" enableDirtyTracking="false"
+                                 enableAssociationManagement="false" enableExtendedEnhancement="false"/>
+                    </target>
                 </configuration>
             </plugin>
 

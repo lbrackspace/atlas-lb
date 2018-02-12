@@ -10,7 +10,7 @@ public class Alert implements Serializable {
     private final static long serialVersionUID = 532512317L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false)
     private Integer id;
 
