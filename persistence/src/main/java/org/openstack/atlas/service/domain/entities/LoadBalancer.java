@@ -29,29 +29,24 @@ public class LoadBalancer extends Entity implements Serializable {
     @OneToMany(mappedBy = "loadBalancer", fetch = FetchType.EAGER)
     private Set<LoadBalancerJoinVip6> loadBalancerJoinVip6Set = new HashSet<LoadBalancerJoinVip6>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER, orphanRemoval = true)
     @OrderBy("id")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<Node> nodes = new HashSet<Node>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER, orphanRemoval = true)
     @OrderBy("id")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<AccessList> accessLists = new HashSet<AccessList>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER, orphanRemoval = true)
     @OrderBy("id")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<CertificateMapping> certificateMappings = new HashSet<CertificateMapping>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER, orphanRemoval = true)
     @OrderBy("id")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<LoadbalancerMeta> loadbalancerMetadata = new HashSet<LoadbalancerMeta>();
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.EAGER, orphanRemoval = true)
     @OrderBy("ticketId")
-    @Cascade(org.hibernate.annotations.CascadeType.DELETE_ORPHAN)
     private Set<Ticket> tickets = new HashSet<Ticket>();
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "loadbalancer", fetch = FetchType.LAZY)

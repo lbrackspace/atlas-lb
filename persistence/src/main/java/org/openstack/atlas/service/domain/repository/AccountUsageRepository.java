@@ -2,7 +2,7 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.jpa.criteria.OrderImpl;
+import org.hibernate.query.criteria.internal.OrderImpl;
 import org.openstack.atlas.service.domain.entities.AccountUsage;
 import org.openstack.atlas.service.domain.entities.AccountUsage_;
 import org.springframework.stereotype.Repository;
