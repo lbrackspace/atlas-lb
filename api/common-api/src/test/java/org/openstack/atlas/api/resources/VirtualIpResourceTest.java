@@ -7,7 +7,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -48,29 +48,29 @@ public class VirtualIpResourceTest {
 
         @Test
         public void shouldReturnA202OnSuccess() throws Exception {
-            doNothing().when(virtualIpService).prepareForVirtualIpDeletion(Matchers.<LoadBalancer>any(), Matchers.<Integer>any());
-            doNothing().when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.DELETE_VIRTUAL_IPS), Matchers.<LoadBalancer>any());
+            doNothing().when(virtualIpService).prepareForVirtualIpDeletion(ArgumentMatchers.<LoadBalancer>any(), ArgumentMatchers.<Integer>any());
+            doNothing().when(asyncService).callAsyncLoadBalancingOperation(ArgumentMatchers.eq(Operation.DELETE_VIRTUAL_IPS), ArgumentMatchers.<LoadBalancer>any());
             Response response = vipResource.removeVirtualIpFromLoadBalancer();
             Assert.assertEquals(202, response.getStatus());
         }
 
         @Test
         public void shouldReturnA404WhenEntityNotExceptionFoundIsThrown() throws Exception {
-            doThrow(new EntityNotFoundException("Exception")).when(virtualIpService).prepareForVirtualIpDeletion(Matchers.<LoadBalancer>any(), Matchers.<Integer>any());
+            doThrow(new EntityNotFoundException("Exception")).when(virtualIpService).prepareForVirtualIpDeletion(ArgumentMatchers.<LoadBalancer>any(), ArgumentMatchers.<Integer>any());
             Response response = vipResource.removeVirtualIpFromLoadBalancer();
             Assert.assertEquals(404, response.getStatus());
         }
 
         @Test
         public void shouldReturnA422WhenImmutableEntityExceptionIsThrown() throws Exception {
-            doThrow(new ImmutableEntityException("Exception")).when(virtualIpService).prepareForVirtualIpDeletion(Matchers.<LoadBalancer>any(), Matchers.<Integer>any());
+            doThrow(new ImmutableEntityException("Exception")).when(virtualIpService).prepareForVirtualIpDeletion(ArgumentMatchers.<LoadBalancer>any(), ArgumentMatchers.<Integer>any());
             Response response = vipResource.removeVirtualIpFromLoadBalancer();
             Assert.assertEquals(422, response.getStatus());
         }
 
         @Test
         public void shouldReturnA422WhenUnprocessableEntityExceptionIsThrown() throws Exception {
-            doThrow(new UnprocessableEntityException("Exception")).when(virtualIpService).prepareForVirtualIpDeletion(Matchers.<LoadBalancer>any(), Matchers.<Integer>any());
+            doThrow(new UnprocessableEntityException("Exception")).when(virtualIpService).prepareForVirtualIpDeletion(ArgumentMatchers.<LoadBalancer>any(), ArgumentMatchers.<Integer>any());
             Response response = vipResource.removeVirtualIpFromLoadBalancer();
             Assert.assertEquals(422, response.getStatus());
         }
@@ -78,15 +78,15 @@ public class VirtualIpResourceTest {
         @Ignore
         @Test
         public void shouldReturn500OnJmsException() throws Exception {
-            doNothing().when(virtualIpService).prepareForVirtualIpDeletion(Matchers.<LoadBalancer>any(), Matchers.<Integer>any());
-            doThrow(new JMSException("Exception")).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.DELETE_VIRTUAL_IPS), Matchers.<LoadBalancer>any());
+            doNothing().when(virtualIpService).prepareForVirtualIpDeletion(ArgumentMatchers.<LoadBalancer>any(), ArgumentMatchers.<Integer>any());
+            doThrow(new JMSException("Exception")).when(asyncService).callAsyncLoadBalancingOperation(ArgumentMatchers.eq(Operation.DELETE_VIRTUAL_IPS), ArgumentMatchers.<LoadBalancer>any());
             Response response = vipResource.removeVirtualIpFromLoadBalancer();
             Assert.assertEquals(500, response.getStatus());
         }
 
         @Test
         public void shouldReturn500OnRuntimeException() throws Exception {
-            doThrow(new RuntimeException("Exception")).when(virtualIpService).prepareForVirtualIpDeletion(Matchers.<LoadBalancer>any(), Matchers.<Integer>any());
+            doThrow(new RuntimeException("Exception")).when(virtualIpService).prepareForVirtualIpDeletion(ArgumentMatchers.<LoadBalancer>any(), ArgumentMatchers.<Integer>any());
             Response response = vipResource.removeVirtualIpFromLoadBalancer();
             Assert.assertEquals(500, response.getStatus());
         }
