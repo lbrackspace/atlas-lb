@@ -91,29 +91,27 @@ public class DeleteConnectionThrottleListenerTest extends STMTestBase {
 
     @Test
     public void testUpdateInvalidLoadBalancer() throws Exception {
-        EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(EntityNotFoundException.class);
 
         deleteConnectionThrottleListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
         verify(notificationService).saveConnectionLimitEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_CONNECTION_THROTTLE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
     @Test
     public void testDeleteInvalidThrottle() throws Exception {
-        Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteConnectionThrottle(lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).deleteConnectionThrottle(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteConnectionThrottleListener.doOnMessage(objectMessage);
 
         verify(reverseProxyLoadBalancerStmService).deleteConnectionThrottle(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveConnectionLimitEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(CONNECTION_LIMIT_ID), anyString(), anyString(), eq(EventType.DELETE_CONNECTION_THROTTLE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 }

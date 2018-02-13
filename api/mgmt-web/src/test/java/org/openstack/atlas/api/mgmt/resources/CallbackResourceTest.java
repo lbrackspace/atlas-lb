@@ -15,8 +15,12 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class CallbackResourceTest {
@@ -53,12 +57,14 @@ public class CallbackResourceTest {
             Assert.assertEquals(200, response.getStatus());
         }
 
-        @Test(expected = Exception.class)
+        @Test()
         public void shouldReturn500() throws Exception {
             ZeusEvent zeusEvent = new ZeusEvent();
             zeusEvent.setParamLine("paramLine");
             zeusEvent.setCallbackHost("hostname");
-            doThrow(Exception.class).when(callbackResource.receiveCallbackMessage(zeusEvent));
+            doThrow(Exception.class).when(callbackService).handleZeusEvent(any(), any());
+            Response response = callbackResource.receiveCallbackMessage(zeusEvent);
+            Assert.assertEquals(500, response.getStatus());
         }
     }
 }

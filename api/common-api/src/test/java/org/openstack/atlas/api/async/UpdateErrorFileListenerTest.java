@@ -95,7 +95,6 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
 
     @Test
     public void testUpdateLoadBalancerWithInvalidLBErrorFile() throws Exception {
-        EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
@@ -103,19 +102,18 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
 
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(EntityNotFoundException.class);
 
         Assert.assertNull(lb.getUserName());
 
         updateErrorFileListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), anyString(), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), anyString(), anyString());
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ERROR);
     }
 
     @Test
     public void testUpdateLoadBalancerWithFailureToSetErrorFile() throws Exception {
-        Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
@@ -125,7 +123,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).setErrorFile(lb, ERROR_FILE_CONTENT);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).setErrorFile(lb, ERROR_FILE_CONTENT);
 
         Assert.assertNull(lb.getUserName());
 
@@ -133,7 +131,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
 
         Assert.assertEquals(USERNAME, lb.getUserName());
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_LOADBALANCER), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
     }
 
@@ -154,7 +152,6 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
 
     @Test
     public void testUpdateDefaultErrorFileWithInvalidCluster() throws Exception {
-        Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(null);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(null);
@@ -163,12 +160,12 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
 
         updateErrorFileListener.doOnMessage(objectMessage);
 
         verify(notificationService).saveAlert(ArgumentMatchers.<Integer>any(),
-                ArgumentMatchers.<Integer>any(), eq(exception),
+                ArgumentMatchers.<Integer>any(), isA(Exception.class),
                 eq(AlertType.ZEUS_FAILURE.name()), ArgumentMatchers.<String>any());
         verify(reverseProxyLoadBalancerStmService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
     }

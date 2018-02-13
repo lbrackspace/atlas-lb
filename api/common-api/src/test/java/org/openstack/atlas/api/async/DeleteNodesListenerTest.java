@@ -116,22 +116,20 @@ public class DeleteNodesListenerTest extends STMTestBase {
 
     @Test
     public void testUpdateInvalidLoadBalancer() throws Exception {
-        EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(EntityNotFoundException.class);
 
         deleteNodesListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
     @Test
     public void testDeleteInvalidNodes() throws Exception {
-        Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
@@ -139,14 +137,14 @@ public class DeleteNodesListenerTest extends STMTestBase {
         when(messageDataContainer.getIds()).thenReturn(doomedNodeIds);
         when(nodeService.getNodesByIds(doomedNodeIds)).thenReturn(doomedNodes);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).removeNodes(lb, doomedNodes);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).removeNodes(lb, doomedNodes);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteNodesListener.doOnMessage(objectMessage);
 
         verify(reverseProxyLoadBalancerStmService).removeNodes(lb, doomedNodes);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService, times(2)).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 }

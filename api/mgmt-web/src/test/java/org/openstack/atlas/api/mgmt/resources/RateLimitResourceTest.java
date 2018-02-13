@@ -3,6 +3,8 @@ package org.openstack.atlas.api.mgmt.resources;
 import org.dozer.DozerBeanMapperBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Ticket;
+import org.openstack.atlas.service.domain.management.operations.EsbRequest;
+import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
@@ -12,6 +14,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.openstack.atlas.service.domain.services.RateLimitingService;
 
 import javax.ws.rs.core.Response;
 import java.text.ParseException;
@@ -21,6 +24,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 @RunWith(Enclosed.class)
@@ -29,6 +35,7 @@ public class RateLimitResourceTest {
     static final String mappingFile = "loadbalancing-dozer-management-mapping.xml";
     public static class WhenCreatingRateLimit {
         private RateLimitResource rateLimitResource;
+        private RateLimitingService rateLimitingService;
         private RateLimit rateLimit;
         private ManagementAsyncService asyncService;
         private OperationResponse operationResponse;
@@ -42,8 +49,10 @@ public class RateLimitResourceTest {
             rateLimitResource.setManagementAsyncService(asyncService);
             rateLimitResource.setMockitoAuth(true);
             lbRepository = mock(LoadBalancerRepository.class);
+            rateLimitingService = mock(RateLimitingService.class);
             rateLimitResource.setLoadBalancerRepository(lbRepository);
             operationResponse = new OperationResponse();
+            rateLimitResource.setRateLimitingService(rateLimitingService);
             rateLimitResource.setDozerMapper(DozerBeanMapperBuilder.create()
                     .withMappingFiles(mappingFile)
                     .build());
@@ -80,21 +89,21 @@ public class RateLimitResourceTest {
         }
 
         @Test
-        public void shouldReturn500OnEsbReturningNull() throws Exception {
-            Response resp = rateLimitResource.createRateLimit(rateLimit);
-            Assert.assertEquals(500, resp.getStatus());
+        public void shouldProduceExceptionWhenAsyncRequestFails() throws Exception {
+            doThrow(Exception.class).when(asyncService).callAsyncLoadBalancingOperation(any(), (EsbRequest) any());
+            Response response = rateLimitResource.createRateLimit(rateLimit);
+            Assert.assertEquals(500, response.getStatus());
         }
 
         @Test
-        public void shouldProduceInternalServerErrorWhenEsbResponseFailed() throws Exception {
-            operationResponse.setExecutedOkay(false);
+        public void shouldProduceExceptionWhenCreateFails() throws Exception {
+            doThrow(Exception.class).when(rateLimitingService).create(any());
             Response response = rateLimitResource.createRateLimit(rateLimit);
             Assert.assertEquals(500, response.getStatus());
         }
 
         @Test
         public void shouldReturn202OnEsbReturnOk() throws Exception {
-            operationResponse.setExecutedOkay(true);            
             Response response = rateLimitResource.createRateLimit(rateLimit);
             Assert.assertEquals(202, response.getStatus());
         }
