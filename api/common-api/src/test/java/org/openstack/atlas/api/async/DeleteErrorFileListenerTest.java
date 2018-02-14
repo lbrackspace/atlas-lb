@@ -79,20 +79,18 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
 
     @Test
     public void testUpdateInvalidLoadBalancer() throws Exception {
-        EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(EntityNotFoundException.class);
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
     }
 
     @Test
     public void testUpdateInvalidLoadBalancerInput() throws Exception {
-        EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(null);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(null);
@@ -100,7 +98,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
-        verify(notificationService, never()).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService, never()).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
         verify(reverseProxyLoadBalancerStmService, never()).deleteErrorFile(lb, null);
         verify(loadBalancerService, never()).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService, never()).setStatus(lb, LoadBalancerStatus.ERROR);
@@ -108,18 +106,17 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
 
     @Test
     public void testDeleteInvalidErrorFile() throws Exception {
-        Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(messageDataContainer);
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).deleteErrorFile(lb, null);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).deleteErrorFile(lb, null);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
         verify(reverseProxyLoadBalancerStmService).deleteErrorFile(lb, null);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
     }
 }

@@ -219,22 +219,20 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
 
     @Test
     public void testUpdateInvalidLoadBalancer() throws Exception { //This is named oddly for this specific test, but left it alone for consistency
-        EntityNotFoundException entityNotFoundException = new EntityNotFoundException();
         when(objectMessage.getObject()).thenReturn(lb);
-        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(entityNotFoundException);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenThrow(EntityNotFoundException.class);
 
         createLoadBalancerListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(entityNotFoundException), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.CREATE_LOADBALANCER), eq(CategoryType.CREATE), eq(EventSeverity.CRITICAL));
     }
 
     @Test
     public void testCreateInvalidLoadBalancer() throws Exception {
-        Exception exception = new Exception();
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(exception).when(reverseProxyLoadBalancerStmService).createLoadBalancer(lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).createLoadBalancer(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         createLoadBalancerListener.doOnMessage(objectMessage);
@@ -243,7 +241,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ERROR);
         Assert.assertTrue(checkNodeHelper(lb.getNodes(), NodeStatus.OFFLINE)); // This is how I decided to test NodesHelper
         verify(loadBalancerService).update(lb);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(exception), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ERROR);
         //TODO: Verify usage now that its been updated...
 //        verify(usageEventHelper).processUsageEvent(eq(lb), eq(UsageEvent.CREATE_LOADBALANCER), eq(0l), eq(0l), eq(0), eq(0l), eq(0l), eq(0), Matchers.any(Calendar.class));

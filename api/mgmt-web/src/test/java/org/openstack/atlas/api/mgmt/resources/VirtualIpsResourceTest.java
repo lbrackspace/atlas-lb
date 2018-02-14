@@ -15,6 +15,8 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -51,14 +53,14 @@ public class VirtualIpsResourceTest {
 
         @Test
         public void shouldProduceInternalServerErrorWhenNullPointerFoundOrSomething() throws NullPointerException {
-            when(vpRepository.getAll(Matchers.anyString(),Matchers.<Integer>anyVararg())).thenThrow(new NullPointerException("FAIL"));
+            doThrow(NullPointerException.class).when(vpRepository).getAll(any(), any());
             Response response = virtualIpsResource.retrieveAllVirtualIps(0,0);
             Assert.assertEquals(500, response.getStatus());
         }
 
         @Test        
         public void shouldReturn200OnSuccessfulRequests() throws Exception {
-            when(vpRepository.getAll(Matchers.anyString(),Matchers.<Integer>anyVararg())).thenReturn(vips);
+            when(vpRepository.getAll(any(),any())).thenReturn(vips);
             Response resp = virtualIpsResource.retrieveAllVirtualIps(0, 0);
             Assert.assertEquals(200, resp.getStatus());
         }

@@ -1,5 +1,6 @@
 package org.openstack.atlas.adapter.zxtm;
 
+import org.mockito.ArgumentMatchers;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
@@ -11,7 +12,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.InOrder;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
@@ -170,7 +171,7 @@ public class ZxtmAdapterImplTest {
 
             adapterSpy = spy(new ZxtmAdapterImpl());
             serviceStubs = mock(ZxtmServiceStubs.class);
-            doReturn(serviceStubs).when(adapterSpy).getServiceStubs(Matchers.<LoadBalancerEndpointConfiguration>anyObject());
+            doReturn(serviceStubs).when(adapterSpy).getServiceStubs(ArgumentMatchers.<LoadBalancerEndpointConfiguration>anyObject());
 
             poolStub = mock(PoolBindingStub.class);
             vsStub = mock(VirtualServerBindingStub.class);
@@ -189,10 +190,10 @@ public class ZxtmAdapterImplTest {
             when(serviceStubs.getZxtmRuleCatalogService()).thenReturn(ruleStub);
             when(serviceStubs.getZxtmRateCatalogService()).thenReturn(rateStub);
 
-            when(serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(Matchers.<String[]>any())).thenReturn(new PoolLoadBalancingAlgorithm[]{PoolLoadBalancingAlgorithm.wroundrobin});
-            when(serviceStubs.getVirtualServerBinding().getRules(Matchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
-            when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(Matchers.<String[]>any())).thenReturn(new boolean[]{false});
-            when(serviceStubs.getVirtualServerBinding().getProtocol(Matchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
+            when(serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(ArgumentMatchers.<String[]>any())).thenReturn(new PoolLoadBalancingAlgorithm[]{PoolLoadBalancingAlgorithm.wroundrobin});
+            when(serviceStubs.getVirtualServerBinding().getRules(ArgumentMatchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
+            when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(ArgumentMatchers.<String[]>any())).thenReturn(new boolean[]{false});
+            when(serviceStubs.getVirtualServerBinding().getProtocol(ArgumentMatchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
             when(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).thenReturn(new String[]{});
             when(serviceStubs.getZxtmRuleCatalogService().getRuleNames()).thenReturn(new String[]{});
         }
@@ -237,16 +238,16 @@ public class ZxtmAdapterImplTest {
         public void shouldRunInOrderWhenCreatingASimpleLoadBalancer() throws InsufficientRequestException, RemoteException, RollBackException {
             InOrder inOrder = inOrder(poolStub, vsStub, trafficIpGroupStub, ruleStub, rateStub);
             adapterSpy.createLoadBalancer(dummyConfig, lb);
-            inOrder.verify(poolStub).addPool(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(poolStub).setLoadBalancingAlgorithm(Matchers.<String[]>anyObject(), Matchers.<PoolLoadBalancingAlgorithm[]>anyObject());
-            inOrder.verify(poolStub).setDisabledNodes(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(poolStub).setDrainingNodes(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(poolStub).setNodesWeightings(Matchers.<String[]>anyObject(), Matchers.<PoolWeightingsDefinition[][]>anyObject());
-            inOrder.verify(vsStub).addVirtualServer(Matchers.<String[]>anyObject(), Matchers.<VirtualServerBasicInfo[]>anyObject());
-            inOrder.verify(trafficIpGroupStub).addTrafficIPGroup(Matchers.<String[]>anyObject(), Matchers.<TrafficIPGroupsDetails[]>anyObject());
-            inOrder.verify(vsStub).setListenTrafficIPGroups(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).addPool(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).setLoadBalancingAlgorithm(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<PoolLoadBalancingAlgorithm[]>anyObject());
+            inOrder.verify(poolStub).setDisabledNodes(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).setDrainingNodes(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).setNodesWeightings(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<PoolWeightingsDefinition[][]>anyObject());
+            inOrder.verify(vsStub).addVirtualServer(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<VirtualServerBasicInfo[]>anyObject());
+            inOrder.verify(trafficIpGroupStub).addTrafficIPGroup(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<TrafficIPGroupsDetails[]>anyObject());
+            inOrder.verify(vsStub).setListenTrafficIPGroups(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
 //            inOrder.verify(ruleStub).getRuleNames();
-//            inOrder.verify(vsStub).getProtocol(Matchers.<String[]>any());
+//            inOrder.verify(vsStub).getProtocol(ArgumentMatchers.<String[]>any());
         }
 
         @Test
@@ -284,32 +285,32 @@ public class ZxtmAdapterImplTest {
 
             InOrder inOrder = inOrder(poolStub, vsStub, trafficIpGroupStub, monitorStub, protectionStub);
             adapterSpy.createLoadBalancer(dummyConfig, lb);
-            inOrder.verify(poolStub).addPool(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(poolStub).setLoadBalancingAlgorithm(Matchers.<String[]>anyObject(), Matchers.<PoolLoadBalancingAlgorithm[]>anyObject());
-            inOrder.verify(poolStub).setDisabledNodes(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(poolStub).setDrainingNodes(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(poolStub).setNodesWeightings(Matchers.<String[]>anyObject(), Matchers.<PoolWeightingsDefinition[][]>anyObject());
-            inOrder.verify(vsStub).addVirtualServer(Matchers.<String[]>anyObject(), Matchers.<VirtualServerBasicInfo[]>anyObject());
-            inOrder.verify(trafficIpGroupStub).addTrafficIPGroup(Matchers.<String[]>anyObject(), Matchers.<TrafficIPGroupsDetails[]>anyObject());
-            inOrder.verify(vsStub).setListenTrafficIPGroups(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(poolStub).setPersistence(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());
-            inOrder.verify(monitorStub).setType(Matchers.<String[]>anyObject(), Matchers.<CatalogMonitorType[]>anyObject());
-            inOrder.verify(vsStub).setProtection(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());
-            inOrder.verify(vsStub).setLogEnabled(Matchers.<String[]>anyObject(), Matchers.<boolean[]>anyObject());
-            inOrder.verify(protectionStub).setAllowedAddresses(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(protectionStub).setBannedAddresses(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).addPool(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).setLoadBalancingAlgorithm(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<PoolLoadBalancingAlgorithm[]>anyObject());
+            inOrder.verify(poolStub).setDisabledNodes(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).setDrainingNodes(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).setNodesWeightings(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<PoolWeightingsDefinition[][]>anyObject());
+            inOrder.verify(vsStub).addVirtualServer(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<VirtualServerBasicInfo[]>anyObject());
+            inOrder.verify(trafficIpGroupStub).addTrafficIPGroup(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<TrafficIPGroupsDetails[]>anyObject());
+            inOrder.verify(vsStub).setListenTrafficIPGroups(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(poolStub).setPersistence(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(monitorStub).setType(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<CatalogMonitorType[]>anyObject());
+            inOrder.verify(vsStub).setProtection(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(vsStub).setLogEnabled(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<boolean[]>anyObject());
+            inOrder.verify(protectionStub).setAllowedAddresses(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(protectionStub).setBannedAddresses(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
         }
 
         @Test
         public void shouldRunInOrderWhenDeletingALoadBalancer() throws InsufficientRequestException, RemoteException, RollBackException {
             InOrder inOrder = inOrder(poolStub, vsStub, monitorStub, protectionStub, trafficIpGroupStub);
             adapterSpy.deleteLoadBalancer(dummyConfig, lb);
-            inOrder.verify(vsStub).deleteVirtualServer(Matchers.<String[]>anyObject());
-            inOrder.verify(poolStub).deletePool(Matchers.<String[]>anyObject());
-            inOrder.verify(protectionStub).deleteProtection(Matchers.<String[]>anyObject());
-            inOrder.verify(poolStub).removeMonitors(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(monitorStub).deleteMonitors(Matchers.<String[]>anyObject());
-            inOrder.verify(trafficIpGroupStub).deleteTrafficIPGroup(Matchers.<String[]>anyObject());
+            inOrder.verify(vsStub).deleteVirtualServer(ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(poolStub).deletePool(ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(protectionStub).deleteProtection(ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(poolStub).removeMonitors(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(monitorStub).deleteMonitors(ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(trafficIpGroupStub).deleteTrafficIPGroup(ArgumentMatchers.<String[]>anyObject());
         }
     }
 
@@ -401,6 +402,7 @@ public class ZxtmAdapterImplTest {
         private CatalogRuleBindingStub ruleStub;
         private CatalogRateBindingStub rateStub;
         private CatalogSSLCertificatesBindingStub certificateCatalogService;
+        private ConfExtraBindingStub extraService;
         private LoadBalancer lb;
         private static final String ZXTM_USERNAME = "mocked_username";
         private static final String ZXTM_PASSWORD = "mocked_password";
@@ -463,7 +465,7 @@ public class ZxtmAdapterImplTest {
             RsaConst.init();
             adapterSpy = spy(new ZxtmAdapterImpl());
             serviceStubs = mock(ZxtmServiceStubs.class);
-            doReturn(serviceStubs).when(adapterSpy).getServiceStubs(Matchers.<LoadBalancerEndpointConfiguration>anyObject());
+            doReturn(serviceStubs).when(adapterSpy).getServiceStubs(ArgumentMatchers.<LoadBalancerEndpointConfiguration>anyObject());
 
             poolStub = mock(PoolBindingStub.class);
             vsStub = mock(VirtualServerBindingStub.class);
@@ -474,6 +476,7 @@ public class ZxtmAdapterImplTest {
             ruleStub = mock(CatalogRuleBindingStub.class);
             rateStub = mock(CatalogRateBindingStub.class);
             certificateCatalogService = mock(CatalogSSLCertificatesBindingStub.class);
+            extraService = mock(ConfExtraBindingStub.class);
 
             when(serviceStubs.getPoolBinding()).thenReturn(poolStub);
             when(serviceStubs.getVirtualServerBinding()).thenReturn(vsStub);
@@ -484,14 +487,17 @@ public class ZxtmAdapterImplTest {
             when(serviceStubs.getZxtmRuleCatalogService()).thenReturn(ruleStub);
             when(serviceStubs.getZxtmRateCatalogService()).thenReturn(rateStub);
             when(serviceStubs.getZxtmCatalogSSLCertificatesBinding()).thenReturn(certificateCatalogService);
+            when(serviceStubs.getZxtmConfExtraBinding()).thenReturn(extraService);
 
-            when(serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(Matchers.<String[]>any())).thenReturn(new PoolLoadBalancingAlgorithm[]{PoolLoadBalancingAlgorithm.wroundrobin});
-            when(serviceStubs.getVirtualServerBinding().getRules(Matchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
-            when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(Matchers.<String[]>any())).thenReturn(new boolean[]{false});
-            when(serviceStubs.getVirtualServerBinding().getProtocol(Matchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
+            when(serviceStubs.getPoolBinding().getLoadBalancingAlgorithm(ArgumentMatchers.<String[]>any())).thenReturn(new PoolLoadBalancingAlgorithm[]{PoolLoadBalancingAlgorithm.wroundrobin});
+            when(serviceStubs.getVirtualServerBinding().getRules(ArgumentMatchers.<String[]>any())).thenReturn(new VirtualServerRule[][]{{}});
+            when(serviceStubs.getVirtualServerBinding().getListenOnAllAddresses(ArgumentMatchers.<String[]>any())).thenReturn(new boolean[]{false});
+            when(serviceStubs.getVirtualServerBinding().getProtocol(ArgumentMatchers.<String[]>any())).thenReturn(new VirtualServerProtocol[]{VirtualServerProtocol.fromValue(VirtualServerProtocol._http)});
             when(serviceStubs.getVirtualServerBinding().getVirtualServerNames()).thenReturn(new String[]{});
-            when(serviceStubs.getVirtualServerBinding().getPort(Matchers.<String[]>any())).thenReturn(new UnsignedInt[]{new UnsignedInt(80)});
+            when(serviceStubs.getVirtualServerBinding().getPort(ArgumentMatchers.<String[]>any())).thenReturn(new UnsignedInt[]{new UnsignedInt(80)});
             when(serviceStubs.getZxtmRuleCatalogService().getRuleNames()).thenReturn(new String[]{});
+            when(serviceStubs.getVirtualServerBinding().getErrorFile(ArgumentMatchers.<String[]>any())).thenReturn(new String[]{"testerrorfile"});
+            doNothing().when(extraService).uploadFile(ArgumentMatchers.any(), ArgumentMatchers.any());
 
         }
 
@@ -528,6 +534,10 @@ public class ZxtmAdapterImplTest {
 
             lb.setAccessLists(networkItems);
 
+            UserPages userpages = new UserPages();
+            userpages.setErrorpage("errorpage");
+            lb.setUserPages(userpages);
+
             SslTermination sslTermination = new SslTermination();
             sslTermination.setIntermediateCertificate(testChain);
             sslTermination.setCertificate(testCrt);
@@ -549,14 +559,14 @@ public class ZxtmAdapterImplTest {
 
             InOrder inOrder = inOrder(vsStub, vsStub, vsStub, protectionStub, protectionStub, certificateCatalogService, vsStub, vsStub);
             adapterSpy.updateSslTermination(dummyConfig, lb, zeusSslTermination);
-            inOrder.verify(vsStub).addVirtualServer(Matchers.<String[]>anyObject(), Matchers.<VirtualServerBasicInfo[]>anyObject());
-            inOrder.verify(vsStub).setProtection(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());
-            inOrder.verify(vsStub).setLogEnabled(Matchers.<String[]>anyObject(), Matchers.<boolean[]>anyObject());
-            inOrder.verify(protectionStub).setAllowedAddresses(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(protectionStub).setBannedAddresses(Matchers.<String[]>anyObject(), Matchers.<String[][]>anyObject());
-            inOrder.verify(certificateCatalogService).importCertificate(Matchers.<String[]>anyObject(), Matchers.<CertificateFiles[]>anyObject());
-            inOrder.verify(vsStub).setSSLCertificate(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());
-            inOrder.verify(vsStub).setSSLDecrypt(Matchers.<String[]>anyObject(), Matchers.<boolean[]>anyObject());
+            inOrder.verify(vsStub).addVirtualServer(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<VirtualServerBasicInfo[]>anyObject());
+            inOrder.verify(vsStub).setProtection(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(vsStub).setLogEnabled(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<boolean[]>anyObject());
+            inOrder.verify(protectionStub).setAllowedAddresses(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(protectionStub).setBannedAddresses(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[][]>anyObject());
+            inOrder.verify(certificateCatalogService).importCertificate(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<CertificateFiles[]>anyObject());
+            inOrder.verify(vsStub).setSSLCertificate(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(vsStub).setSSLDecrypt(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<boolean[]>anyObject());
         }
 
         @Test
@@ -573,10 +583,10 @@ public class ZxtmAdapterImplTest {
 
             InOrder inOrder = inOrder(vsStub, vsStub, certificateCatalogService, vsStub);
             adapterSpy.removeSslTermination(dummyConfig, lb);
-            inOrder.verify(vsStub).setSSLDecrypt(Matchers.<String[]>anyObject(), Matchers.<boolean[]>anyObject());
-            inOrder.verify(vsStub).setSSLCertificate(Matchers.<String[]>anyObject(), Matchers.<String[]>anyObject());
-            inOrder.verify(certificateCatalogService).deleteCertificate(Matchers.<String[]>anyObject());
-            inOrder.verify(vsStub).deleteVirtualServer(Matchers.<String[]>anyObject());
+            inOrder.verify(vsStub).setSSLDecrypt(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<boolean[]>anyObject());
+            inOrder.verify(vsStub).setSSLCertificate(ArgumentMatchers.<String[]>anyObject(), ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(certificateCatalogService).deleteCertificate(ArgumentMatchers.<String[]>anyObject());
+            inOrder.verify(vsStub).deleteVirtualServer(ArgumentMatchers.<String[]>anyObject());
         }
     }
 }
