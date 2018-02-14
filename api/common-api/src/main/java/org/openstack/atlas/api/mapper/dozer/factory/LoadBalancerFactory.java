@@ -1,12 +1,13 @@
 package org.openstack.atlas.api.mapper.dozer.factory;
 
+import org.dozer.config.BeanContainer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.dozer.BeanFactory;
 
 public class LoadBalancerFactory implements BeanFactory {
 
     @Override
-    public Object createBean(Object source, Class<?> sourceClass, String targetBeanId) {
+    public Object createBean(Object source, Class<?> sourceClass, String targetBeanId, BeanContainer beanContainer) {
         if(sourceClass.equals(org.openstack.atlas.service.domain.entities.LoadBalancer.class)) {
             LoadBalancer lb = new LoadBalancer();
             lb.setAccessList(null);
