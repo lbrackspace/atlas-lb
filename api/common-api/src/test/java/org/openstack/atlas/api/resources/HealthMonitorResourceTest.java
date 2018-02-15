@@ -94,7 +94,7 @@ public class HealthMonitorResourceTest {
 
         @Test
         public void shouldProduceInternalServerErrorWhenEsbServiceThrowsRuntimeException() throws Exception {
-            doThrow(new JMSException("fail")).when(es).callAsyncLoadBalancingOperation(
+            doThrow(JMSException.class).when(es).callAsyncLoadBalancingOperation(
                     ArgumentMatchers.eq(Operation.UPDATE_HEALTH_MONITOR), ArgumentMatchers.<LoadBalancer>any());
             Response response = hmr.updateHealthMonitor(chm);
             Assert.assertEquals(500, response.getStatus());
@@ -165,7 +165,7 @@ public class HealthMonitorResourceTest {
 
         @Test
         public void shouldProduceInternalServerErrorWhenAsyncServiceThrowsRuntimeException() throws Exception {
-            doThrow(new JMSException("fail")).when(es).callAsyncLoadBalancingOperation(
+            doThrow(JMSException.class).when(es).callAsyncLoadBalancingOperation(
                     ArgumentMatchers.eq(Operation.UPDATE_HEALTH_MONITOR), ArgumentMatchers.<LoadBalancer>any());
             Response response = hmr.updateHealthMonitor(hm);
             Assert.assertEquals(500, response.getStatus());
@@ -232,7 +232,7 @@ public class HealthMonitorResourceTest {
 
         @Test
         public void shouldProduceInternalServerErrorWhenAsyncServiceThrowsRuntimeException() throws Exception {
-            doThrow(new JMSException("fail")).when(es).callAsyncLoadBalancingOperation(ArgumentMatchers.eq(Operation.UPDATE_HEALTH_MONITOR), ArgumentMatchers.<LoadBalancer>any());
+            doThrow(JMSException.class).when(es).callAsyncLoadBalancingOperation(ArgumentMatchers.eq(Operation.UPDATE_HEALTH_MONITOR), ArgumentMatchers.<LoadBalancer>any());
             Response response = hmr.updateHealthMonitor(chm);
             Assert.assertEquals(500, response.getStatus());
         }
@@ -355,7 +355,7 @@ public class HealthMonitorResourceTest {
         @Test
         public void shouldProduceInternalServerErrorWhenAsyncResponseHasError() throws Exception {
             // Verify async returns exception
-            doThrow(new JMSException("fail")).when(es).callAsyncLoadBalancingOperation(ArgumentMatchers.eq(Operation.DELETE_HEALTH_MONITOR), ArgumentMatchers.<LoadBalancer>any());
+            doThrow(JMSException.class).when(es).callAsyncLoadBalancingOperation(ArgumentMatchers.eq(Operation.DELETE_HEALTH_MONITOR), ArgumentMatchers.<LoadBalancer>any());
             Response response = hmr.deleteHealthMonitor();
             Assert.assertEquals(500, response.getStatus());
         }

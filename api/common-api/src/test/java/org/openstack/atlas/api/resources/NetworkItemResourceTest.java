@@ -53,7 +53,7 @@ public class NetworkItemResourceTest {
 
         @Test
         public void shouldProduceInternalServerErrorWhenAsyncServiceThrowsRuntimeException() throws Exception {
-            doThrow(new JMSException("fail")).when(asyncService).callAsyncLoadBalancingOperation(
+            doThrow(JMSException.class).when(asyncService).callAsyncLoadBalancingOperation(
                     ArgumentMatchers.eq(Operation.APPEND_TO_ACCESS_LIST), ArgumentMatchers.<LoadBalancer>any());
             Response response = networkItemResource.deleteNetworkItem();
             Assert.assertEquals(500, response.getStatus());

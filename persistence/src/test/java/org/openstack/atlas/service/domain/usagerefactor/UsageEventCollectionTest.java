@@ -8,8 +8,8 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
-import org.mockito.Matchers;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.HostStatus;
@@ -35,9 +35,7 @@ import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 import org.openstack.atlas.usagerefactor.processor.UsageEventProcessor;
 import org.openstack.atlas.usagerefactor.processor.impl.UsageEventProcessorImpl;
 import org.openstack.atlas.util.snmp.exceptions.StingraySnmpGeneralException;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -48,12 +46,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.mockito.Mockito.mock;
-import static org.powermock.api.mockito.PowerMockito.when;
+import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class UsageEventCollectionTest {
 
-    @RunWith(PowerMockRunner.class)
     @PrepareForTest(Executors.class)
     public static class WhenCollectingEventData {
         LoadBalancer lb;
@@ -114,7 +111,7 @@ public class UsageEventCollectionTest {
         @Test
         public void shouldNotFailWhenCollectingUsageRecords() throws EntityNotFoundException, DeletedStatusException, InterruptedException, UsageEventCollectionException {
             mock(ExecutorService.class);
-            PowerMockito.when(executorService.invokeAll(ArgumentMatchers.<Callable<Object>>anyCollection())).thenReturn(new ArrayList<java.util.concurrent.Future<Object>>());
+            when(executorService.invokeAll(ArgumentMatchers.<Callable<Object>>anyCollection())).thenReturn(new ArrayList<java.util.concurrent.Future<Object>>());
 
             List<Host> hosts = new ArrayList<Host>();
             Host host = new Host();
@@ -128,7 +125,6 @@ public class UsageEventCollectionTest {
         }
     }
 
-    @RunWith(PowerMockRunner.class)
     @PrepareForTest(Executors.class)
     public static class WhenProcessingSingleUsageEvent {
         SnmpUsage snmpUsage;
@@ -184,6 +180,7 @@ public class UsageEventCollectionTest {
 
         @Before
         public void standUp() {
+            MockitoAnnotations.initMocks(this);
             eventTime = Calendar.getInstance();
         }
 
@@ -217,7 +214,6 @@ public class UsageEventCollectionTest {
         }
     }
 
-    @RunWith(PowerMockRunner.class)
     @PrepareForTest(Executors.class)
     public static class WhenSnmpVSCollectorRuns {
         LoadBalancer lb;
@@ -237,6 +233,8 @@ public class UsageEventCollectionTest {
 
         @Before
         public void standUp() {
+            MockitoAnnotations.initMocks(this);
+
             host = new Host();
             host.setHostStatus(HostStatus.ACTIVE);
             host.setSoapEndpointActive(true);
@@ -258,7 +256,7 @@ public class UsageEventCollectionTest {
         public void shouldReturnSnmpUsage() throws UsageEventCollectionException, StingraySnmpGeneralException {
             usageCollector.setHost(host);
             usageCollector.setLoadbalancer(loadBalancer);
-            when(stingrayUsageClient.getVirtualServerUsage(Matchers.<Host>any(), Matchers.<LoadBalancer>any())).thenReturn(new SnmpUsage());
+            when(stingrayUsageClient.getVirtualServerUsage(ArgumentMatchers.<Host>any(), ArgumentMatchers.<LoadBalancer>any())).thenReturn(new SnmpUsage());
             SnmpUsage usage = usageCollector.call();
             Assert.assertNotNull(usage);
         }
@@ -267,7 +265,7 @@ public class UsageEventCollectionTest {
         public void shouldReturnSnmpStats() throws UsageEventCollectionException, StingraySnmpGeneralException {
             usageCollector.setHost(host);
             usageCollector.setLoadbalancer(loadBalancer);
-            when(stingrayUsageClient.getVirtualServerStats(Matchers.<Host>any(), Matchers.<LoadBalancer>any())).thenReturn(new SnmpStats());
+            when(stingrayUsageClient.getVirtualServerStats(ArgumentMatchers.<Host>any(), ArgumentMatchers.<LoadBalancer>any())).thenReturn(new SnmpStats());
             SnmpStats stats = statsCollector.call();
             Assert.assertNotNull(stats);
         }

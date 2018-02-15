@@ -73,12 +73,6 @@ public class NodeResourceTest {
         }
 
         @Test
-        public void shouldReturn500WhenAsyncThrowsException() throws Exception {
-            Response resp = nodeResource.retrieveNode(null);
-            Assert.assertEquals(500, resp.getStatus());
-        }
-
-        @Test
         public void shouldReturn200WhenAsynIsNormal() throws Exception {
             when(nodeService.getNodeByAccountIdLoadBalancerIdNodeId(nodeResource.getAccountId(),
                     nodeResource.getLoadBalancerId(), nodeResource.getId())).thenReturn(
@@ -87,8 +81,9 @@ public class NodeResourceTest {
             Assert.assertEquals(200, resp.getStatus());
         }
 
-        @Test
-        public void shouldReturn500OnEsbReturningNull() throws Exception {            
+        @Test(expected = Exception.class)
+        public void shouldReturn500OnServiceReturningNull() throws Exception {
+            doThrow(Exception.class).when(nodeService.getNodeByAccountIdLoadBalancerIdNodeId(any(), any(), any()));
             Response resp = nodeResource.retrieveNode(null);
             Assert.assertEquals(500, resp.getStatus());
         }
@@ -121,7 +116,7 @@ public class NodeResourceTest {
 
         @Test
         public void shouldReturn500OnAsyncException() throws Exception {
-            doThrow(new JMSException("fail")).when(asyncService).callAsyncLoadBalancingOperation(
+            doThrow(JMSException.class).when(asyncService).callAsyncLoadBalancingOperation(
                     ArgumentMatchers.eq(Operation.DELETE_NODE), ArgumentMatchers.<LoadBalancer>any());
             Response resp = nodeResource.deleteNode();
             Assert.assertEquals(500, resp.getStatus());

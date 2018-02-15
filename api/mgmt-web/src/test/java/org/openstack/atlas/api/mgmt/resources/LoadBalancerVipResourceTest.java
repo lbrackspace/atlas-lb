@@ -14,11 +14,14 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
+import org.openstack.atlas.service.domain.services.VirtualIpService;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +32,7 @@ public class LoadBalancerVipResourceTest {
 
         private ManagementAsyncService asyncService;
         private LoadbalancerVipResource virtualIpsResource;
+        private VirtualIpService virtualIpService;
         private OperationResponse operationResponse;
         private VirtualIp domainVip;
         private List<VirtualIp> domainVips;
@@ -40,10 +44,12 @@ public class LoadBalancerVipResourceTest {
             virtualIpsResource.setMockitoAuth(true);
             asyncService = mock(ManagementAsyncService.class);
             vpRepository = mock(VirtualIpRepository.class);
+            virtualIpService = mock(VirtualIpService.class);
             virtualIpsResource.setManagementAsyncService(asyncService);
             virtualIpsResource.setId(12);
             virtualIpsResource.setLoadBalancerId(4);
             virtualIpsResource.setVipRepository(vpRepository);
+            virtualIpsResource.setVirtualIpService(virtualIpService);
             operationResponse = new OperationResponse();
             virtualIpsResource.setDozerMapper(MgmtMapperBuilder.getConfiguredMapper());
             domainVip = new VirtualIp();
@@ -69,6 +75,7 @@ public class LoadBalancerVipResourceTest {
 
         private ManagementAsyncService asyncService;
         private LoadbalancerVipResource virtualIpsResource;
+        private VirtualIpService virtualIpService;
         private OperationResponse operationResponse;
         private VirtualIp domainVip;
         private org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp vip;
@@ -78,9 +85,11 @@ public class LoadBalancerVipResourceTest {
             virtualIpsResource = new LoadbalancerVipResource();
             virtualIpsResource.setMockitoAuth(true);
             asyncService = mock(ManagementAsyncService.class);
+            virtualIpService = mock(VirtualIpService.class);
             virtualIpsResource.setManagementAsyncService(asyncService);
             virtualIpsResource.setId(12);
             operationResponse = new OperationResponse();
+            virtualIpsResource.setVirtualIpService(virtualIpService);
             virtualIpsResource.setDozerMapper(MgmtMapperBuilder.getConfiguredMapper());
             domainVip = new VirtualIp();
             vip = new org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp();
@@ -94,44 +103,23 @@ public class LoadBalancerVipResourceTest {
 
         @Test
         public void shouldReturn202WhenVipTypeIsPassedIn() throws Exception {
-            operationResponse.setExecutedOkay(true);
-            operationResponse.setEntity(domainVip);
-            org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp nVip = new org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp();
-            nVip.setType(VipType.PUBLIC);
+            when(virtualIpService.addVirtualIpToLoadBalancer(any(), any(), any())).thenReturn(new VirtualIp());
             Response resp = virtualIpsResource.addVirtualIpToLoadBalancer(vip);
             Assert.assertEquals(202, resp.getStatus());
         }
         
         @Test
         public void shouldReturn202WhenVipIdIsPassedIn() throws Exception {
-            operationResponse.setExecutedOkay(true);
-            operationResponse.setEntity(domainVip);
-            org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp nVip = new org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp();
-            nVip.setId(3);
+            when(virtualIpService.addVirtualIpToLoadBalancer(any(), any(), any())).thenReturn(new VirtualIp());
+            vip.setId(23);
+            vip.setType(null);
             Response resp = virtualIpsResource.addVirtualIpToLoadBalancer(vip);
             Assert.assertEquals(202, resp.getStatus());
         }
 
         @Test
         public void shouldReturn500WhenExecutedOkayisFalse() throws Exception {
-            operationResponse.setExecutedOkay(false);
-            operationResponse.setEntity(domainVip);            
-            Response resp = virtualIpsResource.addVirtualIpToLoadBalancer(vip);
-            Assert.assertEquals(500, resp.getStatus());
-        }
-
-        @Test
-        public void shouldReturn500WhenEsbReturnsNull() throws Exception {
-            operationResponse.setExecutedOkay(false);
-            operationResponse.setEntity(domainVip);            
-            Response resp = virtualIpsResource.addVirtualIpToLoadBalancer(vip);
-            Assert.assertEquals(500, resp.getStatus());
-        }
-
-        @Test
-        public void shouldReturn500OnEsbException() throws Exception {
-            operationResponse.setExecutedOkay(false);
-            operationResponse.setEntity(domainVip);
+            doThrow(Exception.class).when(virtualIpService).addVirtualIpToLoadBalancer(any(), any(), any());
             Response resp = virtualIpsResource.addVirtualIpToLoadBalancer(vip);
             Assert.assertEquals(500, resp.getStatus());
         }

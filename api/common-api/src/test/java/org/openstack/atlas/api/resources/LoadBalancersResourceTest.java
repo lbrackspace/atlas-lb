@@ -84,7 +84,7 @@ public class LoadBalancersResourceTest {
 
         @Test
         public void shouldProduce500ResponseWhenCreateThrowsException() throws Exception {
-            doThrow(new Exception("Exception")).when(loadBalancerService).create(Matchers.<org.openstack.atlas.service.domain.entities.LoadBalancer>any());
+            doThrow(Exception.class).when(loadBalancerService).create(Matchers.<org.openstack.atlas.service.domain.entities.LoadBalancer>any());
             Response response = loadBalancersResource.createLoadBalancer(loadBalancer);
             Assert.assertEquals(500, response.getStatus());
         }
@@ -92,7 +92,7 @@ public class LoadBalancersResourceTest {
         @Test
         public void shouldReturn500onJmsException() throws Exception {
             when(loadBalancerService.create(Matchers.<org.openstack.atlas.service.domain.entities.LoadBalancer>any())).thenReturn(new org.openstack.atlas.service.domain.entities.LoadBalancer());
-            doThrow(new JMSException("Exception")).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.CREATE_LOADBALANCER), Matchers.<org.openstack.atlas.service.domain.entities.LoadBalancer>any());
+            doThrow(JMSException.class).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.CREATE_LOADBALANCER), Matchers.<org.openstack.atlas.service.domain.entities.LoadBalancer>any());
             Response response = loadBalancersResource.createLoadBalancer(loadBalancer);
             Assert.assertEquals(500, response.getStatus());
         }

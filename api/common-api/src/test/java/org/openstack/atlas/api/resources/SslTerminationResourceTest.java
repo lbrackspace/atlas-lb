@@ -64,7 +64,7 @@ public class SslTerminationResourceTest {
         public void shouldReturnA404WhenEntityNotFoundIsThrown() throws Exception {
             when(sslTerminationService.getSslTermination(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(null);
-            doThrow(new EntityNotFoundException("Exception")).when(sslTerminationService).getSslTermination(
+            doThrow(EntityNotFoundException.class).when(sslTerminationService).getSslTermination(
                     ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any());
             response = sslTermResource.getSsl();
             org.junit.Assert.assertEquals(404, response.getStatus());
@@ -104,7 +104,7 @@ public class SslTerminationResourceTest {
             SslTermination sslTerm = new SslTermination();
             when(sslTerminationService.getSslTermination(
                     ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(sslTerm);
-            doThrow(new RemoteException("Exception")).when(reverseProxyLoadBalancerService).getSsl3Ciphers();
+            doThrow(RemoteException.class).when(reverseProxyLoadBalancerService).getSsl3Ciphers();
             response = sslTermResource.retrieveSupportedCiphers();
             org.junit.Assert.assertEquals(500, response.getStatus());
         }
@@ -113,7 +113,7 @@ public class SslTerminationResourceTest {
         public void shouldReturnA404WhenReturningDefaultCiphersListFails() throws Exception {
             SslTermination sslTerm = new SslTermination();
             when(sslTerminationService.getSslTermination(anyInt(), anyInt())).thenReturn(sslTerm);
-            doThrow(new EntityNotFoundException("Exception")).when(sslTerminationService).getSslTermination(
+            doThrow(EntityNotFoundException.class).when(sslTerminationService).getSslTermination(
                     ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any());
             response = sslTermResource.retrieveSupportedCiphers();
             org.junit.Assert.assertEquals(404, response.getStatus());

@@ -28,58 +28,57 @@ import java.util.List;
 
 import static org.mockito.Mockito.when;
 
-@Ignore
 @RunWith(Enclosed.class)
 public class UsageEventProcessorTest {
 
-    @RunWith(MockitoJUnitRunner.class)
-    public static class WhenProcessingUsageEvents {
-        LoadBalancer lb;
-        SnmpUsage snmpUsage;
-        SnmpUsage snmpUsage1;
-        List<SnmpUsage> snmpUsages;
-
-        @Mock
-        VirtualIpRepository virtualIpRepository;
-
-        @Mock
-        UsageRefactorService usageRefactorService;
-
-        @Mock
-        AccountUsageRepository accountUsageRepository;
-
-        @Mock
-        LoadBalancerRepository loadBalancerRepository;
-
-        @Mock
-        HostUsageRefactorRepository hostUsageRefactorRepository;
-
-        @InjectMocks
-        UsageRefactorService usageService1 = new UsageRefactorServiceImpl();
-
-        @Mock
-        UsageRefactorService usageService;
-
-        @InjectMocks
-        UsageEventProcessor processor = new UsageEventProcessorImpl();
-
-        @Before
-        public void standUp() {
-            lb = new LoadBalancer();
-            lb.setId(543221);
-            lb.setAccountId(55555);
-            snmpUsage = new SnmpUsage();
-            snmpUsage.setHostId(1);
-            snmpUsage.setLoadbalancerId(lb.getId());
-            snmpUsage.setBytesIn(1234455);
-            snmpUsage.setBytesInSsl(4321);
-            snmpUsage.setBytesOut(987);
-            snmpUsage.setBytesOutSsl(986);
-            snmpUsage.setConcurrentConnections(1);
-            snmpUsage.setConcurrentConnectionsSsl(3);
-        }
-
-    }
+//    @RunWith(MockitoJUnitRunner.class)
+//    public static class WhenProcessingUsageEvents {
+//        LoadBalancer lb;
+//        SnmpUsage snmpUsage;
+//        SnmpUsage snmpUsage1;
+//        List<SnmpUsage> snmpUsages;
+//
+//        @Mock
+//        VirtualIpRepository virtualIpRepository;
+//
+//        @Mock
+//        UsageRefactorService usageRefactorService;
+//
+//        @Mock
+//        AccountUsageRepository accountUsageRepository;
+//
+//        @Mock
+//        LoadBalancerRepository loadBalancerRepository;
+//
+//        @Mock
+//        HostUsageRefactorRepository hostUsageRefactorRepository;
+//
+//        @InjectMocks
+//        UsageRefactorService usageService1 = new UsageRefactorServiceImpl();
+//
+//        @Mock
+//        UsageRefactorService usageService;
+//
+//        @InjectMocks
+//        UsageEventProcessor processor = new UsageEventProcessorImpl();
+//
+//        @Before
+//        public void standUp() {
+//            lb = new LoadBalancer();
+//            lb.setId(543221);
+//            lb.setAccountId(55555);
+//            snmpUsage = new SnmpUsage();
+//            snmpUsage.setHostId(1);
+//            snmpUsage.setLoadbalancerId(lb.getId());
+//            snmpUsage.setBytesIn(1234455);
+//            snmpUsage.setBytesInSsl(4321);
+//            snmpUsage.setBytesOut(987);
+//            snmpUsage.setBytesOutSsl(986);
+//            snmpUsage.setConcurrentConnections(1);
+//            snmpUsage.setConcurrentConnectionsSsl(3);
+//        }
+//
+//    }
 
     @RunWith(MockitoJUnitRunner.class)
     public static class WhenProcessingAccountUsageEvents {
