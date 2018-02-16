@@ -140,8 +140,8 @@ public class DeadLockRetryAspect implements Ordered {
         final SessionFactory sessionFactory = ((SessionFactoryImplementor) entityManager.getEntityManagerFactory());
         Dialect dialect = ((SessionFactoryImplementor) sessionFactory).getServiceRegistry().getService( JdbcServices.class ).getDialect();
 
-        if (dialect instanceof org.hibernate.dialect.MySQL5InnoDBDialect) {
-            return new MySQL5InnoDBDialect();
+        if (dialect instanceof org.hibernate.dialect.MySQL5Dialect) {
+            return new MySQL5InnoDBDialect();//returns org.openstack.atlas.service.domain.deadlock.MySQL5InnoDBDialect
         }
         // Add custom dialect conditionals here.
         return dialect;

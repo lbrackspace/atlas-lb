@@ -12,7 +12,7 @@
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <!-- Hibernate Properties -->
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect"/>
             <property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.SunONETransactionManagerLookup"/>
             <property name="hibernate.transaction.flush_before_completion" value="false"/>
             <!-- <property name="hibernate.query.factory_class" value="org.hibernate.hql.classic.ClassicQueryTranslatorFactory"/> -->
