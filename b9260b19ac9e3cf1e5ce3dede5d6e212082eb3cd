@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1e5b0898_7edd0ad4",
+        "filename": "migration/schema/loadbalancing/69-70.sql",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2018-02-20T18:18:34Z",
+      "side": 1,
+      "message": "lb_ssl_b32b8da0",
+      "revId": "b9260b19ac9e3cf1e5ce3dede5d6e212082eb3cd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
+    }
+  ]
+}
