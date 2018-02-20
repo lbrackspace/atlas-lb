@@ -12,6 +12,6 @@ CREATE TABLE `ssl_cipher_profile` (
    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `lb_ssl` ADD COLUMN `cipher_list` TEXT;
-ALTER TABLE `lb_ssl` ADD COLUMN `cipher_profile` VARCHAR (255), ADD CONSTRAINT `ssl_cipher_profile_ibfk_1` FOREIGN KEY (`cipher_profile`) REFERENCES `ssl_cipher_profile` (`name`);
+ALTER TABLE `lb_ssl` ADD COLUMN `cipher_profile` VARCHAR (255), ADD CONSTRAINT `lb_ssl_b32b8da0` FOREIGN KEY (`cipher_profile`) REFERENCES `ssl_cipher_profile` (`name`);
 
 update `meta` set `meta_value` = '70' where `meta_key`='version';

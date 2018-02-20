@@ -1,6 +1,6 @@
 use `loadbalancing`;
 
-ALTER TABLE lb_ssl DROP foreign key `ssl_cipher_profile_ibfk_1`;
+ALTER TABLE lb_ssl DROP foreign key `lb_ssl_b32b8da0`;
 
 ALTER TABLE lb_ssl DROP COLUMN cipher_profile;
 ALTER TABLE lb_ssl DROP COLUMN cipher_list;
