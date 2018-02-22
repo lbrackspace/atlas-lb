@@ -16,6 +16,24 @@
       "revId": "8129e2d8d98361a4f12d1b1bdbe328527d181c64",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "caef62d4_3bf66b96",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/usage/entities/Entity.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2018-02-22T07:35:49Z",
+      "side": 1,
+      "message": "Sure Phill, I have added a bit of explanation in CLB-479 under \"@GeneratedValue needs the Strategy to be used:\" section. We can discuss more on the call if required.",
+      "parentUuid": "08ac5613_e78ef80c",
+      "revId": "8129e2d8d98361a4f12d1b1bdbe328527d181c64",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
