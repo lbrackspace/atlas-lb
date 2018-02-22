@@ -34,6 +34,24 @@
       "revId": "8129e2d8d98361a4f12d1b1bdbe328527d181c64",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "21087f75_74e58d0b",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/usage/entities/Entity.java",
+        "patchSetId": 6
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2018-02-22T15:54:12Z",
+      "side": 1,
+      "message": "Thanks for clarification. We probably still need to wait on this one, but this change makes sense and im no longer concerned here.",
+      "parentUuid": "caef62d4_3bf66b96",
+      "revId": "8129e2d8d98361a4f12d1b1bdbe328527d181c64",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": false
     }
   ]
 }
