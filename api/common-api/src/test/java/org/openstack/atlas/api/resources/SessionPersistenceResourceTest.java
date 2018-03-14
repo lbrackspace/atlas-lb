@@ -83,7 +83,7 @@ public class SessionPersistenceResourceTest {
 
         @Test
         public void shouldProduceInternalServerErrorWhenAsyncServiceThrowsRuntimeException() throws Exception {
-            doThrow(new JMSException("fail")).when(asyncService).callAsyncLoadBalancingOperation(
+            doThrow(JMSException.class).when(asyncService).callAsyncLoadBalancingOperation(
                     ArgumentMatchers.<Operation>any(), ArgumentMatchers.<LoadBalancer>any());
             Response response = persistenceResource.enableSessionPersistence(sessionPersistence);
             Assert.assertEquals(500, response.getStatus());
@@ -184,7 +184,7 @@ public class SessionPersistenceResourceTest {
 
         @Test
         public void shouldProduceInternalServerErrorWhenAsyncServiceThrowsRuntimeException() throws Exception {
-            doThrow(new JMSException("fail")).when(asyncService).callAsyncLoadBalancingOperation(
+            doThrow(JMSException.class).when(asyncService).callAsyncLoadBalancingOperation(
                     ArgumentMatchers.<Operation>any(), ArgumentMatchers.<LoadBalancer>any());
             Response response = persistenceResource.disableSessionPersistence();
             Assert.assertEquals(500, response.getStatus());

@@ -77,14 +77,14 @@ public class NodesResourceTest {
 
         @Test
         public void shouldProduce404WhenEntityNotFoundExceptionThrown() throws Exception {
-            doThrow(new EntityNotFoundException("Exception")).when(nodeService).getNodesByAccountIdLoadBalancerId(anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
+            doThrow(EntityNotFoundException.class).when(nodeService).getNodesByAccountIdLoadBalancerId(anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
             Response response = nodesResource.retrieveNodes(0, 4, 3, null);
             Assert.assertEquals(404, response.getStatus());
         }
 
         @Test
         public void shouldProduce410WhenDeletedStatusExceptionThrown() throws Exception {
-            doThrow(new DeletedStatusException("Exception")).when(nodeService).getNodesByAccountIdLoadBalancerId(anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
+            doThrow(DeletedStatusException.class).when(nodeService).getNodesByAccountIdLoadBalancerId(anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
             Response response = nodesResource.retrieveNodes(0, 4, 3, null);
             Assert.assertEquals(410, response.getStatus());
         }
@@ -151,7 +151,7 @@ public class NodesResourceTest {
             LoadBalancer returnLb = new LoadBalancer();
             returnLb.setNodes(new HashSet<org.openstack.atlas.service.domain.entities.Node>());
 
-            doThrow(new EntityNotFoundException("Exception")).when(nodeService).createNodes(Matchers.<LoadBalancer>any());
+            doThrow(EntityNotFoundException.class).when(nodeService).createNodes(Matchers.<LoadBalancer>any());
             Response response = nodesResource.createNodes(nodes);
             Assert.assertEquals(404, response.getStatus());
         }
@@ -161,7 +161,7 @@ public class NodesResourceTest {
             LoadBalancer returnLb = new LoadBalancer();
             returnLb.setNodes(new HashSet<org.openstack.atlas.service.domain.entities.Node>());
 
-            doThrow(new ImmutableEntityException("Exception")).when(nodeService).createNodes(Matchers.<LoadBalancer>any());
+            doThrow(ImmutableEntityException.class).when(nodeService).createNodes(Matchers.<LoadBalancer>any());
             Response response = nodesResource.createNodes(nodes);
             Assert.assertEquals(422, response.getStatus());
         }
@@ -171,7 +171,7 @@ public class NodesResourceTest {
             LoadBalancer returnLb = new LoadBalancer();
             returnLb.setNodes(new HashSet<org.openstack.atlas.service.domain.entities.Node>());
 
-            doThrow(new UnprocessableEntityException("Exception")).when(nodeService).createNodes(Matchers.<LoadBalancer>any());
+            doThrow(UnprocessableEntityException.class).when(nodeService).createNodes(Matchers.<LoadBalancer>any());
             Response response = nodesResource.createNodes(nodes);
             Assert.assertEquals(422, response.getStatus());
         }
@@ -181,7 +181,7 @@ public class NodesResourceTest {
             LoadBalancer returnLb = new LoadBalancer();
             returnLb.setNodes(new HashSet<org.openstack.atlas.service.domain.entities.Node>());
 
-            doThrow(new BadRequestException("Exception")).when(nodeService).createNodes(Matchers.<LoadBalancer>any());
+            doThrow(BadRequestException.class).when(nodeService).createNodes(Matchers.<LoadBalancer>any());
             Response response = nodesResource.createNodes(nodes);
             Assert.assertEquals(400, response.getStatus());
         }
@@ -192,17 +192,16 @@ public class NodesResourceTest {
             Assert.assertEquals(202, response.getStatus());
         }
 
-        @Ignore("This test is not doing what it claims it is...")
         @Test
         public void shouldProduce400WhenPassingInAnInvalidNodeIpAddress() throws Exception {
-            Set<Node> nodes1 = new HashSet<Node>();
             Node node1 = new Node();
-            node1.setAddress("192.168.1.3");
+            node1.setAddress("192.168.1.3333333");
             node1.setPort(80);
             node1.setCondition(NodeCondition.ENABLED);
-            nodes1.add(node1);
+            Nodes nodes = new Nodes();
+            nodes.getNodes().add(node1);
 
-            Response response = nodesResource.createNodes(new Nodes());
+            Response response = nodesResource.createNodes(nodes);
             Assert.assertEquals(400, response.getStatus());
         }
     }

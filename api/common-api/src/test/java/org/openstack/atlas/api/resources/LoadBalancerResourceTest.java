@@ -123,7 +123,7 @@ public class LoadBalancerResourceTest {
         @Test
         public void shouldReturnA404WhenEntityNotFoundIsThrown() throws Exception {
             when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
-            doThrow(new EntityNotFoundException("Exception")).when(loadBalancerService).prepareForDelete(Matchers.<LoadBalancer>any());
+            doThrow(EntityNotFoundException.class   ).when(loadBalancerService).prepareForDelete(Matchers.<LoadBalancer>any());
             response = loadBalancerResource.deleteLoadBalancer();
             Assert.assertEquals(404, response.getStatus());
         }
@@ -131,7 +131,7 @@ public class LoadBalancerResourceTest {
         @Test
         public void shouldReturnA500WhenDeletionFails() throws Exception {
             when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
-            doThrow(new Exception("Exception")).when(loadBalancerService).prepareForDelete(Matchers.<LoadBalancer>any());
+            doThrow(Exception.class).when(loadBalancerService).prepareForDelete(Matchers.<LoadBalancer>any());
             response = loadBalancerResource.deleteLoadBalancer();
             Assert.assertEquals(500, response.getStatus());
         }
@@ -140,7 +140,7 @@ public class LoadBalancerResourceTest {
         public void shouldReturn500OnJmsException() throws Exception {
             when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
             doNothing().when(loadBalancerService).prepareForDelete(Matchers.<LoadBalancer>any());
-            doThrow(new JMSException("Exception")).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.DELETE_LOADBALANCER), Matchers.<LoadBalancer>any());
+            doThrow(JMSException.class).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.DELETE_LOADBALANCER), Matchers.<LoadBalancer>any());
             response = loadBalancerResource.deleteLoadBalancer();
             Assert.assertEquals(500, response.getStatus());
         }

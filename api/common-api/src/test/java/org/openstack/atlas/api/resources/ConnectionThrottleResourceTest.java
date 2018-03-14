@@ -247,7 +247,7 @@ public class ConnectionThrottleResourceTest {
         @Test
         public void shouldReturn500onJmsException() throws Exception {
             when(lbService.get(anyInt())).thenReturn(null);
-            doThrow(new JMSException("Exception")).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.UPDATE_CONNECTION_THROTTLE), Matchers.<LoadBalancer>any());
+            doThrow(JMSException.class).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.UPDATE_CONNECTION_THROTTLE), Matchers.<LoadBalancer>any());
             resp = resource.updateConnectionThrottle(cl);
             Assert.assertEquals(500, resp.getStatus());
         }
@@ -255,7 +255,7 @@ public class ConnectionThrottleResourceTest {
         @Test
         public void shouldReturn500onRuntimeException() throws Exception {
             when(lbService.get(anyInt())).thenReturn(null);
-            doThrow(new RuntimeException("Exception")).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.UPDATE_CONNECTION_THROTTLE), Matchers.<LoadBalancer>any());
+            doThrow(RuntimeException.class).when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.UPDATE_CONNECTION_THROTTLE), Matchers.<LoadBalancer>any());
             resp = resource.updateConnectionThrottle(cl);
             Assert.assertEquals(500, resp.getStatus());
         }
@@ -263,7 +263,7 @@ public class ConnectionThrottleResourceTest {
         @Test
         public void shouldReturn404WhenUpdateThrowsEntityNotFoundException() throws Exception {
             when(lbService.get(anyInt())).thenReturn(null);
-            doThrow(new EntityNotFoundException("Exception")).when(connectionThrottleService).update(Matchers.<LoadBalancer>any());
+            doThrow(EntityNotFoundException.class).when(connectionThrottleService).update(Matchers.<LoadBalancer>any());
             resp = resource.updateConnectionThrottle(cl);
             Assert.assertEquals(404, resp.getStatus());
         }
@@ -271,7 +271,7 @@ public class ConnectionThrottleResourceTest {
         @Test
         public void shouldReturn422WhenUpdateThrowsUnprocessableEntityException() throws Exception {
             when(lbService.get(anyInt())).thenReturn(null);
-            doThrow(new UnprocessableEntityException("Exception")).when(connectionThrottleService).update(Matchers.<LoadBalancer>any());
+            doThrow(UnprocessableEntityException.class).when(connectionThrottleService).update(Matchers.<LoadBalancer>any());
             resp = resource.updateConnectionThrottle(cl);
             Assert.assertEquals(422, resp.getStatus());
         }
@@ -279,7 +279,7 @@ public class ConnectionThrottleResourceTest {
         @Test
         public void shouldReturn400WhenUpdateThrowsBadRequestException() throws Exception {
             when(lbService.get(anyInt())).thenReturn(null);
-            doThrow(new BadRequestException("Exception")).when(connectionThrottleService).update(Matchers.<LoadBalancer>any());
+            doThrow(BadRequestException.class).when(connectionThrottleService).update(Matchers.<LoadBalancer>any());
             resp = resource.updateConnectionThrottle(cl);
             Assert.assertEquals(400, resp.getStatus());
         }
