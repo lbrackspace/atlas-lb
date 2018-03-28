@@ -81,7 +81,7 @@
                                             <type>file</type>
                                             <mapper>
                                                 <type>perm</type>
-                                                <prefix>/opt/glassfish/glassfish/lib</prefix>
+                                                <prefix>/opt/glassfish5/glassfish/lib</prefix>
                                             </mapper>
                                         </data>
                                     </dataSet>
