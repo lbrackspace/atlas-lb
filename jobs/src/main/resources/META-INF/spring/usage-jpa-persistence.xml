@@ -27,10 +27,11 @@
         <qualifier value="usage"/>
     </bean>
 
+    <!-- Commented this as JpaTemplate is removed in Spring 4 and is not used in any code. CLB-567 -->
     <!-- Standard JPA Mumbo Jumbo -->
-    <bean id="jpaTemplate" class="org.springframework.orm.jpa.JpaTemplate">
+    <!--<bean id="jpaTemplate" class="org.springframework.orm.jpa.JpaTemplate">
         <property name="entityManagerFactory" ref="usageEntityManagerFactory"/>
-    </bean>
+    </bean>-->
 
     <!-- The EM Factory is where the magic happens :) -->
     <bean id="usageEntityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">

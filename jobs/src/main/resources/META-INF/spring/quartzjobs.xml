@@ -32,7 +32,7 @@
     <!--LOADBALANCER USAGE POLLER CONFIG-->
     <bean id="lbUsagePollerBean" class="org.openstack.atlas.usage.jobs.LoadBalancerUsagePoller"
           autowire="byName"/>
-    <bean name="lbUsagePoller" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="lbUsagePoller" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -40,7 +40,7 @@
             </map>
         </property>
     </bean>
-    <bean id="lbUsagePollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="lbUsagePollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="lbUsagePoller"/>
         <property name="cronExpression" value="${lb-usage-poller.interval}"/>
     </bean>
@@ -48,7 +48,7 @@
     <!--USAGE ROLLUP CONFIG-->
     <bean id="lbUsageRollupJobBean" class="org.openstack.atlas.usage.jobs.LoadBalancerUsageRollupJob"
           autowire="byName"/>
-    <bean name="lbUsageRollupJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="lbUsageRollupJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -56,7 +56,7 @@
             </map>
         </property>
     </bean>
-    <bean id="lbUsageRollupJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="lbUsageRollupJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="lbUsageRollupJob"/>
         <property name="cronExpression" value="${lb-usage-rollup-job.interval}"/>
     </bean>
@@ -64,7 +64,7 @@
     <!--ACCOUNT USAGE POLLER CONFIG-->
     <bean id="accountUsagePollerBean" class="org.openstack.atlas.usage.jobs.AccountUsagePoller"
           autowire="byName"/>
-    <bean name="accountUsagePoller" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="accountUsagePoller" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -72,7 +72,7 @@
             </map>
         </property>
     </bean>
-    <bean id="accountUsagePollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="accountUsagePollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="accountUsagePoller"/>
         <property name="cronExpression" value="${account-usage-poller.interval}"/>
     </bean>
@@ -80,7 +80,7 @@
     <!--HOST USAGE POLLER CONFIG-->
     <bean id="hostUsagePollerBean" class="org.openstack.atlas.usage.jobs.HostUsagePoller"
           autowire="byName"/>
-    <bean name="hostUsagePoller" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="hostUsagePoller" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -88,7 +88,7 @@
             </map>
         </property>
     </bean>
-    <bean id="hostUsagePollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="hostUsagePollerTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="hostUsagePoller"/>
         <property name="cronExpression" value="${host-usage-poller.interval}"/>
     </bean>
@@ -96,7 +96,7 @@
     <!--SUSPENDED EVENT JOB CONFIG-->
     <bean id="suspendedEventJobBean" class="org.openstack.atlas.usage.jobs.SuspendedEventJob"
           autowire="byName"/>
-    <bean name="suspendedEventJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="suspendedEventJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -104,7 +104,7 @@
             </map>
         </property>
     </bean>
-    <bean id="suspendedEventJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="suspendedEventJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="suspendedEventJob"/>
         <property name="cronExpression" value="${suspended-event-job.interval}"/>
     </bean>
@@ -112,7 +112,7 @@
     <!--USAGE DELETION JOB CONFIG-->
     <bean id="dailyDeletionJobBean" class="org.openstack.atlas.jobs.DailyDeletionJob"
           autowire="byName"/>
-    <bean name="dailyDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="dailyDeletionJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -120,7 +120,7 @@
             </map>
         </property>
     </bean>
-    <bean id="dailyDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="dailyDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="dailyDeletionJob"/>
         <property name="cronExpression" value="${daily-deletion-job.interval}"/>
     </bean>
@@ -128,7 +128,7 @@
     <!--RATE LIMIT DELETION JOB CONFIG-->
     <bean id="rateLimitDeletionJobBean" class="org.openstack.atlas.jobs.RateLimitDeletionJob"
           autowire="byName"/>
-    <bean name="rateLimitDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="rateLimitDeletionJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -136,7 +136,7 @@
             </map>
         </property>
     </bean>
-    <bean id="rateLimitDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="rateLimitDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="rateLimitDeletionJob"/>
         <property name="cronExpression" value="${rate-limit-deletion-job.interval}"/>
     </bean>
@@ -144,7 +144,7 @@
     <!--HOST ENDPOINT POLLER JOB CONFIG-->
     <bean id="hostEndpointPollerJobBean" class="org.openstack.atlas.jobs.HostEndpointPollerJob"
           autowire="byName"/>
-    <bean name="hostEndpointPollerJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="hostEndpointPollerJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -152,7 +152,7 @@
             </map>
         </property>
     </bean>
-    <bean id="hostEndpointPollerJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="hostEndpointPollerJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="hostEndpointPollerJob"/>
         <property name="cronExpression" value="${host-endpoint-poller.interval}"/>
     </bean>
@@ -160,7 +160,7 @@
     <!--ALERT DELETION JOB CONFIG-->
     <bean id="alertDeletionJobBean" class="org.openstack.atlas.jobs.AlertDeletionJob"
           autowire="byName"/>
-    <bean name="alertDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="alertDeletionJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -168,7 +168,7 @@
             </map>
         </property>
     </bean>
-    <bean id="alertDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="alertDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="alertDeletionJob"/>
         <property name="cronExpression" value="${alert-deletion-job.interval}"/>
     </bean>
@@ -176,7 +176,7 @@
     <!--EVENTS DELETION JOB CONFIG-->
     <bean id="eventsDeletionJobBean" class="org.openstack.atlas.jobs.EventsDeletionJob"
           autowire="byName"/>
-    <bean name="eventsDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="eventsDeletionJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -184,7 +184,7 @@
             </map>
         </property>
     </bean>
-    <bean id="eventsDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="eventsDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="eventsDeletionJob"/>
         <property name="cronExpression" value="${events-deletion-job.interval}"/>
     </bean>
@@ -192,7 +192,7 @@
     <!--LB DELETION JOB CONFIG-->
     <bean id="lbDeletionJobBean" class="org.openstack.atlas.jobs.LoadBalancerDeletionJob"
           autowire="byName"/>
-    <bean name="lbDeletionJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="lbDeletionJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -200,7 +200,7 @@
             </map>
         </property>
     </bean>
-    <bean id="lbDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="lbDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="lbDeletionJob"/>
         <property name="cronExpression" value="${lb-deletion-job.interval}"/>
     </bean>
@@ -208,7 +208,7 @@
     <!--ATOM HOPPER USAGE PUSHER CONFIG-->
     <bean id="atomHopperUsagePusherJobBean" class="org.openstack.atlas.usage.jobs.AtomHopperUsagePusher"
           autowire="byName"/>
-    <bean name="atomHopperUsagePusherJob" class="org.springframework.scheduling.quartz.JobDetailBean">
+    <bean name="atomHopperUsagePusherJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
         <property name="jobDataAsMap">
             <map>
@@ -216,7 +216,7 @@
             </map>
         </property>
     </bean>
-    <bean id="atomHopperUsagePusherTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+    <bean id="atomHopperUsagePusherTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="atomHopperUsagePusherJob"/>
         <property name="cronExpression" value="${atom-hopper-usage-pusher.interval}"/>
     </bean>
