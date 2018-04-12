@@ -3,7 +3,7 @@ Version: [[version]]
 Section: libs
 Priority: optional
 Architecture: all
-Depends: rs-glassfish, libmysql-java, rs-lbaas-activemq
+Depends: rs-glassfish5, libmysql-java, rs-lbaas-activemq
 Maintainer: Carlos D. Garza <carlos.garza@rackspace.com>
 Description: The rackspace LBAAS rest management api
  The rackspace lbaas management REST API that runs under glassfish
