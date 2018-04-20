@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.helpers.JsonSerializer;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -8,6 +9,7 @@ import com.fasterxml.jackson.databind.cfg.SerializerFactoryConfig;
 import com.fasterxml.jackson.databind.jsontype.impl.StdSubtypeResolver;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
+import com.fasterxml.jackson.databind.ser.SerializerFactory;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
@@ -63,19 +65,19 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
             throw new JsonGenerationException(errMsg, ex);
         }
 
-//        CustomSerializerFactory casf = new CustomSerializerFactory();
-//        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new SimpleModule().addSerializer(GregorianCalendar.class,  new DateTimeSerializer(this.config, null)));
 
         if (this.wrapperFieldName != null) {
             jgen.writeStartObject();
             jgen.writeFieldName(this.wrapperFieldName);
-            writeJsonArray(jgen, propList, true, sp);
+            writeJsonArray(jgen, propList, true);
         } else {
-            writeJsonArray(jgen, propList, false, sp);
+            writeJsonArray(jgen, propList, false);
         }
 
         if (hasLinks) {
-            writeLinks(value, jgen, valClassName, sp);
+            writeLinks(value, jgen, valClassName);
         }
 
         if (wrapperFieldName != null) {
@@ -83,7 +85,7 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         }
     }
 
-    private void writeLinks(Object value, JsonGenerator jgen, String valClassName, SerializerProvider sp) throws IOException {
+    private void writeLinks(Object value, JsonGenerator jgen, String valClassName) throws IOException {
         List propList;
         String format;
         String errMsg;
@@ -97,14 +99,14 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
             throw new JsonGenerationException(errMsg, ex);
         }
 
-        writeJsonArrayWithFieldName(jgen, propList, false, "links", sp);
+        writeJsonArrayWithFieldName(jgen, propList, false, "links");
     }
 
-    private void writeJsonArray(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty, SerializerProvider sp) throws IOException {
+    private void writeJsonArray(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty) throws IOException {
         if (propList != null && !propList.isEmpty()) {
             jgen.writeStartArray();
             for (Object childObj : propList) {
-                childSerialize(childObj, jgen, sp);
+                childSerialize(childObj, jgen);
             }
             jgen.writeEndArray();
         } else if (writeWhenNullOrEmpty) {
@@ -113,12 +115,17 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         }
     }
 
-    private void writeJsonArrayWithFieldName(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty, String fieldName, SerializerProvider sp) throws IOException {
+    private void writeJsonArrayWithFieldName(JsonGenerator jgen, List propList, boolean writeWhenNullOrEmpty, String fieldName) throws IOException {
         if (writeWhenNullOrEmpty || !propList.isEmpty()) jgen.writeFieldName(fieldName);
-        writeJsonArray(jgen, propList, writeWhenNullOrEmpty, sp);
+        writeJsonArray(jgen, propList, writeWhenNullOrEmpty);
     }
 
-    private void childSerialize(Object obj, JsonGenerator jgen, SerializerProvider sp) throws IOException {
+    private void childSerialize(Object obj, JsonGenerator jgen) throws IOException {
+        SerializerProviderBuilder providerBuilder = new SerializerProviderBuilder();
+        SerializerProvider sp = providerBuilder.createProvider(this.config, BeanSerializerFactory.instance);
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new SimpleModule().addSerializer(GregorianCalendar.class,  new DateTimeSerializer(this.config, null)));
 
         JavaType type = TypeFactory.defaultInstance().constructType(obj.getClass());
         BeanDescription beanDesc = sp.getConfig().introspect(type);

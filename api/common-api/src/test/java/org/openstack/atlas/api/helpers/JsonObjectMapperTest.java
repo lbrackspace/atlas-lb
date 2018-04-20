@@ -8,6 +8,7 @@ import org.junit.*;
 import org.openstack.atlas.api.resources.StubResource;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
@@ -250,24 +251,14 @@ public class JsonObjectMapperTest {
 
     @Test
     public void shouldSerializeSimpleLoadBalancers() throws IOException {
-        // TODO: Cafe tests will validate the outputs for the mostpart,
+        // TODO: Cafe tests will validate the outputs for the most part,
         // we should build these tests out a bit more here...
 
         StubResource stub = new StubResource();
         LoadBalancer loadBalancer = null;
-        org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer loadBalancerman = null;
         String exMsg;
         LoadBalancer loadbalancer = (LoadBalancer) stub.stubLoadBalancer().getEntity();
         LoadBalancers loadbalancers = (LoadBalancers) stub.stubLoadBalancers().getEntity();
-
-        loadBalancerman = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer();
-        loadBalancerman.setId(1);
-        loadBalancerman.setName("testsimplelbmgmt");
-        loadBalancerman.setStatus("ACTIVE");
-        loadBalancerman.setCreated(loadbalancer.getCreated());
-        loadBalancerman.setNodes(loadbalancer.getNodes());
-        org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers loadbalancersman = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers();
-        loadbalancersman.getLoadBalancers().add(loadBalancerman);
 
         // Validate loadbalancers is mapped, we don't want root tags on the children
         String lbsStr = mapper.writeValueAsString(loadbalancers);
@@ -278,31 +269,167 @@ public class JsonObjectMapperTest {
         Assert.assertTrue(lbsStr.contains("LB1"));
         Assert.assertTrue(lbsStr.contains("LB2"));
         Assert.assertTrue(lbsStr.contains("\"address\" : \"127.0.0.20\""));
+    }
 
-        // Ensure the management loadbalancer is mapped too
-        String lbsmanStr = mapper.writeValueAsString(loadbalancersman);
-        Assert.assertFalse(lbsmanStr.contains("\"loadBalancer\""));
-        Assert.assertFalse(lbsmanStr.contains("\"node\""));
-        Assert.assertTrue(lbsmanStr.contains("\"loadBalancers\""));
-        Assert.assertTrue(lbsmanStr.contains("\"name\" : \"testsimplelbmgmt\""));
-        Assert.assertTrue(lbsmanStr.contains("\"address\" : \"127.0.0.20\""));
-        // We didn't add vips and we don't want to map empty arrays.
-        Assert.assertFalse(lbsmanStr.contains("\"virtualIps\" : [ ]"));
+    @Test
+    public void shouldSerializeSimpleErrorPage() throws IOException {
+        //TODO: rework all the tests...
+        Errorpage ep = new Errorpage();
+        ep.setContent("ErrorpageContent");
+
+        String epstr = mapper.writeValueAsString(ep);
+        Assert.assertEquals("{\n  \"errorpage\" : {\n    \"content\" : \"ErrorpageContent\"\n  }\n}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleNodes() throws IOException {
+        Nodes nodes = new Nodes();
+        Node node = new Node();
+        node.setId(1);
+        node.setType(NodeType.PRIMARY);
+        node.setAddress("10.2.2.2");
+        nodes.getNodes().add(node);
+
+        String epstr = mapper.writeValueAsString(nodes);
+        Assert.assertEquals("{\n" +
+                "  \"nodes\" : [ {\n" +
+                "    \"id\" : 1,\n" +
+                "    \"address\" : \"10.2.2.2\",\n" +
+                "    \"type\" : \"PRIMARY\",\n" +
+                "    \"metadata\" : [ ]\n" +
+                "  } ]\n" +
+                "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleNode() throws IOException {
+        Node node = new Node();
+        node.setId(1);
+        node.setType(NodeType.PRIMARY);
+        node.setAddress("10.2.2.2");
+
+        String epstr = mapper.writeValueAsString(node);
+        Assert.assertEquals("{\n" +
+                "  \"node\" : {\n" +
+                "    \"id\" : 1,\n" +
+                "    \"address\" : \"10.2.2.2\",\n" +
+                "    \"type\" : \"PRIMARY\"\n" +
+                "  }\n" +
+                "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleContentCaching() throws IOException {
+        ContentCaching cc = new ContentCaching();
+        cc.setEnabled(true);
+        String epstr = mapper.writeValueAsString(cc);
+        Assert.assertEquals("{\n" +
+                "  \"contentCaching\" : {\n" +
+                "    \"enabled\" : true\n" +
+                "  }\n" +
+                "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleHealthMonitor() throws IOException {
+        HealthMonitor hm = new HealthMonitor();
+        hm.setId(1);
+        hm.setBodyRegex("regex");
+        hm.setType(HealthMonitorType.CONNECT);
+
+        String epstr = mapper.writeValueAsString(hm);
+        Assert.assertEquals("{\n" +
+                "  \"healthMonitor\" : {\n" +
+                "    \"id\" : 1,\n" +
+                "    \"bodyRegex\" : \"regex\",\n" +
+                "    \"type\" : \"CONNECT\"\n" +
+                "  }\n" +
+                "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleConnectionLogging() throws IOException {
+        ConnectionLogging cl = new ConnectionLogging();
+        cl.setEnabled(true);
+
+        String epstr = mapper.writeValueAsString(cl);
+        Assert.assertEquals("{\n" +
+                "  \"connectionLogging\" : {\n" +
+                "    \"enabled\" : true\n" +
+                "  }\n" +
+                "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleSessionPersistence() throws IOException {
+        SessionPersistence sp = new SessionPersistence();
+        sp.setPersistenceType(PersistenceType.HTTP_COOKIE);
+
+        String epstr = mapper.writeValueAsString(sp);
+        Assert.assertEquals("{\n" +
+                "  \"sessionPersistence\" : {\n" +
+                "    \"persistenceType\" : \"HTTP_COOKIE\"\n" +
+                "  }\n" +
+                "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleConnectionThrottle() throws IOException {
+        ConnectionThrottle ct = new ConnectionThrottle();
+        ct.setMaxConnectionRate(1);
+        ct.setRateInterval(2);
+
+        String epstr = mapper.writeValueAsString(ct);
+        Assert.assertEquals("{\n" +
+                "  \"connectionThrottle\" : {\n" +
+                "    \"maxConnectionRate\" : 1,\n" +
+                "    \"rateInterval\" : 2\n" +
+                "  }\n" +
+                "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleCertificateMapping() throws IOException {
+        CertificateMapping ct = new CertificateMapping();
+        ct.setId(1);
+        ct.setCertificate("imacert");
+
+        String epstr = mapper.writeValueAsString(ct);
+        Assert.assertEquals("{\n" +
+                "  \"certificateMapping\" : {\n" +
+                "    \"certificate\" : \"imacert\",\n" +
+                "    \"id\" : 1\n" +
+                "  }\n" +
+                "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleSslTermination() throws IOException {
+        SslTermination ct = new SslTermination();
+        ct.setCipherProfile("Pro1");
+        ct.setEnabled(false);
+        ct.setSecurePort(22);
+
+        String epstr = mapper.writeValueAsString(ct);
+        Assert.assertEquals("{\n" +
+                "  \"sslTermination\" : {\n" +
+                "    \"enabled\" : false,\n" +
+                "    \"securePort\" : 22,\n" +
+                "    \"cipherProfile\" : \"Pro1\"\n" +
+                "  }\n" +
+                "}", epstr);
     }
 
     @Test
     public void shouldMapEmptyLoadbalancersWithRoot() throws IOException {
 
         LoadBalancers loadbalancers = new LoadBalancers();
-        org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers loadbalancersman = new org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers();
 
         // Validate empty loadbalancers are created with a root tag
         String lbsStr = mapper.writeValueAsString(loadbalancers);
-        String lbsmanStr = mapper.writeValueAsString(loadbalancersman);
 
         String expected = "{\n  \"loadBalancers\" : [ ]\n}";
         Assert.assertEquals(lbsStr, expected);
-        Assert.assertEquals(lbsmanStr, expected);
     }
 
     public void nop() {

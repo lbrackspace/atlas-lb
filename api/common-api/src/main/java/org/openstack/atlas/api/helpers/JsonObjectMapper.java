@@ -26,6 +26,11 @@ public class JsonObjectMapper extends ObjectMapper {
         registerModule(new SimpleModule().addSerializer(GregorianCalendar.class,  new DateTimeSerializer(serConf, null)));
         registerModule(new SimpleModule().addDeserializer(Calendar.class,  new DateTimeDeserializer(Calendar.class)));
 
+        Class[] serializerWrapperClasses = new Class[]{HostMachineDetails.class, AccountRecord.class, HealthMonitor.class,
+                SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class, Node.class,
+                RateLimit.class, Errorpage.class, SslTermination.class, CertificateMapping.class,
+                Link.class, AllowedDomain.class, ContentCaching.class};
+
         // Register our Custom deserializers
         Class[] deserializerWrapperClasses = new Class[]{HostMachineDetails.class, AccountRecord.class, Node.class, HealthMonitor.class,
             SessionPersistence.class, ConnectionLogging.class, Meta.class, ConnectionThrottle.class, LoadBalancer.class,
@@ -36,13 +41,15 @@ public class JsonObjectMapper extends ObjectMapper {
             registerModule(new SimpleModule().addDeserializer(wrapperClass, new ObjectWrapperDeserializer(wrapperClass)));
         }
 
+        for (Class wrapperClass : serializerWrapperClasses) {
+            registerModule(new SimpleModule().addSerializer(wrapperClass, new ObjectWrapperSerializer(serConf, wrapperClass)));
+        }
+
         // Load balancer is a bit of a special case since we want loadbalancer
         // wrapped, but none of the collections within loadbalancer. Jackson will properly unwrap arrays
         // by utilizing the WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED and associated configurations
         registerModule(new SimpleModule().addSerializer(LoadBalancer.class,  new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class)));
         registerModule(new SimpleModule().addSerializer(LoadBalancers.class,  new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers", true)));
-        registerModule(new SimpleModule().addSerializer(org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers.class,
-                new PropertyCollectionSerializer(serConf, org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers.class, "getLoadBalancers", false)));
 
         registerModules(new SimpleModule().addDeserializer(LoadBalancer.class, new ObjectWrapperDeserializer(LoadBalancer.class)));
 
