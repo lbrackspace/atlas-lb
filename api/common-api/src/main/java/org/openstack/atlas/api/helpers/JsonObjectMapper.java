@@ -11,6 +11,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.w3.atom.Link;
 
 import java.util.Calendar;
@@ -53,11 +54,17 @@ public class JsonObjectMapper extends ObjectMapper {
 
         registerModules(new SimpleModule().addDeserializer(LoadBalancer.class, new ObjectWrapperDeserializer(LoadBalancer.class)));
 
-        registerModule(new SimpleModule().addSerializer(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems")));
         registerModule(new SimpleModule().addSerializer(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes")));
+        registerModule(new SimpleModule().addSerializer(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems")));
+        registerModule(new SimpleModule().addDeserializer(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems")));
+
         registerModule(new SimpleModule().addSerializer(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas")));
         registerModule(new SimpleModule().addDeserializer(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas")));
-        registerModule(new SimpleModule().addDeserializer(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems")));
+
+
+        registerModule(new SimpleModule().addSerializer(VirtualIps.class, new PropertyCollectionSerializer(serConf, VirtualIps.class, "getVirtualIps")));
+        registerModule(new SimpleModule().addSerializer(AllowedDomains.class, new PropertyCollectionSerializer(serConf, AllowedDomains.class, "getAllowedDomains")));
+        registerModule(new SimpleModule().addSerializer(CertificateMappings.class, new PropertyCollectionSerializer(serConf, CertificateMappings.class, "getCertificateMappings")));
 
 
         // Suppress null properties from being serialized and indent output.

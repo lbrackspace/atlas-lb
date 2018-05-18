@@ -13,7 +13,9 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
+import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
+import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.util.debug.Debug;
 
 import java.io.IOException;
@@ -179,6 +181,102 @@ public class JsonObjectMapperTest {
         Assert.assertEquals(new Integer(80), node1.getPort());
         Assert.assertEquals(new Integer(443), node2.getPort());
 
+    }
+
+    @Test
+    public void shouldMapVirtualIpsDeserializeWith2Elements() throws IOException {
+        String nsJson = "{\n" +
+                "\t\"virtualIps\": [{\n" +
+                "\t\t\"address\": \"127.0.0.1\",\n" +
+                "\t\t\"id\": 64,\n" +
+                "\t\t\"ipVersion\": \"IPV4\",\n" +
+                "\t\t\"type\": \"PUBLIC\"\n" +
+                "\t}, {\n" +
+                "\t\t\"address\": \"127.0.0.2\",\n" +
+                "\t\t\"id\": 65,\n" +
+                "\t\t\"ipVersion\": \"IPV6\",\n" +
+                "\t\t\"type\": \"SERVICENET\"\n" +
+                "\t}]\n" +
+                "}";
+        VirtualIps vips;
+        vips = mapper.readValue(nsJson, VirtualIps.class);
+        VirtualIp vip1 = vips.getVirtualIps().get(0);
+        VirtualIp vip2 = vips.getVirtualIps().get(1);
+
+        Assert.assertEquals(2, vips.getVirtualIps().size());
+
+        Assert.assertEquals(IpVersion.IPV4, vip1.getIpVersion());
+        Assert.assertEquals(IpVersion.IPV6, vip2.getIpVersion());
+
+        Assert.assertEquals("127.0.0.1", vip1.getAddress());
+        Assert.assertEquals("127.0.0.2", vip2.getAddress());
+
+        Assert.assertEquals(new Integer(64), vip1.getId());
+        Assert.assertEquals(new Integer(65), vip2.getId());
+
+        Assert.assertEquals(VipType.PUBLIC, vip1.getType());
+        Assert.assertEquals(VipType.SERVICENET, vip2.getType());
+    }
+
+    @Test
+    public void shouldMapCertificateMappingsDeserializeWith2Elements() throws IOException {
+        String nsJson = "{\n" +
+                "\t\"certificateMappings\": [{\n" +
+                "\t\t\"hostName\": \"host1\",\n" +
+                "\t\t\"id\": 64,\n" +
+                "\t\t\"privateKey\": \"privkey1\",\n" +
+                "\t\t\"certificate\": \"imacert1\",\n" +
+                "\t\t\"intermediateCertificate\": \"intercert1\"\n" +
+                "\t}, {\n" +
+                "\t\t\"hostName\": \"host2\",\n" +
+                "\t\t\"id\": 65,\n" +
+                "\t\t\"privateKey\": \"privkey2\",\n" +
+                "\t\t\"certificate\": \"imacert2\",\n" +
+                "\t\t\"intermediateCertificate\": \"intercert2\"\n" +
+                "\t}]\n" +
+                "}";
+        CertificateMappings cms;
+        cms = mapper.readValue(nsJson, CertificateMappings.class);
+        CertificateMapping cm1 = cms.getCertificateMappings().get(0);
+        CertificateMapping cm2 = cms.getCertificateMappings().get(1);
+
+
+        Assert.assertEquals(2, cms.getCertificateMappings().size());
+
+        Assert.assertEquals("host1", cm1.getHostName());
+        Assert.assertEquals("host2", cm2.getHostName());
+
+        Assert.assertEquals("imacert1", cm1.getCertificate());
+        Assert.assertEquals("imacert2", cm2.getCertificate());
+
+        Assert.assertEquals(new Integer(64), cm1.getId());
+        Assert.assertEquals(new Integer(65), cm2.getId());
+
+        Assert.assertEquals("intercert1", cm1.getIntermediateCertificate());
+        Assert.assertEquals("intercert2", cm2.getIntermediateCertificate());
+
+        Assert.assertEquals("privkey1", cm1.getPrivateKey());
+        Assert.assertEquals("privkey2", cm2.getPrivateKey());
+    }
+
+    @Test
+    public void shouldMapAllowedDomainsDeserializeWith2Elements() throws IOException {
+        String nsJson = "{\n" +
+                "\t\"allowedDomains\": [{\n" +
+                "\t\t\"name\": \"domain1\"\n" +
+                "\t}, {\n" +
+                "\t\t\"name\": \"domain2\"\n" +
+                "\t}]\n" +
+                "}";
+        AllowedDomains ads;
+        ads = mapper.readValue(nsJson, AllowedDomains.class);
+        AllowedDomain ad1 = ads.getAllowedDomains().get(0);
+        AllowedDomain ad2 = ads.getAllowedDomains().get(1);
+
+        Assert.assertEquals(2, ads.getAllowedDomains().size());
+
+        Assert.assertEquals("domain1", ad1.getName());
+        Assert.assertEquals("domain2", ad2.getName());
     }
 
     @Test
@@ -360,16 +458,36 @@ public class JsonObjectMapperTest {
                 "}", epstr);
     }
 
+
     @Test
     public void shouldSerializeSimpleSessionPersistence() throws IOException {
-        SessionPersistence sp = new SessionPersistence();
-        sp.setPersistenceType(PersistenceType.HTTP_COOKIE);
+            SessionPersistence sp = new SessionPersistence();
+            sp.setPersistenceType(PersistenceType.HTTP_COOKIE);
 
-        String epstr = mapper.writeValueAsString(sp);
+            String epstr = mapper.writeValueAsString(sp);
+            Assert.assertEquals("{\n" +
+                    "  \"sessionPersistence\" : {\n" +
+                    "    \"persistenceType\" : \"HTTP_COOKIE\"\n" +
+                    "  }\n" +
+                    "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleVips() throws IOException {
+        VirtualIps vips = new VirtualIps();
+        VirtualIp vip = new VirtualIp();
+        vip.setId(1);
+        vip.setAddress("1.1.1.1");
+        vip.setIpVersion(IpVersion.IPV4);
+        vips.getVirtualIps().add(vip);
+
+        String epstr = mapper.writeValueAsString(vips);
         Assert.assertEquals("{\n" +
-                "  \"sessionPersistence\" : {\n" +
-                "    \"persistenceType\" : \"HTTP_COOKIE\"\n" +
-                "  }\n" +
+                "  \"virtualIps\" : [ {\n" +
+                "    \"id\" : 1,\n" +
+                "    \"address\" : \"1.1.1.1\",\n" +
+                "    \"ipVersion\" : \"IPV4\"\n" +
+                "  } ]\n" +
                 "}", epstr);
     }
 
@@ -389,6 +507,21 @@ public class JsonObjectMapperTest {
     }
 
     @Test
+    public void shouldSerializeSimpleAllowedDomains() throws IOException {
+        AllowedDomains ads = new AllowedDomains();
+        AllowedDomain ad = new AllowedDomain();
+        ad.setName("domain1");
+        ads.getAllowedDomains().add(ad);
+
+        String epstr = mapper.writeValueAsString(ads);
+        Assert.assertEquals("{\n" +
+                "  \"allowedDomains\" : [ {\n" +
+                "    \"name\" : \"domain1\"\n" +
+                "  } ]\n" +
+                "}", epstr);
+    }
+
+    @Test
     public void shouldSerializeSimpleCertificateMapping() throws IOException {
         CertificateMapping ct = new CertificateMapping();
         ct.setId(1);
@@ -400,6 +533,23 @@ public class JsonObjectMapperTest {
                 "    \"certificate\" : \"imacert\",\n" +
                 "    \"id\" : 1\n" +
                 "  }\n" +
+                "}", epstr);
+    }
+
+    @Test
+    public void shouldSerializeSimpleCertificateMappings() throws IOException {
+        CertificateMappings cms = new CertificateMappings();
+        CertificateMapping cm = new CertificateMapping();
+        cm.setId(1);
+        cm.setHostName("host1");
+        cms.getCertificateMappings().add(cm);
+
+        String epstr = mapper.writeValueAsString(cms);
+        Assert.assertEquals("{\n" +
+                "  \"certificateMappings\" : [ {\n" +
+                "    \"id\" : 1,\n" +
+                "    \"hostName\" : \"host1\"\n" +
+                "  } ]\n" +
                 "}", epstr);
     }
 
