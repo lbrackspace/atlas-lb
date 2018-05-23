@@ -219,6 +219,10 @@
             <a>updated</a>
             <b>updated</b>
         </field>
+        <field-exclude>
+            <a get-method="getIsSticky">isSticky</a>
+            <b get-method="getSticky">sticky</b>
+        </field-exclude>
     </mapping>
 
     <mapping map-null="false">
