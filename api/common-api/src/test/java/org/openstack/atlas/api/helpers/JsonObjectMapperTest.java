@@ -19,7 +19,7 @@ import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.util.debug.Debug;
 
 import java.io.IOException;
-
+@Ignore
 public class JsonObjectMapperTest {
 
     private JsonObjectMapper mapper;

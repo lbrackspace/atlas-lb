@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.helpers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.openstack.atlas.api.helpers.JsonDeserializer.*;
@@ -49,7 +50,7 @@ public class JsonObjectMapper extends ObjectMapper {
         // Load balancer is a bit of a special case since we want loadbalancer
         // wrapped, but none of the collections within loadbalancer. Jackson will properly unwrap arrays
         // by utilizing the WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED and associated configurations
-        registerModule(new SimpleModule().addSerializer(LoadBalancer.class,  new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class)));
+        registerModule(new SimpleModule().addSerializer(LoadBalancer.class,  new LoadBalancerWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class)));
         registerModule(new SimpleModule().addSerializer(LoadBalancers.class,  new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers", true)));
 
         registerModules(new SimpleModule().addDeserializer(LoadBalancer.class, new ObjectWrapperDeserializer(LoadBalancer.class)));
