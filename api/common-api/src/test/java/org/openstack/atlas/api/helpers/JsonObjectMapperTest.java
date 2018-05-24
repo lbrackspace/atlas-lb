@@ -370,6 +370,46 @@ public class JsonObjectMapperTest {
     }
 
     @Test
+    public void shouldSerializeSimpleLoadBalancerSingleElemArray() throws IOException {
+        // TODO: Cafe tests will validate the outputs for the most part,
+        // we should build these tests out a bit more here...
+
+        StubResource stub = new StubResource();
+        LoadBalancer loadbalancer = (LoadBalancer) stub.stubLoadBalancer().getEntity();
+
+        // We want to verify single element arrays mapp appropriately
+        loadbalancer.getVirtualIps().remove(0);
+        // Validate loadbalancers is mapped, we don't want root tags on the children
+        String lbsStr = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(loadbalancer);
+        // Very rough asserts...
+        Assert.assertFalse(lbsStr.contains("\"loadBalancers\""));
+        Assert.assertTrue(lbsStr.contains("\"loadBalancer\""));
+        Assert.assertFalse(lbsStr.contains("\"node\""));
+        Assert.assertTrue(lbsStr.contains("\"virtualIps\" : [ {"));
+        Assert.assertFalse(lbsStr.contains("\"virtualIp\""));
+        Assert.assertTrue(lbsStr.contains("\"address\" : \"127.0.0.20\""));
+    }
+
+    @Test
+    public void shouldSerializeSimpleLoadBalancer() throws IOException {
+        // TODO: Cafe tests will validate the outputs for the most part,
+        // we should build these tests out a bit more here...
+
+        StubResource stub = new StubResource();
+        LoadBalancer loadbalancer = (LoadBalancer) stub.stubLoadBalancer().getEntity();
+
+        // Validate loadbalancers is mapped, we don't want root tags on the children
+        String lbsStr = mapper.writeValueAsString(loadbalancer);
+        // Very rough asserts...
+        Assert.assertFalse(lbsStr.contains("\"loadBalancers\""));
+        Assert.assertTrue(lbsStr.contains("\"loadBalancer\""));
+        Assert.assertFalse(lbsStr.contains("\"node\""));
+        Assert.assertTrue(lbsStr.contains("\"virtualIps\" : [ {"));
+        Assert.assertFalse(lbsStr.contains("\"virtualIp\""));
+        Assert.assertTrue(lbsStr.contains("\"address\" : \"127.0.0.20\""));
+    }
+
+    @Test
     public void shouldSerializeSimpleErrorPage() throws IOException {
         //TODO: rework all the tests...
         Errorpage ep = new Errorpage();
@@ -388,12 +428,23 @@ public class JsonObjectMapperTest {
         node.setAddress("10.2.2.2");
         nodes.getNodes().add(node);
 
+        Node node2 = new Node();
+        node2.setId(2);
+        node2.setType(NodeType.SECONDARY);
+        node2.setAddress("10.2.2.4");
+        nodes.getNodes().add(node2);
+
         String epstr = mapper.writeValueAsString(nodes);
         Assert.assertEquals("{\n" +
                 "  \"nodes\" : [ {\n" +
                 "    \"id\" : 1,\n" +
                 "    \"address\" : \"10.2.2.2\",\n" +
                 "    \"type\" : \"PRIMARY\",\n" +
+                "    \"metadata\" : [ ]\n" +
+                "  }, {\n" +
+                "    \"id\" : 2,\n" +
+                "    \"address\" : \"10.2.2.4\",\n" +
+                "    \"type\" : \"SECONDARY\",\n" +
                 "    \"metadata\" : [ ]\n" +
                 "  } ]\n" +
                 "}", epstr);
