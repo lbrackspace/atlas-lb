@@ -27,6 +27,7 @@ public class JsonObjectMapper extends ObjectMapper {
         registerModule(new SimpleModule().addSerializer(GregorianCalendar.class,  new DateTimeSerializer(serConf, null)));
         registerModule(new SimpleModule().addDeserializer(Calendar.class,  new DateTimeDeserializer(Calendar.class)));
 
+
         Class[] serializerWrapperClasses = new Class[]{HostMachineDetails.class, AccountRecord.class, HealthMonitor.class,
                 SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class, Node.class,
                 RateLimit.class, Errorpage.class, SslTermination.class, CertificateMapping.class,
@@ -47,17 +48,16 @@ public class JsonObjectMapper extends ObjectMapper {
         }
 
         // Load balancer is a bit of a special case since we want loadbalancer
-        // wrapped, but none of the collections within loadbalancer. Jackson will properly unwrap arrays
-        // by utilizing the WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED and associated configurations
-        registerModule(new SimpleModule().addSerializer(LoadBalancer.class,  new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class)));
+        // wrapped, but none of the collections within loadbalancer.
+        registerModule(new SimpleModule().addSerializer(LoadBalancer.class,  new LoadbalancerWrapperSerializer(serConf, LoadBalancer.class)));
         registerModule(new SimpleModule().addSerializer(LoadBalancers.class,  new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers", true)));
 
         registerModules(new SimpleModule().addDeserializer(LoadBalancer.class, new ObjectWrapperDeserializer(LoadBalancer.class)));
 
-        registerModule(new SimpleModule().addSerializer(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes")));
         registerModule(new SimpleModule().addSerializer(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems")));
         registerModule(new SimpleModule().addDeserializer(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems")));
 
+        registerModule(new SimpleModule().addSerializer(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes")));
         registerModule(new SimpleModule().addSerializer(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas")));
         registerModule(new SimpleModule().addDeserializer(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas")));
 
@@ -71,7 +71,6 @@ public class JsonObjectMapper extends ObjectMapper {
         this.enable(SerializationFeature.INDENT_OUTPUT);
         this.configure(SerializationFeature.INDENT_OUTPUT, true);
         this.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        this.configure(SerializationFeature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED, true);
         this.configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
         this.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
     }
