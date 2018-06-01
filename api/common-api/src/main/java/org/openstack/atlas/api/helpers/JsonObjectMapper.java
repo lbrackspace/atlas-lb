@@ -1,17 +1,21 @@
 package org.openstack.atlas.api.helpers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationConfig;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.openstack.atlas.api.helpers.JsonDeserializer.*;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import org.openstack.atlas.api.helpers.JsonDeserializer.DateTimeDeserializer;
+import org.openstack.atlas.api.helpers.JsonDeserializer.ObjectWrapperDeserializer;
+import org.openstack.atlas.api.helpers.JsonDeserializer.PropertyListDeserializer;
 import org.openstack.atlas.api.helpers.JsonSerializer.*;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountRecord;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostMachineDetails;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.w3.atom.Link;
 
 import java.util.Calendar;
@@ -20,6 +24,14 @@ import java.util.GregorianCalendar;
 public class JsonObjectMapper extends ObjectMapper {
 
     public void init() {
+        // Suppress null properties from being serialized and indent output.
+        this.enable(SerializationFeature.INDENT_OUTPUT);
+        this.configure(SerializationFeature.INDENT_OUTPUT, true);
+        this.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        //this.configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
+        this.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+
+        this.setDateFormat(new ISO8601DateFormat());
         SerializationConfig serConf = this.getSerializationConfig();
 
         // Register our Custom Date (de)serializers
@@ -65,13 +77,5 @@ public class JsonObjectMapper extends ObjectMapper {
         registerModule(new SimpleModule().addSerializer(VirtualIps.class, new PropertyCollectionSerializer(serConf, VirtualIps.class, "getVirtualIps")));
         registerModule(new SimpleModule().addSerializer(AllowedDomains.class, new PropertyCollectionSerializer(serConf, AllowedDomains.class, "getAllowedDomains")));
         registerModule(new SimpleModule().addSerializer(CertificateMappings.class, new PropertyCollectionSerializer(serConf, CertificateMappings.class, "getCertificateMappings")));
-
-
-        // Suppress null properties from being serialized and indent output.
-        this.enable(SerializationFeature.INDENT_OUTPUT);
-        this.configure(SerializationFeature.INDENT_OUTPUT, true);
-        this.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        this.configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
-        this.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
     }
 }

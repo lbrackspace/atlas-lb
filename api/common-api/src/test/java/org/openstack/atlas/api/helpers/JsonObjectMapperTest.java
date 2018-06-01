@@ -4,21 +4,35 @@
  */
 package org.openstack.atlas.api.helpers;
 
+import org.dozer.Mapper;
 import org.junit.*;
+import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
 import org.openstack.atlas.api.resources.StubResource;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Zone;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
+import org.openstack.atlas.docs.loadbalancers.api.v1.AllowedDomain;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
+import org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMapping;
+import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitor;
+import org.openstack.atlas.docs.loadbalancers.api.v1.HealthMonitorType;
 import org.openstack.atlas.docs.loadbalancers.api.v1.IpVersion;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeStatus;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SessionPersistence;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
-import org.openstack.atlas.service.domain.entities.VirtualIpType;
+import org.openstack.atlas.service.domain.entities.Cluster;
+import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.util.debug.Debug;
 
 import java.io.IOException;
+import java.util.*;
 
 public class JsonObjectMapperTest {
 
@@ -462,7 +476,8 @@ public class JsonObjectMapperTest {
                 "  \"node\" : {\n" +
                 "    \"id\" : 1,\n" +
                 "    \"address\" : \"10.2.2.2\",\n" +
-                "    \"type\" : \"PRIMARY\"\n" +
+                "    \"type\" : \"PRIMARY\",\n" +
+                "    \"metadata\" : [ ]\n" +
                 "  }\n" +
                 "}", epstr);
     }
@@ -614,6 +629,7 @@ public class JsonObjectMapperTest {
         String epstr = mapper.writeValueAsString(ct);
         Assert.assertEquals("{\n" +
                 "  \"sslTermination\" : {\n" +
+                "    \"securityProtocols\" : [ ],\n"+
                 "    \"enabled\" : false,\n" +
                 "    \"securePort\" : 22,\n" +
                 "    \"cipherProfile\" : \"Pro1\"\n" +
@@ -634,5 +650,186 @@ public class JsonObjectMapperTest {
     }
 
     public void nop() {
+    }
+
+    public static org.openstack.atlas.service.domain.entities.LoadBalancer createHydratedLoadbalancer() {
+        org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+        loadBalancer.setCreated(new GregorianCalendar(2018, 05, 01));
+        loadBalancer.setUpdated(new GregorianCalendar(2018, 05, 01));
+        loadBalancer.setProvisioned(new GregorianCalendar(2018, 05, 01));
+        loadBalancer.setId(100);
+        loadBalancer.setName("a-new-loadbalancer");
+        loadBalancer.setPort(8080);
+        loadBalancer.setHalfClosed(false);
+        loadBalancer.setHttpsRedirect(false);
+        loadBalancer.setTimeout(30);
+
+        loadBalancer.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_ROUND_ROBIN);
+        loadBalancer.setStatus(LoadBalancerStatus.BUILD);
+        loadBalancer.setProtocol(LoadBalancerProtocol.HTTP);
+        loadBalancer.setConnectionLogging(false);
+        loadBalancer.setContentCaching(false);
+
+        final Set<LoadbalancerMeta> loadbalancerMetaData = new HashSet<LoadbalancerMeta>();
+        final LoadbalancerMeta loadbalancerMeta1 = new LoadbalancerMeta();
+        loadbalancerMeta1.setId(991);
+        loadbalancerMeta1.setKey("metaKey1");
+        loadbalancerMeta1.setValue("metaValue1");
+        loadbalancerMetaData.add(loadbalancerMeta1);
+        final LoadbalancerMeta loadbalancerMeta2 = new LoadbalancerMeta();
+        loadbalancerMeta2.setId(992);
+        loadbalancerMeta2.setKey("metaKey2");
+        loadbalancerMeta2.setValue("metaValue2");
+        loadbalancerMetaData.add(loadbalancerMeta2);
+        loadBalancer.setLoadbalancerMetadata(loadbalancerMetaData);
+
+        final Set<org.openstack.atlas.service.domain.entities.Node> hashSet = new HashSet<org.openstack.atlas.service.domain.entities.Node>();
+        final org.openstack.atlas.service.domain.entities.Node node1 = new org.openstack.atlas.service.domain.entities.Node();
+        node1.setCondition(org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED);
+        node1.setId(100);
+        node1.setIpAddress("216.58.201.46");
+        node1.setPort(80);
+        node1.setWeight(2);
+        node1.setStatus(org.openstack.atlas.service.domain.entities.NodeStatus.ONLINE);
+        /*final org.openstack.atlas.service.domain.entities.Node node2 = new org.openstack.atlas.service.domain.entities.Node();
+        node2.setCondition(org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED);
+        node2.setId(101);
+        node2.setIpAddress("ip2");
+        node2.setPort(1001);
+        node2.setStatus(org.openstack.atlas.service.domain.entities.NodeStatus.OFFLINE);*/
+        NodeMeta nm = new NodeMeta();
+        nm.setKey("color");
+        nm.setValue("Red");
+        List<NodeMeta> nodeMetas = new ArrayList<NodeMeta>();
+        nodeMetas.add(nm);
+        node1.setNodeMetadata(nodeMetas);
+        hashSet.add(node1);
+        loadBalancer.setNodes(hashSet);
+
+        final Set<org.openstack.atlas.service.domain.entities.VirtualIp> virtualIpSet = new HashSet<org.openstack.atlas.service.domain.entities.VirtualIp>();
+        final org.openstack.atlas.service.domain.entities.VirtualIp virtualIp1 = new org.openstack.atlas.service.domain.entities.VirtualIp();
+        virtualIp1.setId(100);
+        virtualIp1.setIpAddress("ip1");
+        virtualIp1.setVipType(VirtualIpType.PUBLIC);
+        LoadBalancerJoinVip loadBalancerJoinVip1 = new LoadBalancerJoinVip();
+        loadBalancerJoinVip1.setVirtualIp(virtualIp1);
+        loadBalancer.getLoadBalancerJoinVipSet().add(loadBalancerJoinVip1);
+
+        Cluster cluster = new Cluster();
+        cluster.setId(1);
+        cluster.setClusterIpv6Cidr("ffff:ffff:ffff:ffff::/64");
+        final VirtualIpv6 virtualIp3 = new VirtualIpv6();
+        virtualIp3.setId(9000001);
+        virtualIp3.setAccountId(1234);
+        virtualIp3.setVipOctets(1);
+        virtualIp3.setCluster(cluster);
+        org.openstack.atlas.service.domain.entities.Host h = new org.openstack.atlas.service.domain.entities.Host();
+        h.setIpv4Public("Ipv4Public");
+        h.setIpv6Public("Ipv6Public");
+        h.setId(1);
+        h.setName("z2.rackexp.org");
+        loadBalancer.setHost(h);
+        LoadBalancerJoinVip6 loadBalancerJoinVip3 = new LoadBalancerJoinVip6();
+        loadBalancerJoinVip3.setVirtualIp(virtualIp3);
+        loadBalancer.getLoadBalancerJoinVip6Set().add(loadBalancerJoinVip3);
+
+        final ConnectionLimit limit = new ConnectionLimit();
+        limit.setRateInterval(13);
+        limit.setMaxConnectionRate(10);
+        limit.setMaxConnections(11);
+        limit.setMinConnections(12);
+        loadBalancer.setConnectionLimit(limit);
+        loadBalancer.setSessionPersistence(org.openstack.atlas.service.domain.entities.SessionPersistence.HTTP_COOKIE);
+
+
+        final org.openstack.atlas.service.domain.entities.HealthMonitor healthMonitor = new org.openstack.atlas.service.domain.entities.HealthMonitor();
+
+        healthMonitor.setId(1);
+        healthMonitor.setAttemptsBeforeDeactivation(3);
+        healthMonitor.setDelay(10);
+        healthMonitor.setTimeout(10);
+        healthMonitor.setBodyRegex(".*");
+        healthMonitor.setStatusRegex("^[234][0-9][0-9]$");
+        healthMonitor.setPath("/");
+        healthMonitor.setType(org.openstack.atlas.service.domain.entities.HealthMonitorType.HTTP);
+
+        loadBalancer.setHealthMonitor(healthMonitor);
+
+        return loadBalancer;
+    }
+    @Test
+    public void shouldSerializeLoadBalancer() throws IOException {
+        final String publicDozerConfigFile = "loadbalancing-dozer-mapping.xml";
+        org.openstack.atlas.service.domain.entities.LoadBalancer domainLb = createHydratedLoadbalancer();
+        domainLb.setSessionPersistence(null);
+        domainLb.setConnectionLimit(null);
+        domainLb.setLoadbalancerMetadata(null);
+
+        Mapper dozerMapper = MapperBuilder.getConfiguredMapper(publicDozerConfigFile);
+        LoadBalancer loadbalancer = dozerMapper.map(domainLb,
+                org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class);
+
+        String lbsStr =mapper.writeValueAsString(loadbalancer);
+        Assert.assertEquals("{\n" +
+                        "  \"loadBalancer\" : {\n" +
+                        "    \"healthMonitor\" : {\n" +
+                        "      \"delay\" : 10,\n" +
+                        "      \"timeout\" : 10,\n" +
+                        "      \"attemptsBeforeDeactivation\" : 3,\n" +
+                        "      \"path\" : \"/\",\n" +
+                        "      \"statusRegex\" : \"^[234][0-9][0-9]$\",\n" +
+                        "      \"bodyRegex\" : \".*\",\n" +
+                        "      \"type\" : \"HTTP\"\n" +
+                        "    },\n" +
+                        "    \"cluster\" : {\n" +
+                        "      \"name\" : \"z2.rackexp.org\"\n" +
+                        "    },\n" +
+                        "    \"created\" : {\n" +
+                        "      \"time\" : \"2018-05-31T18:30:00Z\"\n" +
+                        "    },\n" +
+                        "    \"updated\" : {\n" +
+                        "      \"time\" : \"2018-05-31T18:30:00Z\"\n" +
+                        "    },\n" +
+                        "    \"connectionLogging\" : {\n" +
+                        "      \"enabled\" : false\n" +
+                        "    },\n" +
+                        "    \"contentCaching\" : {\n" +
+                        "      \"enabled\" : false\n" +
+                        "    },\n" +
+                        "    \"sourceAddresses\" : {\n" +
+                        "      \"ipv4Public\" : \"Ipv4Public\",\n" +
+                        "      \"ipv6Public\" : \"Ipv6Public\"\n" +
+                        "    },\n" +
+                        "    \"id\" : 100,\n" +
+                        "    \"name\" : \"a-new-loadbalancer\",\n" +
+                        "    \"algorithm\" : \"WEIGHTED_ROUND_ROBIN\",\n" +
+                        "    \"protocol\" : \"HTTP\",\n" +
+                        "    \"httpsRedirect\" : false,\n" +
+                        "    \"halfClosed\" : false,\n" +
+                        "    \"port\" : 8080,\n" +
+                        "    \"status\" : \"BUILD\",\n" +
+                        "    \"timeout\" : 30,\n" +
+                        "    \"virtualIps\" : [ {\n" +
+                        "      \"id\" : 100,\n" +
+                        "      \"address\" : \"ip1\",\n" +
+                        "      \"ipVersion\" : \"IPV4\",\n" +
+                        "      \"type\" : \"PUBLIC\"\n" +
+                        "    }, {\n" +
+                        "      \"id\" : 9000001,\n" +
+                        "      \"address\" : \"ffff:ffff:ffff:ffff:7110:eda4:0000:0001\",\n" +
+                        "      \"ipVersion\" : \"IPV6\",\n" +
+                        "      \"type\" : \"PUBLIC\"\n" +
+                        "    } ],\n" +
+                        "    \"nodes\" : [ {\n"+
+                        "      \"id\" : 100,\n" +
+                        "      \"address\" : \"216.58.201.46\",\n" +
+                        "      \"port\" : 80,\n" +
+                        "      \"condition\" : \"ENABLED\",\n" +
+                        "      \"status\" : \"ONLINE\",\n" +
+                        "      \"weight\" : 2,\n" +
+                        "      \"type\" : \"PRIMARY\"\n" +
+                        "    } ]\n" +
+                        "  }\n" +
+                "}", lbsStr);
     }
 }
