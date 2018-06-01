@@ -81,7 +81,7 @@
 
     <bean id="objectMapper" class="org.openstack.atlas.api.helpers.JsonObjectMapper"
           init-method="init"/>
-    <bean id="jsonProvider" class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider">
+    <bean id="jsonProvider" class="org.codehaus.jackson.jaxrs.JacksonJsonProvider">
         <property name="mapper" ref="objectMapper"/>
     </bean>
 
