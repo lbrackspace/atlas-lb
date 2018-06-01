@@ -2,12 +2,16 @@ package org.openstack.atlas.api.helpers.JsonSerializer;
 
 import java.io.IOException;
 
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.JsonSerializer;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.SerializerProvider;
+import org.codehaus.jackson.map.introspect.BasicBeanDescription;
+import org.codehaus.jackson.map.ser.BeanSerializerFactory;
+import org.codehaus.jackson.map.type.TypeFactory;
+import org.codehaus.jackson.type.JavaType;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 
@@ -19,12 +23,12 @@ import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
  * particular serializer is really valuable when you want collections to be
  * serialized naturally and single objects to be serialized differently (e.g.
  * with a wrapper).
- * 
+ *
  * Optionally, a wrapperFieldName can be supplied that will be used to write a
  * wrapping object around the JSON output.
- * 
+ *
  * @author jodom
- * 
+ *
  */
 public class CleanCollectionSerializer extends JsonSerializer<Object> {
 
@@ -32,7 +36,7 @@ public class CleanCollectionSerializer extends JsonSerializer<Object> {
 	private final String wrapperFieldName;
 
 	public CleanCollectionSerializer(SerializationConfig config,
-			Class someClass) {
+									 Class someClass) {
 		this.config = config;
 		this.wrapperFieldName = ClassReflectionTools.getXmlRootElementName(someClass);
 	}
@@ -44,13 +48,14 @@ public class CleanCollectionSerializer extends JsonSerializer<Object> {
 
 	@Override
 	public void serialize(Object value, JsonGenerator jgen,
-			SerializerProvider sp) throws IOException, JsonProcessingException {
+						  SerializerProvider sp) throws IOException, JsonProcessingException {
 
 		BeanSerializerFactory bsf = BeanSerializerFactory.instance;
 
-		JavaType type = TypeFactory.defaultInstance().uncheckedSimpleType(value.getClass());
-		BeanDescription beanDesc = config.introspect(type);
-		JsonSerializer<Object> serializer = bsf.findBeanSerializer(sp, type, beanDesc);
+		JavaType type = TypeFactory.type(value.getClass());
+		BasicBeanDescription beanDesc = config.introspect(type);
+		JsonSerializer<Object> serializer = bsf.findBeanSerializer(type,
+				config, beanDesc);
 
 		SerializerProviderBuilder provider = new SerializerProviderBuilder();
 
