@@ -1,18 +1,14 @@
 package org.openstack.atlas.api.helpers.JsonSerializer;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.cfg.SerializerFactoryConfig;
-import com.fasterxml.jackson.databind.jsontype.impl.StdSubtypeResolver;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
-import com.fasterxml.jackson.databind.ser.SerializerFactory;
-import com.fasterxml.jackson.databind.ser.Serializers;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.JsonSerializer;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.SerializerProvider;
+import org.codehaus.jackson.map.introspect.BasicBeanDescription;
+import org.codehaus.jackson.map.ser.CustomSerializerFactory;
+import org.codehaus.jackson.map.type.TypeFactory;
+import org.codehaus.jackson.type.JavaType;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionToolsException;
 
@@ -62,11 +58,11 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         } catch (ClassReflectionToolsException ex) {
             String format = "Error Failed to dynamically invoke %s.%s() during serialization of %s";
             String errMsg = String.format(format, valClassName, getterName, value.toString());
-            throw new JsonGenerationException(errMsg, ex);
+            throw new org.codehaus.jackson.JsonGenerationException(errMsg, ex);
         }
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new SimpleModule().addSerializer(GregorianCalendar.class,  new DateTimeSerializer(this.config, null)));
+        CustomSerializerFactory csf = new CustomSerializerFactory();
+        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
 
         if (this.wrapperFieldName != null) {
             jgen.writeStartObject();
@@ -96,7 +92,7 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         } catch (ClassReflectionToolsException ex) {
             format = "Error Failed to dynamically invoke %s.%s() during serialization of %s";
             errMsg = String.format(format, valClassName, linksGetMethod, value.toString());
-            throw new JsonGenerationException(errMsg, ex);
+            throw new org.codehaus.jackson.JsonGenerationException(errMsg, ex);
         }
 
         writeJsonArrayWithFieldName(jgen, propList, false, "links");
@@ -120,16 +116,17 @@ public class PropertyCollectionSerializer extends JsonSerializer<Object> {
         writeJsonArray(jgen, propList, writeWhenNullOrEmpty);
     }
 
-    private void childSerialize(Object obj, JsonGenerator jgen) throws IOException {
+    // Cause I kept getting confused when this was done in the serializer method directly
+    private void childSerialize(Object obj, JsonGenerator jgen) throws JsonProcessingException, IOException {
         SerializerProviderBuilder providerBuilder = new SerializerProviderBuilder();
-        SerializerProvider sp = providerBuilder.createProvider(this.config, BeanSerializerFactory.instance);
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new SimpleModule().addSerializer(GregorianCalendar.class,  new DateTimeSerializer(this.config, null)));
-
-        JavaType type = TypeFactory.defaultInstance().constructType(obj.getClass());
-        BeanDescription beanDesc = sp.getConfig().introspect(type);
-        JsonSerializer<Object> serializer = BeanSerializerFactory.instance.findBeanSerializer(sp, type, beanDesc);
-        serializer.serialize(obj, jgen, sp);
+        //BeanSerializerFactory csf = BeanSerializerFactory.instance;
+        CustomSerializerFactory csf = new CustomSerializerFactory();
+        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
+        SerializerProvider childProvider;
+        JavaType childType = TypeFactory.type(obj.getClass());
+        BasicBeanDescription childBeanDesc = this.config.introspect(childType);
+        JsonSerializer<Object> childSerializer = csf.findBeanSerializer(childType, config, childBeanDesc);
+        childProvider = providerBuilder.createProvider(config, csf);
+        childSerializer.serialize(obj, jgen, childProvider);
     }
 }
