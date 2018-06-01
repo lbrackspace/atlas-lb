@@ -20,6 +20,14 @@ import java.util.GregorianCalendar;
 public class JsonObjectMapper extends ObjectMapper {
 
     public void init() {
+        // Suppress null properties from being serialized and indent output.
+        this.enable(SerializationFeature.INDENT_OUTPUT);
+        this.configure(SerializationFeature.INDENT_OUTPUT, true);
+        this.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        this.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+        this.configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
+        this.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+
         SerializationConfig serConf = this.getSerializationConfig();
 
         // Register our Custom Date (de)serializers
@@ -65,13 +73,5 @@ public class JsonObjectMapper extends ObjectMapper {
         registerModule(new SimpleModule().addSerializer(VirtualIps.class, new PropertyCollectionSerializer(serConf, VirtualIps.class, "getVirtualIps")));
         registerModule(new SimpleModule().addSerializer(AllowedDomains.class, new PropertyCollectionSerializer(serConf, AllowedDomains.class, "getAllowedDomains")));
         registerModule(new SimpleModule().addSerializer(CertificateMappings.class, new PropertyCollectionSerializer(serConf, CertificateMappings.class, "getCertificateMappings")));
-
-
-        // Suppress null properties from being serialized and indent output.
-        this.enable(SerializationFeature.INDENT_OUTPUT);
-        this.configure(SerializationFeature.INDENT_OUTPUT, true);
-        this.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        this.configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
-        this.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
     }
 }
