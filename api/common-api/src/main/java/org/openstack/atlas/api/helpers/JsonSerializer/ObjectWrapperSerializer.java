@@ -1,9 +1,14 @@
 package org.openstack.atlas.api.helpers.JsonSerializer;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
-import com.fasterxml.jackson.databind.type.TypeFactory;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.JsonSerializer;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.SerializerProvider;
+import org.codehaus.jackson.map.introspect.BasicBeanDescription;
+import org.codehaus.jackson.map.ser.CustomSerializerFactory;
+import org.codehaus.jackson.map.type.TypeFactory;
+import org.codehaus.jackson.type.JavaType;
 import org.openstack.atlas.api.helpers.reflection.ClassReflectionTools;
 
 import java.io.IOException;
@@ -31,17 +36,21 @@ public class ObjectWrapperSerializer extends JsonSerializer<Object> {
 
     @Override
     public void serialize(Object object, JsonGenerator jgen, SerializerProvider sp) throws IOException {
+        //BeanSerializerFactory bsf = BeanSerializerFactory.instance;
+        CustomSerializerFactory csf = new CustomSerializerFactory();
+        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(config, null));
 
-        JavaType type = TypeFactory.defaultInstance().constructType(object.getClass());
-        BeanDescription beanDesc = sp.getConfig().introspect(type);
-        JsonSerializer<Object> serializer = BeanSerializerFactory.instance.findBeanSerializer(sp, type, beanDesc);
+        JavaType type = TypeFactory.type(object.getClass());
+        BasicBeanDescription beanDesc = config.introspect(type);
+        JsonSerializer<Object> serializer = csf.findBeanSerializer(type, config, beanDesc);
 
         if (wrapperFieldName != null) {
             jgen.writeStartObject();
             jgen.writeFieldName(wrapperFieldName);
         }
 
-        serializer.serialize(object, jgen, sp);
+        SerializerProviderBuilder provider = new SerializerProviderBuilder();
+        serializer.serialize(object, jgen, provider.createProvider(config, csf));
         if (wrapperFieldName != null) {
             jgen.writeEndObject();
         }

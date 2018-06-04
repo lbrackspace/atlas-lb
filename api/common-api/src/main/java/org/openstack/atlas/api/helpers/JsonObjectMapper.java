@@ -1,77 +1,84 @@
 package org.openstack.atlas.api.helpers;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.openstack.atlas.api.helpers.JsonDeserializer.*;
-import org.openstack.atlas.api.helpers.JsonSerializer.*;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.codehaus.jackson.map.deser.CustomDeserializerFactory;
+import org.codehaus.jackson.map.ser.CustomSerializerFactory;
+import org.openstack.atlas.api.helpers.JsonDeserializer.DateTimeDeserializer;
+import org.openstack.atlas.api.helpers.JsonDeserializer.DeserializerProviderBuilder;
+import org.openstack.atlas.api.helpers.JsonDeserializer.ObjectWrapperDeserializer;
+import org.openstack.atlas.api.helpers.JsonDeserializer.PropertyListDeserializer;
+import org.openstack.atlas.api.helpers.JsonSerializer.DateTimeSerializer;
+import org.openstack.atlas.api.helpers.JsonSerializer.ObjectWrapperSerializer;
+import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializer;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.RateLimit;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
-import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
-import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
 import org.w3.atom.Link;
 
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.AccountRecord;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostMachineDetails;
 
 public class JsonObjectMapper extends ObjectMapper {
 
     public void init() {
+        CustomSerializerFactory csf = new CustomSerializerFactory();
+        CustomDeserializerFactory cdf = new CustomDeserializerFactory();
         SerializationConfig serConf = this.getSerializationConfig();
+        DeserializationConfig deserConf = this.getDeserializationConfig();
 
-        // Register our Custom Date (de)serializers
-        registerModule(new GregorianDateSerializerModule(serConf, null));
-        registerModule(new SimpleModule().addSerializer(GregorianCalendar.class,  new DateTimeSerializer(serConf, null)));
-        registerModule(new SimpleModule().addDeserializer(Calendar.class,  new DateTimeDeserializer(Calendar.class)));
+        csf.addSpecificMapping(GregorianCalendar.class, new DateTimeSerializer(serConf, null));
+        cdf.addSpecificMapping(Calendar.class, new DateTimeDeserializer(Calendar.class));
 
 
         Class[] serializerWrapperClasses = new Class[]{HostMachineDetails.class, AccountRecord.class, HealthMonitor.class,
-                SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class, Node.class,
-                RateLimit.class, Errorpage.class, SslTermination.class, CertificateMapping.class,
+                SessionPersistence.class, ConnectionLogging.class, ConnectionThrottle.class, Meta.class,
+                Node.class, RateLimit.class, Errorpage.class, SslTermination.class, CertificateMapping.class,
                 Link.class, AllowedDomain.class, ContentCaching.class};
 
-        // Register our Custom deserializers
         Class[] deserializerWrapperClasses = new Class[]{HostMachineDetails.class, AccountRecord.class, Node.class, HealthMonitor.class,
-            SessionPersistence.class, ConnectionLogging.class, Meta.class, ConnectionThrottle.class, LoadBalancer.class,
-            NetworkItem.class, RateLimit.class, Errorpage.class, SslTermination.class, CertificateMapping.class,
-            Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
-//
-        for (Class wrapperClass : deserializerWrapperClasses) {
-            registerModule(new SimpleModule().addDeserializer(wrapperClass, new ObjectWrapperDeserializer(wrapperClass)));
-        }
+                SessionPersistence.class, ConnectionLogging.class, Meta.class, ConnectionThrottle.class, LoadBalancer.class,
+                NetworkItem.class, RateLimit.class, Errorpage.class, SslTermination.class, CertificateMapping.class,
+                Host.class, Link.class, AllowedDomain.class, ContentCaching.class};
+
 
         for (Class wrapperClass : serializerWrapperClasses) {
-            registerModule(new SimpleModule().addSerializer(wrapperClass, new ObjectWrapperSerializer(serConf, wrapperClass)));
+            csf.addSpecificMapping(wrapperClass, new ObjectWrapperSerializer(serConf, wrapperClass));
         }
+
+
+        for (Class wrapperClass : deserializerWrapperClasses) {
+            cdf.addSpecificMapping(wrapperClass, new ObjectWrapperDeserializer(wrapperClass));
+        }
+
+        cdf.addSpecificMapping(LoadBalancer.class, new ObjectWrapperDeserializer(LoadBalancer.class));
+        // Define any collections utilizing the custom serializers above to
+        // use the clean collections serializer, which will ensure proper JSON
+        // formatting.
 
         // Load balancer is a bit of a special case since we want loadbalancer
         // wrapped, but none of the collections within loadbalancer.
-        registerModule(new SimpleModule().addSerializer(LoadBalancer.class,  new LoadbalancerWrapperSerializer(serConf, LoadBalancer.class)));
-        registerModule(new SimpleModule().addSerializer(LoadBalancers.class,  new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers", true)));
 
-        registerModules(new SimpleModule().addDeserializer(LoadBalancer.class, new ObjectWrapperDeserializer(LoadBalancer.class)));
+        csf.addSpecificMapping(LoadBalancer.class, new ObjectWrapperSerializer(this.getSerializationConfig(), LoadBalancer.class));
+        csf.addSpecificMapping(LoadBalancers.class, new PropertyCollectionSerializer(serConf, LoadBalancers.class, "getLoadBalancers", true));
 
-        registerModule(new SimpleModule().addSerializer(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems")));
-        registerModule(new SimpleModule().addDeserializer(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems")));
+        csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
+        csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));
+        csf.addSpecificMapping(CertificateMappings.class, new PropertyCollectionSerializer(serConf, CertificateMappings.class, "getCertificateMappings"));
+        csf.addSpecificMapping(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas"));
 
-        registerModule(new SimpleModule().addSerializer(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes")));
-        registerModule(new SimpleModule().addSerializer(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas")));
-        registerModule(new SimpleModule().addDeserializer(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas")));
-
-
-        registerModule(new SimpleModule().addSerializer(VirtualIps.class, new PropertyCollectionSerializer(serConf, VirtualIps.class, "getVirtualIps")));
-        registerModule(new SimpleModule().addSerializer(AllowedDomains.class, new PropertyCollectionSerializer(serConf, AllowedDomains.class, "getAllowedDomains")));
-        registerModule(new SimpleModule().addSerializer(CertificateMappings.class, new PropertyCollectionSerializer(serConf, CertificateMappings.class, "getCertificateMappings")));
+        cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
+        cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
 
 
-        // Suppress null properties from being serialized and indent output.
-        this.enable(SerializationFeature.INDENT_OUTPUT);
-        this.configure(SerializationFeature.INDENT_OUTPUT, true);
-        this.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        this.configure(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, false);
-        this.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        this.setSerializerFactory(csf);
+        this.setDeserializerProvider(new DeserializerProviderBuilder(cdf));
+        // Suppress null properties from being serialized.
+        this.configure(SerializationConfig.Feature.WRITE_NULL_PROPERTIES, false);
+        serConf.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
     }
 }
