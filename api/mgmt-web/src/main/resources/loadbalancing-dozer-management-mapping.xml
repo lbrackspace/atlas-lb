@@ -372,6 +372,14 @@
             <a>loadBalancerUsage</a>
             <b>usage</b>
         </field-exclude>
+        <field-exclude>
+            <a>halfClosed</a>
+            <b>halfClosed</b>
+        </field-exclude>
+        <field-exclude>
+            <a>httpsRedirect</a>
+            <b>httpsRedirect</b>
+        </field-exclude>
     </mapping>
 
     <mapping map-id="SIMPLE_CUSTOMER_LB" map-null="false" wildcard="false">
@@ -627,6 +635,14 @@
         <field>
             <a>trafficManagerName</a>
             <b>trafficManagerName</b>
+        </field>
+        <field>
+            <a>soapEndpointActive</a>
+            <b>soapEndpointActive</b>
+        </field>
+        <field>
+            <a>restEndpointActive</a>
+            <b>restEndpointActive</b>
         </field>
     </mapping>
 
