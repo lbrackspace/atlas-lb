@@ -162,6 +162,12 @@ public class DomainToDataModelLoadBalancerMapperTest {
         }
 
         @Test
+        //The domain object has isSticky=false, but Public Api responses should not map this field.
+        public void should_not_map_sticky() {
+            Assert.assertNull(dataModelLoadBalancer.getIsSticky());
+        }
+
+        @Test
         public void should_map_half_close_when_false() {
             loadBalancer.setHalfClosed(false);
             dataModelLoadBalancer = mapper.map(loadBalancer, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class);

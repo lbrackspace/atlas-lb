@@ -69,7 +69,7 @@
         </field>
         <field>
             <a get-method="getIsSticky">isSticky</a>
-            <b get-method="getSticky">sticky</b>
+            <b get-method="getIsSticky">isSticky</b>
         </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
             <a>created</a>
@@ -348,10 +348,10 @@
             <a>connectionLogging</a>
             <b get-method="isConnectionLogging">connectionLogging</b>
         </field>
-        <!--<field>-->
-        <!--<a get-method="isSticky">isSticky</a>-->
-        <!--<b get-method="isSticky">sticky</b>-->
-        <!--</field>-->
+        <field>
+            <a get-method="getSticky">sticky</a>
+            <b get-method="getIsSticky">isSticky</b>
+        </field>
         <field custom-converter="org.openstack.atlas.api.mapper.dozer.converter.CalendarConverter">
             <a>created</a>
             <b>created</b>

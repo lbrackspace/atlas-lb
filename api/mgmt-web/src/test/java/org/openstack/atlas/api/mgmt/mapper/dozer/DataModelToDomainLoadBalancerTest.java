@@ -375,6 +375,25 @@ public class DataModelToDomainLoadBalancerTest {
         }
 
         @Test
+        /**
+         * The sticky field is diplayed differently in different apis. In List Extended Load Balancer Details Response it is displayed as "sticky".
+         * In List Load Balancers by Virtual IP Response it is displayed as "isSticky".
+         */
+        public void shouldMapSticky() {
+            //Extended Load Balancer
+            mLB = mapper.map(dLB,
+                    org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer.class);
+            Assert.assertEquals(mLB.getSticky(), false);
+            Assert.assertNull(mLB.getIsSticky());
+
+            //List Load Balancers by Virtual IP
+            mLB = mapper.map(dLB,
+                    org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer.class, "SIMPLE_VIP_LB");
+            Assert.assertEquals(mLB.getIsSticky(), false);
+            Assert.assertNull(mLB.getSticky());
+        }
+
+        @Test
         public void shouldNotMapTickets() {
             mLB = mapper.map(dLB, org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer.class);
             Assert.assertNull(mLB.getTickets());
