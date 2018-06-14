@@ -35,6 +35,7 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination/certificatemappings(\\.json|\\.xml)?/?$", CertificateMapping.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination/certificatemappings/\\d+(\\.json|\\.xml)?/?$", CertificateMapping.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/errorpage(\\.json|\\.xml)?/?$", Errorpage.class));
+        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/contentcaching(\\.json|\\.xml)?/?$", ContentCaching.class));
 
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/virtualip(\\.json|\\.xml)?/?$", VirtualIp.class));
