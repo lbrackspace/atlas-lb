@@ -39,7 +39,7 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/connectionlogging(\\.json|\\.xml)?/?$", ConnectionLogging.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes/\\d+/metadata(\\.json|\\.xml)?/?$", Metadata.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes/\\d+/metadata/\\d+(\\.json|\\.xml)?/?$", Meta.class));
-
+        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/virtualips(\\.json|\\.xml)?/?$", VirtualIp.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/virtualip(\\.json|\\.xml)?/?$", VirtualIp.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/loadbalancer(\\.json|\\.xml)?/?$", LoadBalancer.class));
