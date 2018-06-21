@@ -10,6 +10,9 @@
         <!-- default dateformat will apply to all class maps unless the class mapping explicitly overrides it -->
         <wildcard>true</wildcard>
         <!-- default wildcard policy that will apply to all class maps unless the class mapping explicitly overrides it -->
+        <wildcard-case-insensitive>true</wildcard-case-insensitive>
+        <!-- Up to Dozer version 5.4.0, wildcard mappings were case insensitive. Current versions of Dozer automatically map fields with the
+        exact same name only. To enable the old case insensitive behaviour set wildcard-case-insensitive policy to true. -->
         <custom-converters> <!-- these are always bi-directional -->
             <converter type="org.openstack.atlas.api.mapper.dozer.converter.ConnectionThrottleConverter">
                 <class-a>org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle</class-a>

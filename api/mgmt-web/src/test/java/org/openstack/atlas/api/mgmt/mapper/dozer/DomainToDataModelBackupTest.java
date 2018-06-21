@@ -2,6 +2,8 @@ package org.openstack.atlas.api.mgmt.mapper.dozer;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Backup;
 import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory;
 import org.openstack.atlas.service.domain.entities.Zone;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
@@ -234,6 +236,33 @@ public class DomainToDataModelBackupTest {
             out.setDescription(String.format("Test%d", id));
             out.setSeverity(EventSeverity.CRITICAL);
             return out;
+        }
+    }
+
+    public static class WhenMappingALoadBalancerStatusHistoryFromDomainToDataModel {
+
+        private Mapper mapper;
+
+        @Before
+        public void setUp() {
+            mapper = MapperBuilder.getConfiguredMapper(managementDozerConfigFile);
+        }
+
+        @Test
+        /**
+         * Verify the Dozer case insensitive behaviour configuration. Current versions of Dozer automatically map fields with the
+         * exact same name only. The old case insensitive behaviour is enabled through a global configuration.
+         */
+        public void testMapperForCaseSensitivity() {
+            LoadBalancerStatusHistory historyEntity = new LoadBalancerStatusHistory();
+            historyEntity.setAccountId(1);
+            historyEntity.setLoadbalancerId(22);
+            historyEntity.setCreated(Calendar.getInstance());
+            historyEntity.setStatus(LoadBalancerStatus.BUILD);
+            org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerStatusHistory dataModel;
+            dataModel = mapper.map(historyEntity, org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancerStatusHistory.class);
+            //case difference in loadBalancerId field name of domain and data model.
+            Assert.assertTrue(dataModel.getLoadBalancerId().equals(historyEntity.getLoadbalancerId()));
         }
     }
 }
