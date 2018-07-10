@@ -26,7 +26,7 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
     private AccountLimitService accountLimitService;
 
     @Override
-    public List<NodeMeta> createNodeMetadata(Integer accountId, Integer loadbalancerId, Integer nodeId, List<NodeMeta> nodeMetadata) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
+    public Set<NodeMeta> createNodeMetadata(Integer accountId, Integer loadbalancerId, Integer nodeId, Set<NodeMeta> nodeMetadata) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         Node node;
         try {
             node = nodeRepository.getNodeByAccountIdLoadBalancerIdNodeId(accountId, loadbalancerId, nodeId);
@@ -60,7 +60,7 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
         LOG.debug(String.format("Current number of metadata items for node '%d': %d", nodeId, node.getNodeMetadata().size()));
         LOG.debug(String.format("Number of new metadata items to be added: %d", nodeMetadata.size()));
 
-        List<NodeMeta> createdNodeMeta = nodeMetadataRepository.addNodeMetas(node, nodeMetadata);
+        Set<NodeMeta> createdNodeMeta = nodeMetadataRepository.addNodeMetas(node, nodeMetadata);
         try {
             LOG.debug(String.format("Successfully added %d metadata items for node '%d'", createdNodeMeta.size(), nodeId));
         } catch (NullPointerException e) {
@@ -70,7 +70,7 @@ public class NodeMetadataServiceImpl extends BaseService implements NodeMetadata
     }
 
     @Override
-    public List<NodeMeta> getNodeMetadataByAccountIdNodeId(Integer accountId, Integer nodeId) throws EntityNotFoundException {
+    public Set<NodeMeta> getNodeMetadataByAccountIdNodeId(Integer accountId, Integer nodeId) throws EntityNotFoundException {
         return nodeMetadataRepository.getNodeMetaDataByAccountIdNodeId(nodeId);
     }
 

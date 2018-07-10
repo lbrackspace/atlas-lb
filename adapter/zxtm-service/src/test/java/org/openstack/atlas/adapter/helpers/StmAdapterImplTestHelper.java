@@ -146,7 +146,7 @@ public class StmAdapterImplTestHelper {
         node.setLoadbalancer(loadBalancer);
         node.setCondition(NodeCondition.ENABLED);
         node.setIpAddress(ipv43);
-        List<NodeMeta> nodeMetadata = new ArrayList<NodeMeta>();
+        Set<NodeMeta> nodeMetadata = new HashSet<NodeMeta>();
         NodeMeta nodeMeta = new NodeMeta();
         nodeMeta.setKey(metaKey);
         nodeMeta.setNode(node);
@@ -165,7 +165,7 @@ public class StmAdapterImplTestHelper {
         node.setLoadbalancer(loadBalancer);
         node.setCondition(NodeCondition.ENABLED);
         node.setIpAddress(ipv44);
-        nodeMetadata = new ArrayList<NodeMeta>();
+        nodeMetadata = new HashSet<NodeMeta>();
         nodeMeta = new NodeMeta();
         nodeMeta.setKey(metaKey);
         nodeMeta.setNode(node);

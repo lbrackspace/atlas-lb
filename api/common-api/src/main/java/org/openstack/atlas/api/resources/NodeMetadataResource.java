@@ -20,7 +20,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static javax.ws.rs.core.MediaType.*;
 
@@ -35,7 +37,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
     @POST
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createMetadata(Metadata Metadata) throws EntityNotFoundException, BadRequestException, ImmutableEntityException, UnprocessableEntityException {
-        List<org.openstack.atlas.service.domain.entities.NodeMeta> domainNodeMetas = new ArrayList<org.openstack.atlas.service.domain.entities.NodeMeta>();
+        Set<org.openstack.atlas.service.domain.entities.NodeMeta> domainNodeMetas = new HashSet<org.openstack.atlas.service.domain.entities.NodeMeta>();
         for (Meta meta : Metadata.getMetas()) {
             ValidatorResult result = ValidatorRepository.getValidatorFor(Meta.class).validate(meta, HttpRequestType.POST);
             if (!result.passedValidation()) {
@@ -59,7 +61,7 @@ public class NodeMetadataResource extends CommonDependencyProvider {
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
     public Response retrieveMetadata() {
-        List<org.openstack.atlas.service.domain.entities.NodeMeta> domainNodeMetaSet;
+        Set<org.openstack.atlas.service.domain.entities.NodeMeta> domainNodeMetaSet;
         Metadata returnMetadata = new Metadata();
 
         try {

@@ -19,7 +19,9 @@ import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Repository
 @Transactional
@@ -28,8 +30,8 @@ public class NodeMetadataRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
-    public List<NodeMeta> addNodeMetas(Node node, Collection<NodeMeta> metas) {
-        List<NodeMeta> newMetas = new ArrayList<NodeMeta>();
+    public Set<NodeMeta> addNodeMetas(Node node, Collection<NodeMeta> metas) {
+        Set<NodeMeta> newMetas = new HashSet<NodeMeta>();
 
         for (NodeMeta meta : metas) {
             meta.setNode(node);
@@ -43,7 +45,7 @@ public class NodeMetadataRepository {
         return newMetas;
     }
 
-    public List<NodeMeta> getNodeMetaDataByAccountIdNodeId(Integer nodeId) {
+    public Set<NodeMeta> getNodeMetaDataByAccountIdNodeId(Integer nodeId) {
         List<NodeMeta> list = new ArrayList<NodeMeta>();
         CriteriaBuilder builder = entityManager.getCriteriaBuilder();
         CriteriaQuery<NodeMeta> criteria = builder.createQuery(NodeMeta.class);
@@ -57,11 +59,11 @@ public class NodeMetadataRepository {
         criteria.select(nodeMetaRoot);
         criteria.where(belongsToNode);
         list = entityManager.createQuery(criteria).getResultList();
-        return list;
+        return new HashSet<NodeMeta>(list);
     }
 
     public void deleteMetadata(Node node, Collection<Integer> ids) throws EntityNotFoundException {
-        List<NodeMeta> nodeMetas = new ArrayList<NodeMeta>();
+        Set<NodeMeta> nodeMetas = new HashSet<NodeMeta>();
         Boolean exists = false;
 
         for (NodeMeta meta : node.getNodeMetadata()) {

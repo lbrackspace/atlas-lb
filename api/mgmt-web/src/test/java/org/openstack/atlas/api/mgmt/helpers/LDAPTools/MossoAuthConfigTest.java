@@ -1,9 +1,11 @@
 package org.openstack.atlas.api.mgmt.helpers.LDAPTools;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.FileWriter;
 import java.security.GeneralSecurityException;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -11,7 +13,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class MossoAuthConfigTest {
-
+    private static final String fileName = "/tmp/ldap.conf";
     private String uid;
     private String ctext;
     private String password;
@@ -29,9 +31,14 @@ public class MossoAuthConfigTest {
         password = decryptPasswd(ctext);
     }
 
+    @After
+    public void tearDown() {
+        File tmpConfig = new File(fileName);
+        tmpConfig.delete();
+    }
+    
     @Test
     public void testMossoAuthConfigFromFile() throws IOException, GeneralSecurityException {
-        String fileName = "/tmp/ldap.conf";
         FileWriter fw = new FileWriter(fileName);
         PrintWriter pw = new PrintWriter(fw);
         pw.printf("host=\"%s\"\n", this.host);
