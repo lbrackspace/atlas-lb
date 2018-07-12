@@ -75,6 +75,7 @@ public class UsageRefactorServiceImpl extends BaseService implements UsageRefact
             if (!lbMap.get(lbHostUsage.getLoadbalancerId()).containsKey(lbHostUsage.getHostId())) {
                 lbMap.get(lbHostUsage.getLoadbalancerId()).put(lbHostUsage.getHostId(), new ArrayList<LoadBalancerHostUsage>());
             }
+            //Map<lbId, HashMap<hostId, List<LoadBalancerHostUsage>>
             lbMap.get(lbHostUsage.getLoadbalancerId()).get(lbHostUsage.getHostId()).add(lbHostUsage);
         }
         return lbMap;
