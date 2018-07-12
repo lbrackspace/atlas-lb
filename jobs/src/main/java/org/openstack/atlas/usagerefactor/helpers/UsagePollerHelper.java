@@ -51,10 +51,10 @@ public class UsagePollerHelper {
         long totIncomingTransferSsl = newMergedUsage.getIncomingTransferSsl();
         long totOutgoingTransfer = newMergedUsage.getOutgoingTransfer();
         long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
-
+//ResetBandwidth = current - previous
         ResetBandwidth normal = getPossibleResetBandwidth(currentUsage.getBytesIn(), previousRecord.getIncomingTransfer(),
                                                           currentUsage.getBytesOut(), previousRecord.getOutgoingTransfer(),
-                                                         currentPollTime, previousRecord.getPollTime());
+                                                         currentPollTime, previousRecord.getPollTime());//poll time?
         totIncomingTransfer += normal.incomingTransfer;
         totOutgoingTransfer += normal.outgoingTransfer;
         ResetBandwidth ssl = getPossibleResetBandwidth(currentUsage.getBytesInSsl(), previousRecord.getIncomingTransferSsl(),
@@ -75,6 +75,16 @@ public class UsagePollerHelper {
         newMergedUsage.setConcurrentConnectionsSsl(ccsSsl);
     }
 
+    /**
+     * Calculates loadbalancer's usage from a host by subtracting the previousRecord's counters from the currentRecord's counters.
+     * The difference is added up to the counters of the newMergedUsage. newMergedUsage holds the sum of lb's usage from each host.
+     *
+     * The concurrent connections from the currentRecord are just added to the newMergedUsage since this is not a counter, only a snapshot.
+     *
+     * @param currentRecord
+     * @param previousRecord
+     * @param newMergedUsage
+     */
     public void calculateUsage(LoadBalancerHostUsage currentRecord, LoadBalancerHostUsage previousRecord,
                                LoadBalancerMergedHostUsage newMergedUsage) {
         long totIncomingTransfer = newMergedUsage.getIncomingTransfer();
@@ -82,15 +92,18 @@ public class UsagePollerHelper {
         long totOutgoingTransfer = newMergedUsage.getOutgoingTransfer();
         long totOutgoingTransferSsl = newMergedUsage.getOutgoingTransferSsl();
 
+        //ResetBandwidth = countersFromCurrentRecord - countersFromPreviousRecord.
         ResetBandwidth normal = getPossibleResetBandwidth(currentRecord.getIncomingTransfer(), previousRecord.getIncomingTransfer(),
                                                           currentRecord.getOutgoingTransfer(), previousRecord.getOutgoingTransfer(),
                                                           currentRecord.getPollTime(), previousRecord.getPollTime());
-        totIncomingTransfer += normal.incomingTransfer;
+        totIncomingTransfer += normal.incomingTransfer;//Add up the normal bandwidth difference to the newMergedUsage counters.
         totOutgoingTransfer += normal.outgoingTransfer;
+
+        //ResetBandwidth = countersFromCurrentRecord - countersFromPreviousRecord.
         ResetBandwidth ssl = getPossibleResetBandwidth(currentRecord.getIncomingTransferSsl(), previousRecord.getIncomingTransferSsl(),
                                                        currentRecord.getOutgoingTransferSsl(), previousRecord.getOutgoingTransferSsl(),
                                                        currentRecord.getPollTime(), previousRecord.getPollTime());
-        totIncomingTransferSsl += ssl.incomingTransfer;
+        totIncomingTransferSsl += ssl.incomingTransfer;//Add up the ssl bandwidth difference to the newMergedUsage counters.
         totOutgoingTransferSsl += ssl.outgoingTransfer;
 
         newMergedUsage.setIncomingTransfer(totIncomingTransfer);
@@ -109,6 +122,19 @@ public class UsagePollerHelper {
         return currentBandwidth < previousBandwidth;
     }
 
+    /**
+     * Calculates the difference between current counter and previous counter.
+     * If the counter for the first event's is less than the previous poll's counter, then a reset is assumed to have occurred and
+     * the bandwidth difference for that load balancer on that particular host will automatically be 0.
+     *
+     * @param currentIncoming
+     * @param previousIncoming
+     * @param currentOutgoing
+     * @param previousOutgoing
+     * @param currentPollTime
+     * @param previousPollTime
+     * @return
+     */
     public ResetBandwidth getPossibleResetBandwidth(long currentIncoming, long previousIncoming, long currentOutgoing,
                                                     long previousOutgoing, Calendar currentPollTime, Calendar previousPollTime) {
         ResetBandwidth ret = new ResetBandwidth();
@@ -129,6 +155,16 @@ public class UsagePollerHelper {
         return ret;
     }
 
+    //Process current usage now. The method processExistingEvents should have removed
+
+    /**
+     * @param existingUsages Has the most recent record in the loadbalancing_usage.lb_host_usage table for a load balancer.
+     *                       This record is used to calculate the usage between the recent existing usage record the current SNMP usage.
+     * @param currentUsages  Current SNMP usage queried from the Zues server.
+     * @param pollTime       The current poller running time. This is the poll time set to the new lb_host_usage entries created from the
+     *                       current SNMP usage.
+     * @return
+     */
     public UsageProcessorResult processCurrentUsage(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages,
                                                     Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
                                                     Calendar pollTime){
@@ -136,7 +172,7 @@ public class UsagePollerHelper {
         Map<Integer, LoadBalancer> buildingLoadBalancers = getMapOfBuildingLoadBalancers();
         List<LoadBalancerMergedHostUsage> mergedUsages = new ArrayList<LoadBalancerMergedHostUsage>();
         List<LoadBalancerHostUsage> newLBHostUsages = new ArrayList<LoadBalancerHostUsage>();
-
+        // Map<lbId, Map<hostId, List<SnmpUsage>>> currentUsages
         for (Integer loadbalancerId : currentUsages.keySet()) {
             for (Integer hostId : currentUsages.get(loadbalancerId).keySet()) {
                 SnmpUsage currentUsage = currentUsages.get(loadbalancerId).get(hostId);
@@ -278,23 +314,42 @@ public class UsagePollerHelper {
         return new UsageProcessorResult(mergedUsages, newLBHostUsages);
     }
 
+    /**
+     * Process the events that have come in between now and last poller run. One LoadBalancerMergedHostUsage per lb per the event happened on that lb
+     * is created by adding up the usage from each host. Ex: if there are two events in the existingUsages for a lb then two entries of
+     * LoadBalancerMergedHostUsage are created for that lb.
+     * For each load balancer the events are processed as follow:
+            o. For each host subtract the first event's counters from the previous poll's counters, and add up the concurrent connections.
+                Ex counters: incomingTransfer, outgoingTransfer, incomingTransferSsl, outgoingTransferSsl etc.
+            o. If the counter for the first event's is less than the previous poll's counter, then a reset is assumed to have occurred
+                and the bandwidth difference for that load balancer on that particular host will automatically be 0.
+            o. It will store the sum of the above differences of bandwidth counters and sum of connections along with the event type and time of event
+                as LoadBalancerMergedHostUsage for later insertion into the loadbalancing_usage.lb_merged_host_usage table.
+            o. If there are more events it will do the same process but only do the calculations using the next event and its preceding event
+                including the reset logic.
+     *
+     * @param existingUsages
+     * @return The list of LoadBalancerMergedHostUsage records created from the events
+     */
     public List<LoadBalancerMergedHostUsage> processExistingEvents(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages) {
         List<LoadBalancerMergedHostUsage> newMergedEventRecords = new ArrayList<LoadBalancerMergedHostUsage>();
         List<Host> hosts = hostRepository.getAll();
-        for (Integer loadBalancerId : existingUsages.keySet()) {
+        for (Integer loadBalancerId : existingUsages.keySet()) {//for each loadbalancer
             LinkedHashMap<String, LoadBalancerMergedHostUsage> mergedUsagesMap = new LinkedHashMap<String, LoadBalancerMergedHostUsage>();
 
             //Group usage records by time and hostId so that it can be later used to determine if there are
             //any records that are missing (for example: due to host being unreachable)
+            //TreeMap<Calendar, Map<HostId, LoadBalancerHostUsage>>
+            //Ex: the data will look like: /atlas-lb/jobs/usagepoller/usagepollerhelper/processexistingevents/case5.xml
             TreeMap<Calendar, Map<Integer, LoadBalancerHostUsage>> lbHostUsagesMapByTime =
                     getLBUsageGroupedByTimeAndHost(existingUsages.get(loadBalancerId), hosts);
             //For times that do not have an entry for a host, insert null
             insertNullRecordsForHostsWithoutEntries(lbHostUsagesMapByTime, hosts);
             Map<Integer, LoadBalancerHostUsage> previousRecords = null;
             boolean isFirstRecord = true;
-            for (Calendar timeKey : lbHostUsagesMapByTime.keySet()) {
+            for (Calendar timeKey : lbHostUsagesMapByTime.keySet()) {//for each pollTime(the time the events happened)
 
-                for (Integer hostId : lbHostUsagesMapByTime.get(timeKey).keySet()) {
+                for (Integer hostId : lbHostUsagesMapByTime.get(timeKey).keySet()) {//for each host's usage (each entry of Map<hostId, lbHostUsage>)
 
                     LoadBalancerHostUsage currentUsage = lbHostUsagesMapByTime.get(timeKey).get(hostId);
 
@@ -307,9 +362,10 @@ public class UsagePollerHelper {
                         }
                     }
 
-                    if (isFirstRecord) {
+                    if (isFirstRecord) {//if first entry of lbHostUsagesMapByTime TreeMap
                         if (currentUsage == null) {
                             if (previousRecords == null) {
+                                //store previous record for each host
                                 previousRecords = new HashMap<Integer, LoadBalancerHostUsage>();
                             }
                             previousRecords.put(hostId, currentUsage);
@@ -335,12 +391,13 @@ public class UsagePollerHelper {
                         previousRecords.put(hostId, currentUsage);
                         continue;
                     }
-
+                    //One entry per poll time in mergedUsagesMap.
                     if (!mergedUsagesMap.containsKey(timeKey.getTime().toString())) {
                         mergedUsagesMap.put(timeKey.getTime().toString(), initializeMergedRecord(currentUsage));
                     }
 
                     LoadBalancerMergedHostUsage newMergedUsage = mergedUsagesMap.get(timeKey.getTime().toString());
+                    //Add up for each host the usage between the current event and its previous event.
                     calculateUsage(currentUsage, previousUsage, newMergedUsage);
 
                     // set previous record for this host to the current
@@ -354,6 +411,7 @@ public class UsagePollerHelper {
             for(String timeKey : mergedUsagesMap.keySet()) {
                 //Safeguard against inserting null records
                 if(mergedUsagesMap.get(timeKey) != null){
+                    //For each event: usages of all the hosts gets merged into a single LoadBalancerMergedHostUsage
                     newMergedEventRecords.add(mergedUsagesMap.get(timeKey));
                 }
             }
@@ -415,16 +473,33 @@ public class UsagePollerHelper {
         return buildingLoadBalancerMap;
     }
 
+    /**
+     * Group usage records by time and hostId as TreeMap<Calendar, Map<HostId, LoadBalancerHostUsage>> lbHostUsagesMapByTime.
+     * This map will have one entry with a pollTime and a map of host, host usages that were polled during this pollTime.
+     * These entries are sorted in the order of the Poll time and this method gets called for each lb.
+     * Sample format of the map:
+     * TreeMap<Calendar, Map<HostId, LoadBalancerHostUsage>>
+       <pollTime:20:01, Map enties:[<host1,LBHU1>, <host2,LBHU2>]> SNMP usage from previous poll
+       <pollTime:20:02, Map enties:[<host1,LBHU3>, <host2,LBHU4>]> event1
+       <pollTime:20:03, Map enties:[<host1,LBHU4>, <host2,LBHU5>]> event2
+     *
+     * @param existingLBUsages
+     * @param hosts
+     * @return HostUsages grouped by pollTime.
+     */
     private TreeMap<Calendar, Map<Integer, LoadBalancerHostUsage>> getLBUsageGroupedByTimeAndHost(Map<Integer, List<LoadBalancerHostUsage>> existingLBUsages,
                                                                                                       List<Host> hosts) {
         TreeMap<Calendar, Map<Integer, LoadBalancerHostUsage>> lbHostUsagesMapByTime = new TreeMap<Calendar, Map<Integer, LoadBalancerHostUsage>>();
-
+        //existingUsages come here are per loadbalancer as Map<hostId, List<LoadBalancerHostUsage>>.
         for (Integer hostId : existingLBUsages.keySet()) {
             for (LoadBalancerHostUsage lbHostUsage : existingLBUsages.get(hostId)) {
+                //for each lbHostUsage if there is no entry with pollTime of lbHostUsage, create one entry
                 if(!lbHostUsagesMapByTime.containsKey(lbHostUsage.getPollTime())) {
+                    //create a map of hosts, host's usages that were polled during the same poll time
                     Map<Integer, LoadBalancerHostUsage> lbHostUsagesMapByHostId = new HashMap<Integer, LoadBalancerHostUsage>();
                     lbHostUsagesMapByTime.put(lbHostUsage.getPollTime(), lbHostUsagesMapByHostId);
                 }
+                //If pollTime entry was already there, then add this usage to Map<hostId, LoadBalancerHostUsage>
                 Map<Integer, LoadBalancerHostUsage> lbHostUsageMapByHostId = lbHostUsagesMapByTime.get(lbHostUsage.getPollTime());
                 if(lbHostUsageMapByHostId.containsKey(hostId)){
                     if (lbHostUsage.getEventType() != null) {

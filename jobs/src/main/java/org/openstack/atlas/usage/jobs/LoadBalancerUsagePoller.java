@@ -50,15 +50,35 @@ public class LoadBalancerUsagePoller extends AbstractJob {
     public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
     }
 
+    /**
+     * Processes the Events from loadbalancing_usage.lb_host_usage table and the current usage fetched by sending SNMP queries.
+     * Creates entries in loadbalancing_usage.lb_merged_host_usage and loadbalancing_usage.lb_host_usage table.
+     *
+     * @throws Exception
+     */
     @Override
     public void run() throws Exception {
+        /**
+         * 1. Whenever one of the events(Ex: Add/Update SSLTermiation, Create/Delete Loadbalancer, Create/Delete VIP, Suspend/UnSuspend Loadbalancer)
+         * take place, each host is queried for the bandwidth counters and current number of connections. For each host a record is inserted into
+         * the loadbalancing_usage.lb_host_usage table with those counters, the time, and the event.
+         * 2. This job fetches all the records from the loadbalancing_usage.lb_host_usage table prior to and equal to the poll time
+         * as Map<lbId, Map<hostId, List<LoadBalancerHostUsage>>.
+         * 3. Queries SNMP in one bulk call and gathers usage for each load balancer from each host as Map<hostId, Map<LBId, SnmpUsage>>.
+         * 4. Processes the above LoadBalancerHostUsage records and creates entries in loadbalancing_usage.lb_merged_host_usage.
+         * 5. Converts the current SNMP data to LoadBalancerHostUsage entries and writes them to loadbalancing_usage.lb_host_usage table.
+         * 5. At the end, deletes the records in the loadbalancing_usage.lb_host_usage table that were prior to the poll time.
+         */
         Calendar pollTime = Calendar.getInstance();
         LOG.info("Set poll time to " + pollTime.getTime().toString() + "...");
+        //Fetch existing Data as Map<lbId, HashMap<hostId, List<LoadBalancerHostUsage>>
         Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages = usageRefactorService.getRecordsBeforeTimeInclusive(pollTime);
+        //Find Max id of the LoadBalancerHostUsage records
         Long maxId = findMaxId(existingUsages);
         LOG.info("Retrieved records for " + existingUsages.size() + " load balancers from lb_host_usage table.");
         Map<Integer, Map<Integer, SnmpUsage>> currentUsages;
         try {
+            //Fetch currentUsages as Map<hostId,Map<LBId, SnmpUsage>
             currentUsages = getCurrentData();
             LOG.info("Retrieved records for " + currentUsages.size() + " hosts from stingray by SNMP.");
         } catch (Exception e) {
@@ -66,13 +86,14 @@ public class LoadBalancerUsagePoller extends AbstractJob {
             return;
         }
 
-
+        //Process the records and get UsageProcessorResult(LBMergedHostUsages, newLBHostUsages)
         UsageProcessorResult result = usageProcessor.mergeRecords(existingUsages, currentUsages, pollTime);
         LOG.info("Completed processing of current usage");
         LOG.info("Checking if any events were inserted between the beginning of this job and now...");
         Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> newEvents = usageRefactorService.getRecordsAfterTimeInclusive(pollTime);
         Set<Integer> loadBalancersNotToDelete = removeLoadBalancerRecordsThatHadNewEvents(result, newEvents);
 
+        //save LBMergedHostUsage entries in batch
         BatchAction<LoadBalancerMergedHostUsage> mergedUsageBatchAction = new BatchAction<LoadBalancerMergedHostUsage>() {
             @Override
             public void execute(Collection<LoadBalancerMergedHostUsage> mergedUsages) throws Exception {
@@ -83,6 +104,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         };
         ExecutionUtilities.ExecuteInBatches(result.getMergedUsages(), BATCH_SIZE, mergedUsageBatchAction);
 
+        //save new LBHostUsages in batch
         BatchAction<LoadBalancerHostUsage> lbHostUsageBatchAction = new BatchAction<LoadBalancerHostUsage>() {
             @Override
             public void execute(Collection<LoadBalancerHostUsage> lbHostUsages) throws Exception {
@@ -93,7 +115,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
         };
         ExecutionUtilities.ExecuteInBatches(result.getLbHostUsages(), BATCH_SIZE, lbHostUsageBatchAction);
 
-
+        //delete old LbHostUsage records for lbs that do not have new events after the poll time
         usageRefactorService.deleteOldLoadBalancerHostUsages(pollTime, loadBalancersNotToDelete, maxId);
         LOG.info("Completed deletion of records from lb_host_usage table prior to poll time: " + pollTime.getTime().toString());
     }
@@ -118,7 +140,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
             for (Future<HostIdUsageMap> future : futures) {
                 mergedHostsUsage.put(future.get().getHostId(), future.get().getMap());
             }
-
+            //return the data as Map<hostId,Map<LBId, SnmpUsage>
             return mergedHostsUsage;
         } finally {
             shutdownAndAwaitTermination(threadPool);
