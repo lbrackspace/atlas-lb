@@ -28,7 +28,7 @@ public class UsageProcessor {
     public UsageProcessorResult mergeRecords(Map<Integer, Map<Integer, List<LoadBalancerHostUsage>>> existingUsages,
                                                  Map<Integer, Map<Integer, SnmpUsage>> currentUsages,
                                                  Calendar pollTime)
-    {
+    {   //TODO in this flow steps b and c may not be correct for Usage Poller, is this flow related to RollupJob?
         /*
          * 1. Query SNMP
          * 2. Query host usage table for previous records. store time as deleteTimeMarker
@@ -45,17 +45,27 @@ public class UsageProcessor {
          */
         LOG.info("Merging load balancer host usage records...");
 
-        //Process events that have come in between now and last poller run
+        //Process events that have come in between now and last poller run and create LoadBalancerMergedHostUsage entries.
+        //one LoadBalancerMergedHostUsage per loadbalancer per event is created by adding up the usage from each host.
+        //Ex: if there are two events in the existingUsages for a lb then two entries of LoadBalancerMergedHostUsage are created for that lb.
         List<LoadBalancerMergedHostUsage> mergedHostUsages = usagePollerHelper.processExistingEvents(existingUsages);
 
-        //Now parent key should be loadbalancerId, and child key hostId
+        //Now parent key should be loadbalancerId, and child key should be hostId in currentUsages
         currentUsages = MapUtil.swapKeys(currentUsages);
 
-        //Process current usage now. The method processExistingEvents should have removed
+        /**
+         * Process current usage and create LoadBalancerMergedHostUsage and LoadBalancerHostUsage entries.
+         * One LoadBalancerMergedHostUsage per lb is created by adding up the current SNMP usage from each host.
+         * And one LoadBalancerHostUsage is created from the each of the current SNMP usages. Ex: if there are 5 hosts then there will be
+         * 5 SNMP records for a lb hence 5 LoadBalancerHostUsage records are created for that lb.
+         */
         UsageProcessorResult processorResult = usagePollerHelper.processCurrentUsage(existingUsages, currentUsages,
                 pollTime);
+
+        //Combine the LoadBalancerMergedHostUsage records from the existingUsage and the currentUsage.
         mergedHostUsages.addAll(processorResult.getMergedUsages());
 
+        //Return UsageProcessorResult with mergedHostUsages and the LbHostUsages
         return new UsageProcessorResult(mergedHostUsages, processorResult.getLbHostUsages());
     }
 }
