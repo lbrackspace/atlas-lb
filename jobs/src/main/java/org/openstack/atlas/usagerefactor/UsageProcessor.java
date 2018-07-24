@@ -22,6 +22,10 @@ public class UsageProcessor {
     @Autowired
     private UsagePollerHelper usagePollerHelper;
 
+    public void setUsagePollerHelper(UsagePollerHelper usagePollerHelper) {
+        this.usagePollerHelper = usagePollerHelper;
+    }
+
     public UsageProcessor() {
     }
 

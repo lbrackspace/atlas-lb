@@ -67,6 +67,39 @@ public class AssertLoadBalancerMergedHostUsage {
             Assert.assertTrue(matched);
     }
 
+    public static void containsValuesByEventType(Integer accountId, Integer lbId, Long incomingTransfer,
+                                      Long incomingTransferSsl, Long outgoingTransfer, Long outgoingTransferSsl,
+                                      Integer ccs, Integer ccsSsl,
+                                      Integer numVips, Integer tags, UsageEvent eventType, String pollTime,
+                                      List<LoadBalancerMergedHostUsage> actualUsageList) throws ParseException {
+        boolean matched = false;
+
+        for (LoadBalancerMergedHostUsage actualUsage : actualUsageList) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String actualTimeStr = sdf.format(actualUsage.getPollTime().getTime());
+            // Check differentiators then verify everything else.
+            if (actualUsage.getLoadbalancerId() == lbId
+                    && Objects.equals(actualTimeStr, pollTime)
+                    && actualUsage.getTagsBitmask() == tags
+                    && actualUsage.getEventType() == eventType) {
+                Assert.assertEquals(accountId.intValue(), actualUsage.getAccountId());
+                Assert.assertEquals(lbId.intValue(), actualUsage.getLoadbalancerId());
+                Assert.assertEquals(incomingTransfer.longValue(), actualUsage.getIncomingTransfer());
+                Assert.assertEquals(incomingTransferSsl.longValue(), actualUsage.getIncomingTransferSsl());
+                Assert.assertEquals(outgoingTransfer.longValue(), actualUsage.getOutgoingTransfer());
+                Assert.assertEquals(outgoingTransferSsl.longValue(), actualUsage.getOutgoingTransferSsl());
+                Assert.assertEquals(ccs.intValue(), actualUsage.getConcurrentConnections());
+                Assert.assertEquals(ccsSsl.intValue(), actualUsage.getConcurrentConnectionsSsl());
+                Assert.assertEquals(numVips.intValue(), actualUsage.getNumVips());
+                Assert.assertEquals(tags.intValue(), actualUsage.getTagsBitmask());
+                Assert.assertEquals(eventType, actualUsage.getEventType());
+                Assert.assertEquals(pollTime, actualTimeStr);
+                matched = true;
+            }
+        }
+        Assert.assertTrue(matched);
+    }
+
     private static Calendar stringToCalendar(String calAsString) throws ParseException {
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
