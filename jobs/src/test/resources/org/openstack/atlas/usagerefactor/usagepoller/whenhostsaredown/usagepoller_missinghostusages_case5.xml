@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Case Details: No events to process and some hosts are missing in existing usages.
+    Hosts 1 and 3 do not have usage here.
+-->
+<dataset>
+    <lb_host_usage id="2" account_id="1234" loadbalancer_id="123" host_id="2" bandwidth_in="5" bandwidth_in_ssl="5" bandwidth_out="5" bandwidth_out_ssl="5" concurrent_connections="5"  concurrent_connections_ssl="5" num_vips="3" tags_bitmask="3" poll_time="2013-04-10 20:01:00" />
+</dataset>
