@@ -180,26 +180,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.jvnet.jaxb2.maven2</groupId>
-                <artifactId>maven-jaxb2-plugin</artifactId>
-                <configuration>
-                    <schemaDirectory>${basedir}/src/main/resources/META-INF/xsd</schemaDirectory>
-                    <bindingDirectory>${basedir}/src/main/resources/META-INF/xsd</bindingDirectory>
-                    <schemaIncludes>
-                        <include>entry.xsd</include>
-                        <include>ProductExtension-LBaaS.xsd</include>
-                        <include>ProductExtension-LBaaS-delete.xsd</include>
-                    </schemaIncludes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <executions>
