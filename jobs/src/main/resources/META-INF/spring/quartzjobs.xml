@@ -16,7 +16,6 @@
                 <ref bean="accountUsagePollerTrigger"/>
                 <ref bean="hostUsagePollerTrigger"/>
                 <ref bean="suspendedEventJobTrigger"/>
-                <ref bean="rateLimitDeletionJobTrigger"/>
                 <ref bean="lbDeletionJobTrigger"/>
                 <ref bean="dailyDeletionJobTrigger"/>
                 <ref bean="eventsDeletionJobTrigger"/>
@@ -123,22 +122,6 @@
     <bean id="dailyDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="dailyDeletionJob"/>
         <property name="cronExpression" value="${daily-deletion-job.interval}"/>
-    </bean>
-
-    <!--RATE LIMIT DELETION JOB CONFIG-->
-    <bean id="rateLimitDeletionJobBean" class="org.openstack.atlas.jobs.RateLimitDeletionJob"
-          autowire="byName"/>
-    <bean name="rateLimitDeletionJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-        <property name="jobClass" value="org.openstack.atlas.jobs.DelegatingJobBean"/>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="job.bean.name" value="rateLimitDeletionJobBean"/>
-            </map>
-        </property>
-    </bean>
-    <bean id="rateLimitDeletionJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="jobDetail" ref="rateLimitDeletionJob"/>
-        <property name="cronExpression" value="${rate-limit-deletion-job.interval}"/>
     </bean>
 
     <!--HOST ENDPOINT POLLER JOB CONFIG-->
