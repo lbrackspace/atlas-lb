@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f5fa0ef0_a8e14b5b",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/zxtm/ZxtmAdapterImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 1673,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2018-09-06T16:05:08Z",
+      "side": 1,
+      "message": "This needs to also handle ipv6 tigs",
+      "revId": "3c0af3296e6e953b26125640c39a2496feea9e72",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
