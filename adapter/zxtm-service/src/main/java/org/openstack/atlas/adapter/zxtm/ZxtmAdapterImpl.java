@@ -1665,8 +1665,20 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
     public void enableDisableSslTermination(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isSslTermination) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
         final String virtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         ZxtmServiceStubs serviceStubs = getServiceStubs(conf);
-
+        String trafficIpGroup=null;
         try {
+            if(loadBalancer.getSuspension()==null){
+                LOG.info(String.format("Load balancer is not Suspended status"));
+            }//CLB-56 fix for deleting load balancer in suspended status with ssl termination enabled
+            else if (loadBalancer.getStatus().equals(LoadBalancerStatus.PENDING_DELETE) && loadBalancer.getSuspension()!=null){
+                for (LoadBalancerJoinVip loadBalancerJoinVipToAdd : loadBalancer.getLoadBalancerJoinVipSet()) {
+                    trafficIpGroup = ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVipToAdd.getVirtualIp());
+                }
+                for (LoadBalancerJoinVip6 loadBalancerJoinVip6ToAdd : loadBalancer.getLoadBalancerJoinVip6Set()) {
+                    trafficIpGroup = ZxtmNameBuilder.generateTrafficIpGroupName(loadBalancer, loadBalancerJoinVip6ToAdd.getVirtualIp());
+                }
+                serviceStubs.getTrafficIpGroupBinding().setEnabled(new String[]{trafficIpGroup}, new boolean[]{true});
+            }
             serviceStubs.getVirtualServerBinding().setSSLDecrypt(new String[]{virtualServerName}, new boolean[]{isSslTermination});
 
             boolean[] isVSEnabled = new boolean[]{loadBalancer.isUsingSsl()};
