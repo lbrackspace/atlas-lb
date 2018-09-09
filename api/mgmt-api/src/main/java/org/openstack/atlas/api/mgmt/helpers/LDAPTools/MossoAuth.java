@@ -12,6 +12,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
 import javax.naming.directory.Attribute;
+import org.openstack.atlas.util.debug.Debug;
 
 public class MossoAuth {
 
@@ -21,8 +22,8 @@ public class MossoAuth {
     private Map<String, ClassConfig> classMap;
 
     static {
-        //Security.addProvider(new OverTrustingTrustProvider());
-        //Security.setProperty("ssl.TrustManagerFactory.algorithm", "TrustAllCertificates");
+        Security.addProvider(new OverTrustingTrustProvider());
+        Security.setProperty("ssl.TrustManagerFactory.algorithm", "TrustAllCertificates");
     }
 
     public MossoAuth() {
@@ -55,8 +56,10 @@ public class MossoAuth {
             results = ctx.search(udn, filter, ctls);
             ct.disconnect();
         } catch (NamingException ex) {
+            String msg = Debug.getEST(ex);
             return false;
         } catch (IOException ex) {
+            String msg = Debug.getEST(ex);
             return false;
         }
         return true;
