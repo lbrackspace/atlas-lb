@@ -84,7 +84,7 @@ public class ManageAuthFilter implements Filter {
         LOG.info(String.format("Requesting URL: %s", hreq.getRequestURI()));
         purged = ldapCache.cleanExpiredByCount(); // Prevent unchecked entries from Living forever
         if(purged>0){
-            LOG.info(String.format("cleaning eDir cache: purged %d stale entries", purged));
+            LOG.info(String.format("cleaning directory cache: purged %d stale entries", purged));
         }
         String[] splitUrl = hreq.getRequestURL().toString().split(hreq.getContextPath());
         if (hreq.getRequestURL().toString().equals(splitUrl[0] + hreq.getContextPath() + "/application.wadl")) {

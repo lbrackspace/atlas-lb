@@ -1,16 +1,18 @@
 package org.openstack.atlas.api.mgmt.helpers.LDAPTools;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import javax.naming.Context;
 import javax.naming.NamingException;
+import javax.naming.ldap.Control;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.StartTlsRequest;
 import javax.naming.ldap.StartTlsResponse;
 import javax.net.ssl.SSLSession;
 import static org.openstack.atlas.api.mgmt.helpers.LDAPTools.MossoAuth.escapeDn;
-
 
 public class LDAPCtxContainer {
 
@@ -87,13 +89,17 @@ public class LDAPCtxContainer {
         String url = String.format("ldap://%s:%d", mossoAuthConfig.getHost(), mossoAuthConfig.getPort());
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         env.put(Context.PROVIDER_URL, url);
+        Control[] controls = new Control[]{};
         ctx = new InitialLdapContext(env, null);
+        ctx.setRequestControls(controls);
+        // Oracle is breaking connectivity with ActiveDirectory
+        // So clear the controls especiall 2.16.840.1.113730.3.4.2
         tls = (StartTlsResponse) ctx.extendedOperation(new StartTlsRequest());
         tls.setHostnameVerifier(new EmptyHostnameVerifier());
-        sslsess = tls.negotiate();
         ctx.addToEnvironment(Context.SECURITY_PRINCIPAL, userDn(user));
         ctx.addToEnvironment(Context.SECURITY_CREDENTIALS, passwd);
         ctx.addToEnvironment(Context.SECURITY_AUTHENTICATION, "simple");
+        sslsess = tls.negotiate();
     }
 
     private void disconnectTLS() throws IOException, NamingException {
@@ -102,10 +108,20 @@ public class LDAPCtxContainer {
     }
 
     private String userDn(String user) {
+        if (mossoAuthConfig.isIsActiveDirectory()) {
+            StringBuilder sb = new StringBuilder(32);
+            sb.append(user);
+            sb.append(mossoAuthConfig.getAppendName());
+            String activeDirectoryUserName = sb.toString();
+            return activeDirectoryUserName;
+        }
         String dn = this.userConfig.getDn();
         String sdn = this.userConfig.getSdn();
         String out = String.format("%s=%s,%s", sdn, escapeDn(user), dn);
         return out;
+    }
+
+    private static void nop() {
     }
 
     public LdapContext getCtx() {
@@ -146,8 +162,5 @@ public class LDAPCtxContainer {
 
     public void setUserConfig(ClassConfig userConfig) {
         this.userConfig = userConfig;
-    }
-
-    private void nop() {
     }
 }

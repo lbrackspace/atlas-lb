@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import javax.net.ssl.SSLSocketFactory;
 import org.apache.log4j.BasicConfigurator;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -101,6 +102,7 @@ public class SnmpMain {
                     System.out.printf("    clear_comparators #Clear the comparators for snmpUsage\n");
                     System.out.printf("    show_threads #Show running thread stack traces\n");
                     System.out.printf("    show_config #Show current Configuration\n");
+                    System.out.printf("    show_ciphers #Show ciphers list\n");
                     System.out.printf("    exit #Exits\n");
                     System.out.printf("\n");
                 } else if (cmd.equals("show_threads")) {
@@ -155,7 +157,6 @@ public class SnmpMain {
                         System.out.printf("Un recognized comparator %s\n", compStr);
                     }
 
-
                 } else if (cmd.equals("display_usage_diff") && args.length >= 2) {
                     System.out.printf("Computing diffs\n");
                     Set<String> allVsNames = new HashSet<String>();
@@ -173,7 +174,6 @@ public class SnmpMain {
                             clientVsNames.get(clientKey).add(usage.getVsName());
                         }
                     }
-
 
                     if (args[1].equals("common")) {
                         System.out.printf("Common VsNames:\n");
@@ -233,7 +233,7 @@ public class SnmpMain {
                         if (vsToHostMap.containsKey(vsFilter)) {
                             printVsMap(vsFilter, vsToHostMap);
                         } else {
-                            System.out.printf("pool %s was not in the usage map\n",vsFilter);
+                            System.out.printf("pool %s was not in the usage map\n", vsFilter);
                         }
                     } else {
 
@@ -379,7 +379,7 @@ public class SnmpMain {
                     }
                     System.out.printf("%s for %s = %d\n", oid, vsName, sum);
 
-                }  else if (cmd.equals("set_retrys") && args.length >= 2) {
+                } else if (cmd.equals("set_retrys") && args.length >= 2) {
                     System.out.printf("Setting retries to ");
                     System.out.flush();
                     int maxRetrys = Integer.parseInt(args[1]);
@@ -487,6 +487,19 @@ public class SnmpMain {
                         if (clientKey.equals(conf.getDefaultHostKey())) {
                             defaultClient = client;
                         }
+                    }
+                } else if (cmd.equals("show_ciphers")) {
+                    SSLSocketFactory sf = (SSLSocketFactory) SSLSocketFactory.getDefault();
+                    System.out.printf("Supported Ciphers\n");
+                    System.out.printf("------------------------------------------------\n");
+                    for (String cipher : sf.getSupportedCipherSuites()) {
+                        System.out.printf("%s\n", cipher);
+                    }
+                    System.out.printf("\n");
+                    System.out.printf("default Ciphers\n");
+                    System.out.printf("------------------------------------------------\n");
+                    for (String cipher : sf.getDefaultCipherSuites()) {
+                        System.out.printf("%s\n", cipher);
                     }
                 } else {
                     System.out.printf("Unknown Command\n");

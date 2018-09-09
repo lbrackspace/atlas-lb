@@ -1,3 +1,4 @@
 *.json
 target/*
 conf.*
+cp.txt

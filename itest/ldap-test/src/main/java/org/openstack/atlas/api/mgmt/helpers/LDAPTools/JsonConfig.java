@@ -10,7 +10,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.staticutils.StaticFileUtils;
+import javax.naming.directory.SearchControls;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 public class JsonConfig {
 
@@ -27,12 +29,13 @@ public class JsonConfig {
     private static final String exampleJson = ""
             + "{\n"
             + "  \"groupConfig\": {\n"
-            + "    \"dn\": \"ou=Users,o=rackspace\", \n"
-            + "    \"memberField\": \"groupMembership\", \n"
+            + "    \"dn\": \"ou=Accounts,dc=rackspace,dc=corp\", \n"
+            + "    \"memberField\": \"memberOf\", \n"
             + "    \"sdn\": \"cn\", \n"
-            + "    \"userQeury\": \"(cn=%s)\", \n"
+            + "    \"userQuery\": \"(uid=%s)\", \n"
             + "    \"objectClass\": \"(objectClass=*)\"\n"
             + "  }, \n"
+            + "  \"appendtoname\": \"@rackspace.corp\", \n"
             + "  \"roles\": {\n"
             + "    \"support\": \"lbaas_support\", \n"
             + "    \"cp\": \"lbaas_cloud_control\", \n"
@@ -41,14 +44,16 @@ public class JsonConfig {
             + "  }, \n"
             + "  \"bind\": {\n"
             + "    \"password\": \"CENSORED\", \n"
-            + "    \"user\": \"CENSORSED\"\n"
+            + "    \"user\": \"CENSORD\"\n"
             + "  }, \n"
+            + "  \"isactivedirectory\": true, \n"
             + "  \"userConfig\": {\n"
-            + "    \"dn\": \"ou=Users,o=rackspace\", \n"
-            + "    \"sdn\": \"cn\"\n"
+            + "    \"dn\": \"ou=Accounts,dc=rackspace,dc=corp\", \n"
+            + "    \"sdn\": \"uid\"\n"
             + "  }, \n"
-            + "  \"host\": \"edir.ord1.corp.rackspace.com\", \n"
+            + "  \"host\": \"ad.auth.rackspace.com\", \n"
             + "  \"connect\": \"ssl\", \n"
+            + "  \"scope\": \"subtree\", \n"
             + "  \"port\": 636\n"
             + "}";
 
@@ -70,11 +75,12 @@ public class JsonConfig {
         conf.setMossoAuthConfig(mossoAuthConfig);
         ClassConfig userConfig = new ClassConfig();
         GroupConfig groupConfig = new GroupConfig();
-        Map<String, String> roles = new HashMap<String, String>();
+        Map<String, String> roles = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
 
         try {
             String tmpStr;
             Long tmpLong;
+            Boolean tmpBool;
 
             JSONObject json = (JSONObject) jp.parse(jsonStr);
             tmpStr = (String) json.get("host");
@@ -91,9 +97,9 @@ public class JsonConfig {
             mossoAuthConfig.setPort(tmpLong.intValue());
 
             tmpStr = (String) json.get("connect");
-            if(tmpStr.equalsIgnoreCase("SSL")){
+            if (tmpStr.equalsIgnoreCase("SSL")) {
                 mossoAuthConfig.setConnectMethod(MossoAuthConfig.LDAPConnectMethod.SSL);
-            }else if(tmpStr.equalsIgnoreCase("TLS")){
+            } else if (tmpStr.equalsIgnoreCase("TLS")) {
                 mossoAuthConfig.setConnectMethod(MossoAuthConfig.LDAPConnectMethod.TLS);
             }
 
@@ -101,40 +107,56 @@ public class JsonConfig {
             JSONObject jsonGroupConfig = (JSONObject) json.get("groupConfig");
 
             tmpStr = (String) jsonGroupConfig.get("dn");
-           groupConfig.setDn(tmpStr);
+            groupConfig.setDn(tmpStr);
 
-            tmpStr = (String)jsonGroupConfig.get("'memberField");
+            tmpStr = (String) jsonGroupConfig.get("memberField");
+            tmpStr = (String) jsonGroupConfig.get("memberField");
             groupConfig.setMemberField(tmpStr);
 
-            tmpStr = (String)jsonGroupConfig.get("sdn");
+            tmpStr = (String) jsonGroupConfig.get("sdn");
             groupConfig.setSdn(tmpStr);
 
-            tmpStr = (String)jsonGroupConfig.get("userQuery");
+            tmpStr = (String) jsonGroupConfig.get("userQuery");
             groupConfig.setUserQuery(tmpStr);
 
-            tmpStr = (String)jsonGroupConfig.get("objectClass");
+            tmpStr = (String) jsonGroupConfig.get("objectClass");
             groupConfig.setObjectClass(tmpStr);
 
             // Get the user config
-            JSONObject jsonUserConfig = (JSONObject)json.get("userConfig");
+            JSONObject jsonUserConfig = (JSONObject) json.get("userConfig");
 
-            tmpStr = (String)jsonUserConfig.get("dn");
+            tmpStr = (String) jsonUserConfig.get("dn");
             userConfig.setDn(tmpStr);
-            
-            tmpStr = (String)jsonUserConfig.get("sdn");
+
+            tmpStr = (String) jsonUserConfig.get("sdn");
             userConfig.setSdn(tmpStr);
-            
+
             conf.setGroupConfig(groupConfig);
             conf.setClassConfig(userConfig);
 
             // set all the roles
-            JSONObject jsonRoles = (JSONObject)json.get("roles");
-            for(Object obj : jsonRoles.entrySet()) {
-                Entry<String, String> ent = (Entry<String, String>)obj;
+            JSONObject jsonRoles = (JSONObject) json.get("roles");
+            for (Object obj : jsonRoles.entrySet()) {
+                Entry<String, String> ent = (Entry<String, String>) obj;
                 String roleName = ent.getKey();
                 String ldapGroup = ent.getValue();
-                roles.put(roleName, ldapGroup);
+                roles.put(ldapGroup, roleName);
             }
+            tmpBool = (Boolean) json.get("isactivedirectory");
+            mossoAuthConfig.setIsActiveDirectory(tmpBool);
+
+            tmpStr = (String) json.get("appendtoname");
+            mossoAuthConfig.setAppendName(tmpStr);
+
+            tmpStr = (String) json.get("scope");
+            if (tmpStr.equalsIgnoreCase("onelevel")) {
+                mossoAuthConfig.setScope(SearchControls.ONELEVEL_SCOPE);
+            } else if (tmpStr.equalsIgnoreCase("subtree")) {
+                mossoAuthConfig.setScope(SearchControls.SUBTREE_SCOPE);
+            } else if (tmpStr.equalsIgnoreCase("object")) {
+                mossoAuthConfig.setScope(SearchControls.OBJECT_SCOPE);
+            }
+
             conf.setRoles(roles);
             Debug.nop();
         } catch (ParseException ex) {
