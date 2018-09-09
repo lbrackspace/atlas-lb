@@ -6,8 +6,6 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-api</artifactId>
         <version>1.25.57-SNAPSHOT</version>
-
-
     </parent>
 
     <artifactId>atlas-mgmt-web</artifactId>
@@ -18,35 +16,14 @@
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>atlas-common-api</artifactId>
+            <artifactId>atlas-mgmt-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>atlas-util</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <!--<dependency>-->
-            <!--<groupId>org.mockito</groupId>-->
-            <!--<artifactId>mockito-all</artifactId>-->
-        <!--</dependency>-->
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-        </dependency>
-
         <!--Added for odd javassit error 4/15/2013-->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-web</artifactId>
         </dependency>
     </dependencies>
 
