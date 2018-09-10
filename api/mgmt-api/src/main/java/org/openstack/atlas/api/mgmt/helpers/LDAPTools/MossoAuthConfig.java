@@ -11,14 +11,19 @@ import java.util.Set;
 
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import javax.naming.directory.SearchControls;
 
 public class MossoAuthConfig {
+
     private String fileName;
     private LDAPConnectMethod connectMethod;
     private String host;
     private Set<String> allowedGroups;
     private Map<String, HashSet<String>> roles;
+    private String appendName;
     private int port;
+    private int scope = SearchControls.ONELEVEL_SCOPE; // default for eDir
+    private boolean isActiveDirectory = false;
     private boolean allowforcedRole = false;
     private boolean allowBypassAuth = false;
     private int ttl = 300; // Cache timeout
@@ -64,21 +69,20 @@ public class MossoAuthConfig {
                     this.host = value;
                 } else if (name.equals("port")) {
                     this.port = Integer.parseInt(value);
-                } else if (name.equals("connect") && value.equals("ssl")) {
+                } else if (name.equals("connect") && value.equalsIgnoreCase("ssl")) {
                     this.connectMethod = LDAPConnectMethod.SSL;
-                } else if (name.equals("connect") && value.equals("tls")) {
+                } else if (name.equals("connect") && value.equalsIgnoreCase("tls")) {
                     this.connectMethod = LDAPConnectMethod.TLS;
                 } else if (name.equals("ttl")) {
                     this.ttl = Integer.parseInt(value);
-                } else if (name.equals("allowforcedrole") && value.equals("true")) {
+                } else if (name.equals("allowforcedrole") && value.equalsIgnoreCase("true")) {
                     this.allowforcedRole = true;
-                } else if (name.equals("allowbypassauth") && value.equals("true")) {
+                } else if (name.equals("allowbypassauth") && value.equalsIgnoreCase("true")) {
                     this.allowBypassAuth = true;
-                } else {
-                    continue;
+                } else if (name.equals("isactivedirectory") && value.equalsIgnoreCase("true")) {
+                    this.isActiveDirectory = true;
                 }
             }
-
         }
         br.close();
         fr.close();
@@ -159,4 +163,28 @@ public class MossoAuthConfig {
 
         TLS, SSL
     };
+
+    public boolean isIsActiveDirectory() {
+        return isActiveDirectory;
+    }
+
+    public void setIsActiveDirectory(boolean isActiveDirectory) {
+        this.isActiveDirectory = isActiveDirectory;
+    }
+
+    public String getAppendName() {
+        return appendName;
+    }
+
+    public void setAppendName(String appendName) {
+        this.appendName = appendName;
+    }
+
+    public int getScope() {
+        return scope;
+    }
+
+    public void setScope(int scope) {
+        this.scope = scope;
+    }
 }
