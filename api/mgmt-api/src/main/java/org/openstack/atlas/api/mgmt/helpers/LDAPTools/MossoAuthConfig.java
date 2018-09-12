@@ -1,27 +1,29 @@
 package org.openstack.atlas.api.mgmt.helpers.LDAPTools;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.openstack.atlas.util.debug.Debug;
+import org.openstack.atlas.util.staticutils.StaticFileUtils;
+
+import java.io.*;
 import java.security.GeneralSecurityException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 import javax.naming.directory.SearchControls;
 
 public class MossoAuthConfig {
 
+    private ClassConfig classConfig;
+    private GroupConfig groupConfig;
     private String fileName;
     private LDAPConnectMethod connectMethod;
     private String host;
     private Set<String> allowedGroups;
-    private Map<String, HashSet<String>> roles;
+    private Map<String, String> roles;
     private String appendName;
-    private int port;
+    private Long port;
     private int scope = SearchControls.ONELEVEL_SCOPE; // default for eDir
     private boolean isActiveDirectory = false;
     private boolean allowforcedRole = false;
@@ -33,7 +35,7 @@ public class MossoAuthConfig {
     public MossoAuthConfig() {
     }
 
-    public MossoAuthConfig(String host, int port) {
+    public MossoAuthConfig(String host, Long port) {
         this.host = host;
         this.port = port;
     }
@@ -41,51 +43,98 @@ public class MossoAuthConfig {
     public MossoAuthConfig(String fileName) throws IOException, GeneralSecurityException {
         int i;
         this.fileName = fileName;
+
+        String[] cols;
+
+        allowedGroups = new HashSet<String>();
+        roles = new HashMap<String, String>();
+
+        ClassConfig userConfig = new ClassConfig();
+        GroupConfig groupConfig = new GroupConfig();
+        Map<String, String> roles = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
+
         String line;
         FileReader fr = new FileReader(fileName);
         BufferedReader br = new BufferedReader(fr);
-        allowedGroups = new HashSet<String>();
-        String[] cols;
-        roles = new HashMap<String, HashSet<String>>();
-        while ((line = br.readLine()) != null) {
-            line.replace("\n", "");
-            Matcher m = opRe.matcher(line);
-            if (m.find()) {
-                String name = m.group(1).trim();
-                String value = m.group(2).trim();
-                Matcher r = rolesRe.matcher(name);
-                if (r.find()) {
-                    String roleName = r.group(1).trim();
-                    String[] groupNames = value.trim().split(",");
-                    if (!roles.containsKey(roleName)) {
-                        roles.put(roleName, new HashSet<String>());
-                    }
-                    for (i = 0; i < groupNames.length; i++) {
-                        String groupName = groupNames[i];
-                        allowedGroups.add(groupName);
-                        roles.get(roleName).add(groupName);
-                    }
-                } else if (name.equals("host")) {
-                    this.host = value;
-                } else if (name.equals("port")) {
-                    this.port = Integer.parseInt(value);
-                } else if (name.equals("connect") && value.equalsIgnoreCase("ssl")) {
-                    this.connectMethod = LDAPConnectMethod.SSL;
-                } else if (name.equals("connect") && value.equalsIgnoreCase("tls")) {
-                    this.connectMethod = LDAPConnectMethod.TLS;
-                } else if (name.equals("ttl")) {
-                    this.ttl = Integer.parseInt(value);
-                } else if (name.equals("allowforcedrole") && value.equalsIgnoreCase("true")) {
-                    this.allowforcedRole = true;
-                } else if (name.equals("allowbypassauth") && value.equalsIgnoreCase("true")) {
-                    this.allowBypassAuth = true;
-                } else if (name.equals("isactivedirectory") && value.equalsIgnoreCase("true")) {
-                    this.isActiveDirectory = true;
-                }
+
+        JSONParser jp = new JSONParser();
+        byte[] jsonBytes = StaticFileUtils.readFile(new File(fileName));
+        String jsonStr = new String(jsonBytes, "utf-8");
+
+
+        try {
+            String tmpStr;
+            Long tmpLong;
+            Boolean tmpBool;
+
+            JSONObject json = (JSONObject) jp.parse(jsonStr);
+            this.host = (String) json.get("host");
+
+            this.port = (Long) json.get("port");
+
+            tmpStr = (String) json.get("connect");
+            if (tmpStr.equalsIgnoreCase("SSL")) {
+                this.connectMethod = LDAPConnectMethod.SSL;
+            } else if (tmpStr.equalsIgnoreCase("TLS")) {
+                this.connectMethod = LDAPConnectMethod.TLS;
             }
+
+            // Get the group config
+            JSONObject jsonGroupConfig = (JSONObject) json.get("groupConfig");
+
+            tmpStr = (String) jsonGroupConfig.get("dn");
+            groupConfig.setDn(tmpStr);
+
+            tmpStr = (String) jsonGroupConfig.get("memberField");
+            groupConfig.setMemberField(tmpStr);
+
+            tmpStr = (String) jsonGroupConfig.get("sdn");
+            groupConfig.setSdn(tmpStr);
+
+            tmpStr = (String) jsonGroupConfig.get("userQuery");
+            groupConfig.setUserQuery(tmpStr);
+
+            tmpStr = (String) jsonGroupConfig.get("objectClass");
+            groupConfig.setObjectClass(tmpStr);
+            this.groupConfig = groupConfig;
+
+            // Get the user config
+            JSONObject jsonUserConfig = (JSONObject) json.get("userConfig");
+
+            tmpStr = (String) jsonUserConfig.get("dn");
+            userConfig.setDn(tmpStr);
+
+            tmpStr = (String) jsonUserConfig.get("sdn");
+            userConfig.setSdn(tmpStr);
+            this.classConfig = userConfig;
+
+            // set all the roles
+            JSONObject jsonRoles = (JSONObject) json.get("roles");
+            for (Object obj : jsonRoles.entrySet()) {
+                Map.Entry<String, String> ent = (Map.Entry<String, String>) obj;
+                String roleName = ent.getKey();
+                String ldapGroup = ent.getValue();
+                roles.put(ldapGroup, roleName);
+            }
+            this.roles = roles;
+
+            this.isActiveDirectory = (Boolean) json.get("isactivedirectory");
+
+            this.appendName = (String) json.get("appendtoname");
+
+            tmpStr = (String) json.get("scope");
+            if (tmpStr.equalsIgnoreCase("onelevel")) {
+                this.scope = SearchControls.ONELEVEL_SCOPE;
+            } else if (tmpStr.equalsIgnoreCase("subtree")) {
+                this.scope = SearchControls.SUBTREE_SCOPE;
+            } else if (tmpStr.equalsIgnoreCase("object")) {
+                this.scope = SearchControls.OBJECT_SCOPE;
+            }
+
+            Debug.nop();
+        } catch (ParseException ex) {
+            throw new IOException("Error parsing json", ex);
         }
-        br.close();
-        fr.close();
     }
 
     public String getHost() {
@@ -96,11 +145,11 @@ public class MossoAuthConfig {
         this.host = host;
     }
 
-    public int getPort() {
+    public Long getPort() {
         return port;
     }
 
-    public void setPort(int port) {
+    public void setPort(Long port) {
         this.port = port;
     }
 
@@ -112,6 +161,22 @@ public class MossoAuthConfig {
         this.setAllowedGroups(allowedGroups);
     }
 
+    public ClassConfig getClassConfig() {
+        return classConfig;
+    }
+
+    public void setClassConfig(ClassConfig classConfig) {
+        this.classConfig = classConfig;
+    }
+
+    public GroupConfig getGroupConfig() {
+        return groupConfig;
+    }
+
+    public void setGroupConfig(GroupConfig groupConfig) {
+        this.groupConfig = groupConfig;
+    }
+
     public LDAPConnectMethod getConnectMethod() {
         return connectMethod;
     }
@@ -120,11 +185,11 @@ public class MossoAuthConfig {
         this.connectMethod = connectMethod;
     }
 
-    public Map<String, HashSet<String>> getRoles() {
+    public Map<String, String> getRoles() {
         return roles;
     }
 
-    public void setRoles(Map<String, HashSet<String>> roles) {
+    public void setRoles(Map<String, String> roles) {
         this.roles = roles;
     }
 

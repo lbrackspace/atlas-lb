@@ -103,9 +103,9 @@ public class ManageAuthFilter implements Filter {
             if (mossoAuth.getConfig().isAllowforcedRole() && forcedRolesHeaders != null) {
                 while (forcedRolesHeaders.hasMoreElements()) {
                     String role = forcedRolesHeaders.nextElement();
-                    Map<String, HashSet<String>> roleMap = mossoAuth.getConfig().getRoles();
-                    if (roleMap.containsKey(role) && roleMap.get(role).iterator().hasNext()) {
-                        String groupToForce = roleMap.get(role).iterator().next();
+                    Map<String, String> roleMap = mossoAuth.getConfig().getRoles();
+                    if (roleMap.containsKey(role)) {
+                        String groupToForce = roleMap.get(role);
                         groups.add(groupToForce);
                     }
                 }
@@ -177,9 +177,9 @@ public class ManageAuthFilter implements Filter {
         if (mossoAuth.getConfig().isAllowforcedRole() && forcedRolesHeaders != null) {
             while (forcedRolesHeaders.hasMoreElements()) {
                 String role = forcedRolesHeaders.nextElement();
-                Map<String, HashSet<String>> roleMap = mossoAuth.getConfig().getRoles();
-                if (roleMap.containsKey(role) && roleMap.get(role).iterator().hasNext()) {
-                    String groupToForce = roleMap.get(role).iterator().next();
+                Map<String, String> roleMap = mossoAuth.getConfig().getRoles();
+                if (roleMap.containsKey(role)) {
+                    String groupToForce = roleMap.get(role);
                     groups.add(groupToForce);
                 }
             }

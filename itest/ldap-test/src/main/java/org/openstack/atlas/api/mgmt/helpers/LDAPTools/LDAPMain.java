@@ -39,7 +39,7 @@ public class LDAPMain {
             Map<String, GroupConfig> groupConfigMap = new HashMap<String, GroupConfig>();
             classConfigMap.put("user", conf.getClassConfig());
             groupConfigMap.put("groups", conf.getGroupConfig());
-            mossoAuth = new MossoAuth(conf.getMossoAuthConfig(), groupConfigMap, classConfigMap);
+            mossoAuth = new MossoAuth(conf.getMossoAuthConfig());
 
             // Test if the user is in ldap
             user = conf.getUser();

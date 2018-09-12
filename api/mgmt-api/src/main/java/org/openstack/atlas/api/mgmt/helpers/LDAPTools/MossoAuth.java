@@ -2,8 +2,6 @@ package org.openstack.atlas.api.mgmt.helpers.LDAPTools;
 
 import java.io.IOException;
 import java.security.Security;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -20,8 +18,8 @@ public class MossoAuth {
 
     private static final int PAGESIZE = 4096;
     private MossoAuthConfig config;
-    private Map<String, GroupConfig> groupMap;
-    private Map<String, ClassConfig> classMap;
+    private GroupConfig groupMap;
+    private ClassConfig classMap;
 
     static {
         Security.addProvider(new OverTrustingTrustProvider());
@@ -31,31 +29,30 @@ public class MossoAuth {
     public MossoAuth() {
     }
 
-    public MossoAuth(MossoAuthConfig config, Map<String, GroupConfig> groupMap, Map<String, ClassConfig> classMap) {
+    public MossoAuth(MossoAuthConfig config) {
         this.config = config;
-        this.groupMap = groupMap;
-        this.classMap = classMap;
+        this.classMap = config.getClassConfig();
+        this.groupMap = config.getGroupConfig();
+
     }
 
     public boolean testAuth(String user, String passwd) {
-        ClassConfig uc;
         LdapContext ctx;
         String udn;
         nop();
         NamingEnumeration<SearchResult> results;
+
         if (user == null || passwd == null || user.equals("") || passwd.equals("")) {
             return false; // Prevents annonymouse binds.
         }
         SearchControls ctls = new SearchControls();
         ctls.setSearchScope(config.getScope());
-        uc = classMap.get("user");
         String filter = String.format("cn=%s", user);
-        udn = uc.getDn();
-        LDAPCtxContainer ct = new LDAPCtxContainer(config, classMap.get("user"));
+        LDAPCtxContainer ct = new LDAPCtxContainer(config, classMap);
         try {
             ct.connect(user, passwd);
             ctx = ct.getCtx();
-            results = ctx.search(udn, filter, ctls);
+            results = ctx.search(classMap.getDn(), filter, ctls);
             ct.disconnect();
         } catch (NamingException ex) {
             String msg = Debug.getEST(ex);
@@ -80,8 +77,8 @@ public class MossoAuth {
         if (user == null || passwd == null || user.equals("") || passwd.equals("")) {
             return groupSet; // Returns empty groupset on annonymouse binds.
         }
-        GroupConfig gc = this.groupMap.get("groups");
-        LDAPCtxContainer ct = new LDAPCtxContainer(config, classMap.get("user"));
+        GroupConfig gc = this.groupMap;
+        LDAPCtxContainer ct = new LDAPCtxContainer(config, classMap);
         String query = gc.getUserQuery();
         String escapeUser = escapeFilter(user);
         String filter = String.format(query, escapeUser);
@@ -117,19 +114,19 @@ public class MossoAuth {
         this.config = config;
     }
 
-    public Map<String, GroupConfig> getGroupMap() {
+    public GroupConfig getGroupMap() {
         return groupMap;
     }
 
-    public void setGroupMap(Map<String, GroupConfig> classMap) {
+    public void setGroupMap(GroupConfig classMap) {
         this.groupMap = classMap;
     }
 
-    public Map<String, ClassConfig> getClassMap() {
+    public ClassConfig getClassMap() {
         return classMap;
     }
 
-    public void setClassMap(Map<String, ClassConfig> classMap) {
+    public void setClassMap(ClassConfig classMap) {
         this.classMap = classMap;
     }
 

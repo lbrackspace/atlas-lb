@@ -94,7 +94,7 @@ public class JsonConfig {
             conf.setPassword(tmpStr);
 
             tmpLong = (Long) json.get("port");
-            mossoAuthConfig.setPort(tmpLong.intValue());
+            mossoAuthConfig.setPort(tmpLong);
 
             tmpStr = (String) json.get("connect");
             if (tmpStr.equalsIgnoreCase("SSL")) {

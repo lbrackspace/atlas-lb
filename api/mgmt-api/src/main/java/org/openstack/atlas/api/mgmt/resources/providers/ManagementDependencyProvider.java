@@ -319,12 +319,12 @@ public class ManagementDependencyProvider {
 
     public Set<String> userRoles() {
         Set<String> out = new HashSet<String>();
-        Map<String, HashSet<String>> roleMap = getMossoAuthConfig().getRoles();
+        Map<String, String> roleMap = getMossoAuthConfig().getRoles();
         Set<String> roleNames = roleMap.keySet();
         for (String roleName : roleNames) {
-            Set<String> groupsInRole = roleMap.get(roleName);
+            String groupsInRole = roleMap.get(roleName);
             Set<String> ldapGroups = getLDAPGroups();
-            if (intersection(ldapGroups, groupsInRole).size() > 0) {
+            if (ldapGroups.contains(groupsInRole)) {
                 out.add(roleName);
             }
         }
@@ -363,8 +363,8 @@ public class ManagementDependencyProvider {
                 String msg = String.format(format, roleName, fileName);
                 throw new IllegalArgumentException(msg);
             }
-            Set<String> roleSet = getMossoAuthConfig().getRoles().get(roleName);
-            if (intersection(getLDAPGroups(), roleSet).size() > 0) {
+            String group = getMossoAuthConfig().getRoles().get(roleName);
+            if (getLDAPGroups().contains(group)) {
                 out = true;
                 return out;
             }
