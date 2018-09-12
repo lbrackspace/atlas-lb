@@ -27,6 +27,7 @@ public class MossoAuthConfig {
     private int port;
     private int scope = SearchControls.ONELEVEL_SCOPE; // default for eDir
     private boolean isActiveDirectory = false;
+    private boolean useHostVerify = true;
     private boolean allowforcedRole = false;
     private boolean allowBypassAuth = false;
     private int ttl = 300; // Cache timeout
@@ -51,6 +52,7 @@ public class MossoAuthConfig {
                 + "    \"ops\": \"lbaas_ops\"\n"
                 + "  }, \n"
                 + "  \"isactivedirectory\": true, \n"
+                + "  \"usehostverify\": true, \n"
                 + "  \"userConfig\": {\n"
                 + "    \"dn\": \"ou=Accounts,dc=rackspace,dc=corp\", \n"
                 + "    \"sdn\": \"uid\"\n"
@@ -148,6 +150,7 @@ public class MossoAuthConfig {
             this.roles = roles;
 
             this.isActiveDirectory = (Boolean) json.get("isactivedirectory");
+            this.useHostVerify = (Boolean) json.get("usehostverify");
 
             tmpBool = (Boolean) json.get("allowbypassauth");
             if (tmpBool != null) {
@@ -274,6 +277,14 @@ public class MossoAuthConfig {
 
     public void setIsActiveDirectory(boolean isActiveDirectory) {
         this.isActiveDirectory = isActiveDirectory;
+    }
+
+    public boolean isUseHostVerify() {
+        return useHostVerify;
+    }
+
+    public void setUseHostVerify(boolean useHostVerify) {
+        this.useHostVerify = useHostVerify;
     }
 
     public String getAppendName() {

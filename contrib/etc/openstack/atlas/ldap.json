@@ -18,6 +18,7 @@
     "dn": "ou=Accounts,dc=rackspace,dc=corp",
     "sdn": "uid"
   },
+  "usehostverify": true,
   "host": "ad.auth.rackspace.com",
   "connect": "ssl",
   "scope": "subtree",

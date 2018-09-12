@@ -38,6 +38,7 @@ public class MossoAuthConfigTest {
             + "    \"ops\": \"lbaas_ops\"\n"
             + "  }, \n"
             + "  \"isactivedirectory\": true, \n"
+            + "  \"usehostverify\": true, \n"
             + "  \"userConfig\": {\n"
             + "    \"dn\": \"ou=Accounts,dc=rackspace,dc=corp\", \n"
             + "    \"sdn\": \"uid\"\n"
@@ -80,6 +81,7 @@ public class MossoAuthConfigTest {
         assertEquals("billing", tConf.getRoles().get("legacy_billing"));
         assertEquals("cp", tConf.getRoles().get("lbaas_cloud_control"));
         assertEquals("support", tConf.getRoles().get("lbaas_support"));
+        assertTrue(tConf.isUseHostVerify());
 
     }
 }

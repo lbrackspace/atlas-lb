@@ -33,7 +33,6 @@ public class MossoAuth {
         this.config = config;
         this.classMap = config.getClassConfig();
         this.groupMap = config.getGroupConfig();
-
     }
 
     public boolean testAuth(String user, String passwd) {
