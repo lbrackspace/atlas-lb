@@ -1,4 +1,3 @@
 *.pyc
 *.json
-conf.*
 test.py
