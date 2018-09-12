@@ -16,35 +16,8 @@ import org.openstack.atlas.util.staticutils.StaticStringUtils;
 
 public class LDAPMain {
 
-    private static final String exampleJson = ""
-            + "{\n"
-            + "  \"groupConfig\": {\n"
-            + "    \"dn\": \"ou=Accounts,dc=rackspace,dc=corp\", \n"
-            + "    \"memberField\": \"memberOf\", \n"
-            + "    \"sdn\": \"cn\", \n"
-            + "    \"userQuery\": \"(uid=%s)\", \n"
-            + "    \"objectClass\": \"(objectClass=*)\"\n"
-            + "  }, \n"
-            + "  \"appendtoname\": \"@rackspace.corp\", \n"
-            + "  \"roles\": {\n"
-            + "    \"support\": \"lbaas_support\", \n"
-            + "    \"cp\": \"lbaas_cloud_control\", \n"
-            + "    \"billing\": \"legacy_billing\", \n"
-            + "    \"ops\": \"lbaas_ops\"\n"
-            + "  }, \n"
-            + "  \"isactivedirectory\": true, \n"
-            + "  \"userConfig\": {\n"
-            + "    \"dn\": \"ou=Accounts,dc=rackspace,dc=corp\", \n"
-            + "    \"sdn\": \"uid\"\n"
-            + "  }, \n"
-            + "  \"host\": \"10.12.99.71\", \n"
-            + "  \"connect\": \"ssl\", \n"
-            + "  \"scope\": \"subtree\", \n"
-            + "  \"port\": 636\n"
-            + "}\n"
-            + "";
-
     public static void main(String[] mainArgs) throws IOException {
+
         BufferedReader stdin = StaticFileUtils.inputStreamToBufferedReader(System.in);
         MossoAuth mossoAuth;
         MossoAuthConfig conf;
@@ -57,19 +30,18 @@ public class LDAPMain {
             System.out.printf("Usage is <configJsonFile>\n");
             System.out.printf("\n");
             System.out.printf("runs the snmpCommandline tester using the jsonConfig from the\n");
-            System.out.printf("specified file. Example configuration\n%s\n", exampleJson);
+            System.out.printf("specified file. Example configuration\n%s\n", MossoAuthConfig.exampleJson);
             return;
         }
         conf_filename = mainArgs[0];
         try {
             jsonFile = new File(StaticFileUtils.expandUser(conf_filename));
-            conf = new MossoAuthConfig(conf_filename);
-            mossoAuth = new MossoAuth(conf);
             System.out.printf("Enter username: ");
             System.out.flush();
             user = StaticStringUtils.stripCRLF(stdin.readLine());
             password = readPasswd("Enter password: ", stdin);
-
+            conf = new MossoAuthConfig(conf_filename);
+            mossoAuth = new MossoAuth(conf);
             if (mossoAuth.testAuth(user, password)) {
                 System.out.printf("GOOD login %s\n", user);
             } else {

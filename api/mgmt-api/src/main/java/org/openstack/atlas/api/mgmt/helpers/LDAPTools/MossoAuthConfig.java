@@ -15,6 +15,7 @@ import javax.naming.directory.SearchControls;
 
 public class MossoAuthConfig {
 
+    public static final String exampleJson;
     private ClassConfig classConfig;
     private GroupConfig groupConfig;
     private String fileName;
@@ -31,6 +32,37 @@ public class MossoAuthConfig {
     private int ttl = 300; // Cache timeout
     private static final Pattern opRe = Pattern.compile("(\\S+)\\s*=\\s*\\\"(.*)\\\"");
     private static final Pattern rolesRe = Pattern.compile("grouprole\\[\\s*\"(\\S+)\"\\s*\\]");
+
+    static {
+        exampleJson = ""
+                + "{\n"
+                + "  \"groupConfig\": {\n"
+                + "    \"dn\": \"ou=Accounts,dc=rackspace,dc=corp\", \n"
+                + "    \"memberField\": \"memberOf\", \n"
+                + "    \"sdn\": \"cn\", \n"
+                + "    \"userQuery\": \"(uid=%s)\", \n"
+                + "    \"objectClass\": \"(objectClass=*)\"\n"
+                + "  }, \n"
+                + "  \"appendtoname\": \"@rackspace.corp\", \n"
+                + "  \"roles\": {\n"
+                + "    \"support\": \"lbaas_support\", \n"
+                + "    \"cp\": \"lbaas_cloud_control\", \n"
+                + "    \"billing\": \"legacy_billing\", \n"
+                + "    \"ops\": \"lbaas_ops\"\n"
+                + "  }, \n"
+                + "  \"isactivedirectory\": true, \n"
+                + "  \"userConfig\": {\n"
+                + "    \"dn\": \"ou=Accounts,dc=rackspace,dc=corp\", \n"
+                + "    \"sdn\": \"uid\"\n"
+                + "  }, \n"
+                + "  \"host\": \"10.12.99.71\", \n"
+                + "  \"connect\": \"ssl\", \n"
+                + "  \"allowbypassauth\": false, \n"
+                + "  \"allowforcedrole\": false\n"
+                + "  \"scope\": \"subtree\", \n"
+                + "  \"port\": 636\n"
+                + "}";
+    }
 
     public MossoAuthConfig() {
     }
@@ -53,10 +85,6 @@ public class MossoAuthConfig {
         GroupConfig groupConfig = new GroupConfig();
         Map<String, String> roles = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
 
-        String line;
-        FileReader fr = new FileReader(fileName);
-        BufferedReader br = new BufferedReader(fr);
-
         JSONParser jp = new JSONParser();
         byte[] jsonBytes = StaticFileUtils.readFile(new File(fileName));
         String jsonStr = new String(jsonBytes, "utf-8");
@@ -70,7 +98,9 @@ public class MossoAuthConfig {
             JSONObject json = (JSONObject) jp.parse(jsonStr);
             this.host = (String) json.get("host");
 
-
+            tmpLong = (Long)json.get("port");
+            this.port = tmpLong.intValue();
+            
             tmpStr = (String) json.get("connect");
             if (tmpStr.equalsIgnoreCase("SSL")) {
                 this.connectMethod = LDAPConnectMethod.SSL;
@@ -118,6 +148,16 @@ public class MossoAuthConfig {
             this.roles = roles;
 
             this.isActiveDirectory = (Boolean) json.get("isactivedirectory");
+
+            tmpBool = (Boolean) json.get("allowbypassauth");
+            if (tmpBool != null) {
+                this.allowBypassAuth = tmpBool;
+            }
+
+            tmpBool = (Boolean) json.get("allowforcedroles");
+            if (tmpBool != null) {
+                this.allowforcedRole = tmpBool;
+            }
 
             this.appendName = (String) json.get("appendtoname");
 

@@ -7,7 +7,7 @@
         <version>1.25.58-SNAPSHOT</version>
     </parent>
     <groupId>org.openstack.atlas</groupId>
-    <artifactId>ldap-test</artifactId>
+    <artifactId>atlas-ldap-test</artifactId>
     <name>Openstack :: Atlas :: Integration tests :: LDAP Tests</name>
     <version>1.25.58-SNAPSHOT</version>
     <packaging>jar</packaging>

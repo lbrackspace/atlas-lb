@@ -15,7 +15,7 @@ public class MossoAuthConfigTest {
     private String uid;
     private String ctext;
     private String password;
-    static String host;
+    private String host;
     private int port = 636;
 
     public MossoAuthConfigTest() {

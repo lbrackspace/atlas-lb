@@ -1,5 +1,7 @@
 package org.openstack.atlas.api.mgmt.filters;
 
+import org.infinispan.util.FastCopyHashMap.EntrySet;
+import java.util.HashMap;
 import org.openstack.atlas.api.mgmt.filters.helpers.UserEntry;
 import org.openstack.atlas.util.simplecache.CacheEntry;
 import org.openstack.atlas.util.simplecache.SimpleCache;
@@ -47,6 +49,7 @@ public class ManageAuthFilter implements Filter {
     private static final String LDAPUSER = "LDAPUser";
     private static final Pattern jsonUriPattern = Pattern.compile(".*\\.json$", Pattern.CASE_INSENSITIVE);
     private static final Pattern xmlUriPattern = Pattern.compile(".*\\.xml$", Pattern.CASE_INSENSITIVE);
+    private Map<String, String> reverseRoleMap = null;
 
 
     static {
@@ -76,6 +79,15 @@ public class ManageAuthFilter implements Filter {
         Set<String> groups;
         HttpServletRequest hreq = (HttpServletRequest) sreq;
         HttpServletResponse hresp = (HttpServletResponse) sresp;
+        if(reverseRoleMap == null){
+            synchronized(this){
+                reverseRoleMap = new HashMap<String, String>();
+                Map<String, String> roleMap = mossoAuth.getConfig().getRoles();
+                for(Map.Entry<String, String> ent : roleMap.entrySet()){
+                    reverseRoleMap.put(ent.getValue(), ent.getKey());
+                }
+            }
+        }
         Enumeration<String> forcedRolesHeaders;
         String accept = hreq.getHeader("Accept");
         AcceptTypes ats = AcceptTypes.getPrefferedAcceptTypes(accept);
@@ -103,9 +115,8 @@ public class ManageAuthFilter implements Filter {
             if (mossoAuth.getConfig().isAllowforcedRole() && forcedRolesHeaders != null) {
                 while (forcedRolesHeaders.hasMoreElements()) {
                     String role = forcedRolesHeaders.nextElement();
-                    Map<String, String> roleMap = mossoAuth.getConfig().getRoles();
-                    if (roleMap.containsKey(role)) {
-                        String groupToForce = roleMap.get(role);
+                    if (reverseRoleMap.containsKey(role)) {
+                        String groupToForce = reverseRoleMap.get(role);
                         groups.add(groupToForce);
                     }
                 }
@@ -113,9 +124,10 @@ public class ManageAuthFilter implements Filter {
             HeadersRequestWrapper nreq = new HeadersRequestWrapper(hreq);
             nreq.overideHeader(LDAPGROUPS);
             nreq.overideHeader(LDAPUSER);
-            nreq.addHeader(LDAPGROUPS, HttpHeadersTools.set2commastr(groups));
+            String forcedGroups = HttpHeadersTools.set2commastr(groups);
+            nreq.addHeader(LDAPGROUPS, forcedGroups);
             nreq.addHeader(LDAPUSER, user);
-            fc.doFilter(sreq, sresp);
+            fc.doFilter(nreq, sresp);
             return;
         }
 
@@ -177,17 +189,17 @@ public class ManageAuthFilter implements Filter {
         if (mossoAuth.getConfig().isAllowforcedRole() && forcedRolesHeaders != null) {
             while (forcedRolesHeaders.hasMoreElements()) {
                 String role = forcedRolesHeaders.nextElement();
-                Map<String, String> roleMap = mossoAuth.getConfig().getRoles();
-                if (roleMap.containsKey(role)) {
-                    String groupToForce = roleMap.get(role);
-                    groups.add(groupToForce);
-                }
+                 if (reverseRoleMap.containsKey(role)) {
+                        String groupToForce = reverseRoleMap.get(role);
+                        groups.add(groupToForce);
+                    }
             }
         }
         HeadersRequestWrapper nreq = new HeadersRequestWrapper(hreq);
         nreq.overideHeader(LDAPGROUPS);
         nreq.overideHeader(LDAPUSER);
-        nreq.addHeader(LDAPGROUPS, HttpHeadersTools.set2commastr(groups));
+        String groupsStr = HttpHeadersTools.set2commastr(groups);
+        nreq.addHeader(LDAPGROUPS, groupsStr);
         nreq.addHeader(LDAPUSER, user);
         nop();
         try {

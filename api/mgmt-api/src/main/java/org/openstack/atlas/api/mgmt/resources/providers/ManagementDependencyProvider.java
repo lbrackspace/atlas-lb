@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources.providers;
 
+import javax.ws.rs.core.HttpHeaders;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
@@ -295,7 +296,8 @@ public class ManagementDependencyProvider {
         Set<String> groupSet = new HashSet<String>();
         List<String> groupList;
         try {
-            groupList = this.requestStateContainer.getHttpHeaders().getRequestHeader("LDAPGroups");
+            HttpHeaders requestHeaders = this.requestStateContainer.getHttpHeaders();
+            groupList = requestHeaders.getRequestHeader("LDAPGroups");
             if (groupList == null) {
                 return groupSet;
             } else {

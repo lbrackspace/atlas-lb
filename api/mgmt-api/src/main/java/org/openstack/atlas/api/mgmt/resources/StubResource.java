@@ -144,7 +144,7 @@ public class StubResource extends ManagementDependencyProvider {
             lg.setGroup(group);
             li.getLdapGroups().add(lg);
         }
-        for (String role : userRoles()) {
+        for (String role : userRoleSet) {
             ul = new UserRole();
             ul.setRoleName(role);
             li.getUserRoles().add(ul);
