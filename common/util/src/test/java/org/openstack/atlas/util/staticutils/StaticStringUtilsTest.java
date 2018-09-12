@@ -60,16 +60,16 @@ public class StaticStringUtilsTest {
         String out = "";
         Set<String> testSet = new HashSet<String>();
 
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
 
         testSet.add("test1");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
 
         testSet.add("test2");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
 
         testSet.add("test3");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
     }
 
     @Test
@@ -77,34 +77,39 @@ public class StaticStringUtilsTest {
         String out = "";
         List<String> testSet = new ArrayList<String>();
 
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
         assertTrue(out.equals("[]"));
         assertFalse(out.equals(""));
 
         testSet.add("test1");
 
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
         assertTrue(out.equals("[test1]"));
         assertFalse(out.equals(""));
 
         testSet.add("test2");
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
         assertTrue(out.equals("[test1, test2]"));
         assertFalse(out.equals(""));
 
         testSet.add("test3");
 
-        out = StaticStringUtils.<String>collectionToString(testSet,", ");
+        out = StaticStringUtils.<String>collectionToString(testSet, ", ");
         assertTrue(out.equals("[test1, test2, test3]"));
         assertFalse(out.equals(""));
     }
-    
+
     @Test
-    public void testJustOneCR(){
+    public void testJustOneCR() {
         assertEquals(StaticStringUtils.justOneCR("123"), "123\n");
-        assertEquals(StaticStringUtils.justOneCR("123\n"),"123\n");
-        assertEquals(StaticStringUtils.justOneCR("123\n\n"),"123\n");
-        assertEquals(StaticStringUtils.justOneCR(""),"\n");
-        assertEquals(StaticStringUtils.justOneCR("1\n2\n3\n"),"123\n");
+        assertEquals(StaticStringUtils.justOneCR("123\n"), "123\n");
+        assertEquals(StaticStringUtils.justOneCR("123\n\n"), "123\n");
+        assertEquals(StaticStringUtils.justOneCR(""), "\n");
+        assertEquals(StaticStringUtils.justOneCR("1\n2\n3\n"), "123\n");
+    }
+
+    @Test
+    public void testStripCRLF() {
+        assertEquals(StaticStringUtils.stripCRLF("test\nin\rg"), "testing");
     }
 }

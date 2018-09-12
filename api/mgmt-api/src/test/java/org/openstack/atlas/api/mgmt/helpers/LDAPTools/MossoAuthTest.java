@@ -24,7 +24,7 @@ public class MossoAuthTest {
     private MossoAuth mossoAuth;
     private MossoAuthConfig config;
     private String host;
-    private Long port;
+    private int port;
     private GroupConfig groupMap;
     private String oClass;
     private String memberField;
@@ -42,7 +42,7 @@ public class MossoAuthTest {
     public void setUp() throws GeneralSecurityException {
 
         host = "127.0.0.1";
-        port = 389L;
+        port = 389;
         config = new MossoAuthConfig(host, port);
 
         dn = "ou=Users,o=rackspace";

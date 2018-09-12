@@ -23,7 +23,7 @@ public class MossoAuthConfig {
     private Set<String> allowedGroups;
     private Map<String, String> roles;
     private String appendName;
-    private Long port;
+    private int port;
     private int scope = SearchControls.ONELEVEL_SCOPE; // default for eDir
     private boolean isActiveDirectory = false;
     private boolean allowforcedRole = false;
@@ -35,7 +35,7 @@ public class MossoAuthConfig {
     public MossoAuthConfig() {
     }
 
-    public MossoAuthConfig(String host, Long port) {
+    public MossoAuthConfig(String host, int port) {
         this.host = host;
         this.port = port;
     }
@@ -70,7 +70,6 @@ public class MossoAuthConfig {
             JSONObject json = (JSONObject) jp.parse(jsonStr);
             this.host = (String) json.get("host");
 
-            this.port = (Long) json.get("port");
 
             tmpStr = (String) json.get("connect");
             if (tmpStr.equalsIgnoreCase("SSL")) {
@@ -145,11 +144,11 @@ public class MossoAuthConfig {
         this.host = host;
     }
 
-    public Long getPort() {
+    public int getPort() {
         return port;
     }
 
-    public void setPort(Long port) {
+    public void setPort(int port) {
         this.port = port;
     }
 

@@ -21,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.*;
+import java.util.HashSet;
 
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class ManagementDependencyProvider {
@@ -46,7 +47,6 @@ public class ManagementDependencyProvider {
     protected BlacklistRepository blacklistRepository;
     protected AllowedDomainsRepository allowedDomainsRepository;
     protected LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
-
     protected TicketService ticketService;
     protected AccountLimitService accountLimitService;
     protected LoadBalancerService loadBalancerService;
@@ -152,7 +152,7 @@ public class ManagementDependencyProvider {
     }
 
     public void setCallbackService(CallbackService callbackService) {
-            this.callbackService = callbackService;
+        this.callbackService = callbackService;
     }
 
     public void setConfiguration(Configuration configuration) {
@@ -321,10 +321,10 @@ public class ManagementDependencyProvider {
         Set<String> out = new HashSet<String>();
         Map<String, String> roleMap = getMossoAuthConfig().getRoles();
         Set<String> roleNames = roleMap.keySet();
-        for (String roleName : roleNames) {
-            String groupsInRole = roleMap.get(roleName);
-            Set<String> ldapGroups = getLDAPGroups();
-            if (ldapGroups.contains(groupsInRole)) {
+        Set<String> ldapGroups = getLDAPGroups();
+        for (String ldapGroup : ldapGroups) {
+            if (roleMap.containsKey(ldapGroup)) {
+                String roleName = roleMap.get(ldapGroup);
                 out.add(roleName);
             }
         }
@@ -348,34 +348,26 @@ public class ManagementDependencyProvider {
 
     public boolean isUserInRole(String roleStr) {
         int i;
-        boolean out = false;
-
         if (isBypassAuth()) {
             return true; // Bypass auth was set to true so consider this request valid.
         }
-
         String[] roleSplit = roleStr.split(",");
+        Set<String> userRoleSet = userRoles();
+        Set<String> desiredRoleSet = new HashSet<String>();
         for (i = 0; i < roleSplit.length; i++) {
             String roleName = roleSplit[i];
-            if (!getMossoAuthConfig().getRoles().containsKey(roleName)) {
+            if (!getMossoAuthConfig().getRoles().containsValue(roleName)) {
                 String fileName = getMossoAuthConfig().getFileName();
                 String format = "Role \"%s\" was not found in %s\n";
                 String msg = String.format(format, roleName, fileName);
                 throw new IllegalArgumentException(msg);
             }
-            String group = getMossoAuthConfig().getRoles().get(roleName);
-            if (getLDAPGroups().contains(group)) {
-                out = true;
-                return out;
+            desiredRoleSet.add(roleName);
+            if (userRoleSet.contains(roleName)) {
+                return true;
             }
         }
-        return out;
-    }
-
-    public Set<String> intersection(Set<String> a, Set<String> b) {
-        Set<String> out = new HashSet<String>(a);
-        out.retainAll(b);
-        return out;
+        return false;
     }
 
     public MossoAuthConfig getMossoAuthConfig() {
@@ -412,13 +404,13 @@ public class ManagementDependencyProvider {
         return expanded;
     }
 
-    public Response getValidationFaultResponse(String errorStr){
+    public Response getValidationFaultResponse(String errorStr) {
         List<String> errorStrs = new ArrayList<String>();
         errorStrs.add(errorStr);
         return getValidationFaultResponse(errorStrs);
     }
 
-     public Response getValidationFaultResponse(List<String> errorStrs) {
+    public Response getValidationFaultResponse(List<String> errorStrs) {
         BadRequest badreq;
         int status = 400;
         badreq = HttpResponseBuilder.buildBadRequestResponse(VFAIL, errorStrs);
@@ -427,7 +419,7 @@ public class ManagementDependencyProvider {
     }
 
     // Got tired of always import StringUtils.getExtendedStackTrace so I'm aliasing it
-    public String getExtendedStackTrace(Throwable ti){
+    public String getExtendedStackTrace(Throwable ti) {
         String out;
         out = org.openstack.atlas.api.filters.helpers.StringUtilities.getExtendedStackTrace(ti);
         return out;

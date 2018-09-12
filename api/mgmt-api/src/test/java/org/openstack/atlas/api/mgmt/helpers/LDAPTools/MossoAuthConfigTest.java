@@ -16,7 +16,7 @@ public class MossoAuthConfigTest {
     private String ctext;
     private String password;
     static String host;
-    private Long port = 636L;
+    private int port = 636;
 
     public MossoAuthConfigTest() {
     }
