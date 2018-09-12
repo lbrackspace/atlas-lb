@@ -42,6 +42,46 @@ class LdapConnecter(object):
         results = self.l.search_s(rdn, scope, query)
         return results
 
+    def get_group_members(self, group_name):
+        filter = self.conf["groupAudit"]["groupBase"]
+        field = self.conf["groupAudit"]["groupField"]
+        query = "(cn=%s)" % (group_name,)
+        results = self.search(filter, self.scope, query)
+        out = []
+        if field not in results[0][1]:
+            return out
+        # Get the CN
+        for member in results[0][1][field]:
+            cn = None
+            ava_array = ldap.dn.str2dn(member)
+            for rdn in ava_array:
+                if len(rdn) != 1:
+                    continue  # We won't consider multivalued rdns
+                (key, value, junk) = rdn[0]
+                if key.lower() == "cn":
+                    out.append((value, member))
+                    break  # We found the cn so we can stop parsing this entry
+        out.sort()
+        return out
+
+    def get_user_sso_name(self, user_dn):
+        results = self.l.search_s(user_dn, self.scope, "(objectClass=*)")
+        sdn = self.conf["userConfig"]["sdn"]
+        for r in results:
+            if user_dn.lower() == r[0].lower():
+                user_dict = r[1]
+                sdn_values = user_dict[sdn]
+                return sdn_values[0]
+        return None
+
+    def get_group_members_ssos(self, group_name):
+        out = {}
+        members = self.get_group_members(group_name)
+        for (cn, dn) in members:
+            sso = self.get_user_sso_name(dn)
+            out[sso] = dn
+        return out
+
     def get_groups_and_roles(self):
         query_fmt = self.conf["groupConfig"]["userQuery"]
         memberField = self.conf["groupConfig"]["memberField"]
