@@ -53,14 +53,12 @@ public class UncertainCertIgnoreingSSLFactory extends SocketFactory {
     @Override
     public Socket createSocket() throws IOException {
         Socket socket = ignoreCertFactory.createSocket();
-        socket = removeSSLv2v3(socket);
         return socket;
     }
 
     @Override
     public Socket createSocket(InetAddress address, int port) throws IOException {
         Socket socket = ignoreCertFactory.createSocket(address, port);
-        socket = removeSSLv2v3(socket);
         return socket;
     }
 
@@ -68,7 +66,6 @@ public class UncertainCertIgnoreingSSLFactory extends SocketFactory {
     public Socket createSocket(InetAddress address, int port, InetAddress localAddress,
             int localPort) throws IOException {
         Socket socket = ignoreCertFactory.createSocket(address, port, localAddress, localPort);
-        socket = removeSSLv2v3(socket);
         return socket;
     }
 
@@ -76,7 +73,6 @@ public class UncertainCertIgnoreingSSLFactory extends SocketFactory {
     public Socket createSocket(String host, int port) throws IOException,
             UnknownHostException {
         Socket socket = ignoreCertFactory.createSocket(host, port);
-        socket = removeSSLv2v3(socket);
         return socket;
     }
 
@@ -84,7 +80,6 @@ public class UncertainCertIgnoreingSSLFactory extends SocketFactory {
     public Socket createSocket(String host, int port, InetAddress localHost, int localPort)
             throws IOException, UnknownHostException {
         Socket socket = ignoreCertFactory.createSocket(host, port, localHost, localPort);
-        socket = removeSSLv2v3(socket);
         return socket;
     }
 

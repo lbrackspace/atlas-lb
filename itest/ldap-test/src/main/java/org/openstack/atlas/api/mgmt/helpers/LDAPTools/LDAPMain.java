@@ -61,7 +61,7 @@ public class LDAPMain {
             for (String groupName : groupList) {
                 System.out.printf("%s\n", groupName);
             }
-
+            System.out.printf("\n");
             ArrayList<String> matchedRoles = new ArrayList<String>();
             for (String groupName : groupList) {
                 if (conf.getRoles().containsKey(groupName)) {

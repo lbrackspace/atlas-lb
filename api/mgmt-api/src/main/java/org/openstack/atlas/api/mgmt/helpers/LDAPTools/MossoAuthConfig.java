@@ -8,6 +8,7 @@ import org.openstack.atlas.util.staticutils.StaticFileUtils;
 
 import java.io.*;
 import java.security.GeneralSecurityException;
+import java.security.Security;
 import java.util.*;
 
 import java.util.regex.Pattern;
@@ -30,11 +31,14 @@ public class MossoAuthConfig {
     private boolean useHostVerify = true;
     private boolean allowforcedRole = false;
     private boolean allowBypassAuth = false;
+    private static boolean providerInitialized = false;
+    private static final Object providerInitializedLock;
     private int ttl = 300; // Cache timeout
     private static final Pattern opRe = Pattern.compile("(\\S+)\\s*=\\s*\\\"(.*)\\\"");
     private static final Pattern rolesRe = Pattern.compile("grouprole\\[\\s*\"(\\S+)\"\\s*\\]");
 
     static {
+        providerInitializedLock = new Object(); // we need a lock that won't change
         exampleJson = ""
                 + "{\n"
                 + "  \"groupConfig\": {\n"
@@ -100,9 +104,9 @@ public class MossoAuthConfig {
             JSONObject json = (JSONObject) jp.parse(jsonStr);
             this.host = (String) json.get("host");
 
-            tmpLong = (Long)json.get("port");
+            tmpLong = (Long) json.get("port");
             this.port = tmpLong.intValue();
-            
+
             tmpStr = (String) json.get("connect");
             if (tmpStr.equalsIgnoreCase("SSL")) {
                 this.connectMethod = LDAPConnectMethod.SSL;
@@ -150,7 +154,21 @@ public class MossoAuthConfig {
             this.roles = roles;
 
             this.isActiveDirectory = (Boolean) json.get("isactivedirectory");
-            this.useHostVerify = json.get("usehostverify") != null ? (Boolean) json.get("usehostverify") : true;
+
+            tmpBool = (Boolean) json.get("usehostverify");
+            if (tmpBool != null) {
+                this.useHostVerify = tmpBool;
+                synchronized (providerInitializedLock) {
+                    if (!providerInitialized) {
+                        if (!tmpBool) {
+                            // Only initialize the provider once
+                            Security.addProvider(new OverTrustingTrustProvider());
+                            Security.setProperty("ssl.TrustManagerFactory.algorithm", "TrustAllCertificates");
+                        }
+                        providerInitialized = true;
+                    }
+                }
+            }
 
             tmpBool = (Boolean) json.get("allowbypassauth");
             if (tmpBool != null) {

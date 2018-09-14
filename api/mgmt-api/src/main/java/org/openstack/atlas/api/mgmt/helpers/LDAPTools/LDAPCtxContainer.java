@@ -65,6 +65,7 @@ public class LDAPCtxContainer {
     }
 
     private void connectSSL(String user, String passwd) throws NamingException {
+        nop();
         Hashtable env = new Hashtable();
         String bindDN;
         String url = String.format("ldaps://%s:%d", this.mossoAuthConfig.getHost(), this.mossoAuthConfig.getPort());
@@ -74,7 +75,9 @@ public class LDAPCtxContainer {
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         env.put(Context.SECURITY_PRINCIPAL, userDn(user));
         env.put(Context.SECURITY_CREDENTIALS, passwd);
-        env.put("java.naming.ldap.factory.socket", UncertainCertIgnoreingSSLFactory.class.getName());
+        if (!mossoAuthConfig.isUseHostVerify()) {
+            env.put("java.naming.ldap.factory.socket", UncertainCertIgnoreingSSLFactory.class.getName());
+        }
         ctx = new InitialLdapContext(env, null);
         nop();
     }
