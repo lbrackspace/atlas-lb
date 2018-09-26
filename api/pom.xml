@@ -15,6 +15,7 @@
 
     <modules>
         <module>common-api</module>
+        <module>mgmt-api</module>
         <module>public-web</module>
         <module>mgmt-web</module>
     </modules>
