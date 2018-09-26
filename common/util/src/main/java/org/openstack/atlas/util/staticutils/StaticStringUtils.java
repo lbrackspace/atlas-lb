@@ -148,6 +148,11 @@ public class StaticStringUtils {
         return sb.toString();
     }
 
+    public static String stripCRLF(String line){
+        String replaced = line.replace("\r","").replace("\n","");
+        return replaced;
+    }
+
     public static String[] stripBlankArgs(String line) {
         int nargs = 0;
         int i;

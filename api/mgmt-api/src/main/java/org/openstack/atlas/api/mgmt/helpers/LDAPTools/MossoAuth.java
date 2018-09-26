@@ -2,61 +2,60 @@ package org.openstack.atlas.api.mgmt.helpers.LDAPTools;
 
 import java.io.IOException;
 import java.security.Security;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
 import javax.naming.directory.Attribute;
+import org.openstack.atlas.util.debug.Debug;
 
 public class MossoAuth {
 
     private static final int PAGESIZE = 4096;
     private MossoAuthConfig config;
-    private Map<String, GroupConfig> groupMap;
-    private Map<String, ClassConfig> classMap;
+    private GroupConfig groupMap;
+    private ClassConfig classMap;
 
     static {
-        //Security.addProvider(new OverTrustingTrustProvider());
-        //Security.setProperty("ssl.TrustManagerFactory.algorithm", "TrustAllCertificates");
     }
 
     public MossoAuth() {
     }
 
-    public MossoAuth(MossoAuthConfig config, Map<String, GroupConfig> groupMap, Map<String, ClassConfig> classMap) {
+    public MossoAuth(MossoAuthConfig config) {
         this.config = config;
-        this.groupMap = groupMap;
-        this.classMap = classMap;
+        this.classMap = config.getClassConfig();
+        this.groupMap = config.getGroupConfig();
     }
 
     public boolean testAuth(String user, String passwd) {
-        ClassConfig uc;
         LdapContext ctx;
         String udn;
         nop();
         NamingEnumeration<SearchResult> results;
+
         if (user == null || passwd == null || user.equals("") || passwd.equals("")) {
             return false; // Prevents annonymouse binds.
         }
         SearchControls ctls = new SearchControls();
-        ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-        uc = classMap.get("user");
+        ctls.setSearchScope(config.getScope());
         String filter = String.format("cn=%s", user);
-        udn = uc.getDn();
-        LDAPCtxContainer ct = new LDAPCtxContainer(config, classMap.get("user"));
+        LDAPCtxContainer ct = new LDAPCtxContainer(config, classMap);
         try {
             ct.connect(user, passwd);
             ctx = ct.getCtx();
-            results = ctx.search(udn, filter, ctls);
+            results = ctx.search(classMap.getDn(), filter, ctls);
             ct.disconnect();
         } catch (NamingException ex) {
+            String msg = Debug.getEST(ex);
             return false;
         } catch (IOException ex) {
+            String msg = Debug.getEST(ex);
             return false;
         }
         return true;
@@ -64,30 +63,37 @@ public class MossoAuth {
 
     public Set<String> getGroups(String user, String passwd) throws NamingException, IOException {
         int i;
-        int j;
+        int nGroups;
         nop();
         LdapContext ctx;
         NamingEnumeration<SearchResult> answer;
         SearchControls ctls = new SearchControls();
-        ctls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-        Set<String> groupSet = new HashSet<String>();
+        ctls.setSearchScope(config.getScope());
+        Set<String> groupSet = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         Map<String, String> attrMap;
         if (user == null || passwd == null || user.equals("") || passwd.equals("")) {
             return groupSet; // Returns empty groupset on annonymouse binds.
         }
-        GroupConfig gc = this.groupMap.get("groups");
-        LDAPCtxContainer ct = new LDAPCtxContainer(config, classMap.get("user"));
-        String filter = String.format(gc.getUserQuery(), escapeFilter(user));
+        GroupConfig gc = this.groupMap;
+        LDAPCtxContainer ct = new LDAPCtxContainer(config, classMap);
+        String query = gc.getUserQuery();
+        String escapeUser = escapeFilter(user);
+        String filter = String.format(query, escapeUser);
+        String dn = gc.getDn();
+        String sdn = gc.getSdn();
+        String memberField = gc.getMemberField();
         ct.connect(user, passwd);
         ctx = ct.getCtx();
-        answer = ctx.search(gc.getDn(), filter, ctls);
+        answer = ctx.search(dn, filter, ctls);
         String groupName;
         while (answer.hasMore()) {
             SearchResult sr = (SearchResult) answer.next();
-            Attribute groupList = sr.getAttributes().get(gc.getMemberField());
-            for (i = 0; i < groupList.size(); i++) {
-                attrMap = attrSplit((String) groupList.get(i));
-                groupName = attrMap.get(gc.getSdn());
+            Attribute groupList = sr.getAttributes().get(memberField);
+            nGroups = groupList.size();
+            for (i = 0; i < nGroups; i++) {
+                String groupListStr = (String) groupList.get(i);
+                attrMap = attrSplit(groupListStr);
+                groupName = attrMap.get(sdn);
                 groupSet.add(groupName);
                 nop();
             }
@@ -105,25 +111,25 @@ public class MossoAuth {
         this.config = config;
     }
 
-    public Map<String, GroupConfig> getGroupMap() {
+    public GroupConfig getGroupMap() {
         return groupMap;
     }
 
-    public void setGroupMap(Map<String, GroupConfig> classMap) {
+    public void setGroupMap(GroupConfig classMap) {
         this.groupMap = classMap;
     }
 
-    public Map<String, ClassConfig> getClassMap() {
+    public ClassConfig getClassMap() {
         return classMap;
     }
 
-    public void setClassMap(Map<String, ClassConfig> classMap) {
+    public void setClassMap(ClassConfig classMap) {
         this.classMap = classMap;
     }
 
     public static final String escapeFilter(String filter) {
         StringBuilder sb;
-        nops();
+        nop();
         sb = new StringBuilder(PAGESIZE);
         for (int i = 0; i < filter.length(); i++) {
             char curChar = filter.charAt(i);
@@ -152,7 +158,7 @@ public class MossoAuth {
 
     public static String escapeDn(String name) {
         StringBuilder sb;
-        nops();
+        nop();
         sb = new StringBuilder();
         if ((name.length() > 0) && ((name.charAt(0) == ' ') || (name.charAt(0) == '#'))) {
             sb.append('\\'); // add the leading backslash if needed
@@ -192,7 +198,8 @@ public class MossoAuth {
     }
 
     private Map<String, String> attrSplit(String attrs) {
-        Map<String, String> mapOut = new HashMap<String, String>();
+        Map<String, String> mapOut;
+        mapOut = new TreeMap<String, String>(String.CASE_INSENSITIVE_ORDER);
         String[] kv;
         for (String term : attrs.split(",")) {
             kv = term.split("=");
@@ -206,9 +213,6 @@ public class MossoAuth {
         return mapOut;
     }
 
-    private void nop() {
-    }
-
-    private static void nops() {
+    private static void nop() {
     }
 }

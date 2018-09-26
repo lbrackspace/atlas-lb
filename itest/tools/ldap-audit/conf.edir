@@ -1,0 +1,29 @@
+{
+  "groupConfig": {
+    "dn": "ou=Users,o=rackspace", 
+    "memberField": "groupMembership", 
+    "sdn": "cn", 
+    "userQuery": "(cn=%s)", 
+    "objectClass": "(objectClass=*)"
+  }, 
+  "appendtoname": "@rackspace.corp", 
+  "groupAudit": {
+    "groupBase": "ou=groups,o=rackspace", 
+    "groupField": "uniqueMember"
+  }, 
+  "roles": {
+    "support": "lbaas_support", 
+    "cp": "lbaas_cloud_control", 
+    "billing": "legacy_billing", 
+    "ops": "lbaas_ops"
+  }, 
+  "isactivedirectory": false, 
+  "userConfig": {
+    "dn": "ou=users,o=rackspace", 
+    "sdn": "cn"
+  }, 
+  "host": "edir.ord1.corp.rackspace.com", 
+  "connect": "ssl", 
+  "scope": "subtree", 
+  "port": 636
+}
