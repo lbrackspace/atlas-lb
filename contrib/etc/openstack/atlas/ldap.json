@@ -1,6 +1,6 @@
 {
   "groupConfig": {
-    "dn": "ou=Accounts,dc=rackspace,dc=corp",
+    "dn": "ou=ServiceAccounts:Accounts,dc=rackspace,dc=corp",
     "memberField": "memberOf",
     "sdn": "cn",
     "userQuery": "(uid=%s)",

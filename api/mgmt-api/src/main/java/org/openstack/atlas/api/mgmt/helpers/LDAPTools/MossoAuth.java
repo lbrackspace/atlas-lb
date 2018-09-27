@@ -1,11 +1,7 @@
 package org.openstack.atlas.api.mgmt.helpers.LDAPTools;
 
 import java.io.IOException;
-import java.security.Security;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.NamingEnumeration;
@@ -84,23 +80,46 @@ public class MossoAuth {
         String memberField = gc.getMemberField();
         ct.connect(user, passwd);
         ctx = ct.getCtx();
-        answer = ctx.search(dn, filter, ctls);
-        String groupName;
-        while (answer.hasMore()) {
-            SearchResult sr = (SearchResult) answer.next();
-            Attribute groupList = sr.getAttributes().get(memberField);
-            nGroups = groupList.size();
-            for (i = 0; i < nGroups; i++) {
-                String groupListStr = (String) groupList.get(i);
-                attrMap = attrSplit(groupListStr);
-                groupName = attrMap.get(sdn);
-                groupSet.add(groupName);
-                nop();
+        ArrayList<String> dnList = new ArrayList<String>();
+        if (dn.contains(":")) {
+            // We have to query multiple org units
+            dnList = buildDn(dn);
+        } else {
+            // We're working against a single org unit
+            dnList.add(dn);
+        }
+        for (String d : dnList) {
+            answer = ctx.search(d, filter, ctls);
+            String groupName;
+            while (answer.hasMore()) {
+                SearchResult sr = (SearchResult) answer.next();
+                Attribute groupList = sr.getAttributes().get(memberField);
+                nGroups = groupList.size();
+                for (i = 0; i < nGroups; i++) {
+                    String groupListStr = (String) groupList.get(i);
+                    attrMap = attrSplit(groupListStr);
+                    groupName = attrMap.get(sdn);
+                    groupSet.add(groupName);
+                    nop();
+                }
             }
         }
         ct.disconnect();
         nop();
         return groupSet;
+    }
+
+    private ArrayList<String> buildDn(String baseDn) {
+        // Returns sanitized DN list with a single OU per DN entry
+        ArrayList<String> dnList = new ArrayList<String>();
+        String[] dsplit = baseDn.split(",");
+        String ous = dsplit[0];
+        for (String ou : ous.split(":")) {
+            dnList.add(String.format("ou=%s,%s,%s",
+                    ou.replaceAll("ou=", ""),
+                    dsplit[1], dsplit[2]));
+        }
+        return dnList;
     }
 
     public MossoAuthConfig getConfig() {

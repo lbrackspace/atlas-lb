@@ -42,7 +42,7 @@ public class MossoAuthConfig {
         exampleJson = ""
                 + "{\n"
                 + "  \"groupConfig\": {\n"
-                + "    \"dn\": \"ou=Accounts,dc=rackspace,dc=corp\", \n"
+                + "    \"dn\": \"ou=ServiceAccounts:Accounts,dc=rackspace,dc=corp\", \n"
                 + "    \"memberField\": \"memberOf\", \n"
                 + "    \"sdn\": \"cn\", \n"
                 + "    \"userQuery\": \"(uid=%s)\", \n"

@@ -71,6 +71,7 @@ public class LDAPCtxContainer {
         String url = String.format("ldaps://%s:%d", this.mossoAuthConfig.getHost(), this.mossoAuthConfig.getPort());
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
         env.put(Context.PROVIDER_URL, url);
+        env.put(Context.REFERRAL, "ignore");
         //env.put(Context.SECURITY_PROTOCOL, "ssl");
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         env.put(Context.SECURITY_PRINCIPAL, userDn(user));
