@@ -71,6 +71,10 @@ public class ManagementDependencyProvider {
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected Configuration configuration;
 
+    public void init() throws Exception{
+        dozerMapper = mgmtDozerMapperBuilderBean.getDozerMapperObject();
+    }
+
     public static String getStackTraceMessage(Exception e) {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("Exception: %s:%s\n", e.getMessage(), e.getClass().getName()));
@@ -294,6 +298,14 @@ public class ManagementDependencyProvider {
 
     public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
         this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
+
+    public MgmtDozerMapperBuilderBean getMgmtDozerMapperBuilderBean() {
+        return mgmtDozerMapperBuilderBean;
+    }
+
+    public void setMgmtDozerMapperBuilderBean(MgmtDozerMapperBuilderBean mgmtDozerMapperBuilderBean) {
+        this.mgmtDozerMapperBuilderBean = mgmtDozerMapperBuilderBean;
     }
 
     public Set<String> getLDAPGroups() {
