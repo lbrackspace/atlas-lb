@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3269104c_d9234ad3",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2018-10-05T16:41:38Z",
+      "side": 1,
+      "message": "Can you avoid doing this splat coding? Re add Hashmap List and Map. Same goies for the splat import of the ord.openstack.atlas.itol.ip.ip package above.",
+      "revId": "64b6c0fb4ab0601e11d79075d138f1cc4144b883",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "d2ac522d_591fd8ce",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2018-10-05T16:41:38Z",
+      "side": 1,
+      "message": "IPv6 is not vulnerable to this bug as when the loadbalancer is mirated its network prefix will change implicity to the traget clusters IPv6 address.",
+      "revId": "64b6c0fb4ab0601e11d79075d138f1cc4144b883",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "942a8c37_9fc27be4",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ChangeHostResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 1001794
+      },
+      "writtenOn": "2018-10-05T16:41:38Z",
+      "side": 1,
+      "message": "We don\u0027t need to worry about IPv6 cause in our architecture the prefix is defined by the cluster your targeting. Infact this code needs to be removed as some of our loadbalancers are expected to change IPv6 prefixes and this code will block those migrations. Only consider IPv4 in your source code.",
+      "revId": "64b6c0fb4ab0601e11d79075d138f1cc4144b883",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
