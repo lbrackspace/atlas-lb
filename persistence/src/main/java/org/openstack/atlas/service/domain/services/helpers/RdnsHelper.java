@@ -3,6 +3,7 @@ package org.openstack.atlas.service.domain.services.helpers;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.restclients.auth.IdentityClientImpl;
+import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 import org.openstack.atlas.restclients.dns.DnsClient1_0;
 import org.openstack.atlas.service.domain.exceptions.RdnsException;
 import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthAdminClient;
@@ -180,7 +181,7 @@ public class RdnsHelper {
             return (new IdentityClientImpl()).getAuthToken();
         } catch (URISyntaxException e) {
             throw logAndThrowRdnsException(e, accountId);
-        } catch (org.openstack.identity.client.fault.IdentityFault identityFault) {
+        } catch (IdentityFault identityFault) {
             throw logAndThrowRdnsException(identityFault, accountId);
         } catch (MalformedURLException e) {
             throw logAndThrowRdnsException(e, accountId);

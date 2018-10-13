@@ -8,7 +8,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.restclients.auth.IdentityAuthClient;
 import org.openstack.atlas.restclients.auth.IdentityClientImpl;
-import org.openstack.identity.client.fault.IdentityFault;
+import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;

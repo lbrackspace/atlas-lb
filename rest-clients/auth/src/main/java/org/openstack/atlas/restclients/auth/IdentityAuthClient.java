@@ -1,6 +1,7 @@
 package org.openstack.atlas.restclients.auth;
 
-import org.openstack.identity.client.fault.IdentityFault;
+
+import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 import org.openstack.identity.client.token.AuthenticateResponse;
 
 import java.net.URISyntaxException;
