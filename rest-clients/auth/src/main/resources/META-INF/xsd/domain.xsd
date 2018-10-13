@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="../xslt/schema.xslt"?>
+
+<!-- (C) 2011 OpenStack LLC., All Rights Reserved -->
+
+<schema
+        elementFormDefault="qualified"
+        attributeFormDefault="unqualified"
+        xmlns="http://www.w3.org/2001/XMLSchema"
+        xmlns:identity="http://docs.openstack.org/identity/api/v2.0"
+        xmlns:domain="http://docs.rackspace.com/identity/api/ext/RAX-AUTH/v1.0"
+        xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+        xmlns:vc="http://www.w3.org/2007/XMLSchema-versioning"
+        xmlns:xsdxt="http://docs.rackspacecloud.com/xsd-ext/v1.0"
+        xmlns:atom="http://www.w3.org/2005/Atom"
+        targetNamespace="http://docs.rackspace.com/identity/api/ext/RAX-AUTH/v1.0"
+        >
+
+    <!-- Import ATOM specific schema definitions -->
+    <import vc:minVersion="1.1" namespace="http://www.w3.org/2005/Atom"
+            schemaLocation="atom/atom.xsd"/>
+    <import vc:minVersion="1.1" namespace="http://docs.openstack.org/identity/api/v2.0"
+            schemaLocation="description.xsd"/>
+
+    <!-- Elements -->
+    <element name="domain" type="domain:Domain">
+        <annotation>
+            <xsd:documentation
+                    xml:lang="EN"
+                    xmlns="http://www.w3.org/1999/xhtml">
+                <p>
+                    A domain
+                </p>
+            </xsd:documentation>
+        </annotation>
+    </element>
+
+    <!-- Complex Types -->
+    <complexType name="Domain">
+        <sequence>
+            <element name="description" type="xsd:string"/>
+            <element name="extra" type="identity:Extra"/>
+            <any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </sequence>
+        <attribute name="id" type="xsd:string" use="optional"/>
+        <attribute name="name" type="xsd:string" use="required"/>
+        <attribute name="enabled" type="xsd:boolean" use="optional"/>
+
+    </complexType>
+</schema>

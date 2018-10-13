@@ -3,6 +3,7 @@ package org.openstack.atlas.api.filters;
 import com.fasterxml.jackson.databind.AnnotationIntrospector;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 import org.openstack.atlas.util.debug.Debug;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -18,7 +19,6 @@ import org.openstack.atlas.util.b64aes.Base64;
 import org.openstack.atlas.util.b64aes.PaddingException;
 import org.openstack.atlas.util.simplecache.CacheEntry;
 import org.openstack.atlas.util.simplecache.SimpleCache;
-import org.openstack.identity.client.fault.IdentityFault;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;

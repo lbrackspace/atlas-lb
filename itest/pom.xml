@@ -20,6 +20,7 @@
         <module>jyson</module>
         <module>jython-tests</module>
         <module>ldap-test</module>
+        <module>auth-test</module>
     </modules>
     <build>
         <pluginManagement>

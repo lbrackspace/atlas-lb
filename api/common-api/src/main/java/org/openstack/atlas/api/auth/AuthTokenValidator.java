@@ -6,8 +6,8 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.exceptions.MissingFieldException;
 import org.openstack.atlas.api.filters.helpers.StringUtilities;
 import org.openstack.atlas.cfg.Configuration;
-import org.openstack.identity.client.client.IdentityClient;
-import org.openstack.identity.client.fault.IdentityFault;
+import org.openstack.atlas.restclients.auth.client.IdentityClient;
+import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 import org.openstack.identity.client.token.AuthenticateResponse;
 
 import java.net.MalformedURLException;
