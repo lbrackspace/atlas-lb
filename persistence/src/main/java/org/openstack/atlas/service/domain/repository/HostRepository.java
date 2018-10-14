@@ -42,7 +42,7 @@ public class HostRepository {
 
     }
 
-    public List<Host> getAllOnline() {
+    public List<Host> getAllOnline() { // OFFLINE host doesn't apply to CLB-754
         String hqlStr = "from Host h where h.hostStatus not in ('OFFLINE', 'SOAP_API_ENDPOINT', 'REST_API_ENDPOINT') ";
         List<Host> hosts;
         hosts = entityManager.createQuery(hqlStr).getResultList();
