@@ -110,7 +110,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
 
         ExecutorService threadPool = Executors.newFixedThreadPool(hostList.size());
         for (Host host : hostList) {
-            callables.add(new HostThread(host));
+            callables.add(new HostThread(host)); // hostList populated by getAccessibleHostsalready excludes offline hosts CLB-754
         }
 
         try {
@@ -127,7 +127,7 @@ public class LoadBalancerUsagePoller extends AbstractJob {
 
     private List<Host> getAccessibleHosts() {
         LOG.info("Discovering accessible hosts...");
-        List<Host> hostList = hostService.getAllOnline();
+        List<Host> hostList = hostService.getAllOnline(); // AllOnline already excludes OFFLINE hosts clb-754
         List<Host> accessibleHosts = new ArrayList<Host>();
         for (Host host : hostList) {
             try {

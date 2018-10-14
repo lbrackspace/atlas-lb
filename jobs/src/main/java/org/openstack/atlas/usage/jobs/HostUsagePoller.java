@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import java.net.ConnectException;
 import java.util.Calendar;
 import java.util.List;
+import org.openstack.atlas.service.domain.entities.HostStatus;
 
 @Component
 public class HostUsagePoller extends AbstractJob {
@@ -53,6 +54,9 @@ public class HostUsagePoller extends AbstractJob {
         List<Host> hosts = hostRepository.getAll();
 
         for (final Host host : hosts) {
+            if(host.getHostStatus() == HostStatus.OFFLINE){
+                continue;
+            }
             try {
                 final LoadBalancerEndpointConfiguration config = HostConfigHelper.getConfig(host, hostRepository);
                 Calendar pollTime = Calendar.getInstance();
