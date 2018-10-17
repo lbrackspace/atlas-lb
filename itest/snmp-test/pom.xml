@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-itest</artifactId>
-        <version>1.25.61</version>
+        <version>1.25.62-SNAPSHOT</version>
 
 
     </parent>
