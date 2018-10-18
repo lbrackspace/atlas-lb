@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-itest</artifactId>
-        <version>1.26.00-SNAPSHOT</version>
+        <version>1.26.00</version>
 
 
     </parent>
@@ -13,7 +13,7 @@
     <artifactId>atlas-jyson</artifactId>
     <name>Openstack :: Itest :: Jyson/Jython module</name>
     <packaging>jar</packaging>
-    <version>1.26.00-SNAPSHOT</version>
+    <version>1.26.00</version>
 
 
 
