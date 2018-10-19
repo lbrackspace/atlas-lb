@@ -437,7 +437,7 @@ public class StaticFileUtils {
     }
 
     /**
-     * /var/log/zxtm/hadoop/cache ==> (/var/log/zxtm/hadoop/cache/2012021005/1, /var/log/zxtm/hadoop/cache/2012021005/1/access_log_10_2012021005.zip)
+     * /var/log/zxtm/hadoop/cache - (/var/log/zxtm/hadoop/cache/2012021005/1, /var/log/zxtm/hadoop/cache/2012021005/1/access_log_10_2012021005.zip)
      */
     public static Map<String, List> getLocalCachedFiles(String cacheLocation) {
         Map<String, List> map = new HashMap<String, List>();
@@ -467,7 +467,7 @@ public class StaticFileUtils {
     }
 
     /**
-     * /var/log/zxtm/hadoop/cache/2012021005/1/access_log_10_2012021005.zip => 2012021005
+     * /var/log/zxtm/hadoop/cache/2012021005/1/access_log_10_2012021005.zip - 2012021005
      */
     public static String getLogFileTime(String absoluteFileName) {
         String accountDirectory = absoluteFileName.substring(0, absoluteFileName.lastIndexOf("/"));
