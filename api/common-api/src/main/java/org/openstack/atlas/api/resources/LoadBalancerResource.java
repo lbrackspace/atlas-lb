@@ -23,6 +23,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static javax.ws.rs.core.MediaType.*;
 
@@ -100,7 +101,10 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         }
 
         try {
-            loadBalancerService.get(id, accountId);
+            org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer_data=loadBalancerService.get(id, accountId);
+            if(Stream.of("UDP", "DNS_UDP", "UDP_STREAM").anyMatch(loadBalancer.getProtocol().toString()::equalsIgnoreCase) && loadBalancer_data.isConnectionLogging()){
+                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Connection logging cannot be enabled for load balancers with UDP, DNS_UDP or UDP_STREAM protocol");
+            }
             domainLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
             domainLb.setId(id);
             domainLb.setAccountId(accountId);

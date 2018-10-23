@@ -20,12 +20,11 @@ import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.LbQueryStatus;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
 import org.w3.atom.Link;
-
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.util.*;
-
+import java.util.stream.Stream;
 import static javax.ws.rs.core.MediaType.*;
 import static org.openstack.atlas.api.atom.FeedType.PARENT_FEED;
 import static org.openstack.atlas.service.domain.operations.Operation.CREATE_LOADBALANCER;
@@ -97,6 +96,8 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
         if (!result.passedValidation()) {
             return getValidationFaultResponse(result);
+        }else if(Stream.of("UDP", "DNS_UDP", "UDP_STREAM").anyMatch(loadBalancer.getProtocol().toString()::equalsIgnoreCase) && loadBalancer.getConnectionLogging()!=null && loadBalancer.getConnectionLogging().getEnabled()){
+            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Connection logging cannot be enabled for load balancers with UDP, DNS_UDP or UDP_STREAM protocol");
         }
 
         try {
