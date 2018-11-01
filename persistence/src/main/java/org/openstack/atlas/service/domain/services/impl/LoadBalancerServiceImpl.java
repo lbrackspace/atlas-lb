@@ -351,6 +351,13 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             boolean portHMTypecheck = true;
             if (dbLoadBalancer.getHealthMonitor() != null) {
                 if (dbLoadBalancer.getHealthMonitor().getType() != null) {
+                    // UDP protocols will not function with health monitors
+                    if (loadBalancer.getProtocol().equals(LoadBalancerProtocol.DNS_UDP) ||
+                            loadBalancer.getProtocol().equals(LoadBalancerProtocol.UDP) ||
+                            loadBalancer.getProtocol().equals(LoadBalancerProtocol.UDP_STREAM)) {
+                        LOG.error("Protocol UDP, UDP_STREAM and DNS_UDP are not allowed with health monitors. ");
+                        throw new BadRequestException("Protocol UDP, UDP_STREAM and DNS_UDP are not allowed with health monitors. ");
+                    }
                     if (dbLoadBalancer.getHealthMonitor().getType().name().equals(LoadBalancerProtocol.HTTP.name())) {
                         //incoming port not HTTP
                         if (!(loadBalancer.getProtocol().name().equals(LoadBalancerProtocol.HTTP.name()))) {
