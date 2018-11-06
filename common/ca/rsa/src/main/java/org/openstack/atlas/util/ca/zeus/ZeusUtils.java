@@ -162,7 +162,7 @@ public class ZeusUtils {
             }
         }
         if (!(obj instanceof KeyPair)) {
-            String msg = String.format("%s keyobject was an unstance of %s but was expecting a %s",
+            String msg = String.format("%s keyobject was an instance of %s but was expecting a %s",
                     ERRORDECODINGKEY, obj.getClass().getName(),
                     KeyPair.class.getCanonicalName());
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, msg, true, null));

@@ -17,15 +17,22 @@ import org.openstack.atlas.service.domain.exceptions.MethodNotAllowedException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-
-import javax.ws.rs.*;
+import javax.ws.rs.PUT;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
 import java.util.Map;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
 public class SslTerminationResource extends CommonDependencyProvider {
 
@@ -39,8 +46,10 @@ public class SslTerminationResource extends CommonDependencyProvider {
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createSsl(SslTermination ssl) {
-        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination))
+        ZeusUtils zeusUtils = new ZeusUtils();
+        if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
             return ResponseFactory.getErrorResponse(new MethodNotAllowedException("Resource not implemented yet..."), null, null);
+        }
 
         ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
         if (!result.passedValidation()) {
@@ -56,6 +65,27 @@ public class SslTerminationResource extends CommonDependencyProvider {
             previousSslTerm.setEnabled(false);
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
+        }
+
+        // Use database as default values. Also getSslTermination already does a null check :)
+        String pemKey = previousSslTerm.getPrivatekey();
+        String imdCrts = previousSslTerm.getIntermediateCertificate();
+        String userCrt = previousSslTerm.getCertificate();
+
+        // But if the values are present in the Rest Object they override the default values
+        if (ssl.getPrivatekey() != null) {
+            pemKey = ssl.getPrivatekey();
+        }
+        if (ssl.getIntermediateCertificate() != null) {
+            imdCrts = ssl.getIntermediateCertificate();
+        }
+        if (ssl.getCertificate() != null) {
+            userCrt = ssl.getCertificate();
+        }
+        ZeusCrtFile zcf = zeusUtils.buildZeusCrtFileLbassValidation(pemKey, userCrt, imdCrts);
+        if (zcf.hasFatalErrors()) {
+            Response resp = getValidationFaultResponse(zcf.getFatalErrorList());
+            return resp;
         }
 
         try {
