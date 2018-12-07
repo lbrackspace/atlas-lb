@@ -101,6 +101,102 @@ public class DateTimeConvertersTest {
     }
 
     @Test
+    public void shouldParseOffsetWithoutColonPlus() throws ConverterException {
+        String isoString = "2000-01-01T00:00:00+0800";
+        int offset;
+        int expectedOffset = 1000 * 60 * 60 * 8; // + 8 hours
+        Calendar cal;
+        cal = isoTocal(isoString);
+        offset = cal.getTimeZone().getRawOffset();
+        assertEquals(expectedOffset, offset);
+    }
+
+    @Test
+    public void shouldParseOffsetWithShortFormPlus() throws ConverterException {
+        String isoString = "2018-10-19T08:07:08+08";
+        int offset;
+        int expectedOffset = 1000 * 60 * 60 * 8; // + 8 hours
+        Calendar cal;
+        cal = isoTocal(isoString);
+        offset = cal.getTimeZone().getRawOffset();
+        assertEquals(expectedOffset, offset);
+    }
+
+    @Test
+    public void shouldParseOffsetWithShortFormMinus() throws ConverterException {
+        String isoString = "2000-01-01T00:00:00-08";
+        int offset;
+        int expectedOffset = 0 - 1000 * 60 * 60 * 8; // - 8 hours
+        Calendar cal;
+        cal = isoTocal(isoString);
+        offset = cal.getTimeZone().getRawOffset();
+        assertEquals(expectedOffset, offset);
+    }
+
+    @Test
+    public void shouldParseOffsetWithoutColonMinus() throws ConverterException {
+        String isoString = "2000-01-01T00:00:00-0800";
+        int offset;
+        int expectedOffset = 0 - 1000 * 60 * 60 * 8; // - 8 hours
+        Calendar cal;
+        cal = isoTocal(isoString);
+        offset = cal.getTimeZone().getRawOffset();
+        assertEquals(expectedOffset, offset);
+    }
+
+    @Test
+    public void shouldParseOffsetWithDateOnly() throws ConverterException {
+        String isoString = "2000-01-01";
+        int offset;
+        int expectedOffset = 0 ;
+        Calendar cal;
+        cal = isoTocal(isoString);
+        offset = cal.getTimeZone().getRawOffset();
+        assertEquals(expectedOffset, offset);
+    }
+
+    @Test(expected = ConverterException.class)
+    public void shouldFailToParseOffsetWithBrokenDateOnly() throws ConverterException {
+        String isoString = "2000-01";
+        isoTocal(isoString);
+        nop();
+    }
+
+    @Test(expected = ConverterException.class)
+    public void shouldFailToParseOffsetWithGibberish() throws ConverterException {
+        String isoString = "2000-01-10Tasdfasdkf-8000";
+        isoTocal(isoString);
+        nop();
+    }
+
+    @Test
+    public void shouldParseOffWithVariousDateFormats() throws ConverterException {
+        String[] variousDates = {
+                "2018-08-08T08:45:00-08",//short form of zone offset and it is same as either the month or the day
+                "2018-12-10T08:45",
+                "2018-12-10T08:45-01:30",
+                "2018-12-10T08:45:30",
+                "2018-12-10T08:45:30.999999999",
+                "2018-12-10T08:45:30.999999999-0800",
+                "2018-12-10T08:45:30.999999999+08:00",
+                //"2018-12-10T08:45:30+01:00[Europe/Paris]",
+                "2018-12-10T",//rare scenarios, but needed as these were accepted before Java 8
+                "2018-12-10T08",
+                "2018-12-10T08-01",
+                "2018-12-10T08-0130",
+        };
+        Calendar calendar;
+        for (String date:variousDates) {
+            try {
+                calendar = isoTocal(date);
+            } catch (Exception ex) {
+                calendar = null;
+            }
+            assertNotNull(date+ " does not follow ISO-8601 format, could not be parsed.", calendar);
+        }
+    }
+
+    @Test
     public void shouldKeepUtcByDefault() throws ConverterException {
         String isoString = "2000-01-01T00:00:00";
         int offset;
