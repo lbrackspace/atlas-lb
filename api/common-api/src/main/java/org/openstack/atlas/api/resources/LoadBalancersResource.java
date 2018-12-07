@@ -71,7 +71,12 @@ public class LoadBalancersResource extends CommonDependencyProvider {
                 }
 
                 if (changedSince != null) {
-                    changedCal = isoTocal(changedSince);
+                    try {
+                        changedCal = isoTocal(changedSince);
+                    } catch (ConverterException ex) {
+                        final String badRequestMessage = "Date parameters must follow ISO-8601 format";
+                        return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
+                    }
                 }
 
                 if (limit == null || limit < 0 || limit > 100) {
