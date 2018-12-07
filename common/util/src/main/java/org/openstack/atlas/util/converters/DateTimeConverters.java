@@ -7,6 +7,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.ResolverStyle;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -15,7 +17,7 @@ import java.util.regex.Pattern;
 
 
 public class DateTimeConverters {
-    private static final Pattern tzPattern = Pattern.compile(".*(\\+|\\-)([0-9][0-9]:[0-9][0-9])$");
+    private static final Pattern tzPattern = Pattern.compile(".*(\\+|\\-)([0-9][0-9](:|)[0-9][0-9])$");
 
     public static Calendar isoTocalNoExc(String isoStr) {
         Calendar cal = null;
@@ -27,11 +29,12 @@ public class DateTimeConverters {
         return cal;
     }
 
-    public static Calendar isoTocal(String isoStr) throws ConverterException {
+    public static Calendar  isoTocal(String isoStr) throws ConverterException {
         Calendar out;
         Matcher tzMatcher;
         String tzStr;
         ZoneOffset dtZone;
+        String sanitizedIsoStr;
         if(isoStr == null){
             throw new ConverterException(new NullPointerException());
         }
@@ -40,10 +43,16 @@ public class DateTimeConverters {
             if(tzMatcher.find()) {
                 tzStr = String.format("%s%s",tzMatcher.group(1),tzMatcher.group(2));
                 dtZone = ZoneOffset.of(tzStr);
+                // Work around for bug: https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8032051
+                // Formatter isn't working as I'd hope for our case either:
+                // https://stackoverflow.com/questions/43360852/cannot-parse-string-in-iso-8601-format-lacking-colon-in-offset-to-java-8-date
+                sanitizedIsoStr = isoStr.replaceAll(String.format("\\%s",tzStr), dtZone.toString());
             }else{
                 dtZone = ZoneOffset.UTC;
+                sanitizedIsoStr = isoStr;
             }
-            OffsetDateTime dateTime =  OffsetDateTime.of(LocalDateTime.parse(isoStr, DateTimeFormatter.ISO_DATE_TIME),dtZone);
+
+            OffsetDateTime dateTime =  OffsetDateTime.of(LocalDateTime.parse(sanitizedIsoStr, DateTimeFormatter.ISO_DATE_TIME),dtZone);
             out = GregorianCalendar.from(ZonedDateTime.from(dateTime));
         } catch (Exception ex) {
             throw new ConverterException(ex);
