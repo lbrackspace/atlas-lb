@@ -101,6 +101,28 @@ public class DateTimeConvertersTest {
     }
 
     @Test
+    public void shouldParseOffsetWithoutColonPlus() throws ConverterException {
+        String isoString = "2000-01-01T00:00:00+0800";
+        int offset;
+        int expectedOffset = 1000 * 60 * 60 * 8; // + 8 hours
+        Calendar cal;
+        cal = isoTocal(isoString);
+        offset = cal.getTimeZone().getRawOffset();
+        assertEquals(expectedOffset, offset);
+    }
+
+    @Test
+    public void shouldParseOffsetWithoutColonMinus() throws ConverterException {
+        String isoString = "2000-01-01T00:00:00-0800";
+        int offset;
+        int expectedOffset = 0 - 1000 * 60 * 60 * 8; // - 8 hours
+        Calendar cal;
+        cal = isoTocal(isoString);
+        offset = cal.getTimeZone().getRawOffset();
+        assertEquals(expectedOffset, offset);
+    }
+
+    @Test
     public void shouldKeepUtcByDefault() throws ConverterException {
         String isoString = "2000-01-01T00:00:00";
         int offset;
