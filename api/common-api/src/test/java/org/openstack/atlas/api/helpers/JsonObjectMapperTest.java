@@ -553,18 +553,24 @@ public class JsonObjectMapperTest {
 //        Assert.assertEquals("{\"certificateMapping\":{\"certificate\":\"imacert\",\"id\":1}}", epstr);
 //    }
 //
-//    @Test
-//    public void shouldSerializeSimpleCertificateMappings() throws IOException {
-//        CertificateMappings cms = new CertificateMappings();
-//        CertificateMapping cm = new CertificateMapping();
-//        cm.setId(1);
-//        cm.setHostName("host1");
-//        cms.getCertificateMappings().add(cm);
-//
-//        String epstr = mapper.writeValueAsString(cms);
-//        Assert.assertEquals("{\"certificateMappings\":[{\"id\":1,\"hostName\":\"host1\"}]}", epstr);
-//    }
-//
+
+    @Test
+    public void shouldSerializeSimpleCertMappings() throws IOException {
+        CertificateMappings mappings = new CertificateMappings();
+        CertificateMapping mapping = new CertificateMapping();
+        mapping.setHostName("host1");
+        mapping.setId(1);
+        mappings.getCertificateMappings().add(mapping);
+
+        mapping = new CertificateMapping();
+        mapping.setHostName("host2");
+        mapping.setId(2);
+        mappings.getCertificateMappings().add(mapping);
+
+        String epstr = mapper.writeValueAsString(mappings);
+        Assert.assertEquals("{\"certificateMappings\":[{\"certificateMapping\":{\"id\":1,\"hostName\":\"host1\"}},{\"certificateMapping\":{\"id\":2,\"hostName\":\"host2\"}}]}", epstr);
+    }
+
 //    @Test
 //    public void shouldSerializeSimpleSslTermination() throws IOException {
 //        SslTermination ct = new SslTermination();

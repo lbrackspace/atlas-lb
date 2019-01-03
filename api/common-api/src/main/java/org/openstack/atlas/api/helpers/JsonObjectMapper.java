@@ -68,7 +68,6 @@ public class JsonObjectMapper extends ObjectMapper {
 
         csf.addSpecificMapping(AccessList.class, new PropertyCollectionSerializer(serConf, AccessList.class, "getNetworkItems"));
         csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));
-        csf.addSpecificMapping(CertificateMappings.class, new PropertyCollectionSerializer(serConf, CertificateMappings.class, "getCertificateMappings"));
         csf.addSpecificMapping(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas"));
 
         cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
