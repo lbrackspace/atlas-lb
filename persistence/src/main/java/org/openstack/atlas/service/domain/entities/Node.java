@@ -2,7 +2,6 @@ package org.openstack.atlas.service.domain.entities;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 @javax.persistence.Entity
@@ -95,9 +94,6 @@ public class Node extends Entity implements Serializable {
     }
 
     public Set<NodeMeta> getNodeMetadata() {
-        if(nodeMetadata==null){
-            nodeMetadata = new HashSet<NodeMeta>();
-        }
         return nodeMetadata;
     }
 
