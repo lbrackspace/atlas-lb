@@ -8,8 +8,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.filters.helpers.StringUtilities;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.restclients.auth.fault.IdentityFault;
+import org.openstack.identity.client.access.Access;
 import org.openstack.identity.client.token.AuthenticateResponse;
 
+import javax.xml.bind.JAXBException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
@@ -54,5 +56,22 @@ public class IdentityClientImpl implements IdentityAuthClient {
     @Override
     public String getAuthToken(String username, String password) throws URISyntaxException, IdentityFault {
         return getAuthResponse(username, password).getToken().getId();
+    }
+
+    @Override
+    public Access impersonateUser(String adminToken, String impUser, int expireInSeconds) throws URISyntaxException, IdentityFault, JAXBException {
+        return identityClient.impersonateUser(adminToken, impUser, expireInSeconds);
+    }
+
+    @Override
+    public Access impersonateUser(String adminToken, String impUser) throws URISyntaxException, IdentityFault, JAXBException {
+        // default to 120 second impersonation timeout
+        return impersonateUser(adminToken, impUser, 120);
+    }
+
+    @Override
+    public String getImpersonationToken(String adminToken, String impUser) throws URISyntaxException, IdentityFault, JAXBException {
+        // default to 120 second impersonation timeout
+        return impersonateUser(adminToken, impUser, 120).getToken().getId();
     }
 }

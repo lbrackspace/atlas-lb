@@ -10,6 +10,7 @@ import org.openstack.atlas.restclients.auth.IdentityAuthClient;
 import org.openstack.atlas.restclients.auth.IdentityClientImpl;
 import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 
+import javax.xml.bind.JAXBException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
@@ -31,5 +32,18 @@ public class IdentityAuthClientTest {
             System.out.print(authToken);
             Assert.assertNotNull(authToken);
         }
+
+        @Ignore
+        @Test
+        public void shouldRetrieveImpersonationToken() throws URISyntaxException, IdentityFault, JAXBException {
+            final String authToken = identityClient.getAuthToken();
+            System.out.print(authToken);
+            Assert.assertNotNull(authToken);
+            String impToken = identityClient.getImpersonationToken(authToken, "crc32");
+            System.out.print(impToken);
+            Assert.assertNotNull(impToken);
+        }
+
+
     }
 }

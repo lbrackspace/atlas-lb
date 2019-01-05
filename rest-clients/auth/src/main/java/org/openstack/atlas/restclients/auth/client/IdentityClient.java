@@ -4,19 +4,25 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 import org.openstack.atlas.restclients.auth.impl.AuthenticationResourceManagerImpl;
+import org.openstack.atlas.restclients.auth.impl.ImpersonationResourceManagerImpl;
 import org.openstack.atlas.restclients.auth.impl.TokenResourceManagerImpl;
 import org.openstack.atlas.restclients.auth.manager.AuthenticationResourceManager;
 import org.openstack.atlas.restclients.auth.manager.IdentityManager;
+import org.openstack.atlas.restclients.auth.manager.ImpersonationResourceManager;
 import org.openstack.atlas.restclients.auth.manager.TokenResourceManager;
+import org.openstack.identity.client.access.Access;
 import org.openstack.identity.client.token.AuthenticateResponse;
 
 import javax.ws.rs.client.Client;
+import javax.xml.bind.JAXBException;
 import java.net.URISyntaxException;
 
 public class IdentityClient extends IdentityManager {
     private final Log logger = LogFactory.getLog(IdentityClient.class);
     private AuthenticationResourceManager authenticationResourceManager = new AuthenticationResourceManagerImpl();
     private TokenResourceManager tokenResourceManager = new TokenResourceManagerImpl();
+    private ImpersonationResourceManager impersonationResourceManager = new ImpersonationResourceManagerImpl();
+
 
 
     public IdentityClient(String authUrl, Client client) throws IdentityFault {
@@ -127,6 +133,40 @@ public class IdentityClient extends IdentityManager {
      */
     public AuthenticateResponse validateToken(String url, String adminToken, String token, String tenantName) throws IdentityFault, URISyntaxException {
         return tokenResourceManager.validateToken(client, url, adminToken, token, tenantName);
+    }
+
+     /* ******************************************************************************************************************/
+    /*                                                IMPERSONATION                                                     */
+    /* ******************************************************************************************************************/
+
+
+    /**
+     * Impersonate user by userName
+     *
+     * @param token
+     * @param userName
+     * @param expireInSeconds
+     * @return
+     * @throws IdentityFault
+     * @throws URISyntaxException
+     */
+    public Access impersonateUser(String token, String userName, int expireInSeconds) throws IdentityFault, URISyntaxException, JAXBException {
+        return impersonateUser(url, token, userName, expireInSeconds);
+    }
+
+    /**
+     * Impersonate user by userName with specif url
+     *
+     * @param url
+     * @param token
+     * @param userName
+     * @param expireInSeconds
+     * @return
+     * @throws IdentityFault
+     * @throws URISyntaxException
+     */
+    public Access impersonateUser(String url, String token, String userName, int expireInSeconds) throws IdentityFault, URISyntaxException, JAXBException {
+        return impersonationResourceManager.impersonateUser(client, url, token, userName, expireInSeconds);
     }
 }
 
