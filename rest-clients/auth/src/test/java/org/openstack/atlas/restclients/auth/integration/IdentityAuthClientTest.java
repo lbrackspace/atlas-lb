@@ -9,6 +9,9 @@ import org.junit.runner.RunWith;
 import org.openstack.atlas.restclients.auth.IdentityAuthClient;
 import org.openstack.atlas.restclients.auth.IdentityClientImpl;
 import org.openstack.atlas.restclients.auth.fault.IdentityFault;
+import org.openstack.identity.client.roles.RoleList;
+import org.openstack.identity.client.user.User;
+import org.openstack.identity.client.user.UserList;
 
 import javax.xml.bind.JAXBException;
 import java.net.MalformedURLException;
@@ -29,7 +32,6 @@ public class IdentityAuthClientTest {
         @Test
         public void shouldRetrieveTokenForAdmin() throws URISyntaxException, IdentityFault {
             final String authToken = identityClient.getAuthToken();
-            System.out.print(authToken);
             Assert.assertNotNull(authToken);
         }
 
@@ -37,13 +39,46 @@ public class IdentityAuthClientTest {
         @Test
         public void shouldRetrieveImpersonationToken() throws URISyntaxException, IdentityFault, JAXBException {
             final String authToken = identityClient.getAuthToken();
-            System.out.print(authToken);
             Assert.assertNotNull(authToken);
             String impToken = identityClient.getImpersonationToken(authToken, "crc32");
-            System.out.print(impToken);
             Assert.assertNotNull(impToken);
         }
 
+        @Ignore
+        @Test
+        public void shouldListUsersByTenantId() throws URISyntaxException, IdentityFault, JAXBException {
+            final String authToken = identityClient.getAuthToken();
+            Assert.assertNotNull(authToken);
+            UserList users = identityClient.getUsersByTenantId(authToken, "354934");
+            Assert.assertTrue(users.getUser().size() > 0);
+        }
 
+        @Ignore
+        @Test
+        public void shouldGetRolesForUser() throws URISyntaxException, IdentityFault, JAXBException {
+            final String authToken = identityClient.getAuthToken();
+            Assert.assertNotNull(authToken);
+            UserList users = identityClient.getUsersByTenantId(authToken, "354934");
+            RoleList roles = identityClient.listUserGlobalRoles(authToken, users.getUser().get(0).getId());
+            Assert.assertNotNull(roles.getRole().size() > 0);
+        }
+
+        @Ignore
+        @Test
+        public void shouldReturnPrimaryUserForTenantSingleUser() throws URISyntaxException, IdentityFault, JAXBException {
+            final String authToken = identityClient.getAuthToken();
+            Assert.assertNotNull(authToken);
+            User user = identityClient.getPrimaryUserForTenantId(authToken, "354934");
+            Assert.assertEquals("crc32", user.getUsername());
+        }
+
+        @Ignore
+        @Test
+        public void shouldReturnPrimaryUserForTenantWithMultipleUsers() throws URISyntaxException, IdentityFault, JAXBException {
+            final String authToken = identityClient.getAuthToken();
+            Assert.assertNotNull(authToken);
+            User user = identityClient.getPrimaryUserForTenantId(authToken, "5806065");
+            Assert.assertEquals("cloudqabrandon", user.getUsername());
+        }
     }
 }

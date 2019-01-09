@@ -74,6 +74,7 @@ public class IdentityConstants {
     /**Query params**/
     public static final String BELONGS_TO = "belongsTo";
     public static final String NAME = "name";
+    public static final String TENANT_ID = "tenant_id";
     public static final String SERVICE_ID = "serviceId";
     public static final String MARKER = "marker";
     public static final String LIMIT = "limit";

@@ -9,6 +9,6 @@ import java.net.URISyntaxException;
 
 public interface ImpersonationResourceManager {
 
-    public Access impersonateUser(Client client, String url, String token, String userName, int epireInSeconds) throws IdentityFault, URISyntaxException, JAXBException;
+    Access impersonateUser(Client client, String url, String token, String userName, int epireInSeconds) throws IdentityFault, URISyntaxException, JAXBException;
 
 }

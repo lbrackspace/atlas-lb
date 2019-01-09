@@ -30,7 +30,7 @@ public abstract class ResponseManagerImpl implements ResponseManager {
         WebTarget target = client.target(uri);
 
         for (String param : params.keySet()) {
-            target.queryParam(param, params.getFirst(param));
+            target = target.queryParam(param, params.getFirst(param));
         }
         return target.request(MediaType.APPLICATION_XML_TYPE)
                 .accept(MediaType.APPLICATION_XML_TYPE)

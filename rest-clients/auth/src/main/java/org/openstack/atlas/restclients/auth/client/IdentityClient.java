@@ -3,15 +3,14 @@ package org.openstack.atlas.restclients.auth.client;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.restclients.auth.fault.IdentityFault;
-import org.openstack.atlas.restclients.auth.impl.AuthenticationResourceManagerImpl;
-import org.openstack.atlas.restclients.auth.impl.ImpersonationResourceManagerImpl;
-import org.openstack.atlas.restclients.auth.impl.TokenResourceManagerImpl;
-import org.openstack.atlas.restclients.auth.manager.AuthenticationResourceManager;
-import org.openstack.atlas.restclients.auth.manager.IdentityManager;
-import org.openstack.atlas.restclients.auth.manager.ImpersonationResourceManager;
-import org.openstack.atlas.restclients.auth.manager.TokenResourceManager;
+import org.openstack.atlas.restclients.auth.impl.*;
+import org.openstack.atlas.restclients.auth.manager.*;
 import org.openstack.identity.client.access.Access;
+import org.openstack.identity.client.roles.RoleList;
+import org.openstack.identity.client.tenant.Tenant;
 import org.openstack.identity.client.token.AuthenticateResponse;
+import org.openstack.identity.client.user.User;
+import org.openstack.identity.client.user.UserList;
 
 import javax.ws.rs.client.Client;
 import javax.xml.bind.JAXBException;
@@ -22,8 +21,8 @@ public class IdentityClient extends IdentityManager {
     private AuthenticationResourceManager authenticationResourceManager = new AuthenticationResourceManagerImpl();
     private TokenResourceManager tokenResourceManager = new TokenResourceManagerImpl();
     private ImpersonationResourceManager impersonationResourceManager = new ImpersonationResourceManagerImpl();
-
-
+    private UserResourceManager userResourceManager = new UserResourceManagerImpl();
+    private RolesResourceManager rolesResourceManager = new RolesResourceManagerImpl();
 
     public IdentityClient(String authUrl, Client client) throws IdentityFault {
         super(authUrl, client, false);
@@ -168,5 +167,71 @@ public class IdentityClient extends IdentityManager {
     public Access impersonateUser(String url, String token, String userName, int expireInSeconds) throws IdentityFault, URISyntaxException, JAXBException {
         return impersonationResourceManager.impersonateUser(client, url, token, userName, expireInSeconds);
     }
+
+
+     /* ******************************************************************************************************************/
+     /*                                                     USERS                                                       */
+    /* ******************************************************************************************************************/
+
+
+    /**
+     * List tenant users
+     *
+     * @param token
+     * @param tenantId
+     * @return
+     * @throws IdentityFault
+     * @throws URISyntaxException
+     */
+    public UserList listTenantUsers(String token, String tenantId) throws IdentityFault, URISyntaxException {
+        return listTenantUsers(url, token, tenantId);
+    }
+
+    /**
+     * List tenant users with specific url
+     *
+     * @param url
+     * @param token
+     * @param tenantId
+     * @return
+     * @throws IdentityFault
+     * @throws URISyntaxException
+     */
+    public UserList listTenantUsers(String url, String token, String tenantId) throws IdentityFault, URISyntaxException {
+        return userResourceManager.listTenantUsers(client, url, token, tenantId);
+    }
+
+    /* ******************************************************************************************************************/
+     /*                                                     ROLES                                                       */
+    /* ******************************************************************************************************************/
+
+
+    /**
+     * List global roles for userId
+     *
+     * @param token
+     * @param userId
+     * @return
+     * @throws URISyntaxException
+     * @throws IdentityFault
+     */
+    public RoleList listUserGlobalRoles(String token, String userId) throws URISyntaxException, IdentityFault {
+        return listUserGlobalRoles(url, token, userId);
+    }
+
+    /**
+     * List global roles for userId with specific url
+     *
+     * @param url
+     * @param token
+     * @param userId
+     * @return
+     * @throws URISyntaxException
+     * @throws IdentityFault
+     */
+    public RoleList listUserGlobalRoles(String url, String token, String userId) throws URISyntaxException, IdentityFault {
+        return rolesResourceManager.listUserGlobalRoles(client, url, token, userId);
+    }
+
 }
 
