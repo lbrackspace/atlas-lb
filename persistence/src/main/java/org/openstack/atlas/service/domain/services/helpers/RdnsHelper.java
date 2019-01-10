@@ -2,23 +2,17 @@ package org.openstack.atlas.service.domain.services.helpers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.restclients.auth.IdentityClientImpl;
+import org.openstack.atlas.restclients.auth.IdentityAuthClientImpl;
 import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 import org.openstack.atlas.restclients.dns.DnsClient1_0;
 import org.openstack.atlas.service.domain.exceptions.RdnsException;
-import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthAdminClient;
-import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthPubClient;
-import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthUserAndToken;
-import org.openstack.atlas.service.domain.services.helpers.authmangler.KeyStoneConfig;
 import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.config.LbConfiguration;
 import org.openstack.atlas.util.config.MossoConfigValues;
 import org.openstack.atlas.util.debug.Debug;
-import org.openstack.client.keystone.KeyStoneException;
-import org.openstack.client.keystone.auth.AuthData;
-import org.openstack.client.keystone.user.User;
 
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -120,8 +114,7 @@ public class RdnsHelper {
         if (useAdminAuth) {
             tokenStr = getLbaasToken2();
         } else {
-            AuthUserAndToken aut = stealUserToken();
-            tokenStr = aut.getTokenString();
+            tokenStr = getImpersanatedUserToken();
         }
 
         DnsClient1_0 dns = new DnsClient1_0(rdnsPublicUrl, tokenStr, accountId);
@@ -136,49 +129,27 @@ public class RdnsHelper {
         return String.format("/%d/loadbalancers/%d", aid, lid);
     }
 
-    public AuthUserAndToken stealUserToken() throws RdnsException {
-        AuthUserAndToken aut;
-        User u;
-        AuthData t;
+    public String getImpersanatedUserToken() throws RdnsException {
         String accountIdStr = Integer.valueOf(accountId).toString();
-        KeyStoneConfig ksc = new KeyStoneConfig(this);
         try {
-            AuthAdminClient adminClient = new AuthAdminClient(ksc);
-            AuthPubClient pubClient = new AuthPubClient(ksc);
-            u = adminClient.listUser(accountIdStr, "mosso");
-            t = pubClient.getToken(u.getId(), u.getKey());
-            aut = new AuthUserAndToken(u, t);
-            return aut;
+            IdentityAuthClientImpl client = new IdentityAuthClientImpl();
+            String adminToken = client.getAuthToken();
+            String username = client.getPrimaryUserForTenantId(adminToken, accountIdStr).getUsername();
+            return client.impersonateUser(adminToken, username).getToken().getId();
         } catch (URISyntaxException ex) {
             throw logAndThrowRdnsException(ex, accountId);
-        } catch (KeyStoneException ex) {
+        } catch (IdentityFault ex) {
             throw logAndThrowRdnsException(ex, accountId);
-        }
-    }
-
-    public AuthUserAndToken getLbaasToken() throws RdnsException {
-        AuthUserAndToken aut;
-        User u;
-        AuthData t;
-        KeyStoneConfig ksc = new KeyStoneConfig(this);
-        try {
-            AuthAdminClient adminClient = new AuthAdminClient(ksc);
-            AuthPubClient pubClient = new AuthPubClient(ksc);
-            u = adminClient.getUserKey(authAdminUser);
-            t = pubClient.getToken(u.getId(), u.getKey());
-
-            aut = new AuthUserAndToken(u, t);
-            return aut;
-        } catch (URISyntaxException ex) {
+        } catch (MalformedURLException ex) {
             throw logAndThrowRdnsException(ex, accountId);
-        } catch (KeyStoneException ex) {
+        } catch (JAXBException ex) {
             throw logAndThrowRdnsException(ex, accountId);
         }
     }
 
     public String getLbaasToken2() throws RdnsException {
         try {
-            return (new IdentityClientImpl()).getAuthToken();
+            return (new IdentityAuthClientImpl()).getAuthToken();
         } catch (URISyntaxException e) {
             throw logAndThrowRdnsException(e, accountId);
         } catch (IdentityFault identityFault) {

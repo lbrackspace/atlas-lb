@@ -11,7 +11,6 @@ import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 import org.openstack.identity.client.access.Access;
 import org.openstack.identity.client.roles.Role;
 import org.openstack.identity.client.roles.RoleList;
-import org.openstack.identity.client.tenant.Tenant;
 import org.openstack.identity.client.token.AuthenticateResponse;
 import org.openstack.identity.client.user.User;
 import org.openstack.identity.client.user.UserList;
@@ -21,13 +20,13 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.util.Objects;
 
-public class IdentityClientImpl implements IdentityAuthClient {
-    private static final Log LOG = LogFactory.getLog(IdentityClientImpl.class);
+public class IdentityAuthClientImpl implements IdentityAuthClient {
+    private static final Log LOG = LogFactory.getLog(IdentityAuthClientImpl.class);
 
     public IdentityClient identityClient;
     private static Configuration configuration = new AuthenticationCredentialConfiguration();
 
-    public IdentityClientImpl() throws MalformedURLException, URISyntaxException, IdentityFault {
+    public IdentityAuthClientImpl() throws MalformedURLException, URISyntaxException, IdentityFault {
         if (configuration.hasKeys(PublicApiServiceConfigurationKeys.identity_auth_url,
                 PublicApiServiceConfigurationKeys.identity_user,
                 PublicApiServiceConfigurationKeys.identity_pass)) {
@@ -56,7 +55,7 @@ public class IdentityClientImpl implements IdentityAuthClient {
     public String getAuthToken() throws URISyntaxException, IdentityFault {
         String username = configuration.getString(PublicApiServiceConfigurationKeys.identity_user);
         String password = configuration.getString(PublicApiServiceConfigurationKeys.identity_pass);
-        return this.getAuthResponse(username, password).getToken().getId();
+        return getAuthResponse(username, password).getToken().getId();
     }
 
     @Override

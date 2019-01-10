@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.restclients.auth.IdentityAuthClient;
-import org.openstack.atlas.restclients.auth.IdentityClientImpl;
+import org.openstack.atlas.restclients.auth.IdentityAuthClientImpl;
 import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 import org.openstack.identity.client.roles.RoleList;
 import org.openstack.identity.client.user.User;
@@ -25,7 +25,7 @@ public class IdentityAuthClientTest {
 
         @Before
         public void standUp() throws MalformedURLException, URISyntaxException, IdentityFault {
-            identityClient = new IdentityClientImpl();
+            identityClient = new IdentityAuthClientImpl();
         }
 
         @Ignore

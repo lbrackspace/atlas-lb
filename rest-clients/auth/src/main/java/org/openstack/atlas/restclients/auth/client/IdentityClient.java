@@ -7,9 +7,7 @@ import org.openstack.atlas.restclients.auth.impl.*;
 import org.openstack.atlas.restclients.auth.manager.*;
 import org.openstack.identity.client.access.Access;
 import org.openstack.identity.client.roles.RoleList;
-import org.openstack.identity.client.tenant.Tenant;
 import org.openstack.identity.client.token.AuthenticateResponse;
-import org.openstack.identity.client.user.User;
 import org.openstack.identity.client.user.UserList;
 
 import javax.ws.rs.client.Client;
