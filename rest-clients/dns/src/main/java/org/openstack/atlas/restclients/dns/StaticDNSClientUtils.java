@@ -1,4 +1,5 @@
 package org.openstack.atlas.restclients.dns;
+
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.util.Map.Entry;
@@ -7,7 +8,9 @@ import java.util.List;
 import org.openstack.atlas.util.b64aes.Base64;
 
 public class StaticDNSClientUtils {
+
     private static final int SB_INIT_SIZE = 1024 * 4;
+
     public static String clientResponseToString(Response resp) {
         StringBuilder sb = new StringBuilder(SB_INIT_SIZE);
         sb.append("ClientResponse: ");
@@ -23,26 +26,31 @@ public class StaticDNSClientUtils {
             sb.append("Headers: \n");
             for (Entry<String, List<Object>> entry : headers.entrySet()) {
                 String key = entry.getKey();
-                if(key == null){
+                if (key == null) {
                     key = "null";
                 }
                 for (Object value : entry.getValue()) {
-                    if(value==null){
-                        value="null";
+                    if (value == null) {
+                        value = "null";
                     }
                     sb.append(key).append(":").append(value).append("\n");
                 }
             }
         }
-        Object body = resp.getEntity();
-        if(body == null){
-            body = "null";
+        Object body = resp.readEntity(String.class);
+        String bodyStr;
+        if (body == null) {
+            bodyStr = "null";
+        } else {
+            bodyStr = (String) body;
         }
-        return sb.append("\n").append(body).append("\n").toString();
+        sb.append("Body:\n").append(bodyStr).append("\nEndbody:\n");
+        String respStr = sb.toString();
+        return respStr;
     }
 
-    public static String encodeBasicAuth(String user,String passwd) throws UnsupportedEncodingException{
-        if(user == null || passwd == null){
+    public static String encodeBasicAuth(String user, String passwd) throws UnsupportedEncodingException {
+        if (user == null || passwd == null) {
             throw new UnsupportedEncodingException("user or passwd must not be null");
         }
         return "BASIC " + Base64.encode(user + ":" + passwd);
