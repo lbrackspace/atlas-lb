@@ -8,7 +8,7 @@ import org.openstack.atlas.restclients.atomhopper.AtomHopperClientImpl;
 import org.openstack.atlas.restclients.atomhopper.config.AtomHopperConfiguration;
 import org.openstack.atlas.restclients.atomhopper.util.AtomHopperUtil;
 import org.openstack.atlas.restclients.auth.IdentityAuthClient;
-import org.openstack.atlas.restclients.auth.IdentityClientImpl;
+import org.openstack.atlas.restclients.auth.IdentityAuthClientImpl;
 import org.openstack.atlas.service.domain.entities.JobName;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
@@ -90,7 +90,7 @@ public class AtomHopperUsagePusher extends AbstractJob {
             ThreadServiceUtil.startThreadMonitor(poolExecutor, threadPoolMonitorService);
             LOG.debug("Setting up the ahuslClient...");
             ahuslClient = new AtomHopperClientImpl();
-            identityClient = new IdentityClientImpl();
+            identityClient = new IdentityAuthClientImpl();
         } catch (Exception e) {
             System.out.printf("Exception: %s\n", new AtomHopperUtil().getExtendedStackTrace(e));
             LOG.error(String.format("Exception: %s\n", new AtomHopperUtil().getExtendedStackTrace(e)));

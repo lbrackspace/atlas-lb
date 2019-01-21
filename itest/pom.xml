@@ -21,6 +21,7 @@
         <module>jython-tests</module>
         <module>ldap-test</module>
         <module>auth-test</module>
+        <module>rdns-test</module>
     </modules>
     <build>
         <pluginManagement>

@@ -2,26 +2,23 @@ package org.openstack.atlas.service.domain.services.helpers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.restclients.auth.IdentityClientImpl;
+import org.openstack.atlas.restclients.auth.IdentityAuthClientImpl;
 import org.openstack.atlas.restclients.auth.fault.IdentityFault;
 import org.openstack.atlas.restclients.dns.DnsClient1_0;
 import org.openstack.atlas.service.domain.exceptions.RdnsException;
-import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthAdminClient;
-import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthPubClient;
-import org.openstack.atlas.service.domain.services.helpers.authmangler.AuthUserAndToken;
-import org.openstack.atlas.service.domain.services.helpers.authmangler.KeyStoneConfig;
 import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.config.LbConfiguration;
 import org.openstack.atlas.util.config.MossoConfigValues;
 import org.openstack.atlas.util.debug.Debug;
-import org.openstack.client.keystone.KeyStoneException;
-import org.openstack.client.keystone.auth.AuthData;
-import org.openstack.client.keystone.user.User;
 
 import javax.ws.rs.core.Response;
+import javax.xml.bind.JAXBException;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import org.openstack.identity.client.access.Access;
+import org.openstack.identity.client.access.Token;
+import org.openstack.identity.client.user.User;
 
 public class RdnsHelper {
 
@@ -50,7 +47,6 @@ public class RdnsHelper {
         rdnsAdminUser = conf.getString(MossoConfigValues.rdns_admin_user);
         authAdminUrl = conf.getString(MossoConfigValues.auth_management_uri);
         authAdminUser = conf.getString(MossoConfigValues.basic_auth_user);
-        //authPublicUrl = conf.getString(MossoConfigValues.auth_public_uri);
         authPublicUrl = authAdminUrl; // So wayne doesn't need to duplicate configs.
         authAdminKey = conf.getString(MossoConfigValues.basic_auth_key);
         useAdminAuth = Boolean.parseBoolean(conf.getString(MossoConfigValues.rdns_use_service_admin));
@@ -62,7 +58,7 @@ public class RdnsHelper {
         } catch (Exception ex) {
             String stackTrace = Debug.getEST(ex);
             String fmt = "Error decrypting rDNS admin passwd. Call to delete "
-                    + "PTR record will fail: %s";
+                    + "PTR record will fail: %s unless configured to use impersonation";
             rdnsPasswd = "????";
         }
     }
@@ -102,17 +98,20 @@ public class RdnsHelper {
         sb.append(String.format("rdnsPublicUrl=%s\n", rdnsPublicUrl));
         sb.append(String.format("rdnsAdminUrl=%s\n", rdnsAdminUrl));
         sb.append(String.format("rdnsUser=%s\n", rdnsAdminUser));
-        sb.append(String.format("rDnsPasswd=%s\n", "CENSORED"));
+        sb.append(String.format("rDnsPasswd=%s\n", rdnsPasswd));
         sb.append(String.format("authAdminUrl=%s\n", authAdminUrl));
         sb.append(String.format("authPublicUrl=%s\n", authPublicUrl));
         sb.append(String.format("authAdminUser=%s\n", authAdminUser));
-        sb.append(String.format("authAdminKey=%s\n", "CENSORED"));
+        sb.append(String.format("authAdminKey=%s\n", authAdminKey));
+        sb.append(String.format("useAdminAuth=%s\n", useAdminAuth));
         return sb.toString();
     }
 
     public Response delPtrManRecord(int lid, String ip) throws UnsupportedEncodingException {
         DnsClient1_0 dns = new DnsClient1_0("", rdnsAdminUrl, rdnsAdminUser, rdnsPasswd, "", accountId);
-        return dns.delPtrRecordMan(buildDeviceUri(accountId, lid), LB_SERVICE_NAME, ip);
+        Response resp = dns.delPtrRecordMan(buildDeviceUri(accountId, lid), LB_SERVICE_NAME, ip);
+        
+        return resp;
     }
 
     public Response delPtrPubRecord(int lid, String ip) throws RdnsException {
@@ -120,8 +119,7 @@ public class RdnsHelper {
         if (useAdminAuth) {
             tokenStr = getLbaasToken2();
         } else {
-            AuthUserAndToken aut = stealUserToken();
-            tokenStr = aut.getTokenString();
+            tokenStr = getImpersanatedUserToken();
         }
 
         DnsClient1_0 dns = new DnsClient1_0(rdnsPublicUrl, tokenStr, accountId);
@@ -136,49 +134,49 @@ public class RdnsHelper {
         return String.format("/%d/loadbalancers/%d", aid, lid);
     }
 
-    public AuthUserAndToken stealUserToken() throws RdnsException {
-        AuthUserAndToken aut;
-        User u;
-        AuthData t;
+    public String getUserName() throws RdnsException {
         String accountIdStr = Integer.valueOf(accountId).toString();
-        KeyStoneConfig ksc = new KeyStoneConfig(this);
         try {
-            AuthAdminClient adminClient = new AuthAdminClient(ksc);
-            AuthPubClient pubClient = new AuthPubClient(ksc);
-            u = adminClient.listUser(accountIdStr, "mosso");
-            t = pubClient.getToken(u.getId(), u.getKey());
-            aut = new AuthUserAndToken(u, t);
-            return aut;
+            IdentityAuthClientImpl client = new IdentityAuthClientImpl();
+            String adminToken = client.getAuthToken();
+            String username = client.getPrimaryUserForTenantId(adminToken, accountIdStr).getUsername();
+            return username;
         } catch (URISyntaxException ex) {
             throw logAndThrowRdnsException(ex, accountId);
-        } catch (KeyStoneException ex) {
+        } catch (IdentityFault ex) {
+            throw logAndThrowRdnsException(ex, accountId);
+        } catch (MalformedURLException ex) {
+            throw logAndThrowRdnsException(ex, accountId);
+        } catch (JAXBException ex) {
             throw logAndThrowRdnsException(ex, accountId);
         }
     }
 
-    public AuthUserAndToken getLbaasToken() throws RdnsException {
-        AuthUserAndToken aut;
-        User u;
-        AuthData t;
-        KeyStoneConfig ksc = new KeyStoneConfig(this);
+    public String getImpersanatedUserToken() throws RdnsException {
+        String accountIdStr = Integer.valueOf(accountId).toString();
         try {
-            AuthAdminClient adminClient = new AuthAdminClient(ksc);
-            AuthPubClient pubClient = new AuthPubClient(ksc);
-            u = adminClient.getUserKey(authAdminUser);
-            t = pubClient.getToken(u.getId(), u.getKey());
-
-            aut = new AuthUserAndToken(u, t);
-            return aut;
+            IdentityAuthClientImpl client = new IdentityAuthClientImpl();
+            String adminToken = client.getAuthToken();
+            User user = client.getPrimaryUserForTenantId(adminToken, accountIdStr);
+            String username = user.getUsername();
+            Access impersonation = client.impersonateUser(adminToken, username);
+            Token token = impersonation.getToken();
+            String tokenId = token.getId();
+            return tokenId;
         } catch (URISyntaxException ex) {
             throw logAndThrowRdnsException(ex, accountId);
-        } catch (KeyStoneException ex) {
+        } catch (IdentityFault ex) {
+            throw logAndThrowRdnsException(ex, accountId);
+        } catch (MalformedURLException ex) {
+            throw logAndThrowRdnsException(ex, accountId);
+        } catch (JAXBException ex) {
             throw logAndThrowRdnsException(ex, accountId);
         }
     }
 
     public String getLbaasToken2() throws RdnsException {
         try {
-            return (new IdentityClientImpl()).getAuthToken();
+            return (new IdentityAuthClientImpl()).getAuthToken();
         } catch (URISyntaxException e) {
             throw logAndThrowRdnsException(e, accountId);
         } catch (IdentityFault identityFault) {
@@ -235,5 +233,7 @@ public class RdnsHelper {
         return authAdminKey;
     }
 
-    public Boolean getUseAdminAuth() { return useAdminAuth; }
+    public Boolean getUseAdminAuth() {
+        return useAdminAuth;
+    }
 }
