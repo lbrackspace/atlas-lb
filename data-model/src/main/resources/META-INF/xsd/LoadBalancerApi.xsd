@@ -194,7 +194,7 @@
         <xsd:attribute name="category" type="xsd:string"/>
         <xsd:attribute name="severity" type="xsd:string"/>
         <xsd:attribute name="relativeUri" type="xsd:string"/>
-        <xsd:attribute name="created" type="xsd:string"/>
+        <xsd:attribute name="created" type="xsd:dateTime"/>
     </xsd:complexType>
 
     <xsd:element name="sessionPersistence" type="tns:sessionPersistence"/>
