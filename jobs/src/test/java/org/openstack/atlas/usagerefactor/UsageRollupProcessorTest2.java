@@ -86,7 +86,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case001.xml")
-    public void edgeCasesCase001() throws Exception {
+    public void edgeCasesCase001() throws Exception {//Empty list of LoadBalancerMergedHostUsage
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertTrue(processedUsages.isEmpty());
@@ -94,7 +94,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case002.xml")
-    public void edgeCasesCase002() throws Exception {
+    public void edgeCasesCase002() throws Exception {//Single LoadBalancerMergedHostUsage record with CREATE_LOADBALANCER event
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(1, processedUsages.size());
@@ -106,6 +106,7 @@ public class UsageRollupProcessorTest2 {
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case003.xml")
     public void edgeCasesCase003() throws Exception {
+        //Multiple events that span across multiple hours. Records that are after hourToRollup are rolled up.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(2, processedUsages.size());
@@ -119,7 +120,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case004.xml")
-    public void edgeCasesCase004() throws Exception {
+    public void edgeCasesCase004() throws Exception {//Normal usage with CREATE_LOADBALANCER and SSL_MIXED_ON events, in between these events there is a polling.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(2, processedUsages.size());
@@ -133,7 +134,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case005.xml")
-    public void edgeCasesCase005() throws Exception {
+    public void edgeCasesCase005() throws Exception {//Normal usage with CREATE_LOADBALANCER and SSL_MIXED_ON events, in between there is no polling.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(2, processedUsages.size());
@@ -148,6 +149,7 @@ public class UsageRollupProcessorTest2 {
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case006.xml")
     public void edgeCasesCase006() throws Exception {
+        //Loadbalancer gets SUSPENDED, then UNSUSPENDED and SUSPENDED event created by SuspendedEventJob for suspended loadbalancers.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(3, processedUsages.size());
@@ -183,7 +185,8 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case008.xml")
-    public void edgeCasesCase008() throws Exception {
+    public void edgeCasesCase008() throws Exception {//null record before CREATE_LOADBALANCER record followed by many auto-polled records.
+        //Any records before CREATE_LOADBALANCER will be discarded.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(1, processedUsages.size());
@@ -194,7 +197,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/edgecases/case009.xml")
-    public void edgeCasesCase009() throws Exception {
+    public void edgeCasesCase009() throws Exception {//Multiple events, and events occur at the same time as auto-polls.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(3, processedUsages.size());
@@ -225,7 +228,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/missingprevioususage/case002.xml")
-    public void missingPreviousUsageCase002() throws Exception {
+    public void missingPreviousUsageCase002() throws Exception {//1 hour worth of usage with event coming in before first auto-poll.
         mostRecentUsage.setTags(5);
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
@@ -240,7 +243,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/missingprevioususage/case003.xml")
-    public void missingPreviousUsageCase003() throws Exception {
+    public void missingPreviousUsageCase003() throws Exception {//DELETE_LOADBALANCER as the first record of the hour
         mostRecentUsage.setTags(5);
         mostRecentUsage.setNumVips(2);
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
@@ -257,7 +260,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/multipleevents/case001.xml")
-    public void multipleEventsCase001() throws Exception {
+    public void multipleEventsCase001() throws Exception {//CREATE_LOADBALANCER record followed by many ssl events and then gets deleted.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
         Assert.assertEquals(5, processedUsages.size());
 
@@ -284,7 +287,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case001.xml")
-    public void normalUsageCase001() throws Exception {
+    public void normalUsageCase001() throws Exception {//CREATE_LOADBALANCER record followed by many auto-polled records.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(1, processedUsages.size());
@@ -294,8 +297,8 @@ public class UsageRollupProcessorTest2 {
     }
 
     @Test
-    @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case002.xml")
-    public void normalUsageCase002() throws Exception {
+        @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case002.xml")
+    public void normalUsageCase002() throws Exception {//CREATE_LOADBALANCER record followed by many auto-polled records, some next hour polls
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(1, processedUsages.size());
@@ -313,7 +316,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case003.xml")
-    public void normalUsageCase003() throws Exception {
+    public void normalUsageCase003() throws Exception {//CREATE_LOADBALANCER record followed by SSL_MIXED_ON followed by auto-poll records
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(2, processedUsages.size());
@@ -327,7 +330,8 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case004.xml")
-    public void normalUsageCase004() throws Exception {
+    public void normalUsageCase004() throws Exception {//CREATE_LOADBALANCER record followed by auto-poll records followed by SSL_MIXED_ON
+        //followed by auto-poll records  within same hour.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(2, processedUsages.size());
@@ -341,7 +345,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case005.xml")
-    public void normalUsageCase005() throws Exception {
+    public void normalUsageCase005() throws Exception {//No events, usage records for two hours in SSL_MIXED mode, processing 2nd hour.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(1, processedUsages.size());
@@ -352,7 +356,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case006.xml")
-    public void normalUsageCase006() throws Exception {
+    public void normalUsageCase006() throws Exception {//DELETE_LOADBALANCER as the first record of the hour.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(2, processedUsages.size());
@@ -367,7 +371,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case007.xml")
-    public void normalUsageCase007() throws Exception {
+    public void normalUsageCase007() throws Exception {//Load balancer running, gets SUSPENDED and then UNSUSPENDED. SUSPENDED events created by SuspendedEventJob for suspended loadbalancers.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(2, processedUsages.size());
@@ -399,7 +403,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/normalusage/case008.xml")
-    public void normalUsageCase008() throws Exception {
+    public void normalUsageCase008() throws Exception {//Two load balancers. We should not create an entry for load balancer #4321.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(1, processedUsages.size());
@@ -480,7 +484,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/pollergoesdown/case003.xml")
-    public void pollerGoesDownCase003() throws Exception {
+    public void pollerGoesDownCase003() throws Exception {//CREATE_LOADBALANCER record followed by one auto-polled record. Then poller goes down.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(1, processedUsages.size());
@@ -491,7 +495,7 @@ public class UsageRollupProcessorTest2 {
 
     @Test
     @DatabaseSetup("classpath:org/openstack/atlas/usagerefactor/rollupjob/pollergoesdown/case004.xml")
-    public void pollerGoesDownCase004() throws Exception {
+    public void pollerGoesDownCase004() throws Exception {//CREATE_LOADBALANCER record followed by SSL_MIXED_ON record within same hour. No additional records.
         processedUsages = usageRollupProcessor.processRecords(allUsageRecordsInOrder, hourToRollup, lbsActiveDuringHour);
 
         Assert.assertEquals(2, processedUsages.size());
