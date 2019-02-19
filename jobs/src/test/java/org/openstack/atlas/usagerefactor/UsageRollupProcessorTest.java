@@ -29,7 +29,7 @@ import static org.mockito.Mockito.when;
 public class UsageRollupProcessorTest {
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class OneHourOfPolledUsageWithNoEvents {
+    public static class OneHourOfPolledUsageWithNoEvents {//Tests to validate one hour rollup with out events
         private int accountId = 5806065;
         private int lbId = 1234;
 
@@ -64,7 +64,7 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldCreateOneHourlyRecord() {
+        public void shouldCreateOneHourlyRecord() {//this tests the number of expected Usage records.
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
             LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
@@ -94,7 +94,7 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldCreateOneRecordWithStartTimeOnTheHourAndEndTimeOnTheNextHour() {
+        public void shouldCreateOneRecordWithStartTimeOnTheHourAndEndTimeOnTheNextHour() {//start time and end time validation of the usage record
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 11));
             LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
@@ -187,7 +187,7 @@ public class UsageRollupProcessorTest {
     }
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class OneHourOfPolledUsageWithEvents {
+    public static class OneHourOfPolledUsageWithEvents {//Tests with events
 
         private int accountId = 5806065;
         private int lbId = 1234;
@@ -392,6 +392,9 @@ public class UsageRollupProcessorTest {
 
         @Test
         public void shouldCreateTwoRecordsIfEventIsFirstRecordOfHour() {
+            //First record is with DELETE_LOADBALANCER event.
+            //One Usage record with zero BW and event null. One more with zero BW and event type as DELETE_LOADBALANCER.
+            //The startTime and endTime of the DELETE_LOADBALANCER Usage record is same as the pollTime of the event.
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 1));
             loadBalancerMergedHosts = PolledUsageRecordGenerator.generate(generatorPojos, initialPollTime);
@@ -438,7 +441,7 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldCalculateAverageConcurrentConnectionsWithEvents() {
+        public void shouldCalculateAverageConcurrentConnectionsWithEvents() {//Concurrent Connections
             List<GeneratorPojo> generatorPojos = new ArrayList<GeneratorPojo>();
             generatorPojos.add(new GeneratorPojo(5806065, 1234, 8));
             List<UsageEvent> eventTypes = new ArrayList<UsageEvent>();
@@ -542,7 +545,7 @@ public class UsageRollupProcessorTest {
     }
 
     @RunWith(MockitoJUnitRunner.class)
-    public static class WhenBreakingPolledRecordsDownByLbId {
+    public static class WhenBreakingPolledRecordsDownByLbId {//Tests for usageRollupProcessor.groupUsagesByLbIdAccountId() method
         private Calendar initialPollTime;
         private UsageRollupProcessor usageRollupProcessor;
         private List<LoadBalancerMergedHostUsage> LoadBalancerMergedHostUsages;
@@ -624,7 +627,7 @@ public class UsageRollupProcessorTest {
         }
 
         @Test
-        public void shouldStopProcessingRecordsBeforeTheNextHour() {
+        public void shouldStopProcessingRecordsBeforeTheNextHour() {//Records with pollTime before (hourToProcess+One hour) will only be processed in current poll
             List<GeneratorPojo> usagePojoList = new ArrayList<GeneratorPojo>();
             usagePojoList.add(new GeneratorPojo(accountId, lbId, 36));
             LoadBalancerMergedHosts = PolledUsageRecordGenerator.generate(usagePojoList, initialPollTime);

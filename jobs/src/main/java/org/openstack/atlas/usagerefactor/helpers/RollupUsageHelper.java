@@ -6,6 +6,11 @@ import org.openstack.atlas.service.domain.usage.entities.LoadBalancerMergedHostU
 
 public class RollupUsageHelper {
 
+    /**
+     * Adds the bandwidth counters from each LoadBalancerMergedHostUsage to the Usage record.
+     * @param usageToProcess
+     * @param LoadBalancerMergedHostUsage
+     */
     public static void calculateAndSetBandwidth(Usage usageToProcess, LoadBalancerMergedHostUsage LoadBalancerMergedHostUsage) {
         usageToProcess.setIncomingTransferSsl(usageToProcess.getIncomingTransferSsl() + LoadBalancerMergedHostUsage.getIncomingTransferSsl());
         usageToProcess.setOutgoingTransferSsl(usageToProcess.getOutgoingTransferSsl() + LoadBalancerMergedHostUsage.getOutgoingTransferSsl());
@@ -13,6 +18,12 @@ public class RollupUsageHelper {
         usageToProcess.setOutgoingTransfer(usageToProcess.getOutgoingTransfer() + LoadBalancerMergedHostUsage.getOutgoingTransfer());
     }
 
+    /**
+     * Calculates the averageConcurrentConnections and sets to the Usage record.
+     * averageConcurrentConnections = total connections from all LoadBalancerMergedHostUsages considered in the Usage record / number Of LoadBalancerMergedHostUsages considered;
+     * @param usageToProcess
+     * @param LoadBalancerMergedHostUsage
+     */
     public static void calculateAndSetAverageConcurrentConnections(Usage usageToProcess,
                                                                    LoadBalancerMergedHostUsage LoadBalancerMergedHostUsage) {
         double total = usageToProcess.getAverageConcurrentConnections() * usageToProcess.getNumberOfPolls();
