@@ -20,6 +20,12 @@ public class PolledUsageRecordGenerator {
     private static final int DEFAULT_TAGS_BITMASK = 0;
     private static final int DEFAULT_POLL_INTERVAL = 5;
 
+    /**
+     * Generates dummy LoadBalancerMergedHostUsage records for the Rollup Job tests with some default values.
+     * @param generatorPojoList
+     * @param initialPollTime pollTime to be used for the first LoadBalancerMergedHostUsage
+     * @return
+     */
     public static List<LoadBalancerMergedHostUsage> generate(List<GeneratorPojo> generatorPojoList, Calendar initialPollTime){
         return generate(generatorPojoList, initialPollTime, DEFAULT_POLL_INTERVAL, DEFAULT_OUTGOING_TRANSFER, DEFAULT_INCOMING_TRANSFER,
                         DEFAULT_OUTGOING_TRANSFER_SSL, DEFAULT_INCOMING_TRANSFER_SSL, DEFAULT_CONCURRENT_CONNECTIONS,

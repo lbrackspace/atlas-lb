@@ -57,7 +57,7 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
 
     @Override
     public void run() throws Exception {
-        if (shouldRollup()) {
+        if (shouldRollup()) {//check if lbUsagePollerJob ran successfully at least once after the start of the current hour.
             rollupUsage();
         } else {
             throw new Exception("Warning! We are currently not rolling up usage! Something may be wrong with the usage poller!");
@@ -81,14 +81,21 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
         return rollup;
     }
 
+    /**
+     * Rollup the usage that came after the last hour processed.
+     * In case if there was a failure of the rollup job, this will process all the records from the hour the poller failed.
+     * If poller's lastHourProcessed is 1pm and the current time is 4:16 pm then the usage is rolled up for 2 to 3 and 3 to 4.
+     *
+     * @throws Exception
+     */
     private void rollupUsage() throws Exception {
-        Calendar hourToStop = getHourToStop();
-        Calendar hourToRollup = null;
-        Calendar rollupMarker = null;
+        Calendar hourToStop = getHourToStop();//current time with stripOutMinsAndSecs, if the current time is 4:16 pm then hourToStop=4pm
+        Calendar hourToRollup = null;//hour to start the rollup
+        Calendar rollupMarker = null;//marker till when the records should be rolledup: (hourToRollup+One Hour)
 
-        while (hourToRollup == null || hourToRollup.before(hourToStop)) {
+        while (hourToRollup == null || hourToRollup.before(hourToStop)) {//while loop to rollup for multiple hours if needed.
             try {
-                hourToRollup = getHourToRollup(hourToStop);
+                hourToRollup = getHourToRollup(hourToStop);//lastHourProcessed + 1 hour, this is the increment to repeat the while loop
                 if (hourToRollup == null) return;
                 rollupMarker = CalendarUtils.copy(hourToRollup);
                 rollupMarker.add(Calendar.HOUR, 1);
@@ -96,7 +103,6 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
                 LOG.error("Usage rollup job failed! Unable to parse inputPath which stores the last successful rollup hour.", pe);
                 throw pe;
             }
-
             LOG.info(String.format("Finding loadbalancers that were active for hour '%s'...", hourToRollup.getTime().toString()));
             Set<LbIdAccountId> loadBalancersActiveDuringPeriod = loadBalancerRepository.getLoadBalancersActiveDuringPeriod(hourToRollup, rollupMarker);
             LOG.info(String.format("%d loadbalancers were active for hour '%s'.", loadBalancersActiveDuringPeriod.size(), hourToRollup.getTime().toString()));
@@ -119,11 +125,12 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
                 ExecutionUtilities.ExecuteInBatches(usagesToInsert, BATCH_SIZE, usageInsertBatchAction);
             }
 
+            //update lastSuccessfulHourProcessed for the LB_USAGE_ROLLUP job so that the next run will know from when to process the records
             String lastSuccessfulHourProcessed = CalendarUtils.calendarToString(hourToRollup);
             jobStateService.updateInputPath(JobName.LB_USAGE_ROLLUP, lastSuccessfulHourProcessed);
 
             LOG.info(String.format("Deleting polling usage entries before hour '%s'...", hourToRollup.getTime().toString()));
-            lbMergedHostUsageRepository.deleteAllRecordsBefore(hourToRollup);
+            lbMergedHostUsageRepository.deleteAllRecordsBefore(hourToRollup);//records before the hourToRollup are deleted not the records that were just processed.
         }
     }
 
@@ -133,6 +140,13 @@ public class LoadBalancerUsageRollupJob extends AbstractJob {
         return hourToStop;
     }
 
+    /**
+     * Calculates the next hour to be rolled up.
+     *
+     * @param hourToStop when to stop the entire rollup process, this will be the top of the current hour.
+     * @return
+     * @throws ParseException
+     */
     protected Calendar getHourToRollup(Calendar hourToStop) throws ParseException {
         Calendar hourToRollup;
 
