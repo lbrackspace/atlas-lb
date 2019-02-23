@@ -24,6 +24,7 @@ public class HostThread implements Callable<HostIdUsageMap> {
     public HostIdUsageMap call() throws Exception {
         try {
             return new HostIdUsageMap(host.getId(), stingrayUsageClient.getHostUsage(host));
+            //HostIdUsageMap(HostId, Map<LBId, SnmpUsage>)
         } catch (Exception e) {
             String retString = String.format("Warning! Request for host %s usage from SNMP server failed.", host.getName());
             LOG.warn(retString, e);
