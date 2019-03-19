@@ -6,8 +6,6 @@
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
         <version>1.26.11-SNAPSHOT</version>
-
-
     </parent>
 
     <groupId>org.openstack.atlas</groupId>
@@ -22,6 +20,7 @@
         <module>ldap-test</module>
         <module>auth-test</module>
         <module>rdns-test</module>
+        <module>tls-inspect</module>
     </modules>
     <build>
         <pluginManagement>

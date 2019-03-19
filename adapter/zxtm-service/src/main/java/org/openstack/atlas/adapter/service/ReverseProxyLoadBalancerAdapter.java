@@ -224,6 +224,9 @@ public interface ReverseProxyLoadBalancerAdapter {
     void enableDisableTLS_10(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isEnabled)
             throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
 
+    void enableDisableTLS_11(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isEnabled)
+            throws RemoteException, InsufficientRequestException, ZxtmRollBackException;
+
     String getSslCiphersByVhost(LoadBalancerEndpointConfiguration conf, Integer accountId, Integer loadbalancerId)
             throws RemoteException, EntityNotFoundException;
 

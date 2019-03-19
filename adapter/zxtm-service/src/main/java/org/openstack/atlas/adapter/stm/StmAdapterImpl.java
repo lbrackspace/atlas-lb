@@ -926,7 +926,11 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         throw new NotImplementedException("Hey you forgot to implement disabling TLS_10 for the Zxtm Rest adaptor");
     }
 
-
+    @Override
+    public void disableEnabledTLS_11(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
+            throws InsufficientRequestException, RollBackException{
+        throw new NotImplementedException("Hey you forgot to implement disabling TLS_11 for the Zxtm Rest adaptor");
+    }
 
     /**
      * Deprecating these(SubnetMapping calls) as per ops. Unused call that is difficult to test, may support in future if needed... *

@@ -357,6 +357,10 @@ public class StubResource extends CommonDependencyProvider {
         protocol.setSecurityProtocolName(SecurityProtocolName.TLS_10);
         protocol.setSecurityProtocolStatus(SecurityProtocolStatus.DISABLED);
         sslTermination.getSecurityProtocols().add(protocol);
+        protocol = new SecurityProtocol();
+        protocol.setSecurityProtocolName(SecurityProtocolName.TLS_11);
+        protocol.setSecurityProtocolStatus(SecurityProtocolStatus.ENABLED);
+        sslTermination.getSecurityProtocols().add(protocol);
         return Response.status(Response.Status.OK).entity(sslTermination).build();
     }
 
