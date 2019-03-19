@@ -1464,6 +1464,9 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
         // disable tls v1.0 if they disabled it
         enableDisableTLS_10(conf, loadBalancer, zeusSslTermination.getSslTermination().isTls10Enabled());
 
+        // disable tls v1.1 if they disabled it
+        enableDisableTLS_11(conf, loadBalancer, zeusSslTermination.getSslTermination().isTls11Enabled());
+
         if (!virtualServerService.getPort(new String[]{sslVirtualServerName})[0].equals(zeusSslTermination.getSslTermination().getSecurePort())) {
             LOG.info(String.format("Updating secure servers port for ssl termination load balancer  %s in zeus...", sslVirtualServerName));
             updatePort(conf, sslVirtualServerName, zeusSslTermination.getSslTermination().getSecurePort());
@@ -1655,6 +1658,26 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             vsBinding.setSSLSupportTLS1(virtualServerNameArry, tlsValue);
         } catch (RemoteException af) {
             String msg = String.format("There was a error setting TLS 1.0 support to %s for loadbalancer %d", isEnabled, loadBalancer.getId());
+            LOG.error(msg);
+            LOG.error(String.format("Operation Failure, Full details: %s", Debug.getExtendedStackTrace(af)));
+            throw new ZxtmRollBackException(msg, af);
+        }
+    }
+
+    @Override
+    public void enableDisableTLS_11(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isEnabled) throws RemoteException, InsufficientRequestException, ZxtmRollBackException {
+        String[] virtualServerNameArry = new String[]{ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId())};
+        VirtualServerSSLSupportTLS11[] tlsValue;
+        if (isEnabled) {
+            tlsValue = new VirtualServerSSLSupportTLS11[]{VirtualServerSSLSupportTLS11.enabled};
+        } else {
+            tlsValue = new VirtualServerSSLSupportTLS11[]{VirtualServerSSLSupportTLS11.disabled};
+        }
+        try {
+            VirtualServerBindingStub vsBinding = getServiceStubs(conf).getVirtualServerBinding();
+            vsBinding.setSSLSupportTLS11(virtualServerNameArry, tlsValue);
+        } catch (RemoteException af) {
+            String msg = String.format("There was a error setting TLS 1.1 support to %s for loadbalancer %d", isEnabled, loadBalancer.getId());
             LOG.error(msg);
             LOG.error(String.format("Operation Failure, Full details: %s", Debug.getExtendedStackTrace(af)));
             throw new ZxtmRollBackException(msg, af);

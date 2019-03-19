@@ -26,7 +26,7 @@ import static org.openstack.atlas.api.validation.context.HttpRequestType.PUT;
 public class SslTerminationValidator implements ResourceValidator<SslTermination> {
 
     private final Validator<SslTermination> validator;
-    private String errMessage = "";
+    //private String errMessage = "";
 
     public SslTerminationValidator() {
         validator = build(new ValidatorBuilder<SslTermination>(SslTermination.class) {
@@ -139,10 +139,11 @@ public class SslTerminationValidator implements ResourceValidator<SslTermination
                                     dups.add(name.value());
                                 }
                             }
-                            errMessage = String.format("Found duplicate Security protocols: %s", StaticStringUtils.collectionToString(dups, ","));
+                            //The validator framework does not support dynamic error messages, hence commented this line
+                            //errMessage = String.format("Found duplicate Security protocols: %s", StaticStringUtils.collectionToString(dups, ","));
                             return new VerifierResult(isSuccess);
                         }
-                    }).withMessage(errMessage);
+                    }).withMessage("Found duplicate Security protocols.");
                 }
             }
         });

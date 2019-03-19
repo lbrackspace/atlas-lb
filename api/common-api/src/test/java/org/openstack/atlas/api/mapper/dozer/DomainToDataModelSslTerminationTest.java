@@ -7,10 +7,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Cipher;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Ciphers;
+import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.exceptions.NoMappableConstantException;
 import org.openstack.atlas.service.domain.util.Constants;
 
 @RunWith(Enclosed.class)
@@ -120,8 +120,30 @@ public class DomainToDataModelSslTerminationTest {
             org.openstack.atlas.service.domain.entities.SslTermination dbSsl;
             org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination apiSsl;
             dbSsl = new org.openstack.atlas.service.domain.entities.SslTermination();
-            dbSsl.setTls10Enabled(false);
+            //TLS protocols not set, should map with status ENABLED by default.
             apiSsl = mapper.map(dbSsl, org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination.class);
+            String TLSMappingMessage = "TLS protocol mapping failed";
+            Assert.assertEquals(TLSMappingMessage, apiSsl.getSecurityProtocols().size(), 2);
+            for (SecurityProtocol sp :apiSsl.getSecurityProtocols()) {
+                Assert.assertEquals(TLSMappingMessage, sp.getSecurityProtocolStatus(), SecurityProtocolStatus.ENABLED);
+            }
+
+            //with TLS protocols explicitly set
+            dbSsl.setTls10Enabled(false);
+            dbSsl.setTls11Enabled(true);
+            apiSsl = mapper.map(dbSsl, org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination.class);
+            for (SecurityProtocol sp :apiSsl.getSecurityProtocols()) {
+                switch (sp.getSecurityProtocolName()){
+                    case TLS_10:
+                        Assert.assertEquals(TLSMappingMessage, sp.getSecurityProtocolStatus(), SecurityProtocolStatus.DISABLED);
+                        break;
+                    case TLS_11:
+                        Assert.assertEquals(TLSMappingMessage, sp.getSecurityProtocolStatus(), SecurityProtocolStatus.ENABLED);
+                        break;
+                    default:
+                        throw new NoMappableConstantException("Cannot map source type: " + SecurityProtocolName.class);
+                }
+            }
         }
     }
 }
