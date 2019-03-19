@@ -33,6 +33,9 @@ public class SslTermination extends Entity implements Serializable {
     @Column(name = "tls10_enabled", nullable = true)
     private boolean isTls10Enabled = true;
 
+    @Column(name = "tls11_enabled", nullable = true)
+    private boolean isTls11Enabled = true;
+
     @ManyToOne
     @JoinColumn(name = "cipher_profile",nullable = true,referencedColumnName = "name")
     private SslCipherProfile cipherProfile;
@@ -103,6 +106,14 @@ public class SslTermination extends Entity implements Serializable {
 
     public void setTls10Enabled(boolean isTls10Enabled) {
         this.isTls10Enabled = isTls10Enabled;
+    }
+
+    public boolean isTls11Enabled() {
+        return isTls11Enabled;
+    }
+
+    public void setTls11Enabled(boolean tls11Enabled) {
+        isTls11Enabled = tls11Enabled;
     }
 
     public SslCipherProfile getCipherProfile() {

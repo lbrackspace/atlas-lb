@@ -76,6 +76,12 @@ public final class SslTerminationHelper {
         }
     }
 
+    /**
+     * Copies the fields apiSslTermination from to dbTermination.
+     * @param apiSslTermination
+     * @param dbTermination
+     * @return
+     */
     public static org.openstack.atlas.service.domain.entities.SslTermination verifyAttributes(SslTermination apiSslTermination, org.openstack.atlas.service.domain.entities.SslTermination dbTermination) {
         boolean isNewDbSslTerm = false;
         if (dbTermination == null) {
@@ -137,7 +143,8 @@ public final class SslTerminationHelper {
     // the persistance layer. 
     public static void convertApiSslTermToDbTlsProtocols(org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination apiSslTerm, org.openstack.atlas.service.domain.entities.SslTermination dbSslTerm, boolean newDbSslTerm) {
         if (newDbSslTerm) {
-            dbSslTerm.setTls10Enabled(true); // if this is a new db instance then set TLS1.0 to enabled by defaukt
+            dbSslTerm.setTls10Enabled(true); // if this is a new db instance then set TLS1.0 to enabled by default
+            dbSslTerm.setTls11Enabled(true);
         }
         for (SecurityProtocol sp : apiSslTerm.getSecurityProtocols()) {
             switch (sp.getSecurityProtocolName()) {
@@ -159,7 +166,22 @@ public final class SslTerminationHelper {
                             break;
                     }
                     break; // Looks like a rouge protocol name. Just ignore it
-                default:
+                case TLS_11:
+                    switch (sp.getSecurityProtocolStatus()) {
+                        case DISABLED:
+                            dbSslTerm.setTls11Enabled(false);
+                            break;
+                        case ENABLED:
+                            dbSslTerm.setTls11Enabled(true);
+                            break;
+                        default:
+                            dbSslTerm.setTls11Enabled(true);
+                            // This should really be an error, lets play it
+                            // safe and assume they wanted to enable TLS 1.1
+                            break;
+                    }
+                    break;
+                default: // Looks like a rouge protocol name. Just ignore it
                     break;
             }
         }

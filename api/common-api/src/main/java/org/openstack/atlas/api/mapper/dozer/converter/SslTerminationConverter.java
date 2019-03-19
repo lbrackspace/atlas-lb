@@ -71,6 +71,7 @@ public class SslTerminationConverter implements CustomConverter {
             Boolean isEnabled = dbSslTerm.getEnabled();
             Boolean isSecureTrafficOnly = dbSslTerm.getSecureTrafficOnly();
             Boolean isTls10Enabled = dbSslTerm.isTls10Enabled();
+            Boolean isTls11Enabled = dbSslTerm.isTls11Enabled();
             apiSslTerm.setCertificate(crt);
             apiSslTerm.setPrivatekey(key);
             apiSslTerm.setIntermediateCertificate(imd);
@@ -85,27 +86,31 @@ public class SslTerminationConverter implements CustomConverter {
                 apiSslTerm.setCipherProfile(cipherProfile.getName());
             }
 
-            SecurityProtocol sp = new SecurityProtocol();
-            sp.setSecurityProtocolName(SecurityProtocolName.TLS_10);
+            //TLS 1.0
+            SecurityProtocol sp = mapSecurityProtocol(SecurityProtocolName.TLS_10, isTls10Enabled);
+            apiSslTerm.getSecurityProtocols().add(sp);
 
-            if (isTls10Enabled != null) {
-                if (isTls10Enabled == true) {
-                    sp.setSecurityProtocolStatus(SecurityProtocolStatus.ENABLED);
-                    apiSslTerm.getSecurityProtocols().add(sp);
-                    return apiSslTerm;
-                } else if (isTls10Enabled == false) {
-                    sp.setSecurityProtocolStatus(SecurityProtocolStatus.DISABLED);
-                    apiSslTerm.getSecurityProtocols().add(sp);
-                    return apiSslTerm;
-                }
-                throw new RuntimeException("Unreachable code reached.");
-            } else {
-                // If its null set it to enabled
-                sp.setSecurityProtocolStatus(SecurityProtocolStatus.ENABLED);
-                apiSslTerm.getSecurityProtocols().add(sp);
-                return apiSslTerm;
-            }
+            //TLS 1.1
+            sp = mapSecurityProtocol(SecurityProtocolName.TLS_11, isTls11Enabled);
+            apiSslTerm.getSecurityProtocols().add(sp);
+            return apiSslTerm;
         }
         throw new NoMappableConstantException("Cannot map source type: " + srcClass.getName());
+    }
+
+    private SecurityProtocol mapSecurityProtocol(SecurityProtocolName securityProtocolName, Boolean isEnabled) {
+        SecurityProtocol sp = new SecurityProtocol();
+        sp.setSecurityProtocolName(securityProtocolName);
+        if (isEnabled != null) {
+            if (isEnabled) {
+                sp.setSecurityProtocolStatus(SecurityProtocolStatus.ENABLED);
+            } else {
+                sp.setSecurityProtocolStatus(SecurityProtocolStatus.DISABLED);
+            }
+        } else {
+            // If its null set it to enabled
+            sp.setSecurityProtocolStatus(SecurityProtocolStatus.ENABLED);
+        }
+        return sp;
     }
 }
