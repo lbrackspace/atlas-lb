@@ -11,6 +11,7 @@ import org.openstack.atlas.service.domain.usage.BitTags;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 
 public interface LoadBalancerService {
 
@@ -98,4 +99,6 @@ public interface LoadBalancerService {
     boolean isServiceNetLoadBalancer(Integer lbId);
 
     BitTags getCurrentBitTags(Integer lbId);
+
+    Map<Integer, LoadBalancer> fetchLBsThatShareIPsWith(int loadBalancerId) throws EntityNotFoundException, BadRequestException;
 }
