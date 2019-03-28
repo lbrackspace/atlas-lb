@@ -85,7 +85,7 @@ public interface LoadBalancerService {
 
     String getDefaultErrorPage() throws ObjectNotFoundException, EntityNotFoundException;
 
-    boolean setErrorPage(Integer lid,Integer accountId,String content) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
+    boolean setErrorPage(Integer lid,Integer accountId,String content) throws BadRequestException, EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
 
     boolean setDefaultErrorPage(String content) throws EntityNotFoundException;
 

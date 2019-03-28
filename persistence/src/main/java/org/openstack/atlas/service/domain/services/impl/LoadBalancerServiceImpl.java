@@ -1144,7 +1144,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
     @Transactional
     @Override
-    public boolean setErrorPage(Integer lid, Integer accountId, String content) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+    public boolean setErrorPage(Integer lid, Integer accountId, String content) throws BadRequestException, EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
+        LoadBalancer lb = loadBalancerRepository.getByIdAndAccountId(lid, accountId);
+        if(lb.getProtocol() != LoadBalancerProtocol.HTTP) {
+            throw new BadRequestException("Custom error page is allowed only on loadbalancers with HTTP protocol.");
+        }
+
         if (!testAndSetStatus(accountId, lid, LoadBalancerStatus.PENDING_UPDATE)) {
             String message = "Load balancer is considered immutable and cannot process request";
             LOG.warn(message);
