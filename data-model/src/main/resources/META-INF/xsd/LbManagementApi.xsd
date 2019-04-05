@@ -42,6 +42,7 @@
     <xsd:complexType name="loadBalancersStatusHistory">
         <xsd:sequence>
             <xsd:element name="loadBalancerStatusHistory" type="tns:loadBalancerStatusHistory" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
     </xsd:complexType>
 
