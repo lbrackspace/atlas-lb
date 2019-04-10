@@ -10,6 +10,7 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     auth_management_uri,
     auth_public_uri,
     base_uri,
+    base_uri_mgmt,
     basic_auth_key,
     basic_auth_user,
     db_host,

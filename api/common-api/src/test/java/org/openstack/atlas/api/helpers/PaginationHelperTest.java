@@ -137,7 +137,7 @@ public class PaginationHelperTest {
         public void shouldCreateProperHref() {
             final String ref = "next";
             final String relativeUri = "/foo/bar/baz";
-            Link link = PaginationHelper.createLink(ref, relativeUri);
+            Link link = PaginationHelper.createLink(ref, relativeUri, true);
             Assert.assertEquals(mockedBaseUri + relativeUri, link.getHref());
         }
     }
