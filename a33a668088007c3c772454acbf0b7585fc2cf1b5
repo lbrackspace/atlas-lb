@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9c6e4d5e_759b7578",
+        "filename": "jobs/src/main/java/org/openstack/atlas/usagerefactor/helpers/RollupUsageHelper.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2019-04-15T20:37:09Z",
+      "side": 1,
+      "message": "Nit, param type",
+      "revId": "a33a668088007c3c772454acbf0b7585fc2cf1b5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "af55f16d_02164b7a",
+        "filename": "jobs/src/main/java/org/openstack/atlas/usagerefactor/helpers/RollupUsageHelper.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2019-04-15T20:37:09Z",
+      "side": 1,
+      "message": "I think I missed this in other review too, ideally params should at least be consistent and reflect/describe the objects being referenced. Just nitpicking though.",
+      "revId": "a33a668088007c3c772454acbf0b7585fc2cf1b5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
