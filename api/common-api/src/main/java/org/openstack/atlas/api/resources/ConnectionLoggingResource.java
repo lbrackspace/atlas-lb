@@ -2,18 +2,19 @@ package org.openstack.atlas.api.resources;
 
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import java.util.stream.Stream;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
@@ -47,7 +48,12 @@ public class ConnectionLoggingResource extends CommonDependencyProvider {
 
         try {
             org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer apiLb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
-            apiLb.setConnectionLogging(conLog);
+            org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer = loadBalancerService.get(loadBalancerId, accountId);
+            if (Stream.of("UDP", "DNS_UDP", "UDP_STREAM").noneMatch(loadBalancer.getProtocol().toString()::equalsIgnoreCase)) {
+                apiLb.setConnectionLogging(conLog);
+            }else{
+                throw new BadRequestException("Connection logging cannot be enabled for load balancers with UDP, DNS_UDP or UDP_STREAM protocol");
+            }
             LoadBalancer domainLb = dozerMapper.map(apiLb, LoadBalancer.class);
             domainLb.setId(loadBalancerId);
             domainLb.setAccountId(accountId);
