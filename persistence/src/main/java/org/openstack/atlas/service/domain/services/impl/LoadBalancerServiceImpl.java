@@ -1281,4 +1281,36 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         }
         return incommingLbIds;
     }
+
+    /**
+     * Get all the LBs that share any IPs with the loadbalancer with loadBalancerId
+     * @param loadBalancerId
+     * @return
+     * @throws EntityNotFoundException
+     * @throws BadRequestException
+     */
+    @Override
+    public Map<Integer, LoadBalancer> fetchLBsThatShareIPsWith(int loadBalancerId) throws EntityNotFoundException, BadRequestException {
+        LoadBalancer lb = get(loadBalancerId);
+
+        Map<Integer, LoadBalancer> lbsThatShareIPsWith = new HashMap<Integer, LoadBalancer>();//lb id taken as the key to avoid duplicate lbs
+
+        for (LoadBalancerJoinVip joinVip : lb.getLoadBalancerJoinVipSet()) {
+            VirtualIp virtualIp = joinVip.getVirtualIp();
+            for (LoadBalancer extraLB : virtualIpService.getLoadBalancerByVipId(virtualIp.getId())) {
+                if (!lbsThatShareIPsWith.containsKey(extraLB.getId())) {
+                    lbsThatShareIPsWith.put(extraLB.getId(), extraLB);
+                }
+            }
+        }
+        for (LoadBalancerJoinVip6 joinVip : lb.getLoadBalancerJoinVip6Set()) {
+            VirtualIpv6 virtualIp = joinVip.getVirtualIp();
+            for (LoadBalancer extraLB : virtualIpService.getLoadBalancerByVip6Id(virtualIp.getId())) {
+                if (!lbsThatShareIPsWith.containsKey(extraLB.getId())) {
+                    lbsThatShareIPsWith.put(extraLB.getId(), extraLB);
+                }
+            }
+        }
+        return lbsThatShareIPsWith;
+    }
 }
