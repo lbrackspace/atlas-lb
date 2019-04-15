@@ -1,5 +1,10 @@
 package org.openstack.atlas.api.async;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.atom.EntryHelper;
@@ -16,7 +21,6 @@ import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
-import java.util.*;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.UPDATE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -73,13 +77,14 @@ public class UpdateSslTerminationListener extends BaseListener {
                 reverseProxyLoadBalancerService.updateSslTermination(dbLoadBalancer, queTermination);
             }
         } catch (Exception e) {
+            String msg = Debug.getEST(e);
+            LOG.error(String.format("Error updating loadbalancr %d: %s\n", dbLoadBalancer.getId(), msg));
             dbLoadBalancer.setStatus(LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId());
+            String alertDescription = String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus.:%s", dbLoadBalancer.getId(), msg);
             loadBalancerService.update(dbLoadBalancer);
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dbLoadBalancer);
-
             return;
         }
 
