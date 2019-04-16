@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.*;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.repository.*;
@@ -23,6 +24,7 @@ import java.util.Set;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(Enclosed.class)
 public class LoadBalancerServiceImplTest {
@@ -245,6 +247,78 @@ public class LoadBalancerServiceImplTest {
 
             lbService.prepareForUpdate(loadBalancer);
 
+        }
+    }
+
+    @RunWith(MockitoJUnitRunner.class)
+    public static class WhenVerifyingProtocols {
+        private LoadBalancer lb;
+        @Mock
+        LoadBalancerRepository lbRepository;
+        @Mock
+        LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
+        @Mock
+        LoadBalancerStatusHistoryServiceImpl loadBalancerStatusHistoryService;
+
+        @InjectMocks
+        LoadBalancerServiceImpl lbService;
+
+        LoadBalancerProtocolObject defaultProtocol;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, UnprocessableEntityException {
+            MockitoAnnotations.initMocks(this);
+
+            lb = new LoadBalancer();
+//            lbService = new LoadBalancerServiceImpl();
+//            lbService.setLoadBalancerRepository(lbRepository);
+//            lbService.setLoadBalancerStatusHistoryRepository(loadBalancerStatusHistoryRepository);
+//            loadBalancerStatusHistoryServiceimpl.setLoadBalancerStatusHistoryRepository(loadBalancerStatusHistoryRepository);
+
+            HealthMonitor hm = new HealthMonitor();
+            hm.setType(HealthMonitorType.CONNECT);
+            lb.setHealthMonitor(hm);
+
+            lb.setId(1);
+            lb.setAccountId(11111);
+            lb.setStatus(LoadBalancerStatus.ACTIVE);
+            lb.setHalfClosed(false);
+
+            defaultProtocol = new LoadBalancerProtocolObject(LoadBalancerProtocol.HTTP, "HTTP Protocol", 80, true);
+            when(lbRepository.getByIdAndAccountId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(lb);
+            when(lbRepository.testAndSetStatus(Matchers.<Integer>anyInt(), Matchers.<Integer>anyInt(), Matchers.anyObject(), Matchers.<Boolean>anyBoolean())).thenReturn(true);
+            when(lbRepository.update(Matchers.anyObject())).thenReturn(lb);
+            when(loadBalancerStatusHistoryService.save(Matchers.anyInt(),Matchers.anyInt(), Matchers.anyObject())).thenReturn(new LoadBalancerStatusHistory());
+
+        }
+
+        @Test()
+        public void shouldAcceptUpdateNonUDPProtocolIfUsingHealthMonitor() throws Exception {
+            LoadBalancer loadBalancer = new LoadBalancer();
+            loadBalancer.setId(1);
+            loadBalancer.setAccountId(11111);
+            loadBalancer.setProtocol(LoadBalancerProtocol.HTTPS);
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+            loadBalancer.setUserName("bob");
+
+            lbService.prepareForUpdate(loadBalancer);
+            Mockito.verify(lbRepository, times(1)).update(lb);
+
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldRejectUpdateUDPProtocolIfUsingHealthMonitor() throws Exception {
+            LoadBalancer loadBalancer = new LoadBalancer();
+            loadBalancer.setId(1);
+            loadBalancer.setAccountId(11111);
+            loadBalancer.setPort(20);
+            loadBalancer.setProtocol(LoadBalancerProtocol.UDP);
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+            loadBalancer.setUserName("bob");
+
+            when(lbRepository.canUpdateToNewPort(Matchers.anyInt(), Matchers.anyObject())).thenReturn(true);
+
+            lbService.prepareForUpdate(loadBalancer);
         }
     }
 
