@@ -3,6 +3,7 @@ package org.openstack.atlas.api.async;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.helpers.SslTerminationUsage;
+import org.openstack.atlas.service.domain.entities.CertificateMapping;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
@@ -113,6 +114,17 @@ public class DeleteSslTerminationListener extends BaseListener {
         } catch (UsageEventCollectionException e) {
             LOG.error(String.format("Collection of the ssl usage event failed for " +
                     "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
+        }
+
+        // Remove all certificate mappings from the database
+        for (CertificateMapping certificateMapping : dbLoadBalancer.getCertificateMappings()) {
+            try {
+                LOG.info(String.format("Removing certificate '%s' for load balancer %d...", certificateMapping.getId(), dbLoadBalancer.getId()));
+                certificateMappingService.deleteByIdAndLoadBalancerId(certificateMapping.getId(), dbLoadBalancer.getId());
+                LOG.info(String.format("Successfully removed certificate '%s' for load balancer %d.", certificateMapping.getId(), dbLoadBalancer.getId()));
+            } catch (Exception odne) {
+                LOG.info(String.format("Certificate for host '%s' does not exist for load balancer %d. Ignoring...", certificateMapping.getHostName(), dbLoadBalancer.getId()));
+            }
         }
 
         sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
