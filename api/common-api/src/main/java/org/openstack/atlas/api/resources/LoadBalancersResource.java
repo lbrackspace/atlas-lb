@@ -196,14 +196,14 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
             if (dataModelLbs.getLoadBalancers().size() > limit) {
                 String relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, PaginationHelper.calculateNextOffset(offset, limit), limit);
-                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri, true);
                 dataModelLbs.getLinks().add(nextLink);
                 dataModelLbs.getLoadBalancers().remove(limit.intValue()); // Remove limit+1 item
             }
 
             if (offset > 0) {
                 String relativeUri = String.format("/%d/loadbalancers/billable?startTime=%s&endTime=%s&offset=%d&limit=%d", accountId, startTimeParam, endTimeParam, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
-                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri, true);
                 dataModelLbs.getLinks().add(nextLink);
             }
 

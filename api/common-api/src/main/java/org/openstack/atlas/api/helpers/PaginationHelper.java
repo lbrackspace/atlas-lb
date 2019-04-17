@@ -33,9 +33,13 @@ public class PaginationHelper {
         else return limit;
     }
 
-    public static Link createLink(String rel, String relativeUri) {
+    public static Link createLink(String rel, String relativeUri, boolean isPubApi) {
         Link link = new Link();
-        link.setHref(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.base_uri) + relativeUri);
+        if (isPubApi){
+            link.setHref(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.base_uri) + relativeUri);
+        } else {
+            link.setHref(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.base_uri_mgmt) + relativeUri);
+        }
         link.setRel(rel);
         return link;
     }

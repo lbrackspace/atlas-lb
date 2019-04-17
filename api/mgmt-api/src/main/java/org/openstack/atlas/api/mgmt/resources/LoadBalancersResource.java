@@ -90,14 +90,14 @@ public class LoadBalancersResource extends ManagementDependencyProvider {
 
             if (loadBalancerUsageRecords.getLoadBalancerUsageRecords().size() > limit) {
                 String relativeUri = String.format("/management/loadbalancers/usage?startTime=%s&endTime=%s&offset=%d&limit=%d", startTimeParam, endTimeParam, PaginationHelper.calculateNextOffset(offset, limit), limit);
-                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri, false);
                 loadBalancerUsageRecords.getLinks().add(nextLink);
                 loadBalancerUsageRecords.getLoadBalancerUsageRecords().remove(limit.intValue()); // Remove limit+1 item
             }
 
             if (offset > 0) {
                 String relativeUri = String.format("/management/loadbalancers/usage?startTime=%s&endTime=%s&offset=%d&limit=%d", startTimeParam, endTimeParam, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
-                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri, false);
                 loadBalancerUsageRecords.getLinks().add(nextLink);
             }
 

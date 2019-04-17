@@ -70,14 +70,14 @@ public class AccountsResource extends ManagementDependencyProvider {
 
             if (accountUsageRecords.getAccountUsageRecords().size() > limit) {
                 String relativeUri = String.format("/management/accounts/usage?startTime=%s&endTime=%s&offset=%d&limit=%d", startTimeParam, endTimeParam, PaginationHelper.calculateNextOffset(offset, limit), limit);
-                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri, false);
                 accountUsageRecords.getLinks().add(nextLink);
                 accountUsageRecords.getAccountUsageRecords().remove(limit.intValue()); // Remove limit+1 item
             }
 
             if (offset > 0) {
                 String relativeUri = String.format("/management/accounts/usage?startTime=%s&endTime=%s&offset=%d&limit=%d", startTimeParam, endTimeParam, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
-                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri, false);
                 accountUsageRecords.getLinks().add(nextLink);
             }
 
