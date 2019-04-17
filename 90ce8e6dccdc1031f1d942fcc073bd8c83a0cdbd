@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "56d3489d_87478ef1",
+        "filename": "contrib/etc/openstack/atlas/public-api.conf",
+        "patchSetId": 1
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2019-04-17T21:52:21Z",
+      "side": 1,
+      "message": "We should honestly remove all references to infra, we shouldn\u0027t have these identifiers here. Instead of cleaning up in this patch we should come back and do an audit. It\u0027s all public anyways now.",
+      "revId": "90ce8e6dccdc1031f1d942fcc073bd8c83a0cdbd",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
