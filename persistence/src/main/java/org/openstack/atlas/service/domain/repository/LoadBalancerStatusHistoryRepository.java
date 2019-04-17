@@ -35,13 +35,20 @@ public class LoadBalancerStatusHistoryRepository {
         return loadBalancerStatusHistory;
     }
 
-    public List<LoadBalancerStatusHistory> getStateHistoryForAccount(int accountId) {
+    public List<LoadBalancerStatusHistory> getStateHistoryForAccount(int accountId, int offset, int limit, Integer marker) {
         List<LoadBalancerStatusHistory> lbshlist = new ArrayList<LoadBalancerStatusHistory>();
         String qStr = "FROM LoadBalancerStatusHistory u where u.accountId = :aid";
+        if(marker != null) {
+            qStr = qStr+" and u.id >= :marker";
+        }
         Query q = entityManager.createQuery(qStr).setParameter("aid", accountId);
+        if(marker != null) {
+            q.setParameter("marker", marker);
+        }
+        q.setFirstResult(offset).setMaxResults(limit+1);
         lbshlist = q.getResultList();
         if (lbshlist.size() <= 0) {
-            return new ArrayList<LoadBalancerStatusHistory>() ;
+            return new ArrayList<LoadBalancerStatusHistory>();
         } else {
             return lbshlist;
         }
