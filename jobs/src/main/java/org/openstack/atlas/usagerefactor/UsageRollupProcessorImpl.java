@@ -59,15 +59,17 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
 
         Map<LbIdAccountId, List<LoadBalancerMergedHostUsage>> usagesByLbId = groupUsagesByLbIdAccountId(lbMergedHostUsages);
 
+        //Insert empty list if a loadbalancer does not have any LoadBalancerMergedHostUsages
         for (LbIdAccountId lbActiveDuringHour : lbsActiveDuringHour) {
             if (!usagesByLbId.containsKey(lbActiveDuringHour)) {
                 usagesByLbId.put(lbActiveDuringHour, new ArrayList<LoadBalancerMergedHostUsage>());
             }
         }
 
-        for (LbIdAccountId lbIdAccountId : usagesByLbId.keySet()) {
+        for (LbIdAccountId lbIdAccountId : usagesByLbId.keySet()) {//for each LbIdAccountId
             List<LoadBalancerMergedHostUsage> lbMergedHostRecordsForLoadBalancer = usagesByLbId.get(lbIdAccountId);
 
+            //process LoadBalancerMergedHostUsages for each LbIdAccountId
             List<Usage> processedRecordsForLb = processRecordsForLb(lbIdAccountId.getAccountId(), lbIdAccountId.getLbId(), lbMergedHostRecordsForLoadBalancer, hourToProcess);
             processedRecords.addAll(processedRecordsForLb);
         }
@@ -75,9 +77,15 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return processedRecords;
     }
 
-
-    /*
-        @param lbMergedHostUsageRecordsForLoadBalancer: Expected to be in order by pollTime.
+    /**
+     * Process the LoadBalancerMergedHostUsage records for a loadbalancer from hourToProcess till hourToProcess+1 hour.
+     * In ideal case the previous hour records also will come in the lbMergedHostUsageRecordsForLoadBalancer to be processed.
+     * The previous hour records are used to gather some information for later use but usage counters are not considered.
+     * @param accountId account that the loadbalancer being processed belongs to.
+     * @param lbId loadbalancer being processed.
+     * @param lbMergedHostUsageRecordsForLoadBalancer: Expected to be in order by pollTime.
+     * @param hourToProcess: the current processing hour.
+     * @return
      */
     @Override
     public List<Usage> processRecordsForLb(Integer accountId, Integer lbId, List<LoadBalancerMergedHostUsage> lbMergedHostUsageRecordsForLoadBalancer, Calendar hourToProcess) {
@@ -95,6 +103,7 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         hourToStop.add(Calendar.HOUR, 1);
 
         if (lbMergedHostUsageRecordsForLoadBalancer == null || lbMergedHostUsageRecordsForLoadBalancer.isEmpty()) {
+            //initialize the Usage record by populating data from the cache or loadbalancer as there are no LoadBalancerMergedHostUsage records
             Usage zeroedOutUsage = initializeRecordForLb(accountId, lbId, hourToProcess, hourToStop);
             if (zeroedOutUsage.getEventType() == null && suspendedLbsCache.contains(lbId)) {
                 zeroedOutUsage.setEventType(SUSPENDED_LOADBALANCER.name());
@@ -108,11 +117,12 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         if (firstRecordInList.getEventType() != null
                 && firstRecordInList.getEventType().equals(CREATE_LOADBALANCER)
                 && firstRecordInList.getPollTime().compareTo(hourToStop) >= 0) {
+            //not sure when this scenario will come, we actually fetch all the records that are before the hourToStop only
             return processedRecords;
         }
-
+        //initialize Usage object from the firstRecordInList, some of the fields are then populated from the previous hour records.
+        //the first set of LoadBalancerMergedHostUsages with eventType null that are withinHourToProcess are rolled up into this Usage record.
         Usage newRecordForLb = initializeRecordForLb(firstRecordInList, hourToProcess, hourToStop);
-
         for (LoadBalancerMergedHostUsage lbMergedHostUsage : lbMergedHostUsageRecordsForLoadBalancer) {
             Calendar pollTime = lbMergedHostUsage.getPollTime();
             boolean equalToHourToProcess = pollTime.equals(hourToProcess);
@@ -122,8 +132,10 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             boolean withinPreviousHour = CalendarUtils.isBetween(pollTime, previousHour, hourToProcess, false);
             boolean allowedToAddBandwidth = true;
 
+            //this block of code seem to gather information from the previous hour records and identify the mostRecentPreviousRecord for later use.
+            //also identify if the loadbalancer had DELETE event, no need to progress further in that case.
             if (pollTime.before(hourToProcess)) {
-                if (withinPreviousHour) {
+                if (withinPreviousHour) {//within immediate previous hour
                     previousHourRecordExists = true;
                     mostRecentPreviousRecord = lbMergedHostUsage;
 
@@ -153,17 +165,28 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
             }
 
             if ((!previousHourRecordExists && isFirstRecordOfHourToProcess) || equalToHourToProcess) {
+                /**
+                 * discard old one and initialize new Usage Record:
+                 * if there is no previous hour record and the current one is the first record of the hour
+                 *  ex: CREATE_LOADBALANCER, there won't be any previous hour records. Also there won't be any bandwidth to be added from such records.
+                 * (or)
+                 * if the current lbMergedHostUsage is equalToHourToProcess then this would be the mostRecentPreviousRecord.
+                 * bandwidth from this record is not added as this would have been already considered in the previous poll.
+                 * More details can be found in CLB-764.
+                 **/
                 newRecordForLb = initializeRecordForLb(lbMergedHostUsage, hourToProcess, hourToStop);
                 allowedToAddBandwidth = false;
             }
 
-            if (withinHourToProcess) {
+            if (withinHourToProcess) {//pollTime.compareTo(startTime) >= 0 && pollTime.compareTo(endTime) <= 0;
+                //update averageConcurrentConnections and numberOfPolls in the Usage record. NumberOfPolls is the number of LoadBalancerMergedHostUsages added to the Usage record
                 RollupUsageHelper.calculateAndSetAverageConcurrentConnections(newRecordForLb, lbMergedHostUsage);
 
-                if (allowedToAddBandwidth) {
+                if (allowedToAddBandwidth) {//the bandwidth is added from the records that are withinHourToProcess only
                     RollupUsageHelper.calculateAndSetBandwidth(newRecordForLb, lbMergedHostUsage);
                 }
 
+                //equalToHourToProcess record would have been already considered in the previous poll, no need to add to NumberOfPolls.
                 if (equalToHourToProcess && newRecordForLb.getNumberOfPolls() > 0) {
                     newRecordForLb.setNumberOfPolls(newRecordForLb.getNumberOfPolls() - 1);
                 }
@@ -176,6 +199,8 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                     }
 
                     if (event.equals(CREATE_LOADBALANCER) || equalToHourToProcess) {
+                        //set empty values as CREATE_LOADBALANCER event will not have any bandwidth and
+                        //equalToHourToProcess record would have been already considered in the previous poll.
                         processedRecords.clear();
                         newRecordForLb.setStartTime(pollTime);
                         newRecordForLb.setEventType(event.name());
@@ -194,10 +219,12 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                             newRecordForLb.setEventType(SUSPENDED_LOADBALANCER.name());
                             newRecordForLb.setEndTime(hourToStop);
                             newRecordForLb.setNumberOfPolls(0);
+                            //SuspendedEventJob creates SUSPENDED_LOADBALANCER Events, if the previous record has a similar event then set above data
                         }
-                    } else {
+                    } else {//Not CREATE_LOADBALANCER and SUSPENDED_LOADBALANCER event, handle the other events.
 
                         if (isFirstRecordOfHourToProcess && !previousHourRecordExists) {
+                            //this is exceptional case? Not CREATE_LOADBALANCER and no previousHourRecordExists
                             int tags = getTags(lbId);
                             int numVips = getNumVips(lbId);
                             newRecordForLb.setTags(tags);
@@ -208,9 +235,10 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
                             newRecordForLb.setNumberOfPolls(0);
                         }
 
+                        //set the endTime of the current Usage record with current lbMergedHostUsage's pollTime
                         newRecordForLb.setEndTime(pollTime);
                         processedRecords.add(newRecordForLb);
-
+                        //create new Usage record and set the eventType. From now on the usage is rolled up into this record for the current event
                         newRecordForLb = initializeRecordForLb(lbMergedHostUsage, pollTime, hourToStop);
                         newRecordForLb.setEventType(event.name());
                     }
@@ -240,6 +268,11 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return processedRecords;
     }
 
+    /**
+     * get the tags from the cache or from the most recent Usage record of the loadbalancer.
+     * @param lbId loadbalancer whose tags to be fetched.
+     * @return
+     */
     private int getTags(Integer lbId) {
         int mostRecentTagsBitmask;
 
@@ -264,6 +297,11 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return mostRecentTagsBitmask;
     }
 
+    /**
+     * get the num of vips from the cache or from the most recent Usage record of the loadbalancer.
+     * @param lbId loadbalancer whose VIPs count to be fetched.
+     * @return
+     */
     private int getNumVips(Integer lbId) {
         final int DEFAULT_NUM_VIPS = 1;
         int numVips = DEFAULT_NUM_VIPS;
@@ -285,6 +323,14 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return numVips;
     }
 
+    /**
+     * Creates Usage object when there are no lbMergedHostUsageRecords For LoadBalancer.
+     * @param accountId loadbalancer's account id.
+     * @param loadbalancerId loadbalancer whose Usage is being processed.
+     * @param startTime start time to be set to the Usage record.
+     * @param endTime end time to be set to the Usage record.
+     * @return
+     */
     private Usage initializeRecordForLb(Integer accountId, Integer loadbalancerId, Calendar startTime, Calendar endTime) {
         Usage usage = new Usage();
 
@@ -305,6 +351,15 @@ public class UsageRollupProcessorImpl implements UsageRollupProcessor {
         return usage;
     }
 
+    /**
+     * Creates Usage object by initializing some of the fields from the LoadBalancerMergedHostUsage.
+     * This will not copy the bandwidth and connections fields.
+     *
+     * @param lbMergedHostUsage LoadBalancerMergedHostUsage used to initialize the Usage record.
+     * @param startTime start time to be set to the Usage record.
+     * @param endTime end time to be set to the Usage record.
+     * @return
+     */
     private Usage initializeRecordForLb(LoadBalancerMergedHostUsage lbMergedHostUsage, Calendar startTime, Calendar endTime) {
         Usage usage = new Usage();
 
