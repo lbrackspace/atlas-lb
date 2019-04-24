@@ -267,7 +267,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
             Calendar now = Calendar.getInstance();
             Calendar nowYesterday = (Calendar) now.clone();
             nowYesterday.add(Calendar.DAY_OF_MONTH, -1);
-            List<Usage> usage = getLoadBalancerRepository().getUsageByLbId(id, nowYesterday, now);
+            List<Usage> usage = getLoadBalancerRepository().getUsageByLbId(id, nowYesterday, now, null, null);
             if (usage != null && !usage.isEmpty()) {
                 rlb.setLoadBalancerUsage(UsageMapper.toRestApiCurrentUsage(usage));
             }

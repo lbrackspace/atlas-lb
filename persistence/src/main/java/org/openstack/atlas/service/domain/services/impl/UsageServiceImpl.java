@@ -13,7 +13,7 @@ import java.util.List;
 public class UsageServiceImpl extends BaseService implements UsageService {
 
     @Override
-    public List<Usage> getUsageByAccountIdandLbId(Integer accountId, Integer loadBalancerId, Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException {
-        return loadBalancerRepository.getUsageByAccountIdandLbId(accountId, loadBalancerId, startTime, endTime);
+    public List<Usage> getUsageByAccountIdandLbId(Integer accountId, Integer loadBalancerId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) throws EntityNotFoundException, DeletedStatusException {
+        return loadBalancerRepository.getUsageByAccountIdandLbId(accountId, loadBalancerId, startTime, endTime, offset, limit);
     }
 }
