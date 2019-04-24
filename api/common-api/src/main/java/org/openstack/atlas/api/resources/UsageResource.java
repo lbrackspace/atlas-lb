@@ -1,10 +1,14 @@
 package org.openstack.atlas.api.resources;
 
+import org.openstack.atlas.api.helpers.DateHelpers;
+import org.openstack.atlas.api.helpers.PaginationHelper;
+import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsage;
 import org.openstack.atlas.service.domain.entities.Usage;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mapper.UsageMapper;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.util.common.exceptions.ConverterException;
+import org.w3.atom.Link;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -22,7 +26,7 @@ public class UsageResource extends CommonDependencyProvider {
     private int accountId;
 
     @GET
-    public Response retrieveUsage(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam) {
+    public Response retrieveUsage(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
         Calendar startTime;
         Calendar endTime;
         List<Usage> usages;
@@ -54,8 +58,27 @@ public class UsageResource extends CommonDependencyProvider {
         }
 
         try {
-            usages = usageService.getUsageByAccountIdandLbId(accountId, loadBalancerId, startTime, endTime);
-            return Response.status(200).entity(UsageMapper.toRestApiServiceUsage(usages)).build();
+            limit = PaginationHelper.determinePageLimit(limit);
+            offset = PaginationHelper.determinePageOffset(offset);
+            usages = usageService.getUsageByAccountIdandLbId(accountId, loadBalancerId, startTime, endTime, offset, limit);
+            LoadBalancerUsage loadBalancerUsage = UsageMapper.toRestApiServiceUsage(usages);
+            int size = loadBalancerUsage.getLoadBalancerUsageRecords().size();
+            String dateString = org.apache.commons.lang3.StringUtils.EMPTY;
+            if (size > limit || offset > 0){//startTime and endTime are optional, prepare the dateString for the relativeUri
+                dateString = DateHelpers.prepareDateParameterString(startTimeParam, endTimeParam);
+            }
+            if (size > limit) {
+                String relativeUri = String.format("/%d/loadbalancers/%d/usage?%soffset=%d&limit=%d", accountId, loadBalancerId, dateString, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri, true);
+                loadBalancerUsage.getLinks().add(nextLink);
+                loadBalancerUsage.getLoadBalancerUsageRecords().remove(limit.intValue()); // Remove limit+1 item
+            }
+            if (offset > 0) {
+                String relativeUri = String.format("/%d/loadbalancers/%d/usage?%soffset=%d&limit=%d", accountId, loadBalancerId, dateString, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri, true);
+                loadBalancerUsage.getLinks().add(nextLink);
+            }
+            return Response.status(200).entity(loadBalancerUsage).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
@@ -63,14 +86,29 @@ public class UsageResource extends CommonDependencyProvider {
 
     @GET
     @Path("current")
-    public Response retrieveCurrentUsage() {
+    public Response retrieveCurrentUsage(@QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
         Calendar now = Calendar.getInstance();
         Calendar nowYesterday = (Calendar) now.clone();
         nowYesterday.add(Calendar.DAY_OF_MONTH, -1);
 
         try {
-            List<Usage> cusage = usageService.getUsageByAccountIdandLbId(accountId, loadBalancerId, nowYesterday, now);
-            return Response.status(200).entity(UsageMapper.toRestApiCurrentUsage(cusage)).build();
+            limit = PaginationHelper.determinePageLimit(limit);
+            offset = PaginationHelper.determinePageOffset(offset);
+            List<Usage> cusage = usageService.getUsageByAccountIdandLbId(accountId, loadBalancerId, nowYesterday, now, offset, limit);
+            LoadBalancerUsage loadBalancerUsage = UsageMapper.toRestApiCurrentUsage(cusage);
+
+            if (loadBalancerUsage.getLoadBalancerUsageRecords().size() > limit) {
+                String relativeUri = String.format("/%d/loadbalancers/%d/usage/current?offset=%d&limit=%d", accountId, loadBalancerId, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri, true);
+                loadBalancerUsage.getLinks().add(nextLink);
+                loadBalancerUsage.getLoadBalancerUsageRecords().remove(limit.intValue()); // Remove limit+1 item
+            }
+            if (offset > 0) {
+                String relativeUri = String.format("/%d/loadbalancers/%d/usage/current?offset=%d&limit=%d", accountId, loadBalancerId, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri, true);
+                loadBalancerUsage.getLinks().add(nextLink);
+            }
+            return Response.status(200).entity(loadBalancerUsage).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

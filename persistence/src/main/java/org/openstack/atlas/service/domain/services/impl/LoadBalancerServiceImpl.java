@@ -538,8 +538,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Override
-    public AccountBilling getAccountBilling(Integer accountId, Calendar startTime, Calendar endTime) throws EntityNotFoundException {
-        return loadBalancerRepository.getAccountBilling(accountId, startTime, endTime);
+    public AccountBilling getAccountBilling(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) throws EntityNotFoundException {
+        return loadBalancerRepository.getAccountBilling(accountId, startTime, endTime, offset,limit);
     }
 
     @Override

@@ -9,5 +9,5 @@ import java.util.List;
 
 
 public interface UsageService {
-    List<Usage> getUsageByAccountIdandLbId(Integer accountId, Integer loadBalancerId, Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException;
+    List<Usage> getUsageByAccountIdandLbId(Integer accountId, Integer loadBalancerId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) throws EntityNotFoundException, DeletedStatusException;
 }

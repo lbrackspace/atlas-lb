@@ -343,10 +343,10 @@ public class LoadBalancerRepository {
         return false;
     }
 
-    public List<Usage> getUsageByAccountIdandLbId(Integer accountId, Integer loadBalancerId, Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException {
+    public List<Usage> getUsageByAccountIdandLbId(Integer accountId, Integer loadBalancerId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) throws EntityNotFoundException, DeletedStatusException {
         // TODO: Find more efficient way of making sure loadbalancer exists
         getByIdAndAccountId(loadBalancerId, accountId); // Make sure loadbalancer exists
-        return getUsageByLbId(loadBalancerId, startTime, endTime);
+        return getUsageByLbId(loadBalancerId, startTime, endTime, offset, limit);
     }
 
     public List<Usage> getUsageByAccountIdandLbIdNeedsPushed(Integer accountId, Integer loadBalancerId, Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException {
@@ -1100,12 +1100,16 @@ public class LoadBalancerRepository {
                 loadbalancerId).executeUpdate();
     }
 
-    public List<Usage> getUsageByLbId(Integer loadBalancerId, Calendar startTime, Calendar endTime) throws EntityNotFoundException, DeletedStatusException {
+    public List<Usage> getUsageByLbId(Integer loadBalancerId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) throws EntityNotFoundException, DeletedStatusException {
         List<Usage> usageList;
 
         Query query = entityManager.createQuery(
                 "from Usage u where u.loadbalancer.id = :loadBalancerId and u.startTime >= :startTime and u.startTime <= :endTime order by u.startTime asc").setParameter("loadBalancerId", loadBalancerId).setParameter("startTime", startTime).setParameter("endTime", endTime);
 
+        if(offset != null)
+            query.setFirstResult(offset);
+        if(limit != null)
+            query.setMaxResults(limit+1);
         usageList = query.getResultList();
 
         if (usageList.isEmpty()) {
@@ -1303,8 +1307,8 @@ public class LoadBalancerRepository {
         return query.getResultList();
     }
 
-    public AccountBilling getAccountBilling(Integer accountId, Calendar startTime, Calendar endTime) throws EntityNotFoundException {
-        AccountBilling accountBilling = new AccountBilling();
+    public AccountBilling getAccountBilling(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) throws EntityNotFoundException {
+        AccountBilling accountBilling = new AccountBilling();//
         accountBilling.setAccountId(accountId);
 
         Query query;
@@ -1320,6 +1324,10 @@ public class LoadBalancerRepository {
         query.setParameter("accountId", accountId);
         query.setParameter("startTime", startTime);
         query.setParameter("endTime", endTime);
+        if(offset != null)
+            query.setFirstResult(offset);
+        if(limit != null)
+            query.setMaxResults(limit+1);
         accountUsageResults = query.getResultList();
 
         String lbUsageQuery = "select u from Usage u where u.loadbalancer.accountId = :accountId and "

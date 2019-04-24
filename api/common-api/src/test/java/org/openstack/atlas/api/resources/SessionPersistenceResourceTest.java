@@ -76,7 +76,7 @@ public class SessionPersistenceResourceTest {
         @Test
         public void shouldProduceAcceptResponseWhenAsyncResponseIsNormal() throws Exception {
             when(lbRepo.getUsageByAccountIdandLbId(ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any(),
-                    ArgumentMatchers.<Calendar>any(), ArgumentMatchers.<Calendar>any())).thenReturn(null);
+                    ArgumentMatchers.<Calendar>any(), ArgumentMatchers.<Calendar>any(), ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(null);
             Response response = persistenceResource.enableSessionPersistence(sessionPersistence);
             Assert.assertEquals(202, response.getStatus());
         }
@@ -129,7 +129,7 @@ public class SessionPersistenceResourceTest {
         @Test
         public void shouldProduceOkResponseWhenAsyncResponseIsNormal() throws Exception {
             when(lbRepo.getUsageByAccountIdandLbId(ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any(),
-                    ArgumentMatchers.<Calendar>any(), ArgumentMatchers.<Calendar>any())).thenReturn(null);
+                    ArgumentMatchers.<Calendar>any(), ArgumentMatchers.<Calendar>any(), ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(null);
             Response response = persistenceResource.retrieveSessionPersistence(null);
             Assert.assertEquals(200, response.getStatus());
         }
@@ -177,7 +177,7 @@ public class SessionPersistenceResourceTest {
 
         @Test
         public void shouldProduceAcceptResponseWhenAsyncResponseIsNormal() throws Exception {
-            when(lbRepo.getUsageByAccountIdandLbId(anyInt(), anyInt(), Matchers.<Calendar>any(), Matchers.<Calendar>any())).thenReturn(null);
+            when(lbRepo.getUsageByAccountIdandLbId(anyInt(), anyInt(), Matchers.<Calendar>any(), Matchers.<Calendar>any(), anyInt(), anyInt())).thenReturn(null);
             Response response = persistenceResource.disableSessionPersistence();
             Assert.assertEquals(202, response.getStatus());
         }

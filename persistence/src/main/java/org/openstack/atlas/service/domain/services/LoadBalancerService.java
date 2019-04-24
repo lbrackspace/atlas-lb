@@ -29,7 +29,7 @@ public interface LoadBalancerService {
 
     List<LoadBalancer> getLoadbalancersGeneric(Integer accountId, String status, LbQueryStatus qs, Calendar changedCal, Integer offset, Integer limit, Integer marker) throws BadRequestException;
 
-    AccountBilling getAccountBilling(Integer accountId, Calendar startTime, Calendar endTime) throws EntityNotFoundException;
+    AccountBilling getAccountBilling(Integer accountId, Calendar startTime, Calendar endTime, Integer offset, Integer limit) throws EntityNotFoundException;
 
     LoadBalancer update(LoadBalancer lb) throws Exception;
 

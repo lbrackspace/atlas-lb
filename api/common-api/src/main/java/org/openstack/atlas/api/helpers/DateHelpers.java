@@ -26,4 +26,21 @@ public class DateHelpers {
         timeTaken = Long.toString(diff);
         return timeTaken;
     }
+
+    /**
+     * Prepares url query parameter with date/time strings.
+     * @param startTimeParam start time string.
+     * @param endTimeParam end time string.
+     * @return
+     */
+    public static String prepareDateParameterString(String startTimeParam, String endTimeParam) {
+        if (startTimeParam != null && endTimeParam != null){
+            return String.format("startTime=%s&endTime=%s&", startTimeParam, endTimeParam);
+        } else if (startTimeParam != null){
+            return String.format("startTime=%s&", startTimeParam);
+        } else if (endTimeParam != null){
+            return String.format("endTime=%s&", endTimeParam);
+        }
+        return org.apache.commons.lang3.StringUtils.EMPTY;
+    }
 }

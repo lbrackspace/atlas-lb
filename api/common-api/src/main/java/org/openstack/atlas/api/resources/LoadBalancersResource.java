@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.resources;
 
 import org.apache.abdera.model.Feed;
+import org.openstack.atlas.api.helpers.DateHelpers;
 import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mapper.DomainToRestModel;
@@ -127,7 +128,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
     @GET
     @Path("usage")
-    public Response retrieveAccountBilling(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam) {
+    public Response retrieveAccountBilling(@QueryParam("startTime") String startTimeParam, @QueryParam("endTime") String endTimeParam, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
         org.openstack.atlas.service.domain.pojos.AccountBilling daccountBilling;
         AccountBilling raccountBilling;
         Calendar startTime;
@@ -156,8 +157,26 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         }
 
         try {
-            daccountBilling = loadBalancerService.getAccountBilling(accountId, startTime, endTime);
+            limit = PaginationHelper.determinePageLimit(limit);
+            offset = PaginationHelper.determinePageOffset(offset);
+            daccountBilling = loadBalancerService.getAccountBilling(accountId, startTime, endTime, offset, limit);
             raccountBilling = UsageMapper.toDataModelAccountBilling(daccountBilling);
+            int size = raccountBilling.getAccountUsage().getAccountUsageRecords().size();
+            String dateString = org.apache.commons.lang3.StringUtils.EMPTY;
+            if (size > limit || offset > 0){
+                dateString = DateHelpers.prepareDateParameterString(startTimeParam, endTimeParam);
+            }
+            if (size > limit) {
+                String relativeUri = String.format("/%d/loadbalancers/usage?%soffset=%d&limit=%d", accountId, dateString, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri, true);
+                raccountBilling.getAccountUsage().getLinks().add(nextLink);
+                raccountBilling.getAccountUsage().getAccountUsageRecords().remove(limit.intValue()); // Remove limit+1 item
+            }
+            if (offset > 0) {
+                String relativeUri = String.format("/%d/loadbalancers/usage?%soffset=%d&limit=%d", accountId, dateString, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri, true);
+                raccountBilling.getAccountUsage().getLinks().add(nextLink);
+            }
             return Response.status(200).entity(raccountBilling).build();
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
