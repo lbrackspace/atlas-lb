@@ -359,7 +359,7 @@ public class AlertRepository {
             query.setParameter("type", type);
         } else  {
             query = entityManager.createQuery("SELECT h FROM Alert h where h.status = 'UNACKNOWLEDGED' and h.messageName = :name and h.alertType = :type");
-            query.setParameter("type", name).setParameter("type", type);
+            query.setParameter("name", name).setParameter("type", type);
         }
         if (p.length >= 2) {
             Integer marker = p[0];
