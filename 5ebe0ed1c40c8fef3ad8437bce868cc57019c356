@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c495901c_76c96043",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2019-05-03T11:16:51Z",
+      "side": 1,
+      "message": "The heading says \"/v1.0\" as the Context Root and the example has \"pub\". Can we use \"/v1.0\" or \"pub\" in all places for consistency?",
+      "range": {
+        "startLine": 73,
+        "startChar": 59,
+        "endLine": 73,
+        "endChar": 62
+      },
+      "revId": "5ebe0ed1c40c8fef3ad8437bce868cc57019c356",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "e0fcc789_7bd177d1",
+        "filename": "README.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 1010948
+      },
+      "writtenOn": "2019-05-03T11:16:51Z",
+      "side": 1,
+      "message": "Can we add the GitHub link in the top section or in the Build section as the code has to be checked out before the build. Also, the branch can be pointing to 1.26-candidate instead of master.",
+      "range": {
+        "startLine": 83,
+        "startChar": 29,
+        "endLine": 83,
+        "endChar": 39
+      },
+      "revId": "5ebe0ed1c40c8fef3ad8437bce868cc57019c356",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
