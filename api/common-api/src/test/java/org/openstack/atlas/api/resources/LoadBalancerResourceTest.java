@@ -92,6 +92,92 @@ public class LoadBalancerResourceTest {
         }
     }
 
+    public static class WhenUpdatingResources {
+        private LoadBalancerService loadBalancerService;
+        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+        private AsyncService asyncService;
+        private Mapper dozerMapper;
+        private LoadBalancerResource loadBalancerResource;
+        private Response response;
+
+        @Before
+        public void standUp() {
+            loadBalancerService = mock(LoadBalancerService.class);
+            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
+            asyncService = mock(AsyncService.class);
+            dozerMapper = mock(Mapper.class);
+            loadBalancerResource = new LoadBalancerResource();
+            loadBalancerResource.setId(1);
+            loadBalancerResource.setAccountId(1234);
+            loadBalancerResource.setLoadBalancerService(loadBalancerService);
+            loadBalancerResource.setAsyncService(asyncService);
+            loadBalancerResource.setDozerMapper(dozerMapper);
+        }
+
+        @Test
+        public void shouldFailForUDPConnectionLog() throws Exception {
+            org.openstack.atlas.service.domain.entities.LoadBalancer dlb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer rlb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
+            dlb.setConnectionLogging(true);
+            rlb.setProtocol("UDP");
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(dlb);
+            doNothing().when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.UPDATE_LOADBALANCER), Matchers.<LoadBalancer>any());
+            response = loadBalancerResource.updateLoadBalancer(rlb);
+            Assert.assertEquals(400, response.getStatus());
+        }
+
+        @Test
+        public void shouldSucceedForUDPNoConnectionLogging() throws Exception {
+            org.openstack.atlas.service.domain.entities.LoadBalancer dlb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer rlb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
+            dlb.setConnectionLogging(false);
+            rlb.setProtocol("UDP");
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(dlb);
+            doNothing().when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.UPDATE_LOADBALANCER), Matchers.<LoadBalancer>any());
+            doReturn(dlb).when(dozerMapper).map(rlb, LoadBalancer.class);
+            response = loadBalancerResource.updateLoadBalancer(rlb);
+            Assert.assertEquals(202, response.getStatus());
+        }
+
+        @Test
+        public void shouldSucceedWithOtherAttrAndNullProto() throws Exception {
+            org.openstack.atlas.service.domain.entities.LoadBalancer dlb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer rlb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
+            dlb.setConnectionLogging(false);
+            rlb.setName("NewName");
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(dlb);
+            doNothing().when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.UPDATE_LOADBALANCER), Matchers.<LoadBalancer>any());
+            doReturn(dlb).when(dozerMapper).map(rlb, LoadBalancer.class);
+            response = loadBalancerResource.updateLoadBalancer(rlb);
+            Assert.assertEquals(202, response.getStatus());
+        }
+
+        @Test
+        public void shouldSucceedWithHttpsRedirectOnly() throws Exception {
+            org.openstack.atlas.service.domain.entities.LoadBalancer dlb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer rlb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
+            dlb.setConnectionLogging(false);
+            rlb.setHttpsRedirect(true);
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(dlb);
+            doNothing().when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.UPDATE_LOADBALANCER), Matchers.<LoadBalancer>any());
+            doReturn(dlb).when(dozerMapper).map(rlb, LoadBalancer.class);
+            response = loadBalancerResource.updateLoadBalancer(rlb);
+            Assert.assertEquals(202, response.getStatus());
+        }
+
+        @Test
+        public void shouldFailWithNoExpectedAttrSupplied() throws Exception {
+            org.openstack.atlas.service.domain.entities.LoadBalancer dlb = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+            org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer rlb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
+            when(loadBalancerService.get(ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(dlb);
+            doNothing().when(asyncService).callAsyncLoadBalancingOperation(Matchers.eq(Operation.UPDATE_LOADBALANCER), Matchers.<LoadBalancer>any());
+            doReturn(dlb).when(dozerMapper).map(rlb, LoadBalancer.class);
+            response = loadBalancerResource.updateLoadBalancer(rlb);
+            Assert.assertEquals(400, response.getStatus());
+        }
+
+    }
+
     public static class WhenDeletingALoadBalancer {
         private LoadBalancerService loadBalancerService;
         private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;

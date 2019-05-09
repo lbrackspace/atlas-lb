@@ -101,8 +101,8 @@ public class LoadBalancerResource extends CommonDependencyProvider {
         }
 
         try {
-            org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer_data=loadBalancerService.get(id, accountId);
-            if(Stream.of("UDP", "DNS_UDP", "UDP_STREAM").anyMatch(loadBalancer.getProtocol().toString()::equalsIgnoreCase) && loadBalancer_data.isConnectionLogging()){
+            org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer_data = loadBalancerService.get(id, accountId);
+            if(loadBalancer.getProtocol() != null && Stream.of("UDP", "DNS_UDP", "UDP_STREAM").anyMatch(loadBalancer.getProtocol()::equalsIgnoreCase) && loadBalancer_data.isConnectionLogging()){
                 return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Connection logging cannot be enabled for load balancers with UDP, DNS_UDP or UDP_STREAM protocol");
             }
             domainLb = dozerMapper.map(loadBalancer, org.openstack.atlas.service.domain.entities.LoadBalancer.class);
