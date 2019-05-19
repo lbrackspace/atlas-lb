@@ -9,6 +9,8 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NetworkItem;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Cluster;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIps;
@@ -32,21 +34,39 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.v1.VipType;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import java.util.List;
-
+import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 import javax.ws.rs.core.Response;
+import org.openstack.atlas.api.exceptions.StingrayTimeoutException;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
-import org.openstack.atlas.docs.loadbalancers.api.v1.Cipher;
+import org.openstack.atlas.api.helpers.ResponseFactory;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ListOfStrings;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Ciphers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Errorpage;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolName;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolStatus;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
+import org.openstack.atlas.service.domain.exceptions.DeletedStatusException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
+import org.openstack.atlas.service.domain.exceptions.LimitReachedException;
+import org.openstack.atlas.service.domain.exceptions.MethodNotAllowedException;
+import org.openstack.atlas.service.domain.exceptions.NoAvailableClusterException;
+import org.openstack.atlas.service.domain.exceptions.OutOfVipsException;
+import org.openstack.atlas.service.domain.exceptions.ServiceUnavailableException;
+import org.openstack.atlas.service.domain.exceptions.SingletonEntityAlreadyExistsException;
+import org.openstack.atlas.service.domain.exceptions.UnauthorizedException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.w3.atom.Link;
 
 public class StubResource extends CommonDependencyProvider {
@@ -71,8 +91,8 @@ public class StubResource extends CommonDependencyProvider {
 
     @GET
     @Path("ciphers")
-    public Response stubCiphersList(){
-        Ciphers ciphers = dozerMapper.map("NES,AES,ZES,DES",Ciphers.class);
+    public Response stubCiphersList() {
+        Ciphers ciphers = dozerMapper.map("NES,AES,ZES,DES", Ciphers.class);
         return Response.status(200).entity(ciphers).build();
     }
 
@@ -345,7 +365,6 @@ public class StubResource extends CommonDependencyProvider {
                 + "-----END CERTIFICATE-----\n"
                 + "";
 
-
         SslTermination sslTermination = new SslTermination();
         sslTermination.setCertificate(crt);
         sslTermination.setPrivatekey(key);
@@ -362,6 +381,57 @@ public class StubResource extends CommonDependencyProvider {
         protocol.setSecurityProtocolStatus(SecurityProtocolStatus.ENABLED);
         sslTermination.getSecurityProtocols().add(protocol);
         return Response.status(Response.Status.OK).entity(sslTermination).build();
+    }
+
+    @GET()
+    @Path("badrequest")
+    public Response stubBadRequest() {
+        BadRequest badRequest = new BadRequest();
+        badRequest.setMessage("error message");
+        badRequest.setCode(400);
+        badRequest.setDetails("details message goes here");
+        ValidationErrors validationErrors = new ValidationErrors();
+        badRequest.setValidationErrors(validationErrors);
+        List<String> messages = validationErrors.getMessages();
+        messages.add("validation error 1");
+        messages.add("validation error 2");
+        messages.add("validation error 3");
+        return Response.status(400).entity(badRequest).build();
+    }
+
+    @GET
+    @Path("exception/{exception}")
+    public Response stubExceptionRaiser(@PathParam("exception") String exception) {
+        ListOfStrings los = new ListOfStrings();
+        Map<String, Exception> map = new HashMap<String, Exception>();
+        map.put("entitynotfound", new EntityNotFoundException());
+        map.put("stingraytimeout", new StingrayTimeoutException("timeout"));
+        map.put("outofvips", new OutOfVipsException("out of vips"));
+        map.put("clusterstatus", new ClusterStatusException("cluster error"));
+        map.put("noavailablecluster", new NoAvailableClusterException("no clust4er"));
+        map.put("serviceunavailable", new ServiceUnavailableException("no shirt no shpes no service"));
+        map.put("singletonentityalreadyexists", new SingletonEntityAlreadyExistsException("Already instatiated"));
+        map.put("immutableentity", new ImmutableEntityException());
+        map.put("unprocessableentity", new UnprocessableEntityException("unprocessable"));
+        map.put("unauthorized", new UnauthorizedException("unauthorized"));
+        map.put("gone", new DeletedStatusException("already deleted"));
+        map.put("badrequest", new BadRequestException());
+        map.put("overlimit", new LimitReachedException("overlimit"));
+        map.put("methodnotallowed", new MethodNotAllowedException("method not allowed"));
+        map.put("default", new Exception("Default Exception"));
+        for (String key : map.keySet()) {
+            los.getStrings().add(key);
+        }
+        Collections.sort(los.getStrings());
+
+        try {
+            if (map.keySet().contains(exception)) {
+                throw map.get(exception);
+            }
+            return Response.status(Response.Status.ACCEPTED).entity(los).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, "message", "detail");
+        }
     }
 
     private Node newNode(Integer id, Integer port, String address) {
