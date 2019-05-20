@@ -4,6 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
+import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.util.converters.StringConverter;
@@ -126,6 +127,21 @@ public class UpdateLoadBalancerListener extends BaseListener {
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
                     sendErrorToEventResource(queueLb);
                     return;
+                }
+                if(queueLb.getProtocol() != LoadBalancerProtocol.HTTP) {//CLB-846
+                    try {
+                        LOG.debug("Attempting to restore default error file in ZXTM...calling deleteErrorFile");
+                        reverseProxyLoadBalancerService.deleteErrorFile(dbLoadBalancer);
+                        LOG.debug("Successfully restored default error file in zeus.");
+                    } catch (Exception e) {
+                        loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
+
+                        String alertDescription = String.format("Error restoring default error file in ZXTM for load balancer '%d' while updating protocol to '%s'.", dbLoadBalancer.getId(), dbLoadBalancer.getProtocol().name());
+                        LOG.error(alertDescription, e);
+                        notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
+                        sendErrorToEventResource(queueLb);
+                        return;
+                    }
                 }
             }
 
