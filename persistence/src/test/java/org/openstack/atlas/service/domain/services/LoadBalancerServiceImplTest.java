@@ -282,6 +282,7 @@ public class LoadBalancerServiceImplTest {
             lb.setId(1);
             lb.setAccountId(11111);
             lb.setStatus(LoadBalancerStatus.ACTIVE);
+            lb.setProtocol(LoadBalancerProtocol.HTTPS);
             lb.setHalfClosed(false);
 
             defaultProtocol = new LoadBalancerProtocolObject(LoadBalancerProtocol.HTTP, "HTTP Protocol", 80, true);
