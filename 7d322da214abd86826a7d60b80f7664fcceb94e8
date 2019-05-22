@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4485fe93_1aab4980",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/LoadBalancerServiceImplTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2019-05-22T21:52:40Z",
+      "side": 1,
+      "message": "We should test that the removeEP repository method is called when it should be and a negative test for when it\u0027s not",
+      "revId": "7d322da214abd86826a7d60b80f7664fcceb94e8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
