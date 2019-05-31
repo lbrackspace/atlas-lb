@@ -3,6 +3,7 @@ package org.openstack.atlas.api.resources;
 import org.apache.abdera.model.Feed;
 import org.openstack.atlas.api.atom.FeedType;
 import org.openstack.atlas.api.helpers.LoadBalancerProperties;
+import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
@@ -18,6 +19,7 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+import org.w3.atom.Link;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.HttpHeaders;
@@ -142,10 +144,23 @@ public class NodesResource extends CommonDependencyProvider {
         List<NodeServiceEvent> dEvents;
         NodeServiceEvents rEvents = new NodeServiceEvents();
         try {
+            limit = PaginationHelper.determinePageLimit(limit);
+            offset = PaginationHelper.determinePageOffset(offset);
             dEvents = loadBalancerEventRepository.getNodeServiceEvents(accountId, loadBalancerId, page, offset, limit, marker);
 
             for (NodeServiceEvent event : dEvents) {
                 rEvents.getNodeServiceEvents().add(dozerMapper.map(event, org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvent.class));
+            }
+            if (rEvents.getNodeServiceEvents().size() > limit) {
+                String relativeUri = String.format("/%d/loadbalancers/%d/nodes/events?offset=%d&limit=%d", accountId, loadBalancerId, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri, true);
+                rEvents.getLinks().add(nextLink);
+                rEvents.getNodeServiceEvents().remove(limit.intValue()); // Remove limit+1 item
+            }
+            if (offset > 0) {
+                String relativeUri = String.format("/%d/loadbalancers/%d/nodes/events?offset=%d&limit=%d", accountId, loadBalancerId, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
+                Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri, true);
+                rEvents.getLinks().add(nextLink);
             }
 
             return Response.status(200).entity(rEvents).build();

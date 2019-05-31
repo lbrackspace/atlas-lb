@@ -177,6 +177,44 @@ public class LoadBalancerEventRepository {
             offset = p[0];
             limit = p[1];
             marker = p[2];
+            if (marker != null) {
+                cq.addParam("evt.nodeId", ">=", "nodeId", marker);
+            }
+        }
+
+        String qStr = cq.getQueryString();
+
+        Query query = entityManager.createQuery(qStr);
+
+        for (QueryParameter param : cq.getQueryParameters()) {
+            query.setParameter(param.getPname(), param.getValue());
+        }
+        //ATOM
+        if (page != null && page > 0) {
+            query.setFirstResult((page - 1) * PAGE_SIZE);
+        } else {
+            query.setFirstResult(offset);
+        }
+        query.setMaxResults(limit+1);
+        return query.getResultList();
+    }
+
+    public List<NodeServiceEvent> getNodeServiceEventss(Integer accountId, Integer loadbalancerId, Integer page, Integer... p) {
+        Integer offset = 0;
+        Integer limit = 100;
+        Integer marker = 0;
+
+        CustomQuery cq;
+        String selectClause = "SELECT evt FROM NodeServiceEvent evt";
+        cq = new CustomQuery(selectClause);
+
+        cq.addParam("evt.accountId", "=", "accountId", accountId);
+        cq.addParam("evt.loadbalancerId", "=", "loadbalancerId", loadbalancerId);
+
+        if (p.length >= 2) {
+            offset = p[0];
+            limit = p[1];
+            marker = p[2];
             int i = 0;
             if (offset == null) {
                 offset = 0;
