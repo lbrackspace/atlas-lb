@@ -167,6 +167,7 @@
     <xsd:complexType name="nodeServiceEvents">
         <xsd:sequence>
             <xsd:element name="nodeServiceEvent" type="tns:nodeServiceEvent" minOccurs="1" maxOccurs="unbounded"/>
+            <xsd:element ref="atom:link" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="loadbalancerId" type="xsd:int"/>
     </xsd:complexType>
