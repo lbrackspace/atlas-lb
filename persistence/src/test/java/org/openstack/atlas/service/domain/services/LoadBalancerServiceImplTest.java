@@ -282,6 +282,7 @@ public class LoadBalancerServiceImplTest {
             lb.setId(1);
             lb.setAccountId(11111);
             lb.setStatus(LoadBalancerStatus.ACTIVE);
+            lb.setProtocol(LoadBalancerProtocol.HTTPS);
             lb.setHalfClosed(false);
 
             defaultProtocol = new LoadBalancerProtocolObject(LoadBalancerProtocol.HTTP, "HTTP Protocol", 80, true);
@@ -319,6 +320,24 @@ public class LoadBalancerServiceImplTest {
             when(lbRepository.canUpdateToNewPort(Matchers.anyInt(), Matchers.anyObject())).thenReturn(true);
 
             lbService.prepareForUpdate(loadBalancer);
+        }
+
+        @Test
+        public void shouldRemoveErrorPageWhenProtocolChangedToNonHttp() throws Exception {
+            UserPages up = new UserPages();
+            up.setErrorpage("Custom Error page");
+            lb.setUserPages(up);//dbLoadBalancer
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+
+            //new changes to update the lb
+            LoadBalancer loadBalancer = new LoadBalancer();
+            loadBalancer.setId(1);
+            loadBalancer.setAccountId(11111);
+            loadBalancer.setProtocol(LoadBalancerProtocol.HTTPS);
+
+            when(lbRepository.removeErrorPage(Matchers.anyInt(), Matchers.anyObject())).thenReturn(true);
+            lbService.prepareForUpdate(loadBalancer);
+            Mockito.verify(lbRepository, times(1)).removeErrorPage(loadBalancer.getId(), loadBalancer.getAccountId());
         }
     }
 
