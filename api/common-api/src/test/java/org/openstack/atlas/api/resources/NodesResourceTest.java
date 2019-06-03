@@ -3,11 +3,16 @@ package org.openstack.atlas.api.resources;
 import org.dozer.DozerBeanMapperBuilder;
 import org.junit.Ignore;
 import org.mockito.ArgumentMatchers;
+import org.openstack.atlas.api.helpers.PaginationHelper;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.NodeCondition;
+import org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.NodeStatus;
+import org.openstack.atlas.service.domain.events.entities.NodeServiceEvent;
+import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
@@ -19,6 +24,10 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
@@ -87,6 +96,78 @@ public class NodesResourceTest {
             doThrow(DeletedStatusException.class).when(nodeService).getNodesByAccountIdLoadBalancerId(anyInt(), anyInt(), anyInt(), anyInt(), anyInt());
             Response response = nodesResource.retrieveNodes(0, 4, 3, null);
             Assert.assertEquals(410, response.getStatus());
+        }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PrepareForTest(RestApiConfiguration.class)
+    @PowerMockIgnore("javax.management.*")
+    public static class WhenGettingNodeEvents {
+
+        private HttpHeaders requestHeaders;
+        private AsyncService asyncService;
+        private NodesResource nodesResource;
+        private NodeService nodeService;
+        private LoadBalancerEventRepository loadBalancerEventRepository;
+
+        @Before
+        public void setUp() throws Exception {
+            requestHeaders = mock(HttpHeaders.class);
+            asyncService = mock(AsyncService.class);
+            nodeService = mock(NodeService.class);
+            loadBalancerEventRepository = mock(LoadBalancerEventRepository.class);
+
+            nodesResource = new NodesResource();
+            nodesResource.setRequestHeaders(requestHeaders);
+            nodesResource.setAsyncService(asyncService);
+            nodesResource.setNodeService(nodeService);
+            nodesResource.setLoadBalancerEventRepository(loadBalancerEventRepository);
+
+            nodesResource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
+
+            List<String> acceptHeaders = new ArrayList<String>();
+            acceptHeaders.add(APPLICATION_XML);
+            when(requestHeaders.getRequestHeader("Accept")).thenReturn(acceptHeaders);
+            nodesResource.setLoadBalancerId(12);
+            nodesResource.setAccountId(12345);
+
+        }
+
+        @Test
+        public void shouldProduce200WhenSuccessful() throws Exception {
+            RestApiConfiguration restApiConfiguration = PowerMockito.mock(RestApiConfiguration.class);
+            PowerMockito.doReturn("mockeduri").when(restApiConfiguration, "getString", anyString());
+            PaginationHelper paginationHelper = new PaginationHelper();
+            paginationHelper.setRestApiConfiguration(restApiConfiguration);
+
+            List<NodeServiceEvent> dEvents = new ArrayList<>();
+            NodeServiceEvent rEvent = new NodeServiceEvent();
+            rEvent.setDetailedMessage("dmsg");
+            dEvents.add(rEvent);
+
+            // no links
+            when(loadBalancerEventRepository.getNodeServiceEvents(anyInt(), anyInt(), anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(dEvents);
+            Response response = nodesResource.retrieveNodeEvents(0, 4, 0, 0);
+            Assert.assertEquals(200, response.getStatus());
+            Assert.assertEquals(1, ((org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents) response.getEntity()).getNodeServiceEvents().size());
+            Assert.assertTrue(((org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents) response.getEntity()).getLinks().isEmpty());
+
+            // links because limit is less than events
+            rEvent = new NodeServiceEvent();
+            rEvent.setDetailedMessage("dmsg1");
+            dEvents.add(rEvent);
+            rEvent = new NodeServiceEvent();
+            rEvent.setDetailedMessage("dmsg2");
+            dEvents.add(rEvent);
+            when(loadBalancerEventRepository.getNodeServiceEvents(anyInt(), anyInt(), anyInt(), anyInt(), anyInt(), anyInt())).thenReturn(dEvents);
+            response = nodesResource.retrieveNodeEvents(0, 1, 0, 0);
+            Assert.assertEquals(200, response.getStatus());
+            Assert.assertEquals(2, ((org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents) response.getEntity()).getNodeServiceEvents().size());
+            Assert.assertFalse(((org.openstack.atlas.docs.loadbalancers.api.v1.NodeServiceEvents) response.getEntity()).getLinks().isEmpty());
+            Assert.assertTrue(((NodeServiceEvents) response.getEntity()).getLinks().get(0).getRel().equals("next"));
+            Assert.assertTrue(((NodeServiceEvents) response.getEntity()).getLinks().get(0).getHref().contains("nodes/events?offset=1&limit=1"));
         }
     }
 

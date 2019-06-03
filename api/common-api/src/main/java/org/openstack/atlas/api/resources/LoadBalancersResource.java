@@ -135,24 +135,30 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         Calendar endTime;
         final String badRequestMessage = "Date parameters must follow ISO-8601 format";
 
-        if (endTimeParam == null) {
-            endTime = Calendar.getInstance(); // Default to right now
-        } else {
-            try {
-                endTime = isoTocal(endTimeParam);
-            } catch (ConverterException ex) {
-                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
-            }
-        }
-
-        if (startTimeParam == null) {
+        if (startTimeParam == null && endTimeParam == null){
+            endTime = Calendar.getInstance();
             startTime = (Calendar) endTime.clone();
-            startTime.add(Calendar.DAY_OF_MONTH, -NUM_DAYS_OF_USAGE); // default to NUM_DAYS_OF_USAGE days ago
+            startTime.add(Calendar.DAY_OF_MONTH, -1);
         } else {
-            try {
-                startTime = isoTocal(startTimeParam);
-            } catch (ConverterException ex) {
-                return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
+            if (endTimeParam == null) {
+                endTime = Calendar.getInstance(); // Default to right now
+            } else {
+                try {
+                    endTime = isoTocal(endTimeParam);
+                } catch (ConverterException ex) {
+                    return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
+                }
+            }
+
+            if (startTimeParam == null) {
+                startTime = (Calendar) endTime.clone();
+                startTime.add(Calendar.DAY_OF_MONTH, -NUM_DAYS_OF_USAGE); // default to NUM_DAYS_OF_USAGE days ago
+            } else {
+                try {
+                    startTime = isoTocal(startTimeParam);
+                } catch (ConverterException ex) {
+                    return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
+                }
             }
         }
 
