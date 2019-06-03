@@ -38,14 +38,14 @@ public class SaveStateHistoryResource extends ManagementDependencyProvider {
                 }
             }
             if (loadBalancersStatusHistory.getLoadBalancerStatusHistories().size() > limit) {
-                String relativeUri = String.format("/management/loadbalancers/%d?offset=%d&limit=%d", id, PaginationHelper.calculateNextOffset(offset, limit), limit);
+                String relativeUri = String.format("/management/loadbalancers/%d/lbstatehistory?offset=%d&limit=%d", id, PaginationHelper.calculateNextOffset(offset, limit), limit);
                 Link nextLink = PaginationHelper.createLink(PaginationHelper.NEXT, relativeUri, false);
                 loadBalancersStatusHistory.getLinks().add(nextLink);
                 loadBalancersStatusHistory.getLoadBalancerStatusHistories().remove(limit.intValue()); // Remove limit+1 item
             }
 
             if (offset > 0) {
-                String relativeUri = String.format("/management/loadbalancers/%d?offset=%d&limit=%d", id, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
+                String relativeUri = String.format("/management/loadbalancers/%d/lbstatehistory?offset=%d&limit=%d", id, PaginationHelper.calculatePreviousOffset(offset, limit), limit);
                 Link nextLink = PaginationHelper.createLink(PaginationHelper.PREVIOUS, relativeUri, false);
                 loadBalancersStatusHistory.getLinks().add(nextLink);
             }
