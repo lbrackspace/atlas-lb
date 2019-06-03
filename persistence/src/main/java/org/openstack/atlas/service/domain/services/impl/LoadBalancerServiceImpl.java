@@ -300,7 +300,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             dbLoadBalancer.setTimeout(loadBalancer.getTimeout());
         }
 
+        boolean isProtocolChanged = false;
+        LoadBalancerProtocol previousProtocol = null;
         if (loadBalancer.getProtocol() != null && !loadBalancer.getProtocol().equals(dbLoadBalancer.getProtocol())) {
+            isProtocolChanged = true;
+            previousProtocol = dbLoadBalancer.getProtocol();
             verifyTCPUDPProtocolandPort(loadBalancer, dbLoadBalancer);
 
             if (loadBalancer.getHalfClosed() != null) {
@@ -423,7 +427,9 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         if (loadBalancer.getHttpsRedirect() != null) {
             dbLoadBalancer.setHttpsRedirect(loadBalancer.getHttpsRedirect());
         }
-
+        if(isProtocolChanged && previousProtocol.equals(LoadBalancerProtocol.HTTP) && dbLoadBalancer.getUserPages() != null){//CLB-846
+            loadBalancerRepository.removeErrorPage(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
+        }
         dbLoadBalancer = loadBalancerRepository.update(dbLoadBalancer);
         dbLoadBalancer.setUserName(loadBalancer.getUserName());
         LOG.debug("Updated the loadbalancer in DB. Now sending response back.");

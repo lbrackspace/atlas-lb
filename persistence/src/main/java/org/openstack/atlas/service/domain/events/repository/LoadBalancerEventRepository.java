@@ -177,17 +177,9 @@ public class LoadBalancerEventRepository {
             offset = p[0];
             limit = p[1];
             marker = p[2];
-            int i = 0;
-            if (offset == null) {
-                offset = 0;
+            if (marker != null) {
+                cq.addParam("evt.nodeId", ">=", "nodeId", marker);
             }
-            if (limit == null || limit > 100) {
-                limit = 100;
-            }
-            if (marker == null) {
-                marker = 0;
-            }
-            cq.addParam("evt.nodeId", ">=", "nodeId", marker);
         }
 
         String qStr = cq.getQueryString();
@@ -197,17 +189,16 @@ public class LoadBalancerEventRepository {
         for (QueryParameter param : cq.getQueryParameters()) {
             query.setParameter(param.getPname(), param.getValue());
         }
-
         //ATOM
         if (page != null && page > 0) {
             query.setFirstResult((page - 1) * PAGE_SIZE);
         } else {
             query.setFirstResult(offset);
         }
-        query.setMaxResults(limit);
+        query.setMaxResults(limit+1);
         return query.getResultList();
     }
-
+    
     public List<HealthMonitorEvent> getAllHealthMonitorEvents(Integer accountId, Integer loadbalancerId, Integer page) {
         Query query = entityManager.createQuery("SELECT evt FROM HealthMonitorEvent evt where evt.accountId = :accountId and evt.loadbalancerId = :loadbalancerId order by evt.created desc").setParameter("accountId", accountId).setParameter("loadbalancerId", loadbalancerId).setMaxResults(PAGE_SIZE);
 
