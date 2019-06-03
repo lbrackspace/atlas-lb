@@ -1,4 +1,3 @@
-test
 Requirements
 ------------
   * Java >= 1.8_152
