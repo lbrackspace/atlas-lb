@@ -1,8 +1,7 @@
 package org.rackspace.stingray.client.integration;
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
+import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -14,8 +13,10 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 
 import java.util.List;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TrafficIpITest extends StingrayTestBase {
     TrafficIp tip;
+    TrafficIp tipTester;
     TrafficIpProperties properties;
     TrafficIpBasic basic;
 
@@ -31,6 +32,13 @@ public class TrafficIpITest extends StingrayTestBase {
         properties.setBasic(basic);
         tip = new TrafficIp();
         tip.setProperties(properties);
+
+        try {
+            tipTester = client.createTrafficIp(TESTNAME, tip);
+        } catch (StingrayRestClientException | StingrayRestClientObjectNotFoundException e) {
+            Assert.fail("Could not create traffic ip " + e.getMessage());
+        }
+        Assert.assertNotNull(tipTester);
     }
 
     /**
@@ -40,9 +48,9 @@ public class TrafficIpITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        TrafficIp createdTip = client.createTrafficIp(TESTNAME, tip);
-        Assert.assertNotNull(createdTip);
+    public void atestCreateTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        tipTester = client.createTrafficIp(TESTNAME, tip);
+        Assert.assertNotNull(tipTester);
     }
 
     /**
@@ -53,7 +61,7 @@ public class TrafficIpITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfTrafficIps() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void btestGetListOfTrafficIps() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getTrafficIps();
         Assert.assertTrue(children.size() > 0);
     }
@@ -65,7 +73,7 @@ public class TrafficIpITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getTrafficIps();
         Assert.assertTrue(children.size() > 0);
         Child child = children.get(0);
@@ -81,7 +89,7 @@ public class TrafficIpITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void dtestDeleteTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean result = client.deleteTrafficIp(TESTNAME);
         Assert.assertTrue(result);
         client.getTrafficIp(TESTNAME);

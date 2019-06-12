@@ -105,7 +105,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     private List<Child> getItems(String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
-            Response response = requestManager.getList(endpoint, client, path);
+            Response response = requestManager.getList(endpoint, client, path, adminUser, adminKey);
             Children children = (Children) interpretResponse(response, Children.class);
 
             return children.getChildren();
@@ -172,7 +172,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     private <T> T getItem(String name, Class<T> clazz, String path, URI endpoint, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
-            Response response = requestManager.getItem(endpoint, client, path + name, cType);
+            Response response = requestManager.getItem(endpoint, client, path + name, cType, adminUser, adminKey);
             T obj = (T) interpretResponse(response, clazz);
             return obj;
         } else {
@@ -233,7 +233,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     private <T> T updateItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
-            Response response = requestManager.updateItem(endpoint, client, path + name, obj, cType);
+            Response response = requestManager.updateItem(endpoint, client, path + name, obj, cType, adminUser, adminKey);
             return (T) interpretResponse(response, clazz);
         } else {
             throw new StingrayRestClientException("There was an error communicating with the resource endpoint: " + path);
@@ -249,7 +249,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     private Boolean deleteItem(String name, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path))
-            return requestManager.deleteItem(endpoint, client, path + name);
+            return requestManager.deleteItem(endpoint, client, path + name, adminUser, adminKey);
         else
             throw new StingrayRestClientException();
     }

@@ -2,7 +2,9 @@ package org.rackspace.stingray.client.integration;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -14,6 +16,7 @@ import org.rackspace.stingray.client.rate.RateProperties;
 
 import java.util.List;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class RateITest extends StingrayTestBase {
     String vsName;
     Rate rate;
@@ -44,7 +47,7 @@ public class RateITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void atestCreateRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Rate createdRate = client.createRate(vsName, rate);
         Assert.assertNotNull(createdRate);
         Assert.assertEquals(createdRate, client.getRate(vsName));
@@ -57,7 +60,7 @@ public class RateITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void btestUpdateRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         int updatePerMin = 17;
         rate.getProperties().getBasic().setMaxRatePerMinute(updatePerMin);
         Rate updatedRate = client.updateRate(vsName, rate);
@@ -74,7 +77,7 @@ public class RateITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfRates() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetListOfRates() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getRates();
         Assert.assertTrue(children.size() > 0);
     }
@@ -86,7 +89,7 @@ public class RateITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void dtestGetRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Rate retrievedRate = client.getRate(vsName);
         Assert.assertNotNull(retrievedRate);
     }
@@ -98,7 +101,7 @@ public class RateITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void etestDeleteRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteRate(vsName);
         Assert.assertTrue(wasDeleted);
         client.getRate(vsName);

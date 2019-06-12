@@ -9,6 +9,7 @@ import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.manager.util.Authenticator;
 import org.rackspace.stingray.client.manager.util.RequestManagerUtil;
 import org.rackspace.stingray.client.util.ClientConstants;
 import org.rackspace.stingray.client.util.StingrayRestClientUtil;
@@ -132,7 +133,9 @@ public class StingrayRestClientManager {
         }
 
         if (client == null) {
-            client = StingrayRestClientUtil.ClientHelper.createClient(false);
+            this.client = StingrayRestClientUtil.ClientHelper.createClient(false);
+        } else {
+            this.client = client;
         }
 
         if (adminUser == null) {
@@ -149,7 +152,6 @@ public class StingrayRestClientManager {
 
         this.config = config;
         this.endpoint = endpoint;
-        this.client = client;
         this.isDebugging = isDebugging;
         this.adminUser = adminUser;
         this.adminKey = adminKey;
@@ -164,10 +166,8 @@ public class StingrayRestClientManager {
         } catch (Exception e) {
             this.connect_timeout = 5000;
         }
-        client.property(ClientProperties.CONNECT_TIMEOUT, this.connect_timeout);
-        client.property(ClientProperties.READ_TIMEOUT, this.read_timeout);
-
-        this.client.target(endpoint).register(HttpAuthenticationFeature.basic(this.adminUser, this.adminKey));
+        this.client.property(ClientProperties.CONNECT_TIMEOUT, this.connect_timeout);
+        this.client.property(ClientProperties.READ_TIMEOUT, this.read_timeout);
     }
 
     /**
@@ -183,8 +183,7 @@ public class StingrayRestClientManager {
         String s;
         RequestManagerUtil rmu = new RequestManagerUtil();
         try {
-            t = response.getEntity();
-//              s = response.getEntity(String.class);
+            t = response.readEntity(clazz);
         } catch (Exception ex) {
             LOG.error("Could not retrieve object of type: " + clazz + " Exception: " + ex);
             if (!rmu.isResponseValid(response)) {

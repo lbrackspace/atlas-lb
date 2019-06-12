@@ -38,6 +38,16 @@
             <artifactId>jersey-media-json-jackson</artifactId>
             <version>2.26</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
+            <version>2.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>2.26</version>
+        </dependency>
         <!--Testing/Logging-->
         <dependency>
             <groupId>junit</groupId>
@@ -63,6 +73,11 @@
         </dependency>
 
         <!--Configuration-->
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.3</version>
+        </dependency>
 
         <!--Mockito-->
         <dependency>
