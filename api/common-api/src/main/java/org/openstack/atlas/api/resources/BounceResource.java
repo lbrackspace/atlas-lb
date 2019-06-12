@@ -21,18 +21,13 @@ import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 
 import javax.ws.rs.core.MediaType;
-import static javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 import javax.ws.rs.core.Response;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
-import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.repository.ValidatorRepository;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
+import org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMapping;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolName;
-import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocolStatus;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
@@ -140,8 +135,19 @@ public class BounceResource extends CommonDependencyProvider {
         return resp;
     }
 
-    @POST
-    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Path("certificatemapping")
+    public Response CertificateMapping(CertificateMapping certificateMapping) {
+        ValidatorResult result = ValidatorRepository.getValidatorFor(CertificateMapping.class).validate(certificateMapping, HttpRequestType.POST);
+
+        if (!result.passedValidation()) {
+            return getValidationFaultResponse(result);
+        }
+        Response resp = Response.status(200).entity(certificateMapping).build();
+        return resp;
+    }
+
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("ssltermination")
     public Response SslTermination(SslTermination sslTerm) {
@@ -170,8 +176,7 @@ public class BounceResource extends CommonDependencyProvider {
         return resp;
     }
 
-    @POST
-    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("sslterminationvalidation")
     public Response SslTerminationValidation(SslTermination sslTerm) {
