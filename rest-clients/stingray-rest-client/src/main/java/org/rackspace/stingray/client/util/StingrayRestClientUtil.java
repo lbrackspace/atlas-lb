@@ -49,17 +49,10 @@ public class StingrayRestClientUtil {
             HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
 
             ClientConfig config = new ClientConfig();
-//            config..getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
-            config.getClasses().add(JacksonJsonProvider.class);
-            config.property(LoggingFeature.LOGGING_FEATURE_LOGGER_NAME, LoggingFeature.Verbosity.PAYLOAD_ANY);
+            if (isDebugging) config.property(LoggingFeature.LOGGING_FEATURE_LOGGER_NAME, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
             Client client = ClientBuilder.newBuilder().withConfig(config)
-                    .sslContext(ctx).hostnameVerifier(new HostnameVerifier() {
-                        @Override
-                        public boolean verify(String hostname, SSLSession session) {
-                            return true;
-                        }
-                    }).build();
+                    .sslContext(ctx).hostnameVerifier((hostname, session) -> true).build();
             return client;
         }
 

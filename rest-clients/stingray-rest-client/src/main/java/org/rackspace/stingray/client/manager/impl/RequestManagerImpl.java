@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
+import org.rackspace.stingray.client.manager.util.Authenticator;
 
 public class RequestManagerImpl implements RequestManager {
     private static final Log LOG = LogFactory.getLog(RequestManagerImpl.class);
@@ -27,12 +28,13 @@ public class RequestManagerImpl implements RequestManager {
      * @return Returns the entity inside the response of the REST api
      */
     @Override
-    public Response getList(URI endpoint, Client client, String path)  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public Response getList(URI endpoint, Client client, String path, String adminUser, String adminKey)  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Response response = null;
         RequestManagerUtil rmu = new RequestManagerUtil();
         try {
             LOG.debug(String.format("GET requested for endpoint: %s", endpoint));
             response = client.target(URI.create(endpoint + path))
+                    .register(new Authenticator(adminUser, adminKey))
                     .request(MediaType.APPLICATION_JSON_TYPE)
                     .get(Response.class);
         } catch (Exception e) {
@@ -55,12 +57,13 @@ public class RequestManagerImpl implements RequestManager {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Override
-    public Response getItem(URI endpoint, Client client, String path, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public Response getItem(URI endpoint, Client client, String path, MediaType cType, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Response response = null;
         RequestManagerUtil rmu = new RequestManagerUtil();
 
         try {
             response = client.target(endpoint + path)
+                    .register(new Authenticator(adminUser, adminKey))
                     .request(cType)
                     .get(Response.class);
         } catch (Exception e) {
@@ -86,8 +89,8 @@ public class RequestManagerImpl implements RequestManager {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Override
-    public Response createItem(URI endpoint, Client client, String path, Object object, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        return updateItem(endpoint, client, path, object, cType);
+    public Response createItem(URI endpoint, Client client, String path, Object object, MediaType cType, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        return updateItem(endpoint, client, path, object, cType, adminUser, adminKey);
     }
 
     /**
@@ -101,13 +104,14 @@ public class RequestManagerImpl implements RequestManager {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Override
-    public Response updateItem(URI endpoint, Client client, String path, Object object, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public Response updateItem(URI endpoint, Client client, String path, Object object, MediaType cType, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Response response = null;
         RequestManagerUtil rmu = new RequestManagerUtil();
 
         try {
             response = client.target(endpoint + path)
-                    .request(cType).put(Entity.entity(object, MediaType.APPLICATION_JSON));
+                    .register(new Authenticator(adminUser, adminKey))
+                    .request(cType).put(Entity.entity(object, cType));
         } catch (Exception e) {
             throw new StingrayRestClientException(ClientConstants.REQUEST_ERROR, e);
         }
@@ -129,12 +133,13 @@ public class RequestManagerImpl implements RequestManager {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Override
-    public boolean deleteItem(URI endpoint, Client client, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public boolean deleteItem(URI endpoint, Client client, String path, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Response response = null;
         RequestManagerUtil rmu = new RequestManagerUtil();
 
         try {
             response = client.target(endpoint + path)
+                    .register(new Authenticator(adminUser, adminKey))
                     .request(MediaType.APPLICATION_JSON)
                     .delete(Response.class);
         } catch (Exception e) {

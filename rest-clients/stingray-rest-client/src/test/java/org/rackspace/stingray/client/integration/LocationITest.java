@@ -2,7 +2,9 @@ package org.rackspace.stingray.client.integration;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -14,6 +16,7 @@ import org.rackspace.stingray.client.location.LocationProperties;
 
 import java.util.List;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class LocationITest extends StingrayTestBase {
     Location location;
     LocationProperties locationProperties;
@@ -47,7 +50,7 @@ public class LocationITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void atestCreateLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Location createdLocation = client.createLocation(vsName, location);
         Assert.assertNotNull(createdLocation);
         Assert.assertEquals(createdLocation, client.getLocation(vsName));
@@ -60,7 +63,7 @@ public class LocationITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void btestUpdateLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         int updateId = 33;
         location.getProperties().getBasic().setId(updateId);
         Location updatedLocation = client.updateLocation(vsName, location);
@@ -76,7 +79,7 @@ public class LocationITest extends StingrayTestBase {
      *
      */
     @Test
-    public void testGetListOfLocations() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetListOfLocations() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getLocations();
         Assert.assertTrue(children.size() > 0);
     }
@@ -88,7 +91,7 @@ public class LocationITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void dtestGetLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Location retrievedLocation = client.getLocation(vsName);
         Assert.assertNotNull(retrievedLocation);
     }
@@ -100,7 +103,7 @@ public class LocationITest extends StingrayTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void etestDeleteLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteLocation(vsName);
         Assert.assertTrue(wasDeleted);
         client.getLocation(vsName);

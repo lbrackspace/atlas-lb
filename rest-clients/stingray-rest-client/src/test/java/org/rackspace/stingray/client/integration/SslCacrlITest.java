@@ -1,11 +1,8 @@
 package org.rackspace.stingray.client.integration;
 
-import org.junit.Assert;
+import org.junit.*;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -17,6 +14,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class SslCacrlITest extends StingrayScriptTestBase {
 
     @Before
@@ -42,7 +40,7 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      * @throws java.io.IOException
      */
     @Test
-    public void testCreateCacrl() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    public void atestCreateCacrl() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
         //the fileName is what it will be created as. ex: /rules/test_script the file in STM is 'test_script'
         client.createCacrl(fileName, createTestFile(fileName, fileText));
         File gfile = client.getCacrl(fileName);
@@ -58,7 +56,7 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      *
      */
     @Test
-    public void getListOfCacrls() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void bgetListOfCacrls() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         List<Child> children = client.getCacrls();
         Assert.assertTrue(children.size() > 0);
     }
@@ -70,7 +68,7 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void testGetCacrl() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetCacrl() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         File retrievedFile = client.getCacrl(fileName);
         Assert.assertNotNull(retrievedFile);
 
@@ -85,7 +83,7 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      * @throws java.io.IOException
      */
     @Test
-    public void testUpdateCacrl() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    public void dtestUpdateCacrl() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
         //the filename is the same, we want to update the contents...
         String updatedFileText = "Updated the test script...";
 
@@ -103,7 +101,7 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void deleteCacrl() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    public void edeleteCacrl() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
         Boolean wasDeleted = client.deleteCacrl(fileName);
         Assert.assertTrue(wasDeleted);
         client.getCacrl(fileName);
