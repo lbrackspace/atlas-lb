@@ -14,6 +14,7 @@ import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -103,8 +104,8 @@ public class PoolITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void etestDeletePool() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deletePool(vsName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deletePool(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getPool(vsName);
     }
 

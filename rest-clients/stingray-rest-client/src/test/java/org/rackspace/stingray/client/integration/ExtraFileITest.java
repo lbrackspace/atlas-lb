@@ -9,6 +9,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -96,8 +97,8 @@ public class ExtraFileITest extends StingrayScriptTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void etestDeleteExtraFile() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteExtraFile(fileName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteExtraFile(fileName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getExtraFile(fileName);
     }
 }

@@ -14,6 +14,7 @@ import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.persistence.PersistenceBasic;
 import org.rackspace.stingray.client.persistence.PersistenceProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -101,8 +102,8 @@ public class PersistenceITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void etestDeletePersistence() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deletePersistence(vsName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deletePersistence(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getPersistence(vsName);
     }
 

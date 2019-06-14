@@ -15,6 +15,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -101,8 +102,8 @@ public class BandwidthITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void edeleteBandwidth() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteBandwidth(vsName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteBandwidth(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getBandwidth(vsName);
     }
 

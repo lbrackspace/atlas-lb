@@ -11,6 +11,7 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -90,8 +91,8 @@ public class TrafficIpITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void dtestDeleteTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean result = client.deleteTrafficIp(TESTNAME);
-        Assert.assertTrue(result);
+        Response result = client.deleteTrafficIp(TESTNAME);
+        Assert.assertEquals(204, result.getStatus());
         client.getTrafficIp(TESTNAME);
     }
 }

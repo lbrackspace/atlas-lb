@@ -9,6 +9,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -86,8 +87,8 @@ public class ActionScriptITest extends StingrayScriptTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void etestDeleteActionScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteActionScript(fileName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteActionScript(fileName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getActionScript(fileName);
     }
 }

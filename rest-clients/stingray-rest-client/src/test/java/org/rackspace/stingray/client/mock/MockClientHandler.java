@@ -1,23 +1,27 @@
 //package org.rackspace.stingray.client.mock;
 //
+//import com.sun.jersey.api.client.ClientHandlerException;
 //import org.apache.commons.lang3.builder.EqualsBuilder;
 //import org.apache.commons.lang3.builder.HashCodeBuilder;
+//import org.glassfish.jersey.client.ClientResponse;
 //import org.mockito.Mockito;
 //import org.rackspace.stingray.client.exception.StingrayRestClientException;
 //import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 //
+//import javax.ws.rs.client.ClientBuilder;
+//import javax.ws.rs.client.WebTarget;
 //import javax.ws.rs.core.Response;
 //import java.util.HashMap;
 //import java.util.Map;
 //
-//public final class MockClientHandler implements ClientHandler {
+//public final class MockClientHandler implements ClientBuilder {
 //
 //    public static final String ROOT = "https://localhost:9070/api/tm/1.0/config/active/";
 //
 //    private Map<Request, MockResponse> mocked = new HashMap<Request, MockResponse>();
 //
 //    @Override
-//    public Response handle(Request cr)
+//    public ClientResponse handle(Request cr)
 //            throws ClientHandlerException {
 //        String uri = cr.getURI().toString();
 //        String relative = uri.replace(ROOT, "");
@@ -60,7 +64,7 @@
 //            ClientResponse clientResponse = Mockito.mock(ClientResponse.class);
 //            Mockito.when(clientResponse.getStatus()).thenReturn(status.getStatusCode());
 ////            Mockito.when(clientResponse.getClientResponseStatus()).thenReturn(Status.fromStatusCode(status.getStatusCode()));
-//            Mockito.when(clientResponse.getEntity(Mockito.<Class>any())).thenReturn(response);
+//            Mockito.when(clientResponse.readEntity(Mockito.<Class>any())).thenReturn(response);
 //
 //            //Failed attempts to update for bad requests...
 ////            if (status != Response.Status.ACCEPTED && status != Response.Status.OK) {

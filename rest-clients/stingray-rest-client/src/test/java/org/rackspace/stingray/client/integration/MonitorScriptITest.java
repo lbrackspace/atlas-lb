@@ -13,6 +13,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -106,8 +107,8 @@ public class MonitorScriptITest extends StingrayScriptTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testDeleteMonitorScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteMonitorScript(fileName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteMonitorScript(fileName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getMonitorScript(fileName);
     }
 

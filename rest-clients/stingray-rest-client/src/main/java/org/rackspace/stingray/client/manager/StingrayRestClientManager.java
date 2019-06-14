@@ -2,22 +2,29 @@ package org.rackspace.stingray.client.manager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+import org.glassfish.jersey.logging.LoggingFeature;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.manager.util.Authenticator;
 import org.rackspace.stingray.client.manager.util.RequestManagerUtil;
 import org.rackspace.stingray.client.util.ClientConstants;
-import org.rackspace.stingray.client.util.StingrayRestClientUtil;
 
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 public class StingrayRestClientManager {
     private static final Log LOG = LogFactory.getLog(StingrayRestClientManager.class);
@@ -30,85 +37,6 @@ public class StingrayRestClientManager {
     protected Integer read_timeout;
     protected Integer connect_timeout;
 
-
-
-    /**
-     * Creates the client configured for authentication and security.
-
-     * @param config      The object to retrieve configuration data
-     * @param endpoint    The rest client endpoint
-     * @param client      The client used to process requests
-     */
-    public StingrayRestClientManager(URI endpoint, Configuration config, Client client) {
-        this(config, endpoint, client, false, null, null);
-    }
-
-    /**
-     * Creates the client configured for authentication and security.
-     *
-     * @param endpoint      The REST client endpoint
-     * @param config        The object to retrieve configuration data
-     */
-    public StingrayRestClientManager(URI endpoint, Configuration config) {
-        this(config, endpoint, null, false, null, null);
-    }
-
-    /**
-     * Creates the client configured for authentication and security.
-     *
-     * @param endpoint      The REST client endpoint
-     */
-    public StingrayRestClientManager(URI endpoint) {
-        this(null, endpoint, null, false, null, null);
-    }
-
-    /**
-     * Creates the client configured for authentication and security.
-     *
-     * @param endpoint      The REST client endpoint
-     * @param adminUser     The configuration username
-     * @param adminKey      The configuration user's key
-     */
-    public StingrayRestClientManager(URI endpoint, String adminUser, String adminKey) {
-        this(null, endpoint, null, false, adminUser, adminKey);
-    }
-
-    /**
-     * Creates the client configured for authentication and security.
-     *
-     * @param endpoint      The REST client endpoint
-     * @param isDebugging   Boolean for switching context
-     * @param adminUser     The configuration username
-     * @param adminKey      The configuration user's key
-     */
-    public StingrayRestClientManager(URI endpoint, boolean isDebugging, String adminUser, String adminKey) {
-        this(null, endpoint, null, isDebugging, adminUser, adminKey);
-    }
-
-    /**
-     * Creates the client configured for authentication and security.
-     *
-     * @param isDebugging   Boolean for switching context
-     */
-    public StingrayRestClientManager(boolean isDebugging) {
-        this(null, null, null, isDebugging, null, null);
-    }
-
-    /**
-     * Creates the client configured for authentication and security.
-     * @param configuration is supplied for a custom configuration.
-     */
-    public StingrayRestClientManager(Configuration configuration) {
-        this(configuration, null, null, false, null, null);
-    }
-
-    /**
-     * Creates the client configured for authentication and security.
-     *
-     */
-    public StingrayRestClientManager() {
-        this(null, null, null, false, null, null);
-    }
 
     /**
      * Creates the client configured for authentication and security.
@@ -133,7 +61,7 @@ public class StingrayRestClientManager {
         }
 
         if (client == null) {
-            this.client = StingrayRestClientUtil.ClientHelper.createClient(false);
+            this.client = this.createClient(false);
         } else {
             this.client = client;
         }
@@ -194,4 +122,47 @@ public class StingrayRestClientManager {
         }
         return t;
     }
+
+    /**
+     * @param isDebugging
+     * @return Configured Client
+     */
+    public Client configureClient(boolean isDebugging) {
+        TrustManager[] certs = new TrustManager[]{
+                new X509TrustManager() {
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    @Override
+                    public void checkServerTrusted(X509Certificate[] chain, String authType)
+                            throws CertificateException {
+                    }
+
+                    @Override
+                    public void checkClientTrusted(X509Certificate[] chain, String authType)
+                            throws CertificateException {
+                    }
+                }
+        };
+        SSLContext ctx = null;
+        try {
+            ctx = SSLContext.getInstance("TLS");
+            ctx.init(null, certs, new SecureRandom());
+        } catch (java.security.GeneralSecurityException ex) {
+        }
+        HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
+
+        ClientConfig config = new ClientConfig();
+        if (isDebugging) config.property(LoggingFeature.LOGGING_FEATURE_LOGGER_NAME, LoggingFeature.Verbosity.PAYLOAD_ANY);
+
+        return ClientBuilder.newBuilder().withConfig(config)
+                .sslContext(ctx).hostnameVerifier((hostname, session) -> true).build();
+    }
+
+    public Client createClient(boolean isDebugging) {
+        return this.configureClient(isDebugging);
+    }
+
 }

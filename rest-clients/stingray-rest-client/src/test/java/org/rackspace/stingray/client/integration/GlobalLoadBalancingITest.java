@@ -12,6 +12,7 @@ import org.rackspace.stingray.client.glb.GlobalLoadBalancingBasic;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancingProperties;
 import org.rackspace.stingray.client.list.Child;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 
@@ -98,8 +99,8 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testDeleteGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteGlb(vsName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteGlb(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getGlb(vsName);
 
     }

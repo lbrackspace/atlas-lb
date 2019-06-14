@@ -2,6 +2,7 @@ package org.rackspace.stingray.client.manager.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.manager.RequestManager;
@@ -58,9 +59,9 @@ public class RequestManagerImpl implements RequestManager {
      */
     @Override
     public Response getItem(URI endpoint, Client client, String path, MediaType cType, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Response response = null;
         RequestManagerUtil rmu = new RequestManagerUtil();
 
+        Response response;
         try {
             response = client.target(endpoint + path)
                     .register(new Authenticator(adminUser, adminKey))
@@ -105,13 +106,14 @@ public class RequestManagerImpl implements RequestManager {
      */
     @Override
     public Response updateItem(URI endpoint, Client client, String path, Object object, MediaType cType, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Response response = null;
+        Response response;
         RequestManagerUtil rmu = new RequestManagerUtil();
 
         try {
             response = client.target(endpoint + path)
                     .register(new Authenticator(adminUser, adminKey))
-                    .request(cType).put(Entity.entity(object, cType));
+                    .request(cType)
+                    .put(Entity.entity(object, cType));
         } catch (Exception e) {
             throw new StingrayRestClientException(ClientConstants.REQUEST_ERROR, e);
         }
@@ -133,8 +135,8 @@ public class RequestManagerImpl implements RequestManager {
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Override
-    public boolean deleteItem(URI endpoint, Client client, String path, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Response response = null;
+    public Response deleteItem(URI endpoint, Client client, String path, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        Response response;
         RequestManagerUtil rmu = new RequestManagerUtil();
 
         try {
@@ -149,7 +151,7 @@ public class RequestManagerImpl implements RequestManager {
         if (!rmu.isResponseValid(response)) {
             rmu.buildFaultMessage(response);
         }
-        return true;
+        return Response.noContent().build();
     }
 
 
