@@ -14,6 +14,7 @@ import org.rackspace.stingray.client.rate.Rate;
 import org.rackspace.stingray.client.rate.RateBasic;
 import org.rackspace.stingray.client.rate.RateProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -102,8 +103,8 @@ public class RateITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void etestDeleteRate() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteRate(vsName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteRate(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getRate(vsName);
     }
 }

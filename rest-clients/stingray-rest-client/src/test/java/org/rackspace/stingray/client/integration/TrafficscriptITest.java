@@ -8,6 +8,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -80,8 +81,8 @@ public class TrafficscriptITest extends StingrayScriptTestBase {
 
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void deleteTrafficScript() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteTrafficscript(fileName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteTrafficscript(fileName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getTraffiscript(fileName);
 
     }

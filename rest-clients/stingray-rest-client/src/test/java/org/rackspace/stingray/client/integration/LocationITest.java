@@ -14,6 +14,7 @@ import org.rackspace.stingray.client.location.Location;
 import org.rackspace.stingray.client.location.LocationBasic;
 import org.rackspace.stingray.client.location.LocationProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -104,8 +105,8 @@ public class LocationITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void etestDeleteLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteLocation(vsName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteLocation(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getLocation(vsName);
 
     }

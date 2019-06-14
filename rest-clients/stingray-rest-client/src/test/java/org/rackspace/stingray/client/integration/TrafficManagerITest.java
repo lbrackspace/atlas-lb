@@ -12,6 +12,7 @@ import org.rackspace.stingray.client.tm.TrafficManager;
 import org.rackspace.stingray.client.tm.TrafficManagerBasic;
 import org.rackspace.stingray.client.tm.TrafficManagerProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 public class TrafficManagerITest extends StingrayTestBase {
@@ -79,8 +80,8 @@ public class TrafficManagerITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testDeleteTrafficManager() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean result = client.deleteTrafficManager(TESTNAME);
-        Assert.assertTrue(result);
+        Response result = client.deleteTrafficManager(TESTNAME);
+        Assert.assertEquals(204, result.getStatus());
         client.getTrafficManager(TESTNAME);
     }
 }

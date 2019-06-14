@@ -12,6 +12,7 @@ import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.protection.ProtectionBasic;
 import org.rackspace.stingray.client.protection.ProtectionProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 public class ProtectionITest extends StingrayTestBase {;
@@ -98,8 +99,8 @@ public class ProtectionITest extends StingrayTestBase {;
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testDeleteProtection() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteProtection(vsName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteProtection(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getProtection(vsName);
     }
 

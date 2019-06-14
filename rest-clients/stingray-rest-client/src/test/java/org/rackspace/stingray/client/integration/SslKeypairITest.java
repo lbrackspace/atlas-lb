@@ -12,6 +12,7 @@ import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
 import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 public class SslKeypairITest extends StingrayTestBase {
@@ -77,8 +78,8 @@ public class SslKeypairITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testDeleteSslKeyPair() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean result = client.deleteKeypair(TESTNAME);
-        Assert.assertTrue(result);
+        Response result = client.deleteKeypair(TESTNAME);
+        Assert.assertEquals(204, result.getStatus());
         client.getKeypair(TESTNAME);
     }
 }

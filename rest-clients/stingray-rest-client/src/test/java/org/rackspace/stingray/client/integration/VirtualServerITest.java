@@ -16,6 +16,7 @@ import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
 import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -107,9 +108,8 @@ public class VirtualServerITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void etestDeleteVirtualServer() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean result = client.deleteVirtualServer(vsName);
-        Assert.assertTrue(result);
-        Assert.assertTrue(client.deletePool(poolName));
+        Response result = client.deleteVirtualServer(vsName);
+        Assert.assertEquals(204, result.getStatus());
         client.getVirtualServer(vsName);
     }
 }

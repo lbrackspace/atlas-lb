@@ -13,6 +13,7 @@ import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
 import org.rackspace.stingray.client.monitor.MonitorProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 public class MonitorITest extends StingrayTestBase {
@@ -100,8 +101,8 @@ public class MonitorITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testDeleteMonitor() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteMonitor(vsName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteMonitor(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getMonitor(vsName);
 
     }

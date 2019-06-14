@@ -54,9 +54,9 @@ public class RequestManagerUtil {
 
         String error;
 
-        logger.info("ResponseWrapper, response status code is: " + response.getStatus());
 
         try {
+            logger.info("ResponseWrapper, response status code is: " + response.getStatus());
             error = response.readEntity(String.class); //Too many permutations of errors, catch all and pull out what we want...
             logger.debug(String.format("Client Request failed: %s", error));
         } catch (Exception ex) {

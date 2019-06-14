@@ -12,6 +12,7 @@ import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair;
 import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairBasic;
 import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairProperties;
 
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 
@@ -102,8 +103,8 @@ public class SslClientKeypairITest extends StingrayTestBase {
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
     public void testDeleteClientKeypair() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Boolean wasDeleted = client.deleteClientKeypair(vsName);
-        Assert.assertTrue(wasDeleted);
+        Response wasDeleted = client.deleteClientKeypair(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
         client.getClientKeypair(vsName);
     }
 

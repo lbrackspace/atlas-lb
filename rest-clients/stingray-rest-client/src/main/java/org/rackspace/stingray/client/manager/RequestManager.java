@@ -18,7 +18,7 @@ public interface RequestManager {
 
     Response updateItem(URI endpoint, Client client, String path, Object object, MediaType cType, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
 
-    boolean deleteItem(URI endpoint, Client client, String path, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
+    Response deleteItem(URI endpoint, Client client, String path, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
 
 
 }
