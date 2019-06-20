@@ -1,14 +1,12 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
@@ -30,6 +28,13 @@ public class SslTerminationITest extends STMTestBase {
     private String normalName;
     private String secureName;
 
+
+    @BeforeClass
+    public static void clientInit() {
+        stmClient = new StingrayRestClient();
+    }
+
+
     @Before
     public void setupClass() throws Exception {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
@@ -37,6 +42,17 @@ public class SslTerminationITest extends STMTestBase {
         createSimpleLoadBalancer();
         normalName = ZxtmNameBuilder.genVSName(lb);
         secureName = ZxtmNameBuilder.genSslVSName(lb);
+    }
+
+    @After
+    public void destroy() {
+        removeSimpleLoadBalancer();
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+        removeSimpleLoadBalancer();
+        teardownEverything();
     }
 
     @Test
@@ -60,15 +76,19 @@ public class SslTerminationITest extends STMTestBase {
         setRateLimit();
     }
 
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testAddingOnlyAccessListWithSslTermination() throws Exception {
+    @Test
+    public void testDeletingOnlyAccessListWithSslTermination() throws Exception {
+        // An updated to accesslist or connection throttle shouldn't remove
+        // protection class. An explicit call to remove protection happens during lb removal
         verifyAccessListWithoutSsl();
         verifyDeleteAccessListWithoutConnectionThrottling();
     }
 
     @Test
     public void testAddingAccessListAndConnectionThrottlingWithSslTermination() throws Exception {
-        lb.setConnectionLimit(new ConnectionLimit());
+        ConnectionLimit cl = new ConnectionLimit();
+        cl.setMaxConnectionRate(25);
+        lb.setConnectionLimit(cl);
         stmAdapter.updateConnectionThrottle(config, lb);
         verifyAccessListWithoutSsl();
         verifyDeleteAccessListWithConnectionThrottling();
@@ -299,7 +319,8 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertNotNull(protection);
             ProtectionConnectionLimiting createdThrottle = protection.getProperties().getConnectionLimiting();
             Assert.assertEquals(maxConnectionRate, (int) createdThrottle.getMaxConnectionRate());
-            Assert.assertEquals(expectedMax10, (int) createdThrottle.getMax10Connections());
+            // Max10 is unused, defaults to 0
+            Assert.assertEquals(0, (int) createdThrottle.getMax10Connections());
             Assert.assertEquals(maxConnections, (int) createdThrottle.getMax1Connections());
             Assert.assertEquals(rateInterval, (int) createdThrottle.getRateTimer());
             Assert.assertEquals(minConnections, (int) createdThrottle.getMinConnections());
@@ -437,9 +458,15 @@ public class SslTerminationITest extends STMTestBase {
         List<Integer> deletionList = new ArrayList<Integer>();
         for (AccessList item : lb.getAccessLists()) {
             deletionList.add(item.getId());
-        };
+        }
         stmAdapter.deleteAccessList(config, lb, deletionList);
-        stmClient.getProtection(normalName);
+        Protection normalProtection = stmClient.getProtection(normalName);
+        Assert.assertTrue(normalProtection.getProperties().getAccessRestriction().getBanned().isEmpty());
+        Assert.assertTrue(normalProtection.getProperties().getAccessRestriction().getAllowed().isEmpty());
+        Assert.assertEquals(Integer.valueOf(0), normalProtection.getProperties().getConnectionLimiting().getMaxConnectionRate());
+        Assert.assertEquals(Integer.valueOf(0), normalProtection.getProperties().getConnectionLimiting().getMax1Connections());
+        Assert.assertEquals(Integer.valueOf(0), normalProtection.getProperties().getConnectionLimiting().getMinConnections());
+        Assert.assertEquals(Integer.valueOf(1), normalProtection.getProperties().getConnectionLimiting().getRateTimer());
     }
 
     private void verifyAccessListWithSsl() {
@@ -481,6 +508,7 @@ public class SslTerminationITest extends STMTestBase {
             ProtectionProperties properties = protection.getProperties();
             Assert.assertTrue(properties.getAccessRestriction().getAllowed().isEmpty());
             Assert.assertTrue(properties.getAccessRestriction().getBanned().isEmpty());
+            Assert.assertEquals(Integer.valueOf(25), properties.getConnectionLimiting().getMaxConnectionRate());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -512,11 +540,6 @@ public class SslTerminationITest extends STMTestBase {
             Assert.fail(e.getMessage());
             removeSimpleLoadBalancer();
         }
-    }
-
-    @After
-    public void tearDownClass() {
-        removeSimpleLoadBalancer();
     }
 
     public static void removeSimpleLoadBalancer() {

@@ -4,12 +4,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.logging.LoggingFeature;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.manager.util.Authenticator;
 import org.rackspace.stingray.client.manager.util.RequestManagerUtil;
 import org.rackspace.stingray.client.util.ClientConstants;
 
@@ -32,8 +34,8 @@ public class StingrayRestClientManager {
     protected Configuration config;
     protected Client client;
     protected boolean isDebugging;
-    protected final String adminUser;
-    protected final String adminKey;
+    protected String adminUser;
+    protected String adminKey;
     protected Integer read_timeout;
     protected Integer connect_timeout;
 
@@ -51,51 +53,54 @@ public class StingrayRestClientManager {
     public StingrayRestClientManager(Configuration config, URI endpoint, Client client, boolean isDebugging,
                                      String adminUser, String adminKey) {
 
+        this.isDebugging = isDebugging;
+
         if (config == null) {
-            config = new StingrayRestClientConfiguration();
+            this.config = new StingrayRestClientConfiguration();
+        } else {
+            this.config = config;
         }
 
         if (endpoint == null) {
-            endpoint = URI.create(config.getString(ClientConfigKeys.stingray_rest_endpoint)
-                    + config.getString(ClientConfigKeys.stingray_base_uri));
+            this.endpoint = URI.create(this.config.getString(ClientConfigKeys.stingray_rest_endpoint)
+                    + this.config.getString(ClientConfigKeys.stingray_base_uri));
+        } else {
+            this.endpoint = endpoint;
         }
 
+        if (adminUser == null) {
+            this.adminUser = this.config.getString(ClientConfigKeys.stingray_admin_user);
+        } else {
+            this.adminUser = adminUser;
+        }
+
+        if (adminKey == null) {
+            try {
+                this.adminKey = CryptoUtil.decrypt(this.config.getString(ClientConfigKeys.stingray_admin_key));
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        } else {
+            this.adminKey = adminKey;
+        }
+
+        try {
+            this.read_timeout = Integer.parseInt(this.config.getString(ClientConfigKeys.stingray_read_timeout));
+        } catch (Exception e) {
+            this.read_timeout = 5000;
+        }
+        try {
+            this.connect_timeout = Integer.parseInt(this.config.getString(ClientConfigKeys.stingray_connect_timeout));
+        } catch (Exception e) {
+            this.connect_timeout = 5000;
+        }
+
+        /** Load or Create the client **/
         if (client == null) {
             this.client = this.createClient(false);
         } else {
             this.client = client;
         }
-
-        if (adminUser == null) {
-            adminUser = config.getString(ClientConfigKeys.stingray_admin_user);
-        }
-
-        if (adminKey == null) {
-            try {
-                adminKey = CryptoUtil.decrypt(config.getString(ClientConfigKeys.stingray_admin_key));
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-
-        this.config = config;
-        this.endpoint = endpoint;
-        this.isDebugging = isDebugging;
-        this.adminUser = adminUser;
-        this.adminKey = adminKey;
-
-        try {
-            this.read_timeout = Integer.parseInt(config.getString(ClientConfigKeys.stingray_read_timeout));
-        } catch (Exception e) {
-            this.read_timeout = 5000;
-        }
-        try {
-            this.connect_timeout = Integer.parseInt(config.getString(ClientConfigKeys.stingray_connect_timeout));
-        } catch (Exception e) {
-            this.connect_timeout = 5000;
-        }
-        this.client.property(ClientProperties.CONNECT_TIMEOUT, this.connect_timeout);
-        this.client.property(ClientProperties.READ_TIMEOUT, this.read_timeout);
     }
 
     /**
@@ -157,8 +162,16 @@ public class StingrayRestClientManager {
         ClientConfig config = new ClientConfig();
         if (isDebugging) config.property(LoggingFeature.LOGGING_FEATURE_LOGGER_NAME, LoggingFeature.Verbosity.PAYLOAD_ANY);
 
-        return ClientBuilder.newBuilder().withConfig(config)
-                .sslContext(ctx).hostnameVerifier((hostname, session) -> true).build();
+        this.client =  ClientBuilder.newBuilder()
+                .withConfig(config).sslContext(ctx)
+                .hostnameVerifier((hostname, session) -> true).build();
+        this.client.register(JacksonFeature.class);
+        this.client.register(new Authenticator(this.adminUser, this.adminKey));
+        this.client.property(ClientProperties.CONNECT_TIMEOUT, this.connect_timeout);
+        this.client.property(ClientProperties.READ_TIMEOUT, this.read_timeout);
+
+        return this.client;
+
     }
 
     public Client createClient(boolean isDebugging) {

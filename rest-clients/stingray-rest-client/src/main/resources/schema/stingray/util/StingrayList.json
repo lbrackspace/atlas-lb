@@ -1,6 +1,6 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
-    "id": "/rvbd/schema/tm/1.0/config/active/list#",
+    "id": "/rvbd-schema/tm/3.4/config/active/list#",
     "title": "StingrayList",
     "description": "List of items by name and the href used to get specific item information.",
     "javaType": "org.rackspace.stingray.client.util.StingrayList",

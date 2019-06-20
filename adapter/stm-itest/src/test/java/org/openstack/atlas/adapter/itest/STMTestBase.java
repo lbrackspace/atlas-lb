@@ -18,6 +18,7 @@ import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
+import org.rackspace.stingray.client.pool.PoolLoadbalancing;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
@@ -91,6 +92,7 @@ public class STMTestBase extends StmTestConstants {
     private static void setUpClusterForIPv6Operations() {
         cluster = new Cluster();
         cluster.setClusterIpv6Cidr("fd24:f480:ce44:91bc::/64");
+        config.getTrafficManagerHost().setCluster(cluster);
     }
 
     protected static void setupIvars() {
@@ -198,7 +200,7 @@ public class STMTestBase extends StmTestConstants {
             pool = stmClient.getPool(loadBalancerName());
             Assert.assertNotNull(pool);
             Assert.assertEquals(0, pool.getProperties().getBasic().getMonitors().size());
-            Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoadBalancing().getAlgorithm());
+            Assert.assertEquals(PoolLoadbalancing.Algorithm.fromValue(lb.getAlgorithm().name().toLowerCase()), pool.getProperties().getLoadBalancing().getAlgorithm());
 
             TrafficIp vip;
             for (String v : vs.getProperties().getBasic().getListenOnTrafficIps()) {

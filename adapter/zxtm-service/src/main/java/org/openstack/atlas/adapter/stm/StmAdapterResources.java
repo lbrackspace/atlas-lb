@@ -471,7 +471,7 @@ public class StmAdapterResources {
             PersistenceProperties properties = new PersistenceProperties();
             PersistenceBasic basic = new PersistenceBasic();
 
-            basic.setType(StmConstants.HTTP_COOKIE);
+            basic.setType(PersistenceBasic.Type.COOKIE);
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
@@ -494,7 +494,7 @@ public class StmAdapterResources {
             PersistenceProperties properties = new PersistenceProperties();
             PersistenceBasic basic = new PersistenceBasic();
 
-            basic.setType(StmConstants.SOURCE_IP);
+            basic.setType(PersistenceBasic.Type.IP);
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
@@ -517,7 +517,7 @@ public class StmAdapterResources {
             PersistenceProperties properties = new PersistenceProperties();
             PersistenceBasic basic = new PersistenceBasic();
 
-            basic.setType(StmConstants.SSL_ID);
+            basic.setType(PersistenceBasic.Type.SSL);
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {

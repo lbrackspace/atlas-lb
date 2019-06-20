@@ -1,9 +1,6 @@
 package org.openstack.atlas.adapter.itest;
 
-import org.junit.Assert;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.rackspace.stingray.client.StingrayRestClient;
@@ -15,17 +12,22 @@ import java.io.IOException;
 
 public class TrafficScriptITest extends STMTestBase {
 
+
     @BeforeClass
-    public static void setupClass() throws InterruptedException {
+    public static void clientInit() {
+        stmClient = new StingrayRestClient();
+    }
+
+    @Before
+    public void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        stmClient.destroy();
+        teardownEverything();
     }
-
 
     @Test
     public void testAddRateLimitScript() throws StingrayRestClientObjectNotFoundException, StingrayRestClientException, IOException {

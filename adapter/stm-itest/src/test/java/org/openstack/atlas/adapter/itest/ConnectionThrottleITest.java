@@ -1,14 +1,12 @@
 package org.openstack.atlas.adapter.itest;
 
-import org.junit.Assert;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.AccessListType;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
+import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
@@ -27,10 +25,16 @@ public class ConnectionThrottleITest extends STMTestBase {
     private int maxConnectionRate;
     private int expectedMax10Connections;
 
+    @BeforeClass
+    public static void clientInit() {
+        stmClient = new StingrayRestClient();
+    }
+
     @Before
     public void standUp() throws InterruptedException, InsufficientRequestException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
+
         createSimpleLoadBalancer();
 
         limits = new ConnectionLimit();
@@ -40,10 +44,15 @@ public class ConnectionThrottleITest extends STMTestBase {
     }
 
     @After
-    public void tearDown() {
+    public void resetAfter() {
         removeLoadBalancer();
-        stmClient.destroy();
     }
+
+    @AfterClass
+    public static void tearDown() {
+        teardownEverything();
+    }
+
 
     @Test
     public void createAndVerifyBasicConnectionThrottle() throws Exception {
@@ -58,12 +67,14 @@ public class ConnectionThrottleITest extends STMTestBase {
         verifyConnectionThrottle();
     }
 
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    @Test
     public void deleteConnectionThrottleDeletingProtection() throws Exception {
+        // An updated to accesslist or connection throttle shouldn't remove
+        // protection class. An explicit call to remove protection happens during lb removal
         setupConnectionThrottle();
         verifyConnectionThrottle();
         deleteConnectionThrottle();
-        stmClient.getProtection(vsName);
+        verifyEmptyConnectionThrottle();
     }
 
     @Test
@@ -104,7 +115,8 @@ public class ConnectionThrottleITest extends STMTestBase {
         this.maxConnections = maxConnections;
         this.minConnections = minConnections;
         this.maxConnectionRate = maxConnectionRate;
-        expectedMax10Connections = 10 * maxConnections;
+        // max10 is ignored, default is 0
+        expectedMax10Connections = 0;
         limits.setRateInterval(rateInterval);
         limits.setMaxConnections(maxConnections);
         limits.setMinConnections(minConnections);

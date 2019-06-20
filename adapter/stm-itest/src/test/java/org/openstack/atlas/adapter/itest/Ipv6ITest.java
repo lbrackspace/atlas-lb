@@ -1,10 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
@@ -13,6 +10,7 @@ import org.openstack.atlas.service.domain.entities.VirtualIpv6;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
+import org.rackspace.stingray.client.pool.PoolLoadbalancing;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
@@ -29,14 +27,19 @@ public class Ipv6ITest extends STMTestBase {
     protected static VirtualIpv6 vip1;
 
     @BeforeClass
-    public static void setupClass() throws InterruptedException {
+    public static void clientInit() {
+        stmClient = new StingrayRestClient();
+    }
+
+    @Before
+    public void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        stmClient.destroy();
+        teardownEverything();
     }
 
     public static void removeIpv6LoadBalancer() throws Exception {
@@ -128,7 +131,8 @@ public class Ipv6ITest extends STMTestBase {
             pool = tclient.getPool(loadBalancerName());
             Assert.assertNotNull(pool);
             Assert.assertEquals(0, pool.getProperties().getBasic().getMonitors().size());
-            Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoadBalancing().getAlgorithm());
+            Assert.assertEquals(PoolLoadbalancing.Algorithm.fromValue(lb.getAlgorithm().name().toLowerCase()),
+                    pool.getProperties().getLoadBalancing().getAlgorithm());
 
             TrafficIp vip;
             for (String v : vs.getProperties().getBasic().getListenOnTrafficIps()) {

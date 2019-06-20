@@ -1,6 +1,6 @@
 {
     "$schema":       "http://json-schema.org/draft-04/schema#",
-    "id":            "/rvbd/schema/tm/1.0/config/active/util#factory",
+    "id":            "/rvbd-schema/tm/3.4/config/active/util#factory",
     "title":         "Pool",
     "description":   "The ENUM factory for the Stingray Rest API",
     "javaType" :     "org.rackspace.stingray.client.util.EnumFactory",

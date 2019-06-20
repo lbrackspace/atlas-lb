@@ -1,21 +1,20 @@
 {
-   "$schema":       "http://json-schema.org/draft-03/schema#",
-   "id":            "/rvbd/schema/tm/1.0/config/active/actionprogs#",
-   "title":         "Action Program",
-   "description":   "This is a program or script that can be referenced and used by actions of type 'Program'",
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/3.4/config/active/action_programs#update",
+   "title":                 "Action Program",
+   "description":           "This is a program or script that can be referenced and used by actions of type 'Program'",
    "javaType" :     "org.rackspace.stingray.client.action.ActionScript",
-   "type":          "object",
-   "required":      false,
-
+   "type":                  "object",
+   "additionalProperties":  false,
+   
    "properties": {
       "javaType" :     "org.rackspace.stingray.client.action.ActionScriptProperties",
       "properties": {
          "type":                  "object",
-         "required":              true,
          "additionalProperties":  false,
-
+         
          "properties": {
-
+            
          }
       }
    }

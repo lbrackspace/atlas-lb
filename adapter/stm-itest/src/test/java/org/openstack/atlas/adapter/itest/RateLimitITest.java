@@ -1,10 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import org.junit.Assert;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
@@ -19,16 +16,25 @@ import java.rmi.RemoteException;
 public class RateLimitITest extends STMTestBase {
 
     @BeforeClass
-    public static void setupClass() throws InterruptedException {
+    public static void clientInit() {
+        stmClient = new StingrayRestClient();
+    }
+
+    @Before
+    public void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
         createSimpleLoadBalancer();
     }
 
+    @After
+    public void destroy() {
+        removeLoadBalancer();
+    }
+
     @AfterClass
     public static void tearDownClass() {
-        removeLoadBalancer();
-        stmClient.destroy();
+        teardownEverything();
     }
 
     // Test everything together for completeness I guess?

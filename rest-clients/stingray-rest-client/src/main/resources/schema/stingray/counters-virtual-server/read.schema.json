@@ -1,11 +1,12 @@
 {
    "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/2.0/status/local_tm/statistics/virtual_servers#read",
+   "id":                    "/rvbd-schema/tm/3.4/status/local_tm/statistics/virtual_servers#read",
    "title":                 "Virtual servers",
    "description":           "Virtual servers statistics values.",
    "javaType" :             "org.rackspace.stingray.client.counters.VirtualServerStats",
    "type":                  "object",
    "additionalProperties":  true,
+   "required":              ["statistics"],
    
    "properties": {
       "statistics": {
@@ -24,7 +25,8 @@
             "protocol": {
                "description":   "The protocol the virtual server is operating.",
                
-               "type":          "string"
+               "type":          "string",
+               "enum":          ["http","https","ftp","imaps","imapv2","imapv3","imapv4","pop3","pop3s","smtp","ldap","ldaps","telnet","sslforwarding","udpstreaming","udp","dns","genericserverfirst","genericclientfirst","dnstcp","sipudp","siptcp","rtsp"]
             },
             
             "bytes_in_lo": {
@@ -236,6 +238,20 @@
             
             "cert_status_responses": {
                "description":   "Number of incoming TLS handshakes for this virtual server to which certificate status responses were attached.",
+               
+               "type":          "integer",
+               "minimum":       0
+            },
+            
+            "max_duration_timed_out": {
+               "description":   "Connections closed by this virtual server because the 'max_transaction_duration' interval was exceeded.",
+               
+               "type":          "integer",
+               "minimum":       0
+            },
+            
+            "processing_timed_out": {
+               "description":   "Connections closed by this virtual server because the 'timeout' interval was exceeded while waiting for rules or external processing.",
                
                "type":          "integer",
                "minimum":       0

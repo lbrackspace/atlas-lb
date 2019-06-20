@@ -12,6 +12,8 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.client.config.ClientConfigKeys;
+import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
@@ -41,10 +43,11 @@ public class StingrayRestClientITest {
 
         @Before
         public void standUp()  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+            stingrayRestClient = new StingrayRestClient();
             stingrayRestClient.setRequestManager(requestManager);
             Children children = new Children();
             when(mockedResponse.readEntity((Class<Object>) Matchers.any())).thenReturn(children);
-            when(requestManager.getList(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any(), Matchers.<String>any(), Matchers.<String>any())).thenReturn(mockedResponse);
+            when(requestManager.getList(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any())).thenReturn(mockedResponse);
         }
 
         @Test
@@ -73,7 +76,7 @@ public class StingrayRestClientITest {
             bandwidth = new Bandwidth();
 
             when(mockedResponse.readEntity(Bandwidth.class)).thenReturn(bandwidth);
-            when(requestManager.getItem(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any(), Matchers.<MediaType>any(),  Matchers.<String>any(),  Matchers.<String>any())).thenReturn(mockedResponse);
+            when(requestManager.getItem(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any(), Matchers.<MediaType>any())).thenReturn(mockedResponse);
         }
 
 
@@ -106,7 +109,7 @@ public class StingrayRestClientITest {
             bandwidth = new Bandwidth();
 
             when(mockedResponse.readEntity(Bandwidth.class)).thenReturn(bandwidth);
-            when(requestManager.updateItem(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any(), Matchers.<Bandwidth>any(), Matchers.<MediaType>any(),  Matchers.<String>any(),  Matchers.<String>any())).thenReturn(mockedResponse);
+            when(requestManager.updateItem(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any(), Matchers.<Bandwidth>any(), Matchers.<MediaType>any())).thenReturn(mockedResponse);
         }
 
 
@@ -137,7 +140,7 @@ public class StingrayRestClientITest {
             stingrayRestClient.setRequestManager(requestManager);
             bandwidth = new Bandwidth();
             Response rnc = Response.noContent().build();
-            when(requestManager.deleteItem(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any(),  Matchers.<String>any(),  Matchers.<String>any())).thenReturn(rnc);
+            when(requestManager.deleteItem(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any())).thenReturn(rnc);
         }
 
 

@@ -1,201 +1,201 @@
 {
    "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/2.0/config/active/protection#update",
+   "id":                    "/rvbd-schema/tm/3.4/config/active/protection#update",
    "title":                 "Protection Class",
    "description":           "A protection class specifies the level of protection against network attacks for a virtual server.",
    "javaType" :     "org.rackspace.stingray.client.protection.Protection",
 
    "type":                  "object",
    "additionalProperties":  false,
-
+   
    "properties": {
-
+      
       "properties": {
          "javaType" :     "org.rackspace.stingray.client.protection.ProtectionProperties",
 
          "type":                  "object",
          "additionalProperties":  false,
-
+         
          "properties": {
-
+            
             "basic": {
                "javaType" :     "org.rackspace.stingray.client.protection.ProtectionBasic",
 
                "type":                  "object",
                "additionalProperties":  false,
-
+               
                "properties": {
                   "debug": {
                      "description":   "Whether or not to output verbose logging.",
-
+                     
                      "type":          "boolean"
                   },
-
+                  
                   "enabled": {
                      "description":   "Enable or disable this service protection class.",
-
+                     
                      "type":          "boolean"
                   },
-
+                  
                   "log_time": {
                      "description":   "Log service protection messages at these intervals. If set to \"0\" no messages will be logged and no alerts will be sent.",
-
+                     
                      "type":          "integer",
                      "minimum":       0
                   },
-
+                  
                   "note": {
                      "description":   "A description of the service protection class.",
-
+                     
                      "type":          "string"
                   },
-
+                  
                   "per_process_connection_count": {
-                     "description":   "Whether or not each process within a Traffic Manager counts connections independently, when limiting the maximum simultaneous connections allowed from one IP address. If set to \"Yes\", each process individually accepts no more than \"max_1_connections\" connections from each IP address.  Each Traffic Manager usually has several processes (typically one per available CPU core).  Therefore, across a Traffic Manager as a whole, total accepted connections from one IP address may also reach several times the \"max_1_connections\" limit. If set to \"No\", counts within a Traffic manager are combined, such that each Traffic Manager as a whole will accept no more than \"max_1_connections\" connections from each IP address.  When counts are combined, \"max_10_connections\" and \" min_connections\" limits are not available.",
-
+                     "description":   "Whether simultaneous connection counting and limits are per-process. (Each Traffic Manager typically has several processes: one process per available CPU core.) \n If \"Yes\", a connecting IP address may make that many connections to each process within a Traffic Manager. If \"No\", a connecting IP address may make that many connections to each Traffic Manager as a whole.",
+                     
                      "type":          "boolean"
                   },
-
+                  
                   "rule": {
                      "description":   "A TrafficScript rule that will be run on the connection after the service protection criteria have been evaluated.  This rule will be executed prior to normal rules configured for the virtual server.",
-
+                     
                      "type":          "string"
                   },
-
+                  
                   "testing": {
                      "description":   "Place the service protection class into testing mode. (Log when this class would have dropped a connection, but allow all connections through).",
-
+                     
                      "type":          "boolean"
                   }
                }
             },
-
+            
             "access_restriction": {
                "javaType" :     "org.rackspace.stingray.client.protection.ProtectionAccessRestriction",
 
                "type":                  "object",
                "additionalProperties":  false,
-
+               
                "properties": {
                   "allowed": {
                      "description":   "Always allow access to these IP addresses. This overrides the connection limits for these machines, but does not stop other restrictions such as HTTP validity checks.",
-
+                     
                      "type":          "array",
                      "uniqueItems":   true,
-
+                     
                      "items": {
                         "type":          "string"
                      }
                   },
-
+                  
                   "banned": {
                      "description":   "Disallow access to these IP addresses.",
-
+                     
                      "type":          "array",
                      "uniqueItems":   true,
-
+                     
                      "items": {
                         "type":          "string"
                      }
                   }
                }
             },
-
+            
             "connection_limiting": {
                "javaType" :     "org.rackspace.stingray.client.protection.ProtectionConnectionLimiting",
 
                "type":                  "object",
                "additionalProperties":  false,
-
+               
                "properties": {
                   "max_10_connections": {
-                     "description":   "Maximum simultaneous connections allowed from the top ten busiest IP addresses.  The setting is ignored if \"per_process_connection_count\" is \"No\".",
-
+                     "description":   "Additional limit on maximum simultaneous connections from the top 10 busiest connecting IP addresses combined.  The value should be between 1 and 10 times the \"max_1_connections\" limit. \n (This limit is disabled if \"per_process_connection_count\" is \"No\", or \"max_1_connections\" is \"0\", or \"min_connections\" is \"0\".)",
+                     
                      "type":          "integer",
                      "minimum":       0
                   },
-
+                  
                   "max_1_connections": {
-                     "description":   "Maximum simultaneous connections allowed from one IP address.  Set to \"0\" to allow unlimited simultaneous connections.",
-
+                     "description":   "Maximum simultaneous connections each connecting IP address is allowed. Set to \"0\" to disable this limit.",
+                     
                      "type":          "integer",
                      "minimum":       0
                   },
-
+                  
                   "max_connection_rate": {
-                     "description":   "Maximum number of connections from one IP address in the \"rate_timer\" interval.  Set to \"0\" to make this unlimited. If applied to an HTTP Virtual Server each request sent on a connection that is kept alive will also be considered.  Each process within a Traffic Manager applies the rate limit independently.",
-
+                     "description":   "Maximum number of new connections each connecting IP address is allowed to make in the \"rate_timer\" interval.  Set to \"0\" to disable this limit. If applied to an HTTP Virtual Server each request sent on a connection that is kept alive counts as a new connection.  The rate limit is per process: each process within a Traffic Manager accepts new connections from the connecting IP address at this rate. (Each Traffic Manager typically has several processes: one process per available CPU core).",
+                     
                      "type":          "integer",
                      "minimum":       0
                   },
-
+                  
                   "min_connections": {
-                     "description":   "Always allow at least this number of simultaneous connections from each IP address before applying restrictions.  Set to \"0\" to allow unlimited simultaneous connections.  The setting is ignored if \"per_process_connection_count\" is \"No\".",
-
+                     "description":   "Entry threshold for the \"max_10_connections\" limit: the \"max_10_connections\" limit is not applied to connecting IP addresses with this many or fewer simultaneous connections. \n Setting to \"0\" disables both the \"max_1_connections\" and \"max_10_connections\" limits, if \"per_process_connection_count\" is \"Yes\". (If \"per_process_connection_count\" is \"No\", this setting is ignored.)",
+                     
                      "type":          "integer",
                      "minimum":       0
                   },
-
+                  
                   "rate_timer": {
                      "description":   "How frequently the \"max_connection_rate\" is assessed. For example, a value of \"1\" (second) will impose a limit of \"max_connection_rate\" connections per second; a value of \"60\" will impose a limit of \"max_connection_rate\" connections per minute. The valid range is 1-99999 seconds.",
-
+                     
                      "type":          "integer",
                      "minimum":       1,
                      "maximum":       99999
                   }
                }
             },
-
+            
             "http": {
                "javaType" :     "org.rackspace.stingray.client.protection.ProtectionHttp",
 
                "type":                  "object",
                "additionalProperties":  false,
-
+               
                "properties": {
                   "check_rfc2396": {
                      "description":   "Whether or not requests with poorly-formed URLs be should be rejected. This tests URL compliance as defined in RFC2396.  Note that enabling this may block some older, non-conforming web browsers.",
-
+                     
                      "type":          "boolean"
                   },
-
+                  
                   "max_body_length": {
                      "description":   "Maximum permitted length of HTTP request body data, set to \"0\" to disable the limit.",
-
+                     
                      "type":          "integer",
                      "minimum":       0
                   },
-
+                  
                   "max_header_length": {
                      "description":   "Maximum permitted length of a single HTTP request header (key and value), set to \"0\" to disable the limit.",
-
+                     
                      "type":          "integer",
                      "minimum":       0
                   },
-
+                  
                   "max_request_length": {
                      "description":   "Maximum permitted size of all the HTTP request headers, set to \"0\" to disable the limit.",
-
+                     
                      "type":          "integer",
                      "minimum":       0
                   },
-
+                  
                   "max_url_length": {
                      "description":   "Maximum permitted URL length, set to \"0\" to disable the limit.",
-
+                     
                      "type":          "integer",
                      "minimum":       0
                   },
-
+                  
                   "reject_binary": {
                      "description":   "Whether or not URLs and HTTP request headers that contain binary data (after decoding) should be rejected.",
-
+                     
                      "type":          "boolean"
                   },
-
+                  
                   "send_error_page": {
                      "description":   "This setting tells the traffic manager to send an HTTP error message if a connection fails the service protection tests, instead of just dropping it. Details of which HTTP response will be sent when particular tests fail can be found in the Help section for this page.",
-
+                     
                      "type":          "boolean"
                   }
                }

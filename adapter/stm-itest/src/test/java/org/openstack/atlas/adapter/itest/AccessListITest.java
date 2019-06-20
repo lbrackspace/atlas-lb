@@ -7,6 +7,7 @@ import org.openstack.atlas.service.domain.entities.AccessListType;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.protection.Protection;
@@ -19,6 +20,11 @@ public class AccessListITest extends STMTestBase {
     Set<AccessList> list;
     AccessList item1;
     AccessList item2;
+
+    @BeforeClass
+    public static void clientInit() {
+        stmClient = new StingrayRestClient();
+    }
 
     @Before
     public void setUp() {
@@ -221,7 +227,12 @@ public class AccessListITest extends STMTestBase {
     }
 
     @After
-    public void tearDown() {
+    public void resetAfter() {
+        removeLoadBalancer();
+    }
+
+    @AfterClass
+    public static void tearDown() {
         teardownEverything();
     }
 }

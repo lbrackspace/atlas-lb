@@ -4,6 +4,9 @@ import org.junit.*;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.Node;
+import org.openstack.atlas.service.domain.entities.NodeType;
+import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.pool.PoolNodesTable;
 
 import java.util.*;
 
@@ -14,24 +17,30 @@ public class SetNodesITest extends STMTestBase {
     private Set<Node> createdNodes;
 
     @BeforeClass
-    public static void setupClass() throws InterruptedException {
-        Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
-        setupIvars();
-        createSimpleLoadBalancer();
+    public static void setupClass() {
+        stmClient = new StingrayRestClient();
+    }
+
+    @After
+    public void destroy() {
+        removeLoadBalancer();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        removeLoadBalancer();
-        stmClient.destroy();
+        teardownEverything();
     }
 
     @Before
     public void standUp() throws Exception {
+        Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
+        setupIvars();
+        createSimpleLoadBalancer();
         vsName = ZxtmNameBuilder.genVSName(lb);
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
         stmAdapter.updateLoadBalancer(config, lb, lb);
     }
+
 
     private void setNodes() throws Exception {
         int node3Port = 81;
@@ -85,9 +94,38 @@ public class SetNodesITest extends STMTestBase {
         int expectedDisabledNodes = 0;
         int expectedDrainingNodes = 0;
         int expectedEnabledNodes = 0;
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+        Set<String> setOfDisabledNodes = new HashSet<>();
+        Set<String> setOfDrainingNodes = new HashSet<>();
+        Set<String> setOfEnabledNodes = new HashSet<>();
+
+        List<PoolNodesTable> poolNodesTable = stmClient.getPool(vsName).getProperties().getBasic().getNodesTable();
+        Assert.assertEquals(3, poolNodesTable.size());
+
+        for (PoolNodesTable pnt : poolNodesTable) {
+            for (Node lbn : lb.getNodes()) {
+                if (pnt.getNode().contains(lbn.getIpAddress())) {
+                    Assert.assertEquals(getFullAddress(lbn), pnt.getNode());
+                    Assert.assertEquals(lbn.getWeight(), pnt.getWeight());
+                    if (lbn.getType() == NodeType.PRIMARY) {
+                        Assert.assertEquals(Integer.valueOf(2), pnt.getPriority());
+                    } else {
+                        Assert.assertEquals(Integer.valueOf(1), pnt.getPriority());
+                    }
+                    String condition = lbn.getCondition().toString().equals("ENABLED") ? "active" : lbn.getCondition().toString().toLowerCase();
+                    Assert.assertEquals(PoolNodesTable.State.fromValue(condition), pnt.getState());
+                    if (pnt.getState() == PoolNodesTable.State.ACTIVE) {
+                        setOfEnabledNodes.add(getFullAddress(lbn));
+                    }
+                    if (pnt.getState() == PoolNodesTable.State.DISABLED) {
+                        setOfDisabledNodes.add(getFullAddress(lbn));
+                    }
+                    if (pnt.getState() == PoolNodesTable.State.DRAINING) {
+                        setOfDrainingNodes.add(getFullAddress(lbn));
+                        setOfEnabledNodes.add(getFullAddress(lbn));
+                    }
+                }
+            }
+        }
 
         for (Node node : createdNodes) {
             if (node.getCondition() == DRAINING) {
@@ -119,9 +157,38 @@ public class SetNodesITest extends STMTestBase {
 
         stmAdapter.removeNode(config, lb, nodeToRemove);
 
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+        Set<String> setOfDisabledNodes = new HashSet<>();
+        Set<String> setOfDrainingNodes = new HashSet<>();
+        Set<String> setOfEnabledNodes = new HashSet<>();
+
+        List<PoolNodesTable> poolNodesTable = stmClient.getPool(vsName).getProperties().getBasic().getNodesTable();
+        Assert.assertEquals(2, poolNodesTable.size());
+
+        for (PoolNodesTable pnt : poolNodesTable) {
+            for (Node lbn : lb.getNodes()) {
+                if (pnt.getNode().contains(lbn.getIpAddress())) {
+                    Assert.assertEquals(getFullAddress(lbn), pnt.getNode());
+                    Assert.assertEquals(lbn.getWeight(), pnt.getWeight());
+                    if (lbn.getType() == NodeType.PRIMARY) {
+                        Assert.assertEquals(Integer.valueOf(2), pnt.getPriority());
+                    } else {
+                        Assert.assertEquals(Integer.valueOf(1), pnt.getPriority());
+                    }
+                    String condition = lbn.getCondition().toString().equals("ENABLED") ? "active" : lbn.getCondition().toString().toLowerCase();
+                    Assert.assertEquals(PoolNodesTable.State.fromValue(condition), pnt.getState());
+                    if (pnt.getState() == PoolNodesTable.State.ACTIVE) {
+                        setOfEnabledNodes.add(getFullAddress(lbn));
+                    }
+                    if (pnt.getState() == PoolNodesTable.State.DISABLED) {
+                        setOfDisabledNodes.add(getFullAddress(lbn));
+                    }
+                    if (pnt.getState() == PoolNodesTable.State.DRAINING) {
+                        setOfDrainingNodes.add(getFullAddress(lbn));
+                        setOfEnabledNodes.add(getFullAddress(lbn));
+                    }
+                }
+            }
+        }
 
         int expectedDisabledNodes = 0;
         int expectedDrainingNodes = 0;
@@ -161,9 +228,38 @@ public class SetNodesITest extends STMTestBase {
 
         stmAdapter.removeNodes(config, lb, nodesToRemove);
 
-        Set<String> setOfDisabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getDisabled();
-        Set<String> setOfDrainingNodes = stmClient.getPool(vsName).getProperties().getBasic().getDraining();
-        Set<String> setOfEnabledNodes = stmClient.getPool(vsName).getProperties().getBasic().getNodes();
+        Set<String> setOfDisabledNodes = new HashSet<>();
+        Set<String> setOfDrainingNodes = new HashSet<>();
+        Set<String> setOfEnabledNodes = new HashSet<>();
+
+        List<PoolNodesTable> poolNodesTable = stmClient.getPool(vsName).getProperties().getBasic().getNodesTable();
+        Assert.assertEquals(1, poolNodesTable.size());
+
+        for (PoolNodesTable pnt : poolNodesTable) {
+            for (Node lbn : lb.getNodes()) {
+                if (pnt.getNode().contains(lbn.getIpAddress())) {
+                    Assert.assertEquals(getFullAddress(lbn), pnt.getNode());
+                    Assert.assertEquals(lbn.getWeight(), pnt.getWeight());
+                    if (lbn.getType() == NodeType.PRIMARY) {
+                        Assert.assertEquals(Integer.valueOf(2), pnt.getPriority());
+                    } else {
+                        Assert.assertEquals(Integer.valueOf(1), pnt.getPriority());
+                    }
+                    String condition = lbn.getCondition().toString().equals("ENABLED") ? "active" : lbn.getCondition().toString().toLowerCase();
+                    Assert.assertEquals(PoolNodesTable.State.fromValue(condition), pnt.getState());
+                    if (pnt.getState() == PoolNodesTable.State.ACTIVE) {
+                        setOfEnabledNodes.add(getFullAddress(lbn));
+                    }
+                    if (pnt.getState() == PoolNodesTable.State.DISABLED) {
+                        setOfDisabledNodes.add(getFullAddress(lbn));
+                    }
+                    if (pnt.getState() == PoolNodesTable.State.DRAINING) {
+                        setOfDrainingNodes.add(getFullAddress(lbn));
+                        setOfEnabledNodes.add(getFullAddress(lbn));
+                    }
+                }
+            }
+        }
 
         int expectedDisabledNodes = 0;
         int expectedDrainingNodes = 0;

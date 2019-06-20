@@ -10,15 +10,15 @@ import java.net.URI;
 
 public interface RequestManager {
 
-    Response getList(URI endpoint, Client client, String path, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
+    Response getList(URI endpoint, Client client, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
 
-    Response getItem(URI endpoint, Client client, String path, MediaType cType, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
+    Response getItem(URI endpoint, Client client, String path, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
 
-    Response createItem(URI endpoint, Client client, String path, Object object, MediaType cType, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
+    Response createItem(URI endpoint, Client client, String path, Object object, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
 
-    Response updateItem(URI endpoint, Client client, String path, Object object, MediaType cType, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
+    Response updateItem(URI endpoint, Client client, String path, Object object, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
 
-    Response deleteItem(URI endpoint, Client client, String path, String adminUser, String adminKey) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
+    Response deleteItem(URI endpoint, Client client, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException;
 
 
 }

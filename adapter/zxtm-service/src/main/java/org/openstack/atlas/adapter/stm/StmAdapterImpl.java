@@ -195,6 +195,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
             String vsName = vsNames.get(vsType);
 
             if (vsType == VSType.REDIRECT_VS) {
+                // TODO: looks like we need to handle redirect here
                 getResources().deleteVirtualServer(client, vsName);
             } else {
                 getResources().deleteVirtualServer(client, vsName);
@@ -528,7 +529,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
         VirtualServer createdServer = translator.getcVServer();
         VirtualServerHttp http = new VirtualServerHttp();
-        http.setLocationRewrite(EnumFactory.AcceptFrom.NEVER.toString());
+//        http.setLocationRewrite(EnumFactory.AcceptFrom.NEVER.toString());
+        http.setLocationRewrite(VirtualServerHttp.LocationRewrite.NEVER);
         createdServer.getProperties().setHttp(http);
         if (loadBalancer.isSecureOnly()) {
             VirtualServer virtualServer;

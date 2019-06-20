@@ -1,6 +1,7 @@
 package org.openstack.atlas.adapter.helpers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zxtm.service.client.PoolPriorityValueDefinition;
 import com.zxtm.service.client.VirtualServerProtocol;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
@@ -99,7 +100,7 @@ public class ResourceTranslator {
         // Redirection specific
         basic.setPort(80);
         basic.setPool("discard");
-        basic.setProtocol(VirtualServerProtocol.http.getValue());
+        basic.setProtocol(VirtualServerBasic.Protocol.HTTP);
 
         log = new VirtualServerLog();
         log.setEnabled(false);
@@ -150,7 +151,7 @@ public class ResourceTranslator {
             if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
                 ssl.setAddHttpHeaders(true);
                 VirtualServerHttp virtualServerHttp = new VirtualServerHttp();
-                virtualServerHttp.setLocationRewrite("never");
+                virtualServerHttp.setLocationRewrite(VirtualServerHttp.LocationRewrite.NEVER);
                 properties.setHttp(virtualServerHttp);
             }
         } else {
@@ -163,7 +164,7 @@ public class ResourceTranslator {
         }
 
         basic.setPool(ZxtmNameBuilder.genVSName(loadBalancer));
-        basic.setProtocol(ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol()).getValue());
+        basic.setProtocol(VirtualServerBasic.Protocol.fromValue(ZxtmConversionUtils.mapProtocol(loadBalancer.getProtocol()).getValue()));
 
         //protection class settings
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null) {
@@ -307,42 +308,65 @@ public class ResourceTranslator {
         cPool = new Pool();
         PoolProperties properties = new PoolProperties();
         PoolBasic basic = new PoolBasic();
-        List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
+        List<PoolNodesTable> poolNodesTable = new ArrayList<>();
+//        List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
         PoolLoadbalancing poollb = new PoolLoadbalancing();
 
         Set<Node> nodes = loadBalancer.getNodes();
+        nodes.addAll(queLb.getNodes());
         Set<Node> enabledNodes = new HashSet<Node>();
 
-
-        enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.ENABLED));
-        enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING));
-
-        basic.setNodes(NodeHelper.getNodeStrValue(enabledNodes));
-        basic.setDraining(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING)));
-        basic.setDisabled(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DISABLED)));
         basic.setPassiveMonitoring(false);
-
-
-        String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
-
-        if (queLb.getNodes() != null && !queLb.getNodes().isEmpty()) {
-            if (lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_ROUND_ROBIN.toString())
-                    || lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_LEAST_CONNECTIONS.toString())) {
-                PoolNodeWeight nw;
-                for (Node n : nodes) {
-                    nw = new PoolNodeWeight();
-                    nw.setNode(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
-                    nw.setWeight(n.getWeight());
-                    weights.add(nw);
-                }
-                poollb.setNodeWeighting(weights);
-            }
-        }
 
         ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(nodes);
         poollb.setPriorityEnabled(znpc.hasSecondary());
-        poollb.setPriorityValues(znpc.getPriorityValuesSet());
-        poollb.setAlgorithm(lbAlgo);
+
+        String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
+
+        for (Node node : nodes) {
+            PoolNodesTable pnt = new PoolNodesTable();
+            pnt.setNode(IpHelper.createZeusIpString(node.getIpAddress(), node.getPort()));
+            pnt.setPriority(node.getType() == NodeType.PRIMARY ? 2 : 1);
+            String condition = node.getCondition().toString() == "ENABLED" ? "active" : node.getCondition().toString().toLowerCase();
+            pnt.setState(PoolNodesTable.State.fromValue(condition));
+            if (lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_ROUND_ROBIN.toString())
+                    || lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_LEAST_CONNECTIONS.toString())) {
+                pnt.setWeight(node.getWeight());
+            }
+            poolNodesTable.add(pnt);
+//            pnt.setSourceIp();
+        }
+
+
+//
+//        enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.ENABLED));
+//        enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING));
+//
+//        basic.setNodes(NodeHelper.getNodeStrValue(enabledNodes));
+//        basic.setDraining(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING)));
+//        basic.setDisabled(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DISABLED)));
+
+
+//        String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
+//
+//        if (queLb.getNodes() != null && !queLb.getNodes().isEmpty()) {
+//            if (lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_ROUND_ROBIN.toString())
+//                    || lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_LEAST_CONNECTIONS.toString())) {
+//                PoolNodeWeight nw;
+//                for (Node n : nodes) {
+//                    nw = new PoolNodeWeight();
+//                    nw.setNode(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
+//                    nw.setWeight(n.getWeight());
+//                    weights.add(nw);
+//                }
+//                poollb.setNodeWeighting(weights);
+//            }
+//        }
+
+
+//        poollb.setPriorityValues(znpc.getPriorityValuesSet());
+//        poollb.setPriorityNodes(znpc.getPriorityValuesSet());
+        poollb.setAlgorithm(PoolLoadbalancing.Algorithm.fromValue(lbAlgo));
 
         PoolConnection connection = null;
         if (queLb.getTimeout() != null) {
@@ -365,6 +389,7 @@ public class ResourceTranslator {
             basic.setBandwidthClass(null);
         }
 
+        basic.setNodesTable(poolNodesTable);
         properties.setBasic(basic);
         properties.setLoadBalancing(poollb);
         properties.setConnection(connection);
@@ -386,9 +411,9 @@ public class ResourceTranslator {
         basic.setFailures(hm.getAttemptsBeforeDeactivation());
 
         if (hm.getType().equals(HealthMonitorType.CONNECT)) {
-            basic.setType(EnumFactory.AcceptFrom.CONNECT.toString());
+            basic.setType(MonitorBasic.Type.CONNECT);
         } else if (hm.getType().equals(HealthMonitorType.HTTP) || hm.getType().equals(HealthMonitorType.HTTPS)) {
-            basic.setType(EnumFactory.AcceptFrom.HTTP.toString());
+            basic.setType(MonitorBasic.Type.HTTP);
             http = new MonitorHttp();
             http.setPath(hm.getPath());
             http.setStatusRegex(hm.getStatusRegex());
@@ -439,16 +464,18 @@ public class ResourceTranslator {
             if (maxConnections == null) maxConnections = 0;
             limiting.setMax1Connections(maxConnections);
 
+            // TODO: Need to verify what/if this bug still exists. Go forward as if it's not the case..
             /* Zeus bug requires us to set per-process to false and ignore most of these settings */
-            basic.setPerProcessConnectionCount(false);
-            limiting.setMinConnections(0);
-            limiting.setRateTimer(1);
-            limiting.setMaxConnectionRate(0);
+            basic.setPerProcessConnectionCount(true);
+//            limiting.setMinConnections(0);
+//            limiting.setRateTimer(1);
+//            limiting.setMaxConnectionRate(0);
+//            limiting.setMax10Connections(0);
+            limiting.setMinConnections(limits.getMinConnections());
+            limiting.setRateTimer(limits.getRateInterval());
+            limiting.setMaxConnectionRate(limits.getMaxConnectionRate());
+            // We wont be using this, but it must be set to 0 as our default
             limiting.setMax10Connections(0);
-            //limiting.setMin_connections(limits.getMinConnections());
-            //limiting.setRate_timer(limits.getRateInterval());
-            //limiting.setMax_connection_rate(limits.getMaxConnectionRate());
-            //limiting.setMax_10_connections(maxConnections * 10);
         } else {
             limiting.setMax1Connections(0);
 

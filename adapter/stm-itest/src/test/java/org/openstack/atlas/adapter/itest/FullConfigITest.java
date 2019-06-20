@@ -1,10 +1,8 @@
 package org.openstack.atlas.adapter.itest;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 import org.openstack.atlas.service.domain.entities.*;
@@ -17,9 +15,11 @@ import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.monitor.Monitor;
+import org.rackspace.stingray.client.monitor.MonitorBasic;
 import org.rackspace.stingray.client.monitor.MonitorHttp;
 import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolNodeWeight;
+import org.rackspace.stingray.client.pool.PoolLoadbalancing;
+import org.rackspace.stingray.client.pool.PoolNodesTable;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.protection.ProtectionAccessRestriction;
 import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
@@ -48,15 +48,25 @@ public class FullConfigITest extends STMTestBase {
      */
 
     @BeforeClass
-    public static void setupClass() throws InterruptedException {
+    public static void clientInit() {
+        client = new StingrayRestClient();
+        stmClient = client;
+    }
+
+    @Before
+    public void standUp() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
-        client = stmClient;
+    }
+
+    @After
+    public void destroy() {
+        removeLoadBalancer();
     }
 
     @AfterClass
     public static void tearDownClass() {
-        teardownEverything();
+        client.destroy();
     }
 
     @Test
@@ -79,6 +89,7 @@ public class FullConfigITest extends STMTestBase {
     @Test
     public void updateFullyConfiguredLoadBalancer() {
         try {
+            setupIvars();
             buildHydratedLb();
             LoadBalancer nlb = new LoadBalancer();
 
@@ -167,12 +178,14 @@ public class FullConfigITest extends STMTestBase {
     }
 
     @Test
-    public void updateFullyConfiguredLoadBalancerWithHealthMonitorRollbacks() throws StingrayRestClientException, IOException, StingrayRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException {
-        LoadBalancer clb = null;
+    public void updateFullyConfiguredLoadBalancerWithHealthMonitorRollbacks() throws StingrayRestClientException, IOException, StingrayRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException, StmRollBackException {
+        buildHydratedLb();
+        stmAdapter.updateLoadBalancer(config, lb, lb);
+
+        LoadBalancer clb = new LoadBalancer();
+        clb.setHealthMonitor(lb.getHealthMonitor());
         try {
             LoadBalancer nlb = new LoadBalancer();
-            clb = new LoadBalancer();
-            clb.setHealthMonitor(lb.getHealthMonitor());
 
             HealthMonitor mon = new HealthMonitor();
             mon.setType(HealthMonitorType.HTTP);
@@ -198,12 +211,14 @@ public class FullConfigITest extends STMTestBase {
     }
 
     @Test
-    public void updateFullyConfiguredLoadBalancerWithProtectionrollbacks() throws StingrayRestClientException, IOException, StingrayRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException {
-        LoadBalancer clb = null;
+    public void updateFullyConfiguredLoadBalancerWithProtectionrollbacks() throws StingrayRestClientException, IOException, StingrayRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException, StmRollBackException {
+        buildHydratedLb();
+        stmAdapter.updateLoadBalancer(config, lb, lb);
+
+        LoadBalancer clb = new LoadBalancer();
+        clb.setHealthMonitor(lb.getHealthMonitor());
         try {
             LoadBalancer nlb = new LoadBalancer();
-            clb = new LoadBalancer();
-            clb.setConnectionLimit(lb.getConnectionLimit());
 
             buildHydratedLb();
             stmAdapter.updateLoadBalancer(config, lb, lb);
@@ -226,6 +241,8 @@ public class FullConfigITest extends STMTestBase {
             LoadBalancer nlb = new LoadBalancer();
             clb = new LoadBalancer();
 
+            buildHydratedLb();
+
             SslTermination sslTermination = new SslTermination();
             sslTermination.setSecureTrafficOnly(false);
             sslTermination.setEnabled(true);
@@ -236,8 +253,9 @@ public class FullConfigITest extends STMTestBase {
             clb.setSslTermination(sslTermination);
             clb.setProtocol(lb.getProtocol());
 
-            buildHydratedLb();
             stmAdapter.updateLoadBalancer(config, lb, lb);
+
+            verifySsltermination(clb);
 
             lb.getSslTermination().setSecurePort(-10);
             nlb.setSslTermination(lb.getSslTermination());
@@ -411,23 +429,27 @@ public class FullConfigITest extends STMTestBase {
         Pool pool = client.getPool(loadBalancerName());
         Assert.assertNotNull(pool);
         Assert.assertEquals(1, pool.getProperties().getBasic().getMonitors().size());
-        Assert.assertEquals(lb.getAlgorithm().name().toLowerCase(), pool.getProperties().getLoadBalancing().getAlgorithm());
-        Assert.assertEquals(2, pool.getProperties().getBasic().getNodes().size()); // List contains ACTIVE and DRAINING nodes
-        Assert.assertEquals(1, pool.getProperties().getBasic().getDisabled().size()); // List contains DISABLED nodes
-        Assert.assertEquals(1, pool.getProperties().getBasic().getDraining().size()); // List contains DRAINING nodes
+        Assert.assertEquals(PoolLoadbalancing.Algorithm.fromValue(lb.getAlgorithm().name().toLowerCase()), pool.getProperties().getLoadBalancing().getAlgorithm());
 
-        List<PoolNodeWeight> pws = pool.getProperties().getLoadBalancing().getNodeWeighting();
-        for (PoolNodeWeight pnw : pws) {
+        List<PoolNodesTable> poolNodesTable = pool.getProperties().getBasic().getNodesTable();
+        Assert.assertEquals(3, poolNodesTable.size());
+
+        for (PoolNodesTable pnt : poolNodesTable) {
             Node lbn = lb.getNodes().iterator().next();
-            // Marking this as a possible place for IpHelper.createZeusIpString(node.getIpAddress(), node.getPort())
-            if (lbn.getIpAddress().equals(pnw.getNode().split(":")[0])) {
-                Assert.assertEquals(lbn.getIpAddress() + ":" + lbn.getPort(), pnw.getNode());
-                Assert.assertEquals(lbn.getWeight(), pnw.getWeight());
+            if (pnt.getNode().contains(lbn.getIpAddress())) {
+                Assert.assertEquals(lbn.getIpAddress() + ":" + lbn.getPort(), pnt.getNode());
+                Assert.assertEquals(lbn.getWeight(), pnt.getWeight());
+                if (lbn.getType() == NodeType.PRIMARY) {
+                    Assert.assertEquals(Integer.valueOf(2), pnt.getPriority());
+                } else {
+                    Assert.assertEquals(Integer.valueOf(1), pnt.getPriority());
+                }
+                String condition = lbn.getCondition().toString() == "ENABLED" ? "active" : lbn.getCondition().toString().toLowerCase();
+                Assert.assertEquals(PoolNodesTable.State.fromValue(condition), pnt.getState());
             }
         }
 
         ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(lb.getNodes());
-        Assert.assertEquals(znpc.getPriorityValuesSet(), pool.getProperties().getLoadBalancing().getPriorityValues());
         Assert.assertEquals(znpc.hasSecondary(), pool.getProperties().getLoadBalancing().getPriorityEnabled());
 
         Assert.assertEquals(lb.getTimeout(), pool.getProperties().getConnection().getMaxReplyTime());
@@ -442,7 +464,7 @@ public class FullConfigITest extends STMTestBase {
 
     private Monitor verifyMonitor(LoadBalancer lb) throws InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Monitor monitor = client.getMonitor(loadBalancerName());
-        Assert.assertEquals(lb.getHealthMonitor().getType().name(), monitor.getProperties().getBasic().getType().toUpperCase());
+        Assert.assertEquals(MonitorBasic.Type.fromValue(lb.getHealthMonitor().getType().name().toLowerCase()), monitor.getProperties().getBasic().getType());
         Assert.assertEquals(lb.getHealthMonitor().getTimeout(), monitor.getProperties().getBasic().getTimeout());
         Assert.assertEquals(lb.getHealthMonitor().getAttemptsBeforeDeactivation(), monitor.getProperties().getBasic().getFailures());
 
