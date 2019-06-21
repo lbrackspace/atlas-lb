@@ -4,6 +4,7 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import org.openstack.atlas.docs.loadbalancers.api.v1.AccessList;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionLogging;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ConnectionThrottle;
@@ -20,6 +21,9 @@ import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 
 import javax.ws.rs.core.MediaType;
+import static javax.ws.rs.core.MediaType.APPLICATION_ATOM_XML;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 import javax.ws.rs.core.Response;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
@@ -137,6 +141,8 @@ public class BounceResource extends CommonDependencyProvider {
     }
 
     @POST
+    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("ssltermination")
     public Response SslTermination(SslTermination sslTerm) {
         if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
@@ -165,6 +171,8 @@ public class BounceResource extends CommonDependencyProvider {
     }
 
     @POST
+    @Produces({APPLICATION_XML, APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("sslterminationvalidation")
     public Response SslTerminationValidation(SslTermination sslTerm) {
         if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
