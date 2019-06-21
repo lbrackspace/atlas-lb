@@ -1,10 +1,7 @@
-# UUID           	Group Name
+# UUID              	Group Name
 #
-user:brandonlogan	user/Brandon Logan (brandonlogan)
-user:crc32a      	user/Carlos D. Garza (crc32a)
-user:interminator	user/Trevor Vardeman (interminator)
-user:jorgem1106  	user/Jorge Miramontes (jorgem1106)
-user:lbrackspace 	user/LBaaS-Rackers (lbrackspace)
-user:rm-you      	user/Adam Harwell (rm-you)
-user:the2hill    	user/Phil Toohill (the2hill)
 user:cody-somerville	user/cody-somerville
+user:crc32a         	user/Carlos D. Garza (crc32a)
+user:jorgem1106     	user/Jorge Miramontes (jorgem1106)
+user:lbrackspace    	user/LBaaS-Rackers (lbrackspace)
+user:the2hill       	user/Phil Toohill (the2hill)
