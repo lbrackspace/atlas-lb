@@ -38,12 +38,6 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void removeSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws InsufficientRequestException, RollBackException;
 
-    public void disableEnabledTLS_10(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws InsufficientRequestException, RollBackException;
-
-    public void disableEnabledTLS_11(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws InsufficientRequestException, RollBackException;
-
     public void setNodes(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws InsufficientRequestException, RollBackException;
 
@@ -114,6 +108,12 @@ public interface ReverseProxyLoadBalancerStmAdapter {
 
     public void setSslCiphersByVhost(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadbalancerId, String ciphers)
             throws RemoteException, EntityNotFoundException, RollBackException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
+
+    public void enableDisableTLS_10(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isEnabled)
+            throws RemoteException, InsufficientRequestException, RollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
+
+    public void enableDisableTLS_11(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isEnabled)
+            throws RemoteException, InsufficientRequestException, RollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
 
 //    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
 //            throws StmRollBackException;

@@ -150,11 +150,17 @@ public class ResourceTranslator {
             basic.setPort(loadBalancer.getSslTermination().getSecurePort());
             basic.setSslDecrypt(true);
             basic.setEnabled(loadBalancer.isUsingSsl());
-            String cipherString = EMPTY;
+
+            // Set cipher profiles
             SslCipherProfile cipherProfile = loadBalancer.getSslTermination().getCipherProfile();
             if(cipherProfile != null) {
                 ssl.setSslCiphers(cipherProfile.getCiphers());
             }
+
+            // Set TLS version enable/disable
+            ssl.setSslSupportTls1(loadBalancer.getSslTermination().isTls10Enabled() ? VirtualServerSsl.SslSupportTls1.ENABLED : VirtualServerSsl.SslSupportTls1.DISABLED);
+            ssl.setSslSupportTls11(loadBalancer.getSslTermination().isTls11Enabled() ? VirtualServerSsl.SslSupportTls11.ENABLED : VirtualServerSsl.SslSupportTls11.DISABLED);
+
             if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
                 ssl.setAddHttpHeaders(true);
                 VirtualServerHttp virtualServerHttp = new VirtualServerHttp();

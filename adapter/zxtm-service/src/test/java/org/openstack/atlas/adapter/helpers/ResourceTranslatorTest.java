@@ -14,6 +14,8 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
@@ -254,6 +256,72 @@ public class ResourceTranslatorTest extends STMTestBase {
 //            Assert.assertTrue(rules.containsAll(createdBasic.getRequest_rules()));
 
 //            Assert.assertEquals(expectedError, createdProperties.getConnectionErrors());
+        }
+
+        @Test
+        public void shouldCreateValidVirtualServerWithSSLTermination() throws InsufficientRequestException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            String secureName = ZxtmNameBuilder.genSslVSName(lb);
+
+            boolean isVsEnabled = true;
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(StmTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(StmTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(StmTestConstants.SSL_KEY);
+            sslTermination.setTls10Enabled(true);
+            sslTermination.setTls11Enabled(false);
+
+            SslCipherProfile cipherProfile = new SslCipherProfile();
+            cipherProfile.setCiphers(StmTestConstants.CIPHER_LIST);
+            cipherProfile.setComments("cipherpro1");
+            cipherProfile.setName("datenameid");
+            sslTermination.setCipherProfile(cipherProfile);
+            sslTermination.setCipherList(cipherProfile.getCiphers());
+
+            ZeusCrtFile zeusCertFile = new ZeusCrtFile();
+            zeusCertFile.setPublic_cert(StmTestConstants.SSL_CERT);
+            zeusCertFile.setPrivate_key(StmTestConstants.SSL_KEY);
+
+            ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+            zeusSslTermination.setCertIntermediateCert(StmTestConstants.SSL_CERT);
+            zeusSslTermination.setSslTermination(sslTermination);
+
+            lb.setSslTermination(zeusSslTermination.getSslTermination());
+
+            VirtualServer createdServer = translator.translateVirtualServerResource(config, secureName, lb);
+            Assert.assertNotNull(createdServer);
+
+            VirtualServerProperties createdProperties = createdServer.getProperties();
+            VirtualServerBasic createdBasic = createdServer.getProperties().getBasic();
+            VirtualServerTcp createdTcp = createdProperties.getTcp();
+            expectedTcp.setProxyClose(isHalfClosed);
+            VirtualServerLog log = createdProperties.getLog();
+            Boolean cacheEnabled = createdProperties.getWebCache().getEnabled();
+            Assert.assertNotNull(log);
+            Assert.assertEquals(logFormat, log.getFormat());
+            Assert.assertTrue(cacheEnabled);
+            Assert.assertEquals(vsName, createdBasic.getPool());
+            Assert.assertTrue(createdBasic.getEnabled());
+            Assert.assertEquals(vsName, createdBasic.getProtectionClass());
+            Assert.assertEquals(expectedTcp, createdTcp);
+            Assert.assertFalse(createdBasic.getListenOnAny());
+            if (lb.isContentCaching()) {
+                rules.add(StmConstants.CONTENT_CACHING);
+            }
+            Assert.assertEquals(rules.size(), createdBasic.getRequestRules().size());
+
+
+            Assert.assertEquals(StmTestConstants.LB_SECURE_PORT, (int) createdBasic.getPort());
+            Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(createdBasic.getProtocol().toString()));
+            Assert.assertEquals(isVsEnabled, createdBasic.getEnabled());
+            Assert.assertEquals(vsName, createdBasic.getPool().toString());
+            Assert.assertEquals(true, createdBasic.getSslDecrypt());
+            Assert.assertEquals(StmTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getSslCiphers());
+            Assert.assertEquals(VirtualServerSsl.SslSupportTls1.ENABLED, createdServer.getProperties().getSsl().getSslSupportTls1());
+            Assert.assertEquals(VirtualServerSsl.SslSupportTls11.DISABLED, createdServer.getProperties().getSsl().getSslSupportTls11());
+
         }
 
         @Test

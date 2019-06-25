@@ -16,6 +16,7 @@ import org.rackspace.stingray.client.protection.ProtectionProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerSsl;
 
 import java.io.File;
 import java.util.*;
@@ -140,6 +141,8 @@ public class SslTerminationITest extends STMTestBase {
             sslTermination.setSecurePort(StmTestConstants.LB_SECURE_PORT);
             sslTermination.setCertificate(StmTestConstants.SSL_CERT);
             sslTermination.setPrivatekey(StmTestConstants.SSL_KEY);
+            sslTermination.setTls10Enabled(true);
+            sslTermination.setTls11Enabled(false);
 
             SslCipherProfile cipherProfile = new SslCipherProfile();
             cipherProfile.setCiphers(StmTestConstants.CIPHER_LIST);
@@ -177,6 +180,8 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(normalName, secureBasic.getPool().toString());
             Assert.assertEquals(isSslTermEnabled, secureBasic.getSslDecrypt());
             Assert.assertEquals(StmTestConstants.CIPHER_LIST, createdSecureVs.getProperties().getSsl().getSslCiphers());
+            Assert.assertEquals(VirtualServerSsl.SslSupportTls1.ENABLED, createdSecureVs.getProperties().getSsl().getSslSupportTls1());
+            Assert.assertEquals(VirtualServerSsl.SslSupportTls11.DISABLED, createdSecureVs.getProperties().getSsl().getSslSupportTls11());
 
             VirtualServerBasic normalBasic = createdNormalVs.getProperties().getBasic();
             Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());

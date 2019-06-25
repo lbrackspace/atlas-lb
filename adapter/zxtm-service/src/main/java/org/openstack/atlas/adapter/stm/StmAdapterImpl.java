@@ -1,11 +1,6 @@
 package org.openstack.atlas.adapter.stm;
 
-import com.zxtm.service.client.CatalogMonitorType;
-import com.zxtm.service.client.CatalogSSLCertificatesBindingStub;
-import com.zxtm.service.client.CertificateFiles;
-import com.zxtm.service.client.ObjectAlreadyExists;
-import com.zxtm.service.client.VirtualServerBindingStub;
-import com.zxtm.service.client.VirtualServerSSLSite;
+import com.zxtm.service.client.*;
 import org.apache.axis.AxisFault;
 import org.apache.axis.types.UnsignedInt;
 import org.apache.commons.logging.Log;
@@ -38,6 +33,7 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerHttp;
+import org.rackspace.stingray.client.virtualserver.VirtualServerSsl;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -924,15 +920,33 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     @Override
-        public void disableEnabledTLS_10(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws InsufficientRequestException, RollBackException{
-        throw new NotImplementedException("Hey you forgot to implement disabling TLS_10 for the Zxtm Rest adaptor");
+    public void enableDisableTLS_10(LoadBalancerEndpointConfiguration config, LoadBalancer lb, boolean isEnabled)
+            throws InsufficientRequestException, RollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        String vsName = String.format("%d_%d_S", lb.getAccountId(), lb.getId());
+        VirtualServer vs = client.getVirtualServer(vsName);
+        VirtualServerSsl.SslSupportTls1 enabled = isEnabled ? VirtualServerSsl.SslSupportTls1.ENABLED : VirtualServerSsl.SslSupportTls1.DISABLED;
+        vs.getProperties().getSsl().setSslSupportTls1(enabled);
+        try {
+            getResources().updateVirtualServer(client, vsName, vs);
+        } catch (StmRollBackException e) {
+            throw new StmRollBackException(String.format("Failed to update enableDisableTLS10 for loadbalancer %s  Roll back...", lb.getId()), e);
+        }
     }
 
     @Override
-    public void disableEnabledTLS_11(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
-            throws InsufficientRequestException, RollBackException{
-        throw new NotImplementedException("Hey you forgot to implement disabling TLS_11 for the Zxtm Rest adaptor");
+    public void enableDisableTLS_11(LoadBalancerEndpointConfiguration config, LoadBalancer lb, boolean isEnabled)
+            throws InsufficientRequestException, RollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        String vsName = String.format("%d_%d_S", lb.getAccountId(), lb.getId());
+        VirtualServer vs = client.getVirtualServer(vsName);
+        VirtualServerSsl.SslSupportTls11 enabled = isEnabled ? VirtualServerSsl.SslSupportTls11.ENABLED : VirtualServerSsl.SslSupportTls11.DISABLED;
+        vs.getProperties().getSsl().setSslSupportTls11(enabled);
+        try {
+            getResources().updateVirtualServer(client, vsName, vs);
+        } catch (StmRollBackException e) {
+            throw new StmRollBackException(String.format("Failed to update enableDisableTLS11 for loadbalancer %s  Roll back...", lb.getId()), e);
+        }
     }
 
     @Override
