@@ -6,6 +6,7 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -105,6 +106,14 @@ public interface ReverseProxyLoadBalancerStmAdapter {
 
     public Stats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
+
+    String getSslCiphersByVhost(LoadBalancerEndpointConfiguration conf, Integer accountId, Integer loadbalancerId)
+            throws RemoteException, EntityNotFoundException, RollBackException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
+
+    public String getSsl3Ciphers(LoadBalancerEndpointConfiguration config) throws RemoteException, RollBackException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
+
+    public void setSslCiphersByVhost(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadbalancerId, String ciphers)
+            throws RemoteException, EntityNotFoundException, RollBackException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
 
 //    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
 //            throws StmRollBackException;

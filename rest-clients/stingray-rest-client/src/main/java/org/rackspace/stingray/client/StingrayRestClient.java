@@ -18,6 +18,7 @@ import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.rate.Rate;
+import org.rackspace.stingray.client.settings.GlobalSettings;
 import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.tm.TrafficManager;
@@ -90,7 +91,8 @@ public class StingrayRestClient extends StingrayRestClientManager {
                 || path.equals(ClientConstants.KEYPAIR_PATH) || path.equals(ClientConstants.LOCATION_PATH)
                 || path.equals(ClientConstants.MONITOR_PATH) || path.equals(ClientConstants.MONITORSCRIPT_PATH)
                 || path.equals(ClientConstants.PROTECTION_PATH) || path.equals(ClientConstants.V_SERVER_PATH)
-                || path.equals(ClientConstants.TRAFFICMANAGER_PATH) || path.equals(ClientConstants.TRAFFICSCRIPT_PATH);
+                || path.equals(ClientConstants.TRAFFICMANAGER_PATH) || path.equals(ClientConstants.TRAFFICSCRIPT_PATH)
+                || path.equals(ClientConstants.GLOBAL_SETTINGS);
     }
 
     /**
@@ -1118,6 +1120,13 @@ public class StingrayRestClient extends StingrayRestClientManager {
      */
     public Response deleteTrafficIp(String name) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         return deleteItem(name, ClientConstants.IP_PATH);
+    }
+
+    /**
+     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     */
+    public GlobalSettings getGlobalSettings() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        return getItem("", GlobalSettings.class, ClientConstants.GLOBAL_SETTINGS);
     }
 
     /**

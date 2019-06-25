@@ -420,6 +420,21 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
         return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, logFileLocation, failoverHosts);
     }
 
+    public LoadBalancerEndpointConfiguration getConfigFirstAvaliableRest() throws EntityNotFoundException, DecryptException {
+        LoadBalancerEndpointConfiguration config = null;
+        Host restHost = hostService.getFirstAvailableRestEndPointHost();
+        Cluster cluster = restHost.getCluster();
+        Integer clusterId = cluster.getId();
+        List<String> failoverHostNames = hostService.getFailoverHostNames(clusterId);
+        List<Host> failoverHosts = hostService.getFailoverHosts(clusterId);
+        String userName = cluster.getUsername();
+        String cipherText = cluster.getPassword();
+        String passwd = CryptoUtil.decrypt(cipherText);
+        String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
+        config = new LoadBalancerEndpointConfiguration(restHost, userName, passwd, restHost, failoverHostNames, logFileLocation, failoverHosts);
+        return config;
+    }
+
     public void setReverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
         this.reverseProxyLoadBalancerStmAdapter = reverseProxyLoadBalancerStmAdapter;
     }
@@ -490,6 +505,43 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
             return stats;
         }
         return stats;
+    }
+
+    @Override
+    public String getSslCiphers(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, RemoteException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
+        String ciphers = null;
+        try {
+            ciphers = reverseProxyLoadBalancerStmAdapter.getSslCiphersByVhost(config, accountId, loadbalancerId);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
+        return ciphers;
+    }
+
+    @Override
+    public void setSslCiphers(Integer accountId, Integer loadbalancerId, String ciphers) throws EntityNotFoundException, RemoteException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
+        try {
+            reverseProxyLoadBalancerStmAdapter.setSslCiphersByVhost(config, accountId, loadbalancerId, ciphers);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        String globalCiphers = null;
+        LoadBalancerEndpointConfiguration config = getConfigFirstAvaliableRest();
+        try {
+            globalCiphers = reverseProxyLoadBalancerStmAdapter.getSsl3Ciphers(config);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
+        return globalCiphers;
     }
 
     public void setAtlasCache(AtlasCache atlasCache) {

@@ -32,6 +32,8 @@ import org.rackspace.stingray.client.virtualserver.*;
 import java.io.IOException;
 import java.util.*;
 
+import static org.apache.commons.lang3.StringUtils.EMPTY;
+
 public class ResourceTranslator {
     public Pool cPool;
     public Monitor cMonitor;
@@ -148,12 +150,18 @@ public class ResourceTranslator {
             basic.setPort(loadBalancer.getSslTermination().getSecurePort());
             basic.setSslDecrypt(true);
             basic.setEnabled(loadBalancer.isUsingSsl());
+            String cipherString = EMPTY;
+            SslCipherProfile cipherProfile = loadBalancer.getSslTermination().getCipherProfile();
+            if(cipherProfile != null) {
+                ssl.setSslCiphers(cipherProfile.getCiphers());
+            }
             if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
                 ssl.setAddHttpHeaders(true);
                 VirtualServerHttp virtualServerHttp = new VirtualServerHttp();
                 virtualServerHttp.setLocationRewrite(VirtualServerHttp.LocationRewrite.NEVER);
                 properties.setHttp(virtualServerHttp);
             }
+
         } else {
             basic.setPort(loadBalancer.getPort());
             if (loadBalancer.hasSsl()) {

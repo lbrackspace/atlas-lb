@@ -699,6 +699,21 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
         }
 
         @Test
+        public void testUpdateSslCiphers() throws Exception {
+            adapterSpy.updateSslTermination(config, loadBalancer, sslTermination);
+
+            verify(resources).loadSTMRestClient(config);
+            verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
+            verify(resourceTranslator).translateKeypairResource(loadBalancer, true);
+            verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
+            verify(resourceTranslator).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);
+            verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
+            verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client).destroy();
+        }
+
+        @Test
         public void testRemoveSslTermination() throws Exception {
             adapterSpy.removeSslTermination(config, loadBalancer);
 

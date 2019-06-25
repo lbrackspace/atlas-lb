@@ -48,6 +48,8 @@ public interface HostService {
 
     public Host getFirstAvailableSoapEndPointHost() throws EntityNotFoundException;
 
+    public Host getFirstAvailableRestEndPointHost() throws EntityNotFoundException;
+
     public String getEndPoint(Integer clusterId);
 
     public Host getHostsByLoadBalancerId(Integer loadBalancerId);

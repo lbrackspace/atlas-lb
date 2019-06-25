@@ -1,12 +1,20 @@
 package org.openstack.atlas.api.integration;
 
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
+import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
+import org.rackspace.stingray.client.exception.StingrayRestClientException;
+import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.rmi.RemoteException;
 import java.util.List;
 import java.util.Set;
 
@@ -68,6 +76,13 @@ public interface ReverseProxyLoadBalancerStmService {
     Stats getVirtualServerStats(LoadBalancer loadBalancer) throws Exception;
 
     boolean isEndPointWorking(Host host) throws Exception;
+
+    String getSslCiphers(Integer accountId, Integer loadbalancerId) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException;
+
+    void setSslCiphers(Integer accountId, Integer loadbalancerId,String ciphersStr) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException;
+
+    String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException;
+
     //Deprecated
 
 //    Hostssubnet getSubnetMappings(Host host) throws Exception;

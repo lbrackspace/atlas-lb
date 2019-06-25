@@ -357,4 +357,10 @@ public class HostServiceImpl extends BaseService implements HostService {
         Host host = hostRepository.getFirstAvailableSoapEndPointHost();
         return host;
     }
+
+    @Override
+    public Host getFirstAvailableRestEndPointHost() throws EntityNotFoundException {
+        Host host = hostRepository.getFirstAvailableRestEndPointHost();
+        return host;
+    }
 }

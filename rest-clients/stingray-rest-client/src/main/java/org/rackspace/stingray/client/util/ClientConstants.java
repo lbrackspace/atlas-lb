@@ -60,6 +60,7 @@ public class ClientConstants {
     public static final String IP_PATH = "traffic_ip_groups/";
     public static final String TRAFFICSCRIPT_PATH = "rules/";
     public static final String V_SERVER_PATH = "virtual_servers/";
+    public static final String GLOBAL_SETTINGS = "global_settings/";
 
     /** Error messages for the Stingray Rest Client**/
     public static final String REQUEST_ERROR = "The Stingray Rest Client encountered a problem processing the request: ";

@@ -19,6 +19,12 @@ public class StmTestConstants {
     public static final int RATE_INTERVAL = 60;
     // Concerns Error Page
     public static final String ERROR_PAGE_CONTENT = "Test Error Page";
+    public static final String CIPHER_LIST =  "SSL_ECDHE_RSA_WITH_AES_256_GCM_SHA384, SSL_ECDHE_RSA_WITH_AES_128_GCM_SHA256, " +
+            "SSL_ECDHE_RSA_WITH_AES_256_CBC_SHA384, SSL_ECDHE_RSA_WITH_AES_256_CBC_SHA, " +
+            "SSL_ECDHE_RSA_WITH_AES_128_CBC_SHA256, SSL_ECDHE_RSA_WITH_AES_128_CBC_SHA, " +
+            "SSL_RSA_WITH_AES_256_GCM_SHA384, SSL_RSA_WITH_AES_256_CBC_SHA256, " +
+            "SSL_RSA_WITH_AES_256_CBC_SHA, SSL_RSA_WITH_AES_128_GCM_SHA256, " +
+            "SSL_RSA_WITH_AES_128_CBC_SHA256, SSL_RSA_WITH_AES_128_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA";
     public static final String SSL_KEY = ""
             + "-----BEGIN RSA PRIVATE KEY-----\n"
             + "MIIEowIBAAKCAQEAgqD3/FFqkcbYkB1ucRtt0PcQQgrmviNW/8xmehxCVAZleyMZ\n"

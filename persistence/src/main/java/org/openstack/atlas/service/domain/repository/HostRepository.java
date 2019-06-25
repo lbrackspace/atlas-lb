@@ -197,6 +197,20 @@ public class HostRepository {
         return hosts.get(0);
     }
 
+    public Host getFirstAvailableRestEndPointHost() throws EntityNotFoundException {
+        String hqlStr = "from Host h where h.soapEndpointActive = 1 "
+                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','REST_API_ENDPOINT') "
+                + "order by h.hostStatus desc, h.id asc";
+        Query q = entityManager.createQuery(hqlStr);
+        List<Host> hosts = q.getResultList();
+        if (hosts.size() < 1) {
+            String errMsg = "Error no rest endpoints found";
+            LOG.error(errMsg);
+            throw new EntityNotFoundException(errMsg);
+        }
+        return hosts.get(0);
+    }
+
     public Host getEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.soapEndpointActive = 1 "
                 + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','SOAP_API_ENDPOINT') "

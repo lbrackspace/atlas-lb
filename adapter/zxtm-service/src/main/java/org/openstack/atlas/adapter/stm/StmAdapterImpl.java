@@ -22,6 +22,7 @@ import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.stm.StmAdapterUtils.VSType;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
@@ -932,6 +933,38 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public void disableEnabledTLS_11(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws InsufficientRequestException, RollBackException{
         throw new NotImplementedException("Hey you forgot to implement disabling TLS_11 for the Zxtm Rest adaptor");
+    }
+
+    @Override
+    public String getSslCiphersByVhost(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        String vsName = String.format("%d_%d_S", accountId, loadbalancerId);
+        String ciphers = client.getVirtualServer(vsName).getProperties().getSsl().getSslCiphers();
+        if (ciphers == null || ciphers.equals("")) {
+            String errorMsg = String.format("no ciphers found for virtual server  %d_%d_s", accountId, loadbalancerId);
+            throw new EntityNotFoundException(errorMsg);
+        }
+        return ciphers;
+    }
+
+    @Override
+    public void setSslCiphersByVhost(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadbalancerId, String ciphers) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException, StmRollBackException {
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        String sslVsName = String.format("%d_%d_S", accountId, loadbalancerId);
+        VirtualServer updatedVs = client.getVirtualServer(sslVsName);
+        updatedVs.getProperties().getSsl().setSslCiphers(ciphers);
+
+        try {
+            getResources().updateVirtualServer(client, sslVsName, updatedVs);
+        } catch (StmRollBackException e) {
+            throw new StmRollBackException(String.format("Failed to update ciphers for loadbalancer %s  Roll back...", loadbalancerId), e);
+        }
+    }
+
+    @Override
+    public String getSsl3Ciphers(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        return client.getGlobalSettings().getProperties().getSsl().getSsl3Ciphers();
     }
 
     /**

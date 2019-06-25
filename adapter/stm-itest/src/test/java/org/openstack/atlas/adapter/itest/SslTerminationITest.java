@@ -141,6 +141,13 @@ public class SslTerminationITest extends STMTestBase {
             sslTermination.setCertificate(StmTestConstants.SSL_CERT);
             sslTermination.setPrivatekey(StmTestConstants.SSL_KEY);
 
+            SslCipherProfile cipherProfile = new SslCipherProfile();
+            cipherProfile.setCiphers(StmTestConstants.CIPHER_LIST);
+            cipherProfile.setComments("cipherpro1");
+            cipherProfile.setName("datenameid");
+            sslTermination.setCipherProfile(cipherProfile);
+            sslTermination.setCipherList(cipherProfile.getCiphers());
+
             ZeusCrtFile zeusCertFile = new ZeusCrtFile();
             zeusCertFile.setPublic_cert(StmTestConstants.SSL_CERT);
             zeusCertFile.setPrivate_key(StmTestConstants.SSL_KEY);
@@ -169,6 +176,7 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(isVsEnabled, secureBasic.getEnabled());
             Assert.assertEquals(normalName, secureBasic.getPool().toString());
             Assert.assertEquals(isSslTermEnabled, secureBasic.getSslDecrypt());
+            Assert.assertEquals(StmTestConstants.CIPHER_LIST, createdSecureVs.getProperties().getSsl().getSslCiphers());
 
             VirtualServerBasic normalBasic = createdNormalVs.getProperties().getBasic();
             Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());
