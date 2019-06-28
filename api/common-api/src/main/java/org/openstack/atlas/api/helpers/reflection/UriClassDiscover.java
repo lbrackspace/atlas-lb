@@ -44,6 +44,7 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/virtualip(\\.json|\\.xml)?/?$", VirtualIp.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/loadbalancer(\\.json|\\.xml)?/?$", LoadBalancer.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/updated(\\.json|\\.xml)?/?$", Updated.class));
+        getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/sslterminationvalidation(\\.json|\\.xml)?/?$", SslTermination.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
         getrList().add(new REFCN(".*/management/hosts(\\.json|\\.xml)?/?$", Host.class));
     }
@@ -92,6 +93,7 @@ public class UriClassDiscover {
         return rootElement;
     }
 
+    // Regular expression for Class Name
     public static class REFCN {
 
         private String rootElement;
