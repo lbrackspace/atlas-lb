@@ -33,16 +33,14 @@ public class HealthMonitorValidator implements ResourceValidator<HealthMonitor> 
                 result(validationTarget().getTimeout()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MAX_TIMEOUT_RANGE[0], MAX_TIMEOUT_RANGE[1])).withMessage(String.format("Must specify valid timeout range between %d and %d.",MAX_TIMEOUT_RANGE[0],MAX_TIMEOUT_RANGE[1]));
                 result(validationTarget().getAttemptsBeforeDeactivation()).if_().exist().then().must().adhereTo(new MustBeIntegerInRange(MAX_ATTEMPTS_BEFORE_DEACTIVATION[0], MAX_ATTEMPTS_BEFORE_DEACTIVATION[1])).withMessage(String.format("Must specify valid attempts before deactivation range between %d and %d.",MAX_ATTEMPTS_BEFORE_DEACTIVATION[0],MAX_ATTEMPTS_BEFORE_DEACTIVATION[1]));
 
-                // PUT EXPECTATIONS
-                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.CONNECT)).then().must().delegateTo(new ConnectHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
-                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTP)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
-                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTPS)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), PUT).forContext(PUT);
+                // Fix for CLB-72 New LB calls allow an incorrect "path" attribute when including healthMonitoring objects/clb-299 validation of body/status regex should be a shared expectation
+                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.CONNECT)).then().must().delegateTo(new ConnectHealthMonitorValidator().getValidator(), PUT);
+                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTP)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), PUT);
+                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTPS)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), PUT);
+                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.CONNECT)).then().must().delegateTo(new ConnectHealthMonitorValidator().getValidator(), POST);
+                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTP)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), POST);
+                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTPS)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), POST);
 
-                // POST EXPECTATIONS
-                // Fix for CLB-72 New LB calls allow an incorrect "path" attribute when including healthMonitoring objects
-                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.CONNECT)).then().must().delegateTo(new ConnectHealthMonitorValidator().getValidator(), POST).forContext(POST);
-                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTP)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), POST).forContext(POST);
-                if_().adhereTo(new HealthMonitorTypeVerifier(HealthMonitorType.HTTPS)).then().must().delegateTo(new HttpHealthMonitorValidator().getValidator(), POST).forContext(POST);
                 //CLB-279 Creating a Load Balancer with empty Health Monitor - creates the Load Balancer in Error state.
                 result(validationTarget().getDelay()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide delay for the health monitor.");
                 result(validationTarget().getTimeout()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide timeout for the health monitor.");
