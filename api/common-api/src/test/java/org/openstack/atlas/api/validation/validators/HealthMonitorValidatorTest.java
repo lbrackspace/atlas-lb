@@ -73,7 +73,7 @@ public class HealthMonitorValidatorTest {
 
         @Test
         public void shouldAcceptValidStatusRegex() {
-            hm = initHealthMonitor(null, HTTP, "10", null, null, "/", "^[234][0-9][0-9]$", null);
+            hm = initHealthMonitor(null, HTTP, "10", null, null, "/", "^[234][0-9][0-9]$", ".*");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
@@ -87,28 +87,28 @@ public class HealthMonitorValidatorTest {
 
         @Test
         public void shouldAcceptValidBodyRegex() {
-            hm = initHealthMonitor(null, HTTP, "10", null, null, "/", null, "^[234][0-9][0-9]$");
+            hm = initHealthMonitor(null, HTTP, "10", null, null, "/", ".*", "^[234][0-9][0-9]$");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldAcceptValidPath() {
-            hm = initHealthMonitor(null, HTTP, "10", null, null, "/", null, null);
+            hm = initHealthMonitor(null, HTTP, "10", null, null, "/", ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldAcceptValidPathWithLongPath() {
-            hm = initHealthMonitor(null, HTTP, "10", null, null, "/fail/this/should/not/fail", null, null);
+            hm = initHealthMonitor(null, HTTP, "10", null, null, "/fail/this/should/not/fail", ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldRejectInalidPath() {
-            hm = initHealthMonitor(null, HTTP, "10", null, null, "FAIL", null, null);
+            hm = initHealthMonitor(null, HTTP, "10", null, null, "FAIL", ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertFalse(resultMessage(result, PUT), result.passedValidation());
         }
@@ -178,42 +178,42 @@ public class HealthMonitorValidatorTest {
 
         @Test
         public void shouldAcceptValidPutHttpDelay() {
-            hm = initHealthMonitor(null, HTTP, "10", null, null, null, null, null);
+            hm = initHealthMonitor(null, HTTP, "10", null, null, "/mnt/pfft", ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldAcceptValidPutHttpTimeout() {
-            hm = initHealthMonitor(null, HTTP, null, "30", null, null, null, null);
+            hm = initHealthMonitor(null, HTTP, null, "30", null, "/mnt/pfft", ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldAcceptValidPutHttpABD() {
-            hm = initHealthMonitor(null, HTTP, null, null, "10", null, null, null);
+            hm = initHealthMonitor(null, HTTP, null, null, "10", "/mnt/pfft", ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldAcceptValidPutHttpPath() {
-            hm = initHealthMonitor(null, HTTP, null, null, null, "/mnt/haha", null, null);
+            hm = initHealthMonitor(null, HTTP, null, null, null, "/mnt/haha", ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldAcceptValidPutHttpStatusRegex() {
-            hm = initHealthMonitor(null, HTTP, null, null, null, null, ".*", ".*");
+            hm = initHealthMonitor(null, HTTP, null, null, null, "/mnt/pfft", ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldAcceptValidPutHttpBodyRegex() {
-            hm = initHealthMonitor(null, HTTP, null, null, null, null, null, ".*");
+            hm = initHealthMonitor(null, HTTP, null, null, null, "/mnt/pfft", ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
@@ -227,7 +227,7 @@ public class HealthMonitorValidatorTest {
 
         @Test
         public void shouldRejectPutConnesWithOutType() {
-            hm = initHealthMonitor(null, null, "10", "20", "10", null, null, null);
+            hm = initHealthMonitor(null, null, "10", "20", "10", null, ".*", ".*");
             result = hmv.validate(hm, PUT);
             assertFalse(resultMessage(result, PUT), result.passedValidation());
         }

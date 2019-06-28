@@ -24,6 +24,10 @@ public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonit
                 // SHARED EXPECTATIONS
                 result(validationTarget().getType()).must().exist().withMessage("Must provide a type for the health monitor.");
                 result(validationTarget().getId()).must().not().exist().withMessage("Health monitor id field cannot be modified.");
+                //CLB-279 Creating a Load Balancer with empty Health Monitor - creates the Load Balancer in Error state/clb-299 validation of body/status regex should be a shared expectation
+                result(validationTarget().getPath()).must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a valid path for the health monitor.");
+                result(validationTarget().getStatusRegex()).must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a status regex for the health monitor.");
+                result(validationTarget().getBodyRegex()).must().adhereTo(new MustNotBeEmpty()).withMessage("Must provide a body regex for the health monitor.");
                 result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("path" + maxStrMsg);
                 result(validationTarget().getPath()).if_().exist().then().must().adhereTo(new HealthMonitorPathVerifier()).withMessage("Must provide a forward slash(/) as the beginning of the path.");
                 result(validationTarget().getStatusRegex()).if_().exist().then().must().adhereTo(new CannotExceedSize(MAXSTR)).withMessage("statusRegex" + maxStrMsg);
@@ -44,13 +48,10 @@ public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonit
                                 StringUtils.isNotEmpty(monitor.getStatusRegex()) ||
                                 StringUtils.isNotEmpty(monitor.getBodyRegex()));
                     }
-                }).forContext(PUT).withMessage("The health monitor must have at least one of the following to update: delay, timeout, attempts before deactivation, path, status regex, body regex.");
+                }).forContext(PUT).withMessage("The health monitor must have the required fields to update: delay, timeout, attempts before deactivation, path, status regex, body regex.");
 
                 //POST EXPECTATIONS
-                //CLB-279 Creating a Load Balancer with empty Health Monitor - creates the Load Balancer in Error state.
-                result(validationTarget().getPath()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a valid path for the health monitor.");
-                result(validationTarget().getStatusRegex()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a status regex for the health monitor.");
-                result(validationTarget().getBodyRegex()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a body regex for the health monitor.");
+
             }
         });
     }
