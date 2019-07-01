@@ -15,4 +15,7 @@ public interface HealthMonitorService {
     public void delete(LoadBalancer requestLb) throws EntityNotFoundException, Exception;
 
      public void verifyMonitorProtocol(HealthMonitor queueMonitor, LoadBalancer dbLoadBalancer, HealthMonitor dbMonitor) throws BadRequestException;
-}
+
+    public void verifyMonitorUpdateRestrictions(HealthMonitor requestMonitor, HealthMonitor dbMonitor) throws BadRequestException;
+
+    }

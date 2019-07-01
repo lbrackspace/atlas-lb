@@ -1,6 +1,7 @@
 package org.openstack.atlas.service.domain.services;
 
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -59,6 +60,95 @@ public class HealthMonitorServiceImplTest {
             healthMonitor.setType(HealthMonitorType.HTTPS);
             lb.setProtocol(LoadBalancerProtocol.HTTP);
             healthMonitorService.verifyMonitorProtocol(healthMonitor, lb, healthMonitor2);
+        }
+
+        @Test()
+        public void shouldReturnFaultIfUpdatieMissingFieldsConnect() {
+            healthMonitor.setType(HealthMonitorType.CONNECT);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            try {
+                healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, null);
+            } catch (BadRequestException ex) {
+                Assert.assertEquals("Please provide all the required fields when creating a CONNECT health monitor:" +
+                        "'attemptsBeforeDeactivation', 'delay', 'timeout' and 'type'", ex.getMessage());
+            }
+        }
+
+        @Test()
+        public void shouldReturnFaultIfUpdatieMissingFieldsHttp() {
+            healthMonitor.setType(HealthMonitorType.HTTP);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            try {
+                healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, null);
+            } catch (BadRequestException ex) {
+                Assert.assertEquals("Please provide all the required fields when creating an HTTP(S) health monitor:" +
+                        "'attemptsBeforeDeactivation', 'delay', 'timeout', 'type', 'path', 'statusRegex' and 'bodyRegex'", ex.getMessage());
+            }
+        }
+
+        @Test
+        public void shouldReturnFaultIfUpdatieMissingFieldsForConnectToHttp() {
+            healthMonitor.setType(HealthMonitorType.HTTP);
+            healthMonitor2.setType(HealthMonitorType.CONNECT);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            try {
+                healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, healthMonitor2);
+            } catch (BadRequestException ex) {
+                Assert.assertEquals("Updating from CONNECT monitor. Please provide the additional required fields for HTTP(S) health monitor: " +
+                        "'path', 'statusRegex' and 'bodyRegex'", ex.getMessage());
+            }
+        }
+
+        @Test
+        public void shouldSuccedForHttpCreate() throws BadRequestException {
+            healthMonitor.setType(HealthMonitorType.HTTP);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            healthMonitor.setAttemptsBeforeDeactivation(1);
+            healthMonitor.setBodyRegex(".*");
+            healthMonitor.setStatusRegex(".*");
+            healthMonitor.setDelay(2);
+            healthMonitor.setPath("/");
+            healthMonitor.setTimeout(10);
+            // Should not throw junit5 has an assert for this
+            healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, null);
+        }
+
+        @Test
+        public void shouldSuccedForConnectCreate() throws BadRequestException {
+            healthMonitor.setType(HealthMonitorType.CONNECT);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            healthMonitor.setAttemptsBeforeDeactivation(1);
+            healthMonitor.setDelay(2);
+            healthMonitor.setTimeout(10);
+            // Should not throw junit5 has an assert for this
+            healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, null);
+        }
+
+        @Test
+        public void shouldSuccedForConnectToHttpUpdate() throws BadRequestException {
+            healthMonitor.setType(HealthMonitorType.HTTP);
+            healthMonitor2.setType(HealthMonitorType.CONNECT);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            healthMonitor.setAttemptsBeforeDeactivation(1);
+            healthMonitor.setBodyRegex(".*");
+            healthMonitor.setStatusRegex(".*");
+            healthMonitor.setDelay(2);
+            healthMonitor.setPath("/");
+            healthMonitor.setTimeout(10);
+            // Should not throw junit5 has an assert for this
+            healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, healthMonitor2);
+        }
+
+        @Test
+        public void shouldSuccedForHttpToConnectUpdate() throws BadRequestException {
+            healthMonitor.setType(HealthMonitorType.CONNECT);
+            healthMonitor2.setType(HealthMonitorType.HTTP);
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            healthMonitor.setAttemptsBeforeDeactivation(1);
+            healthMonitor.setDelay(2);
+            healthMonitor.setTimeout(10);
+            // Should not throw junit5 has an assert for this
+            healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, healthMonitor2);
         }
     }
 }
