@@ -46,6 +46,7 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/updated(\\.json|\\.xml)?/?$", Updated.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/sslterminationvalidation(\\.json|\\.xml)?/?$", SslTermination.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
+        getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/certificatemapping(\\.json|\\.xml)?/?$", SslTermination.class));
         getrList().add(new REFCN(".*/management/hosts(\\.json|\\.xml)?/?$", Host.class));
     }
 
