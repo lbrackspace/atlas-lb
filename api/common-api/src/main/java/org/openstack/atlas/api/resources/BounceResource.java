@@ -42,6 +42,7 @@ public class BounceResource extends CommonDependencyProvider {
     }
 
     @POST
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("loadbalancer")
     public Response echoLoadBalancer(LoadBalancer lb) {
@@ -49,6 +50,7 @@ public class BounceResource extends CommonDependencyProvider {
     }
 
     @POST
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("virtualip")
     public Response echoVirtualIp(VirtualIp virtualIp) {
@@ -56,6 +58,7 @@ public class BounceResource extends CommonDependencyProvider {
     }
 
     @POST
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("virtualips")
     public Response echoVirtualIps(VirtualIps virtualIps) {
@@ -64,6 +67,7 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("connectionthrottle")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response echoConnectionThrottle(ConnectionThrottle ct) {
         Response resp = Response.status(200).entity(ct).build();
@@ -72,6 +76,7 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("node")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response echoNode(Node node) {
         Response resp = Response.status(200).entity(node).build();
@@ -80,6 +85,7 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("healthmonitor")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response echoHealthMonitor(HealthMonitor hm) {
         Response resp = Response.status(200).entity(hm).build();
@@ -88,6 +94,7 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("sessionpersistence")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response echoSessionPersistence(SessionPersistence sp) {
         Response resp = Response.status(200).entity(sp).build();
@@ -96,6 +103,7 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("connectionlogging")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response echoConnectionLogging(ConnectionLogging cl) {
         Response resp = Response.status(200).entity(cl).build();
@@ -104,29 +112,35 @@ public class BounceResource extends CommonDependencyProvider {
 
     @POST
     @Path("nodes")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+
     public Response echoNodes(Nodes nodes) {
         Response resp = Response.status(200).entity(nodes).build();
         return resp;
     }
 
     @POST
-    @Path("accesslist")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Path("accesslist")
     public Response echoAccessList(AccessList accessList) {
         Response resp = Response.status(200).entity(accessList).build();
         return resp;
     }
 
     @POST
-    @Path("updated")
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Path("updated")
     public Response echoUpdated(Updated updated) {
         Response resp = Response.status(200).entity(updated).build();
         return resp;
     }
 
     @POST
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("errorpage")
     public Response echoErrorpage(Errorpage errorpage) {
         Errorpage errorpage_out = new Errorpage();
@@ -135,6 +149,7 @@ public class BounceResource extends CommonDependencyProvider {
         return resp;
     }
 
+    @POST
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("certificatemapping")
@@ -148,6 +163,8 @@ public class BounceResource extends CommonDependencyProvider {
         return resp;
     }
 
+    @POST
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("ssltermination")
     public Response SslTermination(SslTermination sslTerm) {
@@ -176,6 +193,7 @@ public class BounceResource extends CommonDependencyProvider {
         return resp;
     }
 
+    @POST
     @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     @Path("sslterminationvalidation")
