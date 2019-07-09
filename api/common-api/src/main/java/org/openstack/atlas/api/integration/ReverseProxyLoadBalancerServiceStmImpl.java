@@ -446,22 +446,22 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     private void checkAndSetIfRestEndPointBad(LoadBalancerEndpointConfiguration config, StmRollBackException ex) {
         Host configuredHost = config.getEndpointUrlHost();
         if (IpHelper.isNetworkConnectionException(ex)) {
-            LOG.error(String.format("STM endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
+            LOG.error(String.format("REST endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getRestEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
             configuredHost.setRestEndpointActive(Boolean.FALSE);
             hostService.update(configuredHost);
         } else {
-            LOG.warn(String.format("STM endpoint %s on host[%d] throw an STM Fault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
+            LOG.warn(String.format("REST endpoint %s on host[%d] throw an STM Fault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getRestEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
         }
     }
 
     private void checkAndSetIfRestEndPointBad(LoadBalancerEndpointConfiguration config, RollBackException af) {
         Host configuredHost = config.getEndpointUrlHost();
         if (IpHelper.isNetworkConnectionException(af)) {
-            LOG.error(String.format("SOAP endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
+            LOG.error(String.format("REST endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getRestEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
             configuredHost.setRestEndpointActive(Boolean.FALSE);
             hostService.update(configuredHost);
         }
-        LOG.warn(String.format("SOAP endpoint %s on host[%d] throw an RollBackException but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
+        LOG.warn(String.format("REST endpoint %s on host[%d] throw an RollBackException but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getRestEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(af)));
     }
 
     @Override
