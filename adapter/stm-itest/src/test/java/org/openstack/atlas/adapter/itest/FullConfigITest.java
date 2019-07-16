@@ -178,6 +178,35 @@ public class FullConfigITest extends STMTestBase {
     }
 
     @Test
+    public void updateLoadbalancerNodes() {
+        try {
+            setupIvars();
+            buildHydratedLb();
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            LoadBalancer nlb = new LoadBalancer();
+
+            nlb.setSessionPersistence(HTTP_COOKIE);
+            lb.setSessionPersistence(HTTP_COOKIE);
+
+            Node n1 = new Node();
+            n1.setId(23);
+            n1.setIpAddress("10.3.3.3");
+            n1.setPort(8080);
+            nlb.getNodes().add(n1);
+
+            stmAdapter.updateLoadBalancer(config, lb, nlb);
+
+            Thread.sleep(30);
+            verifyPool(lb);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            removeLoadBalancer();
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void updateFullyConfiguredLoadBalancerWithHealthMonitorRollbacks() throws StingrayRestClientException, IOException, StingrayRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException, StmRollBackException {
         buildHydratedLb();
         stmAdapter.updateLoadBalancer(config, lb, lb);
@@ -444,7 +473,7 @@ public class FullConfigITest extends STMTestBase {
                 } else {
                     Assert.assertEquals(Integer.valueOf(1), pnt.getPriority());
                 }
-                String condition = lbn.getCondition().toString() == "ENABLED" ? "active" : lbn.getCondition().toString().toLowerCase();
+                String condition = lbn.getCondition().toString().equals("ENABLED") ? "active" : lbn.getCondition().toString().toLowerCase();
                 Assert.assertEquals(PoolNodesTable.State.fromValue(condition), pnt.getState());
             }
         }

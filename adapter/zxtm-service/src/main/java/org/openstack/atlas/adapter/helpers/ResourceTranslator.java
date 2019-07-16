@@ -323,12 +323,9 @@ public class ResourceTranslator {
         PoolProperties properties = new PoolProperties();
         PoolBasic basic = new PoolBasic();
         List<PoolNodesTable> poolNodesTable = new ArrayList<>();
-//        List<PoolNodeWeight> weights = new ArrayList<PoolNodeWeight>();
         PoolLoadbalancing poollb = new PoolLoadbalancing();
 
         Set<Node> nodes = loadBalancer.getNodes();
-        nodes.addAll(queLb.getNodes());
-        Set<Node> enabledNodes = new HashSet<Node>();
 
         basic.setPassiveMonitoring(false);
 
@@ -341,7 +338,7 @@ public class ResourceTranslator {
             PoolNodesTable pnt = new PoolNodesTable();
             pnt.setNode(IpHelper.createZeusIpString(node.getIpAddress(), node.getPort()));
             pnt.setPriority(node.getType() == NodeType.PRIMARY ? 2 : 1);
-            String condition = node.getCondition().toString() == "ENABLED" ? "active" : node.getCondition().toString().toLowerCase();
+            String condition = node.getCondition().toString().equals("ENABLED") ? "active" : node.getCondition().toString().toLowerCase();
             pnt.setState(PoolNodesTable.State.fromValue(condition));
             if (lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_ROUND_ROBIN.toString())
                     || lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_LEAST_CONNECTIONS.toString())) {
@@ -351,53 +348,24 @@ public class ResourceTranslator {
 //            pnt.setSourceIp();
         }
 
-
-//
-//        enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.ENABLED));
-//        enabledNodes.addAll(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING));
-//
-//        basic.setNodes(NodeHelper.getNodeStrValue(enabledNodes));
-//        basic.setDraining(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DRAINING)));
-//        basic.setDisabled(NodeHelper.getNodeStrValue(NodeHelper.getNodesWithCondition(nodes, NodeCondition.DISABLED)));
-
-
-//        String lbAlgo = loadBalancer.getAlgorithm().name().toLowerCase();
-//
-//        if (queLb.getNodes() != null && !queLb.getNodes().isEmpty()) {
-//            if (lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_ROUND_ROBIN.toString())
-//                    || lbAlgo.equals(EnumFactory.AcceptFrom.WEIGHTED_LEAST_CONNECTIONS.toString())) {
-//                PoolNodeWeight nw;
-//                for (Node n : nodes) {
-//                    nw = new PoolNodeWeight();
-//                    nw.setNode(IpHelper.createZeusIpString(n.getIpAddress(), n.getPort()));
-//                    nw.setWeight(n.getWeight());
-//                    weights.add(nw);
-//                }
-//                poollb.setNodeWeighting(weights);
-//            }
-//        }
-
-
-//        poollb.setPriorityValues(znpc.getPriorityValuesSet());
-//        poollb.setPriorityNodes(znpc.getPriorityValuesSet());
         poollb.setAlgorithm(PoolLoadbalancing.Algorithm.fromValue(lbAlgo));
 
         PoolConnection connection = null;
-        if (queLb.getTimeout() != null) {
+        if (loadBalancer.getTimeout() != null) {
             connection = new PoolConnection();
             connection.setMaxReplyTime(loadBalancer.getTimeout());
         }
 
-        if (queLb.getHealthMonitor() != null)
+        if (loadBalancer.getHealthMonitor() != null)
             basic.setMonitors(new HashSet<String>(Arrays.asList(vsName)));
 
-        if ((queLb.getSessionPersistence() != null) && !(queLb.getSessionPersistence().name().equals(SessionPersistence.NONE.name()))) {
+        if ((loadBalancer.getSessionPersistence() != null) && !(loadBalancer.getSessionPersistence().name().equals(SessionPersistence.NONE.name()))) {
             basic.setPersistenceClass(loadBalancer.getSessionPersistence().name());
         } else {
             basic.setPersistenceClass("");
         }
 
-        if (queLb.getRateLimit() != null) {
+        if (loadBalancer.getRateLimit() != null) {
             basic.setBandwidthClass(vsName);
         } else {
             basic.setBandwidthClass(null);
