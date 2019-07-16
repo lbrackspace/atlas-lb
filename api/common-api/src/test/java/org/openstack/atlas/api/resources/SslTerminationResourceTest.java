@@ -8,6 +8,9 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -30,9 +33,14 @@ public class SslTerminationResourceTest {
         @Mock
         ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         @Mock
+        ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+        @Mock
         SslTerminationService sslTerminationService;
         @Mock
         Mapper dozerBeanMapper;
+        @Mock
+        RestApiConfiguration restApiConfiguration;
+
         private Response response;
 
         @InjectMocks
@@ -43,6 +51,8 @@ public class SslTerminationResourceTest {
             MockitoAnnotations.initMocks(this);
 
             dozerBeanMapper = mock(Mapper.class);
+            restApiConfiguration = mock(RestApiConfiguration.class);
+
             sslTermResource = new SslTerminationResource();
             sslTermResource.setId(1);
             sslTermResource.setAccountId(1234);
@@ -50,6 +60,8 @@ public class SslTerminationResourceTest {
             sslTermResource.setAsyncService(asyncService);
             sslTermResource.setDozerMapper(dozerBeanMapper);
             sslTermResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
+            sslTermResource.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+            sslTermResource.setRestApiConfiguration(restApiConfiguration);
 
         }
 
@@ -82,10 +94,24 @@ public class SslTerminationResourceTest {
 
         @Test
         public void shouldReturnA200WhenReturningDefaultCiphersList() throws Exception {
+            doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
+            doReturn("soap").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
             SslTermination sslTerm = new SslTermination();
             when(sslTerminationService.getSslTermination(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(sslTerm);
             doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerService).getSsl3Ciphers();
+            response = sslTermResource.retrieveSupportedCiphers();
+            org.junit.Assert.assertEquals(200, response.getStatus());
+        }
+
+        @Test
+        public void shouldReturnA200WhenReturningDefaultCiphersListREST() throws Exception {
+            doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
+            doReturn("REST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
+            SslTermination sslTerm = new SslTermination();
+            when(sslTerminationService.getSslTermination(ArgumentMatchers.<Integer>any(),
+                    ArgumentMatchers.<Integer>any())).thenReturn(sslTerm);
+            doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerStmService).getSsl3Ciphers();
             response = sslTermResource.retrieveSupportedCiphers();
             org.junit.Assert.assertEquals(200, response.getStatus());
         }
