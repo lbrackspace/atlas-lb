@@ -43,6 +43,9 @@ public class SslTerminationResource extends CommonDependencyProvider {
 
     private CertificateMappingsResource certificateMappingsResource;
 
+    protected String REST = "REST";
+
+
     @PUT
     @Consumes({APPLICATION_XML, APPLICATION_JSON})
     public Response createSsl(SslTermination ssl) {
@@ -161,8 +164,15 @@ public class SslTerminationResource extends CommonDependencyProvider {
                 if (StringUtils.isNotBlank(dbSslTermination.getCipherList())) {
                     cipherList = dbSslTermination.getCipherList();
                 } else {
+                    // Defaults not set by API grab defaults from vtm global settings
                     //TODO need to confirm if we need to get this from the cache or some configuration.
-                    cipherList = reverseProxyLoadBalancerService.getSsl3Ciphers();
+
+                    if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null
+                            && restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase(REST)) {
+                        cipherList = reverseProxyLoadBalancerStmService.getSsl3Ciphers();
+                    } else {
+                        cipherList = reverseProxyLoadBalancerService.getSsl3Ciphers();
+                    }
                 }
             }
             //Convert the list into JAXB pojo Ciphers.java
