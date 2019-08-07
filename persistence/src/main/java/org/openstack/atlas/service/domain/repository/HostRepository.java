@@ -198,7 +198,7 @@ public class HostRepository {
     }
 
     public Host getFirstAvailableRestEndPointHost() throws EntityNotFoundException {
-        String hqlStr = "from Host h where h.soapEndpointActive = 1 "
+        String hqlStr = "from Host h where h.restEndpointActive = 1 "
                 + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','REST_API_ENDPOINT') "
                 + "order by h.hostStatus desc, h.id asc";
         Query q = entityManager.createQuery(hqlStr);
