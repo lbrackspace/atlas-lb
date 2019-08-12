@@ -211,11 +211,16 @@ public class ResourceTranslator {
         }
 
         //webcache settings
-        if (loadBalancer.isContentCaching() != null && loadBalancer.isContentCaching()) {
-            VirtualServerWebcache cache = new VirtualServerWebcache();
-            cache.setEnabled(true);
-            properties.setWebCache(cache);
-            rules.add(StmConstants.CONTENT_CACHING);
+        // Default
+        VirtualServerWebcache cache = new VirtualServerWebcache();
+        cache.setEnabled(false);
+        properties.setWebCache(cache);
+        if (loadBalancer.isContentCaching() != null) {
+            if (loadBalancer.isContentCaching()) {
+                cache.setEnabled(true);
+                properties.setWebCache(cache);
+                rules.add(StmConstants.CONTENT_CACHING);
+            }
         }
 
         //error file settings
