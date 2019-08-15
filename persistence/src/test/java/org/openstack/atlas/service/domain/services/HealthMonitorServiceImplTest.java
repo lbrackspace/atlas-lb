@@ -6,19 +6,41 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.repository.LoadBalancerStatusHistoryRepository;
+import org.openstack.atlas.service.domain.repository.NodeRepository;
 import org.openstack.atlas.service.domain.services.impl.HealthMonitorServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.LoadBalancerStatusHistoryServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.NodeServiceImpl;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class HealthMonitorServiceImplTest {
 
     public static class HealthMonitorProtocols {
-        HealthMonitorServiceImpl healthMonitorService;
+        @InjectMocks
+        HealthMonitorServiceImpl healthMonitorService = new HealthMonitorServiceImpl();
+        @Mock
+        LoadBalancerRepository lbRepository;
+//        LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
+        @Mock
+        private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+
         LoadBalancer lb;
         LoadBalancer lb2;
         LoadBalancerJoinVip lbjv;
@@ -29,11 +51,11 @@ public class HealthMonitorServiceImplTest {
 
         @Before
         public void standUp() {
-            healthMonitorService = new HealthMonitorServiceImpl();
+            MockitoAnnotations.initMocks(this);
         }
 
         @Before
-        public void standUpObjects() {
+        public void standUpObjects() throws EntityNotFoundException {
             lb = new LoadBalancer();
             lb2 = new LoadBalancer();
             lbjv = new LoadBalancerJoinVip();
@@ -46,6 +68,10 @@ public class HealthMonitorServiceImplTest {
             lbjv.setVirtualIp(vip);
             lbjvs.add(lbjv);
             lb.setLoadBalancerJoinVipSet(lbjvs);
+            lb.setId(1);
+            lb.setAccountId(2333);
+
+            when(loadBalancerStatusHistoryService.save(any())).thenReturn(new LoadBalancerStatusHistory());
         }
 
         @Test(expected = BadRequestException.class)
@@ -62,93 +88,61 @@ public class HealthMonitorServiceImplTest {
             healthMonitorService.verifyMonitorProtocol(healthMonitor, lb, healthMonitor2);
         }
 
-        @Test()
-        public void shouldReturnFaultIfUpdatieMissingFieldsConnect() {
-            healthMonitor.setType(HealthMonitorType.CONNECT);
-            lb.setProtocol(LoadBalancerProtocol.HTTP);
-            try {
-                healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, null);
-            } catch (BadRequestException ex) {
-                Assert.assertEquals("Please provide all the required fields when creating a CONNECT health monitor:" +
-                        "'attemptsBeforeDeactivation', 'delay', 'timeout' and 'type'", ex.getMessage());
-            }
-        }
-
-        @Test()
-        public void shouldReturnFaultIfUpdatieMissingFieldsHttp() {
+        @Test
+        public void shouldSucceedForHttpCreateNoBodyRegex() throws BadRequestException, EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
             healthMonitor.setType(HealthMonitorType.HTTP);
+            healthMonitor.setAttemptsBeforeDeactivation(1);
+            healthMonitor.setStatusRegex(".*");
+            healthMonitor.setDelay(2);
+            healthMonitor.setPath("/");
+            healthMonitor.setTimeout(10);
+
             lb.setProtocol(LoadBalancerProtocol.HTTP);
-            try {
-                healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, null);
-            } catch (BadRequestException ex) {
-                Assert.assertEquals("Please provide all the required fields when creating an HTTP(S) health monitor:" +
-                        "'attemptsBeforeDeactivation', 'delay', 'timeout', 'type', 'path', 'statusRegex' and 'bodyRegex'", ex.getMessage());
-            }
+            lb.setAccountId(21323);
+            lb.setId(1);
+            lb.setHealthMonitor(new HealthMonitor());
+
+            when(lbRepository.getByIdAndAccountId(anyInt(), anyInt())).thenReturn(lb);
+
+            LoadBalancer reqLb = new LoadBalancer();
+            reqLb.setAccountId(21323);
+            reqLb.setId(1);
+            reqLb.setHealthMonitor(healthMonitor);
+
+            when(lbRepository.testAndSetStatus(lb.getAccountId(), lb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)).thenReturn(true);
+            when(lbRepository.update(lb)).thenReturn(lb);
+
+            healthMonitorService.update(reqLb);
+            verify(lbRepository, Mockito.times(1)).update(lb);
         }
 
         @Test
-        public void shouldReturnFaultIfUpdatieMissingFieldsForConnectToHttp() {
+        public void shouldSucceedForHttpCreateFull() throws BadRequestException, EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException {
             healthMonitor.setType(HealthMonitorType.HTTP);
-            healthMonitor2.setType(HealthMonitorType.CONNECT);
-            lb.setProtocol(LoadBalancerProtocol.HTTP);
-            try {
-                healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, healthMonitor2);
-            } catch (BadRequestException ex) {
-                Assert.assertEquals("Updating from CONNECT monitor. Please provide the additional required fields for HTTP(S) health monitor: " +
-                        "'path', 'statusRegex' and 'bodyRegex'", ex.getMessage());
-            }
-        }
-
-        @Test
-        public void shouldSuccedForHttpCreate() throws BadRequestException {
-            healthMonitor.setType(HealthMonitorType.HTTP);
-            lb.setProtocol(LoadBalancerProtocol.HTTP);
             healthMonitor.setAttemptsBeforeDeactivation(1);
             healthMonitor.setBodyRegex(".*");
             healthMonitor.setStatusRegex(".*");
             healthMonitor.setDelay(2);
             healthMonitor.setPath("/");
             healthMonitor.setTimeout(10);
-            // Should not throw junit5 has an assert for this
-            healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, null);
-        }
 
-        @Test
-        public void shouldSuccedForConnectCreate() throws BadRequestException {
-            healthMonitor.setType(HealthMonitorType.CONNECT);
             lb.setProtocol(LoadBalancerProtocol.HTTP);
-            healthMonitor.setAttemptsBeforeDeactivation(1);
-            healthMonitor.setDelay(2);
-            healthMonitor.setTimeout(10);
-            // Should not throw junit5 has an assert for this
-            healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, null);
-        }
+            lb.setAccountId(21323);
+            lb.setId(1);
+            lb.setHealthMonitor(new HealthMonitor());
 
-        @Test
-        public void shouldSuccedForConnectToHttpUpdate() throws BadRequestException {
-            healthMonitor.setType(HealthMonitorType.HTTP);
-            healthMonitor2.setType(HealthMonitorType.CONNECT);
-            lb.setProtocol(LoadBalancerProtocol.HTTP);
-            healthMonitor.setAttemptsBeforeDeactivation(1);
-            healthMonitor.setBodyRegex(".*");
-            healthMonitor.setStatusRegex(".*");
-            healthMonitor.setDelay(2);
-            healthMonitor.setPath("/");
-            healthMonitor.setTimeout(10);
-            // Should not throw junit5 has an assert for this
-            healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, healthMonitor2);
-        }
+            when(lbRepository.getByIdAndAccountId(anyInt(), anyInt())).thenReturn(lb);
 
-        @Test
-        public void shouldSuccedForHttpToConnectUpdate() throws BadRequestException {
-            healthMonitor.setType(HealthMonitorType.CONNECT);
-            healthMonitor2.setType(HealthMonitorType.HTTP);
-            lb.setProtocol(LoadBalancerProtocol.HTTP);
-            healthMonitor.setAttemptsBeforeDeactivation(1);
-            healthMonitor.setDelay(2);
-            healthMonitor.setTimeout(10);
-            // Should not throw junit5 has an assert for this
-            healthMonitorService.verifyMonitorUpdateRestrictions(healthMonitor, healthMonitor2);
+            LoadBalancer reqLb = new LoadBalancer();
+            reqLb.setAccountId(21323);
+            reqLb.setId(1);
+            reqLb.setHealthMonitor(healthMonitor);
+
+            when(lbRepository.testAndSetStatus(lb.getAccountId(), lb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)).thenReturn(true);
+            when(lbRepository.update(lb)).thenReturn(lb);
+
+            healthMonitorService.update(reqLb);
+            verify(lbRepository, Mockito.times(1)).update(lb);
         }
     }
 }

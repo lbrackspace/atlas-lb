@@ -35,8 +35,6 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
 
         HealthMonitor requestMonitor = requestLb.getHealthMonitor();
 
-        verifyMonitorUpdateRestrictions(requestMonitor, dbLoadBalancer.getHealthMonitor());
-
         HealthMonitor dbMonitor = dbLoadBalancer.getHealthMonitor();
         HealthMonitor monitorToUpdate = dbMonitor == null ? new HealthMonitor() : dbMonitor;
         monitorToUpdate.setLoadbalancer(dbLoadBalancer); // Needs to be set
@@ -69,45 +67,6 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
         loadBalancerRepository.update(dbLoadBalancer);
 
         LOG.debug("Leaving " + getClass());
-    }
-
-    @Override
-    public void verifyMonitorUpdateRestrictions(HealthMonitor requestMonitor, HealthMonitor dbMonitor) throws BadRequestException {
-        // Verify if health monitor is newly created and ensure all properties are set
-        if (dbMonitor == null) {
-            // No health monitor is currently configured, this is a health monitor creation event
-            // Verify health monitor has all required properties
-            if (requestMonitor.getType().equals(HealthMonitorType.CONNECT)) {
-                if (requestMonitor.getDelay() == null ||
-                        requestMonitor.getTimeout() == null ||
-                        requestMonitor.getAttemptsBeforeDeactivation() == null) {
-                    throw new BadRequestException("Please provide all the required fields when creating a CONNECT health monitor:" +
-                            "'attemptsBeforeDeactivation', 'delay', 'timeout' and 'type'");
-                }
-            } else if ((requestMonitor.getType().equals(HealthMonitorType.HTTP) ||
-                    requestMonitor.getType().equals(HealthMonitorType.HTTPS))) {
-
-                if (requestMonitor.getDelay() == null ||
-                        requestMonitor.getTimeout() == null ||
-                        requestMonitor.getAttemptsBeforeDeactivation() == null ||
-                        StringUtils.isEmpty(requestMonitor.getPath())||
-                        StringUtils.isEmpty(requestMonitor.getStatusRegex()) ||
-                        StringUtils.isEmpty(requestMonitor.getBodyRegex())) {
-                    throw new BadRequestException("Please provide all the required fields when creating an HTTP(S) health monitor:" +
-                            "'attemptsBeforeDeactivation', 'delay', 'timeout', 'type', 'path', 'statusRegex' and 'bodyRegex'");
-                }
-            }
-        } else {
-            // Validate updating from CONNECT to HTTP(S)
-            if (dbMonitor.getType().equals(HealthMonitorType.CONNECT) &&
-                    requestMonitor.getType().equals(HealthMonitorType.HTTP) || requestMonitor.getType().equals(HealthMonitorType.HTTPS)) {
-                if (requestMonitor.getPath() == null || requestMonitor.getStatusRegex() == null || requestMonitor.getBodyRegex() == null) {
-                    throw new BadRequestException("Updating from CONNECT monitor. Please provide the additional required fields for HTTP(S) health monitor: " +
-                            "'path', 'statusRegex' and 'bodyRegex'");
-                }
-            }
-        }
-
     }
 
     @Override
