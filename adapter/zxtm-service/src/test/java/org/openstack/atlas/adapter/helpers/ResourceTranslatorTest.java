@@ -1021,14 +1021,14 @@ public class ResourceTranslatorTest extends STMTestBase {
             /* Due to a Zeus bug, this all has to be ignored and set to static values */
             // Attempting to verify behavior. Set back to what we want and revist TODO:
 
-            Assert.assertEquals(maxRateInterval, (int) createdLimiting.getMaxConnectionRate());
-            Assert.assertEquals(minConnections, (int) createdLimiting.getMinConnections());
-            Assert.assertEquals(rateTiming, (int) createdLimiting.getRateTimer());
-            Assert.assertTrue(createdProtection.getProperties().getBasic().getPerProcessConnectionCount());
-//            Assert.assertFalse(createdProtection.getProperties().getBasic().getPerProcessConnectionCount());
-//            Assert.assertEquals(0, (int) createdLimiting.getMaxConnectionRate());
-//            Assert.assertEquals(0, (int) createdLimiting.getMinConnections());
-//            Assert.assertEquals(1, (int) createdLimiting.getRateTimer());
+//            Assert.assertEquals(maxRateInterval, (int) createdLimiting.getMaxConnectionRate());
+//            Assert.assertEquals(minConnections, (int) createdLimiting.getMinConnections());
+//            Assert.assertEquals(rateTiming, (int) createdLimiting.getRateTimer());
+//            Assert.assertTrue(createdProtection.getProperties().getBasic().getPerProcessConnectionCount());
+            Assert.assertFalse(createdProtection.getProperties().getBasic().getPerProcessConnectionCount());
+            Assert.assertEquals(0, (int) createdLimiting.getMaxConnectionRate());
+            Assert.assertEquals(0, (int) createdLimiting.getMinConnections());
+            Assert.assertEquals(1, (int) createdLimiting.getRateTimer());
             ProtectionAccessRestriction createdRestriction = createdProtection.getProperties().getAccessRestriction();
             Assert.assertNotNull(createdRestriction);
             Assert.assertTrue(createdRestriction.getAllowed().contains(accessListAllowed.getIpAddress()));

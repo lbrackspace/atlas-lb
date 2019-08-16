@@ -10,6 +10,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.constants.ConnectionThrottleDefaultConstants;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
@@ -446,16 +447,12 @@ public class ResourceTranslator {
             if (maxConnections == null) maxConnections = 0;
             limiting.setMax1Connections(maxConnections);
 
-            // TODO: Need to verify what/if this bug still exists. Go forward as if it's not the case..
             /* Zeus bug requires us to set per-process to false and ignore most of these settings */
-            basic.setPerProcessConnectionCount(true);
-//            limiting.setMinConnections(0);
-//            limiting.setRateTimer(1);
-//            limiting.setMaxConnectionRate(0);
-//            limiting.setMax10Connections(0);
-            limiting.setMinConnections(limits.getMinConnections());
-            limiting.setRateTimer(limits.getRateInterval());
-            limiting.setMaxConnectionRate(limits.getMaxConnectionRate());
+            basic.setPerProcessConnectionCount(false);
+//            #NOTE: These values are  currently deprecated
+            limiting.setMinConnections(ConnectionThrottleDefaultConstants.getMinConnections());
+            limiting.setRateTimer(ConnectionThrottleDefaultConstants.getRateInterval());
+            limiting.setMaxConnectionRate(ConnectionThrottleDefaultConstants.getMaxConnectionRate());
             // We wont be using this, but it must be set to 0 as our default
             limiting.setMax10Connections(0);
         } else {
