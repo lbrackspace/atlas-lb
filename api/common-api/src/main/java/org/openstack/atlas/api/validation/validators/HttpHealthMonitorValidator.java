@@ -50,7 +50,7 @@ public class HttpHealthMonitorValidator implements ResourceValidator<HealthMonit
                 //CLB-279 Creating a Load Balancer with empty Health Monitor - creates the Load Balancer in Error state.
                 result(validationTarget().getPath()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a valid path for the health monitor.");
                 result(validationTarget().getStatusRegex()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a status regex for the health monitor.");
-                result(validationTarget().getBodyRegex()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a body regex for the health monitor.");
+//                result(validationTarget().getBodyRegex()).must().adhereTo(new MustNotBeEmpty()).forContext(POST).withMessage("Must provide a body regex for the health monitor.");
             }
         });
     }

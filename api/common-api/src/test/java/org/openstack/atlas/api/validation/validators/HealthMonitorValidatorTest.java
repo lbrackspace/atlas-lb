@@ -568,10 +568,10 @@ public class HealthMonitorValidatorTest {
         }
 
         @Test
-        public void shouldRejectBodyRegexEmpty() {
+        public void shouldAccepBodyRegexEmpty() {
             hm = initHealthMonitor(null, HTTP, "10", "10", "3", "/", ".*", "");
             result = hmv.validate(hm, POST);
-            assertFalse(resultMessage(result, POST), result.passedValidation());
+            assertTrue(resultMessage(result, POST), result.passedValidation());
         }
 
         @Test
