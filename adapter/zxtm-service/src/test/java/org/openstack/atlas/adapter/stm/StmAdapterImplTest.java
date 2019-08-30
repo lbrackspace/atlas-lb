@@ -18,9 +18,14 @@ import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.util.ca.CertUtils;
+import org.openstack.atlas.util.ca.PemUtils;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.monitor.Monitor;
@@ -30,13 +35,13 @@ import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.client.virtualserver.*;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.Mockito.*;
 
@@ -720,6 +725,146 @@ public class StmAdapterImplTest extends StmAdapterImplTestHelper {
             verify(resources).loadSTMRestClient(config);
             verify(resources).deleteKeypair(client, secureVsName);
             verify(resources).deleteVirtualServer(client, secureVsName);
+            verify(client).destroy();
+        }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PrepareForTest({ResourceTranslator.class, ZeusUtils.class, CertUtils.class, PemUtils.class})
+    public static class WhenModifyingCertificateMappingResources {
+        private String vsName;
+        private String secureVsName;
+        private LoadBalancer loadBalancer;
+        private ResourceTranslator resourceTranslator;
+        private CertificateMapping certificateMapping;
+
+        @Mock
+        private ZeusUtils zeusUtils;
+        @Mock
+        private CertUtils certUtils;
+        @Mock
+        private StmAdapterResources resources;
+        @Mock
+        private LoadBalancerEndpointConfiguration config;
+        @Mock
+        private StingrayRestClient client;
+        @Spy
+        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+
+        @Before
+        public void standUp() throws Exception {
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancer = generateLoadBalancer();
+            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+            secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+            certificateMapping = new CertificateMapping();
+            certificateMapping.setCertificate("thing");
+            certificateMapping.setPrivateKey("thing2");
+            certificateMapping.setIntermediateCertificate("thing3");
+            certificateMapping.setHostName("thingHost");
+            certificateMapping.setId(2);
+
+            ZeusCrtFile zcf = new ZeusCrtFile();
+            zcf.setPrivate_key(certificateMapping.getPrivateKey());
+            zcf.setPublic_cert(certificateMapping.getCertificate() + certificateMapping.getIntermediateCertificate());
+            PowerMockito.mockStatic(PemUtils.class);
+            PowerMockito.mockStatic(CertUtils.class);
+            PowerMockito.mockStatic(ZeusUtils.class);
+            PowerMockito.when(zeusUtils.buildZeusCrtFileLbassValidation(certificateMapping.getPrivateKey(),
+                    certificateMapping.getCertificate(),
+                    certificateMapping.getIntermediateCertificate())).thenReturn(zcf);
+
+            resourceTranslator = spy(new ResourceTranslator());
+            PowerMockito.mockStatic(ResourceTranslator.class);
+            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+
+            when(adapterSpy.getResources()).thenReturn(resources);
+            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            doNothing().when(resources).updateKeypair(eq(client), anyString(), Matchers.any(Keypair.class));
+            doNothing().when(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
+            doNothing().when(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
+            doNothing().when(resources).updateVirtualServer(eq(client), eq(vsName), Matchers.any(VirtualServer.class));
+            doNothing().when(resources).deleteKeypair(eq(client), anyString());
+            doNothing().when(resources).deleteVirtualServer(client, secureVsName);
+        }
+
+        @After
+        public void tearDown() {
+            //TODO figure out if I need to do any actual cleanup
+        }
+
+        @Test
+        public void testUpdateCertificateMappingNew() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerServerCertHostMapping vshm = new VirtualServerServerCertHostMapping();
+            vshm.setHost("thingHost1");
+            vshm.setCertificate("cert12");
+            List<VirtualServerServerCertHostMapping> vsl = new ArrayList<>();
+            vsl.add(vshm);
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsssl.setServerCertHostMapping(vsl);
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(anyString())).thenReturn(vs);
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            cms.add(certificateMapping);
+            loadBalancer.setCertificateMappings(cms);
+            adapterSpy.updateCertificateMapping(config, loadBalancer, certificateMapping);
+
+            String cname = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                    loadBalancer.getAccountId(), certificateMapping.getId());
+            verify(resources).loadSTMRestClient(config);
+            verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
+            verify(resourceTranslator).translateKeypairMappingsResource(loadBalancer, true);
+            verify(resources).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client).destroy();
+        }
+
+        @Test
+        public void testUpdateCertificateMappingExisting() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerServerCertHostMapping vshm = new VirtualServerServerCertHostMapping();
+            vshm.setHost("thingHost");
+            vshm.setCertificate("cert12");
+            List<VirtualServerServerCertHostMapping> vsl = new ArrayList<>();
+            vsl.add(vshm);
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsssl.setServerCertHostMapping(vsl);
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(anyString())).thenReturn(vs);
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            cms.add(certificateMapping);
+            loadBalancer.setCertificateMappings(cms);
+            adapterSpy.updateCertificateMapping(config, loadBalancer, certificateMapping);
+
+            String cname = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                    loadBalancer.getAccountId(), certificateMapping.getId());
+            verify(resources).loadSTMRestClient(config);
+            verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
+            verify(resourceTranslator).translateKeypairMappingsResource(loadBalancer, true);
+            verify(resources).deleteKeypair(client, ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                    loadBalancer.getAccountId(), certificateMapping.getId()));
+            verify(resources).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client).destroy();
+        }
+
+        @Test
+        public void testDeleteCertificateMapping() throws Exception {
+            adapterSpy.deleteCertificateMapping(config, loadBalancer, certificateMapping);
+            String cn = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                    loadBalancer.getAccountId(), certificateMapping.getId());
+            verify(resources).loadSTMRestClient(config);
+            verify(resources).deleteKeypair(client, cn);
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client).destroy();
         }
     }

@@ -1,7 +1,10 @@
 package org.openstack.atlas.adapter.itest;
 
 
+import org.bouncycastle.asn1.x509.Certificate;
 import org.junit.*;
+import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -16,6 +19,7 @@ import org.rackspace.stingray.client.protection.ProtectionProperties;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client.virtualserver.VirtualServerServerCertHostMapping;
 import org.rackspace.stingray.client.virtualserver.VirtualServerSsl;
 
 import java.io.File;
@@ -95,6 +99,12 @@ public class SslTerminationITest extends STMTestBase {
         verifyDeleteAccessListWithConnectionThrottling();
         setSslTermination();
         verifyAccessListWithSsl();
+    }
+
+    @Test
+    public void testCertificateMappings() throws Exception {
+        verifyUpdateCertificateMappings();
+        verifyRemoveCertificateMappings();
     }
 
     @Test
@@ -257,6 +267,124 @@ public class SslTerminationITest extends STMTestBase {
         }
     }
 
+    private void verifyUpdateCertificateMappings() {
+        // Need ssltermination virtual server
+        setSslTermination();
+
+        try {
+            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+            String cname1 = ZxtmNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), 1);
+            String cname2 = ZxtmNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), 2);
+
+            VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            VirtualServerSsl vssl = createdSecureVs.getProperties().getSsl();
+            List<VirtualServerServerCertHostMapping> schm = vssl.getServerCertHostMapping();
+            Assert.assertEquals(0, schm.size());
+
+            Set<CertificateMapping> cmappings = new HashSet<>();
+            CertificateMapping cm1 = new CertificateMapping();
+            cm1.setIntermediateCertificate(StmTestConstants.CMAPPINGS_INTERMEDIATES);
+            cm1.setCertificate(StmTestConstants.CMAPPINGS_CERT);
+            cm1.setPrivateKey(StmTestConstants.CMAPPINGS_KEY);
+            cm1.setHostName("h1");
+            cm1.setId(1);
+//            cmappings.add(cm1);
+
+            CertificateMapping cm2 = new CertificateMapping();
+            cm2.setCertificate(StmTestConstants.SSL_CERT);
+            cm2.setPrivateKey(StmTestConstants.SSL_KEY);
+            cm2.setHostName("h2");
+            cm2.setId(2);
+            cmappings.add(cm2);
+            lb.setCertificateMappings(cmappings);
+
+            // Create one
+            stmAdapter.updateCertificateMapping(config, lb, cm2);
+            createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            vssl = createdSecureVs.getProperties().getSsl();
+            schm = vssl.getServerCertHostMapping();
+            Assert.assertEquals(1, schm.size());
+            Assert.assertEquals("h2", schm.get(0).getHost());
+            Assert.assertEquals(cname2, schm.get(0).getCertificate());
+
+            // Create the second
+            cmappings.add(cm1);
+            lb.setCertificateMappings(cmappings);
+            stmAdapter.updateCertificateMapping(config, lb, cm1);
+            createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            vssl = createdSecureVs.getProperties().getSsl();
+            schm = vssl.getServerCertHostMapping();
+            Assert.assertEquals(2, schm.size());
+            boolean failed = true;
+            for (VirtualServerServerCertHostMapping chm : schm) {
+                if (chm.getHost().equals("h1")) {
+                    Assert.assertEquals(cname1, chm.getCertificate());
+                    failed = false;
+                }
+            }
+            if (failed) {
+                Assert.fail("Second certificate mapping not found");
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+
+    }
+
+    private void verifyRemoveCertificateMappings() {
+
+        try {
+            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+
+            VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            VirtualServerSsl vssl = createdSecureVs.getProperties().getSsl();
+            List<VirtualServerServerCertHostMapping> schm = vssl.getServerCertHostMapping();
+            Assert.assertEquals(2, schm.size());
+
+            Set<CertificateMapping> cmappings = new HashSet<>();
+            CertificateMapping cm1 = new CertificateMapping();
+            cm1.setIntermediateCertificate(StmTestConstants.CMAPPINGS_INTERMEDIATES);
+            cm1.setCertificate(StmTestConstants.CMAPPINGS_CERT);
+            cm1.setPrivateKey(StmTestConstants.CMAPPINGS_KEY);
+            cm1.setHostName("h1");
+            cm1.setId(1);
+            cmappings.add(cm1);
+
+            CertificateMapping cm2 = new CertificateMapping();
+            cm2.setCertificate(StmTestConstants.SSL_CERT);
+            cm2.setPrivateKey(StmTestConstants.SSL_KEY);
+            cm2.setHostName("h2");
+            cm2.setId(2);
+            cmappings.add(cm2);
+            lb.setCertificateMappings(cmappings);
+
+            // Remove one
+            stmAdapter.deleteCertificateMapping(config, lb, cm2);
+            createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            vssl = createdSecureVs.getProperties().getSsl();
+            schm = vssl.getServerCertHostMapping();
+            Assert.assertEquals(1, schm.size());
+            //check..
+
+            // Remove the second
+            stmAdapter.deleteCertificateMapping(config, lb, cm1);
+            createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            vssl = createdSecureVs.getProperties().getSsl();
+            schm = vssl.getServerCertHostMapping();
+            Assert.assertEquals(0, schm.size());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+
+    }
+
     private void setRateLimit() {
         try {
             int maxRequestsPerSecond = 1000;
@@ -331,12 +459,13 @@ public class SslTerminationITest extends STMTestBase {
 
             Assert.assertNotNull(protection);
             ProtectionConnectionLimiting createdThrottle = protection.getProperties().getConnectionLimiting();
-            Assert.assertEquals(maxConnectionRate, (int) createdThrottle.getMaxConnectionRate());
-            // Max10 is unused, defaults to 0
+            Assert.assertEquals(0, (int) createdThrottle.getMaxConnectionRate());
+            // Max1 is only used, rest default to 0 or 1
             Assert.assertEquals(0, (int) createdThrottle.getMax10Connections());
+            Assert.assertEquals(1, (int) createdThrottle.getRateTimer());
+            Assert.assertEquals(0, (int) createdThrottle.getMinConnections());
+
             Assert.assertEquals(maxConnections, (int) createdThrottle.getMax1Connections());
-            Assert.assertEquals(rateInterval, (int) createdThrottle.getRateTimer());
-            Assert.assertEquals(minConnections, (int) createdThrottle.getMinConnections());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -521,7 +650,7 @@ public class SslTerminationITest extends STMTestBase {
             ProtectionProperties properties = protection.getProperties();
             Assert.assertTrue(properties.getAccessRestriction().getAllowed().isEmpty());
             Assert.assertTrue(properties.getAccessRestriction().getBanned().isEmpty());
-            Assert.assertEquals(Integer.valueOf(25), properties.getConnectionLimiting().getMaxConnectionRate());
+            Assert.assertEquals(Integer.valueOf(0), properties.getConnectionLimiting().getMax1Connections());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());

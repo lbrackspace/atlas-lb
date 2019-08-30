@@ -252,11 +252,11 @@ public class FullConfigITest extends STMTestBase {
             buildHydratedLb();
             stmAdapter.updateLoadBalancer(config, lb, lb);
 
-            lb.getConnectionLimit().setRateInterval(-2);
+            lb.getConnectionLimit().setMaxConnections(-2);
             nlb.setConnectionLimit(lb.getConnectionLimit());
 
             stmAdapter.updateLoadBalancer(config, lb, nlb);
-            Assert.fail("Should have failed to update");
+            Assert.fail("Should have failed to update load balancer due to negative max connections");
 
         } catch (Exception e) {
             verifyProtection(clb);
@@ -524,10 +524,10 @@ public class FullConfigITest extends STMTestBase {
 
         if (lb.getConnectionLimit() != null) {
             ProtectionConnectionLimiting cl = protection.getProperties().getConnectionLimiting();
-            Assert.assertEquals(lb.getConnectionLimit().getMinConnections(), cl.getMinConnections());
-            Assert.assertEquals(lb.getConnectionLimit().getMaxConnectionRate(), cl.getMaxConnectionRate());
+            Assert.assertEquals(Integer.valueOf(0), cl.getMinConnections());
+            Assert.assertEquals(Integer.valueOf(0), cl.getMaxConnectionRate());
             Assert.assertEquals(lb.getConnectionLimit().getMaxConnections(), cl.getMax1Connections());
-            Assert.assertEquals(lb.getConnectionLimit().getRateInterval(), cl.getRateTimer());
+            Assert.assertEquals(Integer.valueOf(1), cl.getRateTimer());
         }
 
         return protection;

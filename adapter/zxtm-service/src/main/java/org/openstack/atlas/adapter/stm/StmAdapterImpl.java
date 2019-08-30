@@ -29,10 +29,12 @@ import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.util.EnumFactory;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client.virtualserver.VirtualServerHttp;
+import org.rackspace.stingray.client.virtualserver.VirtualServerServerCertHostMapping;
 import org.rackspace.stingray.client.virtualserver.VirtualServerSsl;
 import org.springframework.stereotype.Component;
 
@@ -48,6 +50,11 @@ import org.openstack.atlas.util.debug.Debug;
 public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public static Log LOG = LogFactory.getLog(StmAdapterImpl.class.getName());
     private StmAdapterResources resources;
+
+    protected static final ZeusUtils zeusUtil;
+    static {
+        zeusUtil = new ZeusUtils();
+    }
 
     /*
     Load Balancer Resources
@@ -191,15 +198,24 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         for (VSType vsType : vsNames.keySet()) {
             String vsName = vsNames.get(vsType);
 
-            if (vsType == VSType.REDIRECT_VS) {
-                // TODO: looks like we need to handle redirect here
-                getResources().deleteVirtualServer(client, vsName);
-            } else {
-                getResources().deleteVirtualServer(client, vsName);
-            }
-
-            if (vsType == VSType.SECURE_VS) {
-                getResources().deleteKeypair(client, vsName);
+            switch(vsType) {
+                case REDIRECT_VS:
+                    getResources().deleteVirtualServer(client, vsName);
+                    break;
+                case SECURE_VS:
+                    getResources().deleteKeypair(client, vsName);
+                    if (loadBalancer.getCertificateMappings() != null &&
+                            !loadBalancer.getCertificateMappings().isEmpty()) {
+                        for (CertificateMapping cm : loadBalancer.getCertificateMappings()) {
+                            getResources().deleteKeypair(client,
+                                    ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                                            loadBalancer.getAccountId(), cm.getId()));
+                        }
+                    }
+                    getResources().deleteVirtualServer(client, vsName);
+                    break;
+                default:
+                    getResources().deleteVirtualServer(client, vsName);
             }
         }
 
@@ -699,11 +715,79 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         }
     }
 
-    protected static final ZeusUtils zeusUtil;
-    static {
-        zeusUtil = new ZeusUtils();
+
+
+    @Override
+    public void updateCertificateMapping(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, CertificateMapping certMappingToUpdate) throws InsufficientRequestException, StmRollBackException {
+        final String virtualServerNameSecure = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        final String certificateName = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(), loadBalancer.getAccountId(), certMappingToUpdate.getId());
+
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
+
+        String userKey = certMappingToUpdate.getPrivateKey();
+        String userCrt = certMappingToUpdate.getCertificate();
+        String imdCrt = certMappingToUpdate.getIntermediateCertificate();
+        ZeusCrtFile zeusCrtFile = zeusUtil.buildZeusCrtFileLbassValidation(userKey, userCrt, imdCrt);
+
+        if (zeusCrtFile.hasFatalErrors()) {
+            String errors = StringUtils.joinString(zeusCrtFile.getFatalErrorList(), ",");
+            String msg = String.format("ZeusCrtFile generation failure: %s", errors);
+            throw new InsufficientRequestException(msg);
+        }
+
+        try {
+            // Retain current configuration for rollbacks
+            VirtualServer virtualServer = client.getVirtualServer(virtualServerNameSecure);
+            List<VirtualServerServerCertHostMapping> curMappings = virtualServer.getProperties().getSsl().getServerCertHostMapping();
+
+            // Translate updated secure virtualserver
+            VirtualServer sVirtualServer = rt.translateVirtualServerResource(config, virtualServerNameSecure, loadBalancer);
+            // map keypairs
+            rt.translateKeypairMappingsResource(loadBalancer, true);
+            // Remove cert keypair for mapping
+            getResources().deleteKeypair(client, certificateName);
+
+            // Update new keypair for cert mapping
+            getResources().updateKeypair(client, certificateName, rt.cKeypairMappings.get(certificateName));
+            getResources().updateVirtualServer(client, virtualServerNameSecure, sVirtualServer);
+        } catch (Exception ex) {
+            client.destroy();
+            LOG.error("Exception updating load balancer: " + ex);
+            throw new StmRollBackException("Failed to update loadbalancer", ex);
+        }
+        client.destroy();
     }
 
+    @Override
+    public void deleteCertificateMapping(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, CertificateMapping certMappingToUpdate) throws InsufficientRequestException, StmRollBackException {
+        final String virtualServerNameSecure = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
+        final String certificateName = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(), loadBalancer.getAccountId(), certMappingToUpdate.getId());
+
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        ResourceTranslator rt = ResourceTranslator.getNewResourceTranslator();
+
+        try {
+            // Retain current configuration for rollbacks
+//            VirtualServer virtualServer = client.getVirtualServer(virtualServerNameSecure);
+//            List<VirtualServerServerCertHostMapping> curMappings = virtualServer.getProperties().getSsl().getServerCertHostMapping();
+
+            // Remove item to be deleted
+            loadBalancer.getCertificateMappings().remove(certMappingToUpdate);
+
+            // Translate updated secure virtualserver, remove keypair and update virtualserver
+            VirtualServer sVirtualServer = rt.translateVirtualServerResource(config, virtualServerNameSecure, loadBalancer);
+            getResources().deleteKeypair(client, certificateName);
+            getResources().updateVirtualServer(client, virtualServerNameSecure, sVirtualServer);
+        } catch (Exception ex) {
+            client.destroy();
+            LOG.error("Exception updating load balancer: " + ex);
+            throw new StmRollBackException("Failed to update loadbalancer", ex);
+        }
+        client.destroy();
+    }
+
+    // TODO deprecated, remove soon
     public void addCertificateMappingSOAP(LoadBalancerEndpointConfiguration config, Integer lbId, Integer accountId, CertificateMapping certMappingToUpdate) throws RemoteException, InsufficientRequestException, StmRollBackException {
         final String virtualServerNameSecure = ZxtmNameBuilder.genSslVSName(lbId, accountId);
         final String certificateName = ZxtmNameBuilder.generateCertificateName(lbId, accountId, certMappingToUpdate.getId());

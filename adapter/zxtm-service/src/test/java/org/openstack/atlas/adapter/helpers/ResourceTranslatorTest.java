@@ -29,6 +29,7 @@ import org.rackspace.stingray.client.pool.*;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.protection.ProtectionAccessRestriction;
 import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
+import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.stingray.client.virtualserver.*;
@@ -321,6 +322,170 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(StmTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getSslCiphers());
             Assert.assertEquals(VirtualServerSsl.SslSupportTls1.ENABLED, createdServer.getProperties().getSsl().getSslSupportTls1());
             Assert.assertEquals(VirtualServerSsl.SslSupportTls11.DISABLED, createdServer.getProperties().getSsl().getSslSupportTls11());
+
+        }
+
+        @Test
+        public void shouldCreateValidVirtualServerWithCertificateMappings() throws InsufficientRequestException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            String secureName = ZxtmNameBuilder.genSslVSName(lb);
+
+            boolean isVsEnabled = true;
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(StmTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(StmTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(StmTestConstants.SSL_KEY);
+            sslTermination.setTls10Enabled(true);
+            sslTermination.setTls11Enabled(false);
+
+            SslCipherProfile cipherProfile = new SslCipherProfile();
+            cipherProfile.setCiphers(StmTestConstants.CIPHER_LIST);
+            cipherProfile.setComments("cipherpro1");
+            cipherProfile.setName("datenameid");
+            sslTermination.setCipherProfile(cipherProfile);
+            sslTermination.setCipherList(cipherProfile.getCiphers());
+
+            ZeusCrtFile zeusCertFile = new ZeusCrtFile();
+            zeusCertFile.setPublic_cert(StmTestConstants.SSL_CERT);
+            zeusCertFile.setPrivate_key(StmTestConstants.SSL_KEY);
+
+            ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+            zeusSslTermination.setCertIntermediateCert(StmTestConstants.SSL_CERT);
+            zeusSslTermination.setSslTermination(sslTermination);
+
+            lb.setSslTermination(zeusSslTermination.getSslTermination());
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            CertificateMapping cm = new CertificateMapping();
+            cm.setId(1);
+            cm.setHostName("h1");
+            cm.setPrivateKey("p1");
+            cm.setCertificate("c1");
+            cm.setIntermediateCertificate("ic1");
+            CertificateMapping cm2 = new CertificateMapping();
+            cm2.setId(2);
+            cm2.setHostName("h2");
+            cm2.setPrivateKey("p2");
+            cm2.setCertificate("c2");
+            cm2.setIntermediateCertificate("ic2");
+            cms.add(cm);
+            cms.add(cm2);
+
+            lb.setCertificateMappings(cms);
+
+            VirtualServer createdServer = translator.translateVirtualServerResource(config, secureName, lb);
+            Assert.assertNotNull(createdServer);
+
+            VirtualServerProperties createdProperties = createdServer.getProperties();
+            VirtualServerBasic createdBasic = createdServer.getProperties().getBasic();
+            VirtualServerTcp createdTcp = createdProperties.getTcp();
+            expectedTcp.setProxyClose(isHalfClosed);
+            VirtualServerLog log = createdProperties.getLog();
+            Boolean cacheEnabled = createdProperties.getWebCache().getEnabled();
+            Assert.assertNotNull(log);
+            Assert.assertEquals(logFormat, log.getFormat());
+            Assert.assertTrue(cacheEnabled);
+            Assert.assertEquals(vsName, createdBasic.getPool());
+            Assert.assertTrue(createdBasic.getEnabled());
+            Assert.assertEquals(vsName, createdBasic.getProtectionClass());
+            Assert.assertEquals(expectedTcp, createdTcp);
+            Assert.assertFalse(createdBasic.getListenOnAny());
+            if (lb.isContentCaching()) {
+                rules.add(StmConstants.CONTENT_CACHING);
+            }
+            Assert.assertEquals(rules.size(), createdBasic.getRequestRules().size());
+
+
+            Assert.assertEquals(StmTestConstants.LB_SECURE_PORT, (int) createdBasic.getPort());
+            Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(createdBasic.getProtocol().toString()));
+            Assert.assertEquals(isVsEnabled, createdBasic.getEnabled());
+            Assert.assertEquals(vsName, createdBasic.getPool().toString());
+            Assert.assertEquals(true, createdBasic.getSslDecrypt());
+            Assert.assertEquals(StmTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getSslCiphers());
+            Assert.assertEquals(VirtualServerSsl.SslSupportTls1.ENABLED, createdServer.getProperties().getSsl().getSslSupportTls1());
+            Assert.assertEquals(VirtualServerSsl.SslSupportTls11.DISABLED, createdServer.getProperties().getSsl().getSslSupportTls11());
+
+            String cname = lb.getId() + "_" + lb.getAccountId();
+            List<VirtualServerServerCertHostMapping> vshm = new ArrayList<>();
+            VirtualServerServerCertHostMapping vs1 = new VirtualServerServerCertHostMapping();
+            vs1.setHost("h1");
+            vs1.setCertificate(cname + "_1");
+            vshm.add(vs1);
+            VirtualServerServerCertHostMapping vs2 = new VirtualServerServerCertHostMapping();
+            vs2.setHost("h2");
+            vs2.setCertificate(cname + "_2");
+            vshm.add(vs2);
+
+            VirtualServerSsl vssl = createdServer.getProperties().getSsl();
+            Assert.assertEquals(2, vssl.getServerCertHostMapping().size());
+            Assert.assertEquals(vshm, vssl.getServerCertHostMapping());
+        }
+
+
+        @Test
+        public void shouldTranslateKeyPairCertMappings() throws InsufficientRequestException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            CertificateMapping cm = new CertificateMapping();
+            cm.setId(1);
+            cm.setHostName("h1");
+            cm.setPrivateKey(StmTestConstants.SSL_KEY);
+            cm.setCertificate(StmTestConstants.SSL_CERT);
+            cms.add(cm);
+
+            lb.setCertificateMappings(cms);
+
+            Map<String, Keypair> translatedMappings = translator.translateKeypairMappingsResource(lb, true);
+            Assert.assertNotNull(translatedMappings);
+
+            String cname = lb.getId() + "_" + lb.getAccountId() + "_1";
+
+            Keypair m1 = translatedMappings.get(cname);
+            Assert.assertNotNull(m1);
+            Assert.assertEquals(StmTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
+            Assert.assertEquals(StmTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
+
+        }
+
+        @Test
+        public void shouldTranslateKeyPairCertMappingsMultiple() throws InsufficientRequestException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            CertificateMapping cm = new CertificateMapping();
+            cm.setId(1);
+            cm.setHostName("h1");
+            cm.setPrivateKey(StmTestConstants.SSL_KEY);
+            cm.setCertificate(StmTestConstants.SSL_CERT);
+
+            CertificateMapping cm2 = new CertificateMapping();
+            cm2.setId(2);
+            cm2.setHostName("h2");
+            cm2.setPrivateKey(StmTestConstants.SSL_KEY);
+            cm2.setCertificate(StmTestConstants.SSL_CERT);
+            cms.add(cm);
+            cms.add(cm2);
+
+            lb.setCertificateMappings(cms);
+
+            Map<String, Keypair> translatedMappings = translator.translateKeypairMappingsResource(lb, true);
+            Assert.assertNotNull(translatedMappings);
+
+            String cname = lb.getId() + "_" + lb.getAccountId() + "_1";
+            String cname2 = lb.getId() + "_" + lb.getAccountId() + "_2";
+
+            Keypair m1 = translatedMappings.get(cname);
+            Assert.assertNotNull(m1);
+            Assert.assertEquals(StmTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
+            Assert.assertEquals(StmTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
+
+            Keypair m2 = translatedMappings.get(cname2);
+            Assert.assertNotNull(m2);
+            Assert.assertEquals(StmTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
+            Assert.assertEquals(StmTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
 
         }
 

@@ -163,6 +163,8 @@ public class StmAdapterResources {
     }
 
     public void deleteKeypair(StingrayRestClient client, String vsName) throws StmRollBackException {
+        // TODO update to be more generic since vsname could refer to keypair generated for cert mappings
+        // vsName can refer to specific cert mapping naming convention
         LOG.info(String.format("Removing the keypair of SSL cert used on virtual server '%s'...", vsName));
         Keypair keypair = null;
 
