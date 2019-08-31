@@ -32,6 +32,12 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void removeSuspension(LoadBalancerEndpointConfiguration config, LoadBalancer lb)
             throws InsufficientRequestException, RollBackException;
 
+    public void updateCertificateMapping(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, CertificateMapping certificateMapping)
+            throws InsufficientRequestException, RollBackException;
+
+    public void deleteCertificateMapping(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, CertificateMapping certificateMapping)
+            throws InsufficientRequestException, RollBackException;
+
     public void updateSslTermination(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, ZeusSslTermination sslTermination)
             throws InsufficientRequestException, RollBackException;
 

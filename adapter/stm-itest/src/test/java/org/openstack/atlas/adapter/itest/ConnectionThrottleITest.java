@@ -38,7 +38,8 @@ public class ConnectionThrottleITest extends STMTestBase {
         createSimpleLoadBalancer();
 
         limits = new ConnectionLimit();
-        setConnectionLimitParams(54, 55, 56, 57);
+        // deprecated values set to defaults
+        setConnectionLimitParams(1, 55, 0, 0);
 
         vsName = ZxtmNameBuilder.genVSName(lb);
     }

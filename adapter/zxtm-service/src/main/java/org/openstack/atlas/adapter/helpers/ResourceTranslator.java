@@ -44,6 +44,7 @@ public class ResourceTranslator {
     public Protection cProtection;
     public Bandwidth cBandwidth;
     public Keypair cKeypair;
+    public Map<String, Keypair> cKeypairMappings;
     protected static final ZeusUtils zeusUtil;
 
     static {
@@ -69,6 +70,7 @@ public class ResourceTranslator {
         translateTrafficIpGroupsResource(config, loadBalancer, vipsEnabled);
 
         if (loadBalancer.getSslTermination() != null) translateKeypairResource(loadBalancer, careAboutCert);
+        if (loadBalancer.getCertificateMappings() != null) translateKeypairMappingsResource(loadBalancer, careAboutCert);
         if ((loadBalancer.getAccessLists() != null && !loadBalancer.getAccessLists().isEmpty()) || loadBalancer.getConnectionLimit() != null)
             translateProtectionResource(loadBalancer);
 
@@ -167,6 +169,20 @@ public class ResourceTranslator {
                 VirtualServerHttp virtualServerHttp = new VirtualServerHttp();
                 virtualServerHttp.setLocationRewrite(VirtualServerHttp.LocationRewrite.NEVER);
                 properties.setHttp(virtualServerHttp);
+            }
+
+            // certificate mappings, related certificate/key pairs should be imported by now
+            List<VirtualServerServerCertHostMapping> cmappings = new ArrayList<>();
+            if (loadBalancer.getCertificateMappings() != null ) {
+                Set<CertificateMapping> certMappings = loadBalancer.getCertificateMappings();
+                for (CertificateMapping cm : certMappings) {
+                    VirtualServerServerCertHostMapping vcm = new VirtualServerServerCertHostMapping();
+                    vcm.setHost(cm.getHostName());
+                    vcm.setCertificate(ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                            loadBalancer.getAccountId(), cm.getId()));
+                    cmappings.add(vcm);
+                }
+                ssl.setServerCertHostMapping(cmappings);
             }
 
         } else {
@@ -503,6 +519,43 @@ public class ResourceTranslator {
         return cKeypair;
     }
 
+    public Map<String, Keypair> translateKeypairMappingsResource(LoadBalancer loadBalancer,
+                                                    boolean careAboutCert) throws InsufficientRequestException {
+        Integer lbId = loadBalancer.getId();
+        Integer accountId = loadBalancer.getAccountId();
+
+        // Ensure we're using a fresh map
+        cKeypairMappings = new HashMap<>();
+
+        for (CertificateMapping cm : loadBalancer.getCertificateMappings()) {
+
+            String certificateName = ZxtmNameBuilder.generateCertificateName(lbId, accountId, cm.getId());
+
+            ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(cm.getPrivateKey(),
+                    cm.getCertificate(), cm.getIntermediateCertificate());
+            if (zeusCertFile.hasFatalErrors()) {
+                String fmt = "StingrayCertFile generation Failure: %s";
+                String errors = StringUtils.joinString(zeusCertFile.getErrors(), ",");
+                String msg = String.format(fmt, errors);
+
+                if (careAboutCert)
+                    throw new InsufficientRequestException(msg);
+                else
+                    return null;
+            }
+
+            Keypair kp = new Keypair();
+            KeypairProperties keypairProperties = new KeypairProperties();
+            KeypairBasic keypairBasic = new KeypairBasic();
+            keypairBasic.setPrivate(zeusCertFile.getPrivate_key());
+            keypairBasic.setPublic(zeusCertFile.getPublic_cert());
+            keypairProperties.setBasic(keypairBasic);
+            kp.setProperties(keypairProperties);
+            cKeypairMappings.put(certificateName, kp);
+        }
+        return cKeypairMappings;
+    }
+
     public Bandwidth translateBandwidthResource(LoadBalancer loadBalancer) throws InsufficientRequestException {
         Bandwidth bandwidth = new Bandwidth();
         BandwidthProperties properties = new BandwidthProperties();
@@ -600,5 +653,13 @@ public class ResourceTranslator {
 
     public void setcKeypair(Keypair keypair) {
         this.cKeypair = keypair;
+    }
+
+    public Map<String, Keypair> getcKeypairMappings() {
+        return cKeypairMappings;
+    }
+
+    public void setcKeypairMappings(Map<String, Keypair> cKeypairMappings) {
+        this.cKeypairMappings = cKeypairMappings;
     }
 }

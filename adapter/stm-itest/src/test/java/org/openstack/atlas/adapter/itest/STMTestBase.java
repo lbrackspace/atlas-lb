@@ -17,8 +17,10 @@ import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolLoadbalancing;
+import org.rackspace.stingray.client.ssl.keypair.Keypair;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.VirtualServer;
 
@@ -234,11 +236,18 @@ public class STMTestBase extends StmTestConstants {
 
         try {
             stmClient.getVirtualServer(loadBalancerName());
-
-            if (lb.getSslTermination() != null) {
-                stmClient.getVirtualServer(secureLoadBalancerName());
-            }
             Assert.fail("Virtual Server should have been deleted!");
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+            } else {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
+        }
+
+        try {
+            stmClient.getVirtualServer(secureLoadBalancerName());
+            Assert.fail("Secure virtual Server should have been deleted!");
         } catch (Exception e) {
             if (e instanceof StingrayRestClientObjectNotFoundException) {
             } else {
@@ -311,6 +320,21 @@ public class STMTestBase extends StmTestConstants {
                     stmClient.getTrafficIp(trafficIpGroupName(jv.getVirtualIp()));
                 }
                 Assert.fail("Traffic ips should have been deleted!");
+            }
+        } catch (Exception e) {
+            if (e instanceof StingrayRestClientObjectNotFoundException) {
+            } else {
+                e.printStackTrace();
+                Assert.fail(e.getMessage());
+            }
+        }
+        try {
+            if (lb.getCertificateMappings() != null) {
+                List<Child> kpl = stmClient.getKeypairs();
+                for (CertificateMapping cm : lb.getCertificateMappings()) {
+                    String zn = ZxtmNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), cm.getId());
+                    Assert.assertFalse(kpl.contains(zn));
+                }
             }
         } catch (Exception e) {
             if (e instanceof StingrayRestClientObjectNotFoundException) {

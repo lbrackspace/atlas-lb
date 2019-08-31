@@ -29,7 +29,7 @@ public class DeleteCertificateMappingListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, enfe);
@@ -39,10 +39,16 @@ public class DeleteCertificateMappingListener extends BaseListener {
         }
 
         try {
-            LOG.debug(String.format("Removing certificate mapping '%d' from load balancer '%d' in ZXTM...", queueCertMapping.getId(), dataContainer.getLoadBalancerId()));
-            CertificateMapping dbCertMapping = certificateMappingService.getByIdAndLoadBalancerId(queueCertMapping.getId(), dbLoadBalancer.getId());
-            reverseProxyLoadBalancerService.removeCertificateMapping(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbCertMapping);
-            LOG.debug(String.format("Successfully removed certificate mapping '%d' from load balancer '%d' in Zeus.", queueCertMapping.getId(), dataContainer.getLoadBalancerId()));
+            if (isRestAdapter()) {
+                LOG.debug(String.format("Updating session persistence for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerStmService.deleteCertificateMapping(dbLoadBalancer, queueCertMapping);
+                LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+            } else {
+                LOG.debug(String.format("Removing certificate mapping '%d' from load balancer '%d' in ZXTM...", queueCertMapping.getId(), dataContainer.getLoadBalancerId()));
+                CertificateMapping dbCertMapping = certificateMappingService.getByIdAndLoadBalancerId(queueCertMapping.getId(), dbLoadBalancer.getId());
+                reverseProxyLoadBalancerService.removeCertificateMapping(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbCertMapping);
+                LOG.debug(String.format("Successfully removed certificate mapping '%d' from load balancer '%d' in Zeus.", queueCertMapping.getId(), dataContainer.getLoadBalancerId()));
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error removing certificate mapping '%d' in Zeus for loadbalancer '%d'.", queueCertMapping.getId(), dataContainer.getLoadBalancerId());

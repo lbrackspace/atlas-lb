@@ -29,7 +29,7 @@ public class UpdateCertificateMappingListener extends BaseListener {
         LoadBalancer dbLoadBalancer;
 
         try {
-            dbLoadBalancer = loadBalancerService.get(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
+            dbLoadBalancer = loadBalancerService.getWithUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId());
         } catch (EntityNotFoundException enfe) {
             String alertDescription = String.format("Load balancer '%d' not found in database.", dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, enfe);
@@ -39,10 +39,16 @@ public class UpdateCertificateMappingListener extends BaseListener {
         }
 
         try {
-            LOG.info(String.format("Adding/Updating certificate mapping '%d' for load balancer '%d' in ZXTM...", queueCertMapping.getId(), dbLoadBalancer.getId()));
-            CertificateMapping dbCertMapping = certificateMappingService.getByIdAndLoadBalancerId(queueCertMapping.getId(), dbLoadBalancer.getId());
-            reverseProxyLoadBalancerService.updateCertificateMapping(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbCertMapping);
-            LOG.debug(String.format("Successfully added/updated certificate mapping '%d' for load balancer '%d' in Zeus...", queueCertMapping.getId(), dbLoadBalancer.getId()));
+            if (isRestAdapter()) {
+                LOG.debug(String.format("Updating session persistence for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                reverseProxyLoadBalancerStmService.updateCertificateMapping(dbLoadBalancer, queueCertMapping);
+                LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+            } else {
+                LOG.info(String.format("Adding/Updating certificate mapping '%d' for load balancer '%d' in ZXTM...", queueCertMapping.getId(), dbLoadBalancer.getId()));
+                CertificateMapping dbCertMapping = certificateMappingService.getByIdAndLoadBalancerId(queueCertMapping.getId(), dbLoadBalancer.getId());
+                reverseProxyLoadBalancerService.updateCertificateMapping(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbCertMapping);
+                LOG.debug(String.format("Successfully added/updated certificate mapping '%d' for load balancer '%d' in Zeus...", queueCertMapping.getId(), dbLoadBalancer.getId()));
+            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error adding/updating certificate mapping '%d' in Zeus for loadbalancer '%d'.", queueCertMapping.getId(), dbLoadBalancer.getId());
