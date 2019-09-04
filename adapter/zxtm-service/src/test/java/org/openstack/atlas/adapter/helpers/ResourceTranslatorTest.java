@@ -1,6 +1,7 @@
 package org.openstack.atlas.adapter.helpers;
 
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -420,7 +421,7 @@ public class ResourceTranslatorTest extends STMTestBase {
 
             VirtualServerSsl vssl = createdServer.getProperties().getSsl();
             Assert.assertEquals(2, vssl.getServerCertHostMapping().size());
-            Assert.assertEquals(vshm, vssl.getServerCertHostMapping());
+            Assert.assertTrue(vssl.getServerCertHostMapping().containsAll(vshm));
         }
 
 
