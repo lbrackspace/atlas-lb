@@ -35,6 +35,9 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void updateCertificateMapping(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, CertificateMapping certificateMapping)
             throws InsufficientRequestException, RollBackException;
 
+    public void updateCertificateMappings(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
+            throws InsufficientRequestException, RollBackException;
+
     public void deleteCertificateMapping(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, CertificateMapping certificateMapping)
             throws InsufficientRequestException, RollBackException;
 
