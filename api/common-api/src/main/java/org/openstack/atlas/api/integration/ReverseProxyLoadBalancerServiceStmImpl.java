@@ -465,6 +465,17 @@ public class ReverseProxyLoadBalancerServiceStmImpl implements ReverseProxyLoadB
     }
 
     @Override
+    public void updateCertificateMappings(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
+        try {
+            reverseProxyLoadBalancerStmAdapter.updateCertificateMappings(config, loadBalancer);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
     public void updateCertificateMapping(LoadBalancer loadBalancer, CertificateMapping certificateMapping) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {

@@ -39,6 +39,8 @@ public interface ReverseProxyLoadBalancerStmService {
 
     void removeSslTermination(LoadBalancer lb) throws Exception;
 
+    void updateCertificateMappings(LoadBalancer loadBalancer) throws Exception;
+
     void updateCertificateMapping(LoadBalancer loadBalancer, CertificateMapping certificateMapping) throws Exception;
 
     void deleteCertificateMapping(LoadBalancer loadBalancer, CertificateMapping certificateMapping) throws Exception;
