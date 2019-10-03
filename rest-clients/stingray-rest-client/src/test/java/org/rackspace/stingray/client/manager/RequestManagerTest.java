@@ -7,12 +7,14 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.manager.impl.RequestManagerImpl;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolHttp;
 import org.rackspace.stingray.client.pool.PoolProperties;
+import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.MediaType;
@@ -21,6 +23,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(Enclosed.class)
@@ -208,12 +211,12 @@ public class RequestManagerTest {
         }
 
 
-         @Test
+        @Test
         public void shouldReturnTrueAfterSuccessfulDelete() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-             Mockito.when(this.mockResponse.getStatus()).thenReturn(204);
-             Response response = requestManager.deleteItem(getPoolPath(), this.mockClient, vsName);
-             Assert.assertNotNull(response);
-             Assert.assertEquals(204, response.getStatus());
+            Mockito.when(this.mockResponse.getStatus()).thenReturn(204);
+            Response response = requestManager.deleteItem(getPoolPath(), this.mockClient, vsName);
+            Assert.assertNotNull(response);
+            Assert.assertEquals(204, response.getStatus());
         }
 
         @Test(expected = StingrayRestClientObjectNotFoundException.class)
@@ -222,5 +225,38 @@ public class RequestManagerTest {
             Mockito.when(this.mockResponse.readEntity(String.class)).thenReturn("Invalid resource URI");
             requestManager.deleteItem(getPoolPath(), this.mockClient, vsName);
         }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore("javax.management.*")
+    public static class VerifyVirtualServerStatProperties {
+        VirtualServerStatsProperties vs;
+
+
+        @Before
+        public void standUp() throws URISyntaxException, IOException {
+            vs = new VirtualServerStatsProperties();
+            vs.setBytesIn(10L);
+            vs.setBytesInHi(10L);
+            vs.setBytesInLo(10L);
+            vs.setBytesOut(10L);
+            vs.setBytesOutHi(10L);
+            vs.setBytesOutLo(10L);
+            vs.setConnectionFailures(3);
+        }
+
+        @Test
+        public void verifyByteFieldsAreLong() {
+            // Verify virtual server stats byte* fields are of type long
+            // See: CLB-1021
+            Assert.assertThat(vs.getConnectionFailures(), instanceOf(Integer.class));
+            Assert.assertThat(vs.getBytesIn(), instanceOf(Long.class));
+            Assert.assertThat(vs.getBytesInHi(), instanceOf(Long.class));
+            Assert.assertThat(vs.getBytesInLo(), instanceOf(Long.class));
+            Assert.assertThat(vs.getBytesOut(), instanceOf(Long.class));
+            Assert.assertThat(vs.getBytesOutHi(), instanceOf(Long.class));
+            Assert.assertThat(vs.getBytesOutLo(), instanceOf(Long.class));
+        }
+
     }
 }
