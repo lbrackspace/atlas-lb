@@ -67,7 +67,7 @@ public class CustomMappings {
             connectionErrorSsl[0] += propertiesSsl.getConnectionErrors();
             connectionFailureSsl[0] += propertiesSsl.getConnectionFailures();
             connectionTimedOutSsl[0] += propertiesSsl.getConnectTimedOut();
-            currentConnections[0] += propertiesSsl.getCurrentConn();
+            currentConnectionsSsl[0] += propertiesSsl.getCurrentConn();
             dataTimedOutSsl[0] += propertiesSsl.getDataTimedOut();
             keepaliveTimedOutSsl[0] += propertiesSsl.getKeepaliveTimedOut();
             Integer maxSsl = propertiesSsl.getMaxConn();
