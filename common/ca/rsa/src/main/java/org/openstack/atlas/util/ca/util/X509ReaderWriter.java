@@ -88,7 +88,12 @@ public class X509ReaderWriter {
         List<Exception> exceptions = new ArrayList<Exception>();
         byte[] pemBytes = StringUtils.asciiBytes(pemString);
         Set<X509CertificateHolder> x509objs = new HashSet<X509CertificateHolder>();
-        List<PemBlock> blocks = PemUtils.parseMultiPem(pemBytes);
+        List<PemBlock> blocks = null;
+        try {
+            blocks = PemUtils.parseMultiPem(pemBytes);
+        } catch (PemException ex) {
+            exceptions.add(buildNotX509ObjectException(ex.getMessage(), null, null, ex));
+        }
         for (PemBlock block : blocks) {
             if (!StringUtils.strEquals(block.getStartLine(), BEG_CRT)) {
                 continue;
@@ -308,7 +313,11 @@ public class X509ReaderWriter {
             throw new X509ReaderException(msg);
         }
         List<X509CertificateHolder> x509objs;
-        x509objs = decodeAsPem(pemBytes);
+        try {
+            x509objs = decodeAsPem(pemBytes);
+        } catch (PemException ex) {
+            throw new X509ReaderException(ex.getMessage());
+        }
         if (x509objs.size() > 0) {
             return x509objs;
         }
@@ -354,7 +363,7 @@ public class X509ReaderWriter {
         return x509objs;
     }
 
-    private static List<X509CertificateHolder> decodeAsPem(byte[] pemBytes) {
+    private static List<X509CertificateHolder> decodeAsPem(byte[] pemBytes) throws PemException {
         String msg;
         List<X509CertificateHolder> x509ObjList = new ArrayList<X509CertificateHolder>();
         List<PemBlock> blocks = PemUtils.parseMultiPem(pemBytes);

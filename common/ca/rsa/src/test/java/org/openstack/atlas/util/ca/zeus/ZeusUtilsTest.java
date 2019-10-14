@@ -31,6 +31,13 @@ import org.openstack.atlas.util.ca.util.X509PathBuilder;
 
 public class ZeusUtilsTest {
 
+    private static final String ECDSA_KEY = "" +
+        "-----BEGIN PRIVATE KEY-----\n" +
+        "MIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQg3CW4HRg8tOnEcZdFUXnq\n" +
+        "jxWj8MRTEvc4ddGGakRkNSShRANCAAQluVw/0hI7JyKCM1E/0lhQlGF6sdEA0pbA\n" +
+        "ltFhfkM63NFzv1PMknXIfgu3xtbP6hpFXx+PtoNhBZ8TX+rcLo66\n" +
+        "-----END PRIVATE KEY-----\n";
+
     private static KeyPair userKey;
     private static X509CertificateHolder userCrt;
     private static Set<X509CertificateHolder> imdCrts;
@@ -210,6 +217,15 @@ public class ZeusUtilsTest {
     public void shouldInvalidateMalformedKey() {
         List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
         ZeusUtils.parseKey("foobar", errors);
+
+        Assert.assertFalse(errors.isEmpty());
+        Assert.assertEquals(ErrorType.UNREADABLE_KEY, errors.get(0).getErrorType());
+    }
+
+    @Test
+    public void shouldInvalidateECDSAKey() {
+        List<ErrorEntry> errors = new ArrayList<ErrorEntry>();
+        ZeusUtils.parseKey(ECDSA_KEY, errors);
 
         Assert.assertFalse(errors.isEmpty());
         Assert.assertEquals(ErrorType.UNREADABLE_KEY, errors.get(0).getErrorType());

@@ -11,6 +11,8 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+
+import java.security.PrivateKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.security.KeyPair;
@@ -97,7 +99,7 @@ public class PemUtils {
         return out;
     }
 
-    public static Object fromPemBytes(byte[] pemBytes) throws PemException {
+    public static Object fromPemBytes(byte[] pemBytes) throws PemException, UnsupportedEncodingException{
         Object obj;
         ByteArrayInputStream bis;
         InputStreamReader isr;
@@ -134,10 +136,13 @@ public class PemUtils {
             }
         } else if (obj instanceof PrivateKeyInfo) {
 
+            PrivateKey ppkey = null;
             try {
                 JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider(RsaConst.BC);
                 PrivateKeyInfo privKeyInfo = (PrivateKeyInfo) obj;
-                BCRSAPrivateCrtKey privKey = (BCRSAPrivateCrtKey) converter.getPrivateKey(privKeyInfo);
+                ppkey = converter.getPrivateKey(privKeyInfo);
+
+                BCRSAPrivateCrtKey privKey = (BCRSAPrivateCrtKey) ppkey;
                 byte[] privKeyBytes = PemUtils.toPemBytes(privKey);
                 KeyPair kp = (KeyPair) PemUtils.fromPemBytes(privKeyBytes);
                 return kp;
@@ -146,6 +151,13 @@ public class PemUtils {
                 String msg = String.format(fmt,
                         Debug.findClassPath(obj.getClass()),
                         Debug.findClassPath(KeyPair.class));
+            } catch (ClassCastException ccex) {
+                // This is kind of a temp solution. We'd want to rework a lot of this
+                // in order to provide more clear and useful error messages to users.
+                if (ppkey != null && ppkey.getAlgorithm().toLowerCase().contains("ecdsa")) {
+                    // We don't accept ecdsa at this time. CLB-1008
+                    throw new UnsupportedEncodingException("ECDSA is an invalid algorithm at this time.");
+                }
             }
         }
         return obj; // Not sure what to convert this object to so just return it
@@ -161,8 +173,8 @@ public class PemUtils {
             pemBytes = pemStr.getBytes(RsaConst.USASCII);
             obj = fromPemBytes(pemBytes);
             return obj;
-        } catch (UnsupportedEncodingException ex) {
-            throw new PemException("Error decoding PEM", ex);
+        } catch (Exception cex) {
+            throw new PemException("Error decoding PEM", cex);
         }
     }
 
@@ -196,13 +208,13 @@ public class PemUtils {
         return bas.toByteArray();
     }
 
-    public static List<PemBlock> parseMultiPem(String multiPemString) {
+    public static List<PemBlock> parseMultiPem(String multiPemString) throws PemException {
         byte[] multiPemBytes;
         multiPemBytes = StringUtils.asciiBytes(multiPemString);
         return parseMultiPem(multiPemBytes);
     }
 
-    public static List<PemBlock> parseMultiPem(byte[] multiPemBytes) {
+    public static List<PemBlock> parseMultiPem(byte[] multiPemBytes) throws PemException {
         List<PemBlock> pemBlocks = new ArrayList<PemBlock>();
         ByteLineReader br = new ByteLineReader(multiPemBytes);
         boolean outsideBlock = true;
@@ -248,6 +260,9 @@ public class PemUtils {
                         decodedObject = PemUtils.fromPemBytes(bytes);
                     } catch (PemException ex) {
                         decodedObject = null;
+                    } catch (UnsupportedEncodingException uee) {
+                        // We cannot handle ecdsa at this time
+                        throw new PemException("ECDSA is an invalid algorithm at this time.", uee);
                     }
                     pemBlock.setDecodedObject(decodedObject);
                     currBytePos = br.getBytesRead();

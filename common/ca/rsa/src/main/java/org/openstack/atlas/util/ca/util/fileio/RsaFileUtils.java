@@ -1,5 +1,6 @@
 package org.openstack.atlas.util.ca.util.fileio;
 
+import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.util.X509MapValue;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -142,12 +143,12 @@ public class RsaFileUtils {
     }
 
     // For Jython
-    public static List<X509MapValue> readX509File(String fileName) throws FileNotFoundException, IOException {
+    public static List<X509MapValue> readX509File(String fileName) throws FileNotFoundException, IOException, PemException {
         File file = new File(fileName);
         return readX509FileToMapVals(file);
     }
 
-    public static List<X509MapValue> readX509FileToMapVals(File file) throws FileNotFoundException, IOException {
+    public static List<X509MapValue> readX509FileToMapVals(File file) throws FileNotFoundException, IOException, PemException {
         List<X509MapValue> valMapList = new ArrayList<X509MapValue>();
         byte[] pemBytes = readFile(file);
         List<PemBlock> blocks = PemUtils.parseMultiPem(pemBytes);
@@ -178,6 +179,9 @@ public class RsaFileUtils {
                 continue;
             } catch (IOException ex) {
                 Logger.getLogger(RsaFileUtils.class.getName()).log(Level.WARNING, null, ex);
+                continue;
+            } catch (PemException ex) {
+                Logger.getLogger(RsaFileUtils.class.getName()).log(Level.SEVERE, null, ex);
                 continue;
             }
             mapVals.addAll(fileMapVals);

@@ -2,6 +2,8 @@ package org.openstack.atlas.util.ca;
 
 import java.math.BigInteger;
 import java.security.KeyPair;
+
+import junit.framework.AssertionFailedError;
 import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -143,6 +145,13 @@ public class PemUtilsTest {
             + "-----END RSA PRIVATE KEY-----\n"
             + "";
 
+    private static final String ECDSA_KEY = "" +
+            "-----BEGIN PRIVATE KEY-----\n" +
+            "MIGEAgEAMBAGByqGSM49AgEGBSuBBAAKBG0wawIBAQQg3CW4HRg8tOnEcZdFUXnq\n" +
+            "jxWj8MRTEvc4ddGGakRkNSShRANCAAQluVw/0hI7JyKCM1E/0lhQlGF6sdEA0pbA\n" +
+            "ltFhfkM63NFzv1PMknXIfgu3xtbP6hpFXx+PtoNhBZ8TX+rcLo66\n" +
+            "-----END PRIVATE KEY-----\n";
+
     public PemUtilsTest() {
     }
 
@@ -227,6 +236,16 @@ public class PemUtilsTest {
         pemStr = PemUtils.toPemString(keys.getPrivate());
         obj = PemUtils.fromPemString(pemStr);
         Debug.nop();
+    }
+
+    @Test()
+    public void testFromPembytesWithECDSA() throws RsaException {
+        try {
+            PemUtils.fromPemString(ECDSA_KEY);
+            fail("Expecting PemException for ECDSA key");
+        } catch (PemException ex) {
+            Assert.assertEquals("ECDSA is an invalid algorithm at this time.", ex.getCause().getMessage());
+        }
     }
 
     @Test

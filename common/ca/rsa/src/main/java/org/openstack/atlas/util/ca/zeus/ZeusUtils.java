@@ -137,7 +137,13 @@ public class ZeusUtils {
 
     public static KeyPair parseKey(String keyIn, List<ErrorEntry> errors) {
         KeyPair kp = null;
-        List<PemBlock> blocks = PemUtils.parseMultiPem(keyIn);
+        List<PemBlock> blocks = null;
+        try {
+            blocks = PemUtils.parseMultiPem(keyIn);
+        } catch (PemException ex) {
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, ex.getMessage(), false, ex));
+            return null;
+        }
         Object obj;
         if (blocks.size() < 1) {
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, KEYREQUIRED, true, null));
@@ -190,8 +196,13 @@ public class ZeusUtils {
 
     public static X509CertificateHolder parseCert(String certIn, List<ErrorEntry> errors) {
         X509CertificateHolder x509obj = null;
-        List<PemBlock> blocks = PemUtils.parseMultiPem(certIn);
-        Object obj;
+        List<PemBlock> blocks = null;
+        try {
+            blocks = PemUtils.parseMultiPem(certIn);
+        } catch (PemException ex) {
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, ex.getMessage(), false, ex));
+            return null;
+        }        Object obj;
         if (blocks.size() < 1) {
             errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, CERTREQUIRED, true, null));
             return x509obj;
@@ -235,7 +246,13 @@ public class ZeusUtils {
         ErrorEntry errorEntry;
         List<X509CertificateHolder> imdCrts = new ArrayList<X509CertificateHolder>();
         X509CertificateHolder xh;
-        List<PemBlock> blocks = PemUtils.parseMultiPem(imdStr);
+        List<PemBlock> blocks = null;
+        try {
+            blocks = PemUtils.parseMultiPem(imdStr);
+        } catch (PemException ex) {
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, ex.getMessage(), false, ex));
+            return null;
+        }
         String msg;
         if (imdStr == null || imdStr.length() == 0) {
             return imdCrts;

@@ -1578,7 +1578,7 @@ public class CaFrame extends javax.swing.JFrame {
         try {
             obj = PemUtils.fromPemBytes(pem);
             printKnownPemObject(obj);
-        } catch (PemException ex) {
+        } catch (Exception ex) {
             fmt = "Error decoding pem object\n%s\n";
             msg = String.format(fmt, getEST(ex));
             logError("%s", msg);
@@ -1912,6 +1912,10 @@ public class CaFrame extends javax.swing.JFrame {
             fmt = "InvalidKeySpecException when trying to decode KeyPair\n";
             logError(fmt, caKeyFile, getEST(ex));
             return;
+        } catch (UnsupportedEncodingException ex) {
+            fmt = "UnsupportedEncodingException when trying to decode KeyPair\n";
+            logError(fmt, caKeyFile, getEST(ex));
+            return;
         }
 
         try {
@@ -1930,6 +1934,10 @@ public class CaFrame extends javax.swing.JFrame {
             return;
         } catch (RuntimeException ex) {
             fmt = "Object from \"%s\" does not appear to be a valid csr\n%s\n";
+            logError(fmt, csrFile, getEST(ex));
+            return;
+        } catch (UnsupportedEncodingException ex) {
+            fmt = "Object from \"%s\" is an unsupported encoding\n%s\n";
             logError(fmt, csrFile, getEST(ex));
             return;
         }
@@ -1982,6 +1990,10 @@ public class CaFrame extends javax.swing.JFrame {
                 fmt = "Error data in \"%s\" does not appear to be a x509 certificate\n%s\n";
                 logError(fmt, caCrtFile, getEST(ex));
                 return;
+            } catch (UnsupportedEncodingException ex) {
+                fmt = "Error data in \"%s\" does not appear to be valid or accepted data\n%s\n";
+                logError(fmt, caCrtFile, getEST(ex));
+                return;
             }
             try {
                 crt = CertUtils.signCSR(req, kp, caCrt, notBeforeDays, notAfterDays, serial);
@@ -2012,7 +2024,7 @@ public class CaFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_setOutputCrtFileButtonActionPerformed
 
     private void MultiParseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MultiParseFileButtonActionPerformed
-        List<PemBlock> pemBlocks;
+        List<PemBlock> pemBlocks = null;
         String fileName = RsaFileUtils.expandUser(mysteryFN.getText());
         byte[] fileData;
         try {
@@ -2022,7 +2034,12 @@ public class CaFrame extends javax.swing.JFrame {
             return;
         }
 
-        pemBlocks = PemUtils.parseMultiPem(fileData);
+        try {
+            pemBlocks = PemUtils.parseMultiPem(fileData);
+        } catch (PemException ex) {
+            logError("Error processing cert/key %s\n%s\n", fileName, getEST(ex));
+            return;
+        }
         for (PemBlock pemBlock : pemBlocks) {
             String className;
             Object obj = pemBlock.getDecodedObject();
@@ -2294,7 +2311,7 @@ public class CaFrame extends javax.swing.JFrame {
         }
         try {
             x509obj = (X509CertificateHolder) PemUtils.fromPemBytes(pemBytes);
-        } catch (PemException | ClassCastException ex) {
+        } catch (PemException | ClassCastException | UnsupportedEncodingException ex) {
             pth.redWrite("Error decodeing contents of \"%s\" to X509Certificate object", file.getName());
             pth.writeException(ex);
             return null;
@@ -2747,7 +2764,7 @@ public class CaFrame extends javax.swing.JFrame {
         dbg.setGreen();
     }
 
-    private KeyPair getKeyPairFromBytes(byte[] pemBytes) throws PemException, InvalidKeySpecException {
+    private KeyPair getKeyPairFromBytes(byte[] pemBytes) throws PemException, InvalidKeySpecException, UnsupportedEncodingException {
         Object pemObj = PemUtils.fromPemBytes(pemBytes);
         KeyPair kp = (KeyPair) pemObj;
         return kp;
