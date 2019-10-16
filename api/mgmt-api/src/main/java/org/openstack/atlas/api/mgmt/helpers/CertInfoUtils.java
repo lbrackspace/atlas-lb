@@ -5,6 +5,7 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.CertInfo;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
+import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.exceptions.X509ReaderDecodeException;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import org.openstack.atlas.util.ca.util.X509Inspector;
@@ -58,7 +59,13 @@ public class CertInfoUtils {
     public static List<String> splitImds(String imdBlob) {
         ZeusCrtFile zcf = new ZeusCrtFile();
         List<String> imds = new ArrayList<String>();
-        List<PemBlock> blocks = PemUtils.parseMultiPem(imdBlob);
+        List<PemBlock> blocks = null;
+        try {
+            blocks = PemUtils.parseMultiPem(imdBlob);
+        } catch (PemException e) {
+            // Unable to parse, should never hit this as validation wouldn't allow causing certs through
+            return imds;
+        }
         for (PemBlock block : blocks) {
             if (block.getDecodedObject() != null) {
                 String pemCrt = StringUtils.asciiString(block.getPemData());

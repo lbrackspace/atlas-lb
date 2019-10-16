@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bouncycastle.jce.provider.X509CertificateObject;
 import org.openstack.atlas.util.ca.PemUtils;
+import org.openstack.atlas.util.ca.exceptions.PemException;
 import org.openstack.atlas.util.ca.primitives.PemBlock;
 import org.openstack.atlas.util.ca.primitives.RsaConst;
 import org.openstack.atlas.util.ca.util.StaticHelpers;
@@ -21,16 +22,20 @@ public class StaticPems {
 
     static {
         RsaConst.init();
-        Set<X509CertificateObject> x509Objs;
+        Set<X509CertificateObject> x509Objs = null;
         try {
             x509Objs = getX509CertificateObjectSet("/pems/roots.crt");
         } catch (IOException ex) {
+            x509Objs = new HashSet<X509CertificateObject>();
+        } catch (PemException e) {
             x509Objs = new HashSet<X509CertificateObject>();
         }
         roots = x509Objs;
         try {
             x509Objs = getX509CertificateObjectSet("/pems/imds.crt");
         } catch (IOException ex) {
+            x509Objs = new HashSet<X509CertificateObject>();
+        } catch (PemException e) {
             x509Objs = new HashSet<X509CertificateObject>();
         }
         imds = x509Objs;
@@ -44,7 +49,7 @@ public class StaticPems {
         return new HashSet<X509CertificateObject>(imds);
     }
 
-    public static Set<X509CertificateObject> getX509CertificateObjectSet(String fileName) throws IOException {
+    public static Set<X509CertificateObject> getX509CertificateObjectSet(String fileName) throws IOException, PemException {
         Set<X509CertificateObject> objSet = new HashSet<X509CertificateObject>();
         List objList = readPemObjectsFromClass(fileName);
         for (Object obj : objList) {
@@ -53,7 +58,7 @@ public class StaticPems {
         return objSet;
     }
 
-    private static List readPemObjectsFromClass(String fileName) throws IOException {
+    private static List readPemObjectsFromClass(String fileName) throws IOException, PemException {
         byte[] pemBytes = RsaFileUtils.readFileFromClassPath(fileName);
         List<PemBlock> blocks = PemUtils.parseMultiPem(pemBytes);
         List objList = StaticHelpers.filterObjectList(PemUtils.getBlockObjects(blocks), null);

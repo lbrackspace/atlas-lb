@@ -1,6 +1,7 @@
 package org.openstack.atlas.util.ca;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.NoSuchProviderException;
@@ -302,7 +303,12 @@ public class RSAKeyUtils {
     public static PEMKeyPair getPemKeyPair(BCRSAPrivateCrtKey privKey) throws PemException {
         JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider(RsaConst.BC);
         byte[] privKeyBytes = PemUtils.toPemBytes(privKey);
-        KeyPair kp = (KeyPair) PemUtils.fromPemBytes(privKeyBytes);
+        KeyPair kp = null;
+        try {
+            kp = (KeyPair) PemUtils.fromPemBytes(privKeyBytes);
+        } catch (UnsupportedEncodingException e) {
+            throw new PemException(e.getMessage());
+        }
         return getPemKeyPair(kp);
     }
 

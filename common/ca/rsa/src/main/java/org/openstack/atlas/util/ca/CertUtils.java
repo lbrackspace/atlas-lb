@@ -1,5 +1,6 @@
 package org.openstack.atlas.util.ca;
 
+import java.io.UnsupportedEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 
@@ -333,17 +334,23 @@ public class CertUtils {
         try {
             issuerCert = (X509CertificateHolder) PemUtils.fromPemBytes(issuerCertPem);
         } catch (PemException ex) {
-            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "Error decodeing issuer Cert data to X509Certificate", true, ex));
+            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "Error decoding issuer Cert data to X509Certificate", true, ex));
         } catch (ClassCastException ex) {
-            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "Error decodeing issuer Cert data to X509Certificate", true, ex));
+            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "Error decoding issuer Cert data to X509Certificate", true, ex));
+        } catch (UnsupportedEncodingException e) {
+            // This error only thrown when encountering ecdsa algorithm
+            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "ECDSA is an invalid algorithm at this time.", true, e));
         }
 
         try {
             subjectCert = (X509CertificateHolder) PemUtils.fromPemBytes(subjectCertPem);
         } catch (PemException ex) {
-            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "Error decodeing subject Cert data to X509Certificate", true, ex));
+            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "Error decoding subject Cert data to X509Certificate", true, ex));
         } catch (ClassCastException ex) {
-            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "Error decodeing issuer Cert data to X509Certificate", true, ex));
+            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "Error decoding issuer Cert data to X509Certificate", true, ex));
+        } catch (UnsupportedEncodingException e) {
+            // This error only thrown when encountering ecdsa algorithm
+            errorList.add(new ErrorEntry(ErrorType.UNREADABLE_CERT, "ECDSA is an invalid algorithm at this time.", true, e));
         }
         if (issuerCert == null || subjectCert == null) {
             return errorList;
@@ -405,6 +412,8 @@ public class CertUtils {
         } catch (PemException ex) {
             return false;
         } catch (ClassCastException ex) {
+            return false;
+        } catch (UnsupportedEncodingException e) {
             return false;
         }
         return isSelfSigned(cert);
