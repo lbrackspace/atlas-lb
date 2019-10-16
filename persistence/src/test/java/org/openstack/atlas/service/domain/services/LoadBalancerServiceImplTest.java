@@ -324,7 +324,7 @@ public class LoadBalancerServiceImplTest {
 
         @Test(expected = BadRequestException.class)
         public void shouldRejectUpdateToHTTPSProtocolIfContentCachingEnabled() throws Exception {
-            // Allowing content caching for non-http loadbalancer is aa bug, fix it for the http-https case, CLB-1007
+            // Allowing content caching for non-http loadbalancer is aa bug, CLB-1007
             LoadBalancer loadBalancer = new LoadBalancer();
             loadBalancer.setId(1);
             loadBalancer.setAccountId(11111);
@@ -342,9 +342,9 @@ public class LoadBalancerServiceImplTest {
             lbService.prepareForUpdate(loadBalancer);
         }
 
-        @Test()
-        public void shouldAcceptUpdateToUDPProtocolAndDisableContentCaching() throws Exception {
-            // This is currently expected behavior, would break customer expectations if changed, CLB-1023
+        @Test(expected = BadRequestException.class)
+        public void shouldRejectUpdateToUDPProtocolIfContentCachingEnabled() throws Exception {
+            // Allowing content caching for non-http loadbalancer is aa bug, CLB-1007
             LoadBalancer loadBalancer = new LoadBalancer();
             loadBalancer.setId(1);
             loadBalancer.setAccountId(11111);
@@ -354,16 +354,12 @@ public class LoadBalancerServiceImplTest {
             loadBalancer.setUserName("bob");
 
             lb.setHealthMonitor(null);
-            lb.setContentCaching(true);
-            lb.setProtocol(LoadBalancerProtocol.HTTPS);
+            lb.setContentCaching(Boolean.TRUE);
             when(lbRepository.getByIdAndAccountId(Matchers.<Integer>any(), Matchers.<Integer>any())).thenReturn(lb);
 
             when(lbRepository.canUpdateToNewPort(Matchers.anyInt(), Matchers.anyObject())).thenReturn(true);
 
-            LoadBalancer r = lbService.prepareForUpdate(loadBalancer);
-
-            Assert.assertNotNull(r);
-            Assert.assertFalse(r.isContentCaching());
+            lbService.prepareForUpdate(loadBalancer);
         }
 
         @Test

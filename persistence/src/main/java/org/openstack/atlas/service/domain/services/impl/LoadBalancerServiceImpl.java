@@ -398,7 +398,8 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                         dbLoadBalancer.setProtocol(lbProtocol);
                     }
                 } else {
-                    dbLoadBalancer.setContentCaching(false);
+                    // Silently disabling is not the behavior we want, validate in verifyProtocolLoggingAndCaching: clb-1023
+//                    dbLoadBalancer.setContentCaching(false);
                     if ((dbPersistenceType == SessionPersistence.SOURCE_IP)) {
                         LOG.debug("Existing session persistence valid with " + lbProtocol + " protocol. Updating loadbalancer protocol to " + lbProtocol);
                         dbLoadBalancer.setProtocol(lbProtocol);
