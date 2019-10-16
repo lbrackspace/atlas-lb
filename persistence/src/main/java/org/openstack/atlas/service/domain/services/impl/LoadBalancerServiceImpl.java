@@ -351,7 +351,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 throw new BadRequestException("Protocol is not valid. Please verify shared virtual ips and the ports being shared.");
             }
 
-            //check for health monitor type and allow update only if protocol matches health monitory type for HTTP and HTTPS
+            //check for health monitor type and allow update only if protocol matches health monitor type for HTTP and HTTPS
             boolean portHMTypecheck = true;
             if (dbLoadBalancer.getHealthMonitor() != null) {
                 if (dbLoadBalancer.getHealthMonitor().getType() != null) {
@@ -437,12 +437,16 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return dbLoadBalancer;
     }
 
-    private void verifyProtocolLoggingAndCaching(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws UnprocessableEntityException {
+    private void verifyProtocolLoggingAndCaching(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, BadRequestException {
         String logErr = "Protocol must be HTTP for connection logging.";
-        String ccErr = "Protocol must be HTTP for content caching.";
+        String ccErr = "Content caching cannot be enabled when updating to non-HTTP load balancer protocols";
         String enable = " is Being enabled on the loadbalancer";
         String disable = " is Being disabled on the loadbalancer";
 
+        // Method called only during Loadbalancer update; loadBalancer object will contain null logging/caching fields
+        // If protocol has changed and those fields exist and are enabled in database verify against protocols
+
+        // connection logging needs to be verified/updated. Not changing behavior now, should be addressed in CLB-1022
         if (loadBalancer.isConnectionLogging() != null && !loadBalancer.isConnectionLogging().equals(dbLoadBalancer.isConnectionLogging())) {
             if (loadBalancer.isConnectionLogging()) {
                 if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
@@ -453,23 +457,18 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             } else {
                 LOG.debug("ConnectionLogging" + disable);
             }
+            // This is never set and shouldn't be, it is validated in the validators...
             dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
         }
 
-        if (loadBalancer.isContentCaching() != null && !loadBalancer.isContentCaching().equals(dbLoadBalancer.isConnectionLogging())) {
-            if (loadBalancer.isContentCaching()) {
-                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
-                    LOG.error(ccErr);
-                    throw new UnprocessableEntityException(ccErr);
-                }
-                LOG.debug("ContentCaching" + enable);
-            } else {
-                LOG.debug("ContentCaching" + disable);
+        // Content caching is only available for HTTP protocol...
+        if (loadBalancer.getProtocol() != null && loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+            LOG.debug("Protocol set to non-http, verifying if content caching is enabled... " );
+            if (dbLoadBalancer.isContentCaching() != null && dbLoadBalancer.isContentCaching()) {
+                LOG.error(ccErr);
+                throw new BadRequestException(ccErr);
             }
-            dbLoadBalancer.setConnectionLogging(loadBalancer.isConnectionLogging());
         }
-
-
     }
 
     @Transactional
