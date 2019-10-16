@@ -1,253 +1,253 @@
 {
    "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/3.4/config/active/virtual_servers#update",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/virtual_servers#update",
    "title":                 "Virtual Server",
    "description":           "The \"conf/vservers\" directory contains configuration files that define virtual servers.  The name of a file is the name of the virtual server it defines.  Virtual servers can be configured under the \"Services > Virtual Servers\" section of the Admin Server UI or by using functions under the \"VirtualServer\" section of the SOAP API and CLI.",
    "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServer",
    "type":                  "object",
+   "resourceType":          "Collection",
    "additionalProperties":  false,
-   
+
    "properties": {
-      
+
       "properties": {
          "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerProperties",
          "type":                  "object",
          "additionalProperties":  false,
-         
+
          "properties": {
-            
+
             "basic": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerBasic",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
-                  "add_cluster_ip": {
-                     "description":   "Whether or not the virtual server should add an \"X-Cluster-Client-Ip\" header to the request that contains the remote client's IP address.",
-                     
-                     "type":          "boolean"
-                  },
-                  
-                  "add_x_forwarded_for": {
-                     "description":   "Whether or not the virtual server should append the remote client's IP address to the X-Forwarded-For header. If the header does not exist, it will be added.",
-                     
-                     "type":          "boolean"
-                  },
-                  
-                  "add_x_forwarded_proto": {
-                     "description":   "Whether or not the virtual server should add an \"X-Forwarded-Proto\" header to the request that contains the original protocol used by the client to connect to the traffic manager.",
-                     
-                     "type":          "boolean"
-                  },
-                  
                   "bandwidth_class": {
-                     "description":   "The bandwidth management class should this server should use, if any.",
-                     
-                     "type":          "string"
+                     "description":   "The bandwidth management class that this server should use, if any.",
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
-                  "close_with_rst": {
-                     "description":   "Whether or not connections from clients should be closed with a RST packet, rather than a FIN packet. This avoids the TIME_WAIT state, which on rare occasions allows wandering duplicate packets to be safely ignored.",
-                     
-                     "type":          "boolean"
-                  },
-                  
-                  "completionrules": {
+
+                  "completion_rules": {
                      "description":   "Rules that are run at the end of a transaction, in order, comma separated.",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   false,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
                   "connect_timeout": {
-                     "description":   "The time, in seconds, to wait for data from a new connection.  If no data is received within this time, the connection will be closed.  A value of \"0\" (zero) will disable the timeout.",
-                     
+                     "description":   "The time, in seconds, for which an established connection can remain idle waiting for some initial data to be received from the client. The initial data is defined as a complete set of request headers for HTTP, SIP and RTSP services, or the first byte of data for all other services. A value of \"0\" will disable the timeout.",
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       99999
+                     "maximum":       99999,
+                     "default":       10
                   },
-                  
+
                   "enabled": {
                      "description":   "Whether the virtual server is enabled.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
-                  "ftp_force_server_secure": {
-                     "description":   "Whether or not the virtual server should require that incoming FTP data connections from the nodes originate from the same IP address as the node.",
-                     
-                     "type":          "boolean"
-                  },
-                  
+
                   "glb_services": {
                      "description":   "The associated GLB services for this DNS virtual server.",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
                   "listen_on_any": {
                      "description":   "Whether to listen on all IP addresses",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
                   "listen_on_hosts": {
                      "description":   "Hostnames and IP addresses to listen on",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
                   "listen_on_traffic_ips": {
                      "description":   "Traffic IP Groups to listen on",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
+                  "max_concurrent_connections": {
+                     "description":   "The maximum number of concurrent TCP connections that will be handled by this virtual server. If set to a non-zero value, the traffic manager will limit the number of concurrent TCP connections that this virtual server will accept to the value specified. When the limit is reached, new connections to this virtual server will not be accepted. If set to \"0\" the number of concurrent TCP connections will not be limited.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  },
+
                   "note": {
                      "description":   "A description for the virtual server.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "pool": {
                      "description":   "The default pool to use for traffic.",
-                     
+
                      "type":          "string"
                   },
-                  
+
                   "port": {
                      "description":   "The port on which to listen for incoming connections.",
-                     
+
                      "type":          "integer",
                      "minimum":       1,
                      "maximum":       65535
                   },
-                  
+
                   "protection_class": {
                      "description":   "The service protection class that should be used to protect this server, if any.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "protocol": {
                      "description":   "The protocol that the virtual server is using.",
-                     
+
                      "type":          "string",
+                     "default":       "http",
                      "enum":          ["client_first","dns","dns_tcp","ftp","http","https","imaps","imapv2","imapv3","imapv4","ldap","ldaps","pop3","pop3s","rtsp","server_first","siptcp","sipudp","smtp","ssl","stream","telnet","udp","udpstreaming"]
                   },
-                  
+
+                  "proxy_protocol": {
+                     "description":   "Expect connections to the traffic manager to be prefixed with a PROXY protocol header. If enabled, the information contained in the PROXY header will be available in TrafficScript. Connections that are not prefixed with a valid PROXY protocol header will be discarded.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "proxy_protocol_optional": {
+                     "description":   "Connections which do not include a PROXY protocol header are not rejected, but are treated as ordinary non-PROXY protocol connections.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
                   "request_rules": {
                      "description":   "Rules to be applied to incoming requests, in order, comma separated.",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   false,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
                   "response_rules": {
                      "description":   "Rules to be applied to responses, in order, comma separated.",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   false,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
+                  "rules_on_connect": {
+                     "description":   "Only applicable for Client First Generic Protocol. Allows Virtual Traffic Manager to execute rules on a client connects without waiting for data from the client.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
                   "slm_class": {
                      "description":   "The service level monitoring class that this server should use, if any.",
-                     
-                     "type":          "string"
-                  },
-                  
-                  "so_nagle": {
-                     "description":   "Whether or not Nagle's algorithm should be used for TCP connections.",
-                     
-                     "type":          "boolean"
-                  },
-                  
-                  "ssl_client_cert_headers": {
-                     "description":   "What HTTP headers the virtual server should add to each request to show the data in the client certificate.",
-                     
+
                      "type":          "string",
-                     "enum":          ["all","none","simple"]
+                     "default":       ""
                   },
-                  
+
                   "ssl_decrypt": {
                      "description":   "Whether or not the virtual server should decrypt incoming SSL traffic.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
-                  "ssl_honor_fallback_scsv": {
-                     "description":   "Whether or not the Fallback SCSV sent by TLS clients is honored by this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!honor_fallback_scsv\"> \"ssl!honor_fallback_scsv\"</a> from the Global Settings section of the System tab will be enforced.",
-                     
-                     "type":          "string",
-                     "enum":          ["disabled","enabled","use_default"]
+
+                  "transparent": {
+                     "description":   "Whether or not bound sockets should be configured for transparent proxying.",
+
+                     "type":          "boolean",
+                     "default":       false
                   }
                }
             },
-            
+
             "aptimizer": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerAptimizer",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "enabled": {
-                     "description":   "Whether the virtual server should aptimize web content.",
-                     
-                     "type":          "boolean"
+                     "description":   "Whether the virtual server should optimize web content.",
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "profile": {
                      "description":   "A table of Aptimizer profiles and the application scopes that apply to them.",
-                     
-                     "type":          "array",
-                     
-                     "items": {
-                        "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerProfile",
 
+                     "type":          "array",
+
+                     "items": {
                         "type":                  "object",
                         "required":              ["name","urls"],
                         "additionalProperties":  false,
-                        
+
                         "properties": {
                            "name": {
                               "description":   "The name of an Aptimizer acceleration profile.",
-                              
+
                               "type":          "string"
                            },
                            "urls": {
                               "description":   "The application scopes which apply to the acceleration profile.",
-                              
+
                               "type":          "array",
                               "uniqueItems":   true,
-                              
+
                               "items": {
                                  "type":          "string"
                               }
@@ -257,944 +257,1492 @@
                   }
                }
             },
-            
-            "connection": {
-               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerConnection",
 
+            "auth": {
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerAuth",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
+               "properties": {
+                  "saml_idp": {
+                     "description":   "Name of the Trusted Identity Provider configuration to use. To create Identity Providers, please visit section <a href=\"?section=SAML%3aTrusted%20Identity%20Providers\">Trusted Identity Providers</a>",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "saml_nameid_format": {
+                     "description":   "The NameID format to request and expect from the identity provider.",
+
+                     "type":          "string",
+                     "default":       "none",
+                     "enum":          ["emailaddress","none","unspecified"]
+                  },
+
+                  "saml_sp_acs_url": {
+                     "description":   "The 'Assertion Consumer Service' endpoint for the SAML service provider on this virtual server, ie the endpoint to which the identity provider will cause the user agent to send SAML assertions. This should be an HTTPS URL, must be in the same cookie domain as all hostnames used by the end user to access the virtual server (see cookie configuration) and the port must be the port on which this virtual server is listening. It must match the URI placed by the identity provider in the 'Recipient' attribute in the SAML assertion, if present.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "saml_sp_entity_id": {
+                     "description":   "The entity ID to be used by the SAML service provider function on this virtual server. This should usually be a URL, or a URN, however it may be any string. It must match the entity ID placed  by the identity provider in the 'Audience' field in the SAML assertion.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "saml_time_tolerance": {
+                     "description":   "Time tolerance on authentication checks. When checking time-stamps and expiry dates against the current time on the system, allow a tolerance of this many seconds. For example, if a SAML response contains a 'NotOnOrAfter' that is 4 seconds in the past according to the local time, and the tolerance is set to 5 seconds, it will still be accepted. This is to prevent a lack of clock synchronization from resulting in rejection of SAML responses.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       3600,
+                     "default":       5
+                  },
+
+                  "session_cookie_attributes": {
+                     "description":   "Attributes of cookie used for authentication session.",
+
+                     "type":          "string",
+                     "default":       "HttpOnly; SameSite=Strict"
+                  },
+
+                  "session_cookie_name": {
+                     "description":   "Name of cookie used for authentication session.",
+
+                     "type":          "string",
+                     "default":       "VS_SamlSP_Auth",
+                     "pattern":       "^[a-zA-Z0-9_]+$"
+                  },
+
+                  "session_log_external_state": {
+                     "description":   "Whether or not to include state of authentication sessions stored encrypted on the client as plaintext in the logs.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "session_timeout": {
+                     "description":   "Timeout on authentication session.",
+
+                     "type":          "integer",
+                     "minimum":       60,
+                     "maximum":       31535940,
+                     "default":       7200
+                  },
+
+                  "type": {
+                     "description":   "Type of authentication to apply to requests to the virtual server.",
+
+                     "type":          "string",
+                     "default":       "none",
+                     "enum":          ["none","saml_sp"]
+                  },
+
+                  "verbose": {
+                     "description":   "Whether or not detailed messages about virtual server authentication should be written to the error log.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  }
+               }
+            },
+
+            "connection": {
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerConnection",
+               "type":                  "object",
+               "additionalProperties":  false,
+
                "properties": {
                   "keepalive": {
                      "description":   "Whether or not the virtual server should use keepalive connections with the remote clients.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
                   "keepalive_timeout": {
                      "description":   "The length of time that the virtual server should keep an idle keepalive connection before discarding it.  A value of \"0\" (zero) will mean that the keepalives are never closed by the traffic manager.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       99999
+                     "maximum":       99999,
+                     "default":       10
                   },
-                  
+
                   "max_client_buffer": {
                      "description":   "The amount of memory, in bytes, that the virtual server should use to store data sent by the client. Larger values will use more memory, but will minimise the number of \"read()\" and \"write()\" system calls that the traffic manager must perform.",
-                     
+
                      "type":          "integer",
                      "minimum":       1024,
-                     "maximum":       16777216
+                     "maximum":       16777216,
+                     "default":       65536
                   },
-                  
+
                   "max_server_buffer": {
                      "description":   "The amount of memory, in bytes, that the virtual server should use to store data returned by the server.  Larger values will use more memory, but will minimise the number of \"read()\" and \"write()\" system calls that the traffic manager must perform.",
-                     
+
                      "type":          "integer",
                      "minimum":       1024,
-                     "maximum":       16777216
+                     "maximum":       16777216,
+                     "default":       65536
                   },
-                  
+
                   "max_transaction_duration": {
                      "description":   "The total amount of time a transaction can take, counted from the first byte being received until the transaction is complete.  For HTTP, this can mean all data has been written in both directions, or the connection has been closed; in most other cases it is the same as the connection being closed.<br> The default value of \"0\" means there is no maximum duration, i.e., transactions can take arbitrarily long if none of the other timeouts occur.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       99999
+                     "maximum":       99999,
+                     "default":       0
                   },
-                  
+
                   "server_first_banner": {
-                     "description":   "If specified, the traffic manager will use the value as the banner to send for server-first protocols such as POP, SMTP and IMAP. This allows rules to use the first part of the client data (such as the username) to select a pool.",
-                     
-                     "type":          "string"
+                     "description":   "If specified, the traffic manager will use the value as the banner to send for server-first protocols such as FTP, POP, SMTP and IMAP. This allows rules to use the first part of the client data (such as the username) to select a pool. The banner should be in the correct format for the protocol, e.g. for FTP it should start with \"220 \"",
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "timeout": {
                      "description":   "A connection should be closed if no additional data has been received for this period of time.  A value of \"0\" (zero) will disable this timeout.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       99999
+                     "maximum":       99999,
+                     "default":       300
                   }
                }
             },
-            
-            "connection_errors": {
-               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerConnectionError",
 
+            "connection_errors": {
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerConnectionErrors",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "error_file": {
                      "description":   "The error message to be sent to the client when the traffic manager detects an internal or backend error for the virtual server.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       "Default"
                   }
                }
             },
-            
+
             "cookie": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerCookie",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "domain": {
                      "description":   "The way in which the traffic manager should rewrite the domain portion of any cookies set by a back-end web server.",
-                     
+
                      "type":          "string",
+                     "default":       "no_rewrite",
                      "enum":          ["no_rewrite","set_to_named","set_to_request"]
                   },
-                  
+
                   "new_domain": {
                      "description":   "The domain to use when rewriting a cookie's domain to a named value.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "path_regex": {
                      "description":   "If you wish to rewrite the path portion of any cookies set by a back-end web server, provide a regular expression to match the path:",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "path_replace": {
                      "description":   "If cookie path regular expression matches, it will be replaced by this substitution.  Parameters $1-$9 can be used to represent bracketed parts of the regular expression.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "secure": {
                      "description":   "Whether or not the traffic manager should modify the \"secure\" tag of any cookies set by a back-end web server.",
-                     
+
                      "type":          "string",
+                     "default":       "no_modify",
                      "enum":          ["no_modify","set_secure","unset_secure"]
                   }
                }
             },
-            
+
             "dns": {
-               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualSererDns",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerDns",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
+                  "edns_client_subnet": {
+                     "description":   "Enable/Disable use of EDNS client subnet option",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
                   "edns_udpsize": {
                      "description":   "EDNS UDP size advertised in responses.",
-                     
+
                      "type":          "integer",
                      "minimum":       512,
-                     "maximum":       4096
+                     "maximum":       4096,
+                     "default":       4096
                   },
-                  
+
                   "max_udpsize": {
                      "description":   "Maximum UDP answer size.",
-                     
+
                      "type":          "integer",
                      "minimum":       512,
-                     "maximum":       4096
+                     "maximum":       4096,
+                     "default":       4096
                   },
-                  
+
                   "rrset_order": {
                      "description":   "Response record ordering.",
-                     
+
                      "type":          "string",
+                     "default":       "fixed",
                      "enum":          ["cyclic","fixed"]
                   },
-                  
+
                   "verbose": {
                      "description":   "Whether or not the DNS Server should emit verbose logging. This is useful for diagnosing problems.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "zones": {
                      "description":   "The DNS zones",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   }
                }
             },
-            
+
             "ftp": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerFtp",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "data_source_port": {
                      "description":   "The source port to be used for active-mode FTP data connections.  If 0, a random high port will be used, otherwise the specified port will be used. If a port below 1024 is required you must first explicitly permit use of low ports with the \"data_bind_low\" global setting.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       0
                   },
-                  
+
                   "force_client_secure": {
                      "description":   "Whether or not the virtual server should require that incoming FTP data connections from the client originate from the same IP address as the corresponding client control connection.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
+                  "force_server_secure": {
+                     "description":   "Whether or not the virtual server should require that incoming FTP data connections from the nodes originate from the same IP address as the node.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
                   "port_range_high": {
                      "description":   "If non-zero, then this controls the upper bound of the port range to use for FTP data connections.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       0
                   },
-                  
+
                   "port_range_low": {
                      "description":   "If non-zero, then this controls the lower bound of the port range to use for FTP data connections.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       0
                   },
-                  
+
                   "ssl_data": {
                      "description":   "Use SSL on the data connection as well as the control connection (if not enabled it is left to the client and server to negotiate this).",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   }
                }
             },
-            
+
             "gzip": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerGzip",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
+                  "chunk": {
+                     "description":   "Use HTTP chunking to deliver data to the client. If this is turned off, we won't use chunking when gzipping server data. This would mean that the response couldn't be kept-alive.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
                   "compress_level": {
                      "description":   "Compression level (1-9, 1=low, 9=high).",
-                     
+
                      "type":          "integer",
                      "minimum":       1,
-                     "maximum":       9
+                     "maximum":       9,
+                     "default":       1
                   },
-                  
+
                   "enabled": {
                      "description":   "Compress web pages sent back by the server.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "etag_rewrite": {
                      "description":   "How the ETag header should be manipulated when compressing content.",
-                     
+
                      "type":          "string",
+                     "default":       "wrap",
                      "enum":          ["delete","ignore","weaken","wrap"]
                   },
-                  
+
                   "include_mime": {
                      "description":   "MIME types to compress. Complete MIME types can be used, or a type can end in a '*' to match multiple types.",
-                     
+
                      "type":          "array",
+                     "default":       ["text/html","text/plain"],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
                   "max_size": {
                      "description":   "Maximum document size to compress (0 means unlimited).",
-                     
+
                      "type":          "integer",
-                     "minimum":       0
+                     "minimum":       0,
+                     "default":       10000000
                   },
-                  
+
                   "min_size": {
                      "description":   "Minimum document size to compress.",
-                     
+
                      "type":          "integer",
-                     "minimum":       0
+                     "minimum":       0,
+                     "default":       1000
                   },
-                  
+
                   "no_size": {
                      "description":   "Compress documents with no given size.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   }
                }
             },
-            
+
             "http": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerHttp",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
+                  "add_cluster_ip": {
+                     "description":   "Whether or not the virtual server should add an \"X-Cluster-Client-Ip\" header to the request that contains the remote client's IP address.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "add_x_forwarded_for": {
+                     "description":   "Whether or not the virtual server should append the remote client's IP address to the X-Forwarded-For header. If the header does not exist, it will be added.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "add_x_forwarded_proto": {
+                     "description":   "Whether or not the virtual server should add an \"X-Forwarded-Proto\" header to the request that contains the original protocol used by the client to connect to the traffic manager.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "auto_upgrade_protocols": {
+                     "description":   "A case-insensitive list of HTTP \"Upgrade\" header values that will trigger the HTTP connection upgrade auto-detection.",
+
+                     "type":          "array",
+                     "default":       ["websocket"],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "autodetect_upgrade_headers": {
+                     "description":   "Whether the traffic manager should check for HTTP responses that confirm an HTTP connection is transitioning to the WebSockets protocol.  If that such a response is detected, the traffic manager will cease any protocol-specific processing on the connection and just pass incoming data to the client/server as appropriate.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
                   "chunk_overhead_forwarding": {
-                     "description":   "Handling of HTTP chunk overhead.  When Stingray receives data from a server or client that consists purely of protocol overhead (contains no payload), forwarding of such segments is delayed until useful payload data arrives (setting \"lazy\").  Changing this key to \"eager\" will make Stingray incur the overhead of immediately passing such data on; it should only be used with HTTP peers whose chunk handling requires it.",
-                     
+                     "description":   "Handling of HTTP chunk overhead.  When vTM receives data from a server or client that consists purely of protocol overhead (contains no payload), forwarding of such segments is delayed until useful payload data arrives (setting \"lazy\").  Changing this key to \"eager\" will make vTM incur the overhead of immediately passing such data on; it should only be used with HTTP peers whose chunk handling requires it.",
+
                      "type":          "string",
+                     "default":       "lazy",
                      "enum":          ["eager","lazy"]
                   },
-                  
+
                   "location_regex": {
                      "description":   "If the 'Location' header matches this regular expression, rewrite the header using the 'location_replace' pattern.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "location_replace": {
                      "description":   "If the 'Location' header matches the 'location_regex' regular expression, rewrite the header with this pattern (parameters such as $1-$9 can be used to match parts of the regular expression):",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "location_rewrite": {
                      "description":   "The action the virtual server should take if the \"Location\" header does not match the \"location_regex\" regular expression.",
-                     
+
                      "type":          "string",
+                     "default":       "if_host_matches",
                      "enum":          ["always","if_host_matches","never"]
                   },
-                  
+
                   "mime_default": {
                      "description":   "Auto-correct MIME types if the server sends the \"default\" MIME type for files.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       "text/plain"
                   },
-                  
+
                   "mime_detect": {
                      "description":   "Auto-detect MIME types if the server does not provide them.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "strip_x_forwarded_proto": {
+                     "description":   "Whether or not the virtual server should strip the 'X-Forwarded-Proto' header from incoming requests.",
+
+                     "type":          "boolean",
+                     "default":       true
                   }
                }
             },
-            
+
+            "http2": {
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerHttp2",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "connect_timeout": {
+                     "description":   "The time, in seconds, to wait for a request on a new HTTP/2 connection.  If no request is received within this time, the connection will be closed. This setting overrides the \"connect_timeout\" setting. If set to \"0\" (zero), the value of \"connect_timeout\" will be used instead.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       99999,
+                     "default":       0
+                  },
+
+                  "data_frame_size": {
+                     "description":   "This setting controls the preferred frame size used when sending body data to the client. If the client specifies a smaller maximum size than this setting, the client's maximum size will be used. Every data frame sent has at least a 9-byte header, in addition to this frame size, prepended to it.",
+
+                     "type":          "integer",
+                     "minimum":       100,
+                     "maximum":       16777206,
+                     "default":       4096
+                  },
+
+                  "enabled": {
+                     "description":   "This setting allows the HTTP/2 protocol to be used by a HTTP virtual server. Unless use of HTTP/2 is negotiated by the client, the virtual server will fall back to HTTP 1.x automatically.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "header_table_size": {
+                     "description":   "This setting controls the amount of memory allowed for header compression on each HTTP/2 connection.",
+
+                     "type":          "integer",
+                     "minimum":       4096,
+                     "maximum":       1048576,
+                     "default":       4096
+                  },
+
+                  "headers_index_blacklist": {
+                     "description":   "A list of header names that should never be compressed using indexing.",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "headers_index_default": {
+                     "description":   "The HTTP/2 HPACK compression scheme allows for HTTP headers to be compressed using indexing. Sensitive headers can be marked as \"never index\", which prevents them from being compressed using indexing. When this setting is \"Yes\", only headers included in \"http2!headers_index_blacklist\" are marked as \"never index\". When this setting is \"No\", all headers will be marked as \"never index\" unless they are included in \"http2!headers_index_whitelist\".",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "headers_index_whitelist": {
+                     "description":   "A list of header names that can be compressed using indexing when the value of \"http2!headers_index_default\" is set to \"No\".",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "headers_size_limit": {
+                     "description":   "The maximum size, in bytes, of decompressed headers for an HTTP/2 request. If the limit is exceeded, the connection on which the request was sent will be dropped. A value of 0 disables the limit check. If a service protection class with \"http!max_header_length\" configured is associated with this service then that setting will take precedence.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       262144
+                  },
+
+                  "idle_timeout_no_streams": {
+                     "description":   "The time, in seconds, to wait for a new HTTP/2 request on a previously used HTTP/2 connection that has no open HTTP/2 streams. If an HTTP/2 request is not received within this time, the connection will be closed. A value of \"0\" (zero) will disable the timeout.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       99999,
+                     "default":       120
+                  },
+
+                  "idle_timeout_open_streams": {
+                     "description":   "The time, in seconds, to wait for data on an idle HTTP/2 connection, which has open streams, when no data has been sent recently (e.g. for long-polled requests). If data is not sent within this time, all open streams and the HTTP/2 connection will be closed. A value of \"0\" (zero) will disable the timeout.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       99999,
+                     "default":       600
+                  },
+
+                  "max_concurrent_streams": {
+                     "description":   "This setting controls the number of streams a client is permitted to open concurrently on a single connection.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       999999,
+                     "default":       200
+                  },
+
+                  "max_frame_size": {
+                     "description":   "This setting controls the maximum HTTP/2 frame size clients are permitted to send to the traffic manager.",
+
+                     "type":          "integer",
+                     "minimum":       16384,
+                     "maximum":       16777215,
+                     "default":       16384
+                  },
+
+                  "max_header_padding": {
+                     "description":   "The maximum size, in bytes, of the random-length padding to add to HTTP/2 header frames. The padding, a random number of zero bytes up to the maximum specified.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       256,
+                     "default":       0
+                  },
+
+                  "merge_cookie_headers": {
+                     "description":   "Whether Cookie headers received from an HTTP/2 client should be merged into a single Cookie header using RFC6265 rules before forwarding to an HTTP/1.1 server. Some web applications do not handle multiple Cookie headers correctly.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "stream_window_size": {
+                     "description":   "This setting controls the flow control window for each HTTP/2 stream. This will limit the memory used for buffering when the client is sending body data faster than the pool node is reading it.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       2147483647,
+                     "default":       65535
+                  }
+               }
+            },
+
             "kerberos_protocol_transition": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerKerberosProtocolTransition",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "enabled": {
                      "description":   "Whether or not the virtual server should use Kerberos Protocol Transition.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "principal": {
                      "description":   "The Kerberos principal this virtual server should use to perform Kerberos Protocol Transition.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "target": {
                      "description":   "The Kerberos principal name of the service this virtual server targets.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   }
                }
             },
-            
+
             "log": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerLog",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
+                  "always_flush": {
+                     "description":   "Write log data to disk immediately, rather than buffering data.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
                   "client_connection_failures": {
                      "description":   "Should the virtual server log failures occurring on connections to clients.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "enabled": {
                      "description":   "Whether or not to log connections to the virtual server to a disk on the file system.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "filename": {
-                     "description":   "The name of the file in which to store the request logs. Appliances will ignore this. The filename can contain macros which will be expanded by the traffic manager to generate the full filename. ",
-                     
-                     "type":          "string"
+                     "description":   "The name of the file in which to store the request logs. The filename can contain macros which will be expanded by the traffic manager to generate the full filename. ",
+
+                     "type":          "string",
+                     "default":       "%zeushome%/zxtm/log/%v.log"
                   },
-                  
+
                   "format": {
                      "description":   "The log file format. This specifies the line of text that will be written to the log file when a connection to the traffic manager is completed.  Many parameters from the connection can be recorded using macros. ",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\""
                   },
-                  
+
                   "save_all": {
                      "description":   "Whether to log all connections by default, or log no connections by default. Specific connections can be selected for addition to or exclusion from the log using the TrafficScript function \"requestlog.include()\".",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
                   "server_connection_failures": {
                      "description":   "Should the virtual server log failures occurring on connections to nodes.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "session_persistence_verbose": {
                      "description":   "Should the virtual server log session persistence events.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "ssl_failures": {
                      "description":   "Should the virtual server log failures occurring on SSL secure negotiation.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "ssl_resumption_failures": {
+                     "description":   "Should the virtual server log messages when attempts to resume SSL sessions (either from the session cache or a session ticket) fail. Note that failure to resume an SSL session does not result in the SSL connection being closed, but it does cause a full SSL handshake to take place.",
+
+                     "type":          "boolean",
+                     "default":       false
                   }
                }
             },
-            
+
             "recent_connections": {
-               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerRequestConnections",
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerRecentConnections",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "enabled": {
                      "description":   "Whether or not connections handled by this virtual server should be shown on the Activity > Connections page.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
                   "save_all": {
                      "description":   "Whether or not all connections handled by this virtual server should be shown on the Connections page. Individual connections can be selectively shown on the Connections page using the \"recentconns.include()\" TrafficScript function.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   }
                }
             },
-            
+
             "request_tracing": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerRequestTracing",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "enabled": {
                      "description":   "Record a trace of major connection processing events for each request and response.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "trace_io": {
                      "description":   "Include details of individual I/O events in request and response traces.  Requires request tracing to be enabled.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   }
                }
             },
-            
+
             "rtsp": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerRtsp",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "streaming_port_range_high": {
                      "description":   "If non-zero this controls the upper bound of the port range to use for streaming data connections.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       0
                   },
-                  
+
                   "streaming_port_range_low": {
                      "description":   "If non-zero this controls the lower bound of the port range to use for streaming data connections.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       0
                   },
-                  
+
                   "streaming_timeout": {
                      "description":   "If non-zero data-streams associated with RTSP connections will timeout if no data is transmitted for this many seconds.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       99999
+                     "maximum":       99999,
+                     "default":       30
                   }
                }
             },
-            
-            "sip": {
-                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSip",
 
+            "sip": {
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSip",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "dangerous_requests": {
                      "description":   "The action to take when a SIP request with body data arrives that should be routed to an external IP.",
-                     
+
                      "type":          "string",
+                     "default":       "node",
                      "enum":          ["forbid","forward","node"]
                   },
-                  
+
                   "follow_route": {
                      "description":   "Should the virtual server follow routing information contained in SIP requests. If set to \"No\" requests will be routed to the chosen back-end node regardless of their URI or Route header.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
                   "max_connection_mem": {
                      "description":   "SIP clients can have several pending requests at one time. To protect the traffic manager against DoS attacks, this setting limits the amount of memory each client can use.  When the limit is reached new requests will be sent a 413 response. If the value is set to \"0\" (zero) the memory limit is disabled.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       16777216
+                     "maximum":       16777216,
+                     "default":       65536
                   },
-                  
+
                   "mode": {
                      "description":   "The mode that this SIP virtual server should operate in.",
-                     
+
                      "type":          "string",
+                     "default":       "sip_gateway",
                      "enum":          ["full_gateway","route","sip_gateway"]
                   },
-                  
+
                   "rewrite_uri": {
                      "description":   "Replace the Request-URI of SIP requests with the address of the selected back-end node.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "streaming_port_range_high": {
                      "description":   "If non-zero this controls the upper bound of the port range to use for streaming data connections.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       0
                   },
-                  
+
                   "streaming_port_range_low": {
                      "description":   "If non-zero, then this controls the lower bound of the port range to use for streaming data connections.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       0
                   },
-                  
+
                   "streaming_timeout": {
                      "description":   "If non-zero a UDP stream will timeout when no data has been seen within this time.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       99999
+                     "maximum":       99999,
+                     "default":       60
                   },
-                  
+
                   "timeout_messages": {
                      "description":   "When timing out a SIP transaction, send a 'timed out' response to the client and, in the case of an INVITE transaction, a CANCEL request to the server.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
                   "transaction_timeout": {
                      "description":   "The virtual server should discard a SIP transaction when no further messages have been seen within this time.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       99999
+                     "maximum":       99999,
+                     "default":       30
+                  },
+
+                  "udp_associate_by_source": {
+                     "description":   "Require that SIP datagrams which are part of the same transaction are received from the same address and port.",
+
+                     "type":          "boolean",
+                     "default":       true
                   }
                }
             },
-            
-            "smtp": {
-               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerStmp",
 
+            "smtp": {
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSmtp",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "expect_starttls": {
                      "description":   "Whether or not the traffic manager should expect the connection to start off in plain text and then upgrade to SSL using STARTTLS when handling SMTP traffic.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   }
                }
             },
-            
+
             "ssl": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSsl",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "add_http_headers": {
                      "description":   "Whether or not the virtual server should add HTTP headers to each request to show the SSL connection parameters.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
+                  "cipher_suites": {
+                     "description":   "The SSL/TLS cipher suites to allow for connections to this virtual server.  Leaving this empty will make the virtual server use the globally configured cipher suites, see configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!cipher_suites\"> \"ssl!cipher_suites\"</a> in the Global Settings section of the System tab.  See there for how to specify SSL/TLS cipher suites.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
                   "client_cert_cas": {
                      "description":   "The certificate authorities that this virtual server should trust to validate client certificates. If no certificate authorities are selected, and client certificates are requested, then all client certificates will be accepted.",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
+                  "client_cert_headers": {
+                     "description":   "What HTTP headers the virtual server should add to each request to show the data in the client certificate.",
+
+                     "type":          "string",
+                     "default":       "none",
+                     "enum":          ["all","none","simple"]
+                  },
+
                   "elliptic_curves": {
                      "description":   "The SSL elliptic curve preference list for SSL connections to this virtual server using TLS version 1.0 or higher. Leaving this empty will make the virtual server use the globally configured curve preference list. The named curves P256, P384 and P521 may be configured.",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   false,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
+                  "honor_fallback_scsv": {
+                     "description":   "Whether or not the Fallback SCSV sent by TLS clients is honored by this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!honor_fallback_scsv\"> \"ssl!honor_fallback_scsv\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
                   "issued_certs_never_expire": {
                      "description":   "When the virtual server verifies certificates signed by these certificate authorities, it doesn't check the 'not after' date, i.e., they are considered valid even after their expiration date has passed (but not if they have been revoked).",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
+                  "issued_certs_never_expire_depth": {
+                     "description":   "This setting gives the number of certificates in a certificate chain beyond those listed as issued_certs_never_expire whose certificate expiry will not be checked. For example \"0\" will result in the expiry checks being made for certificates issued by issued_certs_never_expire certificates, \"1\" will result in no expiry checks being performed for the certificates directly issued by issued_certs_never_expire certificates, \"2\" will avoid checking expiry for certificates issued by certificates issued by the issued_certs_never_expire certificates as well, and so on.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       255,
+                     "default":       1
+                  },
+
+                  "max_key_size": {
+                     "description":   "The maximum client RSA/DSA certificate key size that the virtual server should accept.",
+
+                     "type":          "integer",
+                     "minimum":       128,
+                     "maximum":       8192,
+                     "default":       2048
+                  },
+
+                  "min_key_size": {
+                     "description":   "The minimum client RSA/DSA certificate key size that the virtual server should accept.",
+
+                     "type":          "integer",
+                     "minimum":       128,
+                     "maximum":       8192,
+                     "default":       512
+                  },
+
                   "ocsp_enable": {
                      "description":   "Whether or not the traffic manager should use OCSP to check the revocation status of client certificates.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "ocsp_issuers": {
                      "description":   "A table of certificate issuer specific OCSP settings.",
-                     
-                     "type":          "array",
-                     
-                     "items": {
-                        "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerOcspIssuer",
 
+                     "type":          "array",
+
+                     "items": {
                         "type":                  "object",
                         "required":              ["issuer"],
                         "additionalProperties":  false,
-                        
+
                         "properties": {
                            "issuer": {
                               "description":   "The name of an issuer (or DEFAULT for default OCSP settings).",
-                              
+
                               "type":          "string"
                            },
                            "aia": {
                               "description":   "Whether the traffic manager should use AIA information contained in a client certificate to determine which OCSP responder to contact.",
-                              
-                              "type":          "boolean"
+
+                              "type":          "boolean",
+                              "default":       true
                            },
                            "nonce": {
                               "description":   "How to use the OCSP nonce extension, which protects against OCSP replay attacks. Some OCSP servers do not support nonces.",
-                              
+
                               "type":          "string",
+                              "default":       "off",
                               "enum":          ["off","on","strict"]
                            },
                            "required": {
                               "description":   "Whether we should do an OCSP check for this issuer, and whether it is required or optional.",
-                              
+
                               "type":          "string",
+                              "default":       "optional",
                               "enum":          ["none","optional","strict"]
                            },
                            "responder_cert": {
                               "description":   "The expected responder certificate.",
-                              
-                              "type":          "string"
+
+                              "type":          "string",
+                              "default":       ""
                            },
                            "signer": {
                               "description":   "The certificate with which to sign the request, if any.",
-                              
-                              "type":          "string"
+
+                              "type":          "string",
+                              "default":       ""
                            },
                            "url": {
                               "description":   "Which OCSP responders this virtual server should use to verify client certificates.",
-                              
-                              "type":          "string"
+
+                              "type":          "string",
+                              "default":       ""
                            }
                         }
                      }
                   },
-                  
+
                   "ocsp_max_response_age": {
                      "description":   "The number of seconds for which an OCSP response is considered valid if it has not yet exceeded the time specified in the 'nextUpdate' field. If set to \"0\" (zero) then OCSP responses are considered valid until the time specified in their 'nextUpdate' field.",
-                     
+
                      "type":          "integer",
-                     "minimum":       0
+                     "minimum":       0,
+                     "default":       0
                   },
-                  
+
                   "ocsp_stapling": {
                      "description":   "If OCSP URIs are present in certificates used by this virtual server, then enabling this option will allow the traffic manager to provide OCSP responses for these certificates as part of the handshake, if the client sends a TLS status_request extension in the ClientHello.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "ocsp_time_tolerance": {
                      "description":   "The number of seconds outside the permitted range for which the 'thisUpdate' and 'nextUpdate' fields of an OCSP response are still considered valid.",
-                     
+
                      "type":          "integer",
-                     "minimum":       0
+                     "minimum":       0,
+                     "default":       30
                   },
-                  
+
                   "ocsp_timeout": {
                      "description":   "The number of seconds after which OCSP requests will be timed out.",
-                     
+
                      "type":          "integer",
-                     "minimum":       0
+                     "minimum":       0,
+                     "default":       10
                   },
-                  
-                  "prefer_sslv3": {
-                     "description":   "Deprecated. Formerly allowed a preference for SSLv3 for performance reasons.",
-                     
-                     "type":          "boolean"
-                  },
-                  
+
                   "request_client_cert": {
                      "description":   "Whether or not the virtual server should request an identifying SSL certificate from each client.",
-                     
+
                      "type":          "string",
+                     "default":       "dont_request",
                      "enum":          ["dont_request","request","require"]
                   },
-                  
+
                   "send_close_alerts": {
                      "description":   "Whether or not to send an SSL/TLS \"close alert\" when the traffic manager is initiating an SSL socket disconnection.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
+                  "server_cert_alt_certificates": {
+                     "description":   "The SSL certificates and corresponding private keys.",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   false,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
                   "server_cert_default": {
                      "description":   "The default SSL certificate to use for this virtual server.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "server_cert_host_mapping": {
                      "description":   "Host specific SSL server certificate mappings.",
-                     
+
                      "type":          "array",
-                     
+
                      "items": {
                         "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerServerCertHostMapping",
-
                         "type":                  "object",
                         "required":              ["host","certificate"],
                         "additionalProperties":  false,
-                        
+
                         "properties": {
                            "host": {
                               "description":   "Host which this entry refers to.",
-                              
+
                               "type":          "string"
                            },
                            "certificate": {
                               "description":   "The SSL server certificate for a particular destination site IP.",
-                              
+
                               "type":          "string"
+                           },
+                           "alt_certificates": {
+                              "description":   "The SSL server certificates for a particular destination site IP.",
+
+                              "type":          "array",
+                              "default":       [],
+                              "uniqueItems":   false,
+
+                              "items": {
+                                 "type":          "string"
+                              }
                            }
                         }
                      }
                   },
-                  
+
+                  "session_cache_enabled": {
+                     "description":   "Whether or not use of the session cache is enabled for this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!cache!enabled\"> \"ssl!session_cache_enabled\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
+                  "session_tickets_enabled": {
+                     "description":   "Whether or not use of session tickets is enabled for this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!tickets!enabled\"> \"ssl!tickets!enabled\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
                   "signature_algorithms": {
                      "description":   "The SSL signature algorithms preference list for SSL connections to this virtual server using TLS version 1.2 or higher. Leaving this empty will make the virtual server use the globally configured preference list, \"signature_algorithms\" in the \"ssl\" section of the \"global_settings\" resource.  See there and in the online help for how to specify SSL signature algorithms.",
-                     
-                     "type":          "string"
-                  },
-                  
-                  "ssl_ciphers": {
-                     "description":   "The SSL/TLS ciphers to allow for connections to this virtual server.  Leaving this empty will make the virtual server use the globally configured ciphers, see configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!ssl3_ciphers\"> \"ssl!ssl3_ciphers\"</a> in the Global Settings section of the System tab.  See there for how to specify SSL/TLS ciphers.",
-                     
-                     "type":          "string"
-                  },
-                  
-                  "ssl_support_ssl2": {
-                     "description":   "Whether or not SSLv2 is enabled for this virtual server.  Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_ssl2\"> \"ssl!support_ssl2\"</a> from the Global Settings section of the System tab will be enforced.",
-                     
+
                      "type":          "string",
-                     "enum":          ["disabled","enabled","use_default"]
+                     "default":       ""
                   },
-                  
-                  "ssl_support_ssl3": {
+
+                  "support_ssl3": {
                      "description":   "Whether or not SSLv3 is enabled for this virtual server.  Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_ssl3\"> \"ssl!support_ssl3\"</a> from the Global Settings section of the System tab will be enforced.",
-                     
+
                      "type":          "string",
+                     "default":       "use_default",
                      "enum":          ["disabled","enabled","use_default"]
                   },
-                  
-                  "ssl_support_tls1": {
+
+                  "support_tls1": {
                      "description":   "Whether or not TLSv1.0 is enabled for this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1\"> \"ssl!support_tls1\"</a> from the Global Settings section of the System tab will be enforced.",
-                     
+
                      "type":          "string",
+                     "default":       "use_default",
                      "enum":          ["disabled","enabled","use_default"]
                   },
-                  
-                  "ssl_support_tls1_1": {
-                     "description":   "Whether or not TLSv1.1 is enabled for this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1.1\"> \"ssl!support_tls1.1\"</a> from the Global Settings section of the System tab will be enforced.",
-                     
+
+                  "support_tls1_1": {
+                     "description":   "Whether or not TLSv1.1 is enabled for this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1_1\"> \"ssl!support_tls1_1\"</a> from the Global Settings section of the System tab will be enforced.",
+
                      "type":          "string",
+                     "default":       "use_default",
                      "enum":          ["disabled","enabled","use_default"]
                   },
-                  
-                  "ssl_support_tls1_2": {
-                     "description":   "Whether or not TLSv1.2 is enabled for this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1.2\"> \"ssl!support_tls1.2\"</a> from the Global Settings section of the System tab will be enforced.",
-                     
+
+                  "support_tls1_2": {
+                     "description":   "Whether or not TLSv1.2 is enabled for this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1_2\"> \"ssl!support_tls1_2\"</a> from the Global Settings section of the System tab will be enforced.",
+
                      "type":          "string",
+                     "default":       "use_default",
                      "enum":          ["disabled","enabled","use_default"]
                   },
-                  
+
+                  "support_tls1_3": {
+                     "description":   "Whether or not TLSv1.3 is enabled for this virtual server. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1_3\"> \"ssl!support_tls1_3\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
                   "trust_magic": {
                      "description":   "If the traffic manager is receiving traffic sent from another traffic manager, then enabling this option will allow it to decode extra information on the true origin of the SSL connection. This information is supplied by the first traffic manager.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   }
                }
             },
-            
+
             "syslog": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerSyslog",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "enabled": {
                      "description":   "Whether or not to log connections to the virtual server to a remote syslog host.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "format": {
                      "description":   "The log format for the remote syslog.  This specifies the line of text that will be sent to the remote syslog  when a connection to the traffic manager is completed. Many parameters from the connection can be recorded using macros. ",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\""
                   },
-                  
+
                   "ip_end_point": {
                      "description":   "The remote host and port (default is 514) to send request log lines to.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "msg_len_limit": {
                      "description":   "Maximum length in bytes of a message sent to the remote syslog. Messages longer than this will be truncated before they are sent.",
-                     
+
                      "type":          "integer",
                      "minimum":       480,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       2048
                   }
                }
             },
-            
+
             "tcp": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerTcp",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
+                  "close_with_rst": {
+                     "description":   "Whether or not connections from clients should be closed with a RST packet, rather than a FIN packet. This avoids the TIME_WAIT state, which on rare occasions allows wandering duplicate packets to be safely ignored.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "mss": {
+                     "description":   "The maximum TCP segment size. This will place a maximum on the size of TCP segments that are sent by this machine, and will advertise to the client this value as the maximum size of TCP segment to send to this machine. Setting this to zero causes the default maximum TCP segment size to be advertised and used.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  },
+
+                  "nagle": {
+                     "description":   "Whether or not Nagle's algorithm should be used for TCP connections.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
                   "proxy_close": {
                      "description":   "If set to \"Yes\" the traffic manager will send the client FIN to the back-end server and wait for a server response instead of closing the connection immediately.  This is only necessary for protocols that require half-close support to function correctly, such as \"rsh\".  If the traffic manager is responding to the request itself, setting this key to Yes will cause the traffic manager to continue writing the response even after it has received a FIN from the client.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   }
                }
             },
-            
+
+            "transaction_export": {
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerTransactionExport",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "brief": {
+                     "description":   "Whether to export a restricted set of metadata about transactions processed by this virtual server. If enabled, more verbose information such as client and server headers and request tracing events will be omitted from the exported data.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "enabled": {
+                     "description":   "Export metadata about transactions handled by this service to the globally configured endpoint. Data will be exported only if the global \"transaction_export!enabled\" setting is enabled.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "hi_res": {
+                     "description":   "Whether the transaction processing timeline included in the metadata export is recorded with a high, microsecond, resolution. If set to \"No\", timestamps will be recorded with a resolution of milliseconds.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "http_header_blacklist": {
+                     "description":   "The set of HTTP header names for which corresponding values should be redacted from the metadata exported by this virtual server.",
+
+                     "type":          "array",
+                     "default":       ["Authorization"],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  }
+               }
+            },
+
             "udp": {
                "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerUdp",
-
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "end_point_persistence": {
-                     "description":   "Whether or not UDP datagrams from the same IP and port are sent to the same node in the pool if there's an existing UDP transaction. Although it's not always guaranteed as while making a decision to reuse the same node, traffic manager can also apply other protocol specific filtering e.g CallID matching for SIP packets in addition to IP and port matching.",
-                     
-                     "type":          "boolean"
+                     "description":   "Whether UDP datagrams received from the same IP address and port are sent to the same pool node if they match an existing UDP session. Sessions are defined by the protocol being handled, for example SIP datagrams are grouped based on the value of the Call-ID header.",
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
                   "port_smp": {
                      "description":   "Whether or not UDP datagrams should be distributed across all traffic manager processes. This setting is not recommended if the traffic manager will be handling connection-based UDP protocols.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "response_datagrams_expected": {
                      "description":   "The virtual server should discard any UDP connection and reclaim resources when the node has responded with this number of datagrams.  For simple request/response protocols this can be often set to \"1\".  If set to \"-1\", the connection will not be discarded until the \"timeout\" is reached.",
-                     
-                     "type":          "integer"
+
+                     "type":          "integer",
+                     "default":       1
                   },
-                  
+
                   "timeout": {
                      "description":   "The virtual server should discard any UDP connection and reclaim resources when no further UDP traffic has been seen within this time.",
-                     
+
                      "type":          "integer",
                      "minimum":       1,
-                     "maximum":       99999
+                     "maximum":       99999,
+                     "default":       7
                   }
                }
             },
-            
-            "web_cache": {
-               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerWebcache",
 
+            "web_cache": {
+               "javaType" :     "org.rackspace.stingray.client.virtualserver.VirtualServerWebCache",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "control_out": {
                      "description":   "The \"Cache-Control\" header to add to every cached HTTP response, \"no-cache\" or \"max-age=600\" for example.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "enabled": {
                      "description":   "If set to \"Yes\" the traffic manager will attempt to cache web server responses.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "error_page_time": {
                      "description":   "Time period to cache error pages for.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       999999
+                     "maximum":       999999,
+                     "default":       30
                   },
-                  
+
                   "max_time": {
                      "description":   "Maximum time period to cache web pages for.",
-                     
+
                      "type":          "integer",
                      "minimum":       1,
-                     "maximum":       999999
+                     "maximum":       999999,
+                     "default":       600
                   },
-                  
+
                   "refresh_time": {
                      "description":   "If a cached page is about to expire within this time, the traffic manager will start to forward some new requests on to the web servers. A maximum of one request per second will be forwarded; the remainder will continue to be served from the cache. This prevents \"bursts\" of traffic to your web servers when an item expires from the cache. Setting this value to \"0\" will stop the traffic manager updating the cache before it expires.",
-                     
+
                      "type":          "integer",
                      "minimum":       0,
-                     "maximum":       999999
+                     "maximum":       999999,
+                     "default":       2
                   }
                }
             }

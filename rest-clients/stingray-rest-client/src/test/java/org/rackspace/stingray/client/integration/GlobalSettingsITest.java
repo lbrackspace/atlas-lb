@@ -56,9 +56,7 @@ public class GlobalSettingsITest extends StingrayTestBase {
     public void aTestRetrieveSslv3Ciphers() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         GlobalSettings globalSettings = client.getGlobalSettings();
         Assert.assertNotNull(globalSettings);
-        Assert.assertEquals(ciphers, globalSettings.getProperties().getSsl().getSsl3Ciphers());
-
-
+        Assert.assertEquals(ciphers, globalSettings.getProperties().getSsl().getCipherSuites());
     }
 
 }

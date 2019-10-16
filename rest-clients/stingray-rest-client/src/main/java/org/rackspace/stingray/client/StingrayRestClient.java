@@ -4,6 +4,7 @@ import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.client.counters.VirtualServerStatsStatistics;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
@@ -1138,9 +1139,9 @@ public class StingrayRestClient extends StingrayRestClientManager {
         try {
             stats = getItem(name, VirtualServerStats.class, ClientConstants.V_SERVER_PATH, endpoint);
         } catch (StingrayRestClientObjectNotFoundException e) {
-            stats.setStatistics(getZeroStats());
+            stats.setProperties(getZeroStats());
         } catch (StingrayRestClientException e) {
-            stats.setStatistics(getZeroStats());
+            stats.setProperties(getZeroStats());
         }
         return stats;
     }
@@ -1154,13 +1155,15 @@ public class StingrayRestClient extends StingrayRestClientManager {
 
     private VirtualServerStatsProperties getZeroStats() {
         VirtualServerStatsProperties props = new VirtualServerStatsProperties();
-        props.setConnectTimedOut(0);
-        props.setConnectionErrors(0);
-        props.setConnectionFailures(0);
-        props.setDataTimedOut(0);
-        props.setKeepaliveTimedOut(0);
-        props.setMaxConn(0);
-        props.setCurrentConn(0);
+        VirtualServerStatsStatistics stats = new VirtualServerStatsStatistics();
+        stats.setConnectTimedOut(0);
+        stats.setConnectionErrors(0);
+        stats.setConnectionFailures(0);
+        stats.setDataTimedOut(0);
+        stats.setKeepaliveTimedOut(0);
+        stats.setMaxConn(0);
+        stats.setCurrentConn(0);
+        props.setStatistics(stats);
         return props;
     }
 }

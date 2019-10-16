@@ -1,6 +1,6 @@
 {
     "$schema":       "http://json-schema.org/draft-04/schema#",
-    "id":            "/rvbd-schema/tm/3.4/config/active/exception#ClientException",
+    "id":            "/rvbd-schema/tm/7.0/config/active/exception#ClientException",
     "title":         "Stingray Rest Client Exception",
     "description":   "The Stingray Rest Client exception wrapper for client errors",
     "javaType" :     "org.rackspace.stingray.client.exception.ClientException",

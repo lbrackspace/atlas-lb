@@ -1062,8 +1062,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String vsName = String.format("%d_%d_S", lb.getAccountId(), lb.getId());
         VirtualServer vs = client.getVirtualServer(vsName);
-        VirtualServerSsl.SslSupportTls1 enabled = isEnabled ? VirtualServerSsl.SslSupportTls1.ENABLED : VirtualServerSsl.SslSupportTls1.DISABLED;
-        vs.getProperties().getSsl().setSslSupportTls1(enabled);
+        VirtualServerSsl.SupportTls1 enabled = isEnabled ? VirtualServerSsl.SupportTls1.ENABLED : VirtualServerSsl.SupportTls1.DISABLED;
+        vs.getProperties().getSsl().setSupportTls1(enabled);
         try {
             getResources().updateVirtualServer(client, vsName, vs);
         } catch (StmRollBackException e) {
@@ -1077,8 +1077,8 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String vsName = String.format("%d_%d_S", lb.getAccountId(), lb.getId());
         VirtualServer vs = client.getVirtualServer(vsName);
-        VirtualServerSsl.SslSupportTls11 enabled = isEnabled ? VirtualServerSsl.SslSupportTls11.ENABLED : VirtualServerSsl.SslSupportTls11.DISABLED;
-        vs.getProperties().getSsl().setSslSupportTls11(enabled);
+        VirtualServerSsl.SupportTls11 enabled = isEnabled ? VirtualServerSsl.SupportTls11.ENABLED : VirtualServerSsl.SupportTls11.DISABLED;
+        vs.getProperties().getSsl().setSupportTls11(enabled);
         try {
             getResources().updateVirtualServer(client, vsName, vs);
         } catch (StmRollBackException e) {
@@ -1090,7 +1090,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public String getSslCiphersByVhost(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String vsName = String.format("%d_%d_S", accountId, loadbalancerId);
-        String ciphers = client.getVirtualServer(vsName).getProperties().getSsl().getSslCiphers();
+        String ciphers = client.getVirtualServer(vsName).getProperties().getSsl().getCipherSuites();
         if (ciphers == null || ciphers.equals("")) {
             String errorMsg = String.format("no ciphers found for virtual server  %d_%d_s", accountId, loadbalancerId);
             throw new EntityNotFoundException(errorMsg);
@@ -1103,7 +1103,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         String sslVsName = String.format("%d_%d_S", accountId, loadbalancerId);
         VirtualServer updatedVs = client.getVirtualServer(sslVsName);
-        updatedVs.getProperties().getSsl().setSslCiphers(ciphers);
+        updatedVs.getProperties().getSsl().setCipherSuites(ciphers);
 
         try {
             getResources().updateVirtualServer(client, sslVsName, updatedVs);
@@ -1115,7 +1115,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public String getSsl3Ciphers(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-        return client.getGlobalSettings().getProperties().getSsl().getSsl3Ciphers();
+        return client.getGlobalSettings().getProperties().getSsl().getCipherSuites();
     }
 
     /**
