@@ -94,7 +94,7 @@ public class ZeusUtils {
             try {
                 zkey = PemUtils.toPemString(userKey);
             } catch (PemException ex) {
-                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_KEY, "Error encodeing users key", true, ex));
+                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_KEY, "Error encoding users key", true, ex));
             }
             try {
                 sb.append(PemUtils.toPemString(userCrt));
@@ -141,7 +141,7 @@ public class ZeusUtils {
         try {
             blocks = PemUtils.parseMultiPem(keyIn);
         } catch (PemException ex) {
-            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, ex.getMessage(), false, ex));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, ex.getMessage(), true, ex));
             return null;
         }
         Object obj;

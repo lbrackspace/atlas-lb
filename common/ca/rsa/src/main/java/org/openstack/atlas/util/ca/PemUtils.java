@@ -72,8 +72,11 @@ public class PemUtils {
             pw.flush();
             pw.close();
         } catch (IOException ex) {
-            String msg = String.format("Error encoding object %s to PEM",
-                    obj.getClass().getCanonicalName());
+            String msg = "Error encoding null object to PEM";
+            if (obj != null) {
+                msg = String.format("Error encoding object %s to PEM",
+                        obj.getClass().getCanonicalName());
+            }
             throw new PemException(msg);
         }
         out = bas.toByteArray();
@@ -119,9 +122,10 @@ public class PemUtils {
                 String msg = "Returned obj instance was null in call to fromPemBytes(byte[] pemBytes)";
                 throw new NotAPemObject(msg);
             }
-        } catch (IOException ex) {
-            throw new PemException("could not read PEM data", ex);
+        } catch (Exception ex) {
+            throw new PemException("Could not read PEM data", ex);
         }
+
         if (obj instanceof PEMKeyPair) {
             PEMKeyPair pkp = (PEMKeyPair) obj;
             JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider(RsaConst.BC);
@@ -157,6 +161,8 @@ public class PemUtils {
                 if (ppkey != null && ppkey.getAlgorithm().toLowerCase().contains("ecdsa")) {
                     // We don't accept ecdsa at this time. CLB-1008
                     throw new UnsupportedEncodingException("ECDSA is an invalid algorithm at this time.");
+                } else {
+                    throw new PemException("Cannot process private key", ccex);
                 }
             }
         }
