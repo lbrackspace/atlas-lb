@@ -133,7 +133,7 @@ public class StringUtils {
         }
     }
 
-    // LineWrapper for jython encodeing of Strings
+    // LineWrapper for jython encoding of Strings
     public static String lineWrap(String strIn,int cols){
         StringBuilder sb = new StringBuilder();
         char[] strArray = strIn.toCharArray();

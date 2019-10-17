@@ -152,6 +152,10 @@ public class PemUtilsTest {
             "ltFhfkM63NFzv1PMknXIfgu3xtbP6hpFXx+PtoNhBZ8TX+rcLo66\n" +
             "-----END PRIVATE KEY-----\n";
 
+    private static final String EMPTY_KEY = "" +
+            "-----BEGIN PRIVATE KEY-----\n" +
+            "-----END PRIVATE KEY-----\n";
+
     public PemUtilsTest() {
     }
 
@@ -239,7 +243,7 @@ public class PemUtilsTest {
     }
 
     @Test()
-    public void testFromPembytesWithECDSA() throws RsaException {
+    public void testFromPembytesWithECDSA() {
         try {
             PemUtils.fromPemString(ECDSA_KEY);
             fail("Expecting PemException for ECDSA key");
@@ -247,6 +251,38 @@ public class PemUtilsTest {
             Assert.assertEquals("ECDSA is an invalid algorithm at this time.", ex.getCause().getMessage());
         }
     }
+
+    @Test()
+    public void testFromPembytesWithEmptyKey() {
+        try {
+            PemUtils.fromPemString(EMPTY_KEY);
+            fail("Expecting PemException for Empty key");
+        } catch (PemException ex) {
+            Assert.assertEquals("Could not read PEM data", ex.getCause().getMessage());
+        }
+    }
+
+    @Test()
+    public void testToPembytesWithECDSAString() {
+        try {
+            PemUtils.toPemBytes(ECDSA_KEY);
+            fail("Expecting PemException");
+        } catch (PemException ex) {
+            Assert.assertEquals("Error encoding object java.lang.String to PEM", ex.getMessage());
+        }
+    }
+
+    @Test()
+    public void testToPembytesWithECDSANull() {
+        try {
+            PemUtils.toPemBytes(null);
+            fail("Expecting PemException null");
+        } catch (PemException ex) {
+            Assert.assertEquals("Error encoding null object to PEM", ex.getMessage());
+        }
+    }
+
+
 
     @Test
     public void testPKCS10Read() {

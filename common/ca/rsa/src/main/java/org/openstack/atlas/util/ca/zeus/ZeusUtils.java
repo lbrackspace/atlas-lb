@@ -94,12 +94,12 @@ public class ZeusUtils {
             try {
                 zkey = PemUtils.toPemString(userKey);
             } catch (PemException ex) {
-                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_KEY, "Error encodeing users key", true, ex));
+                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_KEY, "Error encoding users key", true, ex));
             }
             try {
                 sb.append(PemUtils.toPemString(userCrt));
             } catch (PemException ex) {
-                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Error encodeing users Crt", true, ex));
+                errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Error encoding users Crt", true, ex));
             }
             for (X509CertificateHolder x509obj : imdCrts) {
                 try {
@@ -108,10 +108,10 @@ public class ZeusUtils {
                 } catch (PemException ex) {
                     if (lineMap.containsKey(x509obj)) {
                         int x509lineNum = lineMap.get(x509obj).intValue();
-                        msg = String.format("Error encodeing chain crt at line %d", x509lineNum);
+                        msg = String.format("Error encoding chain crt at line %d", x509lineNum);
                         errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, msg, true, ex));
                     } else {
-                        errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Error encodeing chain crt", true, ex));
+                        errors.add(new ErrorEntry(ErrorType.COULDENT_ENCODE_CERT, "Error encoding chain crt", true, ex));
                     }
                 }
             }
@@ -141,7 +141,7 @@ public class ZeusUtils {
         try {
             blocks = PemUtils.parseMultiPem(keyIn);
         } catch (PemException ex) {
-            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, ex.getMessage(), false, ex));
+            errors.add(new ErrorEntry(ErrorType.UNREADABLE_KEY, ex.getMessage(), true, ex));
             return null;
         }
         Object obj;

@@ -163,6 +163,7 @@ public class ZeusUtilsTest {
         assertZCFLbaasErrors(roots, "", null, null, expectFatalErrors, expectErrors);
         assertZCFLbaasErrors(roots, null, null, null, expectFatalErrors, expectErrors);
         assertZCFLbaasErrors(roots, "", "", workingUserChain, expectFatalErrors, expectErrors);
+        assertZCFLbaasErrors(roots, ECDSA_KEY, "", workingUserChain, expectFatalErrors, expectErrors);
     }
 
     private void assertZCFLbaasErrors(Set<X509CertificateHolder> roots, String key, String crt, String imd, boolean expectFatalErrors, boolean expectErrors) {
@@ -186,6 +187,7 @@ public class ZeusUtilsTest {
         }
         if (!expectFatalErrors && hasFatalErrors) {
             sb.append(String.format("wasn't expecting Fatal Errors but buildZeusCrtFile returned %s. ", StringUtils.joinString(zcf.getFatalErrors(), ",")));
+            testFailed = true;
         }
 
         if (testFailed) {
@@ -229,6 +231,7 @@ public class ZeusUtilsTest {
 
         Assert.assertFalse(errors.isEmpty());
         Assert.assertEquals(ErrorType.UNREADABLE_KEY, errors.get(0).getErrorType());
+        Assert.assertTrue(errors.get(0).isFatal());
     }
 
     @Test
