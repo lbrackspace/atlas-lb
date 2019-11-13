@@ -242,20 +242,22 @@ public class RequestManagerTest {
             vs.setBytesOut(10L);
             vs.setBytesOutHi(10L);
             vs.setBytesOutLo(10L);
-            vs.setConnectionFailures(3);
+            vs.setConnectionFailures(3L);
+            vs.setTotalConn(2218728488L);
         }
 
         @Test
-        public void verifyByteFieldsAreLong() {
+        public void verifyStatFieldsAreLong() {
             // Verify virtual server stats byte* fields are of type long
             // See: CLB-1021
-            Assert.assertThat(vs.getConnectionFailures(), instanceOf(Integer.class));
+            Assert.assertThat(vs.getConnectionFailures(), instanceOf(Long.class));
             Assert.assertThat(vs.getBytesIn(), instanceOf(Long.class));
             Assert.assertThat(vs.getBytesInHi(), instanceOf(Long.class));
             Assert.assertThat(vs.getBytesInLo(), instanceOf(Long.class));
             Assert.assertThat(vs.getBytesOut(), instanceOf(Long.class));
             Assert.assertThat(vs.getBytesOutHi(), instanceOf(Long.class));
             Assert.assertThat(vs.getBytesOutLo(), instanceOf(Long.class));
+            Assert.assertThat(vs.getTotalConn(), instanceOf(Long.class));
         }
 
     }

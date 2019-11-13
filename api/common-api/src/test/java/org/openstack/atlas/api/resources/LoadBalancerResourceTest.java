@@ -263,12 +263,12 @@ public class LoadBalancerResourceTest {
             loadBalancerResource.setDozerMapper(dozerBeanMapper);
 
             stats = new Stats();
-            stats.setConnectError(new int[]{90});
-            stats.setConnectFailure(new int[]{30});
-            stats.setConnectTimeOut(new int[]{40});
-            stats.setDataTimedOut(new int[]{500});
-            stats.setKeepAliveTimedOut(new int[]{40});
-            stats.setMaxConn(new int[]{20});
+            stats.setConnectError(90L);
+            stats.setConnectFailure(30L);
+            stats.setConnectTimeOut(40L);
+            stats.setDataTimedOut(500L);
+            stats.setKeepAliveTimedOut(40L);
+            stats.setMaxConn(20L);
 
             lb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
             lb.setStatus("ACTIVE");

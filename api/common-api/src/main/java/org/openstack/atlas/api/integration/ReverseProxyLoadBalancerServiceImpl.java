@@ -550,21 +550,21 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     private Stats convertSnmpStatsToStats(SnmpStats snmpStats) {
-        int[] connectionTimedOut = new int[]{snmpStats.getConnectTimedOut()};
-        int[] connectionError = new int[]{snmpStats.getConnectionErrors()};
-        int[] connectionFailure = new int[]{snmpStats.getConnectionFailures()};
-        int[] dataTimedOut = new int[]{snmpStats.getDataTimedOut()};
-        int[] keepaliveTimedOut = new int[]{snmpStats.getKeepaliveTimedOut()};
-        int[] maxConnections = new int[]{snmpStats.getMaxConnections()};
-        int[] currentConnections = new int[]{snmpStats.getConcurrentConnections()};
+        long connectionTimedOut = snmpStats.getConnectTimedOut();
+        long connectionError = snmpStats.getConnectionErrors();
+        long connectionFailure = snmpStats.getConnectionFailures();
+        long dataTimedOut = snmpStats.getDataTimedOut();
+        long keepaliveTimedOut = snmpStats.getKeepaliveTimedOut();
+        long maxConnections = snmpStats.getMaxConnections();
+        long currentConnections = snmpStats.getConcurrentConnections();
 
-        int[] connectionTimedOutSsl = new int[]{snmpStats.getConnectTimedOutSsl()};
-        int[] connectionErrorSsl = new int[]{snmpStats.getConnectionErrorsSsl()};
-        int[] connectionFailureSsl = new int[]{snmpStats.getConnectionFailuresSsl()};
-        int[] dataTimedOutSsl = new int[]{snmpStats.getDataTimedOutSsl()};
-        int[] keepaliveTimedOutSsl = new int[]{snmpStats.getKeepaliveTimedOutSsl()};
-        int[] maxConnectionsSsl = new int[]{snmpStats.getMaxConnectionsSsl()};
-        int[] currentConnectionsSsl = new int[]{snmpStats.getConcurrentConnectionsSsl()};
+        long connectionTimedOutSsl = snmpStats.getConnectTimedOutSsl();
+        long connectionErrorSsl = snmpStats.getConnectionErrorsSsl();
+        long connectionFailureSsl = snmpStats.getConnectionFailuresSsl();
+        long dataTimedOutSsl = snmpStats.getDataTimedOutSsl();
+        long keepaliveTimedOutSsl = snmpStats.getKeepaliveTimedOutSsl();
+        long maxConnectionsSsl = snmpStats.getMaxConnectionsSsl();
+        long currentConnectionsSsl = snmpStats.getConcurrentConnectionsSsl();
 
         Stats stats = new Stats();
         stats.setConnectTimeOut(connectionTimedOut);

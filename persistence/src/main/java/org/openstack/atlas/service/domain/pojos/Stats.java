@@ -9,130 +9,130 @@ public class Stats implements Serializable {
         return serialVersionUID;
     }
 
-    protected int[] connectTimeOut;
-    protected int[] connectError;
-    protected int[] connectFailure;
-    protected int[] currentConn;
-    protected int[] dataTimedOut;
-    protected int[] keepAliveTimedOut;
-    protected int[] maxConn;
-    protected int[] connectTimeOutSsl;
-    protected int[] connectErrorSsl;
-    protected int[] connectFailureSsl;
-    protected int[] currentConnSsl;
-    protected int[] dataTimedOutSsl;
-    protected int[] keepAliveTimedOutSsl;
-    protected int[] maxConnSsl;
+    protected long connectTimeOut;
+    protected long connectError;
+    protected long connectFailure;
+    protected long currentConn;
+    protected long dataTimedOut;
+    protected long keepAliveTimedOut;
+    protected long maxConn;
+    protected long connectTimeOutSsl;
+    protected long connectErrorSsl;
+    protected long connectFailureSsl;
+    protected long currentConnSsl;
+    protected long dataTimedOutSsl;
+    protected long keepAliveTimedOutSsl;
+    protected long maxConnSsl;
 
-    public int[] getConnectTimeOut() {
+    public long getConnectTimeOut() {
         return connectTimeOut;
     }
 
-    public void setConnectTimeOut(int[] connectTimeOut) {
+    public void setConnectTimeOut(long connectTimeOut) {
         this.connectTimeOut = connectTimeOut;
     }
 
-    public int[] getConnectError() {
+    public long getConnectError() {
         return connectError;
     }
 
-    public void setConnectError(int[] connectError) {
+    public void setConnectError(long connectError) {
         this.connectError = connectError;
     }
 
-    public int[] getConnectFailure() {
+    public long getConnectFailure() {
         return connectFailure;
     }
 
-    public void setConnectFailure(int[] connectFailure) {
+    public void setConnectFailure(long connectFailure) {
         this.connectFailure = connectFailure;
     }
 
-    public int[] getCurrentConn() {
+    public long getCurrentConn() {
         return currentConn;
     }
 
-    public void setCurrentConn(int[] currentConn) {
+    public void setCurrentConn(long currentConn) {
         this.currentConn = currentConn;
     }
 
-    public int[] getDataTimedOut() {
+    public long getDataTimedOut() {
         return dataTimedOut;
     }
 
-    public void setDataTimedOut(int[] dataTimedOut) {
+    public void setDataTimedOut(long dataTimedOut) {
         this.dataTimedOut = dataTimedOut;
     }
 
-    public int[] getKeepAliveTimedOut() {
+    public long getKeepAliveTimedOut() {
         return keepAliveTimedOut;
     }
 
-    public void setKeepAliveTimedOut(int[] keepAliveTimedOut) {
+    public void setKeepAliveTimedOut(long keepAliveTimedOut) {
         this.keepAliveTimedOut = keepAliveTimedOut;
     }
 
-    public int[] getMaxConn() {
+    public long getMaxConn() {
         return maxConn;
     }
 
-    public void setMaxConn(int[] maxConn) {
+    public void setMaxConn(long maxConn) {
         this.maxConn = maxConn;
     }
 
-    public int[] getConnectTimeOutSsl() {
+    public long getConnectTimeOutSsl() {
         return connectTimeOutSsl;
     }
 
-    public void setConnectTimeOutSsl(int[] connectTimeOutSsl) {
+    public void setConnectTimeOutSsl(long connectTimeOutSsl) {
         this.connectTimeOutSsl = connectTimeOutSsl;
     }
 
-    public int[] getConnectErrorSsl() {
+    public long getConnectErrorSsl() {
         return connectErrorSsl;
     }
 
-    public void setConnectErrorSsl(int[] connectErrorSsl) {
+    public void setConnectErrorSsl(long connectErrorSsl) {
         this.connectErrorSsl = connectErrorSsl;
     }
 
-    public int[] getConnectFailureSsl() {
+    public long getConnectFailureSsl() {
         return connectFailureSsl;
     }
 
-    public void setConnectFailureSsl(int[] connectFailureSsl) {
+    public void setConnectFailureSsl(long connectFailureSsl) {
         this.connectFailureSsl = connectFailureSsl;
     }
 
-    public int[] getCurrentConnSsl() {
+    public long getCurrentConnSsl() {
         return currentConnSsl;
     }
 
-    public void setCurrentConnSsl(int[] currentConnSsl) {
+    public void setCurrentConnSsl(long currentConnSsl) {
         this.currentConnSsl = currentConnSsl;
     }
 
-    public int[] getDataTimedOutSsl() {
+    public long getDataTimedOutSsl() {
         return dataTimedOutSsl;
     }
 
-    public void setDataTimedOutSsl(int[] dataTimedOutSsl) {
+    public void setDataTimedOutSsl(long dataTimedOutSsl) {
         this.dataTimedOutSsl = dataTimedOutSsl;
     }
 
-    public int[] getKeepAliveTimedOutSsl() {
+    public long getKeepAliveTimedOutSsl() {
         return keepAliveTimedOutSsl;
     }
 
-    public void setKeepAliveTimedOutSsl(int[] keepAliveTimedOutSsl) {
+    public void setKeepAliveTimedOutSsl(long keepAliveTimedOutSsl) {
         this.keepAliveTimedOutSsl = keepAliveTimedOutSsl;
     }
 
-    public int[] getMaxConnSsl() {
+    public long getMaxConnSsl() {
         return maxConnSsl;
     }
 
-    public void setMaxConnSsl(int[] maxConnSsl) {
+    public void setMaxConnSsl(long maxConnSsl) {
         this.maxConnSsl = maxConnSsl;
     }
 }
