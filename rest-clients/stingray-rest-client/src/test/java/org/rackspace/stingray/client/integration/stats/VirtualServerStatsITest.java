@@ -1,10 +1,6 @@
 package org.rackspace.stingray.client.integration.stats;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
@@ -98,6 +94,42 @@ public class VirtualServerStatsITest extends StingrayTestBase {
             stats = client.getVirtualServerStats(vsName, endpoint);
         } catch (Exception e) {
             Assert.fail("Exception thrown when retrieving virtual server stats for " + vsName + ".");
+        }
+        statsProperties = stats.getStatistics();
+        Assert.assertNotNull(statsProperties);
+        Assert.assertNotNull(statsProperties.getConnectTimedOut());
+        Assert.assertNotNull(statsProperties.getConnectionErrors());
+        Assert.assertNotNull(statsProperties.getConnectionFailures());
+        Assert.assertNotNull(statsProperties.getDataTimedOut());
+        Assert.assertNotNull(statsProperties.getKeepaliveTimedOut());
+        Assert.assertNotNull(statsProperties.getMaxConn());
+        Assert.assertNotNull(statsProperties.getCurrentConn());
+    }
+
+
+    @Ignore
+    @Test
+    public void testRetrieveVirtualServerStatsLiveTemp() {
+        // comment out @after for safety, DO NOT SET VSNAME...
+        String b = "accountid_LBID<_S>";
+        List<Child> children = new ArrayList<Child>();
+
+        try {
+            children = client.getVirtualServers();
+        } catch (Exception e) {
+            Assert.fail("");
+        }
+        Boolean containsVirtualServer = false;
+        for (Child child : children) {
+            if (child.getName().equals(b)) {
+                containsVirtualServer = true;
+            }
+        }
+        Assert.assertTrue(containsVirtualServer);
+        try {
+            stats = client.getVirtualServerStats(b, endpoint);
+        } catch (Exception e) {
+            Assert.fail("Exception thrown when retrieving virtual server stats for " + b + ".");
         }
         statsProperties = stats.getStatistics();
         Assert.assertNotNull(statsProperties);

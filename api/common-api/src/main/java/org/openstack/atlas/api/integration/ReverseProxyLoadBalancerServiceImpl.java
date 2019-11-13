@@ -567,21 +567,21 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         int[] currentConnectionsSsl = new int[]{snmpStats.getConcurrentConnectionsSsl()};
 
         Stats stats = new Stats();
-        stats.setConnectTimeOut(connectionTimedOut);
-        stats.setConnectError(connectionError);
-        stats.setConnectFailure(connectionFailure);
-        stats.setDataTimedOut(dataTimedOut);
-        stats.setKeepAliveTimedOut(keepaliveTimedOut);
-        stats.setMaxConn(maxConnections);
-        stats.setCurrentConn(currentConnections);
+        stats.setConnectTimeOut((long) connectionTimedOut[0]);
+        stats.setConnectError((long) connectionError[0]);
+        stats.setConnectFailure((long) connectionFailure[0]);
+        stats.setDataTimedOut((long) dataTimedOut[0]);
+        stats.setKeepAliveTimedOut((long) keepaliveTimedOut[0]);
+        stats.setMaxConn((long) maxConnections[0]);
+        stats.setCurrentConn((long) currentConnections[0]);
 
-        stats.setConnectTimeOutSsl(connectionTimedOutSsl);
-        stats.setConnectErrorSsl(connectionErrorSsl);
-        stats.setConnectFailureSsl(connectionFailureSsl);
-        stats.setDataTimedOutSsl(dataTimedOutSsl);
-        stats.setKeepAliveTimedOutSsl(keepaliveTimedOutSsl);
-        stats.setMaxConnSsl(maxConnectionsSsl);
-        stats.setCurrentConnSsl(currentConnectionsSsl);
+        stats.setConnectTimeOutSsl((long) connectionTimedOutSsl[0]);
+        stats.setConnectErrorSsl((long) connectionErrorSsl[0]);
+        stats.setConnectFailureSsl((long) connectionFailureSsl[0]);
+        stats.setDataTimedOutSsl((long) dataTimedOutSsl[0]);
+        stats.setKeepAliveTimedOutSsl((long) keepaliveTimedOutSsl[0]);
+        stats.setMaxConnSsl((long) maxConnectionsSsl[0]);
+        stats.setCurrentConnSsl((long) currentConnectionsSsl[0]);
 
         return stats;
     }

@@ -3008,32 +3008,32 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
         }
         final String sslVirtualServerName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-        int[] connectionTimedOut = new int[1];
-        int[] connectionError = new int[1];
-        int[] connectionFailure = new int[1];
-        int[] dataTimedOut = new int[1];
-        int[] keepaliveTimedOut = new int[1];
-        int[] maxConnections = new int[]{0};
-        int[] currentConnections = new int[1];
-        int[] connectionTimedOutSsl = new int[1];
-        int[] connectionErrorSsl = new int[1];
-        int[] connectionFailureSsl = new int[1];
-        int[] dataTimedOutSsl = new int[1];
-        int[] keepaliveTimedOutSsl = new int[1];
-        int[] maxConnectionsSsl = new int[1];
-        int[] currentConnectionsSsl = new int[1];
+        long connectionTimedOut = 0L;
+        long connectionError = 0L;
+        long connectionFailure = 0L;
+        long dataTimedOut = 0L;
+        long keepaliveTimedOut = 0L;
+        long maxConnections = 0L;
+        long currentConnections = 0L;
+        long connectionTimedOutSsl = 0L;
+        long connectionErrorSsl = 0L;
+        long connectionFailureSsl = 0L;
+        long dataTimedOutSsl = 0L;
+        long keepaliveTimedOutSsl = 0L;
+        long maxConnectionsSsl = 0L;
+        long currentConnectionsSsl = 0L;
 
         if (!loadBalancer.isSecureOnly() && (loadBalancer.getHttpsRedirect() == null || !loadBalancer.getHttpsRedirect())) {
             for (ZxtmServiceStubs serviceStubs : allStubs) {
-                connectionTimedOut[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName})[0];
-                connectionError[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName})[0];
-                connectionFailure[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{virtualServerName})[0];
-                dataTimedOut[0] += serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{virtualServerName})[0];
-                keepaliveTimedOut[0] += serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut(new String[]{virtualServerName})[0];
-                currentConnections[0] += serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{virtualServerName})[0];
+                connectionTimedOut += serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName})[0];
+                connectionError += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName})[0];
+                connectionFailure += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{virtualServerName})[0];
+                dataTimedOut += serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{virtualServerName})[0];
+                keepaliveTimedOut += serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut(new String[]{virtualServerName})[0];
+                currentConnections += serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{virtualServerName})[0];
                 int max = serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{virtualServerName})[0];
-                if (max > maxConnections[0]) {
-                    maxConnections[0] = max;
+                if (max > maxConnections) {
+                    maxConnections = max;
                 }
             }
             stats.setConnectTimeOut(connectionTimedOut);
@@ -3044,26 +3044,26 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             stats.setMaxConn(maxConnections);
             stats.setCurrentConn(currentConnections);
         } else {
-            stats.setConnectTimeOut(new int[]{0});
-            stats.setConnectError(new int[]{0});
-            stats.setConnectFailure(new int[]{0});
-            stats.setDataTimedOut(new int[]{0});
-            stats.setKeepAliveTimedOut(new int[]{0});
-            stats.setMaxConn(new int[]{0});
-            stats.setCurrentConn(new int[]{0});
+            stats.setConnectTimeOut(0L);
+            stats.setConnectError(0L);
+            stats.setConnectFailure(0L);
+            stats.setDataTimedOut(0L);
+            stats.setKeepAliveTimedOut(0L);
+            stats.setMaxConn(0L);
+            stats.setCurrentConn(0L);
         }
 
         if (loadBalancer.isUsingSsl()) {
             for (ZxtmServiceStubs serviceStubs : allStubs) {
-                connectionTimedOutSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{sslVirtualServerName})[0];
-                connectionErrorSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{sslVirtualServerName})[0];
-                connectionFailureSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{sslVirtualServerName})[0];
-                dataTimedOutSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{sslVirtualServerName})[0];
-                keepaliveTimedOutSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut(new String[]{sslVirtualServerName})[0];
-                currentConnectionsSsl[0] += serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{sslVirtualServerName})[0];
+                connectionTimedOutSsl += serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{sslVirtualServerName})[0];
+                connectionErrorSsl += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{sslVirtualServerName})[0];
+                connectionFailureSsl += serviceStubs.getSystemStatsBinding().getVirtualserverConnectionFailures(new String[]{sslVirtualServerName})[0];
+                dataTimedOutSsl += serviceStubs.getSystemStatsBinding().getVirtualserverDataTimedOut(new String[]{sslVirtualServerName})[0];
+                keepaliveTimedOutSsl += serviceStubs.getSystemStatsBinding().getVirtualserverKeepaliveTimedOut(new String[]{sslVirtualServerName})[0];
+                currentConnectionsSsl += serviceStubs.getSystemStatsBinding().getVirtualserverCurrentConn(new String[]{sslVirtualServerName})[0];
                 int maxSsl = serviceStubs.getSystemStatsBinding().getVirtualserverMaxConn(new String[]{sslVirtualServerName})[0];
-                if (maxSsl > maxConnectionsSsl[0]) {
-                    maxConnectionsSsl[0] = maxSsl;
+                if (maxSsl > maxConnectionsSsl) {
+                    maxConnectionsSsl = maxSsl;
                 }
                 //            stats.setConnectTimeOut(serviceStubs.getSystemStatsBinding().getVirtualserverConnectTimedOut(new String[]{virtualServerName}));
                 //            stats.setConnectError(serviceStubs.getSystemStatsBinding().getVirtualserverConnectionErrors(new String[]{virtualServerName}));
@@ -3088,13 +3088,13 @@ public class ZxtmAdapterImpl implements ReverseProxyLoadBalancerAdapter {
             stats.setMaxConnSsl(maxConnectionsSsl);
             stats.setCurrentConnSsl(currentConnectionsSsl);
         } else {
-            stats.setConnectTimeOutSsl(new int[]{0});
-            stats.setConnectErrorSsl(new int[]{0});
-            stats.setConnectFailureSsl(new int[]{0});
-            stats.setDataTimedOutSsl(new int[]{0});
-            stats.setKeepAliveTimedOutSsl(new int[]{0});
-            stats.setMaxConnSsl(new int[]{0});
-            stats.setCurrentConnSsl(new int[]{0});
+            stats.setConnectTimeOutSsl(0L);
+            stats.setConnectErrorSsl(0L);
+            stats.setConnectFailureSsl(0L);
+            stats.setDataTimedOutSsl(0L);
+            stats.setKeepAliveTimedOutSsl(0L);
+            stats.setMaxConnSsl(0L);
+            stats.setCurrentConnSsl(0L);
         }
         return stats;
     }

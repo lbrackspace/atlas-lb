@@ -62,20 +62,20 @@
 
     <xsd:element name="stats" type="tns:stats"/>
     <xsd:complexType name="stats">
-        <xsd:attribute name="connectTimeOut" type="xsd:int"/>
-        <xsd:attribute name="connectError" type="xsd:int"/>
-        <xsd:attribute name="connectFailure" type="xsd:int"/>
-        <xsd:attribute name="dataTimedOut" type="xsd:int"/>
-        <xsd:attribute name="keepAliveTimedOut" type="xsd:int"/>
-        <xsd:attribute name="maxConn" type="xsd:int"/>
-        <xsd:attribute name="currentConn" type="xsd:int"/>
-        <xsd:attribute name="connectTimeOutSsl" type="xsd:int"/>
-        <xsd:attribute name="connectErrorSsl" type="xsd:int"/>
-        <xsd:attribute name="connectFailureSsl" type="xsd:int"/>
-        <xsd:attribute name="dataTimedOutSsl" type="xsd:int"/>
-        <xsd:attribute name="keepAliveTimedOutSsl" type="xsd:int"/>
-        <xsd:attribute name="maxConnSsl" type="xsd:int"/>
-        <xsd:attribute name="currentConnSsl" type="xsd:int"/>
+        <xsd:attribute name="connectTimeOut" type="xsd:long"/>
+        <xsd:attribute name="connectError" type="xsd:long"/>
+        <xsd:attribute name="connectFailure" type="xsd:long"/>
+        <xsd:attribute name="dataTimedOut" type="xsd:long"/>
+        <xsd:attribute name="keepAliveTimedOut" type="xsd:long"/>
+        <xsd:attribute name="maxConn" type="xsd:long"/>
+        <xsd:attribute name="currentConn" type="xsd:long"/>
+        <xsd:attribute name="connectTimeOutSsl" type="xsd:long"/>
+        <xsd:attribute name="connectErrorSsl" type="xsd:long"/>
+        <xsd:attribute name="connectFailureSsl" type="xsd:long"/>
+        <xsd:attribute name="dataTimedOutSsl" type="xsd:long"/>
+        <xsd:attribute name="keepAliveTimedOutSsl" type="xsd:long"/>
+        <xsd:attribute name="maxConnSsl" type="xsd:long"/>
+        <xsd:attribute name="currentConnSsl" type="xsd:long"/>
     </xsd:complexType>
 
     <xsd:element name="connectionLogging" type="tns:connectionLogging"/>

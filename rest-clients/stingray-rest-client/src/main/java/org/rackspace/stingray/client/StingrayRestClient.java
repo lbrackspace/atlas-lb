@@ -1154,13 +1154,13 @@ public class StingrayRestClient extends StingrayRestClientManager {
 
     private VirtualServerStatsProperties getZeroStats() {
         VirtualServerStatsProperties props = new VirtualServerStatsProperties();
-        props.setConnectTimedOut(0);
-        props.setConnectionErrors(0);
-        props.setConnectionFailures(0);
-        props.setDataTimedOut(0);
-        props.setKeepaliveTimedOut(0);
-        props.setMaxConn(0);
-        props.setCurrentConn(0);
+        props.setConnectTimedOut(0L);
+        props.setConnectionErrors(0L);
+        props.setConnectionFailures(0L);
+        props.setDataTimedOut(0L);
+        props.setKeepaliveTimedOut(0L);
+        props.setMaxConn(0L);
+        props.setCurrentConn(0L);
         return props;
     }
 }

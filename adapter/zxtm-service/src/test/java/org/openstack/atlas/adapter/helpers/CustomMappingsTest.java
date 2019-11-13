@@ -69,21 +69,21 @@ public class CustomMappingsTest extends STMTestBase {
             vsPropsSsl = new VirtualServerStatsProperties();
 
 
-            vsProps.setConnectionFailures(5);
-            vsProps.setConnectionErrors(6);
-            vsProps.setConnectTimedOut(7);
-            vsProps.setDataTimedOut(8);
-            vsProps.setKeepaliveTimedOut(9);
-            vsProps.setMaxConn(10);
-            vsProps.setCurrentConn(4);
+            vsProps.setConnectionFailures(5L);
+            vsProps.setConnectionErrors(6L);
+            vsProps.setConnectTimedOut(7L);
+            vsProps.setDataTimedOut(8L);
+            vsProps.setKeepaliveTimedOut(9L);
+            vsProps.setMaxConn(10L);
+            vsProps.setCurrentConn(4L);
 
-            vsPropsSsl.setConnectionFailures(11);
-            vsPropsSsl.setConnectionErrors(12);
-            vsPropsSsl.setConnectTimedOut(13);
-            vsPropsSsl.setDataTimedOut(14);
-            vsPropsSsl.setKeepaliveTimedOut(15);
-            vsPropsSsl.setMaxConn(16);
-            vsPropsSsl.setCurrentConn(17);
+            vsPropsSsl.setConnectionFailures(11L);
+            vsPropsSsl.setConnectionErrors(12L);
+            vsPropsSsl.setConnectTimedOut(13L);
+            vsPropsSsl.setDataTimedOut(14L);
+            vsPropsSsl.setKeepaliveTimedOut(15L);
+            vsPropsSsl.setMaxConn(16L);
+            vsPropsSsl.setCurrentConn(17L);
 
             virtualServerStats.setStatistics(vsProps);
             virtualServerStatsSsl.setStatistics(vsPropsSsl);
@@ -96,13 +96,13 @@ public class CustomMappingsTest extends STMTestBase {
         @Test
         public void shouldMapVirtualServerNoSSL() {
             stats = CustomMappings.mapVirtualServerStatsLists(virtualServerStatsList, new ArrayList<>());
-            Assert.assertEquals(5, stats.getConnectFailure()[0]);
-            Assert.assertEquals(6, stats.getConnectError()[0]);
-            Assert.assertEquals(7, stats.getConnectTimeOut()[0]);
-            Assert.assertEquals(8, stats.getDataTimedOut()[0]);
-            Assert.assertEquals(9, stats.getKeepAliveTimedOut()[0]);
-            Assert.assertEquals(10, stats.getMaxConn()[0]);
-            Assert.assertEquals(4, stats.getCurrentConn()[0]);
+            Assert.assertEquals(5, stats.getConnectFailure());
+            Assert.assertEquals(6, stats.getConnectError());
+            Assert.assertEquals(7, stats.getConnectTimeOut());
+            Assert.assertEquals(8, stats.getDataTimedOut());
+            Assert.assertEquals(9, stats.getKeepAliveTimedOut());
+            Assert.assertEquals(10, stats.getMaxConn());
+            Assert.assertEquals(4, stats.getCurrentConn());
         }
 
         @Test
@@ -110,44 +110,44 @@ public class CustomMappingsTest extends STMTestBase {
             VirtualServerStats vs2 = new VirtualServerStats();
             VirtualServerStatsProperties vsp2 = new VirtualServerStatsProperties();
 
-            vsp2.setConnectionFailures(5);
-            vsp2.setConnectionErrors(6);
-            vsp2.setConnectTimedOut(7);
-            vsp2.setDataTimedOut(8);
-            vsp2.setKeepaliveTimedOut(9);
-            vsp2.setMaxConn(11); // maxconn is top value from shadow or regular server
-            vsp2.setCurrentConn(4);
+            vsp2.setConnectionFailures(5L);
+            vsp2.setConnectionErrors(6L);
+            vsp2.setConnectTimedOut(7L);
+            vsp2.setDataTimedOut(8L);
+            vsp2.setKeepaliveTimedOut(9L);
+            vsp2.setMaxConn(11L); // maxconn is top value from shadow or regular server
+            vsp2.setCurrentConn(4L);
             vs2.setStatistics(vsp2);
             virtualServerStatsList.add(vs2);
 
             stats = CustomMappings.mapVirtualServerStatsLists(virtualServerStatsList, new ArrayList<>());
-            Assert.assertEquals(10, stats.getConnectFailure()[0]);
-            Assert.assertEquals(12, stats.getConnectError()[0]);
-            Assert.assertEquals(14, stats.getConnectTimeOut()[0]);
-            Assert.assertEquals(16, stats.getDataTimedOut()[0]);
-            Assert.assertEquals(18, stats.getKeepAliveTimedOut()[0]);
-            Assert.assertEquals(11, stats.getMaxConn()[0]);
-            Assert.assertEquals(8, stats.getCurrentConn()[0]);
+            Assert.assertEquals(10, stats.getConnectFailure());
+            Assert.assertEquals(12, stats.getConnectError());
+            Assert.assertEquals(14, stats.getConnectTimeOut());
+            Assert.assertEquals(16, stats.getDataTimedOut());
+            Assert.assertEquals(18, stats.getKeepAliveTimedOut());
+            Assert.assertEquals(11, stats.getMaxConn());
+            Assert.assertEquals(8, stats.getCurrentConn());
         }
 
         @Test
         public void shouldMapVirtualServerWithSSL() {
             stats = CustomMappings.mapVirtualServerStatsLists(virtualServerStatsList, virtualServerStatsSslList);
-            Assert.assertEquals(5, stats.getConnectFailure()[0]);
-            Assert.assertEquals(6, stats.getConnectError()[0]);
-            Assert.assertEquals(7, stats.getConnectTimeOut()[0]);
-            Assert.assertEquals(8, stats.getDataTimedOut()[0]);
-            Assert.assertEquals(9, stats.getKeepAliveTimedOut()[0]);
-            Assert.assertEquals(10, stats.getMaxConn()[0]);
-            Assert.assertEquals(4, stats.getCurrentConn()[0]);
+            Assert.assertEquals(5, stats.getConnectFailure());
+            Assert.assertEquals(6, stats.getConnectError());
+            Assert.assertEquals(7, stats.getConnectTimeOut());
+            Assert.assertEquals(8, stats.getDataTimedOut());
+            Assert.assertEquals(9, stats.getKeepAliveTimedOut());
+            Assert.assertEquals(10, stats.getMaxConn());
+            Assert.assertEquals(4, stats.getCurrentConn());
 
-            Assert.assertEquals(11, stats.getConnectFailureSsl()[0]);
-            Assert.assertEquals(12, stats.getConnectErrorSsl()[0]);
-            Assert.assertEquals(13, stats.getConnectTimeOutSsl()[0]);
-            Assert.assertEquals(14, stats.getDataTimedOutSsl()[0]);
-            Assert.assertEquals(15, stats.getKeepAliveTimedOutSsl()[0]);
-            Assert.assertEquals(16, stats.getMaxConnSsl()[0]);
-            Assert.assertEquals(17, stats.getCurrentConnSsl()[0]);
+            Assert.assertEquals(11, stats.getConnectFailureSsl());
+            Assert.assertEquals(12, stats.getConnectErrorSsl());
+            Assert.assertEquals(13, stats.getConnectTimeOutSsl());
+            Assert.assertEquals(14, stats.getDataTimedOutSsl());
+            Assert.assertEquals(15, stats.getKeepAliveTimedOutSsl());
+            Assert.assertEquals(16, stats.getMaxConnSsl());
+            Assert.assertEquals(17, stats.getCurrentConnSsl());
         }
 
         @Test
@@ -158,43 +158,43 @@ public class CustomMappingsTest extends STMTestBase {
             VirtualServerStats vs2ssl = new VirtualServerStats();
             VirtualServerStatsProperties vsp2ssl = new VirtualServerStatsProperties();
 
-            vsp2.setConnectionFailures(5);
-            vsp2.setConnectionErrors(6);
-            vsp2.setConnectTimedOut(7);
-            vsp2.setDataTimedOut(8);
-            vsp2.setKeepaliveTimedOut(9);
-            vsp2.setMaxConn(11); // maxconn is top value from shadow or regular server
-            vsp2.setCurrentConn(4);
+            vsp2.setConnectionFailures(5L);
+            vsp2.setConnectionErrors(6L);
+            vsp2.setConnectTimedOut(7L);
+            vsp2.setDataTimedOut(8L);
+            vsp2.setKeepaliveTimedOut(9L);
+            vsp2.setMaxConn(11L); // maxconn is top value from shadow or regular server
+            vsp2.setCurrentConn(4L);
             vs2.setStatistics(vsp2);
             virtualServerStatsList.add(vs2);
 
-            vsp2ssl.setConnectionFailures(11);
-            vsp2ssl.setConnectionErrors(12);
-            vsp2ssl.setConnectTimedOut(13);
-            vsp2ssl.setDataTimedOut(14);
-            vsp2ssl.setKeepaliveTimedOut(15);
-            vsp2ssl.setMaxConn(17); // maxconn is top value from shadow or regular server
-            vsp2ssl.setCurrentConn(17);
+            vsp2ssl.setConnectionFailures(11L);
+            vsp2ssl.setConnectionErrors(12L);
+            vsp2ssl.setConnectTimedOut(13L);
+            vsp2ssl.setDataTimedOut(14L);
+            vsp2ssl.setKeepaliveTimedOut(15L);
+            vsp2ssl.setMaxConn(17L); // maxconn is top value from shadow or regular server
+            vsp2ssl.setCurrentConn(17L);
             vs2ssl.setStatistics(vsp2ssl);
             virtualServerStatsSslList.add(vs2ssl);
 
 
             stats = CustomMappings.mapVirtualServerStatsLists(virtualServerStatsList, virtualServerStatsSslList);
-            Assert.assertEquals(10, stats.getConnectFailure()[0]);
-            Assert.assertEquals(12, stats.getConnectError()[0]);
-            Assert.assertEquals(14, stats.getConnectTimeOut()[0]);
-            Assert.assertEquals(16, stats.getDataTimedOut()[0]);
-            Assert.assertEquals(18, stats.getKeepAliveTimedOut()[0]);
-            Assert.assertEquals(11, stats.getMaxConn()[0]);
-            Assert.assertEquals(8, stats.getCurrentConn()[0]);
+            Assert.assertEquals(10, stats.getConnectFailure());
+            Assert.assertEquals(12, stats.getConnectError());
+            Assert.assertEquals(14, stats.getConnectTimeOut());
+            Assert.assertEquals(16, stats.getDataTimedOut());
+            Assert.assertEquals(18, stats.getKeepAliveTimedOut());
+            Assert.assertEquals(11, stats.getMaxConn());
+            Assert.assertEquals(8, stats.getCurrentConn());
 
-            Assert.assertEquals(22, stats.getConnectFailureSsl()[0]);
-            Assert.assertEquals(24, stats.getConnectErrorSsl()[0]);
-            Assert.assertEquals(26, stats.getConnectTimeOutSsl()[0]);
-            Assert.assertEquals(28, stats.getDataTimedOutSsl()[0]);
-            Assert.assertEquals(30, stats.getKeepAliveTimedOutSsl()[0]);
-            Assert.assertEquals(17, stats.getMaxConnSsl()[0]);
-            Assert.assertEquals(34, stats.getCurrentConnSsl()[0]);
+            Assert.assertEquals(22, stats.getConnectFailureSsl());
+            Assert.assertEquals(24, stats.getConnectErrorSsl());
+            Assert.assertEquals(26, stats.getConnectTimeOutSsl());
+            Assert.assertEquals(28, stats.getDataTimedOutSsl());
+            Assert.assertEquals(30, stats.getKeepAliveTimedOutSsl());
+            Assert.assertEquals(17, stats.getMaxConnSsl());
+            Assert.assertEquals(34, stats.getCurrentConnSsl());
         }
     }
 }

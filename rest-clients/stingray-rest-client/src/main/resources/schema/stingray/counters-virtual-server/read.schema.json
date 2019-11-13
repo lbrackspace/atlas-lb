@@ -64,77 +64,88 @@
             "current_conn": {
                "description":   "TCP connections currently established to this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "max_conn": {
                "description":   "Maximum number of simultaneous TCP connections this virtual server has processed at any one time.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "total_conn": {
                "description":   "Requests received by this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "discard": {
                "description":   "Connections discarded by this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "direct_replies": {
                "description":   "Direct replies from this virtual server, without forwarding to a node.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "connect_timed_out": {
                "description":   "Connections closed by this virtual server because the 'connect_timeout' interval was exceeded.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "data_timed_out": {
                "description":   "Connections closed by this virtual server because the 'timeout' interval was exceeded.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "keepalive_timed_out": {
                "description":   "Connections closed by this virtual server because the 'keepalive_timeout' interval was exceeded.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "udp_timed_out": {
                "description":   "Connections closed by this virtual server because the 'udp_timeout' interval was exceeded.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "total_dgram": {
                "description":   "UDP datagrams processed by this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "gzip": {
                "description":   "Responses which have been compressed by content compression.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
@@ -157,63 +168,72 @@
             "http_rewrite_location": {
                "description":   "HTTP Location headers, supplied by a node, that have been rewritten.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "http_rewrite_cookie": {
                "description":   "HTTP Set-Cookie headers, supplied by a node, that have been rewritten.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "http_cache_hits": {
                "description":   "HTTP responses sent directly from the web cache by this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "http_cache_lookups": {
                "description":   "HTTP requests that are looked up in the web cache by this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "http_cache_hit_rate": {
                "description":   "Percentage hit rate of the web cache for this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "sip_total_calls": {
                "description":   "Total number of SIP INVITE requests seen by this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "sip_rejected_requests": {
                "description":   "Number of SIP requests rejected due to them exceeding the maximum amount of memory allocated to the connection.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "connection_errors": {
                "description":   "Number of transaction or protocol errors in this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "connection_failures": {
                "description":   "Number of connection failures in this virtual server.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
@@ -241,28 +261,32 @@
             "cert_status_requests": {
                "description":   "Number of incoming TLS handshakes for this virtual server with certificate status requests.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "cert_status_responses": {
                "description":   "Number of incoming TLS handshakes for this virtual server to which certificate status responses were attached.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "max_duration_timed_out": {
                "description":   "Connections closed by this virtual server because the 'max_transaction_duration' interval was exceeded.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             },
             
             "processing_timed_out": {
                "description":   "Connections closed by this virtual server because the 'timeout' interval was exceeded while waiting for rules or external processing.",
                
-               "type":          "integer",
+               "type":          "string",
+               "format":        "utc-millisec",
                "minimum":       0
             }
          }
