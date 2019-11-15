@@ -154,7 +154,14 @@ public class MossoAuthConfig {
                 Map.Entry<String, String> ent = (Map.Entry<String, String>) obj;
                 String roleName = ent.getKey();
                 String ldapGroup = ent.getValue();
-                roles.put(ldapGroup, roleName);
+                if (ldapGroup.contains(",")) {
+                    String[] groups = ldapGroup.split(",");
+                    for (String g : groups) {
+                        roles.put(g, roleName);
+                    }
+                } else {
+                    roles.put(ldapGroup, roleName);
+                }
             }
             this.roles = roles;
 
