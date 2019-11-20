@@ -86,7 +86,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), eq(String.format("Load balancer '%d' not found in database.", lb.getId())));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
-        verify(notificationService, never()).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService, never()).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), eq(String.format("Load balancer '%d' not found in database.", lb.getId())));
         verify(reverseProxyLoadBalancerStmService, never()).deleteErrorFile(lb, null);
         verify(loadBalancerService, never()).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService, never()).setStatus(lb, LoadBalancerStatus.ERROR);
@@ -117,6 +117,6 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
 
         verify(reverseProxyLoadBalancerStmService).deleteErrorFile(lb, null);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("Error setting Errorfile for %d_%d", lb.getAccountId(), lb.getId())));
     }
 }

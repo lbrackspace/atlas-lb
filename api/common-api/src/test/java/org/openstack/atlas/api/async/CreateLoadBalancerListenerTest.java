@@ -224,7 +224,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
 
         createLoadBalancerListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), eq(String.format("Load balancer '%d' not found in database.", lb.getId())));
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.CREATE_LOADBALANCER), eq(CategoryType.CREATE), eq(EventSeverity.CRITICAL));
     }
 
@@ -241,7 +241,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ERROR);
         Assert.assertTrue(checkNodeHelper(lb.getNodes(), NodeStatus.OFFLINE)); // This is how I decided to test NodesHelper
         verify(loadBalancerService).update(lb);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("An error occurred while creating loadbalancer '%d' in STM.", lb.getId())));
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ERROR);
         //TODO: Verify usage now that its been updated...
 //        verify(usageEventHelper).processUsageEvent(eq(lb), eq(UsageEvent.CREATE_LOADBALANCER), eq(0l), eq(0l), eq(0), eq(0l), eq(0l), eq(0), Matchers.any(Calendar.class));

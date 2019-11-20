@@ -100,9 +100,11 @@ public class DeleteLoadBalancerListener extends BaseListener {
         usageEventCollection.processUsageEvent(usages, dbLoadBalancer, UsageEvent.DELETE_LOADBALANCER, eventTime);
         } catch (Exception exc) {
             String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
-            String alertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",
-                    dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
-            LOG.error(alertDescription);
+            String alertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d",
+                    dbLoadBalancer.getId());
+            String alertDescriptionLog = String.format("%s %d: \n%s\n\n%s",
+                    alertDescription, dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
+            LOG.error(alertDescriptionLog);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), exc, USAGE_FAILURE.name(), alertDescription);
         }
         LOG.info(String.format("Completed processing DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
