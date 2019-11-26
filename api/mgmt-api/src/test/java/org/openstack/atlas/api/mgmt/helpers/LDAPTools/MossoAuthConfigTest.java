@@ -35,7 +35,7 @@ public class MossoAuthConfigTest {
             + "    \"support\": \"lbaas_support\", \n"
             + "    \"cp\": \"lbaas_cloud_control\", \n"
             + "    \"billing\": \"legacy_billing\", \n"
-            + "    \"ops\": \"lbaas_ops\"\n"
+            + "    \"ops\": \"lbaas_ops,special_group\"\n"
             + "  }, \n"
             + "  \"isactivedirectory\": true, \n"
             + "  \"usehostverify\": true, \n"
@@ -78,6 +78,24 @@ public class MossoAuthConfigTest {
         assertEquals("ou=Accounts,dc=rackspace,dc=corp", tConf.getClassConfig().getDn());
         assertEquals("uid", tConf.getClassConfig().getSdn());
         assertEquals("ops", tConf.getRoles().get("lbaas_ops"));
+        assertEquals("billing", tConf.getRoles().get("legacy_billing"));
+        assertEquals("cp", tConf.getRoles().get("lbaas_cloud_control"));
+        assertEquals("support", tConf.getRoles().get("lbaas_support"));
+        assertTrue(tConf.isUseHostVerify());
+
+    }
+
+    @Test
+    public void testMossoAuthConfigFromFileMultiGroup() throws IOException, GeneralSecurityException {
+        String fileName = "/tmp/ldap.json";
+        FileWriter fw = new FileWriter(fileName);
+        PrintWriter pw = new PrintWriter(fw);
+        pw.print(exampleJson);
+        pw.close();
+        fw.close();
+        MossoAuthConfig tConf = new MossoAuthConfig(fileName);
+        assertEquals("ops", tConf.getRoles().get("lbaas_ops"));
+        assertEquals("ops", tConf.getRoles().get("special_group"));
         assertEquals("billing", tConf.getRoles().get("legacy_billing"));
         assertEquals("cp", tConf.getRoles().get("lbaas_cloud_control"));
         assertEquals("support", tConf.getRoles().get("lbaas_support"));
