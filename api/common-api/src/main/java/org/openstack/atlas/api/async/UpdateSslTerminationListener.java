@@ -80,7 +80,7 @@ public class UpdateSslTerminationListener extends BaseListener {
             String msg = Debug.getEST(e);
             LOG.error(String.format("Error updating loadbalancr %d: %s\n", dbLoadBalancer.getId(), msg));
             dbLoadBalancer.setStatus(LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus.:%s", dbLoadBalancer.getId(), msg);
+            String alertDescription = String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus", dbLoadBalancer.getId());
             loadBalancerService.update(dbLoadBalancer);
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
@@ -124,9 +124,11 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.info(String.format("Finished processing usage event for load balancer: %s", dbLoadBalancer.getId()));
         } catch (Exception exc) {
             String exceptionStackTrace = Debug.getExtendedStackTrace(exc);
-            String usageAlertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d: \n%s\n\n%s",
-                                                         dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
-            LOG.error(usageAlertDescription);
+            String usageAlertDescription = String.format("An error occurred while processing the usage for an event on loadbalancer %d",
+                    dbLoadBalancer.getId());
+            String alertDescriptionLog = String.format("%s %d: \n%s\n\n%s",
+                    usageAlertDescription, dbLoadBalancer.getId(), exc.getMessage(), exceptionStackTrace);
+            LOG.error(alertDescriptionLog);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), exc, USAGE_FAILURE.name(), usageAlertDescription);
         }
         // Update load balancer status in DB

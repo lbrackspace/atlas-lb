@@ -125,7 +125,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
 
         deleteLoadBalancerListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()),  eq(String.format("Load balancer '%d' not found in database.", lb.getId())));
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_LOADBALANCER), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
@@ -141,7 +141,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         verify(usageEventCollection).getUsage(lb);
         verify(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()),  eq(String.format("Error deleting loadbalancer '%d' in Zeus.", lb.getId())));
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_LOADBALANCER), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 }

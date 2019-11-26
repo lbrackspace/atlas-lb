@@ -103,7 +103,7 @@ public class AddVirtualIpListenerTest extends STMTestBase {
 
         addVirtualIpListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(0), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(0), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), eq(String.format("Load balancer '%d' not found in database.", lb.getId())));
         verify(notificationService).saveVirtualIpEvent(eq(""), eq(0), eq(LOAD_BALANCER_ID), eq(VIP_ID), anyString(), anyString(), eq(EventType.UPDATE_LOADBALANCER), eq(CategoryType.CREATE), eq(EventSeverity.CRITICAL));
     }
 
@@ -121,7 +121,7 @@ public class AddVirtualIpListenerTest extends STMTestBase {
 
         verify(reverseProxyLoadBalancerStmService).addVirtualIps(LOAD_BALANCER_ID, ACCOUNT_ID, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("Error adding virtual ip in Zeus for loadbalancer '%d'.", lb.getId())));
         verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(VIP_ID), anyString(), anyString(), eq(EventType.UPDATE_LOADBALANCER), eq(CategoryType.CREATE), eq(EventSeverity.CRITICAL));
     }
 }

@@ -218,7 +218,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ERROR);
         verify(loadBalancerService).update(lb);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus", lb.getId())));
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_SSL_TERMINATION), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
     }
 }

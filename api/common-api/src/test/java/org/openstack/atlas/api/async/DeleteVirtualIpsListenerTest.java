@@ -116,7 +116,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
 
         deleteVirtualIpsListener.doOnMessage(objectMessage);
 
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), eq(String.format("Load balancer '%d' not found in database.", lb.getId())));
         verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
@@ -135,7 +135,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
 
         verify(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete, null);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("Error deleting virtual ips in Zeus for loadbalancer '%d'.", lb.getId())));
         verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
     }
 
@@ -155,7 +155,7 @@ public class DeleteVirtualIpsListenerTest extends STMTestBase {
         verify(reverseProxyLoadBalancerStmService).deleteVirtualIps(lb, vipIdsToDelete, null);
         verify(virtualIpService).removeVipsFromLoadBalancer(lb, vipIdsToDelete);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.DATABASE_FAILURE.name()), anyString());
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.DATABASE_FAILURE.name()), eq(String.format("Error deleting virtual ips in database for loadbalancer '%d'.", lb.getId())));
         verify(notificationService).saveVirtualIpEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_VIRTUAL_IP), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ERROR);
     }
