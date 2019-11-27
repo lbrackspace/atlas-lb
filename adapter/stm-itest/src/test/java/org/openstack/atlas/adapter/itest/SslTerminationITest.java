@@ -130,6 +130,27 @@ public class SslTerminationITest extends STMTestBase {
         verifyHostHeaderRewrite();
     }
 
+    @Test
+    public void veriyHttpsRedirect() {
+        verifyHttpsRedirectWithSSLTermination();
+    }
+
+    @Test
+    public void veriyHttpsRedirectSecureTrafficOnly() {
+        verifyHttpsRedirectWithSSLTerminationSecureOnly();
+    }
+
+    @Test
+    public void veriyHttpsRedirectUpdateSslTermination() {
+        verifyHttpsRedirectUpdateSslTerm();
+    }
+
+    @Test
+    public void veriyHttpsRedirectUpdateAndRevert() {
+        verifyHttpsRedirectSslOnlyBackToDefault();
+        verifyHttpsRedirectSslOnlyInverseBackToDefault();
+    }
+
     private void setSslTermination() {
         boolean isSslTermEnabled = true;
         boolean allowSecureTrafficOnly = false;
@@ -175,13 +196,17 @@ public class SslTerminationITest extends STMTestBase {
             try {
                 stmAdapter.updateSslTermination(config, lb, zeusSslTermination);
                 createdSecureVs = stmClient.getVirtualServer(secureName);
-                createdNormalVs = stmClient.getVirtualServer(normalName);
+                if (!lb.isSecureOnly() && (lb.getHttpsRedirect() != null && !lb.getHttpsRedirect())) {
+                    createdNormalVs = stmClient.getVirtualServer(normalName);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             Assert.assertNotNull(createdSecureVs);
-            Assert.assertNotNull(createdNormalVs);
+            if (!lb.isSecureOnly() && (lb.getHttpsRedirect() != null && !lb.getHttpsRedirect())) {
+                Assert.assertNotNull(createdNormalVs);
+            }
 
             VirtualServerBasic secureBasic = createdSecureVs.getProperties().getBasic();
             Assert.assertEquals(StmTestConstants.LB_SECURE_PORT, (int) secureBasic.getPort());
@@ -193,15 +218,17 @@ public class SslTerminationITest extends STMTestBase {
             Assert.assertEquals(VirtualServerSsl.SslSupportTls1.ENABLED, createdSecureVs.getProperties().getSsl().getSslSupportTls1());
             Assert.assertEquals(VirtualServerSsl.SslSupportTls11.DISABLED, createdSecureVs.getProperties().getSsl().getSslSupportTls11());
 
-            VirtualServerBasic normalBasic = createdNormalVs.getProperties().getBasic();
-            Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());
-            Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(normalBasic.getProtocol().toString()));
-            if (allowSecureTrafficOnly) {
-                Assert.assertEquals(!isVsEnabled, normalBasic.getEnabled());
-            } else {
-                Assert.assertEquals(isVsEnabled, normalBasic.getEnabled());
+            if (!lb.isSecureOnly() && (lb.getHttpsRedirect() != null && !lb.getHttpsRedirect())) {
+                VirtualServerBasic normalBasic = createdNormalVs.getProperties().getBasic();
+                Assert.assertEquals(StmTestConstants.LB_PORT, (int) normalBasic.getPort());
+                Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(normalBasic.getProtocol().toString()));
+                if (allowSecureTrafficOnly) {
+                    Assert.assertEquals(!isVsEnabled, normalBasic.getEnabled());
+                } else {
+                    Assert.assertEquals(isVsEnabled, normalBasic.getEnabled());
+                }
+                Assert.assertEquals(normalName, normalBasic.getPool().toString());
             }
-            Assert.assertEquals(normalName, normalBasic.getPool().toString());
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -213,14 +240,26 @@ public class SslTerminationITest extends STMTestBase {
         try {
             String vsName = ZxtmNameBuilder.genVSName(lb);
             String vsSslName = ZxtmNameBuilder.genSslVSName(lb);
-            VirtualServer createdNormalVs = stmClient.getVirtualServer(normalName);
+            try {
+                VirtualServer createdNormalVs = stmClient.getVirtualServer(normalName);
+            } catch (Exception e) {
+                if (!lb.isSecureOnly() && (lb.getHttpsRedirect() != null && !lb.getHttpsRedirect())) {
+                    // default vs should have existed..
+                    e.printStackTrace();
+                    Assert.fail(e.getMessage());
+                    removeSimpleLoadBalancer();
+                }
+                // expected
+            }
             stmAdapter.removeSslTermination(config, lb);
             List<String> names = new ArrayList<String>();
             for (Child child : stmClient.getVirtualServers()) {
                 names.add(child.getName());
             }
             Assert.assertFalse(names.contains(vsSslName));
-            Assert.assertTrue(names.contains(vsName));
+            if (!lb.isSecureOnly() && (lb.getHttpsRedirect() != null && !lb.getHttpsRedirect())) {
+                Assert.assertTrue(names.contains(vsName));
+            }
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail(e.getMessage());
@@ -376,6 +415,280 @@ public class SslTerminationITest extends STMTestBase {
             vssl = createdSecureVs.getProperties().getSsl();
             schm = vssl.getServerCertHostMapping();
             Assert.assertEquals(0, schm.size());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+
+    }
+
+
+    private void verifyHttpsRedirectWithSSLTermination() {
+        // Need ssltermination virtual server
+        setSslTermination();
+
+        try {
+            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+            String vsName = ZxtmNameBuilder.genVSName(lb);
+            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+
+            VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
+
+            lb.setHttpsRedirect(Boolean.TRUE); //enable redirect, which disables but doesnt delete the 'regular vs'
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                Assert.assertTrue("Default virtual server succesfully removed", true);
+            }
+            VirtualServer redirectVs = stmClient.getVirtualServer(redirectVsName);
+            Assert.assertTrue(redirectVs.getProperties().getBasic().getEnabled());
+
+            createdSecureVs= stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+
+    }
+
+    private void verifyHttpsRedirectWithSSLTerminationSecureOnly() {
+        // Need ssltermination virtual server
+        setSslTermination();
+
+        try {
+            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+            String vsName = ZxtmNameBuilder.genVSName(lb);
+            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+
+            VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
+
+            lb.setHttpsRedirect(Boolean.TRUE); //enable redirect, which disables but doesnt delete the 'regular vs'
+            lb.getSslTermination().setSecureTrafficOnly(true);
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                Assert.assertTrue("Default virtual server succesfully removed", true);
+            }
+            VirtualServer redirectVs = stmClient.getVirtualServer(redirectVsName);
+            Assert.assertTrue(redirectVs.getProperties().getBasic().getEnabled());
+
+            createdSecureVs= stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+
+    }
+
+    private void verifyHttpsRedirectUpdateSslTerm() {
+        // Need ssltermination virtual server
+        setSslTermination();
+
+        try {
+            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+            String vsName = ZxtmNameBuilder.genVSName(lb);
+            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+
+            VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
+
+            lb.setHttpsRedirect(Boolean.TRUE); //enable redirect, which disables but doesnt delete the 'regular vs'
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            VirtualServer updateVs;
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                Assert.assertTrue("Default virtual server succesfully removed", true);
+            }
+            VirtualServer redirectVs = stmClient.getVirtualServer(redirectVsName);
+            Assert.assertTrue(redirectVs.getProperties().getBasic().getEnabled());
+
+            lb.getSslTermination().setSecureTrafficOnly(true);
+            setSslTermination(true, true);
+
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                Assert.assertTrue("Default virtual server succesfully removed", true);
+            }
+            redirectVs = stmClient.getVirtualServer(redirectVsName);
+            Assert.assertTrue(redirectVs.getProperties().getBasic().getEnabled());
+
+            createdSecureVs= stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+
+    }
+
+    private void verifyHttpsRedirectSslOnlyBackToDefault() {
+        // Need ssltermination virtual server
+        setSslTermination();
+
+        try {
+            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+            String vsName = ZxtmNameBuilder.genVSName(lb);
+            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+
+            VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
+
+            // Update settings and verify virtual servers are correctly created/enabled...
+            lb.setHttpsRedirect(Boolean.TRUE); //enable redirect which disables but doesnt delete the 'regular/default vs'
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            VirtualServer updateVs;
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                Assert.assertTrue("Default virtual server succesfully removed", true);
+            }
+            VirtualServer redirectVs = stmClient.getVirtualServer(redirectVsName);
+            Assert.assertTrue(redirectVs.getProperties().getBasic().getEnabled());
+
+
+            // now update ssl termination to secure only, still with httpsredirect
+            lb.getSslTermination().setSecureTrafficOnly(true);
+            setSslTermination(true, true);
+
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                Assert.assertTrue("Default virtual server removed", true);
+            }
+            redirectVs = stmClient.getVirtualServer(redirectVsName);
+            Assert.assertTrue(redirectVs.getProperties().getBasic().getEnabled());
+
+
+            // Now undo the updates and verify the vs's are disabled/removed as expected
+            lb.getSslTermination().setSecureTrafficOnly(false);
+            setSslTermination(true, false);
+
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                // httpsRedirect is still set at this point, this is expected
+                Assert.assertTrue("Default virtual server removed", true);
+            }
+            redirectVs = stmClient.getVirtualServer(redirectVsName);
+            Assert.assertTrue(redirectVs.getProperties().getBasic().getEnabled());
+
+            lb.setHttpsRedirect(Boolean.FALSE); //enable redirect, which disables but doesnt delete the 'regular vs'
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            try {
+                // Default virtual server should have been recreated and enabled
+                updateVs = stmClient.getVirtualServer(vsName);
+                Assert.assertTrue(updateVs.getProperties().getBasic().getEnabled());
+            } catch (Exception ex) {
+                Assert.fail("Default virtual server should be created and enabled..");
+            }
+            try {
+                redirectVs = stmClient.getVirtualServer(redirectVsName);
+                Assert.assertFalse(redirectVs.getProperties().getBasic().getEnabled());
+            } catch (Exception ex) {
+                Assert.assertTrue("Redirect virtual server removed", true);
+            }
+
+            // Ensure ssl virtual server is in tact...
+            createdSecureVs= stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+            removeSimpleLoadBalancer();
+        }
+
+    }
+
+    private void verifyHttpsRedirectSslOnlyInverseBackToDefault() {
+        // Need ssltermination virtual server
+        setSslTermination();
+
+        try {
+            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+            String vsName = ZxtmNameBuilder.genVSName(lb);
+            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+
+            VirtualServer createdSecureVs = stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
+
+            // Update settings and verify virtual servers are correctly created/enabled...
+            lb.setHttpsRedirect(Boolean.TRUE); //enable redirect which disables but doesnt delete the 'regular/default vs'
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            VirtualServer updateVs;
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                Assert.assertTrue("Default virtual server succesfully removed", true);
+            }
+            VirtualServer redirectVs = stmClient.getVirtualServer(redirectVsName);
+            Assert.assertTrue(redirectVs.getProperties().getBasic().getEnabled());
+
+
+            // now update ssl termination to secure only, still with httpsredirect
+            lb.getSslTermination().setSecureTrafficOnly(true);
+            setSslTermination(true, true);
+
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                Assert.assertTrue("Default virtual server removed", true);
+            }
+            redirectVs = stmClient.getVirtualServer(redirectVsName);
+            Assert.assertTrue(redirectVs.getProperties().getBasic().getEnabled());
+
+
+            // Now undo the updates and verify the vs's are disabled/removed as expected
+            lb.setHttpsRedirect(Boolean.FALSE); //enable redirect, which disables but doesnt delete the 'regular vs'
+            stmAdapter.updateLoadBalancer(config, lb, lb);
+            try {
+                stmClient.getVirtualServer(vsName);
+            } catch (Exception ex) {
+                // secureTrafficOnly is still set at this point, this is expected
+                Assert.assertTrue("Default virtual server removed", true);
+            }
+            try {
+                redirectVs = stmClient.getVirtualServer(redirectVsName);
+                Assert.assertFalse(redirectVs.getProperties().getBasic().getEnabled());
+            } catch (Exception ex) {
+                Assert.assertTrue("Redirect virtual server removed", true);
+            }
+
+            lb.getSslTermination().setSecureTrafficOnly(false);
+            setSslTermination(true, false);
+
+            try {
+                // Default virtual server should have been recreated and enabled
+                updateVs = stmClient.getVirtualServer(vsName);
+                Assert.assertTrue(updateVs.getProperties().getBasic().getEnabled());
+            } catch (Exception ex) {
+                Assert.fail("Default virtual server should be created and enabled..");
+            }
+
+            // Ensure ssl virtual server is in tact...
+            createdSecureVs= stmClient.getVirtualServer(secureVsName);
+            Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
 
         } catch (Exception e) {
             e.printStackTrace();

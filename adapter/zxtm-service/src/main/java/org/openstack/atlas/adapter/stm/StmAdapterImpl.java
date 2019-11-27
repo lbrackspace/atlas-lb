@@ -549,17 +549,16 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         http.setLocationRewrite(VirtualServerHttp.LocationRewrite.NEVER);
         createdServer.getProperties().setHttp(http);
         if (loadBalancer.isSecureOnly()) {
-            VirtualServer virtualServer;
             try {
-                virtualServer = client.getVirtualServer(vsName);
+                // The secure virtual server becomes the primary
+                getResources().deleteVirtualServer(client, vsName);
             } catch (Exception e) {
-                LOG.error(String.format("Error retrieving non-secure virtual server.\n%s", Debug.getExtendedStackTrace(e)));
-                throw new StmRollBackException("Error retrieving non-secure virtual server.", e);
+                LOG.error(String.format("Error removing default virtual server.\n%s", Debug.getExtendedStackTrace(e)));
             }
-            if (virtualServer != null) {
-                virtualServer.getProperties().getBasic().setEnabled(false);
-                getResources().updateVirtualServer(client, vsName, virtualServer);
-            }
+        } else if (loadBalancer.getHttpsRedirect() != null && !loadBalancer.getHttpsRedirect()){
+            // Ensure default virtual is reinstated if httpsRedirect is also not enabled
+            translator.translateVirtualServerResource(config, vsName, loadBalancer);
+            getResources().updateVirtualServer(client, vsName, translator.getcVServer());
         }
 
         LOG.info(String.format("Updating certificate for load balancer: %s", loadBalancer.getId()));
