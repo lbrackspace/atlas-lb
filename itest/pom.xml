@@ -22,6 +22,7 @@
         <module>rdns-test</module>
         <module>tls-inspect</module>
     </modules>
+
     <build>
         <pluginManagement>
             <plugins>
