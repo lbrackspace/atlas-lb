@@ -23,6 +23,54 @@
         <module>java-cloudfiles</module>
     </modules>
 
+    <profiles>
+        <profile>
+            <id>jenkins</id>
+            <activation>
+                <property>
+                    <name>env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cobertura-maven-plugin</artifactId>
+                        <configuration>
+                            <instrumentation>
+                                <excludes>
+                                    <exclude>org/rackspace/stingray/client/action/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/bandwidth/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/config/**/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/counters/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/exception/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/extra/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/glb/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/list/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/location/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/manager/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/monitor/**/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/persistence/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/pool/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/protection/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/rate/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/settings/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/ssl/**/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/tmi/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/tm/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/traffic/**/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/trafficscript/*.class</exclude>
+                                    <exclude>org/rackspace/stingray/client/virtualserver/*.class</exclude>
+                                </excludes>
+                            </instrumentation>
+                            <check/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <defaultGoal>install</defaultGoal>
         <pluginManagement>
