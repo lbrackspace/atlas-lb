@@ -131,6 +131,35 @@
             <artifactId>spring-test-dbunit</artifactId>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>jenkins</id>
+            <activation>
+                <property>
+                    <name>env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cobertura-maven-plugin</artifactId>
+                        <configuration>
+                            <instrumentation>
+                                <excludes>
+                                    <exclude>org/openstack/atlas/service/domain/events/pojos/**/*.class</exclude>
+                                    <exclude>org/openstack/atlas/service/domain/operations/**/*.class</exclude>
+                                    <exclude>org/openstack/atlas/service/domain/pojos/**/*.class</exclude>
+                                </excludes>
+                            </instrumentation>
+                        <check/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>

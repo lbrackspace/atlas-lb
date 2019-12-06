@@ -22,6 +22,36 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+    <profiles>
+        <profile>
+            <id>jenkins</id>
+            <activation>
+                <property>
+                    <name>env.BUILD_NUMBER</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cobertura-maven-plugin</artifactId>
+                        <configuration>
+                            <instrumentation>
+                                <excludes>
+                                    <exclude>org.openstack.atlas.api.atom.*</exclude>
+                                    <exclude>org/openstack/atlas/api/atom/**/*.class</exclude>
+                                    <exclude>org/w3/atom/**/*.class</exclude>
+                                    <exclude>org/openstack/atlas/docs/loadbalancers/api/management/v1/**/*.class</exclude>
+                                    <exclude>org/openstack/atlas/docs/loadbalancers/api/v1/**/*.class</exclude>
+                                </excludes>
+                            </instrumentation>
+                            <check/>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
         <plugins>
