@@ -1,21 +1,34 @@
 package org.openstack.atlas.api.resources;
 
-import org.junit.Assert;
+import junit.framework.Assert;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.*;
+import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.VirtualIpService;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+import org.springframework.test.context.TestExecutionListeners;
+import org.w3.atom.Link;
 
 import javax.jms.JMSException;
 import javax.ws.rs.core.Response;
+import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -98,21 +111,118 @@ public class LoadBalancersResourceTest {
         }
     }
 
+    @RunWith(PowerMockRunner.class)
+    @PrepareForTest({PaginationHelper.class, MapperBuilder.class})
+    @PowerMockIgnore("javax.management.*")
+    public static class WhenRetrievingUsage{
+
+        private LoadBalancersResource loadBalancersResource;
+        private LoadBalancerService loadBalancerService;
+        private AsyncService asyncService;
+        private VirtualIpService virtualIpService;
+        private LoadBalancer loadBalancer;
+        private AccountBilling accountBilling;
+        private AccountUsage accountUsage;
+        private RestApiConfiguration restApiConfiguration;
+        private String mockedBaseUri = "http://mocked.api.endpoint/v1.0";
+        private PaginationHelper paginationHelper;
+        
+        @Before
+        public void setUp() {
+            asyncService = mock(AsyncService.class);
+            virtualIpService = mock(VirtualIpService.class);
+            loadBalancerService = mock(LoadBalancerService.class);
+            restApiConfiguration = mock(RestApiConfiguration.class);
+            PowerMockito.mockStatic(MapperBuilder.class);
+            PowerMockito.mockStatic(PaginationHelper.class);
+            loadBalancersResource = new LoadBalancersResource();
+            loadBalancersResource.setAsyncService(asyncService);
+            loadBalancersResource.setVirtualIpService(virtualIpService);
+            loadBalancersResource.setLoadBalancerService(loadBalancerService);
+            loadBalancersResource.setDozerMapper(MapperBuilder.getConfiguredMapper(publicDozerConfigFile));
+
+            when(PaginationHelper.createLink(anyString(), anyString(), anyBoolean())).thenReturn(new Link());
+
+
+        }
+
+        @Before
+        public void setupLoadBalancerObject() {
+            loadBalancersResource.setAccountId(5);
+            loadBalancer = new LoadBalancer();
+            loadBalancer.setName("a-new-loadbalancer");
+            loadBalancer.setProtocol("IMAPv4");
+
+            List<VirtualIp> virtualIps = new ArrayList<VirtualIp>();
+            VirtualIp vip = new VirtualIp();
+            vip.setType(VipType.PUBLIC);
+            virtualIps.add(vip);
+
+
+            loadBalancer.getVirtualIps().addAll(virtualIps);
+
+            Nodes nodes = new Nodes();
+            Node node = new Node();
+            node.setAddress("10.1.1.1");
+            node.setPort(80);
+            node.setCondition(NodeCondition.ENABLED);
+            nodes.getNodes().add(node);
+            loadBalancer.getNodes().addAll(nodes.getNodes());
+        }
+
+        @Test
+        public void shouldProduce400ResponseForAccountLevelUsage() {
+            Response response = loadBalancersResource.retrieveAccountBilling("2019-11-21T10:15:30", "2019-10-21T10:15:30", 0,100);
+            Assert.assertEquals(400,response.getStatus());
+        }
+
+        @Test
+        public void shouldProduce200ResponseForAccountLevelUsage() throws EntityNotFoundException {
+            
+            org.openstack.atlas.service.domain.pojos.AccountBilling abilling = new org.openstack.atlas.service.domain.pojos.AccountBilling();
+            List<org.openstack.atlas.service.domain.entities.AccountUsage> accountUsageRecords = new ArrayList<>();
+            abilling.setAccountUsageRecords(accountUsageRecords);
+
+            
+            when(loadBalancerService.getAccountBilling(anyInt(), any(Calendar.class), any(Calendar.class), anyInt(), anyInt())).thenReturn(abilling);
+
+            Response response = loadBalancersResource.retrieveAccountBilling("2019-09-21T10:15:30", "2019-12-21T10:15:30", 1,100);
+            Assert.assertEquals(200, response.getStatus());
+        }
+
+        @Test
+        public void shouldProduce400ResponseForListBillable() {
+            Response response = loadBalancersResource.retrieveBillableLoadBalancers("2019-11-21T10:15:30", "2019-10-21T10:15:30", 0,100);
+            Assert.assertEquals(400,response.getStatus());
+        }
+
+        @Test
+        public void shouldProduce200ResponseForListBillable(){
+            Response response = loadBalancersResource.retrieveBillableLoadBalancers("2019-09-21T10:15:30", "2019-12-21T10:15:30", 1,100);
+            Assert.assertEquals(200, response.getStatus());
+        }
+
+
+    }
+
     public static class WhenRetrievingResources {
 
-        @Mock
-        LoadBalancerResource loadBalancerResource;
+
+        private LoadBalancerResource loadBalancerResource;
         Integer lbId;
 
-        @InjectMocks
         private LoadBalancersResource loadBalancersResource;
+
+
 
         @Before
         public void setUp() {
-            MockitoAnnotations.initMocks(this);
+            loadBalancerResource = mock(LoadBalancerResource.class);
+
             lbId = 42;
             loadBalancersResource = new LoadBalancersResource();
             loadBalancersResource.setLoadBalancerResource(loadBalancerResource);
+
         }
 
         @Test

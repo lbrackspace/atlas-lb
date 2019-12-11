@@ -162,6 +162,10 @@ public class LoadBalancersResource extends CommonDependencyProvider {
             }
         }
 
+        if ((startTimeParam != null && endTimeParam != null) && startTime.compareTo(endTime) > 0) {
+            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Must specify an earlier startTime than endTime.");
+        }
+
         try {
             limit = PaginationHelper.determinePageLimit(limit);
             offset = PaginationHelper.determinePageOffset(offset);
@@ -208,6 +212,10 @@ public class LoadBalancersResource extends CommonDependencyProvider {
                 final String badRequestMessage = "Date parameters must follow ISO-8601 format";
                 return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, badRequestMessage);
             }
+        }
+
+        if (startTime.compareTo(endTime) > 0) {
+            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, "Must specify an earlier startTime than endTime.");
         }
 
         try {
