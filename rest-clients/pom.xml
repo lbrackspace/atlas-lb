@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.26.28-SNAPSHOT</version>
+        <version>1.26.28</version>
     </parent>
 
     <artifactId>atlas-rest-clients</artifactId>
-    <version>1.26.28-SNAPSHOT</version>
+    <version>1.26.28</version>
     <name>Openstack :: Atlas :: Rest Clients</name>
 
     <packaging>pom</packaging>
@@ -76,7 +76,7 @@
                                     <exclude>org/openstack/identity/client/user/**/*.class</exclude>
                                 </excludes>
                             </instrumentation>
-                            <check/>
+                            <check />
                         </configuration>
                     </plugin>
                 </plugins>

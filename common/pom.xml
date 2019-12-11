@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-parent</artifactId>
-        <version>1.26.28-SNAPSHOT</version>
+        <version>1.26.28</version>
     </parent>
 
     <artifactId>atlas-common</artifactId>
@@ -42,7 +42,7 @@
                                 <exclude>org/bouncycastle/**/*.class</exclude>
                             </excludes>
                         </instrumentation>
-                        <check/>
+                        <check />
                     </configuration>
                     </plugin>
                 </plugins>
