@@ -5,14 +5,14 @@
     <name>Openstack :: Atlas :: Parent</name>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-parent</artifactId>
-    <version>1.26.29</version>
+    <version>1.26.30-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <scm>
         <url>scm:git:ssh://lbrackspace@review.gerrithub.io:29418/lbrackspace/atlas-lb/</url>
         <developerConnection>scm:git:ssh://lbrackspace@review.gerrithub.io:29418/lbrackspace/atlas-lb/</developerConnection>
         <connection>scm:git:ssh://lbrackspace@review.gerrithub.io:29418/lbrackspace/atlas-lb/</connection>
-      <tag>atlas-parent-1.26.29</tag>
+      <tag>atlas-parent-1.26.02</tag>
   </scm>
 
     <organization>
