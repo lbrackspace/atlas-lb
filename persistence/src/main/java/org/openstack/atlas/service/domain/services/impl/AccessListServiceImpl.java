@@ -86,7 +86,7 @@ public class AccessListServiceImpl extends BaseService implements AccessListServ
             dLb.addAccessList(al);
         }
         Set<AccessList> newAccessList = diffRequestAccessListWithDomainAccessList(rLb, dLb);
-        //send the newly added access list to add notification events them in the Listener
+        //send the newly added access list to add notification events for them in the Listener
         rLb.setAccessLists(newAccessList);
         return rLb;
     }
