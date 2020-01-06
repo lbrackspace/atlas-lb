@@ -439,7 +439,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     private void verifyProtocolLoggingAndCaching(LoadBalancer loadBalancer, LoadBalancer dbLoadBalancer) throws UnprocessableEntityException, BadRequestException {
-        String logErr = "Protocol must be HTTP for connection logging.";
+        String logErr = "Protocol cannot be UDP, UDP_STREAM, or DNS_UDP for connection logging.";
         String ccErr = "Content caching cannot be enabled when updating to non-HTTP load balancer protocols";
         String enable = " is Being enabled on the loadbalancer";
         String disable = " is Being disabled on the loadbalancer";
@@ -447,12 +447,12 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         // Method called only during Loadbalancer update; loadBalancer object will contain null logging/caching fields
         // If protocol has changed and those fields exist and are enabled in database verify against protocols
 
-        // connection logging needs to be verified/updated. Not changing behavior now, should be addressed in CLB-1022
+        // connection logging being verified/updated.
         if (loadBalancer.isConnectionLogging() != null && !loadBalancer.isConnectionLogging().equals(dbLoadBalancer.isConnectionLogging())) {
             if (loadBalancer.isConnectionLogging()) {
-                if (loadBalancer.getProtocol() != LoadBalancerProtocol.HTTP) {
+                if (loadBalancer.getProtocol() == UDP || loadBalancer.getProtocol() == UDP_STREAM || loadBalancer.getProtocol() == DNS_UDP) {
                     LOG.error(logErr);
-                    throw new UnprocessableEntityException(logErr);
+                    throw new BadRequestException(logErr);
                 }
                 LOG.debug("ConnectionLogging" + enable);
             } else {
