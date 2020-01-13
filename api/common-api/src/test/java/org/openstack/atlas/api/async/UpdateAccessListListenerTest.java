@@ -1,22 +1,21 @@
 package org.openstack.atlas.api.async;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
-import org.openstack.atlas.service.domain.entities.AccessList;
-import org.openstack.atlas.service.domain.entities.IpVersion;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.events.entities.AccessListEvent;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
+import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.AccessListService;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
@@ -25,6 +24,7 @@ import org.openstack.atlas.service.domain.services.helpers.AlertType;
 
 import javax.jms.ObjectMessage;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.mockito.Matchers.anyInt;
@@ -53,8 +53,16 @@ public class UpdateAccessListListenerTest extends STMTestBase {
     private AccessListService accessListService;
     @Mock
     private RestApiConfiguration config;
+    @Mock
+    private LoadBalancerEventRepository loadBalancerEventRepository;
+    @Captor
+    private ArgumentCaptor<Integer> valueCaptor;
+    @Captor
+    private ArgumentCaptor<String> stringCaptor;
+
 
     private UpdateAccessListListener updateAccessListListener;
+
 
     @Before
     public void standUp() {
@@ -73,6 +81,7 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         updateAccessListListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
         updateAccessListListener.setAccessListService(accessListService);
         updateAccessListListener.setConfiguration(config);
+
     }
 
     @After
@@ -83,6 +92,9 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         accessList = mock(AccessList.class);
 
         when(accessList.getId()).thenReturn(ACCESS_LIST_ID);
+        when(accessList.getIpAddress()).thenReturn("206.160.163.21");
+        when(accessList.getType()).thenReturn(AccessListType.ALLOW);
+
         // Could set up more of this class, but not sure if it matters.
 
         return accessList;
@@ -126,6 +138,44 @@ public class UpdateAccessListListenerTest extends STMTestBase {
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.UPDATE_ACCESS_LIST), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
+    }
+
+    @Test
+    public void testUpdateAccessListListenerEvent() throws Exception {
+
+
+        AccessList al = new AccessList();
+        al.setType(AccessListType.ALLOW);
+        al.setId(20);
+        al.setIpAddress("206.160.163.21");
+        AccessList al2 = new AccessList();
+        al2.setType(AccessListType.ALLOW);
+        al2.setId(21);
+        al.setIpAddress("206.160.163.22");
+        HashSet<AccessList> newAccessLists = new HashSet<AccessList>();
+
+        newAccessLists.add(al);
+        newAccessLists.add(al2);
+
+        lb.setAccessLists(newAccessLists);
+
+        when(objectMessage.getObject()).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
+
+
+        updateAccessListListener.doOnMessage(objectMessage);
+
+        verify(notificationService, times(2)).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), valueCaptor.capture(), anyString(), anyString(), eq(EventType.UPDATE_ACCESS_LIST), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
+
+        List<Integer> accessListEventIds = valueCaptor.getAllValues();
+
+        Assert.assertEquals(2, accessListEventIds.size());
+        Assert.assertTrue(accessListEventIds.contains(al.getId()));
+        Assert.assertTrue(accessListEventIds.contains(al2.getId()));
+
+        verify(accessListService, never()).diffRequestAccessListWithDomainAccessList(lb, lb);
+
     }
 
 }

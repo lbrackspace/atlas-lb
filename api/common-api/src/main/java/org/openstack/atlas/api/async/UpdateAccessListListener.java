@@ -59,7 +59,7 @@ public class UpdateAccessListListener extends BaseListener {
 
         loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
 
-        for (AccessList al : accessListService.diffRequestAccessListWithDomainAccessList(queueLb, dbLoadBalancer)) {
+        for (AccessList al : queueLb.getAccessLists()) {
             notificationService.saveAccessListEvent(queueLb.getUserName(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), al.getId(), UPDATE_ACCESS_LIST_TITLE, EntryHelper.createAccessListSummary(al), UPDATE_ACCESS_LIST, UPDATE, INFO);
         }
 
