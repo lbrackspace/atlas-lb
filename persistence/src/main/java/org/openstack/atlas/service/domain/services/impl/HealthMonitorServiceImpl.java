@@ -41,6 +41,9 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
 
         verifyMonitorProtocol(requestMonitor, dbLoadBalancer, dbMonitor);
 
+        if(requestMonitor.getType() != HealthMonitorType.HTTP ||  requestMonitor.getType() != HealthMonitorType.HTTPS){
+            dbLoadBalancer.getHealthMonitor().setHostHeader(null);
+        }
         if (requestMonitor.getType().equals(HealthMonitorType.CONNECT)) {
             if (requestMonitor.getPath() != null || requestMonitor.getStatusRegex() != null || requestMonitor.getBodyRegex() != null) {
                 throw new BadRequestException("Updating to CONNECT monitor. Please provide the required fields only.");
