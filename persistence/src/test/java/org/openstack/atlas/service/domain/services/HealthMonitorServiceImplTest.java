@@ -6,10 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
@@ -40,6 +37,8 @@ public class HealthMonitorServiceImplTest {
 //        LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
         @Mock
         private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+        @Captor
+        private ArgumentCaptor<LoadBalancer> loadBalancerArgumentCaptor;
 
         LoadBalancer lb;
         LoadBalancer lb2;
@@ -86,6 +85,66 @@ public class HealthMonitorServiceImplTest {
             healthMonitor.setType(HealthMonitorType.HTTPS);
             lb.setProtocol(LoadBalancerProtocol.HTTP);
             healthMonitorService.verifyMonitorProtocol(healthMonitor, lb, healthMonitor2);
+        }
+
+        @Test
+        public void hostHeaderShouldReturnNullForNonHTTP() throws UnprocessableEntityException, EntityNotFoundException, BadRequestException, ImmutableEntityException {
+            healthMonitor.setType(HealthMonitorType.CONNECT);
+            healthMonitor.setAttemptsBeforeDeactivation(1);
+            healthMonitor.setDelay(2);
+            healthMonitor.setTimeout(10);
+            healthMonitor.setHostHeader("Test.com");
+
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            lb.setAccountId(21323);
+            lb.setId(1);
+            lb.setHealthMonitor(new HealthMonitor());
+
+            when(lbRepository.getByIdAndAccountId(anyInt(), anyInt())).thenReturn(lb);
+
+            LoadBalancer reqLb = new LoadBalancer();
+            reqLb.setAccountId(21323);
+            reqLb.setId(1);
+            reqLb.setHealthMonitor(healthMonitor);
+
+            when(lbRepository.testAndSetStatus(lb.getAccountId(), lb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)).thenReturn(true);
+            when(lbRepository.update(lb)).thenReturn(lb);
+
+            healthMonitorService.update(reqLb);
+            verify(lbRepository).update((loadBalancerArgumentCaptor.capture()));
+            LoadBalancer lbCheck = loadBalancerArgumentCaptor.getValue();
+            Assert.assertNull(lbCheck.getHealthMonitor().getHostHeader());
+        }
+
+        @Test
+        public void hostHeaderShouldReturnValueForHTTP() throws UnprocessableEntityException, EntityNotFoundException, BadRequestException, ImmutableEntityException {
+            healthMonitor.setType(HealthMonitorType.HTTP);
+            healthMonitor.setAttemptsBeforeDeactivation(1);
+            healthMonitor.setDelay(2);
+            healthMonitor.setTimeout(10);
+            healthMonitor.setStatusRegex(".*");
+            healthMonitor.setPath("/");
+            healthMonitor.setHostHeader("Test.com");
+
+            lb.setProtocol(LoadBalancerProtocol.HTTP);
+            lb.setAccountId(21323);
+            lb.setId(1);
+            lb.setHealthMonitor(new HealthMonitor());
+
+            when(lbRepository.getByIdAndAccountId(anyInt(), anyInt())).thenReturn(lb);
+
+            LoadBalancer reqLb = new LoadBalancer();
+            reqLb.setAccountId(21323);
+            reqLb.setId(1);
+            reqLb.setHealthMonitor(healthMonitor);
+
+            when(lbRepository.testAndSetStatus(lb.getAccountId(), lb.getId(), LoadBalancerStatus.PENDING_UPDATE, false)).thenReturn(true);
+            when(lbRepository.update(lb)).thenReturn(lb);
+
+            healthMonitorService.update(reqLb);
+            verify(lbRepository).update((loadBalancerArgumentCaptor.capture()));
+            LoadBalancer lbCheck = loadBalancerArgumentCaptor.getValue();
+            Assert.assertEquals("Test.com",lbCheck.getHealthMonitor().getHostHeader());
         }
 
         @Test

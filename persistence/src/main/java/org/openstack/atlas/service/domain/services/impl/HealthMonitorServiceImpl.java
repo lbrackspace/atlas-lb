@@ -201,5 +201,7 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
         newMonitor.setPath(null);
         newMonitor.setStatusRegex(null);
         newMonitor.setBodyRegex(null);
+        newMonitor.setHostHeader(null);
+
     }
 }
