@@ -140,10 +140,6 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
             throw new BadRequestException("Must provide a path for the request");
         }
 
-        if(requestMonitor.getType() != HealthMonitorType.HTTP ||  requestMonitor.getType() != HealthMonitorType.HTTPS){
-            newMonitor.setHostHeader(null);
-        }
-
         if (requestMonitor.getStatusRegex() != null) {
             newMonitor.setStatusRegex(requestMonitor.getStatusRegex());
         } else if (dbMonitor != null && dbMonitor.getStatusRegex() != null && dbMonitor.getStatusRegex().length() > 0) {
@@ -160,6 +156,9 @@ public class HealthMonitorServiceImpl extends BaseService implements HealthMonit
             newMonitor.setBodyRegex(null);
         }
 
+        if (requestMonitor.getType() != HealthMonitorType.HTTP ||  requestMonitor.getType() != HealthMonitorType.HTTPS){
+            newMonitor.setHostHeader(null);
+        }
         if (requestMonitor.getHostHeader() != null) {
             newMonitor.setHostHeader(requestMonitor.getHostHeader());
         } else if (dbMonitor != null && dbMonitor.getHostHeader() != null) {
