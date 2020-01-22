@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "97f9cc72_87a443e8",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/HealthMonitorServiceImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-01-22T15:40:23Z",
+      "side": 1,
+      "message": "I would move this inside the other property setters: setHttpMonitorProperties instead of out here by itself",
+      "revId": "088bf239260a34c66c84ba64aa56400a2ffabf4e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
