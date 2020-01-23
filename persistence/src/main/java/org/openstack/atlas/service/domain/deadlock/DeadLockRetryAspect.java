@@ -17,7 +17,10 @@ import org.springframework.stereotype.Component;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceException;
+import javax.persistence.RollbackException;
+
 import org.openstack.atlas.util.debug.Debug;
+import org.springframework.transaction.TransactionSystemException;
 
 
 /**
@@ -70,6 +73,13 @@ public class DeadLockRetryAspect implements Ordered {
                 } else {
                     throw exception;
                 }
+            } catch (final TransactionSystemException txex) {
+                if (txex.getCause() instanceof RollbackException) {
+                    // This is our response from deadlocked cluster quorum, retry the transaction...
+                    deadlockCounter = handleException((RollbackException) txex.getCause(), deadlockCounter, retryCount);
+                } else {
+                    throw txex;
+                }
             } catch (final PersistenceException pe) {
                 deadlockCounter = handleException(pe, deadlockCounter, retryCount);
             } catch (Exception e) {
@@ -111,6 +121,24 @@ public class DeadLockRetryAspect implements Ordered {
         } else {
             throw exception;
         }
+        return deadlockCounter;
+    }
+
+    /**
+     * handles the rollback exception.
+     *
+     * @param exception       the rollback exception that could be a deadlock
+     * @param deadlockCounter the counter of occured deadlocks
+     * @param retryCount      the max retry count
+     * @return the deadlockCounter that is incremented
+     */
+    private Integer handleException(final RollbackException exception, Integer deadlockCounter, final Integer retryCount) {
+            LOGGER.error("Deadlock Rollback "+" "+ exception.getMessage());
+            if (deadlockCounter == (retryCount - 1)) {
+                throw exception;
+            }
+        deadlockCounter++;
+
         return deadlockCounter;
     }
 
