@@ -2,7 +2,7 @@ package org.rackspace.stingray.client.exception;
 
 public class StingrayRestClientException extends Exception {
 
-    private static final long serialVersionUID = -1984130663036438322L;
+    private static final long serialVersionUID = -1475324189691918403L;
 
     public StingrayRestClientException(String message) {
         super(message);
