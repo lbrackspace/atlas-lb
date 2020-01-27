@@ -1,0 +1,106 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/persistence#update",
+   "title":                 "Session Persistence Class",
+   "description":           "A session persistence class is used to identify the session a new connection belongs too and deliver it to the same backend node.",
+   "javaType" :     "org.rackspace.stingray.client_7.persistence.Persistence",
+   "type":                  "object",
+   "resourceType":          "Collection",
+   "additionalProperties":  false,
+
+   "properties": {
+
+      "properties": {
+         "javaType" :     "org.rackspace.stingray.client_7.persistence.PersistenceProperties",
+         "type":                  "object",
+         "additionalProperties":  false,
+
+         "properties": {
+
+            "basic": {
+               "javaType" :     "org.rackspace.stingray.client_7.persistence.PersistenceBasic",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "cookie": {
+                     "description":   "The cookie name to use for tracking session persistence.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "delete": {
+                     "description":   "Whether or not the session should be deleted when a session failure occurs. (Note, setting a failure mode of 'choose a new node' implicitly deletes the session.)",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "failure_mode": {
+                     "description":   "The action the pool should take if the session data is invalid or it cannot contact the node specified by the session.",
+
+                     "type":          "string",
+                     "default":       "new_node",
+                     "enum":          ["close","new_node","url"]
+                  },
+
+                  "note": {
+                     "description":   "A description of the session persistence class.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "subnet_prefix_length_v4": {
+                     "description":   "When using IP-based session persistence, ensure all requests from this IPv4 subnet, specified as a prefix length, are sent to the same node. If set to 0, requests from different IPv4 addresses will be load-balanced individually.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       31,
+                     "default":       0
+                  },
+
+                  "subnet_prefix_length_v6": {
+                     "description":   "When using IP-based session persistence, ensure all requests from this IPv6 subnet, specified as a prefix length, are sent to the same node. If set to 0, requests from different IPv6 addresses will be load-balanced individually.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       127,
+                     "default":       0
+                  },
+
+                  "transparent_always_set_cookie": {
+                     "description":   "Whether or not the cookie should be inserted in every response sent to the client when using transparent session affinity. If set to \"No\" then the cookie is inserted only if the corresponding request did not already contain a matching cookie.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "transparent_directives": {
+                     "description":   "The cookie directives to include in the cookie sent when using transparent session affinity. If more than one directive is included, the semi-colon separator between them must be included in this string. The semi-colon separator between the cookie value and the first directive should not be included in this string.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "type": {
+                     "description":   "The type of session persistence to use.",
+
+                     "type":          "string",
+                     "default":       "ip",
+                     "enum":          ["asp","cookie","ip","j2ee","named","ssl","transparent","universal","x_zeus"]
+                  },
+
+                  "url": {
+                     "description":   "The redirect URL to send clients to if the session persistence is configured to redirect users when a node dies.",
+
+                     "type":          "string",
+                     "default":       ""
+                  }
+               }
+            }
+         }
+      }
+   }
+}

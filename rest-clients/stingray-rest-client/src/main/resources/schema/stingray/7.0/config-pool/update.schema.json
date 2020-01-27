@@ -1,0 +1,873 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/pools#update",
+   "title":                 "Pool",
+   "description":           "The \"conf/pools\" directory contains configuration files for backend node pools.  The name of a file is the name of the pool it defines.  Pools can be configured under the \"Services > Pools\" section of the Admin Server UI or by using functions under the \"Pool\" section of the SOAP API and CLI.",
+   "javaType" :     "org.rackspace.stingray.client_7.pool.Pool",
+   "type":                  "object",
+   "resourceType":          "Collection",
+   "additionalProperties":  false,
+
+   "properties": {
+
+      "properties": {
+         "javaType" :     "org.rackspace.stingray.client_7.pool.PoolProperties",
+         "type":                  "object",
+         "additionalProperties":  false,
+
+         "properties": {
+
+            "basic": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolBasic",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "bandwidth_class": {
+                     "description":   "The Bandwidth Management Class this pool uses, if any.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "failure_pool": {
+                     "description":   "If all of the nodes in this pool have failed, then requests can be diverted to another pool.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "lard_size": {
+                     "description":   "The size of the LARD cache. This is used when recording unique URLs to provide request affinity, where the same request is sent to the same node.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       999999,
+                     "default":       2047
+                  },
+
+                  "max_connection_attempts": {
+                     "description":   "The maximum number of nodes to which the traffic manager will attempt to send a request before returning an error to the client_7. Requests that are non-retryable will be attempted against only one node. Zero signifies no limit.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       99999,
+                     "default":       0
+                  },
+
+                  "max_idle_connections_pernode": {
+                     "description":   "The maximum number of unused HTTP keepalive connections that should be maintained to an individual node.  Zero signifies no limit.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       999999,
+                     "default":       50
+                  },
+
+                  "max_timed_out_connection_attempts": {
+                     "description":   "The maximum number of connection attempts the traffic manager will make where the server fails to respond within the time limit defined by the \"max_reply_time\" setting. Zero signifies no limit.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       99999,
+                     "default":       2
+                  },
+
+                  "monitors": {
+                     "description":   "The monitors assigned to this pool, used to detect failures in the back end nodes.",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "node_close_with_rst": {
+                     "description":   "Whether or not connections to the back-end nodes should be closed with a RST packet, rather than a FIN packet. This avoids the TIME_WAIT state, which on rare occasions allows wandering duplicate packets to be safely ignored.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "node_connection_attempts": {
+                     "description":   "The number of times the software will attempt to connect to the same back-end node before marking it as failed.  This is only used when \"passive_monitoring\" is enabled.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       100,
+                     "default":       3
+                  },
+
+                  "node_delete_behavior": {
+                     "description":   "Specify the deletion behavior for nodes in this pool.",
+
+                     "type":          "string",
+                     "default":       "immediate",
+                     "enum":          ["drain","immediate"]
+                  },
+
+                  "node_drain_to_delete_timeout": {
+                     "description":   "The maximum time that a node will be allowed to remain in a draining state after it has been deleted. A value of 0 means no maximum time.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       99999,
+                     "default":       0
+                  },
+
+                  "nodes_table": {
+                     "description":   "A table of all nodes in this pool. A node should be specified as a \"<ip>:<port>\" pair, and has a state, weight and priority.",
+
+                     "type":          "array",
+
+                     "items": {
+                        "javaType" :     "org.rackspace.stingray.client_7.pool.PoolNodesTable",
+                        "type":                  "object",
+                        "required":              ["node"],
+                        "additionalProperties":  false,
+
+                        "properties": {
+                           "node": {
+                              "description":   "A node is a combination of an ip address and port",
+
+                              "type":          "string"
+                           },
+                           "priority": {
+                              "description":   "The priority of the node, higher values signify higher priority. If a priority is not specified for a node it is assumed to be \"1\".",
+
+                              "type":          "integer",
+                              "minimum":       0,
+                              "default":       1
+                           },
+                           "state": {
+                              "description":   "The state of the pool, which can either be Active, Draining or Disabled",
+
+                              "type":          "string",
+                              "default":       "active",
+                              "enum":          ["active","disabled","draining"]
+                           },
+                           "weight": {
+                              "description":   "Weight for the node. The actual value in isolation does not matter: As long as it is a valid integer 1-100, the per-node weightings are calculated on the relative values between the nodes.",
+
+                              "type":          "integer",
+                              "minimum":       1,
+                              "maximum":       100,
+                              "default":       1
+                           },
+                           "source_ip": {
+                              "description":   "The source address the Traffic Manager uses to connect to this node.",
+
+                              "type":          "string",
+                              "default":       ""
+                           }
+                        }
+                     }
+                  },
+
+                  "note": {
+                     "description":   "A description of the pool.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "passive_monitoring": {
+                     "description":   "Whether or not the software should check that 'real' requests (i.e. not those from monitors) to this pool appear to be working.  This should normally be enabled, so that when a node is refusing connections, responding too slowly, or sending back invalid data, it can mark that node as failed, and stop sending requests to it. <br>If this is disabled, you should ensure that suitable health monitors are configured to check your servers instead, otherwise failed requests will not be detected and subsequently retried.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "persistence_class": {
+                     "description":   "The default Session Persistence class this pool uses, if any.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "transparent": {
+                     "description":   "Whether or not connections to the back-ends appear to originate from the source client IP address.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  }
+               }
+            },
+
+            "auto_scaling": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolAutoScale",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "addnode_delaytime": {
+                     "description":   "The time in seconds from the creation of the node which the traffic manager should wait before adding the node to the autoscaled pool. Set this to allow applications on the newly created node time to intialize before being sent traffic.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  },
+
+                  "cloud_credentials": {
+                     "description":   "The Cloud Credentials object containing authentication credentials to use in cloud API calls.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "cluster": {
+                     "description":   "The ESX host or ESX cluster name to put the new virtual machine instances on.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "data_center": {
+                     "description":   "The name of the logical datacenter on the vCenter server. Virtual machines will be scaled up and down under the datacenter root folder.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "data_store": {
+                     "description":   "The name of the datastore to be used by the newly created virtual machine.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "enabled": {
+                     "description":   "Are the nodes of this pool subject to autoscaling?  If yes, nodes will be automatically added and removed from the pool by the chosen autoscaling mechanism.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "external": {
+                     "description":   "Whether or not autoscaling is being handled by an external system. Set this value to Yes if all aspects of autoscaling are handled by an external system, such as RightScale. If set to No, the traffic manager will determine when to scale the pool and will communicate with the cloud provider to create and destroy nodes as necessary.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "extraargs": {
+                     "description":   "Any extra arguments to the autoscaling API. Each argument can be separated by comma. E.g in case of EC2, it can take extra parameters to the Amazon's RunInstance API say DisableApiTermination=false,Placement.Tenancy=default.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "hysteresis": {
+                     "description":   "The time period in seconds for which a change condition must persist before the change is actually instigated.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       20
+                  },
+
+                  "imageid": {
+                     "description":   "The identifier for the image of the instances to create.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "ips_to_use": {
+                     "description":   "Which type of IP addresses on the node to use.  Choose private IPs if the traffic manager is in the same cloud as the nodes, otherwise choose public IPs.",
+
+                     "type":          "string",
+                     "default":       "publicips",
+                     "enum":          ["private_ips","publicips"]
+                  },
+
+                  "last_node_idle_time": {
+                     "description":   "The time in seconds for which the last node in an autoscaled pool must have been idle before it is destroyed.  This is only relevant if min_nodes is 0.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       3600
+                  },
+
+                  "max_nodes": {
+                     "description":   "The maximum number of nodes in this autoscaled pool.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       4
+                  },
+
+                  "min_nodes": {
+                     "description":   "The minimum number of nodes in this autoscaled pool.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       1
+                  },
+
+                  "name": {
+                     "description":   "The beginning of the name of nodes in the cloud that are part of this autoscaled pool.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "port": {
+                     "description":   "The port number to use for each node in this autoscaled pool.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       65535,
+                     "default":       80
+                  },
+
+                  "refractory": {
+                     "description":   "The time period in seconds after the instigation of a re-size during which no further changes will be made to the pool size.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       180
+                  },
+
+                  "response_time": {
+                     "description":   "The expected response time of the nodes in ms.  This time is used as a reference when deciding whether a node's response time is conforming.  All responses from all the nodes will be compared to this reference and the percentage of conforming responses is the base for decisions about scaling the pool up or down.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       1000
+                  },
+
+                  "scale_down_level": {
+                     "description":   "The fraction, in percent, of conforming requests above which the pool size is decreased.  If the percentage of conforming requests exceeds this value, the pool is scaled down.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       95
+                  },
+
+                  "scale_up_level": {
+                     "description":   "The fraction, in percent, of conforming requests below which the pool size is increased.  If the percentage of conforming requests drops below this value, the pool is scaled up.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       40
+                  },
+
+                  "securitygroupids": {
+                     "description":   "List of security group IDs to associate to the new EC2 instance.",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "size_id": {
+                     "description":   "The identifier for the size of the instances to create.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "subnetids": {
+                     "description":   "List of subnet IDs where the new EC2-VPC instance(s) will be launched. Instances will be evenly distributed among the subnets. If the list is empty, instances will be launched inside EC2-Classic.",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  }
+               }
+            },
+
+            "connection": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolConnection",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "max_connect_time": {
+                     "description":   "How long the pool should wait for a connection to a node to be established before giving up and trying another node.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       99999,
+                     "default":       4
+                  },
+
+                  "max_connections_per_node": {
+                     "description":   "The maximum number of concurrent connections allowed to each back-end node in this pool per machine. A value of 0 means unlimited connections.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       999999,
+                     "default":       0
+                  },
+
+                  "max_queue_size": {
+                     "description":   "The maximum number of connections that can be queued due to connections limits. A value of 0 means unlimited queue size.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       999999,
+                     "default":       0
+                  },
+
+                  "max_reply_time": {
+                     "description":   "How long the pool should wait for a response from the node before either discarding the request or trying another node (retryable requests only).",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       99999,
+                     "default":       30
+                  },
+
+                  "max_transactions_per_node": {
+                     "description":   "The maximum number of concurrent transactions allowed to each back-end node in this pool per machine. A value of 0 means unlimited transactions. Idle connections kept alive for reuse do not count against this limit. A transaction begins by allocating a connection for sending the request, and ends (for the purposes of queuing) after a complete response has been received from the node.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       999999,
+                     "default":       0
+                  },
+
+                  "queue_timeout": {
+                     "description":   "The maximum time to keep a connection queued in seconds.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       31536000,
+                     "default":       10
+                  }
+               }
+            },
+
+            "dns_autoscale": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolDnsAutoScale",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "enabled": {
+                     "description":   "When enabled, the Traffic Manager will periodically resolve the hostnames in the \"hostnames\" list using a DNS query, and use the results to automatically add, remove or update the IP addresses of the nodes in the pool.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "hostnames": {
+                     "description":   "A list of hostnames which will be used for DNS-derived autoscaling",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "port": {
+                     "description":   "The port number to use for each node when using DNS-derived autoscaling",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       65535,
+                     "default":       80
+                  }
+               }
+            },
+
+            "ftp": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolFtp",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "support_rfc_2428": {
+                     "description":   "Whether or not the backend IPv4 nodes understand the EPRT and EPSV command from RFC 2428.  It is always assumed that IPv6 nodes support these commands.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  }
+               }
+            },
+
+            "http": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolHttp",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "keepalive": {
+                     "description":   "Whether or not the pool should maintain HTTP keepalive connections to the nodes.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "keepalive_non_idempotent": {
+                     "description":   "Whether or not the pool should maintain HTTP keepalive connections to the nodes for non-idempotent requests.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  }
+               }
+            },
+
+            "kerberos_protocol_transition": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolKerberosProtocolTransition",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "principal": {
+                     "description":   "The Kerberos principal the traffic manager should use when performing Kerberos Protocol Transition.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "target": {
+                     "description":   "The Kerberos principal name of the service this pool targets.",
+
+                     "type":          "string",
+                     "default":       ""
+                  }
+               }
+            },
+
+            "load_balancing": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolLoadbalancing",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "algorithm": {
+                     "description":   "The load balancing algorithm that this pool uses to distribute load across its nodes.",
+
+                     "type":          "string",
+                     "default":       "round_robin",
+                     "enum":          ["fastest_response_time","least_connections","perceptive","random","round_robin","weighted_least_connections","weighted_round_robin"]
+                  },
+
+                  "priority_enabled": {
+                     "description":   "Enable priority lists.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "priority_nodes": {
+                     "description":   "Minimum number of highest-priority active nodes.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       65535,
+                     "default":       1
+                  }
+               }
+            },
+
+            "node": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolNode",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "close_on_death": {
+                     "description":   "Close all connections to a node once we detect that it has failed.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "retry_fail_time": {
+                     "description":   "The amount of time, in seconds, that a traffic manager will wait before re-trying a node that has been marked as failed by passive monitoring.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       99999,
+                     "default":       60
+                  }
+               }
+            },
+
+            "service_discovery": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolServiceDiscovery",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "enabled": {
+                     "description":   "Are the nodes of this pool determined by a Service Discovery plugin? If yes, nodes will be automatically added and removed from the pool by the traffic manager.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "interval": {
+                     "description":   "The minimum time before rerunning the Service Discovery plugin",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       10
+                  },
+
+                  "plugin": {
+                     "description":   "The plugin script a Service Discovery autoscaled pool should use to retrieve the list of nodes.",
+
+                     "type":          "string",
+                     "default":       "",
+                     "pattern":       "^\\S*$"
+                  },
+
+                  "plugin_args": {
+                     "description":   "The arguments for the script specified in \"service_discovery!plugin\", e.g. a common instance tag, or name of a managed group of cloud instances.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "timeout": {
+                     "description":   "The maximum time a plugin should be allowed to run before timing out. Set to 0 for no timeout.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  }
+               }
+            },
+
+            "smtp": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolSmtp",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "send_starttls": {
+                     "description":   "If we are encrypting traffic for an SMTP connection, should we upgrade to SSL using STARTTLS.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  }
+               }
+            },
+
+            "ssl": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolSsl",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "cipher_suites": {
+                     "description":   "The SSL/TLS cipher suites to allow for connections to a back-end node. Leaving this empty will make the pool use the globally configured cipher suites, see configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!cipher_suites\"> \"ssl!cipher_suites\"</a> in the Global Settings section of the System tab.  See there for how to specify SSL/TLS cipher suites.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "client_auth": {
+                     "description":   "Whether or not a suitable certificate and private key from the SSL Client Certificates catalog be used if the back-end server requests client authentication.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "common_name_match": {
+                     "description":   "A list of names against which the 'common name' of the certificate is matched; these names are used in addition to the node's hostname or IP address as specified in the config file or added by the autoscaler process.",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "elliptic_curves": {
+                     "description":   "The SSL elliptic curve preference list for SSL connections from this pool using TLS version 1.0 or higher. Leaving this empty will make the pool use the globally configured preference list. The named curves P256, P384 and P521 may be configured.",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   false,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "enable": {
+                     "description":   "Whether or not the pool should encrypt data before sending it to a back-end node.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "enhance": {
+                     "description":   "SSL protocol enhancements allow your traffic manager to prefix each new SSL connection with information about the client_7. This enables Pulse Secure Virtual Traffic Manager virtual servers referenced by this pool to discover the original client's IP address. Only enable this if you are using nodes for this pool which are Pulse Secure vTMs, whose virtual servers have the \"ssl_trust_magic\" setting enabled.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "middlebox_compatibility": {
+                     "description":   "Whether or not TLS 1.3 middlebox compatibility mode as described in RFC 8446 appendix D.4 will be used in connections to pool nodes. Choosing the global setting means the value of configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!middlebox_compatibility\"> \"ssl!middlebox_compatibility\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
+                  "send_close_alerts": {
+                     "description":   "Whether or not to send an SSL/TLS \"close alert\" when initiating a socket disconnection.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "server_name": {
+                     "description":   "Whether or not the software should use the TLS 1.0 server_name extension, which may help the back-end node provide the correct certificate. Enabling this setting will force the use of at least TLS 1.0.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "session_cache_enabled": {
+                     "description":   "Whether or not the SSL client cache will be used for this pool. Choosing the global setting means the value of the configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!client_cache!enabled\"> \"ssl!client_cache!enabled\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
+                  "session_tickets_enabled": {
+                     "description":   "Whether or not SSL session tickets, including TLS >= 1.3 PSKs, will be used for this pool if the session cache is also enabled. Choosing the global setting means the value of the configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!client_cache!tickets_enabled\"> \"ssl!client_cache!tickets_enabled\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
+                  "signature_algorithms": {
+                     "description":   "The SSL signature algorithms preference list for SSL connections from this pool using TLS version 1.2 or higher. Leaving this empty will make the pool use the globally configured preference list, \"signature_algorithms\" in the \"ssl\" section of the \"global_settings\" resource.  See there and in the online help for how to specify SSL signature algorithms.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "ssl_fixed_client_certificate": {
+                     "description":   "An entry in the SSL client certificates catalog, containing a certificate and private key to be used whenever client authentication is requested. If set, this overrides server request parameters.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "strict_verify": {
+                     "description":   "Whether or not strict certificate verification should be performed. This will turn on checks to disallow server certificates that don't match the server name or a name in the ssl_common_name_match list, are self-signed, expired, revoked, or have an unknown CA.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "support_ssl3": {
+                     "description":   "Whether or not SSLv3 is enabled for this pool. Choosing the global setting means the value of the configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_ssl3\"> \"ssl!support_ssl3\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
+                  "support_tls1": {
+                     "description":   "Whether or not TLSv1.0 is enabled for this pool. Choosing the global setting means the value of the configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1\"> \"ssl!support_tls1\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
+                  "support_tls1_1": {
+                     "description":   "Whether or not TLSv1.1 is enabled for this pool. Choosing the global setting means the value of the configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1_1\"> \"ssl!support_tls1_1\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
+                  "support_tls1_2": {
+                     "description":   "Whether or not TLSv1.2 is enabled for this pool. Choosing the global setting means the value of the configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1_2\"> \"ssl!support_tls1_2\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  },
+
+                  "support_tls1_3": {
+                     "description":   "Whether or not TLSv1.3 is enabled for this pool. Choosing the global setting means the value of the configuration key <a href=\"?fold_open=SSL%20Configuration&section=Global%20Settings#a_ssl!support_tls1_3\"> \"ssl!support_tls1_3\"</a> from the Global Settings section of the System tab will be enforced.",
+
+                     "type":          "string",
+                     "default":       "use_default",
+                     "enum":          ["disabled","enabled","use_default"]
+                  }
+               }
+            },
+
+            "tcp": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolTcp",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "nagle": {
+                     "description":   "Whether or not Nagle's algorithm should be used for TCP connections to the back-end nodes.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  }
+               }
+            },
+
+            "udp": {
+               "javaType" :     "org.rackspace.stingray.client_7.pool.PoolUdp",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "accept_from": {
+                     "description":   "The IP addresses and ports from which responses to UDP requests should be accepted. \n If set to accept responses from a specific set of IP addresses, you will need to enter a CIDR Mask (such as 10.100.0.0/16).",
+
+                     "type":          "string",
+                     "default":       "dest_only",
+                     "enum":          ["all","dest_ip_only","dest_only","ip_mask"]
+                  },
+
+                  "accept_from_mask": {
+                     "description":   "The CIDR mask that matches IPs we want to receive responses from.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "response_timeout": {
+                     "description":   "The maximum length of time that a node is permitted to take after receiving a UDP request packet before sending a reply packet. Zero indicates that there is no maximum, preventing a node that does not send replies from being presumed to have failed.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       99999,
+                     "default":       0
+                  }
+               }
+            }
+         }
+      }
+   }
+}

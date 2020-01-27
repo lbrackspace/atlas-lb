@@ -1,0 +1,26 @@
+{
+    "$schema":       "http://json-schema.org/draft-04/schema#",
+    "id":            "/rvbd-schema/tm/7.0/config/active/exception#ClientException",
+    "title":         "Stingray Rest Client Exception",
+    "description":   "The Stingray Rest Client exception wrapper for client errors",
+    "javaType" :     "org.rackspace.stingray.client_7.exception.ClientException",
+    "type":          "object",
+    "required":      true,
+
+    "properties": {
+        "error_id": {
+            "description": "error Classification",
+            "type": "string"
+        },
+        "error_text": {
+            "description": "error Message",
+            "type": "string"
+        },
+        "error_info":{
+            "description": "error Information",
+            "type": "string"
+        }
+
+    }
+}
+

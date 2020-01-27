@@ -1,30 +1,31 @@
 package org.rackspace.stingray.client;
 
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.client_7.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.Configuration;
-import org.rackspace.stingray.client.counters.VirtualServerStats;
-import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.client_7.counters.VirtualServerStats;
+import org.rackspace.stingray.client_7.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.client_7.counters.VirtualServerStatsStatistics;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.list.Children;
-import org.rackspace.stingray.client.location.Location;
+import org.rackspace.stingray.client_7.glb.GlobalLoadBalancing;
+import org.rackspace.stingray.client_7.list.Child;
+import org.rackspace.stingray.client_7.list.Children;
+import org.rackspace.stingray.client_7.location.Location;
 import org.rackspace.stingray.client.manager.RequestManager;
 import org.rackspace.stingray.client.manager.StingrayRestClientManager;
 import org.rackspace.stingray.client.manager.impl.RequestManagerImpl;
-import org.rackspace.stingray.client.monitor.Monitor;
-import org.rackspace.stingray.client.persistence.Persistence;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.protection.Protection;
-import org.rackspace.stingray.client.rate.Rate;
-import org.rackspace.stingray.client.settings.GlobalSettings;
-import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.tm.TrafficManager;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
+import org.rackspace.stingray.client_7.monitor.Monitor;
+import org.rackspace.stingray.client_7.persistence.Persistence;
+import org.rackspace.stingray.client_7.pool.Pool;
+import org.rackspace.stingray.client_7.protection.Protection;
+import org.rackspace.stingray.client_7.rate.Rate;
+import org.rackspace.stingray.client_7.settings.GlobalSettings;
+import org.rackspace.stingray.client_7.ssl.client.keypair.ClientKeypair;
+import org.rackspace.stingray.client_7.ssl.keypair.Keypair;
+import org.rackspace.stingray.client_7.tm.TrafficManager;
+import org.rackspace.stingray.client_7.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.util.ClientConstants;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.stingray.client_7.virtualserver.VirtualServer;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.core.MediaType;
@@ -1138,9 +1139,9 @@ public class StingrayRestClient extends StingrayRestClientManager {
         try {
             stats = getItem(name, VirtualServerStats.class, ClientConstants.V_SERVER_PATH, endpoint);
         } catch (StingrayRestClientObjectNotFoundException e) {
-            stats.setStatistics(getZeroStats());
+            stats.setProperties(getZeroStats());
         } catch (StingrayRestClientException e) {
-            stats.setStatistics(getZeroStats());
+            stats.setProperties(getZeroStats());
         }
         return stats;
     }
@@ -1154,13 +1155,15 @@ public class StingrayRestClient extends StingrayRestClientManager {
 
     private VirtualServerStatsProperties getZeroStats() {
         VirtualServerStatsProperties props = new VirtualServerStatsProperties();
-        props.setConnectTimedOut(0L);
-        props.setConnectionErrors(0L);
-        props.setConnectionFailures(0L);
-        props.setDataTimedOut(0L);
-        props.setKeepaliveTimedOut(0L);
-        props.setMaxConn(0L);
-        props.setCurrentConn(0L);
+        VirtualServerStatsStatistics stats = new VirtualServerStatsStatistics();
+        stats.setConnectTimedOut(0L);
+        stats.setConnectionErrors(0L);
+        stats.setConnectionFailures(0L);
+        stats.setDataTimedOut(0L);
+        stats.setKeepaliveTimedOut(0L);
+        stats.setMaxConn(0L);
+        stats.setCurrentConn(0L);
+        props.setStatistics(stats);
         return props;
     }
 }
