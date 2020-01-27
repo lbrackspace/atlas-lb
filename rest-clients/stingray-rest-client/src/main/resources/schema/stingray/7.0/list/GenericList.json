@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "id": "/rvbd-schema/tm/3.4/config/active/list#",
+    "title": "Children",
+    "description": "List of items by name and the href used to get specific item information.",
+    "javaType": "org.rackspace.stingray.client_7.list.Children",
+    "type": "object",
+    "properties": {
+        "children": {
+            "type": "array",
+            "required": true,
+            "items": {
+                "javaType": "org.rackspace.stingray.client_7.list.Child",
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "href": {
+                        "type": "string"
+                    }
+                },
+                "additionalProperties": false
+            }
+        }
+    },
+    "additionalProperties": false
+}

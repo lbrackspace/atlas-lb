@@ -1,0 +1,490 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/status/local_tm/statistics/virtual_servers#read",
+   "title":                 "Virtual servers",
+   "description":           "Virtual servers statistics values.",
+   "javaType" :             "org.rackspace.stingray.client_7.counters.VirtualServerStats",
+   "type":                  "object",
+   "resourceType":          "Dynamic",
+   "additionalProperties":  true,
+   "required":              ["statistics"],
+
+   "properties": {
+
+      "properties": {
+         "javaType" :             "org.rackspace.stingray.client_7.counters.VirtualServerStatsProperties",
+         "type":                  "object",
+         "additionalProperties":  true,
+         "required":              ["statistics"],
+
+         "properties": {
+            "statistics": {
+               "javaType" :             "org.rackspace.stingray.client_7.counters.VirtualServerStatsStatistics",
+
+               "type":                  "object",
+               "additionalProperties":  true,
+
+               "properties": {
+                  "port": {
+                     "description":   "The port the virtual server listens on.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "protocol": {
+                     "description":   "The protocol the virtual server is operating.",
+
+                     "type":          "string",
+                     "enum":          ["http","https","ftp","imaps","imapv2","imapv3","imapv4","pop3","pop3s","smtp","ldap","ldaps","telnet","sslforwarding","udpstreaming","udp","dns","genericserverfirst","genericclientfirst","dnstcp","sipudp","siptcp","rtsp","stream","l4acceltcp","l4acceludp","l4accelgeneric","l4accelstateless"]
+                  },
+
+                  "current_conn": {
+                     "description":   "TCP connections currently established to this virtual server.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "max_conn": {
+                     "description":   "Maximum number of simultaneous TCP connections this virtual server has processed at any one time.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "discard": {
+                     "description":   "Connections discarded by this virtual server.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "direct_replies": {
+                     "description":   "Direct replies from this virtual server, without forwarding to a node.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "connect_timed_out": {
+                     "description":   "Connections closed by this virtual server because the 'connect_timeout' interval was exceeded.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "data_timed_out": {
+                     "description":   "Connections closed by this virtual server because the 'timeout' interval was exceeded.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "keepalive_timed_out": {
+                     "description":   "Connections closed by this virtual server because the 'keepalive_timeout' interval was exceeded.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "udp_timed_out": {
+                     "description":   "Connections closed by this virtual server because the 'udp_timeout' interval was exceeded.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "total_dgram": {
+                     "description":   "UDP datagrams processed by this virtual server.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "gzip": {
+                     "description":   "Responses which have been compressed by content compression.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "http_rewrite_location": {
+                     "description":   "HTTP Location headers, supplied by a node, that have been rewritten.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "http_rewrite_cookie": {
+                     "description":   "HTTP Set-Cookie headers, supplied by a node, that have been rewritten.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "http_cache_hits": {
+                     "description":   "HTTP responses sent directly from the web cache by this virtual server.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "http_cache_lookups": {
+                     "description":   "HTTP requests that are looked up in the web cache by this virtual server.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "http_cache_hit_rate": {
+                     "description":   "Percentage hit rate of the web cache for this virtual server.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "sip_total_calls": {
+                     "description":   "Total number of SIP INVITE requests seen by this virtual server.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "sip_rejected_requests": {
+                     "description":   "Number of SIP requests rejected due to them exceeding the maximum amount of memory allocated to the connection.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "connection_errors": {
+                     "description":   "Number of transaction or protocol errors in this virtual server.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "connection_failures": {
+                     "description":   "Number of connection failures in this virtual server.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec",
+                     "minimum":       0
+                  },
+
+                  "bytes_in": {
+                     "description":   "Bytes received by this virtual server from clients.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec"
+                  },
+
+                  "bytes_out": {
+                     "description":   "Bytes sent by this virtual server to clients.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec"
+                  },
+
+                  "gzip_bytes_saved": {
+                     "description":   "Bytes of network traffic saved by content compression.",
+
+                     "type":          "string",
+                     "format":        "utc-millisec"
+                  },
+
+                  "cert_status_requests": {
+                     "description":   "Number of incoming TLS handshakes for this virtual server with certificate status requests.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "cert_status_responses": {
+                     "description":   "Number of incoming TLS handshakes for this virtual server to which certificate status responses were attached.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "max_duration_timed_out": {
+                     "description":   "Connections closed by this virtual server because the 'max_transaction_duration' interval was exceeded.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "processing_timed_out": {
+                     "description":   "Connections closed by this virtual server because the 'timeout' interval was exceeded while waiting for rules or external processing.",
+
+                     "type":          "integer",
+                     "minimum":       0
+                  },
+
+                  "total_requests": {
+                     "description":   "Requests received by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "total_http_requests": {
+                     "description":   "HTTP Requests received by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "total_http1_requests": {
+                     "description":   "HTTP/1.x Requests received by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "total_http2_requests": {
+                     "description":   "HTTP/2 Requests received by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_new_session": {
+                     "description":   "Number of times a new SSL session was created.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_cache_lookup": {
+                     "description":   "Number of times a lookup for an existing SSL session was performed.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_cache_miss": {
+                     "description":   "Number of times a lookup failed to find an existing SSL session.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_cache_rejected": {
+                     "description":   "Number of times an SSL session was found in the cache but rejected and not resumed.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_cache_resumed": {
+                     "description":   "Number of times an SSL session was resumed from the cache.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_ticket_received": {
+                     "description":   "Number of SSL session tickets received.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_ticket_key_not_found": {
+                     "description":   "Number of SSL session tickets that could not be decrypted because the ticket key they referenced could not be found.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_ticket_expired": {
+                     "description":   "Number of SSL session tickets that were rejected because they had expired.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_ticket_rejected": {
+                     "description":   "Number of SSL session tickets that were rejected for a reason other than because they had expired.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_ticket_resumed": {
+                     "description":   "Number of SSL session tickets that were successfully used to resume a session.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_ticket_issued": {
+                     "description":   "Number of SSL session tickets that were issued to clients.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_cache_saved": {
+                     "description":   "Number of times an SSL session was saved to the cache.",
+
+                     "type":          "integer"
+                  },
+
+                  "auth_sessions_created": {
+                     "description":   "Number of times an authentication session was created.",
+
+                     "type":          "integer"
+                  },
+
+                  "auth_sessions_used": {
+                     "description":   "Number of times an authentication session was used.",
+
+                     "type":          "integer"
+                  },
+
+                  "auth_sessions_rejected": {
+                     "description":   "Number of times an authentication session was rejected.",
+
+                     "type":          "integer"
+                  },
+
+                  "auth_saml_redirects": {
+                     "description":   "Number of times a user agent was redirected to SAML Identity Provider.",
+
+                     "type":          "integer"
+                  },
+
+                  "auth_saml_responses": {
+                     "description":   "Number of times a SAML Response was processed.",
+
+                     "type":          "integer"
+                  },
+
+                  "auth_saml_responses_accepted": {
+                     "description":   "Number of times a SAML Response was accepted.",
+
+                     "type":          "integer"
+                  },
+
+                  "auth_saml_responses_rejected": {
+                     "description":   "Number of times a SAML Response was rejected.",
+
+                     "type":          "integer"
+                  },
+
+                  "http1xx_responses": {
+                     "description":   "Number of HTTP 1xx responses returned by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http2xx_responses": {
+                     "description":   "Number of HTTP 2xx responses returned by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http3xx_responses": {
+                     "description":   "Number of HTTP 3xx responses returned by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http4xx_responses": {
+                     "description":   "Number of HTTP 4xx responses returned by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http5xx_responses": {
+                     "description":   "Number of HTTP 5xx responses returned by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_generated2xx_responses": {
+                     "description":   "Number of HTTP 2xx responses generated by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_generated3xx_responses": {
+                     "description":   "Number of HTTP 3xx responses generated by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_generated4xx_responses": {
+                     "description":   "Number of HTTP 4xx responses generated by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_generated5xx_responses": {
+                     "description":   "Number of HTTP 5xx responses generated by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_cache2xx_responses": {
+                     "description":   "Number of HTTP 2xx responses returned from webcache by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_cache3xx_responses": {
+                     "description":   "Number of HTTP 3xx responses returned from webcache by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_cache4xx_responses": {
+                     "description":   "Number of HTTP 4xx responses returned from webcache by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_cache5xx_responses": {
+                     "description":   "Number of HTTP 5xx responses returned from webcache by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_server1xx_responses": {
+                     "description":   "Number of HTTP 1xx responses returned from a backend server or TrafficScript rule by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_server2xx_responses": {
+                     "description":   "Number of HTTP 2xx responses returned from a backend server or TrafficScript rule by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_server3xx_responses": {
+                     "description":   "Number of HTTP 3xx responses returned from a backend server or TrafficScript rule by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_server4xx_responses": {
+                     "description":   "Number of HTTP 4xx responses returned from a backend server or TrafficScript rule by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "http_server5xx_responses": {
+                     "description":   "Number of HTTP 5xx responses returned from a backend server or TrafficScript rule by this virtual server.",
+
+                     "type":          "integer"
+                  },
+
+                  "ssl_hello_retry_requested": {
+                     "description":   "Number of times a HelloRetryRequest message was sent to TLS clients.",
+
+                     "type":          "integer"
+                  }
+               }
+            }
+         }
+      }
+   }
+}
