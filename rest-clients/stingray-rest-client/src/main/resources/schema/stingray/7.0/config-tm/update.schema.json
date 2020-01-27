@@ -1,0 +1,1095 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/traffic_managers#update",
+   "title":                 "Traffic Manager",
+   "description":           "The \"conf/zxtms\" directory contains a configuration file for each traffic manager in your cluster.  The name of each file is the hostname of the traffic manager it represents.  These files contain host-specific configuration data and on each installation of the software, the \"conf/../global.cfg\" file is sym-linked to the host's own configuration in the \"conf/zxtms\" directory.  The files may contain a variety of configuration options that are configured in various locations under the \"System\" section of the Admin Server UI and the \"System\" section of the SOAP API and CLI.",
+   "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManager",
+   "type":                  "object",
+   "resourceType":          "Collection",
+   "additionalProperties":  false,
+
+   "properties": {
+
+      "properties": {
+         "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerProperties",
+         "type":                  "object",
+         "additionalProperties":  false,
+
+         "properties": {
+
+            "basic": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerBasic",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "adminMasterXMLIP": {
+                     "description":   "The Application Firewall master XML IP.",
+
+                     "type":          "string",
+                     "default":       "0.0.0.0"
+                  },
+
+                  "adminSlaveXMLIP": {
+                     "description":   "The Application Firewall slave XML IP.",
+
+                     "type":          "string",
+                     "default":       "0.0.0.0"
+                  },
+
+                  "appliance_card": {
+                     "description":   "The table of network cards of a hardware appliance",
+
+                     "type":          "array",
+
+                     "items": {
+                        "type":                  "object",
+                        "required":              ["name","interfaces"],
+                        "additionalProperties":  false,
+
+                        "properties": {
+                           "name": {
+                              "description":   "Network card PCI ID",
+
+                              "type":          "string"
+                           },
+                           "interfaces": {
+                              "description":   "The order of the interfaces of a network card",
+
+                              "type":          "array",
+                              "uniqueItems":   false,
+
+                              "items": {
+                                 "type":          "string"
+                              }
+                           },
+                           "label": {
+                              "description":   "The labels of the installed network cards",
+
+                              "type":          "string",
+                              "default":       "-",
+                              "pattern":       "^[\\w\\.:@\\-]{1,64}$"
+                           }
+                        }
+                     }
+                  },
+
+                  "appliance_sysctl": {
+                     "description":   "Custom kernel parameters applied by the user with sysctl interface",
+
+                     "type":          "array",
+
+                     "items": {
+                        "type":                  "object",
+                        "required":              ["sysctl","value"],
+                        "additionalProperties":  false,
+
+                        "properties": {
+                           "sysctl": {
+                              "description":   "The name of the kernel parameter, e.g. net.ipv4.forward",
+
+                              "type":          "string"
+                           },
+                           "description": {
+                              "description":   "Associated optional description for the sysctl",
+
+                              "type":          "string",
+                              "default":       ""
+                           },
+                           "value": {
+                              "description":   "The value of the kernel parameter",
+
+                              "type":          "string"
+                           }
+                        }
+                     }
+                  },
+
+                  "authenticationServerIP": {
+                     "description":   "The Application Firewall Authentication Server IP.",
+
+                     "type":          "string",
+                     "default":       "0.0.0.0"
+                  },
+
+                  "cloud_platform": {
+                     "description":   "Cloud platform where the traffic manager is running.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "community_edition_accepted": {
+                     "description":   "Whether user has accepted the Community Edition and will not be prompted for uploading a license key",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "disk_serious": {
+                     "description":   "The percentage level of disk usage that triggers a SERIOUS event log entry",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       100,
+                     "default":       95
+                  },
+
+                  "disk_warn": {
+                     "description":   "The percentage level of disk usage that triggers a WARN event log entry",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       100,
+                     "default":       85
+                  },
+
+                  "kmod_policy": {
+                     "description":   "The policy for loading and unloading kernel modules",
+
+                     "type":          "string",
+                     "default":       "enabled",
+                     "enum":          ["disabled","enabled","nounload"]
+                  },
+
+                  "location": {
+                     "description":   "This is the location of the local traffic manager is in.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "nameip": {
+                     "description":   "Replace Traffic Manager name with an IP address.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "num_aptimizer_threads": {
+                     "description":   "How many worker threads the Web Accelerator process should create to optimise content. By default, one thread will be created for each CPU on the system.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  },
+
+                  "num_children": {
+                     "description":   "The number of worker processes the software will run.  By default, one child process will be created for each CPU on the system.  You may wish to reduce this to effectively \"reserve\" CPU(s) for other processes running on the host system.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  },
+
+                  "numberOfCPUs": {
+                     "description":   "The number of Application Firewall decider process to run.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       64,
+                     "default":       0
+                  },
+
+                  "restServerPort": {
+                     "description":   "The Application Firewall REST Internal API port, this port should not be accessed directly",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  },
+
+                  "start_sysd": {
+                     "description":   "Whether or not to start the sysd process on software installations. Appliance and EC2 will always run sysd regardless of this config key.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "trafficip": {
+                     "description":   "A table mapping interfaces to networks, used by the traffic manager to select which interface to raise a Traffic IP on.",
+
+                     "type":          "array",
+
+                     "items": {
+                        "type":                  "object",
+                        "required":              ["name","networks"],
+                        "additionalProperties":  false,
+
+                        "properties": {
+                           "name": {
+                              "description":   "A network interface.",
+
+                              "type":          "string"
+                           },
+                           "networks": {
+                              "description":   "A set of IP/masks to which the network interface maps.",
+
+                              "type":          "array",
+                              "uniqueItems":   true,
+
+                              "items": {
+                                 "type":          "string"
+                              }
+                           }
+                        }
+                     }
+                  },
+
+                  "updaterIP": {
+                     "description":   "The Application Firewall Updater IP.",
+
+                     "type":          "string",
+                     "default":       "0.0.0.0"
+                  },
+
+                  "use_mx": {
+                     "description":   "Which polling method to use.  The default for your platform is almost always the optimal choice.",
+
+                     "type":          "string",
+                     "default":       "auto",
+                     "enum":          ["auto","devpoll","epoll","eventport","kevent","poll","select"]
+                  }
+               }
+            },
+
+            "appliance": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerAppliance",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "disable_cloud_init": {
+                     "description":   "Whether to disable the cloud-init service",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "disable_kpti": {
+                     "description":   "Whether the traffic manager appliance should run without kernel page table isolation (KPTI). KPTI provides protection to prevent unprivileged software from being potentially able to read arbitrary memory from the kernel (i.e. the Meltdown attack, CVE-2017-5754); however this protection incurs a general system performance penalty. If you are running trusted software on the appliance, and the trade-off between performance at the cost of 'defense in depth' favors the former in your deployment, you may wish to enable this configuration key. If you are unsure, it is recommended that you leave this key disabled, which is also the default.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "dnscache": {
+                     "description":   "The DNS cache setting the appliance should use and place in \"/etc/systemd/resolved.conf\".",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "dnssec": {
+                     "description":   "The DNSSEC setting the appliance should use and place in \"/etc/systemd/resolved.conf\".",
+
+                     "type":          "string",
+                     "default":       "no",
+                     "enum":          ["allow_downgrade","no","yes"]
+                  },
+
+                  "gateway_ipv4": {
+                     "description":   "The default gateway.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "gateway_ipv6": {
+                     "description":   "The default IPv6 gateway.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "hostname": {
+                     "description":   "Name (hostname.domainname) of the appliance.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "hosts": {
+                     "description":   "A table of hostname to static ip address mappings, to be placed in the /etc/hosts file.",
+
+                     "type":          "array",
+
+                     "items": {
+                        "type":                  "object",
+                        "required":              ["name","ip_address"],
+                        "additionalProperties":  false,
+
+                        "properties": {
+                           "name": {
+                              "description":   "The name of a host.",
+
+                              "type":          "string"
+                           },
+                           "ip_address": {
+                              "description":   "The static IP address of the host.",
+
+                              "type":          "string"
+                           }
+                        }
+                     }
+                  },
+
+                  "if": {
+                     "description":   "A table of network interface specific settings.",
+
+                     "type":          "array",
+
+                     "items": {
+                        "type":                  "object",
+                        "required":              ["name"],
+                        "additionalProperties":  false,
+
+                        "properties": {
+                           "name": {
+                              "description":   "A network interface name.",
+
+                              "type":          "string"
+                           },
+                           "autoneg": {
+                              "description":   "Whether auto-negotiation should be enabled for the interface.",
+
+                              "type":          "boolean",
+                              "default":       true
+                           },
+                           "bmode": {
+                              "description":   "The trunking mode used for the interface (only 802.3ad is currently supported).",
+
+                              "type":          "string",
+                              "default":       "802_3ad",
+                              "enum":          ["802_3ad","balance_alb"]
+                           },
+                           "bond": {
+                              "description":   "The trunk of which the interface should be a member.",
+
+                              "type":          "string",
+                              "default":       "",
+                              "pattern":       "^(bond\\d+)?$"
+                           },
+                           "duplex": {
+                              "description":   "Whether full-duplex should be enabled for the interface.",
+
+                              "type":          "boolean",
+                              "default":       true
+                           },
+                           "mode": {
+                              "description":   "Set the configuriation mode of an interface, the interface name is used in place of the \"*\" (asterisk).",
+
+                              "type":          "string",
+                              "default":       "static",
+                              "enum":          ["dhcp","static"]
+                           },
+                           "mtu": {
+                              "description":   "The maximum transmission unit (MTU) of the interface.",
+
+                              "type":          "integer",
+                              "minimum":       68,
+                              "maximum":       9216,
+                              "default":       1500
+                           },
+                           "speed": {
+                              "description":   "The speed of the interface.",
+
+                              "type":          "string",
+                              "default":       "1000",
+                              "enum":          ["10","100","1000","10000","100000","40000"]
+                           }
+                        }
+                     }
+                  },
+
+                  "ip": {
+                     "description":   "A table of network interfaces and their network settings.",
+
+                     "type":          "array",
+
+                     "items": {
+                        "type":                  "object",
+                        "required":              ["name","addr","mask"],
+                        "additionalProperties":  false,
+
+                        "properties": {
+                           "name": {
+                              "description":   "A network interface name.",
+
+                              "type":          "string"
+                           },
+                           "addr": {
+                              "description":   "The IP address for the interface.",
+
+                              "type":          "string"
+                           },
+                           "isexternal": {
+                              "description":   "Whether the interface is externally facing.",
+
+                              "type":          "boolean",
+                              "default":       false
+                           },
+                           "mask": {
+                              "description":   "The IP mask (netmask) for the interface.",
+
+                              "type":          "string"
+                           }
+                        }
+                     }
+                  },
+
+                  "ipmi_lan_access": {
+                     "description":   "Whether IPMI LAN access should be enabled or not.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "ipmi_lan_addr": {
+                     "description":   "The IP address of the appliance IPMI LAN channel.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "ipmi_lan_gateway": {
+                     "description":   "The default gateway of the IPMI LAN channel.",
+
+                     "type":          "string",
+                     "default":       "0.0.0.0"
+                  },
+
+                  "ipmi_lan_ipsrc": {
+                     "description":   "The addressing mode the IPMI LAN channel operates.",
+
+                     "type":          "string",
+                     "default":       "static",
+                     "enum":          ["dhcp","static"]
+                  },
+
+                  "ipmi_lan_mask": {
+                     "description":   "Set the IP netmask for the IPMI LAN channel.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "ipv4_forwarding": {
+                     "description":   "Whether or not IPv4 forwarding is enabled.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "ipv6_forwarding": {
+                     "description":   "Whether or not IPv6 forwarding is enabled.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "licence_agreed": {
+                     "description":   "Whether or not the license agreement has been accepted.  This determines whether or not the Initial Configuration wizard is displayed.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "manageazureroutes": {
+                     "description":   "Whether or not the software manages the Azure policy routing.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "manageec2conf": {
+                     "description":   "Whether or not the software manages the EC2 config.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "managegceroutes": {
+                     "description":   "Whether or not the software manages the GCE routing.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "manageiptrans": {
+                     "description":   "Whether or not the software manages the IP transparency",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "managereservedports": {
+                     "description":   "Whether or not the software manages the system configuration for reserved ports",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "manageresolved": {
+                     "description":   "Whether or not the software manages resolved.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "managereturnpath": {
+                     "description":   "Whether or not the software manages return path routing. If disabled, the appliance won't modify iptables / rules / routes for this feature.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "manageservices": {
+                     "description":   "Whether or not the software manages the system services",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "managesysctl": {
+                     "description":   "Whether or not the software manages user specified sysctl keys.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "managevpcconf": {
+                     "description":   "Whether or not the software manages the EC2-VPC secondary IPs.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "name_servers": {
+                     "description":   "The IP addresses of the nameservers the appliance should use and place in \"/etc/systemd/resolved.conf\".",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "ntpservers": {
+                     "description":   "The NTP servers the appliance should use to synchronize its clock.",
+
+                     "type":          "array",
+                     "default":       ["0.zeus.pool.ntp.org","1.zeus.pool.ntp.org","2.zeus.pool.ntp.org","3.zeus.pool.ntp.org"],
+                     "uniqueItems":   false,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "routes": {
+                     "description":   "A table of destination IP addresses and routing details to reach them.",
+
+                     "type":          "array",
+
+                     "items": {
+                        "type":                  "object",
+                        "required":              ["name","gw","if","mask"],
+                        "additionalProperties":  false,
+
+                        "properties": {
+                           "name": {
+                              "description":   "A destination IP address.",
+
+                              "type":          "string"
+                           },
+                           "gw": {
+                              "description":   "The gateway IP to configure for the route.",
+
+                              "type":          "string"
+                           },
+                           "if": {
+                              "description":   "The network interface to configure for the route.",
+
+                              "type":          "string"
+                           },
+                           "mask": {
+                              "description":   "The netmask to apply to the IP address.",
+
+                              "type":          "string"
+                           }
+                        }
+                     }
+                  },
+
+                  "search_domains": {
+                     "description":   "The search domains the appliance should use and place in \"/etc/systemd/resolved.conf\".",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "ssh_enabled": {
+                     "description":   "Whether or not the SSH server is enabled on the appliance.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "ssh_password_allowed": {
+                     "description":   "Whether or not the SSH server allows password based login.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "ssh_port": {
+                     "description":   "The port that the SSH server should listen on.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       65535,
+                     "default":       22
+                  },
+
+                  "timezone": {
+                     "description":   "The timezone the appliance should use.  This must be a path to a timezone file that exists under \"/usr/share/zoneinfo/\".",
+
+                     "type":          "string",
+                     "default":       "US/Pacific"
+                  },
+
+                  "vlans": {
+                     "description":   "The VLANs the software should raise.  A VLAN should be configured using the format \"<dev>.<vlanid>\", where \"<dev>\" is the name of a network device that exists in the host system, \"eth0.100\" for example.",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  }
+               }
+            },
+
+            "autodiscover": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerAutodiscover",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "product_id": {
+                     "description":   "This key overrides the product ID used by traffic manager instances to discover each other when clustering. Traffic managers will only discover each other if their product IDs are the same and their versions are compatible.",
+
+                     "type":          "string",
+                     "default":       "ZXTM",
+                     "pattern":       "^\\w{1,256}$"
+                  }
+               }
+            },
+
+            "cluster_comms": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerClusterComms",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "allow_update": {
+                     "description":   "Whether or not this instance of the software can send configuration updates to other members of the cluster.  When not clustered this key is ignored. When clustered the value can only be changed by another machine in the cluster that has \"allow_update\" set to \"true\".  If set to \"false\" then it will not be possible to log into the admin server for this instance.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "bind_ip": {
+                     "description":   "The IP address that the software should bind to for internal administration communications.  See also \"port\".  If the software is not part of a cluster the default is to use \"127.0.0.1\" and there should be no reason to touch this setting.  If the software is part of a cluster then the default is to listen on all raised IPs, in this case an alternative configuration is to listen on a single IP address.  This may be useful if you have a separate management network and wish to restrict control messages to it.  It is important to ensure that the \"allowed_update_hosts\" (in the \"Global Settings\" resource) is compatible with the IP configured here.",
+
+                     "type":          "string",
+                     "default":       "*"
+                  },
+
+                  "external_ip": {
+                     "description":   "This is the optional external ip of the traffic manager, which is used to circumvent natting when traffic managers in a cluster span different networks.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "port": {
+                     "description":   "The port that the software should listen on for internal administration communications.  See also \"bind_ip\".",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       65535,
+                     "default":       9080
+                  }
+               }
+            },
+
+            "ec2": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerEc2",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "availability_zone": {
+                     "description":   "The availability zone of this EC2 instance, should be set when the appliance is first booted. Not required for non-EC2 systems.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "instanceid": {
+                     "description":   "The EC2 instance ID of this EC2 virtual appliance, should be set when the appliance is first booted. Not required for non-EC2 systems.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "trafficips_public_enis": {
+                     "description":   "List of MAC addresses of interfaces which the traffic manager can use to associate the EC2 elastic IPs (Traffic IPs) to the instance.",
+
+                     "type":          "array",
+                     "default":       [],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "vpcid": {
+                     "description":   "The ID of the VPC the instance is in, should be set when the appliance is first booted. Not required for non-VPC EC2 or non-EC2 systems.",
+
+                     "type":          "string",
+                     "default":       ""
+                  }
+               }
+            },
+
+            "fault_tolerance": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerFaultTolerance",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "bgp_router_id": {
+                     "description":   "The BGP router id\n If set to empty, then the IPv4 address used to communicate with the default IPv4 gateway is used instead.\n Specifying 0.0.0.0 will stop the traffic manager routing software from running the BGP protocol.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "ospfv2_ip": {
+                     "description":   "The traffic manager's permanent IPv4 address which the routing software will use for peering and transit traffic, and as its OSPF router ID.\n If set to empty, then the address used to communicate with the default IPv4 gateway is used instead.\n Specifying 0.0.0.0 will stop the traffic manager routing software from running the OSPF protocol.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "ospfv2_neighbor_addrs": {
+                     "description":   "The IP addresses of routers which are expected to be found as OSPFv2 neighbors of the traffic manager. A warning will be reported if some of the expected routers are not peered, and an error will be reported if none of the expected routers are peered. An empty list disables monitoring. The special value %gateway% is a placeholder for the default gateway.",
+
+                     "type":          "array",
+                     "default":       ["%gateway%"],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "rhi_support": {
+                     "description":   "This key does nothing.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "routing_sw_log_level": {
+                     "description":   "The routing software log level. Values are: 0 - emergency 1 - alert 2 - critical 3 - error 4 - warning 5 - notification 6 - informational 7 - debug Messages with priority less or equal to the set level will be logged.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       7,
+                     "default":       4
+                  }
+               }
+            },
+
+            "iptables": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerIptables",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "config_enabled": {
+                     "description":   "Whether the Traffic Manager should configure the iptables built-in chains to call Traffic Manager defined rules (e.g. the IP transparency chain). This should only be disabled in case of conflict with other software that manages iptables, e.g. firewalls. When disabled, you will need to add rules manually to use these features - see the user manual for details.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  }
+               }
+            },
+
+            "iptrans": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerIptrans",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "chain": {
+                     "description":   "The iptables named chain to use for IP transparency rules.",
+
+                     "type":          "string",
+                     "default":       "STM_IPTrans",
+                     "pattern":       "^[A-Za-z0-9_]{1,28}$"
+                  },
+
+                  "fwmark": {
+                     "description":   "The netfilter forwarding mark to use for IP transparency rules",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       320
+                  },
+
+                  "iptables_enabled": {
+                     "description":   "Whether IP transparency may be used via netfilter/iptables. This requires Linux 2.6.24 and the iptables socket extension. For older Linux versions, the \"ztrans\" kernel module may be used instead.",
+
+                     "type":          "boolean",
+                     "default":       true
+                  },
+
+                  "routing_table": {
+                     "description":   "The special routing table ID to use for IP transparency rules",
+
+                     "type":          "integer",
+                     "minimum":       256,
+                     "maximum":       2147483647,
+                     "default":       320
+                  }
+               }
+            },
+
+            "java": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerJava",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "port": {
+                     "description":   "The port the Java Extension handler process should listen on.  This port will be bound for localhost communications only.",
+
+                     "type":          "integer",
+                     "minimum":       1024,
+                     "maximum":       65535,
+                     "default":       9060
+                  }
+               }
+            },
+
+            "kerberos": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerKerberos",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "hostname": {
+                     "description":   "The hostname to use in Kerberos principal names.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "num_kpt_threads": {
+                     "description":   "How many worker threads the Kerberos Protocol Transition helper process will use.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       10000,
+                     "default":       0
+                  }
+               }
+            },
+
+            "remote_licensing": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerRemoteLicensing",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "email_address": {
+                     "description":   "The e-mail address sent as part of a remote licensing request.",
+
+                     "type":          "string",
+                     "default":       "",
+                     "pattern":       "^(.*@.*)?$"
+                  },
+
+                  "is_template": {
+                     "description":   "Whether this appliance is a 'template' or not. A template will not attempt self-registration, and is intended to be cloned. Guest customization always resets this to false.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "message": {
+                     "description":   "A free-text field sent as part of a remote licensing request.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "registration_identifier": {
+                     "description":   "A registration identifier for Services Director use.",
+
+                     "type":          "string",
+                     "default":       ""
+                  }
+               }
+            },
+
+            "rest_api": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerRestApi",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "bind_ips": {
+                     "description":   "A list of IP Addresses which the REST API will listen on for connections. The list should contain IP addresses (IPv4 or IPv6) or a single entry containing an asterisk (*). This indicates that the REST API should listen on all IP Addresses.",
+
+                     "type":          "array",
+                     "default":       ["*"],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "port": {
+                     "description":   "The port on which the REST API should listen for requests.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       65535,
+                     "default":       9070
+                  }
+               }
+            },
+
+            "snmp": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerSnmp",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "allow": {
+                     "description":   "Restrict which IP addresses can access the SNMP command responder service.  The value can be \"all\", \"localhost\", or a list of IP CIDR subnet masks.  For example \"10.100.0.0/16\" would allow connections from any IP address beginning with \"10.100\".",
+
+                     "type":          "array",
+                     "default":       ["all"],
+                     "uniqueItems":   true,
+
+                     "items": {
+                        "type":          "string"
+                     }
+                  },
+
+                  "auth_password": {
+                     "description":   "The authentication password. Required (minimum length 8 characters) if \"security_level\" includes authentication.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "bind_ip": {
+                     "description":   "The IP address the SNMP service should bind its listen port to.  The value \"*\" (asterisk) means SNMP will listen on all IP addresses.",
+
+                     "type":          "string",
+                     "default":       "*"
+                  },
+
+                  "community": {
+                     "description":   "The community string required for SNMPv1 and SNMPv2c commands.  (If empty, all SNMPv1 and SNMPv2c commands will be rejected).",
+
+                     "type":          "string",
+                     "default":       "public",
+                     "pattern":       "^\\S*$"
+                  },
+
+                  "enabled": {
+                     "description":   "Whether or not the SNMP command responder service should be enabled on this traffic manager.",
+
+                     "type":          "boolean",
+                     "default":       false
+                  },
+
+                  "hash_algorithm": {
+                     "description":   "The hash algorithm for authenticated SNMPv3 communications.",
+
+                     "type":          "string",
+                     "default":       "md5",
+                     "enum":          ["md5","sha1"]
+                  },
+
+                  "port": {
+                     "description":   "The port the SNMP command responder service should listen on. The value \"default\" denotes port 161 if the software is running with root privileges, and 1161 otherwise.",
+
+                     "type":          "string",
+                     "default":       "default"
+                  },
+
+                  "priv_password": {
+                     "description":   "The privacy password. Required (minimum length 8 characters) if \"security_level\" includes privacy (message encryption).",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "security_level": {
+                     "description":   "The security level for SNMPv3 communications.",
+
+                     "type":          "string",
+                     "default":       "noauthnopriv",
+                     "enum":          ["authnopriv","authpriv","noauthnopriv"]
+                  },
+
+                  "username": {
+                     "description":   "The username required for SNMPv3 commands.  (If empty, all SNMPv3 commands will be rejected).",
+
+                     "type":          "string",
+                     "default":       "",
+                     "pattern":       "^\\S*$"
+                  }
+               }
+            },
+
+            "soap": {
+               "javaType" :     "org.rackspace.stingray.client_7.tm.TrafficManagerSoap",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "max_requests": {
+                     "description":   "The maximum SOAP requests before the SOAP processes restarts.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  }
+               }
+            }
+         }
+      }
+   }
+}

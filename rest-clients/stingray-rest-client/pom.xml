@@ -121,29 +121,53 @@
                     <annotationStyle>jackson2</annotationStyle>
                     <useCommonsLang3>true</useCommonsLang3>
                     <sourcePaths>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-action-script</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-bandwidth</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-extra-file</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-glb</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-location</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-monitor</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-monitor-script</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-persistence</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-pool</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-protection</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-rate</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-ssl-cacrl</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-ssl-client-keypair</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-ssl-keypair</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-tm</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-traffic-ip</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-trafficscript</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-virtual-server</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/config-settings</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/counters-virtual-server</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/util</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/list</sourcePath>
-                        <sourcePath>${basedir}/src/main/resources/schema/stingray/exception</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-action-script</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-bandwidth</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-extra-file</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-glb</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-location</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-monitor</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-monitor-script</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-persistence</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-pool</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-protection</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-rate</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-ssl-cacrl</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-ssl-client-keypair</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-ssl-keypair</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-tm</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-traffic-ip</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-trafficscript</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-virtual-server</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/config-settings</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/counters-virtual-server</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/util</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/list</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/3.4/exception</sourcePath>
+
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-action-script</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-bandwidth</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-extra-file</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-glb</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-location</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-monitor</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-monitor-script</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-persistence</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-pool</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-protection</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-rate</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-ssl-cacrl</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-ssl-client-keypair</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-ssl-keypair</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-tm</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-traffic-ip</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-trafficscript</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-virtual-server</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/config-settings</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/counters-virtual-server</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/util</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/list</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/7.0/exception</sourcePath>
                     </sourcePaths>
                     <outputDirectory>${project.build.directory}/generated-sources/json2pojo</outputDirectory>
                 </configuration>

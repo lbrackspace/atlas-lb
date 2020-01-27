@@ -1,0 +1,55 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/bandwidth#update",
+   "title":                 "Bandwidth Class",
+   "description":           "A Bandwidth class, which can be assigned to a virtual server or pool in order to limit the number of bytes per second used by inbound or outbound traffic.",
+   "javaType" :     "org.rackspace.stingray.client_7.bandwidth.Bandwidth",
+   "type":                  "object",
+   "resourceType":          "Collection",
+   "additionalProperties":  false,
+
+   "properties": {
+
+      "properties": {
+         "javaType" :     "org.rackspace.stingray.client_7.bandwidth.BandwidthProperties",
+         "type":                  "object",
+         "additionalProperties":  false,
+
+         "properties": {
+
+            "basic": {
+               "javaType" :     "org.rackspace.stingray.client_7.bandwidth.BandwidthBasic",
+
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "maximum": {
+                     "description":   "The maximum bandwidth to allocate to connections that are associated with this bandwidth class (in kbits/second).",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       20000000,
+                     "default":       10000
+                  },
+
+                  "note": {
+                     "description":   "A description of this bandwidth class.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "sharing": {
+                     "description":   "The scope of the bandwidth class.",
+
+                     "type":          "string",
+                     "default":       "cluster",
+                     "enum":          ["cluster","connection","machine"]
+                  }
+               }
+            }
+         }
+      }
+   }
+}
