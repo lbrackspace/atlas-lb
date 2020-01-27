@@ -1,0 +1,54 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/ssl/server_keys#update",
+   "title":                 "SSL Key Pair",
+   "description":           "SSL Server Certificates are presented to clients by virtual servers when SSL decryption is enabled.",
+   "javaType" :     "org.rackspace.stingray.client.ssl.keypair.Keypair",
+   "type":                  "object",
+   "resourceType":          "SSLCert",
+   "additionalProperties":  false,
+
+   "properties": {
+
+      "properties": {
+         "javaType" :     "org.rackspace.stingray.client.ssl.keypair.KeypairProperties",
+         "type":                  "object",
+         "additionalProperties":  false,
+
+         "properties": {
+
+            "basic": {
+               "javaType" :     "org.rackspace.stingray.client.ssl.keypair.KeypairBasic",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "public": {
+                     "description":   "Public certificate",
+
+                     "type":          "string"
+                  },
+
+                  "request": {
+                     "description":   "Certificate Signing Request for certificate",
+
+                     "type":          "string"
+                  },
+
+                  "private": {
+                     "description":   "Private key for certificate",
+
+                     "type":          "string"
+                  },
+
+                  "note": {
+                     "description":   "Notes for this certificate",
+
+                     "type":          "string"
+                  }
+               }
+            }
+         }
+      }
+   }
+}

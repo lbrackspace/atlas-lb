@@ -1,0 +1,22 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/action_programs#update",
+   "title":                 "Action Program",
+   "description":           "This is a program or script that can be referenced and used by actions of type 'Program'",
+   "javaType" :     "org.rackspace.stingray.client.action.ActionScript",
+   "type":                  "object",
+   "resourceType":          "File",
+   "additionalProperties":  false,
+
+   "properties": {
+      "javaType" :     "org.rackspace.stingray.client.action.ActionScriptProperties",
+      "properties": {
+         "type":                  "object",
+         "additionalProperties":  false,
+
+         "properties": {
+
+         }
+      }
+   }
+}

@@ -4,6 +4,7 @@ import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.client.counters.VirtualServerStatsStatistics;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
@@ -1138,9 +1139,9 @@ public class StingrayRestClient extends StingrayRestClientManager {
         try {
             stats = getItem(name, VirtualServerStats.class, ClientConstants.V_SERVER_PATH, endpoint);
         } catch (StingrayRestClientObjectNotFoundException e) {
-            stats.setStatistics(getZeroStats());
+            stats.setProperties(getZeroStats());
         } catch (StingrayRestClientException e) {
-            stats.setStatistics(getZeroStats());
+            stats.setProperties(getZeroStats());
         }
         return stats;
     }
@@ -1154,6 +1155,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
 
     private VirtualServerStatsProperties getZeroStats() {
         VirtualServerStatsProperties props = new VirtualServerStatsProperties();
+<<<<<<< HEAD
         props.setConnectTimedOut(0L);
         props.setConnectionErrors(0L);
         props.setConnectionFailures(0L);
@@ -1161,6 +1163,17 @@ public class StingrayRestClient extends StingrayRestClientManager {
         props.setKeepaliveTimedOut(0L);
         props.setMaxConn(0L);
         props.setCurrentConn(0L);
+=======
+        VirtualServerStatsStatistics stats = new VirtualServerStatsStatistics();
+        stats.setConnectTimedOut(0);
+        stats.setConnectionErrors(0);
+        stats.setConnectionFailures(0);
+        stats.setDataTimedOut(0);
+        stats.setKeepaliveTimedOut(0);
+        stats.setMaxConn(0);
+        stats.setCurrentConn(0);
+        props.setStatistics(stats);
+>>>>>>> 67ad2c5... Updating RestAdapter schemas for 7.0
         return props;
     }
 }

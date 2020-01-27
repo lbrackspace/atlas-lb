@@ -3,6 +3,7 @@ package org.openstack.atlas.adapter.helpers;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.client.counters.VirtualServerStatsStatistics;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ public class CustomMappings {
 
     public static Stats mapVirtualServerStats(VirtualServerStats virtualServerStats, VirtualServerStats virtualServerStatsSsl) {
         Stats stats = new Stats();
+<<<<<<< HEAD
         VirtualServerStatsProperties properties = virtualServerStats.getStatistics();
         VirtualServerStatsProperties propertiesSsl = virtualServerStatsSsl.getStatistics();
         stats.setConnectError(properties.getConnectionErrors());
@@ -26,6 +28,24 @@ public class CustomMappings {
         stats.setDataTimedOutSsl(propertiesSsl.getDataTimedOut());
         stats.setKeepAliveTimedOutSsl(propertiesSsl.getKeepaliveTimedOut());
         stats.setMaxConnSsl(propertiesSsl.getMaxConn());
+=======
+        VirtualServerStatsStatistics properties = virtualServerStats.getProperties().getStatistics();
+        VirtualServerStatsStatistics propertiesSsl = virtualServerStatsSsl.getProperties().getStatistics();
+        stats.setConnectError(new int[]{properties.getConnectionErrors()});
+        stats.setConnectFailure(new int[]{properties.getConnectionFailures()});
+        stats.setConnectTimeOut(new int[]{properties.getConnectTimedOut()});
+        stats.setCurrentConn(new int[]{properties.getCurrentConn()});
+        stats.setDataTimedOut(new int[]{properties.getDataTimedOut()});
+        stats.setKeepAliveTimedOut(new int[]{properties.getKeepaliveTimedOut()});
+        stats.setMaxConn(new int[]{properties.getMaxConn()});
+        stats.setConnectErrorSsl(new int[]{propertiesSsl.getConnectionErrors()});
+        stats.setConnectFailureSsl(new int[]{propertiesSsl.getConnectionFailures()});
+        stats.setConnectTimeOutSsl(new int[]{propertiesSsl.getConnectTimedOut()});
+        stats.setCurrentConnSsl(new int[]{propertiesSsl.getCurrentConn()});
+        stats.setDataTimedOutSsl(new int[]{propertiesSsl.getDataTimedOut()});
+        stats.setKeepAliveTimedOutSsl(new int[]{propertiesSsl.getKeepaliveTimedOut()});
+        stats.setMaxConnSsl(new int[]{propertiesSsl.getMaxConn()});
+>>>>>>> 67ad2c5... Updating RestAdapter schemas for 7.0
         return stats;
     }
 
@@ -48,6 +68,7 @@ public class CustomMappings {
         Stats stats = new Stats();
 
         for (VirtualServerStats vss : virtualServerStats) {
+<<<<<<< HEAD
             VirtualServerStatsProperties properties = vss.getStatistics();
             connectionError += properties.getConnectionErrors();
             connectionFailure += properties.getConnectionFailures();
@@ -58,11 +79,24 @@ public class CustomMappings {
             long max = properties.getMaxConn();
             if (max > maxConnections) {
                 maxConnections = max;
+=======
+            VirtualServerStatsStatistics properties = vss.getProperties().getStatistics();
+            connectionError[0] += properties.getConnectionErrors();
+            connectionFailure[0] += properties.getConnectionFailures();
+            connectionTimedOut[0] += properties.getConnectTimedOut();
+            currentConnections[0] += properties.getCurrentConn();
+            dataTimedOut[0] += properties.getDataTimedOut();
+            keepaliveTimedOut[0] += properties.getKeepaliveTimedOut();
+            Integer max = properties.getMaxConn();
+            if (max > maxConnections[0]) {
+                maxConnections[0] = max;
+>>>>>>> 67ad2c5... Updating RestAdapter schemas for 7.0
             }
 
         }
 
         for (VirtualServerStats vsss : virtualServerStatsSsl) {
+<<<<<<< HEAD
             VirtualServerStatsProperties propertiesSsl = vsss.getStatistics();
             connectionErrorSsl += propertiesSsl.getConnectionErrors();
             connectionFailureSsl += propertiesSsl.getConnectionFailures();
@@ -73,6 +107,18 @@ public class CustomMappings {
             long maxSsl = propertiesSsl.getMaxConn();
             if (maxSsl > maxConnectionsSsl) {
                 maxConnectionsSsl = maxSsl;
+=======
+            VirtualServerStatsStatistics propertiesSsl = vsss.getProperties().getStatistics();
+            connectionErrorSsl[0] += propertiesSsl.getConnectionErrors();
+            connectionFailureSsl[0] += propertiesSsl.getConnectionFailures();
+            connectionTimedOutSsl[0] += propertiesSsl.getConnectTimedOut();
+            currentConnectionsSsl[0] += propertiesSsl.getCurrentConn();
+            dataTimedOutSsl[0] += propertiesSsl.getDataTimedOut();
+            keepaliveTimedOutSsl[0] += propertiesSsl.getKeepaliveTimedOut();
+            Integer maxSsl = propertiesSsl.getMaxConn();
+            if (maxSsl > maxConnectionsSsl[0]) {
+                maxConnectionsSsl[0] = maxSsl;
+>>>>>>> 67ad2c5... Updating RestAdapter schemas for 7.0
             }
         }
 

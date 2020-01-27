@@ -1,0 +1,69 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/locations#update",
+   "title":                 "Location",
+   "description":           "These are geographic locations as used by *Global Load Balancing* services. Such a location may not necessarily contain a traffic manager; instead it could refer to the location of a remote datacenter.",
+   "javaType" :     "org.rackspace.stingray.client.location.Location",
+
+   "type":                  "object",
+   "resourceType":          "Collection",
+   "additionalProperties":  false,
+
+   "properties": {
+
+      "properties": {
+         "javaType" :     "org.rackspace.stingray.client.location.LocationProperties",
+
+         "type":                  "object",
+         "additionalProperties":  false,
+
+         "properties": {
+
+            "basic": {
+               "javaType" :     "org.rackspace.stingray.client.location.LocationBasic",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "id": {
+                     "description":   "The identifier of this location.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "maximum":       2000000000
+                  },
+
+                  "latitude": {
+                     "description":   "The latitude of this location.",
+
+                     "type":          "number",
+                     "default":       "0.0"
+                  },
+
+                  "longitude": {
+                     "description":   "The longitude of this location.",
+
+                     "type":          "number",
+                     "default":       "0.0"
+                  },
+
+                  "note": {
+                     "description":   "A note, used to describe this location.",
+
+                     "type":          "string",
+                     "default":       ""
+                  },
+
+                  "type": {
+                     "description":   "Does this location contain traffic managers and configuration or is it a recipient of GLB requests?",
+
+                     "type":          "string",
+                     "default":       "config",
+                     "enum":          ["config","glb"]
+                  }
+               }
+            }
+         }
+      }
+   }
+}
