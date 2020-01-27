@@ -1,0 +1,30 @@
+{
+    "$schema":       "http://json-schema.org/draft-04/schema#",
+    "id":            "/rvbd-schema/tm/3.4/config/active/util#factory",
+    "title":         "Pool",
+    "description":   "The ENUM factory for the Stingray Rest API",
+    "javaType" :     "org.rackspace.vtm.client.util.EnumFactory",
+    "type":          "object",
+    "required":      true,
+
+    "properties": {
+        "accept_from": {
+            "description":   "The Enum Factory for Stingray Rest API ENUM",
+
+            "type":          "string",
+            "required":      false,
+            "enum":          ["dest_ip_only","dest_only","ip_mask", "private_ips","publicips",
+            "fastest_response_time","least_connections","perceptive","random","round_robin",
+            "weighted_least_connections","weighted_round_robin","all","none","simple",
+            "no_rewrite","set_to_named","set_to_request", "no_modify","set_secure","unset_secure",
+            "eager","lazy", "always","if_host_matches","never", "forbid","forward","node",
+            "full_gateway","route","sip_gateway", "off","on","optional","strict",
+            "dont_request","request","require", "ec2elastic","multihosted","singlehosted", "802_3ad","balance_alb",
+            "10","100","1000", "priority", "critical","debug","info","notice","serious","warning",
+            "local","manual","portal", "md5","sha1", "authnopriv","authpriv","noauthnopriv", "close","new_node","url",
+            "asp","cookie","ip","j2ee","named","ssl","transparent","universal","x_zeus", "pernode","poolwide",
+            "connect","http","ping","program","rtsp","sip","tcp_transaction", "tcp","udp", "config","glb",
+            "cluster","connection","machine"]
+        }
+    }
+}

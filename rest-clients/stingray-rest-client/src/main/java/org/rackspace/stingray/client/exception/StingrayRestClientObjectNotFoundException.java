@@ -9,7 +9,7 @@ package org.rackspace.stingray.client.exception;
  */
 public class StingrayRestClientObjectNotFoundException extends Exception {
 
-    private static final long serialVersionUID = -1984130663036438982L;
+    private static final long serialVersionUID = -4269612697562722004L;
 
        public StingrayRestClientObjectNotFoundException(String message) {
            super(message);

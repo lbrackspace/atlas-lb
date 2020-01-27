@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.client.counters.VirtualServerStatsStatistics;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.manager.impl.RequestManagerImpl;
@@ -231,11 +232,13 @@ public class RequestManagerTest {
     @PowerMockIgnore("javax.management.*")
     public static class VerifyVirtualServerStatProperties {
         VirtualServerStatsProperties vs;
+        VirtualServerStatsStatistics stats;
 
 
         @Before
         public void standUp() throws URISyntaxException, IOException {
             vs = new VirtualServerStatsProperties();
+<<<<<<< HEAD
             vs.setBytesIn(10L);
             vs.setBytesInHi(10L);
             vs.setBytesInLo(10L);
@@ -244,12 +247,20 @@ public class RequestManagerTest {
             vs.setBytesOutLo(10L);
             vs.setConnectionFailures(3L);
             vs.setTotalConn(2218728488L);
+=======
+            stats = new VirtualServerStatsStatistics();
+            stats.setBytesIn(10L);
+            stats.setBytesOut(10L);
+            stats.setConnectionFailures(3);
+            vs.setStatistics(stats);
+>>>>>>> 67ad2c5... Updating RestAdapter schemas for 7.0
         }
 
         @Test
         public void verifyStatFieldsAreLong() {
             // Verify virtual server stats byte* fields are of type long
             // See: CLB-1021
+<<<<<<< HEAD
             Assert.assertThat(vs.getConnectionFailures(), instanceOf(Long.class));
             Assert.assertThat(vs.getBytesIn(), instanceOf(Long.class));
             Assert.assertThat(vs.getBytesInHi(), instanceOf(Long.class));
@@ -258,6 +269,11 @@ public class RequestManagerTest {
             Assert.assertThat(vs.getBytesOutHi(), instanceOf(Long.class));
             Assert.assertThat(vs.getBytesOutLo(), instanceOf(Long.class));
             Assert.assertThat(vs.getTotalConn(), instanceOf(Long.class));
+=======
+            Assert.assertThat(stats.getConnectionFailures(), instanceOf(Integer.class));
+            Assert.assertThat(stats.getBytesIn(), instanceOf(Long.class));
+            Assert.assertThat(stats.getBytesOut(), instanceOf(Long.class));
+>>>>>>> 67ad2c5... Updating RestAdapter schemas for 7.0
         }
 
     }

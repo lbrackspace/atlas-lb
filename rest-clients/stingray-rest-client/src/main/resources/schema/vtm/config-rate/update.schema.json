@@ -1,0 +1,53 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/rate#update",
+   "title":                 "Rate Shaping Class",
+   "description":           "A rate shaping class restricts the number of connections being processed by a virtual server at once.",
+   "javaType" :     "org.rackspace.vtm.client.rate.Rate",
+   "type":                  "object",
+   "resourceType":          "Collection",
+   "additionalProperties":  false,
+
+   "properties": {
+
+      "properties": {
+         "javaType" :     "org.rackspace.vtm.client.rate.RateProperties",
+         "type":                  "object",
+         "additionalProperties":  false,
+
+         "properties": {
+
+            "basic": {
+               "javaType" :     "org.rackspace.vtm.client.rate.RateBasic",
+               "type":                  "object",
+               "additionalProperties":  false,
+
+               "properties": {
+                  "max_rate_per_minute": {
+                     "description":   "Requests that are associated with this rate class will be rate-shaped to this many requests per minute, set to \"0\" to disable the limit.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  },
+
+                  "max_rate_per_second": {
+                     "description":   "Although requests will be rate-shaped to the \"max_rate_per_minute\", the traffic manager will also rate limit per-second. This smooths traffic so that a full minute's traffic will not be serviced in the first second of the minute, set this to \"0\" to disable the per-second limit.",
+
+                     "type":          "integer",
+                     "minimum":       0,
+                     "default":       0
+                  },
+
+                  "note": {
+                     "description":   "A description of the rate class.",
+
+                     "type":          "string",
+                     "default":       ""
+                  }
+               }
+            }
+         }
+      }
+   }
+}

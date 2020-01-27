@@ -1,0 +1,23 @@
+{
+   "$schema":               "http://json-schema.org/draft-04/schema#",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/ssl/cas#update",
+   "title":                 "SSL Trusted Certificate",
+   "description":           "SSL certificate authority certificates (CAs) and certificate revocation lists (CRLs) can be used when validating server and client certificates.",
+   "javaType" :     "org.rackspace.vtm.client.ssl.cacrl.Cacrl",
+   "type":                  "object",
+   "resourceType":          "File",
+   "additionalProperties":  false,
+
+   "properties": {
+
+      "properties": {
+         "javaType" :     "org.rackspace.vtm.client.ssl.cacrl.CacrlProperties",
+         "type":                  "object",
+         "additionalProperties":  false,
+
+         "properties": {
+
+         }
+      }
+   }
+}
