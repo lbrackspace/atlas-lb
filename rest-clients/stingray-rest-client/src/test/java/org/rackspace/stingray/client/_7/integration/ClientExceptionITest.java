@@ -6,11 +6,13 @@ import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolProperties;
 
-public class ClientExceptionITest extends StingrayTestBase {
+public class ClientExceptionITest extends VTMTestBase {
     //Verify marshaling of all exception messages...
     String vsName;
     Pool pool;
@@ -36,11 +38,11 @@ public class ClientExceptionITest extends StingrayTestBase {
      * Tests the creation of a Pool
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException,
-     *          StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException,
+     *          VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testCreatePool() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreatePool() throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         pool.getProperties().setHttp(null);
         Pool createdPool = client.createPool(vsName, pool);
         Assert.assertNotNull(createdPool);

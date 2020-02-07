@@ -9,6 +9,8 @@ import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 
 import javax.ws.rs.core.Response;
@@ -17,7 +19,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-public class MonitorScriptITest extends StingrayScriptTestBase {
+public class MonitorScriptITest extends VTMScriptTestBase {
     /**
      * Initializes variables prior to test execution
      */
@@ -39,12 +41,12 @@ public class MonitorScriptITest extends StingrayScriptTestBase {
      * Tests the creation of a Monitor Script
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      * @throws URISyntaxException
      * @throws IOException
      */
     @Test
-    public void testCreateMonitorScript() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    public void testCreateMonitorScript() throws URISyntaxException, IOException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         client.createMonitorScript(fileName, createTestFile(fileName, fileText));
         File createdFile = client.getMonitorScript(fileName);
         Assert.assertNotNull(createdFile);
@@ -56,12 +58,12 @@ public class MonitorScriptITest extends StingrayScriptTestBase {
      * Tests the updating of a Monitor Script
      * Verifies using a get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      * @throws URISyntaxException
      * @throws IOException
      */
     @Test
-    public void testUpateMonitorScript() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    public void testUpateMonitorScript() throws URISyntaxException, IOException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         String updatedFileText = "Updated the test script...";
 
         client.updateMonitorScript(fileName, createTestFile(fileName, updatedFileText));
@@ -76,11 +78,11 @@ public class MonitorScriptITest extends StingrayScriptTestBase {
      * Tests the retrieval of a list of Monitor Scripts
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException
      *
      */
     @Test
-    public void testGetListOfMonitorScripts() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfMonitorScripts() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getMonitorScripts();
         Assert.assertTrue(children.size() > 0);
     }
@@ -89,10 +91,10 @@ public class MonitorScriptITest extends StingrayScriptTestBase {
      * Tests the get function for an individual Monitor Script
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testGetMonitorScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetMonitorScript() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         File retrievedFile = client.getMonitorScript(fileName);
         Assert.assertNotNull(retrievedFile);
     }
@@ -101,10 +103,10 @@ public class MonitorScriptITest extends StingrayScriptTestBase {
      * Tests the deletion of a Monitor Script
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteMonitorScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void testDeleteMonitorScript() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response wasDeleted = client.deleteMonitorScript(fileName);
         Assert.assertEquals(204, wasDeleted.getStatus());
         client.getMonitorScript(fileName);

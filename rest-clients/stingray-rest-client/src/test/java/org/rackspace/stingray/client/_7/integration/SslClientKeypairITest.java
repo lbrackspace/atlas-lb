@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair;
 import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypairBasic;
@@ -15,7 +17,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 
-public class SslClientKeypairITest extends StingrayTestBase {
+public class SslClientKeypairITest extends VTMTestBase {
     String vsName;
     ClientKeypair clientKeypair;
     ClientKeypairProperties clientKeypairProperties;
@@ -36,16 +38,16 @@ public class SslClientKeypairITest extends StingrayTestBase {
         clientKeypairProperties.setBasic(clientKeypairBasic);
         clientKeypair.setProperties(clientKeypairProperties);
 
-    }
+}
 
     /**
      * Tests the creation of a Client Keypair
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateClientKeypair() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateClientKeypair() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         ClientKeypair createdClientKeypair = client.createClientKeypair(vsName, clientKeypair);
         Assert.assertNotNull(createdClientKeypair);
         Assert.assertEquals(createdClientKeypair, client.getClientKeypair(vsName));
@@ -55,10 +57,10 @@ public class SslClientKeypairITest extends StingrayTestBase {
      * Tests the updating of a Client Keypair
      * Verifies using a get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateClientKeypair() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateClientKeypair() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         String updateNote = "qwertyuiop";
         clientKeypair.getProperties().getBasic().setNote(updateNote);
         ClientKeypair updatedKeypair = client.updateClientKeypair(vsName, clientKeypair);
@@ -73,11 +75,11 @@ public class SslClientKeypairITest extends StingrayTestBase {
      * Tests the retrieval of a list of Client Keypairs
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException
      *
      */
     @Test
-    public void testGetListOfClientKeypairs() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfClientKeypairs() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getClientKeypairs();
         Assert.assertTrue(children.size() > 0);
     }
@@ -86,10 +88,10 @@ public class SslClientKeypairITest extends StingrayTestBase {
      * Tests the get function for an individual Client Keypair
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testGetClientKeypair() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetClientKeypair() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         ClientKeypair retrievedKeypair = client.getClientKeypair(vsName);
         Assert.assertNotNull(retrievedKeypair);
     }
@@ -98,10 +100,10 @@ public class SslClientKeypairITest extends StingrayTestBase {
      * Tests the deletion of a Client Keypair
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteClientKeypair() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void testDeleteClientKeypair() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response wasDeleted = client.deleteClientKeypair(vsName);
         Assert.assertEquals(204, wasDeleted.getStatus());
         client.getClientKeypair(vsName);

@@ -8,6 +8,8 @@ import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
@@ -17,7 +19,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class TrafficIpITest extends StingrayTestBase {
+public class TrafficIpITest extends VTMTestBase {
     TrafficIp tip;
     TrafficIp tipTester;
     TrafficIpProperties properties;
@@ -38,7 +40,7 @@ public class TrafficIpITest extends StingrayTestBase {
 
         try {
             tipTester = client.createTrafficIp(TESTNAME, tip);
-        } catch (StingrayRestClientException | StingrayRestClientObjectNotFoundException e) {
+        } catch (VTMRestClientException | VTMRestClientObjectNotFoundException e) {
             Assert.fail("Could not create traffic ip " + e.getMessage());
         }
         Assert.assertNotNull(tipTester);
@@ -48,10 +50,10 @@ public class TrafficIpITest extends StingrayTestBase {
      * Tests the creation of a Traffic IP
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void atestCreateTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void atestCreateTrafficIp() throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         tipTester = client.createTrafficIp(TESTNAME, tip);
         Assert.assertNotNull(tipTester);
     }
@@ -60,11 +62,11 @@ public class TrafficIpITest extends StingrayTestBase {
      * Tests the retrieval of a list of Traffic Ips
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException
      *
      */
     @Test
-    public void btestGetListOfTrafficIps() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void btestGetListOfTrafficIps() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getTrafficIps();
         Assert.assertTrue(children.size() > 0);
     }
@@ -73,10 +75,10 @@ public class TrafficIpITest extends StingrayTestBase {
      * Tests the get function for an individual Traffic Ip
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void ctestGetTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetTrafficIp() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getTrafficIps();
         Assert.assertTrue(children.size() > 0);
         Child child = children.get(0);
@@ -89,10 +91,10 @@ public class TrafficIpITest extends StingrayTestBase {
      * Tests the deletion of a Traffic Ip
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void dtestDeleteTrafficIp() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void dtestDeleteTrafficIp() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response result = client.deleteTrafficIp(TESTNAME);
         Assert.assertEquals(204, result.getStatus());
         client.getTrafficIp(TESTNAME);

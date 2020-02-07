@@ -2,7 +2,7 @@ package org.rackspace.stingray.client._7.integration.stats;
 
 import org.junit.*;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client._7.integration.StingrayTestBase;
+import org.rackspace.stingray.client._7.integration.VTMTestBase;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
@@ -20,7 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VirtualServerStatsITest extends StingrayTestBase {
+public class VirtualServerStatsITest extends VTMTestBase {
     String vsName;
     String poolName;
     URI endpoint;
