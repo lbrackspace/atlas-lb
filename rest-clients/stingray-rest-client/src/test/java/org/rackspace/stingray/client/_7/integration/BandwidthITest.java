@@ -12,13 +12,15 @@ import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
 import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class BandwidthITest extends StingrayTestBase {
+public class BandwidthITest extends VTMTestBase {
     Bandwidth bandwidth;
     BandwidthProperties bandwidthProperties;
     BandwidthBasic bandwidthBasic;
@@ -43,10 +45,10 @@ public class BandwidthITest extends StingrayTestBase {
      * Tests the creation of a Bandwidth
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void atestCreateBandwidth() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void atestCreateBandwidth() throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         Bandwidth createdBandwidth = client.createBandwidth(vsName, bandwidth);
         Assert.assertNotNull(createdBandwidth);
         Assert.assertEquals(createdBandwidth, client.getBandwidth(vsName));
@@ -58,10 +60,10 @@ public class BandwidthITest extends StingrayTestBase {
      * Tests the updating of a Bandwidth
      * Verifies using a get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void btestUpdateBandwidth() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void btestUpdateBandwidth() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         int testLimit = 1;
         bandwidth.getProperties().getBasic().setMaximum(testLimit);
         Bandwidth updatedBandwidth = client.updateBandwidth(vsName, bandwidth);
@@ -72,11 +74,11 @@ public class BandwidthITest extends StingrayTestBase {
      * Tests the retrieval of a list of Bandwidths
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException
      *
      */
     @Test
-    public void ctestGetListOfBandwidths() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetListOfBandwidths() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getBandwidths();
         Assert.assertTrue(children.size() > 0);
     }
@@ -85,10 +87,10 @@ public class BandwidthITest extends StingrayTestBase {
      * Tests the get function for an individual Bandwidth
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void dtestGetBandwidth() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void dtestGetBandwidth() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Bandwidth retrievedBandwidth = client.getBandwidth(vsName);
         Assert.assertNotNull(retrievedBandwidth);
     }
@@ -97,10 +99,10 @@ public class BandwidthITest extends StingrayTestBase {
      * Tests the deletion of a Bandwidth
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void edeleteBandwidth() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void edeleteBandwidth() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response wasDeleted = client.deleteBandwidth(vsName);
         Assert.assertEquals(204, wasDeleted.getStatus());
         client.getBandwidth(vsName);

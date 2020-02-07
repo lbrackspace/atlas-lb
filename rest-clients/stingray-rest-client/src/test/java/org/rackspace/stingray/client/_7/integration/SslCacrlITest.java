@@ -6,6 +6,8 @@ import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 
 import javax.ws.rs.core.Response;
@@ -15,7 +17,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SslCacrlITest extends StingrayScriptTestBase {
+public class SslCacrlITest extends VTMScriptTestBase {
 
     @Before
     @Override
@@ -35,12 +37,12 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      * Tests the creation of a Traffic Script
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      * @throws URISyntaxException
      * @throws IOException
      */
     @Test
-    public void atestCreateCacrl() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    public void atestCreateCacrl() throws URISyntaxException, IOException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         //the fileName is what it will be created as. ex: /rules/test_script the file in STM is 'test_script'
         client.createCacrl(fileName, createTestFile(fileName, fileText));
         File gfile = client.getCacrl(fileName);
@@ -52,11 +54,11 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      * Tests the retrieval of a list of Cacrls
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException
      *
      */
     @Test
-    public void bgetListOfCacrls() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void bgetListOfCacrls() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getCacrls();
         Assert.assertTrue(children.size() > 0);
     }
@@ -65,10 +67,10 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      * Tests the get function for an individual Cacrl
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void ctestGetCacrl() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetCacrl() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         File retrievedFile = client.getCacrl(fileName);
         Assert.assertNotNull(retrievedFile);
 
@@ -78,12 +80,12 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      * Tests the updating of a Traffic Script
      * Verifies using a get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      * @throws URISyntaxException
      * @throws IOException
      */
     @Test
-    public void dtestUpdateCacrl() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    public void dtestUpdateCacrl() throws URISyntaxException, IOException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         //the filename is the same, we want to update the contents...
         String updatedFileText = "Updated the test script...";
 
@@ -98,10 +100,10 @@ public class SslCacrlITest extends StingrayScriptTestBase {
      * Tests the deletion of a Cacrl
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void edeleteCacrl() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void edeleteCacrl() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response wasDeleted = client.deleteCacrl(fileName);
         Assert.assertEquals(204, wasDeleted.getStatus());
         client.getCacrl(fileName);

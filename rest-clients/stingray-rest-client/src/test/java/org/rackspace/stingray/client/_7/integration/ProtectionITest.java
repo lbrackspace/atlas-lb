@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.protection.ProtectionBasic;
@@ -14,7 +16,7 @@ import org.rackspace.stingray.client.protection.ProtectionProperties;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-public class ProtectionITest extends StingrayTestBase {;
+public class ProtectionITest extends VTMTestBase {;
     String vsName = TESTNAME;
     Protection protection;
     ProtectionProperties protectionProperties;
@@ -40,10 +42,10 @@ public class ProtectionITest extends StingrayTestBase {;
      * Tests the creation of a Protection
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateProtection() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateProtection() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Protection createdProtection = client.createProtection(vsName, protection);
         Assert.assertNotNull(createdProtection);
         Assert.assertEquals(createdProtection, client.getProtection(vsName));
@@ -53,10 +55,10 @@ public class ProtectionITest extends StingrayTestBase {;
      * Tests the updating of a Protection
      * Verifies using a get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateProtection() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateProtection() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         String updateNote = "qwertyuiop";
         protection.getProperties().getBasic().setNote(updateNote);
         Protection updatedProtection = client.updateProtection(vsName, protection);
@@ -69,11 +71,11 @@ public class ProtectionITest extends StingrayTestBase {;
      * Tests the retrieval of a list of Protections
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException
      *
      */
     @Test
-    public void testGetListOfProtections() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfProtections() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getProtections();
         Assert.assertTrue(children.size() > 0);
     }
@@ -82,10 +84,10 @@ public class ProtectionITest extends StingrayTestBase {;
      * Tests the get function for an individual Protection
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testGetProtection() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetProtection() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Protection retrievedProtection = client.getProtection(vsName);
         Assert.assertNotNull(retrievedProtection);
     }
@@ -94,10 +96,10 @@ public class ProtectionITest extends StingrayTestBase {;
      * Tests the deletion of a Protection
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteProtection() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void testDeleteProtection() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response wasDeleted = client.deleteProtection(vsName);
         Assert.assertEquals(204, wasDeleted.getStatus());
         client.getProtection(vsName);
