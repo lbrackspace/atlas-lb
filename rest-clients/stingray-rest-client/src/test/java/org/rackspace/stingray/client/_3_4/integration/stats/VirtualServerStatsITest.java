@@ -6,7 +6,6 @@ import org.rackspace.stingray.client._3_4.integration.StingrayTestBase;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
-import org.rackspace.stingray.client.counters.VirtualServerStatsStatistics;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
@@ -31,7 +30,6 @@ public class VirtualServerStatsITest extends StingrayTestBase {
     VirtualServerProperties properties;
     VirtualServerStats stats;
     VirtualServerStatsProperties statsProperties;
-    VirtualServerStatsStatistics statistics;
 
     /**
      * This method is the beginning for every test following.  Initial steps to the testing are completed here.
@@ -42,11 +40,9 @@ public class VirtualServerStatsITest extends StingrayTestBase {
         super.standUp();
         stats = new VirtualServerStats();
         statsProperties = new VirtualServerStatsProperties();
-        statistics = new VirtualServerStatsStatistics();
         vsName = TESTNAME;
         endpoint = URI.create(config.getString(ClientConfigKeys.stingray_rest_endpoint)
                 + config.getString(ClientConfigKeys.stingray_stats_base_uri));
-        statsProperties.setStatistics(statistics);
         virtualServer = new VirtualServer();
         properties = new VirtualServerProperties();
         basic = new VirtualServerBasic();
@@ -98,15 +94,15 @@ public class VirtualServerStatsITest extends StingrayTestBase {
         } catch (Exception e) {
             Assert.fail("Exception thrown when retrieving virtual server stats for " + vsName + ".");
         }
-        statistics = stats.getProperties().getStatistics();
-        Assert.assertNotNull(statistics);
-        Assert.assertNotNull(statistics.getConnectTimedOut());
-        Assert.assertNotNull(statistics.getConnectionErrors());
-        Assert.assertNotNull(statistics.getConnectionFailures());
-        Assert.assertNotNull(statistics.getDataTimedOut());
-        Assert.assertNotNull(statistics.getKeepaliveTimedOut());
-        Assert.assertNotNull(statistics.getMaxConn());
-        Assert.assertNotNull(statistics.getCurrentConn());
+        statsProperties = stats.getStatistics();
+        Assert.assertNotNull(statsProperties);
+        Assert.assertNotNull(statsProperties.getConnectTimedOut());
+        Assert.assertNotNull(statsProperties.getConnectionErrors());
+        Assert.assertNotNull(statsProperties.getConnectionFailures());
+        Assert.assertNotNull(statsProperties.getDataTimedOut());
+        Assert.assertNotNull(statsProperties.getKeepaliveTimedOut());
+        Assert.assertNotNull(statsProperties.getMaxConn());
+        Assert.assertNotNull(statsProperties.getCurrentConn());
     }
 
 

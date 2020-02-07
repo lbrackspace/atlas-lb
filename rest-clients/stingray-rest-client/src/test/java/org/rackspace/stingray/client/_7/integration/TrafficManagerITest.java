@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.tm.TrafficManager;
 import org.rackspace.stingray.client.tm.TrafficManagerBasic;
@@ -14,7 +16,7 @@ import org.rackspace.stingray.client.tm.TrafficManagerProperties;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-public class TrafficManagerITest extends StingrayTestBase {
+public class TrafficManagerITest extends VTMTestBase {
     TrafficManager manager;
     TrafficManagerProperties properties;
     TrafficManagerBasic basic;
@@ -37,10 +39,10 @@ public class TrafficManagerITest extends StingrayTestBase {
      * Tests the creation of a Traffic Manager
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateTrafficManager() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateTrafficManager() throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         TrafficManager createdManager = client.createTrafficManager(TESTNAME, manager);
         String t = manager.toString();
         Assert.assertNotNull(createdManager);
@@ -50,11 +52,11 @@ public class TrafficManagerITest extends StingrayTestBase {
      * Tests the retrieval of a list of Traffic Managers
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException
      *
      */
     @Test
-    public void testGetListOfTrafficManagers() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfTrafficManagers() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getTrafficManagers();
         Assert.assertTrue(children.size() > 0);
     }
@@ -63,10 +65,10 @@ public class TrafficManagerITest extends StingrayTestBase {
      * Tests the get function for an individual Traffic Manager
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testGetTrafficManager() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetTrafficManager() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         TrafficManager trafficManager = client.getTrafficManager(TESTNAME);
         Assert.assertNotNull(trafficManager);
     }
@@ -75,10 +77,10 @@ public class TrafficManagerITest extends StingrayTestBase {
      * Tests the deletion of a Traffic Manager
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteTrafficManager() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void testDeleteTrafficManager() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response result = client.deleteTrafficManager(TESTNAME);
         Assert.assertEquals(204, result.getStatus());
         client.getTrafficManager(TESTNAME);

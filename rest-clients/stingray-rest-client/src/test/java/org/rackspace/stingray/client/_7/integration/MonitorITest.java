@@ -7,6 +7,8 @@ import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.monitor.MonitorBasic;
@@ -15,7 +17,7 @@ import org.rackspace.stingray.client.monitor.MonitorProperties;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-public class MonitorITest extends StingrayTestBase {
+public class MonitorITest extends VTMTestBase {
     Monitor monitor;
     MonitorProperties monitorProperties;
     MonitorBasic monitorBasic;
@@ -41,10 +43,10 @@ public class MonitorITest extends StingrayTestBase {
      * Tests the creation of a Monitor
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateMonitor() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateMonitor() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Monitor createdMonitor = client.createMonitor(vsName, monitor);
         Assert.assertNotNull(createdMonitor);
         Assert.assertEquals(createdMonitor, client.getMonitor(vsName));
@@ -55,10 +57,10 @@ public class MonitorITest extends StingrayTestBase {
      * Tests the updating of a Monitor
      * Verifies using a get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateMonitor() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateMonitor() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         int updateTimeout = 17;
         monitor.getProperties().getBasic().setTimeout(updateTimeout);
         Monitor updatedMonitor = client.updateMonitor(vsName, monitor);
@@ -71,11 +73,11 @@ public class MonitorITest extends StingrayTestBase {
      * Tests the retrieval of a list of Monitors
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      *
      */
     @Test
-    public void testGetListOfMonitors() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfMonitors() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getMonitors();
         Assert.assertTrue(children.size() > 0);
     }
@@ -84,10 +86,10 @@ public class MonitorITest extends StingrayTestBase {
      * Tests the get function for an individual Monitor
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testGetMonitor() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetMonitor() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Monitor retrievedMonitor = client.getMonitor(vsName);
         Assert.assertNotNull(retrievedMonitor);
     }
@@ -96,10 +98,10 @@ public class MonitorITest extends StingrayTestBase {
      * Tests the deletion of a Monitor
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteMonitor() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void testDeleteMonitor() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response wasDeleted = client.deleteMonitor(vsName);
         Assert.assertEquals(204, wasDeleted.getStatus());
         client.getMonitor(vsName);

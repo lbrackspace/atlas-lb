@@ -8,6 +8,8 @@ import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.persistence.Persistence;
 import org.rackspace.stingray.client.persistence.PersistenceBasic;
@@ -17,7 +19,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class PersistenceITest extends StingrayTestBase {
+public class PersistenceITest extends VTMTestBase {
     Persistence persistence;
     PersistenceProperties persistenceProperties;
     PersistenceBasic persistenceBasic;
@@ -43,10 +45,10 @@ public class PersistenceITest extends StingrayTestBase {
      * Tests the creation of a Persistence
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void atestCreatePersistence() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void atestCreatePersistence() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Persistence createdPersistence = client.createPersistence(vsName, persistence);
         Assert.assertNotNull(createdPersistence);
         Assert.assertEquals(createdPersistence, client.getPersistence(vsName));
@@ -56,10 +58,10 @@ public class PersistenceITest extends StingrayTestBase {
      * Tests the updating of a Persistence
      * Verifies using a get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void btestUpdatePersistence() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void btestUpdatePersistence() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         String updateNote = "qwertyuiop";
         persistence.getProperties().getBasic().setNote(updateNote);
         Persistence updatedPersistence = client.updatePersistence(vsName, persistence);
@@ -72,11 +74,11 @@ public class PersistenceITest extends StingrayTestBase {
      * Tests the retrieval of a list of Persistences
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      *
      */
     @Test
-    public void ctestGetListOfPersistences() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetListOfPersistences() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getPersistences();
         Assert.assertTrue(children.size() > 0);
     }
@@ -85,10 +87,10 @@ public class PersistenceITest extends StingrayTestBase {
      * Tests the get function for an individual Persistence
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void dtestGetPersistence() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void dtestGetPersistence() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Persistence retrievedPersistence = client.getPersistence(vsName);
         Assert.assertNotNull(retrievedPersistence);
     }
@@ -97,10 +99,10 @@ public class PersistenceITest extends StingrayTestBase {
      * Tests the deletion of a Persistence
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void etestDeletePersistence() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void etestDeletePersistence() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response wasDeleted = client.deletePersistence(vsName);
         Assert.assertEquals(204, wasDeleted.getStatus());
         client.getPersistence(vsName);
