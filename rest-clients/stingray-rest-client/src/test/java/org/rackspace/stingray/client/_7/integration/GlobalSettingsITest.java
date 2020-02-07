@@ -9,12 +9,14 @@ import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.settings.GlobalSettings;
 import org.rackspace.stingray.client.settings.GlobalSettingsProperties;
 import org.rackspace.stingray.client.settings.GlobalSettingsSsl;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GlobalSettingsITest extends StingrayTestBase {
+public class GlobalSettingsITest extends VTMTestBase {
     GlobalSettings globalSettings;
     GlobalSettingsProperties globalSettingsProperties;
     GlobalSettingsSsl globalSettingsSsl;
@@ -46,10 +48,10 @@ public class GlobalSettingsITest extends StingrayTestBase {
      * Tests retrieval of global setting sslv3 ciphers
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void aTestRetrieveSslv3Ciphers() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void aTestRetrieveSslv3Ciphers() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         GlobalSettings globalSettings = client.getGlobalSettings();
         Assert.assertNotNull(globalSettings);
         Assert.assertEquals(ciphers, globalSettings.getProperties().getSsl().getCipherSuites());

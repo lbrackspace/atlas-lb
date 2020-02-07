@@ -4,7 +4,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 
-public class StingrayScriptTestBase extends StingrayTestBase {
+public class VTMScriptTestBase extends VTMTestBase {
 
     static String fileName;
     String fileText;
