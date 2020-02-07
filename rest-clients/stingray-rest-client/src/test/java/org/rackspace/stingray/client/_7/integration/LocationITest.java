@@ -8,6 +8,8 @@ import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.location.Location;
 import org.rackspace.stingray.client.location.LocationBasic;
@@ -17,7 +19,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class LocationITest extends StingrayTestBase {
+public class LocationITest extends VTMTestBase {
     Location location;
     LocationProperties locationProperties;
     LocationBasic locationBasic;
@@ -47,10 +49,10 @@ public class LocationITest extends StingrayTestBase {
      * Tests the creation of a Location
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void atestCreateLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void atestCreateLocation() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Location createdLocation = client.createLocation(vsName, location);
         Assert.assertNotNull(createdLocation);
         Assert.assertEquals(createdLocation, client.getLocation(vsName));
@@ -60,10 +62,10 @@ public class LocationITest extends StingrayTestBase {
      * Tests the updating of a Location
      * Verifies using a get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void btestUpdateLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void btestUpdateLocation() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         int updateId = 33;
         location.getProperties().getBasic().setId(updateId);
         Location updatedLocation = client.updateLocation(vsName, location);
@@ -75,11 +77,11 @@ public class LocationITest extends StingrayTestBase {
      * Tests the retrieval of a list of Locations
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      *
      */
     @Test
-    public void ctestGetListOfLocations() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetListOfLocations() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getLocations();
         Assert.assertTrue(children.size() > 0);
     }
@@ -88,10 +90,10 @@ public class LocationITest extends StingrayTestBase {
      * Tests the get function for an individual Location
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void dtestGetLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void dtestGetLocation() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Location retrievedLocation = client.getLocation(vsName);
         Assert.assertNotNull(retrievedLocation);
     }
@@ -100,10 +102,10 @@ public class LocationITest extends StingrayTestBase {
      * Tests the deletion of a Location
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void etestDeleteLocation() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void etestDeleteLocation() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response wasDeleted = client.deleteLocation(vsName);
         Assert.assertEquals(204, wasDeleted.getStatus());
         client.getLocation(vsName);

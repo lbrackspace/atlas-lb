@@ -3,6 +3,7 @@ package org.rackspace.stingray.client._7.integration;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.VTMRestClient;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
 
@@ -11,10 +12,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URI;
 
-public class StingrayTestBase {
+public class VTMTestBase {
 
     public final String TESTNAME = "i_test";
-    public StingrayRestClient client;
+    public VTMRestClient client;
     public StingrayRestClientConfiguration config;
 
 
@@ -23,7 +24,7 @@ public class StingrayTestBase {
         String adminUser = config.getString(ClientConfigKeys.stingray_admin_user);
         String adminKey = CryptoUtil.decrypt(config.getString(ClientConfigKeys.stingray_admin_key));
         URI endpoint = URI.create(config.getString(ClientConfigKeys.stingray_rest_endpoint) + config.getString(ClientConfigKeys.stingray_base_uri));
-        client = new StingrayRestClient(endpoint, adminUser, adminKey);
+        client = new VTMRestClient(endpoint, adminUser, adminKey);
     }
 
     public File createTestFile(String fileName, String fileText) throws IOException {

@@ -1,7 +1,23 @@
 package org.rackspace.stingray.client;
 
+import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.client.counters.VirtualServerStats;
+import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
+import org.rackspace.stingray.client.list.Child;
+import org.rackspace.stingray.client.location.Location;
 import org.rackspace.stingray.client.manager.VTMRequestManager;
 import org.rackspace.stingray.client.manager.impl.VTMRequestManagerImpl;
+import org.rackspace.stingray.client.monitor.Monitor;
+import org.rackspace.stingray.client.persistence.Persistence;
+import org.rackspace.stingray.client.pool.Pool;
+import org.rackspace.stingray.client.protection.Protection;
+import org.rackspace.stingray.client.rate.Rate;
+import org.rackspace.stingray.client.settings.GlobalSettings;
+import org.rackspace.stingray.client.ssl.client.keypair.ClientKeypair;
+import org.rackspace.stingray.client.ssl.keypair.Keypair;
+import org.rackspace.stingray.client.tm.TrafficManager;
+import org.rackspace.stingray.client.traffic.ip.TrafficIp;
+import org.rackspace.stingray.client.virtualserver.VirtualServer;
 import org.rackspace.stingray.client_7.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client_7.counters.VirtualServerStats;
