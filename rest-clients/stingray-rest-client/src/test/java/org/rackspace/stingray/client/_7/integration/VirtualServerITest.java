@@ -8,6 +8,8 @@ import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolProperties;
@@ -19,7 +21,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class VirtualServerITest extends StingrayTestBase {
+public class VirtualServerITest extends VTMTestBase {
     String poolName;
     String vsName;
     Integer port;
@@ -52,10 +54,10 @@ public class VirtualServerITest extends StingrayTestBase {
     /**
      * This method tests the create virtual server request, and will verify its creation with a get request.
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void atestCreateVirtualServer() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void atestCreateVirtualServer() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Pool createdPool = client.createPool(poolName, pool);
         Assert.assertNotNull(createdPool);
         VirtualServer vs = client.createVirtualServer(vsName, virtualServer);
@@ -71,7 +73,7 @@ public class VirtualServerITest extends StingrayTestBase {
     }
 
     @Test
-    public void btestUpdateVirtualServer() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void btestUpdateVirtualServer() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Integer modPort = 8999;
         virtualServer.getProperties().getBasic().setPort(modPort);
         VirtualServer vs = client.updateVirtualServer(vsName, virtualServer);
@@ -81,10 +83,10 @@ public class VirtualServerITest extends StingrayTestBase {
     /**
      * This method tests that a list of children holding the name and URI for every virtual server can be retrieved.
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void ctestGetVirtualServersList() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void ctestGetVirtualServersList() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getVirtualServers();
         Assert.assertTrue(children.size() > 0);
     }
@@ -92,10 +94,10 @@ public class VirtualServerITest extends StingrayTestBase {
     /**
      * This method tests that one virtual server can be retrieved.
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void dtestGetVirtualServer() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void dtestGetVirtualServer() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         VirtualServer vs = client.getVirtualServer(vsName);
         Assert.assertNotNull(vs);
     }
@@ -103,10 +105,10 @@ public class VirtualServerITest extends StingrayTestBase {
     /**
      * This method tests that our originally created virtual server is able to be deleted.
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, StingrayRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void etestDeleteVirtualServer() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void etestDeleteVirtualServer() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response result = client.deleteVirtualServer(vsName);
         Assert.assertEquals(204, result.getStatus());
         client.getVirtualServer(vsName);

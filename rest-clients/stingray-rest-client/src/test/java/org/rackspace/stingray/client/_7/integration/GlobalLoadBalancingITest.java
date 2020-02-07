@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancingBasic;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancingProperties;
@@ -15,7 +17,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 
 
-public class GlobalLoadBalancingITest extends StingrayTestBase {
+public class GlobalLoadBalancingITest extends VTMTestBase {
     GlobalLoadBalancing glb;
     GlobalLoadBalancingProperties glbProperties;
     GlobalLoadBalancingBasic glbBasic;
@@ -40,10 +42,10 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      * Tests the creation of a Glb
      * Verifies using get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testCreateGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testCreateGlb() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         GlobalLoadBalancing createdGlb = client.createGlb(vsName, glb);
         Assert.assertNotNull(createdGlb);
         Assert.assertEquals(createdGlb, client.getGlb(vsName));
@@ -53,10 +55,10 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      * Tests the updating of a Glb
      * Verifies using a get and a comparison of content contained
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testUpdateGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testUpdateGlb() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         int testInt = 1;
         glb.getProperties().getBasic().setGeoEffect(testInt);
         GlobalLoadBalancing updatedGlb = client.updateGlb(vsName, glb);
@@ -69,11 +71,11 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      * Tests the retrieval of a list of Glbs
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws StingrayRestClientException
+     * @throws VTMRestClientException
      *
      */
     @Test
-    public void testGetListOfGlbs() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetListOfGlbs() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         List<Child> children = client.getGlbs();
         Assert.assertTrue(children.size() > 0);
     }
@@ -82,10 +84,10 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      * Tests the get function for an individual Glb
      * Retrieves the specific Action Script created earlier
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
-    public void testGetGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public void testGetGlb() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         GlobalLoadBalancing retrievedGlb = client.getGlb(vsName);
         Assert.assertNotNull(retrievedGlb);
     }
@@ -94,10 +96,10 @@ public class GlobalLoadBalancingITest extends StingrayTestBase {
      * Tests the deletion of a Glb
      * Checks return of the delete call, and throws an error
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void testDeleteGlb() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void testDeleteGlb() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response wasDeleted = client.deleteGlb(vsName);
         Assert.assertEquals(204, wasDeleted.getStatus());
         client.getGlb(vsName);
