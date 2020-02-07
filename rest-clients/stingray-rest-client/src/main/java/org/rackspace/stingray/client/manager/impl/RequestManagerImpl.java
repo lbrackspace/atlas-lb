@@ -5,7 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.manager.RequestManager;
-import org.rackspace.stingray.client.manager.util.RequestManagerUtil;
+import org.rackspace.stingray.client.manager.util.StingrayRequestManagerUtil;
 import org.rackspace.stingray.client.util.ClientConstants;
 
 import javax.ws.rs.client.Client;
@@ -28,7 +28,7 @@ public class RequestManagerImpl implements RequestManager {
     @Override
     public Response getList(URI endpoint, Client client, String path)  throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Response response = null;
-        RequestManagerUtil rmu = new RequestManagerUtil();
+        StingrayRequestManagerUtil rmu = new StingrayRequestManagerUtil();
         try {
             LOG.debug(String.format("GET requested for endpoint: %s", endpoint));
             response = client.target(URI.create(endpoint + path))
@@ -55,7 +55,7 @@ public class RequestManagerImpl implements RequestManager {
      */
     @Override
     public Response getItem(URI endpoint, Client client, String path, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        RequestManagerUtil rmu = new RequestManagerUtil();
+        StingrayRequestManagerUtil rmu = new StingrayRequestManagerUtil();
 
         Response response;
         try {
@@ -102,7 +102,7 @@ public class RequestManagerImpl implements RequestManager {
     @Override
     public Response updateItem(URI endpoint, Client client, String path, Object object, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Response response;
-        RequestManagerUtil rmu = new RequestManagerUtil();
+        StingrayRequestManagerUtil rmu = new StingrayRequestManagerUtil();
 
         try {
             response = client.target(endpoint + path)
@@ -131,7 +131,7 @@ public class RequestManagerImpl implements RequestManager {
     @Override
     public Response deleteItem(URI endpoint, Client client, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         Response response;
-        RequestManagerUtil rmu = new RequestManagerUtil();
+        StingrayRequestManagerUtil rmu = new StingrayRequestManagerUtil();
 
         try {
             response = client.target(endpoint + path)
