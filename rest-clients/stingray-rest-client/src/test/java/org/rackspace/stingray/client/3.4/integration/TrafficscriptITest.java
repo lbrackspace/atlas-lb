@@ -2,8 +2,6 @@ package org.rackspace.stingray.client.integration;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.*;
-import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;

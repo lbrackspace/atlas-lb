@@ -3,8 +3,6 @@ package org.rackspace.stingray.client.integration;
 import org.junit.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.runners.MethodSorters;
-import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
@@ -16,20 +14,10 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ExtraFileITest extends StingrayScriptTestBase {
-    /**
-     * Initializes variables prior to test execution
-     */
-    @Before
-    @Override
-    public void standUp() throws DecryptException {
-        super.standUp();
-        fileText = "test_file";
-        fileName = TESTNAME;
-    }
+public class ActionScriptITest extends StingrayScriptTestBase {
 
     /**
-     * Tests the creation of an Extra File
+     * Tests the creation of an Action Script
      * Verifies using get and a comparison of content contained
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
@@ -37,16 +25,16 @@ public class ExtraFileITest extends StingrayScriptTestBase {
      * @throws java.io.IOException
      */
     @Test
-    public void atestCreateExtraFile() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    public void atestCreateActionScript() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
 
-        client.createExtraFile(fileName, createTestFile(fileName, fileText));
-        File createdFile = client.getExtraFile(fileName);
+        client.createActionScript(fileName, createTestFile(fileName, fileText));
+        File createdFile = client.getActionScript(fileName);
         Assert.assertNotNull(createdFile);
         Assert.assertEquals(fileText, FileUtils.readFileToString(createdFile));
     }
 
     /**
-     * Tests the updating of a Extra File
+     * Tests the updating of an Action Script
      * Verifies using a get and a comparison of content contained
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
@@ -54,51 +42,51 @@ public class ExtraFileITest extends StingrayScriptTestBase {
      * @throws java.io.IOException
      */
     @Test
-    public void btestUpdateExtraFile() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
+    public void btestUpdateActionScript() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
         String updatedFileText = "Updated the test script...";
 
-        client.updateExtraFile(fileName, createTestFile(fileName, updatedFileText));
+        client.updateActionScript(fileName, createTestFile(fileName, updatedFileText));
 
-        File updatedFile = client.getExtraFile(fileName);
+        File updatedFile = client.getActionScript(fileName);
         Assert.assertNotNull(updatedFile);
         Assert.assertEquals(updatedFileText, FileUtils.readFileToString(updatedFile));
     }
 
     /**
-     * Tests the retrieval of a list of Extra Files
+     * Tests the retrieval of a list of Action Scripts
      * Retrieves a list of action scripts and checks its size
      *
      * @throws org.rackspace.stingray.client.exception.StingrayRestClientException
      *
      */
     @Test
-    public void ctestGetListOfExtraFiles() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        List<Child> children = client.getExtraFiles();
+    public void ctestGetListOfActionScripts() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        List<Child> children = client.getActionScripts();
         Assert.assertTrue(children.size() > 0);
     }
 
     /**
-     * Tests the get function for an individual Extra File
+     * Tests the get function for an individual Action Script
      * Retrieves the specific Action Script created earlier
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test
-    public void dtestGetExtraFile() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        File retrievedFile = client.getExtraFile(fileName);
+    public void dtestGetActionScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        File retrievedFile = client.getActionScript(fileName);
         Assert.assertNotNull(retrievedFile);
     }
 
     /**
-     * Tests the deletion of an Extra File
+     * Tests the deletion of an Action Script
      * Checks return of the delete call, and throws an error
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
     @Test(expected = StingrayRestClientObjectNotFoundException.class)
-    public void etestDeleteExtraFile() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
-        Response wasDeleted = client.deleteExtraFile(fileName);
+    public void etestDeleteActionScript() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        Response wasDeleted = client.deleteActionScript(fileName);
         Assert.assertEquals(204, wasDeleted.getStatus());
-        client.getExtraFile(fileName);
+        client.getActionScript(fileName);
     }
 }
