@@ -66,7 +66,15 @@ public class VirtualServerStatsITest extends VTMTestBase {
     /**
      * This method tests the create virtual server request, and will verify its creation with a get request.
      *
+<<<<<<< HEAD
      * @throws VTMRestClientException, StingrayRestClientObjectNotFoundException
+=======
+<<<<<<< HEAD:rest-clients/stingray-rest-client/src/test/java/org/rackspace/vtm/client/integration/stats/VirtualServerStatsITest.java
+     * @throws VTMRestClientException, StingrayRestClientObjectNotFoundException
+=======
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+>>>>>>> 201ba70... Updating v7 tests/client/utils:rest-clients/stingray-rest-client/src/test/java/org/rackspace/stingray/client/_7/integration/stats/VirtualServerStatsITest.java
+>>>>>>> d80d60f... VTM upgrade
      */
     @Test
     public void testRetrieveVirtualServerStats() {
@@ -148,7 +156,15 @@ public class VirtualServerStatsITest extends VTMTestBase {
     /**
      * This method is to clean up the built pool and virtual server after running the test.
      *
+<<<<<<< HEAD
      * @throws VTMRestClientException, StingrayRestClientObjectNotFoundException
+=======
+<<<<<<< HEAD:rest-clients/stingray-rest-client/src/test/java/org/rackspace/vtm/client/integration/stats/VirtualServerStatsITest.java
+     * @throws VTMRestClientException, StingrayRestClientObjectNotFoundException
+=======
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+>>>>>>> 201ba70... Updating v7 tests/client/utils:rest-clients/stingray-rest-client/src/test/java/org/rackspace/stingray/client/_7/integration/stats/VirtualServerStatsITest.java
+>>>>>>> d80d60f... VTM upgrade
      */
     @After
     public void cleanUp() throws VTMRestClientObjectNotFoundException, VTMRestClientException {

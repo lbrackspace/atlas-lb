@@ -12,7 +12,10 @@ import org.rackspace.vtm.client.list.Child;
 import org.rackspace.vtm.client.rate.Rate;
 import org.rackspace.vtm.client.rate.RateBasic;
 import org.rackspace.vtm.client.rate.RateProperties;
+<<<<<<< HEAD
 
+=======
+>>>>>>> d80d60f... VTM upgrade
 import javax.ws.rs.core.Response;
 import java.util.List;
 
