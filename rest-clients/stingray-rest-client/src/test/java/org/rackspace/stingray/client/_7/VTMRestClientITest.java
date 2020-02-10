@@ -26,7 +26,7 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
-public class StingrayRestClientITest {
+public class VTMRestClientITest {
 
     @RunWith(MockitoJUnitRunner.class)
     public static class WhenGettingAListOfItems {
