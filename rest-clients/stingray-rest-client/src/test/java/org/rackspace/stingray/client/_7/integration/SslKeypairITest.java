@@ -4,14 +4,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.exception.VTMRestClientException;
 import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.ssl.keypair.KeypairBasic;
-import org.rackspace.stingray.client.ssl.keypair.KeypairProperties;
+import org.rackspace.stingray.client_7.list.Child;
+import org.rackspace.stingray.client_7.ssl.keypair.Keypair;
+import org.rackspace.stingray.client_7.ssl.keypair.KeypairBasic;
+import org.rackspace.stingray.client_7.ssl.keypair.KeypairProperties;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
@@ -77,7 +75,7 @@ public class SslKeypairITest extends VTMTestBase {
      *
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
     public void testDeleteSslKeyPair() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         Response result = client.deleteKeypair(TESTNAME);
         Assert.assertEquals(204, result.getStatus());
