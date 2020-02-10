@@ -4,14 +4,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.exception.VTMRestClientException;
 import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
-import org.rackspace.stingray.client.glb.GlobalLoadBalancingBasic;
-import org.rackspace.stingray.client.glb.GlobalLoadBalancingProperties;
-import org.rackspace.stingray.client.list.Child;
+import org.rackspace.stingray.client_7.glb.GlobalLoadBalancing;
+import org.rackspace.stingray.client_7.glb.GlobalLoadBalancingBasic;
+import org.rackspace.stingray.client_7.glb.GlobalLoadBalancingProperties;
+import org.rackspace.stingray.client_7.list.Child;
 
 import javax.ws.rs.core.Response;
 import java.util.List;

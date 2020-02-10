@@ -5,10 +5,9 @@ import org.junit.Assert;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.exception.VTMRestClientException;
 import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
+import org.rackspace.stingray.client_7.list.Child;
 
 import javax.ws.rs.core.Response;
 import java.io.File;

@@ -7,14 +7,12 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
-import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
-import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.exception.VTMRestClientException;
 import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
+import org.rackspace.stingray.client_7.bandwidth.Bandwidth;
+import org.rackspace.stingray.client_7.bandwidth.BandwidthBasic;
+import org.rackspace.stingray.client_7.bandwidth.BandwidthProperties;
+import org.rackspace.stingray.client_7.list.Child;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
