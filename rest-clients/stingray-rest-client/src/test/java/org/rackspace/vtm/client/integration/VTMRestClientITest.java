@@ -13,7 +13,7 @@ package org.rackspace.vtm.client.integration;//package org.rackspace.vtm.client.
 //import java.util.HashSet;
 //import java.util.Set;
 //
-//public class VTMRestClientITest {
+//public class VTMRestClientTest {
 //    //TODO: clean these up, make more...
 //
 //    @Test

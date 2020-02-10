@@ -1,145 +1,188 @@
 {
    "$schema":               "http://json-schema.org/draft-04/schema#",
-   "id":                    "/rvbd-schema/tm/3.4/config/active/traffic_ip_groups#update",
+   "id":                    "/rvbd-schema/tm/7.0/config/active/traffic_ip_groups#update",
    "title":                 "Traffic IP Group",
    "description":           "Traffic IP groups are sets of IP addresses that are distributed across a cluster for fault tolerance.",
-   "javaType" :     "org.rackspace.vtm.client.traffic.ip.TrafficIp",
-
+   "javaType" :             "org.rackspace.vtm.client.traffic.ip.TrafficIp",
    "type":                  "object",
+   "resourceType":          "Collection",
    "additionalProperties":  false,
-   
-   "properties": {
-      
-      "properties": {
-         "javaType" :     "org.rackspace.vtm.client.traffic.ip.TrafficIpProperties",
 
+   "properties": {
+
+      "properties": {
+         "javaType" :             "org.rackspace.vtm.client.traffic.ip.TrafficIpProperties",
          "type":                  "object",
          "additionalProperties":  false,
-         
-         "properties": {
-            
-            "basic": {
-               "javaType" :     "org.rackspace.vtm.client.traffic.ip.TrafficIpBasic",
 
+         "properties": {
+
+            "basic": {
+               "javaType" :             "org.rackspace.vtm.client.traffic.ip.TrafficIpBasic",
                "type":                  "object",
                "additionalProperties":  false,
-               
+
                "properties": {
                   "enabled": {
                      "description":   "If set to \"No\", the traffic IP group will be disabled and none of the traffic IP addresses will be raised.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       true
                   },
-                  
+
                   "hash_source_port": {
                      "description":   "Whether or not the source port should be taken into account when deciding which traffic manager should handle a request.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
+                  "ip_assignment_mode": {
+                     "description":   "Configure how traffic IPs are assigned to traffic managers in Single-Hosted mode",
+
+                     "type":          "string",
+                     "default":       "balanced",
+                     "enum":          ["alphabetic","balanced"]
+                  },
+
                   "ip_mapping": {
                      "description":   "A table assigning traffic IP addresses to machines that should host them. Traffic IP addresses not specified in this table will automatically be assigned to a machine.",
-                     
-                     "type":          "array",
-                     
-                     "items": {
-                        "javaType" :     "org.rackspace.vtm.client.traffic.ip.TrafficIpIpMapping",
 
+                     "type":          "array",
+
+                     "items": {
+                        "javaType" :             "org.rackspace.vtm.client.traffic.ip.TrafficIpIpMapping",
                         "type":                  "object",
                         "required":              ["ip","traffic_manager"],
                         "additionalProperties":  false,
-                        
+
                         "properties": {
                            "ip": {
                               "description":   "A traffic IP address (from the ipaddresses property).",
-                              
+
                               "type":          "string"
                            },
                            "traffic_manager": {
                               "description":   "The name of the traffic manager that should host the IP address.",
-                              
+
                               "type":          "string",
                               "pattern":       "^[A-Za-z0-9._-]*$"
                            }
                         }
                      }
                   },
-                  
+
                   "ipaddresses": {
                      "description":   "The IP addresses that belong to the Traffic IP group.",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
                   "keeptogether": {
                      "description":   "If set to \"Yes\" then all the traffic IPs will be raised on a single traffic manager.  By default they're distributed across all active traffic managers in the traffic IP group.",
-                     
-                     "type":          "boolean"
+
+                     "type":          "boolean",
+                     "default":       false
                   },
-                  
+
                   "location": {
                      "description":   "The location in which the Traffic IP group is based.",
-                     
-                     "type":          "integer"
+
+                     "type":          "integer",
+                     "default":       0
                   },
-                  
+
                   "machines": {
                      "description":   "The traffic managers that can host the traffic IP group's IP addresses.",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }
                   },
-                  
+
                   "mode": {
                      "description":   "The method used to distribute traffic IPs across machines in the cluster. If \"multihosted\" is used then \"multicast\" must be set to an appropriate multicast IP address.",
-                     
+
                      "type":          "string",
-                     "enum":          ["ec2elastic","ec2vpcelastic","ec2vpcprivate","multihosted","rhi","singlehosted"]
+                     "default":       "singlehosted",
+                     "enum":          ["ec2elastic","ec2vpcelastic","ec2vpcprivate","gceexternal","multihosted","rhi","singlehosted"]
                   },
-                  
+
                   "multicast": {
                      "description":   "The multicast IP address used to duplicate traffic to all traffic managers in the group.",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
                   "note": {
                      "description":   "A note, used to describe this Traffic IP Group",
-                     
-                     "type":          "string"
+
+                     "type":          "string",
+                     "default":       ""
                   },
-                  
+
+                  "rhi_bgp_metric_base": {
+                     "description":   "The base BGP routing metric for this Traffic IP group. This is the advertised routing cost for the active traffic manager in the cluster. It can be used to set up inter-cluster failover.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       4294967295,
+                     "default":       10
+                  },
+
+                  "rhi_bgp_passive_metric_offset": {
+                     "description":   "The BGP routing metric offset for this Traffic IP group. This is the difference between the advertised routing cost for the active and passive traffic manager in the cluster.",
+
+                     "type":          "integer",
+                     "minimum":       1,
+                     "maximum":       4294967295,
+                     "default":       10
+                  },
+
                   "rhi_ospfv2_metric_base": {
-                     "description":   "The base routing metric for this Traffic IP group. This is the advertised routing cost for the active traffic manager in the cluster. It can be used to set up inter-cluster failover.",
-                     
+                     "description":   "The base OSPFv2 routing metric for this Traffic IP group. This is the advertised routing cost for the active traffic manager in the cluster. It can be used to set up inter-cluster failover.",
+
                      "type":          "integer",
                      "minimum":       1,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       10
                   },
-                  
+
                   "rhi_ospfv2_passive_metric_offset": {
-                     "description":   "The routing metric offset for this Traffic IP group. This is the difference between the advertised routing cost for the active and passive traffic manager in the cluster.",
-                     
+                     "description":   "The OSPFv2 routing metric offset for this Traffic IP group. This is the difference between the advertised routing cost for the active and passive traffic manager in the cluster.",
+
                      "type":          "integer",
                      "minimum":       1,
-                     "maximum":       65535
+                     "maximum":       65535,
+                     "default":       10
                   },
-                  
+
+                  "rhi_protocols": {
+                     "description":   "A list of protocols to be used for RHI. Currently must be 'ospf' or 'bgp' or both. The default, if empty, is 'ospf', which means that it is not possible to specify no protocol.",
+
+                     "type":          "string",
+                     "default":       "ospf",
+                     "pattern":       "^(ospf|bgp|ospf\\s*bgp|bgp\\s*ospf)$"
+                  },
+
                   "slaves": {
                      "description":   "A list of traffic managers that are in 'passive' mode. This means that in a fully working environment, they will not have any traffic IP addresses assigned to them.",
-                     
+
                      "type":          "array",
+                     "default":       [],
                      "uniqueItems":   true,
-                     
+
                      "items": {
                         "type":          "string"
                      }

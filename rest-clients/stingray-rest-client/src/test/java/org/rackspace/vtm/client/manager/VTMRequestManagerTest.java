@@ -32,11 +32,11 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(Enclosed.class)
-public class RequestManagerTest {
+public class VTMRequestManagerTest {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore("javax.management.*")
-    public static class WhenRetrievingAPool {
+    public static class WhenRetrievingAnItem {
 
         final Client mockClient = Mockito.mock(Client.class);
         final Response mockResponse = Mockito.mock(Response.class);
@@ -76,11 +76,11 @@ public class RequestManagerTest {
 
 
         private URI getPoolPath() throws URISyntaxException {
-            return new URI("https://localhost:9070/api/tm/1.0/config/active/" + "pool");
+            return new URI("https://localhost:9070/api/tm/3.4/config/active/" + "pool");
         }
 
         @Test
-        public void shouldReturnAPoolWhenResponseIsValid() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
+        public void getItemShouldReturnAPoolWhenResponseIsValid() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
 
             Mockito.when(this.mockResponse.getStatus()).thenReturn(200);
             Mockito.when(this.mockBuilder.put((Entity) any())).thenReturn(this.mockResponse);
@@ -94,8 +94,19 @@ public class RequestManagerTest {
 
         }
 
+        @Test(expected = VTMRestClientException.class)
+        public void getItemShouldThrowVTMRestClientException() throws VTMRestClientException, VTMRestClientObjectNotFoundException, URISyntaxException {
+            Mockito.when(this.mockClient.target(Matchers.anyString())).thenReturn(null);
+
+            Mockito.when(this.mockResponse.getStatus()).thenReturn(200);
+            Mockito.when(this.mockBuilder.put((Entity) any())).thenReturn(this.mockResponse);
+            Mockito.when(this.mockResponse.readEntity(Pool.class)).thenReturn(pool);
+            Response response = requestManager.getItem(getPoolPath(), this.mockClient, vsName, MediaType.APPLICATION_JSON_TYPE);
+
+        }
+
         @Test(expected = VTMRestClientObjectNotFoundException.class)
-        public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
+        public void getItemShouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
 
             Mockito.when(this.mockResponse.getStatus()).thenReturn(400);
             Mockito.when(this.mockResponse.readEntity(String.class)).thenReturn("Invalid resource URI");
@@ -106,7 +117,7 @@ public class RequestManagerTest {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore("javax.management.*")
-    public static class WhenUpdatingAPool {
+    public static class WhenUpdatingAnItem {
         final Client mockClient = Mockito.mock(Client.class);
         final Response mockResponse = Mockito.mock(Response.class);
         final Invocation.Builder mockBuilder = Mockito.mock(Invocation.Builder.class);
@@ -146,11 +157,11 @@ public class RequestManagerTest {
 
 
         private URI getPoolPath() throws URISyntaxException {
-            return new URI("https://localhost:9070/api/tm/1.0/config/active/" + "pool");
+            return new URI("https://localhost:9070/api/tm/3.4/config/active/" + "pool");
         }
 
         @Test
-        public void shouldReturnAPoolAfterUpdate() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
+        public void updateItemShouldReturnAPool() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
             Mockito.when(this.mockResponse.getStatus()).thenReturn(200);
             Mockito.when(this.mockBuilder.put((Entity) any())).thenReturn(this.mockResponse);
             Mockito.when(this.mockResponse.readEntity(Pool.class)).thenReturn(pool);
@@ -161,9 +172,20 @@ public class RequestManagerTest {
             Assert.assertTrue(response.readEntity(Pool.class).getProperties().getHttp().getKeepalive());
         }
 
+        @Test(expected = VTMRestClientException.class)
+        public void updateItemShouldThrowVTMRestClientException() throws VTMRestClientException, VTMRestClientObjectNotFoundException, URISyntaxException {
+            Mockito.when(this.mockClient.target(Matchers.anyString())).thenReturn(null);
+
+            Mockito.when(this.mockResponse.getStatus()).thenReturn(200);
+            Mockito.when(this.mockBuilder.put((Entity) any())).thenReturn(this.mockResponse);
+            Mockito.when(this.mockResponse.readEntity(Pool.class)).thenReturn(pool);
+            Response response = requestManager.updateItem(getPoolPath(), this.mockClient, vsName, pool, MediaType.APPLICATION_JSON_TYPE);
+
+        }
+
 
         @Test(expected = VTMRestClientObjectNotFoundException.class)
-        public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
+        public void updateItemShouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
 
             Mockito.when(this.mockResponse.getStatus()).thenReturn(400);
             Mockito.when(this.mockResponse.readEntity(String.class)).thenReturn("Invalid resource URI");
@@ -173,7 +195,7 @@ public class RequestManagerTest {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore("javax.management.*")
-    public static class WhenDeletingAPool {
+    public static class WhenDeletingAnItem {
         final Client mockClient = Mockito.mock(Client.class);
         final Response mockResponse = Mockito.mock(Response.class);
         final Invocation.Builder mockBuilder = Mockito.mock(Invocation.Builder.class);
@@ -212,20 +234,30 @@ public class RequestManagerTest {
 
 
         private URI getPoolPath() throws URISyntaxException {
-            return new URI("https://localhost:9070/api/tm/1.0/config/active/" + "pool");
+            return new URI("https://localhost:9070/api/tm/3.4/config/active/" + "pool");
         }
 
 
         @Test
-        public void shouldReturnTrueAfterSuccessfulDelete() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
+        public void deleteItemShouldReturnNoContentAfterSuccessfulDeletion() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
             Mockito.when(this.mockResponse.getStatus()).thenReturn(204);
             Response response = requestManager.deleteItem(getPoolPath(), this.mockClient, vsName);
             Assert.assertNotNull(response);
             Assert.assertEquals(204, response.getStatus());
         }
 
+        @Test(expected = VTMRestClientException.class)
+        public void updateItemShouldThrowVTMRestClientException() throws VTMRestClientException, VTMRestClientObjectNotFoundException, URISyntaxException {
+            Mockito.when(this.mockClient.target(Matchers.anyString())).thenReturn(null);
+            Mockito.when(this.mockResponse.getStatus()).thenReturn(204);
+            Response response = requestManager.deleteItem(getPoolPath(), this.mockClient, vsName);
+
+        }
+
+
+
         @Test(expected = VTMRestClientObjectNotFoundException.class)
-        public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
+        public void deleteItemShouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
             Mockito.when(this.mockResponse.getStatus()).thenReturn(400);
             Mockito.when(this.mockResponse.readEntity(String.class)).thenReturn("Invalid resource URI");
             requestManager.deleteItem(getPoolPath(), this.mockClient, vsName);
