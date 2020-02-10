@@ -12,7 +12,6 @@ import org.rackspace.vtm.client.list.Child;
 import org.rackspace.vtm.client.rate.Rate;
 import org.rackspace.vtm.client.rate.RateBasic;
 import org.rackspace.vtm.client.rate.RateProperties;
-
 import javax.ws.rs.core.Response;
 import java.util.List;
 

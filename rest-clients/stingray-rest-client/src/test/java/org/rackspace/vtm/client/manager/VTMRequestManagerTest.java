@@ -32,7 +32,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(Enclosed.class)
-public class RequestManagerTest {
+public class VTMRequestManagerTest {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore("javax.management.*")
