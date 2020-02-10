@@ -25,7 +25,7 @@ import java.util.List;
 import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
-public class VTMRestClientITest {
+public class VTMRestClientTest {
 
     @RunWith(MockitoJUnitRunner.class)
     public static class WhenGettingAListOfItems {

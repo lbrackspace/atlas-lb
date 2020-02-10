@@ -10,6 +10,8 @@ import org.rackspace.vtm.client.pool.Pool;
 import org.rackspace.vtm.client.pool.PoolBasic;
 import org.rackspace.vtm.client.pool.PoolProperties;
 
+import javax.ws.rs.core.Response;
+
 public class ClientExceptionITest extends VTMTestBase {
     //Verify marshaling of all exception messages...
     String vsName;
@@ -48,6 +50,27 @@ public class ClientExceptionITest extends VTMTestBase {
         Assert.assertNotNull(retrievedPool);
         client.deletePool(vsName);
     }
-
-
+    /**
+     * Tests that VTMRestClientException is thrown.
+     * Checks to make sure VTMRestClientFoundException is thrown by failing to createPool.
+     *
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+     */
+    @Test(expected = VTMRestClientException.class)
+    public void testThrowVTMRestClientException() throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+        pool.setProperties(null);
+        client.createPool(vsName, pool);
+    }
+    /**
+     * Tests the deletion of a Pool
+     * Checks return of the delete call, and checks to make sure VTMRestClientObjectNotFoundException is thrown.
+     *
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+     */
+    @Test(expected = VTMRestClientObjectNotFoundException.class)
+    public void testDeletePool() throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+        Response wasDeleted = client.deletePool(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
+        client.getPool(vsName);
+    }
 }

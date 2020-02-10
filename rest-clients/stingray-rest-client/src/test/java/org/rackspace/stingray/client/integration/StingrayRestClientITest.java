@@ -2,18 +2,18 @@ package org.rackspace.stingray.client.integration;//package org.rackspace.stingr
 //
 //import org.junit.Assert;
 //import org.junit.Test;
-//import org.rackspace.stingray.client.StingrayRestClient;
-//import org.rackspace.stingray.client.pool.Pool;
-//import org.rackspace.stingray.client.pool.PoolBasic;
-//import org.rackspace.stingray.client.pool.PoolLoadbalancing;
-//import org.rackspace.stingray.client.pool.PoolProperties;
-//import org.rackspace.stingray.client.util.EnumFactory;
+//import org.rackspace.stingray.client.VTMRestClient;
+//import org.rackspace.stingray.client_7.pool.Pool;
+//import org.rackspace.stingray.client_7.pool.PoolBasic;
+//import org.rackspace.stingray.client_7.pool.PoolLoadbalancing;
+//import org.rackspace.stingray.client_7.pool.PoolProperties;
+//import org.rackspace.stingray.client_7.util.EnumFactory;
 //
 //import javax.xml.bind.JAXBException;
 //import java.util.HashSet;
 //import java.util.Set;
 //
-//public class VTMRestClientITest {
+//public class VTMRestClientTest {
 //    //TODO: clean these up, make more...
 //
 //    @Test
