@@ -66,7 +66,7 @@ public class VirtualServerStatsITest extends VTMTestBase {
     /**
      * This method tests the create virtual server request, and will verify its creation with a get request.
      *
-     * @throws VTMRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
     public void testRetrieveVirtualServerStats() {
@@ -148,7 +148,7 @@ public class VirtualServerStatsITest extends VTMTestBase {
     /**
      * This method is to clean up the built pool and virtual server after running the test.
      *
-     * @throws VTMRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @After
     public void cleanUp() throws VTMRestClientObjectNotFoundException, VTMRestClientException {

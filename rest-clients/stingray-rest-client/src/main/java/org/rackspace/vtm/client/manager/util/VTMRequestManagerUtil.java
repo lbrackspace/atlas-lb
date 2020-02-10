@@ -28,14 +28,6 @@ public class VTMRequestManagerUtil {
     }
 
 
-    public <T> T stringToObject(String str, Class<T> clazz) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        Object myObject = mapper.readValue(str, clazz);
-        return (T) myObject;
-
-    }
-
-
     /**
      * A method to build a message detailing a failure response from the Stingray REST api
      *

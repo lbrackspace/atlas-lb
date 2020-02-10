@@ -103,7 +103,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return the generic list retrieval method
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException , VTMRestClientObjectNotFoundException
      */
-    private List<Child> getItems(String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public List<Child> getItems(String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         if (isPathValid(path)) {
             Response response = requestManager.getList(endpoint, client, path);
             Children children = (Children) interpretResponse(response, Children.class);
@@ -124,7 +124,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return Calls another method to retrieve an item of a specified type
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException , VTMRestClientObjectNotFoundException
      */
-    private <T> T getItem(String name, Class<T> clazz, String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public <T> T getItem(String name, Class<T> clazz, String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         return getItem(name, clazz, path, MediaType.APPLICATION_JSON_TYPE);
     }
 
@@ -139,7 +139,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return Return object of a specified type
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException , VTMRestClientObjectNotFoundException
      */
-    private <T> T getItem(String name, Class<T> clazz, String path, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public <T> T getItem(String name, Class<T> clazz, String path, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         return getItem(name, clazz, path, endpoint, cType);
     }
 
@@ -154,7 +154,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return Return object of a specified type
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException , VTMRestClientObjectNotFoundException
      */
-    private <T> T getItem(String name, Class<T> clazz, String path, URI endpoint) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public <T> T getItem(String name, Class<T> clazz, String path, URI endpoint) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         return getItem(name, clazz, path, endpoint, MediaType.APPLICATION_JSON_TYPE);
     }
 
@@ -170,7 +170,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return Return object of a specified type
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException , VTMRestClientObjectNotFoundException
      */
-    private <T> T getItem(String name, Class<T> clazz, String path, URI endpoint, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public <T> T getItem(String name, Class<T> clazz, String path, URI endpoint, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         if (isPathValid(path)) {
             Response response = requestManager.getItem(endpoint, client, path + name, cType);
             T obj = (T) interpretResponse(response, clazz);
@@ -189,7 +189,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    private <T> T createItem(String name, Class<T> clazz, String path, T obj) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public <T> T createItem(String name, Class<T> clazz, String path, T obj) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         return createItem(name, clazz, path, obj, MediaType.APPLICATION_JSON_TYPE);
     }
 
@@ -203,7 +203,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    private <T> T createItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public <T> T createItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         return updateItem(name, clazz, path, obj, cType);
     }
 
@@ -217,7 +217,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    private <T> T updateItem(String name, Class<T> clazz, String path, T obj) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public <T> T updateItem(String name, Class<T> clazz, String path, T obj) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         return updateItem(name, clazz, path, obj, MediaType.APPLICATION_JSON_TYPE);
     }
 
@@ -231,7 +231,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    private <T> T updateItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public <T> T updateItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         if (isPathValid(path)) {
             Response response = requestManager.updateItem(endpoint, client, path + name, obj, cType);
             return (T) interpretResponse(response, clazz);
@@ -247,7 +247,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @return
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
-    private Response deleteItem(String name, String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+    public Response deleteItem(String name, String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         if (isPathValid(path))
             return requestManager.deleteItem(endpoint, client, path + name);
         else
