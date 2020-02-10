@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "4afce4a3_312c9891",
+        "filename": "rest-clients/stingray-rest-client/src/main/java/org/rackspace/stingray/client/VTMRestClient.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-02-10T15:26:24Z",
+      "side": 1,
+      "message": "These imports break the client. VTM client is _7 schema and should not have \u0027regular\u0027 schema imports",
+      "revId": "3fa9a5c4f3d57e67a2681642f46e1076c2152244",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
