@@ -41,7 +41,7 @@ public class ClientConstants {
 
     public static final int DEFAULT_SERVER_FAULT = 500;
 
-    /** Constants used for performing queries against the identity service **/
+    /** Constants used for performing queries against the vtm service **/
     public static final String ACTIONSCRIPT_PATH = "action_programs/";
     public static final String BANDWIDTH_PATH = "bandwidth/";
     public static final String EXTRAFILE_PATH = "extra_files/";
@@ -62,37 +62,14 @@ public class ClientConstants {
     public static final String V_SERVER_PATH = "virtual_servers/";
     public static final String GLOBAL_SETTINGS = "global_settings/";
 
-    /** Error messages for the Stingray Rest Client**/
-    public static final String REQUEST_ERROR = "The Stingray Rest Client encountered a problem processing the request: ";
+    /** Error messages for the VTM Rest Client**/
+    public static final String REQUEST_ERROR = "The VTM Rest Client encountered a problem processing the request: ";
 
     public static final String CLIENT_ERROR = "There was an error communicating with the auth service...";
-    public static final String STM_CLIENT_ERROR = "There was an error communicating with the Stingray Rest Service...";
+    public static final String STM_CLIENT_ERROR = "There was an error communicating with the VTM Rest Service...";
 
 
     /** Default error responses **/
     public static final String MISSING_PROP = "One or more values necessary for this request could not be found, please check the request and try again.";
-    public static Properties MIMETYPES = new Properties ();
-
-    static {
-    	try
-        {
-    		MIMETYPES.load (ClientConstants.class.getResourceAsStream("MIME.types"));
-        }
-        catch (IOException err)
-        {
-            logger.warn("Could not load MIME.types all refrences to IdentityConstants.MIMETYPES will return null.", err);
-        }
-    }
-
-    /**
-     * Convenience method to get a MIME Type.  If none is found it will return "application/octet-stream"
-     *
-     * @param fileExt   Provides the file extension
-     * @return The suggested MIME type for the file extention.
-     */
-    public static String getMimetype (String fileExt)
-    {
-    	return ClientConstants.MIMETYPES.getProperty(fileExt.toLowerCase(), "application/octet-stream");
-    }
 
 }

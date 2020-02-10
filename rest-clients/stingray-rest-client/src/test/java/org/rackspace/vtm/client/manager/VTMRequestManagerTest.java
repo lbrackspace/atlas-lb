@@ -32,7 +32,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.mockito.ArgumentMatchers.any;
 
 @RunWith(Enclosed.class)
-public class RequestManagerTest {
+public class VTMRequestManagerTest {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore("javax.management.*")
@@ -76,7 +76,7 @@ public class RequestManagerTest {
 
 
         private URI getPoolPath() throws URISyntaxException {
-            return new URI("https://localhost:9070/api/tm/1.0/config/active/" + "pool");
+            return new URI("https://localhost:9070/api/tm/7.0/config/active/" + "pool");
         }
 
         @Test
@@ -146,7 +146,7 @@ public class RequestManagerTest {
 
 
         private URI getPoolPath() throws URISyntaxException {
-            return new URI("https://localhost:9070/api/tm/1.0/config/active/" + "pool");
+            return new URI("https://localhost:9070/api/tm/7.0/config/active/" + "pool");
         }
 
         @Test
@@ -212,7 +212,7 @@ public class RequestManagerTest {
 
 
         private URI getPoolPath() throws URISyntaxException {
-            return new URI("https://localhost:9070/api/tm/1.0/config/active/" + "pool");
+            return new URI("https://localhost:9070/api/tm/7.0/config/active/" + "pool");
         }
 
 
