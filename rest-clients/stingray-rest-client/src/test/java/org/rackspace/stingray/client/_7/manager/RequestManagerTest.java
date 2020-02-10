@@ -9,15 +9,15 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
-import org.rackspace.stingray.client.counters.VirtualServerStatsStatistics;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.manager.RequestManager;
-import org.rackspace.stingray.client.manager.impl.RequestManagerImpl;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolHttp;
-import org.rackspace.stingray.client.pool.PoolProperties;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
+import org.rackspace.stingray.client.manager.VTMRequestManager;
+import org.rackspace.stingray.client.manager.impl.VTMRequestManagerImpl;
+import org.rackspace.stingray.client_7.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.client_7.counters.VirtualServerStatsStatistics;
+import org.rackspace.stingray.client_7.pool.Pool;
+import org.rackspace.stingray.client_7.pool.PoolHttp;
+import org.rackspace.stingray.client_7.pool.PoolProperties;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
@@ -44,13 +44,13 @@ public class RequestManagerTest {
         final Invocation.Builder mockBuilder = Mockito.mock(Invocation.Builder.class);
 
 
-        private RequestManager requestManager;
+        private VTMRequestManager requestManager;
         private String vsName;
         private Pool pool;
 
         @Before
         public void standUp() throws URISyntaxException, IOException {
-            requestManager = new RequestManagerImpl();
+            requestManager = new VTMRequestManagerImpl();
             vsName = "12345_1234";
             pool = createPool();
 
@@ -81,7 +81,7 @@ public class RequestManagerTest {
         }
 
         @Test
-        public void shouldReturnAPoolWhenResponseIsValid() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        public void shouldReturnAPoolWhenResponseIsValid() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
 
             Mockito.when(this.mockResponse.getStatus()).thenReturn(200);
             Mockito.when(this.mockBuilder.put((Entity) any())).thenReturn(this.mockResponse);
@@ -95,8 +95,8 @@ public class RequestManagerTest {
 
         }
 
-        @Test(expected = StingrayRestClientObjectNotFoundException.class)
-        public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        @Test(expected = VTMRestClientObjectNotFoundException.class)
+        public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
 
             Mockito.when(this.mockResponse.getStatus()).thenReturn(400);
             Mockito.when(this.mockResponse.readEntity(String.class)).thenReturn("Invalid resource URI");
@@ -112,14 +112,14 @@ public class RequestManagerTest {
         final Response mockResponse = Mockito.mock(Response.class);
         final Invocation.Builder mockBuilder = Mockito.mock(Invocation.Builder.class);
 
-        private RequestManager requestManager;
+        private VTMRequestManager requestManager;
         private String vsName;
         private Pool pool;
 
 
         @Before
         public void standUp() throws URISyntaxException, IOException {
-            requestManager = new RequestManagerImpl();
+            requestManager = new VTMRequestManagerImpl();
             vsName = "12345_1234";
             pool = createPool();
 
@@ -151,7 +151,7 @@ public class RequestManagerTest {
         }
 
         @Test
-        public void shouldReturnAPoolAfterUpdate() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        public void shouldReturnAPoolAfterUpdate() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
             Mockito.when(this.mockResponse.getStatus()).thenReturn(200);
             Mockito.when(this.mockBuilder.put((Entity) any())).thenReturn(this.mockResponse);
             Mockito.when(this.mockResponse.readEntity(Pool.class)).thenReturn(pool);
@@ -163,8 +163,8 @@ public class RequestManagerTest {
         }
 
 
-        @Test(expected = StingrayRestClientObjectNotFoundException.class)
-        public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        @Test(expected = VTMRestClientObjectNotFoundException.class)
+        public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
 
             Mockito.when(this.mockResponse.getStatus()).thenReturn(400);
             Mockito.when(this.mockResponse.readEntity(String.class)).thenReturn("Invalid resource URI");
@@ -179,14 +179,14 @@ public class RequestManagerTest {
         final Response mockResponse = Mockito.mock(Response.class);
         final Invocation.Builder mockBuilder = Mockito.mock(Invocation.Builder.class);
 
-        private RequestManager requestManager;
+        private VTMRequestManager requestManager;
         private String vsName;
         private Pool pool;
 
 
         @Before
         public void standUp() throws URISyntaxException, IOException {
-            requestManager = new RequestManagerImpl();
+            requestManager = new VTMRequestManagerImpl();
             vsName = "12345_1234";
             pool = createPool();
 
@@ -218,15 +218,15 @@ public class RequestManagerTest {
 
 
         @Test
-        public void shouldReturnTrueAfterSuccessfulDelete() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        public void shouldReturnTrueAfterSuccessfulDelete() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
             Mockito.when(this.mockResponse.getStatus()).thenReturn(204);
             Response response = requestManager.deleteItem(getPoolPath(), this.mockClient, vsName);
             Assert.assertNotNull(response);
             Assert.assertEquals(204, response.getStatus());
         }
 
-        @Test(expected = StingrayRestClientObjectNotFoundException.class)
-        public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        @Test(expected = VTMRestClientObjectNotFoundException.class)
+        public void shouldThrowExceptionWhenBadResponseStatus() throws URISyntaxException, VTMRestClientException, VTMRestClientObjectNotFoundException {
             Mockito.when(this.mockResponse.getStatus()).thenReturn(400);
             Mockito.when(this.mockResponse.readEntity(String.class)).thenReturn("Invalid resource URI");
             requestManager.deleteItem(getPoolPath(), this.mockClient, vsName);
@@ -243,42 +243,20 @@ public class RequestManagerTest {
         @Before
         public void standUp() throws URISyntaxException, IOException {
             vs = new VirtualServerStatsProperties();
-<<<<<<< HEAD
-            vs.setBytesIn(10L);
-            vs.setBytesInHi(10L);
-            vs.setBytesInLo(10L);
-            vs.setBytesOut(10L);
-            vs.setBytesOutHi(10L);
-            vs.setBytesOutLo(10L);
-            vs.setConnectionFailures(3L);
-            vs.setTotalConn(2218728488L);
-=======
             stats = new VirtualServerStatsStatistics();
             stats.setBytesIn(10L);
             stats.setBytesOut(10L);
-            stats.setConnectionFailures(3);
+            stats.setConnectionFailures(3L);
             vs.setStatistics(stats);
->>>>>>> 67ad2c5... Updating RestAdapter schemas for 7.0
         }
 
         @Test
         public void verifyStatFieldsAreLong() {
             // Verify virtual server stats byte* fields are of type long
             // See: CLB-1021
-<<<<<<< HEAD
-            Assert.assertThat(vs.getConnectionFailures(), instanceOf(Long.class));
-            Assert.assertThat(vs.getBytesIn(), instanceOf(Long.class));
-            Assert.assertThat(vs.getBytesInHi(), instanceOf(Long.class));
-            Assert.assertThat(vs.getBytesInLo(), instanceOf(Long.class));
-            Assert.assertThat(vs.getBytesOut(), instanceOf(Long.class));
-            Assert.assertThat(vs.getBytesOutHi(), instanceOf(Long.class));
-            Assert.assertThat(vs.getBytesOutLo(), instanceOf(Long.class));
-            Assert.assertThat(vs.getTotalConn(), instanceOf(Long.class));
-=======
             Assert.assertThat(stats.getConnectionFailures(), instanceOf(Integer.class));
             Assert.assertThat(stats.getBytesIn(), instanceOf(Long.class));
             Assert.assertThat(stats.getBytesOut(), instanceOf(Long.class));
->>>>>>> 67ad2c5... Updating RestAdapter schemas for 7.0
         }
 
     }

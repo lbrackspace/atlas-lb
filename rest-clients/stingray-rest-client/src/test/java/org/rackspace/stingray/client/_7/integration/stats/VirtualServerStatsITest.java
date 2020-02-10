@@ -4,17 +4,17 @@ import org.junit.*;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client._7.integration.VTMTestBase;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
-import org.rackspace.stingray.client.counters.VirtualServerStats;
-import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
-import org.rackspace.stingray.client.counters.VirtualServerStatsStatistics;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolProperties;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
-import org.rackspace.stingray.client.virtualserver.VirtualServerBasic;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.client.exception.VTMRestClientException;
+import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
+import org.rackspace.stingray.client_7.counters.VirtualServerStats;
+import org.rackspace.stingray.client_7.counters.VirtualServerStatsProperties;
+import org.rackspace.stingray.client_7.list.Child;
+import org.rackspace.stingray.client_7.pool.Pool;
+import org.rackspace.stingray.client_7.pool.PoolProperties;
+import org.rackspace.stingray.client_7.virtualserver.VirtualServer;
+import org.rackspace.stingray.client_7.virtualserver.VirtualServerBasic;
+import org.rackspace.stingray.client_7.virtualserver.VirtualServerProperties;
+import org.rackspace.stingray.client_7.counters.VirtualServerStatsStatistics;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -66,7 +66,7 @@ public class VirtualServerStatsITest extends VTMTestBase {
     /**
      * This method tests the create virtual server request, and will verify its creation with a get request.
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @Test
     public void testRetrieveVirtualServerStats() {
@@ -134,34 +134,34 @@ public class VirtualServerStatsITest extends VTMTestBase {
         } catch (Exception e) {
             Assert.fail("Exception thrown when retrieving virtual server stats for " + b + ".");
         }
-        statsProperties = stats.getStatistics();
-        Assert.assertNotNull(statsProperties);
-        Assert.assertNotNull(statsProperties.getConnectTimedOut());
-        Assert.assertNotNull(statsProperties.getConnectionErrors());
-        Assert.assertNotNull(statsProperties.getConnectionFailures());
-        Assert.assertNotNull(statsProperties.getDataTimedOut());
-        Assert.assertNotNull(statsProperties.getKeepaliveTimedOut());
-        Assert.assertNotNull(statsProperties.getMaxConn());
-        Assert.assertNotNull(statsProperties.getCurrentConn());
+        statistics = stats.getProperties().getStatistics();
+        Assert.assertNotNull(statistics);
+        Assert.assertNotNull(statistics.getConnectTimedOut());
+        Assert.assertNotNull(statistics.getConnectionErrors());
+        Assert.assertNotNull(statistics.getConnectionFailures());
+        Assert.assertNotNull(statistics.getDataTimedOut());
+        Assert.assertNotNull(statistics.getKeepaliveTimedOut());
+        Assert.assertNotNull(statistics.getMaxConn());
+        Assert.assertNotNull(statistics.getCurrentConn());
     }
 
     /**
      * This method is to clean up the built pool and virtual server after running the test.
      *
-     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     @After
-    public void cleanUp() throws StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+    public void cleanUp() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         client.deleteVirtualServer(vsName);
         try {
             client.getVirtualServer(vsName);
-        } catch (StingrayRestClientObjectNotFoundException e) {
+        } catch (VTMRestClientObjectNotFoundException e) {
             // Object not found, this is expected.
         }
         client.deletePool(poolName);
         try {
             client.getPool(poolName);
-        } catch (StingrayRestClientObjectNotFoundException e) {
+        } catch (VTMRestClientObjectNotFoundException e) {
             // Object not found, this is expected.
         }
     }

@@ -4,13 +4,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.exception.VTMRestClientException;
 import org.rackspace.stingray.client.exception.VTMRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolBasic;
-import org.rackspace.stingray.client.pool.PoolProperties;
+import org.rackspace.stingray.client_7.pool.Pool;
+import org.rackspace.stingray.client_7.pool.PoolBasic;
+import org.rackspace.stingray.client_7.pool.PoolProperties;
 
 public class ClientExceptionITest extends VTMTestBase {
     //Verify marshaling of all exception messages...
