@@ -2,12 +2,9 @@ package org.rackspace.stingray.client.integration;
 
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.openstack.atlas.util.crypto.exception.EncryptException;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 
 import java.io.File;
 import java.io.FileWriter;

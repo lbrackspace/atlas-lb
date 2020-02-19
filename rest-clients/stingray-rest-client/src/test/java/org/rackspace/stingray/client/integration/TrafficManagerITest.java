@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
@@ -51,7 +50,7 @@ public class TrafficManagerITest extends StingrayTestBase {
      * Tests the retrieval of a list of Traffic Managers
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws org.rackspace.stingray.client.exception.StingrayRestClientException
+     * @throws StingrayRestClientException
      *
      */
     @Test

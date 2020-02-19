@@ -12,7 +12,7 @@ import org.rackspace.stingray.client.config.Configuration;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.manager.util.Authenticator;
-import org.rackspace.stingray.client.manager.util.RequestManagerUtil;
+import org.rackspace.stingray.client.manager.util.StingrayRequestManagerUtil;
 import org.rackspace.stingray.client.util.ClientConstants;
 
 
@@ -114,7 +114,7 @@ public class StingrayRestClientManager {
     public synchronized <T> Object interpretResponse(Response response, Class<T> clazz)  throws StingrayRestClientException {
         Object t = null;
         String s;
-        RequestManagerUtil rmu = new RequestManagerUtil();
+        StingrayRequestManagerUtil rmu = new StingrayRequestManagerUtil();
         try {
             t = response.readEntity(clazz);
         } catch (Exception ex) {

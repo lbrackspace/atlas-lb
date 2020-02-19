@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
@@ -50,7 +49,7 @@ public class SslKeypairITest extends StingrayTestBase {
     /**
      * Method that tests the request to retrieve all the names for every SSL Keypair
      *
-     * @throws org.rackspace.stingray.client.exception.StingrayRestClientException
+     * @throws StingrayRestClientException
      *
      */
     @Test
