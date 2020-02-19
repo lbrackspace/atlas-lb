@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.config.StingrayRestClientConfiguration;

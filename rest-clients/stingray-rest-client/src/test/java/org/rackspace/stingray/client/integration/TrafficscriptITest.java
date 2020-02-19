@@ -1,9 +1,8 @@
 package org.rackspace.stingray.client.integration;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.*;
-import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.StingrayRestClient;
+import org.junit.Assert;
+import org.junit.Test;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
@@ -21,8 +20,8 @@ public class TrafficscriptITest extends StingrayScriptTestBase {
      * Verifies using get and a comparison of content contained
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
-     * @throws java.net.URISyntaxException
-     * @throws java.io.IOException
+     * @throws URISyntaxException
+     * @throws IOException
      */
     @Test
     public void testCreateTrafficScript() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
@@ -37,7 +36,7 @@ public class TrafficscriptITest extends StingrayScriptTestBase {
      * Tests the retrieval of a list of Trafficscripts
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws org.rackspace.stingray.client.exception.StingrayRestClientException
+     * @throws StingrayRestClientException
      *
      */
     @Test
@@ -64,8 +63,8 @@ public class TrafficscriptITest extends StingrayScriptTestBase {
      * Verifies using a get and a comparison of content contained
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
-     * @throws java.net.URISyntaxException
-     * @throws java.io.IOException
+     * @throws URISyntaxException
+     * @throws IOException
      */
     @Test
     public void testUpdateTrafficScript() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {

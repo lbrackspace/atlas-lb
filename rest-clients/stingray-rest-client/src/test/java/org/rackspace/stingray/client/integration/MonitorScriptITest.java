@@ -1,14 +1,12 @@
 package org.rackspace.stingray.client.integration;
 
 
-import org.junit.Assert;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
@@ -42,8 +40,8 @@ public class MonitorScriptITest extends StingrayScriptTestBase {
      * Verifies using get and a comparison of content contained
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
-     * @throws java.net.URISyntaxException
-     * @throws java.io.IOException
+     * @throws URISyntaxException
+     * @throws IOException
      */
     @Test
     public void testCreateMonitorScript() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
@@ -59,8 +57,8 @@ public class MonitorScriptITest extends StingrayScriptTestBase {
      * Verifies using a get and a comparison of content contained
      *
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
-     * @throws java.net.URISyntaxException
-     * @throws java.io.IOException
+     * @throws URISyntaxException
+     * @throws IOException
      */
     @Test
     public void testUpateMonitorScript() throws StingrayRestClientException, URISyntaxException, IOException, StingrayRestClientObjectNotFoundException {
@@ -78,7 +76,7 @@ public class MonitorScriptITest extends StingrayScriptTestBase {
      * Tests the retrieval of a list of Monitor Scripts
      * Retrieves a list of action scripts and checks its size
      *
-     * @throws org.rackspace.stingray.client.exception.StingrayRestClientException
+     * @throws StingrayRestClientException
      *
      */
     @Test

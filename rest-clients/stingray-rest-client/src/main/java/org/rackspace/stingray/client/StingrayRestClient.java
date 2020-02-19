@@ -102,7 +102,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return the generic list retrieval method
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException , StingrayRestClientObjectNotFoundException
      */
-    private List<Child> getItems(String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public List<Child> getItems(String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
             Response response = requestManager.getList(endpoint, client, path);
             Children children = (Children) interpretResponse(response, Children.class);
@@ -123,7 +123,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return Calls another method to retrieve an item of a specified type
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException , StingrayRestClientObjectNotFoundException
      */
-    private <T> T getItem(String name, Class<T> clazz, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public <T> T getItem(String name, Class<T> clazz, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         return getItem(name, clazz, path, MediaType.APPLICATION_JSON_TYPE);
     }
 
@@ -138,7 +138,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return Return object of a specified type
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException , StingrayRestClientObjectNotFoundException
      */
-    private <T> T getItem(String name, Class<T> clazz, String path, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public <T> T getItem(String name, Class<T> clazz, String path, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         return getItem(name, clazz, path, endpoint, cType);
     }
 
@@ -153,7 +153,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return Return object of a specified type
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException , StingrayRestClientObjectNotFoundException
      */
-    private <T> T getItem(String name, Class<T> clazz, String path, URI endpoint) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public <T> T getItem(String name, Class<T> clazz, String path, URI endpoint) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         return getItem(name, clazz, path, endpoint, MediaType.APPLICATION_JSON_TYPE);
     }
 
@@ -169,7 +169,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return Return object of a specified type
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException , StingrayRestClientObjectNotFoundException
      */
-    private <T> T getItem(String name, Class<T> clazz, String path, URI endpoint, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public <T> T getItem(String name, Class<T> clazz, String path, URI endpoint, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
             Response response = requestManager.getItem(endpoint, client, path + name, cType);
             T obj = (T) interpretResponse(response, clazz);
@@ -188,7 +188,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    private <T> T createItem(String name, Class<T> clazz, String path, T obj) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public <T> T createItem(String name, Class<T> clazz, String path, T obj) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         return createItem(name, clazz, path, obj, MediaType.APPLICATION_JSON_TYPE);
     }
 
@@ -202,7 +202,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    private <T> T createItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public <T> T createItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         return updateItem(name, clazz, path, obj, cType);
     }
 
@@ -216,7 +216,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    private <T> T updateItem(String name, Class<T> clazz, String path, T obj) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public <T> T updateItem(String name, Class<T> clazz, String path, T obj) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         return updateItem(name, clazz, path, obj, MediaType.APPLICATION_JSON_TYPE);
     }
 
@@ -230,7 +230,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    private <T> T updateItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public <T> T updateItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path)) {
             Response response = requestManager.updateItem(endpoint, client, path + name, obj, cType);
             return (T) interpretResponse(response, clazz);
@@ -246,7 +246,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
      * @return
      * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
      */
-    private Response deleteItem(String name, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+    public Response deleteItem(String name, String path) throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
         if (isPathValid(path))
             return requestManager.deleteItem(endpoint, client, path + name);
         else

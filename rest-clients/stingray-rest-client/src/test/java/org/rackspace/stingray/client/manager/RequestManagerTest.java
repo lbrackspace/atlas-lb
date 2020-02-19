@@ -1,6 +1,8 @@
 package org.rackspace.stingray.client.manager;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
@@ -14,9 +16,11 @@ import org.rackspace.stingray.client.manager.impl.RequestManagerImpl;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolHttp;
 import org.rackspace.stingray.client.pool.PoolProperties;
-import org.rackspace.stingray.client.virtualserver.VirtualServerProperties;
 
-import javax.ws.rs.client.*;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;

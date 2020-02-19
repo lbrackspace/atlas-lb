@@ -2,12 +2,12 @@ package org.rackspace.stingray.client.integration.stats;
 
 import org.junit.*;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
+import org.rackspace.stingray.client.integration.StingrayTestBase;
 import org.rackspace.stingray.client.config.ClientConfigKeys;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.integration.StingrayTestBase;
 import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolProperties;
@@ -43,7 +43,6 @@ public class VirtualServerStatsITest extends StingrayTestBase {
         vsName = TESTNAME;
         endpoint = URI.create(config.getString(ClientConfigKeys.stingray_rest_endpoint)
                 + config.getString(ClientConfigKeys.stingray_stats_base_uri));
-        stats.setStatistics(statsProperties);
         virtualServer = new VirtualServer();
         properties = new VirtualServerProperties();
         basic = new VirtualServerBasic();

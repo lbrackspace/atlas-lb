@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
@@ -37,7 +36,7 @@ public class ClientExceptionITest extends StingrayTestBase {
      * Tests the creation of a Pool
      * Verifies using get and a comparison of content contained
      *
-     * @throws org.rackspace.stingray.client.exception.StingrayRestClientException,
+     * @throws StingrayRestClientException,
      *          StingrayRestClientObjectNotFoundException
      */
     @Test
