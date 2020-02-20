@@ -1058,65 +1058,63 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     @Override
     public void enableDisableTLS_10(LoadBalancerEndpointConfiguration config, LoadBalancer lb, boolean isEnabled)
             throws InsufficientRequestException, RollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
-//        StingrayRestClient client = getResources().loadSTMRestClient(config);
-//        String vsName = String.format("%d_%d_S", lb.getAccountId(), lb.getId());
-//        VirtualServer vs = client.getVirtualServer(vsName);
-//        VirtualServerSsl.SupportTls1 enabled = isEnabled ? VirtualServerSsl.SupportTls1.ENABLED : VirtualServerSsl.SupportTls1.DISABLED;
-//        vs.getProperties().getSsl().setSupportTls1(enabled);
-//        try {
-//            getResources().updateVirtualServer(client, vsName, vs);
-//        } catch (StmRollBackException e) {
-//            throw new StmRollBackException(String.format("Failed to update enableDisableTLS10 for loadbalancer %s  Roll back...", lb.getId()), e);
-//        }
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        String vsName = String.format("%d_%d_S", lb.getAccountId(), lb.getId());
+        VirtualServer vs = client.getVirtualServer(vsName);
+        VirtualServerSsl.SslSupportTls1 enabled = isEnabled ? VirtualServerSsl.SslSupportTls1.ENABLED : VirtualServerSsl.SslSupportTls1.DISABLED;
+        vs.getProperties().getSsl().setSslSupportTls1(enabled);
+        try {
+            getResources().updateVirtualServer(client, vsName, vs);
+        } catch (StmRollBackException e) {
+            throw new StmRollBackException(String.format("Failed to update enableDisableTLS10 for loadbalancer %s  Roll back...", lb.getId()), e);
+        }
     }
 
     @Override
     public void enableDisableTLS_11(LoadBalancerEndpointConfiguration config, LoadBalancer lb, boolean isEnabled)
             throws InsufficientRequestException, RollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
-//        StingrayRestClient client = getResources().loadSTMRestClient(config);
-//        String vsName = String.format("%d_%d_S", lb.getAccountId(), lb.getId());
-//        VirtualServer vs = client.getVirtualServer(vsName);
-//        VirtualServerSsl.SupportTls11 enabled = isEnabled ? VirtualServerSsl.SupportTls11.ENABLED : VirtualServerSsl.SupportTls11.DISABLED;
-//        vs.getProperties().getSsl().setSupportTls11(enabled);
-//        try {
-//            getResources().updateVirtualServer(client, vsName, vs);
-//        } catch (StmRollBackException e) {
-//            throw new StmRollBackException(String.format("Failed to update enableDisableTLS11 for loadbalancer %s  Roll back...", lb.getId()), e);
-//        }
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        String vsName = String.format("%d_%d_S", lb.getAccountId(), lb.getId());
+        VirtualServer vs = client.getVirtualServer(vsName);
+        VirtualServerSsl.SslSupportTls11 enabled = isEnabled ? VirtualServerSsl.SslSupportTls11.ENABLED : VirtualServerSsl.SslSupportTls11.DISABLED;
+        vs.getProperties().getSsl().setSslSupportTls11(enabled);
+        try {
+            getResources().updateVirtualServer(client, vsName, vs);
+        } catch (StmRollBackException e) {
+            throw new StmRollBackException(String.format("Failed to update enableDisableTLS11 for loadbalancer %s  Roll back...", lb.getId()), e);
+        }
     }
 
     @Override
     public String getSslCiphersByVhost(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-//        String vsName = String.format("%d_%d_S", accountId, loadbalancerId);
-//        String ciphers = client.getVirtualServer(vsName).getProperties().getSsl().getCipherSuites();
-//        if (ciphers == null || ciphers.equals("")) {
-//            String errorMsg = String.format("no ciphers found for virtual server  %d_%d_s", accountId, loadbalancerId);
-//            throw new EntityNotFoundException(errorMsg);
-//        }
-//        return ciphers;
-        return null;
+        String vsName = String.format("%d_%d_S", accountId, loadbalancerId);
+        String ciphers = client.getVirtualServer(vsName).getProperties().getSsl().getSslCiphers();
+        if (ciphers == null || ciphers.equals("")) {
+            String errorMsg = String.format("no ciphers found for virtual server  %d_%d_s", accountId, loadbalancerId);
+            throw new EntityNotFoundException(errorMsg);
+        }
+        return ciphers;
     }
 
     @Override
     public void setSslCiphersByVhost(LoadBalancerEndpointConfiguration config, Integer accountId, Integer loadbalancerId, String ciphers) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException, StmRollBackException {
-//        StingrayRestClient client = getResources().loadSTMRestClient(config);
-//        String sslVsName = String.format("%d_%d_S", accountId, loadbalancerId);
-//        VirtualServer updatedVs = client.getVirtualServer(sslVsName);
-//        updatedVs.getProperties().getSsl().setCipherSuites(ciphers);
-//
-//        try {
-//            getResources().updateVirtualServer(client, sslVsName, updatedVs);
-//        } catch (StmRollBackException e) {
-//            throw new StmRollBackException(String.format("Failed to update ciphers for loadbalancer %s  Roll back...", loadbalancerId), e);
-//        }
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        String sslVsName = String.format("%d_%d_S", accountId, loadbalancerId);
+        VirtualServer updatedVs = client.getVirtualServer(sslVsName);
+        updatedVs.getProperties().getSsl().setSslCiphers(ciphers);
+
+        try {
+            getResources().updateVirtualServer(client, sslVsName, updatedVs);
+        } catch (StmRollBackException e) {
+            throw new StmRollBackException(String.format("Failed to update ciphers for loadbalancer %s  Roll back...", loadbalancerId), e);
+        }
     }
 
     @Override
     public String getSsl3Ciphers(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
-//        return client.getGlobalSettings().getProperties().getSsl().getCipherSuites();
-        return null;
+        return client.getGlobalSettings().getProperties().getSsl().getSsl3Ciphers();
     }
 
     /**

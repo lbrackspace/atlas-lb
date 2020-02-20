@@ -1,7 +1,6 @@
 package org.openstack.atlas.adapter.helpers;
 
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -41,7 +40,7 @@ import java.util.*;
 import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
-public class ResourceTranslatorTest extends STMTestBase {
+public class ResourceTranslatorTest extends VTMTestBase {
 
 
     public static class WhenTranslatingAVirtualServer {
@@ -269,25 +268,25 @@ public class ResourceTranslatorTest extends STMTestBase {
             SslTermination sslTermination = new SslTermination();
             sslTermination.setSecureTrafficOnly(false);
             sslTermination.setEnabled(true);
-            sslTermination.setSecurePort(StmTestConstants.LB_SECURE_PORT);
-            sslTermination.setCertificate(StmTestConstants.SSL_CERT);
-            sslTermination.setPrivatekey(StmTestConstants.SSL_KEY);
+            sslTermination.setSecurePort(VTMTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(VTMTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(VTMTestConstants.SSL_KEY);
             sslTermination.setTls10Enabled(true);
             sslTermination.setTls11Enabled(false);
 
             SslCipherProfile cipherProfile = new SslCipherProfile();
-            cipherProfile.setCiphers(StmTestConstants.CIPHER_LIST);
+            cipherProfile.setCiphers(VTMTestConstants.CIPHER_LIST);
             cipherProfile.setComments("cipherpro1");
             cipherProfile.setName("datenameid");
             sslTermination.setCipherProfile(cipherProfile);
             sslTermination.setCipherList(cipherProfile.getCiphers());
 
             ZeusCrtFile zeusCertFile = new ZeusCrtFile();
-            zeusCertFile.setPublic_cert(StmTestConstants.SSL_CERT);
-            zeusCertFile.setPrivate_key(StmTestConstants.SSL_KEY);
+            zeusCertFile.setPublic_cert(VTMTestConstants.SSL_CERT);
+            zeusCertFile.setPrivate_key(VTMTestConstants.SSL_KEY);
 
             ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
-            zeusSslTermination.setCertIntermediateCert(StmTestConstants.SSL_CERT);
+            zeusSslTermination.setCertIntermediateCert(VTMTestConstants.SSL_CERT);
             zeusSslTermination.setSslTermination(sslTermination);
 
             lb.setSslTermination(zeusSslTermination.getSslTermination());
@@ -315,12 +314,12 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(rules.size(), createdBasic.getRequestRules().size());
 
 
-            Assert.assertEquals(StmTestConstants.LB_SECURE_PORT, (int) createdBasic.getPort());
+            Assert.assertEquals(VTMTestConstants.LB_SECURE_PORT, (int) createdBasic.getPort());
             Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(createdBasic.getProtocol().toString()));
             Assert.assertEquals(isVsEnabled, createdBasic.getEnabled());
             Assert.assertEquals(vsName, createdBasic.getPool().toString());
             Assert.assertEquals(true, createdBasic.getSslDecrypt());
-            Assert.assertEquals(StmTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getSslCiphers());
+            Assert.assertEquals(VTMTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getSslCiphers());
             Assert.assertEquals(VirtualServerSsl.SslSupportTls1.ENABLED, createdServer.getProperties().getSsl().getSslSupportTls1());
             Assert.assertEquals(VirtualServerSsl.SslSupportTls11.DISABLED, createdServer.getProperties().getSsl().getSslSupportTls11());
 
@@ -335,25 +334,25 @@ public class ResourceTranslatorTest extends STMTestBase {
             SslTermination sslTermination = new SslTermination();
             sslTermination.setSecureTrafficOnly(false);
             sslTermination.setEnabled(true);
-            sslTermination.setSecurePort(StmTestConstants.LB_SECURE_PORT);
-            sslTermination.setCertificate(StmTestConstants.SSL_CERT);
-            sslTermination.setPrivatekey(StmTestConstants.SSL_KEY);
+            sslTermination.setSecurePort(VTMTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(VTMTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(VTMTestConstants.SSL_KEY);
             sslTermination.setTls10Enabled(true);
             sslTermination.setTls11Enabled(false);
 
             SslCipherProfile cipherProfile = new SslCipherProfile();
-            cipherProfile.setCiphers(StmTestConstants.CIPHER_LIST);
+            cipherProfile.setCiphers(VTMTestConstants.CIPHER_LIST);
             cipherProfile.setComments("cipherpro1");
             cipherProfile.setName("datenameid");
             sslTermination.setCipherProfile(cipherProfile);
             sslTermination.setCipherList(cipherProfile.getCiphers());
 
             ZeusCrtFile zeusCertFile = new ZeusCrtFile();
-            zeusCertFile.setPublic_cert(StmTestConstants.SSL_CERT);
-            zeusCertFile.setPrivate_key(StmTestConstants.SSL_KEY);
+            zeusCertFile.setPublic_cert(VTMTestConstants.SSL_CERT);
+            zeusCertFile.setPrivate_key(VTMTestConstants.SSL_KEY);
 
             ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
-            zeusSslTermination.setCertIntermediateCert(StmTestConstants.SSL_CERT);
+            zeusSslTermination.setCertIntermediateCert(VTMTestConstants.SSL_CERT);
             zeusSslTermination.setSslTermination(sslTermination);
 
             lb.setSslTermination(zeusSslTermination.getSslTermination());
@@ -399,12 +398,12 @@ public class ResourceTranslatorTest extends STMTestBase {
             Assert.assertEquals(rules.size(), createdBasic.getRequestRules().size());
 
 
-            Assert.assertEquals(StmTestConstants.LB_SECURE_PORT, (int) createdBasic.getPort());
+            Assert.assertEquals(VTMTestConstants.LB_SECURE_PORT, (int) createdBasic.getPort());
             Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(createdBasic.getProtocol().toString()));
             Assert.assertEquals(isVsEnabled, createdBasic.getEnabled());
             Assert.assertEquals(vsName, createdBasic.getPool().toString());
             Assert.assertEquals(true, createdBasic.getSslDecrypt());
-            Assert.assertEquals(StmTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getSslCiphers());
+            Assert.assertEquals(VTMTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getSslCiphers());
             Assert.assertEquals(VirtualServerSsl.SslSupportTls1.ENABLED, createdServer.getProperties().getSsl().getSslSupportTls1());
             Assert.assertEquals(VirtualServerSsl.SslSupportTls11.DISABLED, createdServer.getProperties().getSsl().getSslSupportTls11());
 
@@ -433,8 +432,8 @@ public class ResourceTranslatorTest extends STMTestBase {
             CertificateMapping cm = new CertificateMapping();
             cm.setId(1);
             cm.setHostName("h1");
-            cm.setPrivateKey(StmTestConstants.SSL_KEY);
-            cm.setCertificate(StmTestConstants.SSL_CERT);
+            cm.setPrivateKey(VTMTestConstants.SSL_KEY);
+            cm.setCertificate(VTMTestConstants.SSL_CERT);
             cms.add(cm);
 
             lb.setCertificateMappings(cms);
@@ -446,8 +445,8 @@ public class ResourceTranslatorTest extends STMTestBase {
 
             Keypair m1 = translatedMappings.get(cname);
             Assert.assertNotNull(m1);
-            Assert.assertEquals(StmTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
-            Assert.assertEquals(StmTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
+            Assert.assertEquals(VTMTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
+            Assert.assertEquals(VTMTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
 
         }
 
@@ -459,14 +458,14 @@ public class ResourceTranslatorTest extends STMTestBase {
             CertificateMapping cm = new CertificateMapping();
             cm.setId(1);
             cm.setHostName("h1");
-            cm.setPrivateKey(StmTestConstants.SSL_KEY);
-            cm.setCertificate(StmTestConstants.SSL_CERT);
+            cm.setPrivateKey(VTMTestConstants.SSL_KEY);
+            cm.setCertificate(VTMTestConstants.SSL_CERT);
 
             CertificateMapping cm2 = new CertificateMapping();
             cm2.setId(2);
             cm2.setHostName("h2");
-            cm2.setPrivateKey(StmTestConstants.SSL_KEY);
-            cm2.setCertificate(StmTestConstants.SSL_CERT);
+            cm2.setPrivateKey(VTMTestConstants.SSL_KEY);
+            cm2.setCertificate(VTMTestConstants.SSL_CERT);
             cms.add(cm);
             cms.add(cm2);
 
@@ -480,13 +479,13 @@ public class ResourceTranslatorTest extends STMTestBase {
 
             Keypair m1 = translatedMappings.get(cname);
             Assert.assertNotNull(m1);
-            Assert.assertEquals(StmTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
-            Assert.assertEquals(StmTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
+            Assert.assertEquals(VTMTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
+            Assert.assertEquals(VTMTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
 
             Keypair m2 = translatedMappings.get(cname2);
             Assert.assertNotNull(m2);
-            Assert.assertEquals(StmTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
-            Assert.assertEquals(StmTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
+            Assert.assertEquals(VTMTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
+            Assert.assertEquals(VTMTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
 
         }
 

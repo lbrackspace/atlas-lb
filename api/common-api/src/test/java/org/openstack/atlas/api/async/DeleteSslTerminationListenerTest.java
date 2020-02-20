@@ -8,7 +8,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.CertificateMapping;
@@ -57,7 +57,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private UsageEventCollection usageEventCollection;
     @Mock
@@ -91,7 +91,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
         deleteSslTerminationListener.setLoadBalancerService(loadBalancerService);
         deleteSslTerminationListener.setCertificateMappingService(certificateMappingService);
         deleteSslTerminationListener.setNotificationService(notificationService);
-        deleteSslTerminationListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        deleteSslTerminationListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         deleteSslTerminationListener.setUsageEventCollection(usageEventCollection);
         deleteSslTerminationListener.setSslTerminationService(sslTerminationService);
         deleteSslTerminationListener.setConfiguration(config);
@@ -115,7 +115,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
         deleteSslTerminationListener.doOnMessage(objectMessage);
 
         verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
-        verify(reverseProxyLoadBalancerStmService).removeSslTermination(lb);
+        verify(reverseProxyLoadBalancerVTMService).removeSslTermination(lb);
         verify(sslTerminationService).deleteSslTermination(LOAD_BALANCER_ID, ACCOUNT_ID);
         verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_OFF), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
@@ -136,7 +136,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
         deleteSslTerminationListener.doOnMessage(objectMessage);
 
         verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
-        verify(reverseProxyLoadBalancerStmService).removeSslTermination(lb);
+        verify(reverseProxyLoadBalancerVTMService).removeSslTermination(lb);
         // Should call to remove two certification mappings
         verify(certificateMappingService, times(2)).deleteByIdAndLoadBalancerId(Matchers.anyInt(), Matchers.anyInt());
         for (CertificateMapping cm : lb.getCertificateMappings()) {
@@ -171,14 +171,14 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(messageDataContainer.getUserName()).thenReturn(USERNAME);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).removeSslTermination(lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).removeSslTermination(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteSslTerminationListener.doOnMessage(objectMessage);
 
         verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
-        verify(reverseProxyLoadBalancerStmService).removeSslTermination(lb);
+        verify(reverseProxyLoadBalancerVTMService).removeSslTermination(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("Error deleting loadbalancer '%d' ssl termination in Zeus.", lb.getId())));
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_SSL_TERMINATION), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));

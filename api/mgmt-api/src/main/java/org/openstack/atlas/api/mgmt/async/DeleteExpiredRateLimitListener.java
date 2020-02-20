@@ -23,7 +23,7 @@ public class DeleteExpiredRateLimitListener extends BaseListener {
                 LoadBalancer lb = rl.getLoadbalancer();
                 if (isRestAdapter()) {
                     LOG.debug(String.format("Attempting to remove expired rate limit for load balancer in STM... '%d' ...", lb.getId()));
-                    reverseProxyLoadBalancerStmService.deleteRateLimit(lb);
+                    reverseProxyLoadBalancerVTMService.deleteRateLimit(lb);
                     LOG.debug(String.format("expired rate limits were removed from STM..loadbalancer in STM...'%s'..", lb.getId())
                             + "Now we can remove the from the database...");
                 } else {

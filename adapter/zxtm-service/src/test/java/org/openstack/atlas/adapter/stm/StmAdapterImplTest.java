@@ -12,7 +12,7 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.StmAdapterImplTestHelper;
+import org.openstack.atlas.adapter.helpers.VTMAdapterImplTestHelper;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
@@ -25,7 +25,6 @@ import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.core.classloader.annotations.SuppressStaticInitializationFor;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.monitor.Monitor;
@@ -44,10 +43,9 @@ import java.util.List;
 import java.util.Set;
 
 import static org.mockito.Mockito.*;
-import static org.openstack.atlas.adapter.stm.StmAdapterImpl.zeusUtil;
 
 @RunWith(Enclosed.class)
-public class StmAdapterImplTest extends StmAdapterImplTestHelper {
+public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})

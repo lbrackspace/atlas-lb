@@ -9,7 +9,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -48,7 +48,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private RestApiConfiguration config;
 
@@ -64,7 +64,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         updateErrorFileListener.setLoadBalancerService(loadBalancerService);
         updateErrorFileListener.setNotificationService(notificationService);
         updateErrorFileListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
-        updateErrorFileListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateErrorFileListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         updateErrorFileListener.setConfiguration(config);
     }
 
@@ -89,7 +89,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         updateErrorFileListener.doOnMessage(objectMessage);
 
         Assert.assertEquals(USERNAME, lb.getUserName());
-        verify(reverseProxyLoadBalancerStmService).setErrorFile(lb, ERROR_FILE_CONTENT);
+        verify(reverseProxyLoadBalancerVTMService).setErrorFile(lb, ERROR_FILE_CONTENT);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
     }
 
@@ -123,7 +123,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).setErrorFile(lb, ERROR_FILE_CONTENT);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).setErrorFile(lb, ERROR_FILE_CONTENT);
 
         Assert.assertNull(lb.getUserName());
 
@@ -147,7 +147,7 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
 
         updateErrorFileListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
+        verify(reverseProxyLoadBalancerVTMService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
     }
 
     @Test
@@ -160,14 +160,14 @@ public class UpdateErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getErrorFileContents()).thenReturn(ERROR_FILE_CONTENT);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
 
         updateErrorFileListener.doOnMessage(objectMessage);
 
         verify(notificationService).saveAlert(ArgumentMatchers.<Integer>any(),
                 ArgumentMatchers.<Integer>any(), isA(Exception.class),
                 eq(AlertType.ZEUS_FAILURE.name()), ArgumentMatchers.<String>any());
-        verify(reverseProxyLoadBalancerStmService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
+        verify(reverseProxyLoadBalancerVTMService).uploadDefaultErrorFile(CLUSTER_ID, ERROR_FILE_CONTENT);
     }
 
 }

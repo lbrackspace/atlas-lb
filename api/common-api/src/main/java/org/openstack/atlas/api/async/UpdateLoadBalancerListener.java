@@ -50,7 +50,7 @@ public class UpdateLoadBalancerListener extends BaseListener {
         if (isRestAdapter()) {
             try {
                 LOG.debug(String.format("Updating load balancer '%d' STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb);
+                reverseProxyLoadBalancerVTMService.updateLoadBalancer(dbLoadBalancer, queueLb);
                 LOG.debug(String.format("Successfully updated load balancer '%d' in STM.", dbLoadBalancer.getId()));
                 atomSummary.append("algorithm: '").append(dbLoadBalancer.getAlgorithm().name()).append("', ");
             } catch (Exception e) {

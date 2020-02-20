@@ -40,7 +40,7 @@ public class UpdateConnectionLoggingListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Updating connection logging for load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb);
+                reverseProxyLoadBalancerVTMService.updateLoadBalancer(dbLoadBalancer, queueLb);
                 LOG.debug(String.format("Successfully updated connection logging for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Updating connection logging for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));

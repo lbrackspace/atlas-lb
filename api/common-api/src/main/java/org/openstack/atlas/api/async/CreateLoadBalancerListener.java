@@ -54,7 +54,7 @@ public class CreateLoadBalancerListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug("Creating load balancer in STM...");
-                reverseProxyLoadBalancerStmService.createLoadBalancer(dbLoadBalancer);
+                reverseProxyLoadBalancerVTMService.createLoadBalancer(dbLoadBalancer);
                 LOG.debug("Successfully created a load balancer in STM.");
             } else {
                 LOG.debug("Creating load balancer in ZXTM...");

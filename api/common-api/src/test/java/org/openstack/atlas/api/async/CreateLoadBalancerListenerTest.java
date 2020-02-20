@@ -8,7 +8,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
@@ -57,7 +57,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
@@ -92,7 +92,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
         createLoadBalancerListener = new CreateLoadBalancerListener();
         createLoadBalancerListener.setLoadBalancerService(loadBalancerService);
         createLoadBalancerListener.setNotificationService(notificationService);
-        createLoadBalancerListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        createLoadBalancerListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         createLoadBalancerListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         createLoadBalancerListener.setUsageEventCollection(usageEventCollection);
         createLoadBalancerListener.setConfiguration(config);
@@ -195,7 +195,7 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
 
         createLoadBalancerListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).createLoadBalancer(lb);
+        verify(reverseProxyLoadBalancerVTMService).createLoadBalancer(lb);
         verify(usageEventCollection).processZeroUsageEvent(eq(lb), eq(UsageEvent.CREATE_LOADBALANCER), Matchers.any(Calendar.class));
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
         Assert.assertTrue(checkNodeHelper(lb.getNodes(), NodeStatus.ONLINE)); // This is how I decided to test NodesHelper
@@ -232,12 +232,12 @@ public class CreateLoadBalancerListenerTest extends STMTestBase {
     public void testCreateInvalidLoadBalancer() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).createLoadBalancer(lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).createLoadBalancer(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         createLoadBalancerListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).createLoadBalancer(lb);
+        verify(reverseProxyLoadBalancerVTMService).createLoadBalancer(lb);
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ERROR);
         Assert.assertTrue(checkNodeHelper(lb.getNodes(), NodeStatus.OFFLINE)); // This is how I decided to test NodesHelper
         verify(loadBalancerService).update(lb);

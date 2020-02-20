@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.api.mgmt.async.util.STMTestBase;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
@@ -43,7 +43,7 @@ public class SyncListenerTest extends STMTestBase {
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerStmService;
     @Mock
     private RestApiConfiguration config;
 
@@ -64,7 +64,7 @@ public class SyncListenerTest extends STMTestBase {
         syncListener.setNotificationService(notificationService);
         syncListener.setUsageEventCollection(usageEventCollection);
         syncListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
-        syncListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        syncListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerStmService);
         syncListener.setConfiguration(config);
     }
 

@@ -42,7 +42,7 @@ public class CreateRateLimitListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug("Creating rate limit in STM...");
-                reverseProxyLoadBalancerStmService.setRateLimit(dbLoadBalancer, queueLb.getRateLimit());
+                reverseProxyLoadBalancerVTMService.setRateLimit(dbLoadBalancer, queueLb.getRateLimit());
                 LOG.debug("Successfully created rate limit in STM.");
             } else {
                 LOG.debug("Creating rate limit in ZXTM...");

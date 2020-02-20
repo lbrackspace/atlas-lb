@@ -85,7 +85,7 @@ public class StmAdapterResources {
                     client.updateVirtualServer(vsName, curVs);
                 } catch (Exception ex2) {
                     String em2 = String.format("Error updating virtual server while reverting to previous configuration" +
-                            ": %s RollBack aborted \n Exception: %s "
+                                    ": %s RollBack aborted \n Exception: %s "
                             , vsName, ex2);
                     LOG.error(em2);
                 }
@@ -118,7 +118,7 @@ public class StmAdapterResources {
                     client.updateVirtualServer(vsName, curVs);
                 } catch (Exception ex2) {
                     String em2 = String.format("Error updating virtual server while reverting to previous configuration" +
-                            ": %s RollBack aborted \n Exception: %s "
+                                    ": %s RollBack aborted \n Exception: %s "
                             , vsName, ex2);
                     LOG.error(em2);
                 }
@@ -220,7 +220,7 @@ public class StmAdapterResources {
                     client.updatePool(poolName, curPool);
                 } catch (Exception ex2) {
                     String em2 = String.format("Error updating node pool while reverting to previous configuration" +
-                            ": %s RollBack aborted \n Exception: %s "
+                                    ": %s RollBack aborted \n Exception: %s "
                             , poolName, ex2);
                     LOG.error(em2);
                 }
@@ -273,7 +273,7 @@ public class StmAdapterResources {
                     client.updatePool(poolName, curPool);
                 } catch (Exception ex2) {
                     String em2 = String.format("Error updating node pool while reverting to previous configuration" +
-                            ": %s RollBack aborted \n Exception: %s "
+                                    ": %s RollBack aborted \n Exception: %s "
                             , poolName, ex2);
                     LOG.error(em2);
                 }
@@ -312,7 +312,7 @@ public class StmAdapterResources {
                         client.updateTrafficIp(vsName, curTig);
                     } catch (Exception ex2) {
                         String em2 = String.format("Error updating virtual ips while attempting to set previous configuration" +
-                                ": %s RollBack aborted \n Exception: %s"
+                                        ": %s RollBack aborted \n Exception: %s"
                                 , vsName, ex2);
                         LOG.error(em2);
                     }
@@ -415,7 +415,7 @@ public class StmAdapterResources {
                     client.updateProtection(protectionName, curProtection);
                 } catch (Exception ex2) {
                     String em2 = String.format("Error updating protection while attempting to set previous configuration" +
-                            ": %s RollBack aborted \n Exception: %s"
+                                    ": %s RollBack aborted \n Exception: %s"
                             , protectionName, ex2);
                     LOG.error(em2);
                 }
@@ -450,7 +450,7 @@ public class StmAdapterResources {
                     client.updateProtection(protectionName, curPro);
                 } catch (Exception ex2) {
                     String em2 = String.format("Error updating protection while attempting to set previous configuration" +
-                            ": %s RollBack aborted \n Exception: %s"
+                                    ": %s RollBack aborted \n Exception: %s"
                             , protectionName, ex2);
                     LOG.error(em2);
                 }
@@ -631,7 +631,7 @@ public class StmAdapterResources {
                         client.updateVirtualServer(vsName, curVs);
                     } catch (Exception ex2) {
                         String em2 = String.format("Error updating virtual server while reverting to previous configuration" +
-                                ": %s RollBack aborted \n Exception: %s "
+                                        ": %s RollBack aborted \n Exception: %s "
                                 , vsName, ex2);
                         LOG.error(em2);
                     }

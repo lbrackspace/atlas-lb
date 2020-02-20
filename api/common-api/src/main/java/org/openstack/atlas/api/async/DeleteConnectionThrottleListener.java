@@ -40,7 +40,7 @@ public class DeleteConnectionThrottleListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug("Deleting connection throttle in STM...");
-                reverseProxyLoadBalancerStmService.deleteConnectionThrottle(dbLoadBalancer);
+                reverseProxyLoadBalancerVTMService.deleteConnectionThrottle(dbLoadBalancer);
                 LOG.debug("Successfully deleted connection throttle in Zeus.");
             } else {
                 LOG.debug("Deleting connection throttle in ZXTM...");

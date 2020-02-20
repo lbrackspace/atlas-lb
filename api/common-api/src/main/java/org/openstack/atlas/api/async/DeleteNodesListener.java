@@ -47,7 +47,7 @@ public class DeleteNodesListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in STM...", doomedIdsStr, msg.getLoadBalancerId()));
-                reverseProxyLoadBalancerStmService.removeNodes(dbLoadBalancer, doomedNodes);
+                reverseProxyLoadBalancerVTMService.removeNodes(dbLoadBalancer, doomedNodes);
                 // Removes node from load balancer in DB
                 dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, doomedNodes);
                 LOG.debug(String.format("Successfully removed nodes '[%s]' from load balancer '%d' in Zeus.", doomedIdsStr, msg.getLoadBalancerId()));

@@ -53,7 +53,7 @@ public class MgmtCreateSuspensionListener extends BaseListener {
                 try {
                     if (isRestAdapter()) {
                         LOG.debug(String.format("Suspending load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                        reverseProxyLoadBalancerStmService.suspendLoadBalancer(dbLoadBalancer);
+                        reverseProxyLoadBalancerVTMService.suspendLoadBalancer(dbLoadBalancer);
                         LOG.debug(String.format("Successfully suspended load balancer '%d' in STM.", dbLoadBalancer.getId()));
                     } else {
                         LOG.debug(String.format("Suspending load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));

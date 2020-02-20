@@ -11,7 +11,7 @@ import static org.openstack.atlas.service.domain.entities.LoadBalancerProtocol.H
 import static org.openstack.atlas.service.domain.entities.NodeCondition.DISABLED;
 import static org.openstack.atlas.service.domain.entities.NodeCondition.ENABLED;
 
-public class STMTestBase {
+public class VTMTestBase {
     public static final Integer SLEEP_TIME_BETWEEN_TESTS = 500;
 
     public static final Integer TEST_ACCOUNT_ID = 999998;
@@ -68,7 +68,7 @@ public class STMTestBase {
 
         lb.setUserPages(new UserPages());
 
-        STMTestBase.lb = lb;
+        VTMTestBase.lb = lb;
     }
 
     protected static String loadBalancerName() throws InsufficientRequestException {

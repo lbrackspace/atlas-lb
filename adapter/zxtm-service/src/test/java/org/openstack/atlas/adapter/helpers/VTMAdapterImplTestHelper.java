@@ -6,7 +6,7 @@ import java.util.*;
 
 import static org.mockito.Mockito.spy;
 
-public class StmAdapterImplTestHelper {
+public class VTMAdapterImplTestHelper {
 
     static String username = "username";
     static String ipv41 = "10.0.0.1";

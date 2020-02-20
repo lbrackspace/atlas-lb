@@ -24,7 +24,7 @@ public class UpdateRateLimitListener extends BaseListener {
         if (isRestAdapter()) {
             LOG.debug("Rate limit attributes verified. Continuing...");
             LOG.debug("Updating rate limit in STM...");
-            reverseProxyLoadBalancerStmService.updateRateLimit(dbLoadBalancer, queueLb.getRateLimit());
+            reverseProxyLoadBalancerVTMService.updateRateLimit(dbLoadBalancer, queueLb.getRateLimit());
         } else {
             LOG.debug("Rate limit attributes verified. Continuing...");
             LOG.debug("Updating rate limit in ZXTM...");

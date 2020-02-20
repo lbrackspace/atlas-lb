@@ -1,6 +1,6 @@
 package org.openstack.atlas.adapter.helpers;
 
-public class StmTestConstants {
+public class VTMTestConstants {
 
     public static final int LB_PORT = 80;
     public static final int LB_SECURE_PORT = 443;
