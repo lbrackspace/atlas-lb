@@ -1,14 +1,13 @@
-package org.openstack.atlas.adapter.stm;
+package org.openstack.atlas.adapter.vtm;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.StmConstants;
-import org.openstack.atlas.adapter.helpers.VTMResourceTranslator;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.stm.StmAdapterUtils;
 import org.openstack.atlas.adapter.stm.StmAdapterUtils.VSType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.UserPages;
