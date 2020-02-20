@@ -12,7 +12,7 @@ import org.mockito.Spy;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.helpers.SslTerminationUsage;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -56,7 +56,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private UsageEventCollection usageEventCollection;
     @Mock
@@ -79,7 +79,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         updateSslTerminationListener = new UpdateSslTerminationListener();
         updateSslTerminationListener.setLoadBalancerService(loadBalancerService);
         updateSslTerminationListener.setNotificationService(notificationService);
-        updateSslTerminationListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateSslTerminationListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         updateSslTerminationListener.setUsageEventCollection(usageEventCollection);
         updateSslTerminationListener.setConfiguration(config);
     }
@@ -114,7 +114,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection, times(2)).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(reverseProxyLoadBalancerVTMService).updateSslTermination(lb, queTermination);
         //TODO: Update for new usage behaviour...
 //        verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_ONLY_ON), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
@@ -144,7 +144,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection, times(2)).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(reverseProxyLoadBalancerVTMService).updateSslTermination(lb, queTermination);
         verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_MIXED_ON), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveSslTerminationEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, SSL_TERMINATION_ID, EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), EventType.UPDATE_SSL_TERMINATION, CategoryType.UPDATE, EventSeverity.INFO);
@@ -172,7 +172,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection, times(2)).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(reverseProxyLoadBalancerVTMService).updateSslTermination(lb, queTermination);
         verify(usageEventCollection).processUsageEvent(eq(usages), eq(lb), eq(UsageEvent.SSL_OFF), any(Calendar.class));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveSslTerminationEvent(USERNAME, ACCOUNT_ID, LOAD_BALANCER_ID, SSL_TERMINATION_ID, EntryHelper.UPDATE_SSL_TERMINATION_TITLE, EntryHelper.createSslTerminationSummary(sslTermination), EventType.UPDATE_SSL_TERMINATION, CategoryType.UPDATE, EventSeverity.INFO);
@@ -207,7 +207,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         when(usageEventCollection.getUsage(lb)).thenReturn(usages);
 //        when(loadBalancerService.get(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).updateSslTermination(lb, queTermination);
         when(config.getString((ConfigurationKey) any())).thenReturn("REST");
 
         updateSslTerminationListener.doOnMessage(objectMessage);
@@ -215,7 +215,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(loadBalancerService).getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID);
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(usageEventCollection).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).updateSslTermination(lb, queTermination);
+        verify(reverseProxyLoadBalancerVTMService).updateSslTermination(lb, queTermination);
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ERROR);
         verify(loadBalancerService).update(lb);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus", lb.getId())));

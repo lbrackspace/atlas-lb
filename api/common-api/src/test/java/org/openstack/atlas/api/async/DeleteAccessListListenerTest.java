@@ -8,7 +8,8 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.AccessList;
@@ -51,7 +52,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
@@ -77,7 +78,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
         deleteAccessListListener = new DeleteAccessListListener();
         deleteAccessListListener.setLoadBalancerService(loadBalancerService);
         deleteAccessListListener.setNotificationService(notificationService);
-        deleteAccessListListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        deleteAccessListListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         deleteAccessListListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteAccessListListener.setAccessListService(accessListService);
         deleteAccessListListener.setConfiguration(config);
@@ -105,7 +106,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteAccessList(lb, deletionList);
+        verify(reverseProxyLoadBalancerVTMService).deleteAccessList(lb, deletionList);
         verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(ACCESS_LIST_ID), anyString(), anyString(), eq(EventType.DELETE_ACCESS_LIST), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService).update(lb);
@@ -120,7 +121,7 @@ public class DeleteAccessListListenerTest extends STMTestBase {
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteAccessList(lb, deletionList);
+        verify(reverseProxyLoadBalancerVTMService).deleteAccessList(lb, deletionList);
         verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(ACCESS_LIST_ID), anyString(), anyString(), eq(EventType.DELETE_ACCESS_LIST), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService).update(lb);
@@ -144,11 +145,11 @@ public class DeleteAccessListListenerTest extends STMTestBase {
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).deleteAccessList(eq(lb), anyList());
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).deleteAccessList(eq(lb), anyList());
 
         deleteAccessListListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteAccessList(eq(lb), anyList());
+        verify(reverseProxyLoadBalancerVTMService).deleteAccessList(eq(lb), anyList());
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveAccessListEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyInt(), anyString(), anyString(), eq(EventType.DELETE_ACCESS_LIST), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));

@@ -100,7 +100,8 @@
         <property name="connectionLoggingService" ref="connectionLoggingService"/>
         <property name="contentCachingService" ref="contentCachingService"/>
         <property name="sessionPersistenceService" ref="sessionPersistenceService"/>
-        <property name="reverseProxyLoadBalancerStmService" ref="reverseProxyLoadBalancerStmService"/>
+<!--        <property name="reverseProxyLoadBalancerStmService" ref="reverseProxyLoadBalancerStmService"/>-->
+        <property name="reverseProxyLoadBalancerVTMService" ref="reverseProxyLoadBalancerVTMService"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
         <property name="accessListService" ref="accessListService"/>
         <property name="rateLimitingService" ref="rateLimitingService"/>
@@ -120,6 +121,17 @@
         <property name="healthMonitorService" ref="healthMonitorService"/>
         <property name="hostService" ref="hostService"/>
         <property name="reverseProxyLoadBalancerStmAdapter" ref="reverseProxyLoadBalancerStmAdapter"/>
+        <property name="configuration" ref="configuration"/>
+        <property name="atlasCache" ref="atlasCache"/>
+    </bean>
+
+    <bean id="reverseProxyLoadBalancerVTMService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceVTMImpl">
+        <property name="notificationService" ref="notificationService"/>
+        <property name="loadBalancerService" ref="loadBalancerService"/>
+        <property name="healthMonitorService" ref="healthMonitorService"/>
+        <property name="hostService" ref="hostService"/>
+        <property name="reverseProxyLoadBalancerStmAdapter" ref="reverseProxyLoadBalancerStmAdapter"/>
+        <property name="reverseProxyLoadBalancerVTMAdapter" ref="reverseProxyLoadBalancerVTMAdapter"/>
         <property name="configuration" ref="configuration"/>
         <property name="atlasCache" ref="atlasCache"/>
     </bean>

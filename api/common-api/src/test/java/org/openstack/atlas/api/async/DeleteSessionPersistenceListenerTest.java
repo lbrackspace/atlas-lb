@@ -8,7 +8,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -40,7 +40,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
@@ -58,7 +58,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
         deleteSessionPersistenceListener = new DeleteSessionPersistenceListener();
         deleteSessionPersistenceListener.setLoadBalancerService(loadBalancerService);
         deleteSessionPersistenceListener.setNotificationService(notificationService);
-        deleteSessionPersistenceListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        deleteSessionPersistenceListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         deleteSessionPersistenceListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteSessionPersistenceListener.setConfiguration(config);
     }
@@ -75,7 +75,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
 
         deleteSessionPersistenceListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
         Assert.assertEquals(lb.getSessionPersistence(), SessionPersistence.NONE);
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService).update(lb);
@@ -98,12 +98,12 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
     public void testDeleteInvalidSessionPersistence() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteSessionPersistenceListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_SESSION_PERSISTENCE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));

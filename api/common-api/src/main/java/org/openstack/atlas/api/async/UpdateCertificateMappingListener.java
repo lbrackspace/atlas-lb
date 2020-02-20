@@ -41,7 +41,7 @@ public class UpdateCertificateMappingListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Updating session persistence for load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.updateCertificateMapping(dbLoadBalancer, queueCertMapping);
+                reverseProxyLoadBalancerVTMService.updateCertificateMapping(dbLoadBalancer, queueCertMapping);
                 LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
             } else {
                 LOG.info(String.format("Adding/Updating certificate mapping '%d' for load balancer '%d' in ZXTM...", queueCertMapping.getId(), dbLoadBalancer.getId()));

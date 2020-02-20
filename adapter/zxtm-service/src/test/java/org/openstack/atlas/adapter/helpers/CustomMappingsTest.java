@@ -3,47 +3,18 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
-import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
-import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.Stats;
-import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
-import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
-import org.rackspace.stingray.client.bandwidth.BandwidthBasic;
-import org.rackspace.stingray.client.bandwidth.BandwidthProperties;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
-import org.rackspace.stingray.client.exception.ClientException;
-import org.rackspace.stingray.client.monitor.Monitor;
-import org.rackspace.stingray.client.monitor.MonitorBasic;
-import org.rackspace.stingray.client.monitor.MonitorHttp;
-import org.rackspace.stingray.client.monitor.MonitorProperties;
-import org.rackspace.stingray.client.pool.*;
-import org.rackspace.stingray.client.protection.Protection;
-import org.rackspace.stingray.client.protection.ProtectionAccessRestriction;
-import org.rackspace.stingray.client.protection.ProtectionConnectionLimiting;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.traffic.ip.TrafficIpBasic;
-import org.rackspace.stingray.client.virtualserver.*;
 
-import java.io.IOException;
 import java.util.*;
 
-import static org.mockito.Mockito.when;
-
 @RunWith(Enclosed.class)
-public class CustomMappingsTest extends STMTestBase {
+public class CustomMappingsTest extends VTMTestBase {
 
 
     public static class WhenMappingVirtualServerStats {

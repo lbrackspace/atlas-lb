@@ -1,7 +1,7 @@
-package org.openstack.atlas.adapter.stm;
+package org.openstack.atlas.adapter.vtm;
 
-import org.junit.Assert;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.VTMAdapterImplTestHelper;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
@@ -26,15 +25,15 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.rackspace.stingray.client.StingrayRestClient;
-import org.rackspace.stingray.client.monitor.Monitor;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.pool.PoolBasic;
-import org.rackspace.stingray.client.pool.PoolProperties;
-import org.rackspace.stingray.client.protection.Protection;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.virtualserver.*;
+import org.rackspace.vtm.client.monitor.Monitor;
+import org.rackspace.vtm.client.pool.Pool;
+import org.rackspace.vtm.client.pool.PoolBasic;
+import org.rackspace.vtm.client.pool.PoolProperties;
+import org.rackspace.vtm.client.protection.Protection;
+import org.rackspace.vtm.client.ssl.keypair.Keypair;
+import org.rackspace.vtm.client.traffic.ip.TrafficIp;
+import org.rackspace.vtm.client.virtualserver.*;
+import org.rackspace.vtm.client.VTMRestClient;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -45,25 +44,25 @@ import java.util.Set;
 import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
-public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
+public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest({ResourceTranslator.class})
+    @PrepareForTest({VTMResourceTranslator.class})
     public static class WhenModifyingLoadbalancerResources {
         private String vsName;
         private String secureVsName;
         private LoadBalancer loadBalancer;
-        private ResourceTranslator resourceTranslator;
+        private VTMResourceTranslator resourceTranslator;
 
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -73,12 +72,12 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
             secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
 
-            resourceTranslator = spy(new ResourceTranslator());
-            PowerMockito.mockStatic(ResourceTranslator.class);
-            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
             doNothing().when(adapterSpy).setErrorFile(config, loadBalancer, loadBalancer.getUserPages().getErrorpage());
             doNothing().when(adapterSpy).deleteVirtualIps(config, loadBalancer);
         }
@@ -92,7 +91,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testCreateLoadBalancer() throws Exception {
             adapterSpy.createLoadBalancer(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             verify(resources).createPersistentClasses(config);
             //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
@@ -107,7 +106,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testUpdateLoadBalancer() throws Exception {
             adapterSpy.updateLoadBalancer(config, loadBalancer, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator, times(1)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, true, true);
             //verify(resources).updateHealthMonitor(eq(config), eq(client), eq(vsName), Matchers.any(Monitor.class)); //TODO: this should be passing, but if the LB has SSL it won't
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
@@ -123,7 +122,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testDeleteLoadBalancer() throws Exception {
             adapterSpy.deleteLoadBalancer(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resources).deleteRateLimit(config, loadBalancer, vsName);
             verify(resources).deleteHealthMonitor(client, vsName);
             verify(resources).deleteProtection(client, vsName);
@@ -137,20 +136,20 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest({ResourceTranslator.class, TrafficScriptHelper.class})
+    @PrepareForTest({VTMResourceTranslator.class, TrafficScriptHelper.class})
     public static class WhenModifyingVirtualIpResources {
         private String vsName;
         private LoadBalancer loadBalancer;
-        private ResourceTranslator resourceTranslator;
+        private VTMResourceTranslator resourceTranslator;
 
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -159,13 +158,13 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             loadBalancer = generateLoadBalancer();
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
-            resourceTranslator = spy(new ResourceTranslator());
-            PowerMockito.mockStatic(ResourceTranslator.class);
-            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
             PowerMockito.mockStatic(TrafficScriptHelper.class);
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
         }
 
         @After
@@ -177,7 +176,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testUpdateVirtualIps() throws Exception {
             adapterSpy.updateVirtualIps(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             verify(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
             verify(resources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
@@ -192,7 +191,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
             adapterSpy.deleteVirtualIps(config, loadBalancer, vipsToDelete);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator, times(2)).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
             verify(loadBalancer.getLoadBalancerJoinVipSet()).removeAll(anySetOf(LoadBalancerJoinVip.class));
             verify(loadBalancer.getLoadBalancerJoinVipSet()).addAll(anySetOf(LoadBalancerJoinVip.class));
@@ -204,20 +203,20 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest(ResourceTranslator.class)
+    @PrepareForTest(VTMResourceTranslator.class)
     public static class WhenModifyingHealthMonitorResources {
         private String vsName;
         private LoadBalancer loadBalancer;
-        private ResourceTranslator resourceTranslator;
+        private VTMResourceTranslator resourceTranslator;
 
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -226,12 +225,12 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             loadBalancer = generateLoadBalancer();
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
-            resourceTranslator = spy(new ResourceTranslator());
-            PowerMockito.mockStatic(ResourceTranslator.class);
-            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
         }
 
         @After
@@ -243,7 +242,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testUpdateHealthMonitor() throws Exception {
             adapterSpy.updateHealthMonitor(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
             verify(resources).updateHealthMonitor(eq(client), eq(vsName), Matchers.any(Monitor.class));
             verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
@@ -254,7 +253,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testDeleteHealthMonitor() throws Exception {
             adapterSpy.deleteHealthMonitor(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resources).deleteHealthMonitor(client, vsName);
             verify(client).destroy();
         }
@@ -262,20 +261,20 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest(ResourceTranslator.class)
+    @PrepareForTest(VTMResourceTranslator.class)
     public static class WhenModifyingProtectionResources {
         private String vsName;
         private LoadBalancer loadBalancer;
-        private ResourceTranslator resourceTranslator;
+        private VTMResourceTranslator resourceTranslator;
 
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -284,12 +283,12 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             loadBalancer = generateLoadBalancer();
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
-            resourceTranslator = spy(new ResourceTranslator());
-            PowerMockito.mockStatic(ResourceTranslator.class);
-            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
         }
 
         @After
@@ -301,7 +300,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testUpdateProtection() throws Exception {
             adapterSpy.updateProtection(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translateProtectionResource(loadBalancer);
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             verify(client).destroy();
@@ -311,7 +310,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testDeleteProtection() throws Exception {
             adapterSpy.deleteProtection(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resources).deleteProtection(client, vsName);
             verify(client).destroy();
         }
@@ -319,21 +318,21 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest(ResourceTranslator.class)
+    @PrepareForTest(VTMResourceTranslator.class)
     public static class WhenModifyingBandwidthResources { //Lumping ConnectionThrottle and RateLimit together here, even though they aren't both Bandwidth related...
         private String vsName;
         private LoadBalancer loadBalancer;
-        private ResourceTranslator resourceTranslator;
+        private VTMResourceTranslator resourceTranslator;
         private RateLimit testRateLimit;
 
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -343,14 +342,14 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
             testRateLimit = new RateLimit();
 
-            resourceTranslator = spy(new ResourceTranslator());
-            PowerMockito.mockStatic(ResourceTranslator.class);
-            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
             doNothing().when(adapterSpy).updateProtection(config, loadBalancer);
             doNothing().when(adapterSpy).deleteProtection(config, loadBalancer);
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
         }
 
         @After
@@ -426,13 +425,13 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         private File errorFile;
 
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -441,10 +440,10 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             loadBalancer = generateLoadBalancer();
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
             errorContent = "My Error Content";
-            errorFile = new StmAdapterResources().getFileWithContent(errorContent);
+            errorFile = new VTMAdapterResources().getFileWithContent(errorContent);
 
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
             when(resources.getFileWithContent(errorContent)).thenReturn(errorFile);
         }
 
@@ -457,7 +456,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testSetErrorFile() throws Exception {
             adapterSpy.setErrorFile(config, loadBalancer, errorContent);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resources).setErrorFile(config, client, loadBalancer, errorContent);
             verify(client).destroy();
         }
@@ -466,7 +465,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testDeleteErrorFile() throws Exception {
             adapterSpy.deleteErrorFile(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resources).deleteErrorFile(config, client, loadBalancer);
             verify(client).destroy();
         }
@@ -475,7 +474,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testUploadDefaultErrorFile() throws Exception {
             adapterSpy.uploadDefaultErrorFile(config, errorContent);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(client).createExtraFile(Constants.DEFAULT_ERRORFILE, errorFile);
             verify(client).destroy();
         }
@@ -483,21 +482,21 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest(ResourceTranslator.class)
+    @PrepareForTest(VTMResourceTranslator.class)
     public static class WhenModifyingPoolResources {
         private String vsName;
         private LoadBalancer loadBalancer;
-        private ResourceTranslator resourceTranslator;
+        private VTMResourceTranslator resourceTranslator;
         private List<Node> doomedNodes;
 
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -508,19 +507,19 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             doomedNodes = new ArrayList<Node>();
             doomedNodes.add(loadBalancer.getNodes().iterator().next());
 
-            resourceTranslator = spy(new ResourceTranslator());
-            PowerMockito.mockStatic(ResourceTranslator.class);
-            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
             doNothing().when(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
             Pool p = new Pool();
             PoolProperties pp = new PoolProperties();
             PoolBasic pb = new PoolBasic();
             pp.setBasic(pb);
             p.setProperties(pp);
-            when(resources.getPool(Matchers.any(StingrayRestClient.class), Matchers.anyString())).thenReturn(p);
+            when(resources.getPool(Matchers.any(VTMRestClient.class), Matchers.anyString())).thenReturn(p);
         }
 
         @After
@@ -532,7 +531,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testSetNodes() throws Exception {
             adapterSpy.setNodes(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translatePoolResource(vsName, loadBalancer, loadBalancer);
             verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
             verify(client).destroy();
@@ -546,7 +545,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
             Assert.assertTrue(loadBalancer.getNodes().size() == numNodes - 1);
             Assert.assertFalse(loadBalancer.getNodes().contains(doomedNodes.get(0)));
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translatePoolResource(vsName, loadBalancer, loadBalancer);
             verify(resources).updatePool(eq(client), eq(vsName), Matchers.any(Pool.class));
             verify(client).destroy();
@@ -555,23 +554,23 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest(ResourceTranslator.class)
+    @PrepareForTest(VTMResourceTranslator.class)
     public static class WhenSuspendingLoadBalancer {
         private String vsName;
         private String secureVsName;
         private LoadBalancer loadBalancer;
-        private ResourceTranslator resourceTranslator;
+        private VTMResourceTranslator resourceTranslator;
         private VirtualServer virtualServer;
         private VirtualServer virtualServerSecure;
 
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -587,12 +586,12 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             virtualServerSecure.setProperties(new VirtualServerProperties());
             virtualServerSecure.getProperties().setBasic(new VirtualServerBasic());
 
-            resourceTranslator = spy(new ResourceTranslator());
-            PowerMockito.mockStatic(ResourceTranslator.class);
-            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
 
             when(client.getVirtualServer(vsName)).thenReturn(virtualServer);
             when(client.getVirtualServer(secureVsName)).thenReturn(virtualServerSecure);
@@ -609,7 +608,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             virtualServerSecure.getProperties().getBasic().setEnabled(true);
             adapterSpy.addSuspension(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(client).getVirtualServer(vsName);
             Assert.assertFalse(virtualServer.getProperties().getBasic().getEnabled());
             verify(resources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
@@ -627,7 +626,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             virtualServerSecure.getProperties().getBasic().setEnabled(false);
             adapterSpy.removeSuspension(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(client).getVirtualServer(vsName);
             Assert.assertTrue(virtualServer.getProperties().getBasic().getEnabled());
             verify(resources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
@@ -642,22 +641,22 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest({ResourceTranslator.class})
+    @PrepareForTest({VTMResourceTranslator.class})
     public static class WhenModifyingSSLResources {
         private String vsName;
         private String secureVsName;
         private LoadBalancer loadBalancer;
-        private ResourceTranslator resourceTranslator;
+        private VTMResourceTranslator resourceTranslator;
         private ZeusSslTermination sslTermination;
 
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -668,12 +667,12 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
             sslTermination = new ZeusSslTermination();
 
-            resourceTranslator = spy(new ResourceTranslator());
-            PowerMockito.mockStatic(ResourceTranslator.class);
-            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
             doNothing().when(resources).updateKeypair(eq(client), eq(vsName), Matchers.any(Keypair.class));
             doNothing().when(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             doNothing().when(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
@@ -691,7 +690,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testUpdateSslTermination() throws Exception {
             adapterSpy.updateSslTermination(config, loadBalancer, sslTermination);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
             verify(resourceTranslator).translateKeypairResource(loadBalancer, true);
             verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
@@ -706,7 +705,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testUpdateSslCiphers() throws Exception {
             adapterSpy.updateSslTermination(config, loadBalancer, sslTermination);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
             verify(resourceTranslator).translateKeypairResource(loadBalancer, true);
             verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
@@ -721,7 +720,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         public void testRemoveSslTermination() throws Exception {
             adapterSpy.removeSslTermination(config, loadBalancer);
 
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resources).deleteKeypair(client, secureVsName);
             verify(resources).deleteVirtualServer(client, secureVsName);
             verify(client).destroy();
@@ -730,12 +729,12 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
     @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest({ResourceTranslator.class, ZeusUtils.class, CertUtils.class, PemUtils.class})
+    @PrepareForTest({VTMResourceTranslator.class, ZeusUtils.class, CertUtils.class, PemUtils.class})
     public static class WhenModifyingCertificateMappingResources {
         private String vsName;
         private String secureVsName;
         private LoadBalancer loadBalancer;
-        private ResourceTranslator resourceTranslator;
+        private VTMResourceTranslator resourceTranslator;
         private CertificateMapping certificateMapping;
 
         @Mock
@@ -743,13 +742,13 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         @Mock
         private CertUtils certUtils;
         @Mock
-        private StmAdapterResources resources;
+        private VTMAdapterResources resources;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
         @Spy
-        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
         @Before
         public void standUp() throws Exception {
@@ -775,14 +774,14 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
                     certificateMapping.getCertificate(),
                     certificateMapping.getIntermediateCertificate())).thenReturn(zcf);
 
-            resourceTranslator = spy(new ResourceTranslator());
-            PowerMockito.mockStatic(ResourceTranslator.class);
-            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
 
             zeusUtils = spy(new ZeusUtils());
 
             when(adapterSpy.getResources()).thenReturn(resources);
-            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
             doNothing().when(resources).updateKeypair(eq(client), anyString(), Matchers.any(Keypair.class));
             doNothing().when(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             doNothing().when(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));
@@ -818,7 +817,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
             String cname = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
                     loadBalancer.getAccountId(), certificateMapping.getId());
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
             verify(resourceTranslator).translateKeypairMappingsResource(loadBalancer, true);
             verify(resources).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
@@ -848,7 +847,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
             String cname = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
                     loadBalancer.getAccountId(), certificateMapping.getId());
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
             verify(resourceTranslator).translateKeypairMappingsResource(loadBalancer, true);
             verify(resources).deleteKeypair(client, ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
@@ -881,7 +880,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             String cname = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
                     loadBalancer.getAccountId(), certificateMapping.getId());
             // Called for each resource
-            verify(resources, times(3)).loadSTMRestClient(config);
+            verify(resources, times(3)).loadVTMRestClient(config);
             verify(resourceTranslator, times(2)).translateVirtualServerResource(config, secureVsName, loadBalancer);
             verify(resourceTranslator, times(2)).translateKeypairMappingsResource(loadBalancer, true);
             verify(resources, times(1)).deleteKeypair(client, ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
@@ -926,7 +925,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             String cname = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
                     loadBalancer.getAccountId(), certificateMapping.getId());
             // Called for each resource
-            verify(resources, times(3)).loadSTMRestClient(config);
+            verify(resources, times(3)).loadVTMRestClient(config);
 //            verify(zeusUtils, times(2)).buildZeusCrtFileLbassValidation(anyString(), anyString(), anyString());
             verify(resourceTranslator, times(2)).translateVirtualServerResource(config, secureVsName, loadBalancer);
             verify(resourceTranslator, times(2)).translateKeypairMappingsResource(loadBalancer, true);
@@ -945,7 +944,7 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
             adapterSpy.deleteCertificateMapping(config, loadBalancer, certificateMapping);
             String cn = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
                     loadBalancer.getAccountId(), certificateMapping.getId());
-            verify(resources).loadSTMRestClient(config);
+            verify(resources).loadVTMRestClient(config);
             verify(resources).deleteKeypair(client, cn);
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client).destroy();

@@ -39,7 +39,7 @@ public class DeleteRateLimitListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug("Deleting rate limit in STM...");
-                reverseProxyLoadBalancerStmService.deleteRateLimit(dbLoadBalancer);
+                reverseProxyLoadBalancerVTMService.deleteRateLimit(dbLoadBalancer);
                 LOG.debug("Successfully deleted rate limit in STM.");
             } else {
                 LOG.debug("Deleting rate limit in ZXTM...");

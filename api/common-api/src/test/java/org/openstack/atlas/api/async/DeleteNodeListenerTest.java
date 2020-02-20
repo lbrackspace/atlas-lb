@@ -8,7 +8,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -47,7 +47,7 @@ public class DeleteNodeListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
@@ -71,7 +71,7 @@ public class DeleteNodeListenerTest extends STMTestBase {
         deleteNodeListener.setLoadBalancerService(loadBalancerService);
         deleteNodeListener.setNodeService(nodeService);
         deleteNodeListener.setNotificationService(notificationService);
-        deleteNodeListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        deleteNodeListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         deleteNodeListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteNodeListener.setConfiguration(config);
     }
@@ -90,7 +90,7 @@ public class DeleteNodeListenerTest extends STMTestBase {
         Assert.assertTrue(lb.getNodes().contains(nodeToDelete));
         deleteNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
+        verify(reverseProxyLoadBalancerVTMService).removeNode(lb, nodeToDelete);
         verify(loadBalancerService).setStatusForOp(lb, LoadBalancerStatus.ACTIVE);
 //        Assert.assertEquals(LoadBalancerStatus.PENDING_UPDATE, lb.getStatus());
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ACTIVE);
@@ -112,12 +112,12 @@ public class DeleteNodeListenerTest extends STMTestBase {
     public void testDeleteInvalidNode() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).removeNode(lb, nodeToDelete);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).removeNode(lb, nodeToDelete);
+        verify(reverseProxyLoadBalancerVTMService).removeNode(lb, nodeToDelete);
         verify(loadBalancerService).setStatusForOp(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(nodeToDelete.getId()), anyString(), anyString(), eq(EventType.DELETE_NODE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));

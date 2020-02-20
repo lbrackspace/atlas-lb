@@ -10,13 +10,8 @@ import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.STMTestBase;
+import org.openstack.atlas.adapter.helpers.VTMTestBase;
 import org.openstack.atlas.adapter.helpers.StmConstants;
-import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -35,7 +30,7 @@ import java.util.Map;
 import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
-public class STMAdapterResourcesTest extends STMTestBase {
+public class VTMAdapterResourcesTest extends VTMTestBase {
 
     public static class MiscFunctions {
         private StmAdapterResources adapterResources;

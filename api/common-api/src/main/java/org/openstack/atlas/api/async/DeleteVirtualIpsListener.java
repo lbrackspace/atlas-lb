@@ -48,7 +48,7 @@ public class DeleteVirtualIpsListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Removing virtual ips from load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.deleteVirtualIps(dbLoadBalancer, vipIdsToDelete, loadBalancerService.getUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId()));
+                reverseProxyLoadBalancerVTMService.deleteVirtualIps(dbLoadBalancer, vipIdsToDelete, loadBalancerService.getUserPages(dataContainer.getLoadBalancerId(), dataContainer.getAccountId()));
                 LOG.debug(String.format("Successfully removed virtual ips from load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Removing virtual ips from load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));

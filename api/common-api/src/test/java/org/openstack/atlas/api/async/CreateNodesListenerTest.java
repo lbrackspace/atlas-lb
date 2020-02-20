@@ -9,7 +9,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -45,7 +45,7 @@ public class CreateNodesListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
@@ -70,7 +70,7 @@ public class CreateNodesListenerTest extends STMTestBase {
         createNodesListener = new CreateNodesListener();
         createNodesListener.setLoadBalancerService(loadBalancerService);
         createNodesListener.setNotificationService(notificationService);
-        createNodesListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        createNodesListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         createNodesListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         createNodesListener.setConfiguration(config);
     }
@@ -87,7 +87,7 @@ public class CreateNodesListenerTest extends STMTestBase {
 
         createNodesListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
+        verify(reverseProxyLoadBalancerVTMService).setNodes(lb);
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService).update(lb);
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.ACTIVE);
@@ -110,11 +110,11 @@ public class CreateNodesListenerTest extends STMTestBase {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).setNodes(lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).setNodes(lb);
 
         createNodesListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
+        verify(reverseProxyLoadBalancerVTMService).setNodes(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.CREATE_NODE), eq(CategoryType.CREATE), eq(EventSeverity.CRITICAL));

@@ -50,7 +50,7 @@ public class UpdateErrorFileListener extends BaseListener {
             try {
                 if (isRestAdapter()) {
                     LOG.debug("Attempting to set error file in STM...calling setErrorFile");
-                    reverseProxyLoadBalancerStmService.setErrorFile(dbLoadBalancer, content);
+                    reverseProxyLoadBalancerVTMService.setErrorFile(dbLoadBalancer, content);
                     LOG.debug("Successfully updated error file in zeus.");
                 } else {
                     LOG.debug("Attempting to set error file in ZXTM...calling setErrorFile");
@@ -71,7 +71,7 @@ public class UpdateErrorFileListener extends BaseListener {
             try {
                 if (isRestAdapter()) {
                     LOG.debug("Attempting to upload default error file in STM...calling uploadDefaultErrorFile");
-                    reverseProxyLoadBalancerStmService.uploadDefaultErrorFile(clusterId, content);
+                    reverseProxyLoadBalancerVTMService.uploadDefaultErrorFile(clusterId, content);
                     LOG.debug("Successfully uploaded default error file in zeus.");
                 } else {
                     LOG.debug("Attempting to upload default error file in ZXTM...calling uploadDefaultErrorFile");

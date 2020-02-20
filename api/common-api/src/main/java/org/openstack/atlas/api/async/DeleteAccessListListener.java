@@ -45,7 +45,7 @@ public class DeleteAccessListListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Deleting access list for load balancer '%s' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.deleteAccessList(dbLoadBalancer, accessListsToDelete);
+                reverseProxyLoadBalancerVTMService.deleteAccessList(dbLoadBalancer, accessListsToDelete);
                 LOG.debug(String.format("Access list successfully deleted for load balancer '%s' in Zeus.", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Deleting access list for load balancer '%s' in ZXTM...", dbLoadBalancer.getId()));

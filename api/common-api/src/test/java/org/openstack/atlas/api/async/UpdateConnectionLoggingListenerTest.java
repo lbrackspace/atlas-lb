@@ -7,7 +7,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -37,7 +37,7 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private RestApiConfiguration config;
 
@@ -53,7 +53,7 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
         updateConnectionLoggingListener = new UpdateConnectionLoggingListener();
         updateConnectionLoggingListener.setLoadBalancerService(loadBalancerService);
         updateConnectionLoggingListener.setNotificationService(notificationService);
-        updateConnectionLoggingListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateConnectionLoggingListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         updateConnectionLoggingListener.setConfiguration(config);
     }
 
@@ -70,7 +70,7 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_CONNECTION_LOGGING), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
     }
@@ -84,7 +84,7 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_CONNECTION_LOGGING), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
     }
@@ -104,12 +104,12 @@ public class UpdateConnectionLoggingListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidLogging() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateConnectionLoggingListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_CONNECTION_LOGGING), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));

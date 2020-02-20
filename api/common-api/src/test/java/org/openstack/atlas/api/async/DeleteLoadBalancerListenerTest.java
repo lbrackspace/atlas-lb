@@ -7,7 +7,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -45,7 +45,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
@@ -70,7 +70,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         deleteLoadBalancerListener = new DeleteLoadBalancerListener();
         deleteLoadBalancerListener.setLoadBalancerService(loadBalancerService);
         deleteLoadBalancerListener.setNotificationService(notificationService);
-        deleteLoadBalancerListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        deleteLoadBalancerListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         deleteLoadBalancerListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteLoadBalancerListener.setUsageEventCollection(usageEventCollection);
         deleteLoadBalancerListener.setSslTerminationService(sslTerminationService);
@@ -93,7 +93,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         deleteLoadBalancerListener.doOnMessage(objectMessage);
 
         verify(usageEventCollection).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
+        verify(reverseProxyLoadBalancerVTMService).deleteLoadBalancer(lb);
         verify(loadBalancerService).pseudoDelete(lb);
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.DELETED);
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_LOADBALANCER), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
@@ -111,7 +111,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         deleteLoadBalancerListener.doOnMessage(objectMessage);
 
         verify(usageEventCollection).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
+        verify(reverseProxyLoadBalancerVTMService).deleteLoadBalancer(lb);
         verify(sslTerminationService).deleteSslTermination(LOAD_BALANCER_ID, ACCOUNT_ID);
         verify(loadBalancerService).pseudoDelete(lb);
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.DELETED);
@@ -133,13 +133,13 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
     public void testDeleteInvalidLoadBalancer() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).deleteLoadBalancer(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteLoadBalancerListener.doOnMessage(objectMessage);
 
         verify(usageEventCollection).getUsage(lb);
-        verify(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
+        verify(reverseProxyLoadBalancerVTMService).deleteLoadBalancer(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()),  eq(String.format("Error deleting loadbalancer '%d' in Zeus.", lb.getId())));
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_LOADBALANCER), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));

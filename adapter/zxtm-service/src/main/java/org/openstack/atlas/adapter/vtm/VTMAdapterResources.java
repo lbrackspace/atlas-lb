@@ -1,15 +1,11 @@
-package org.openstack.atlas.adapter.stm;
+package org.openstack.atlas.adapter.vtm;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.StmConstants;
-import org.openstack.atlas.adapter.helpers.VTMResourceTranslator;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
-import org.openstack.atlas.adapter.stm.StmAdapterUtils.VSType;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.UserPages;
 import org.rackspace.vtm.client.VTMRestClient;
@@ -45,15 +41,15 @@ public class VTMAdapterResources {
         return new VTMRestClient(restEndpoint, config.getUsername(), config.getPassword());
     }
 
-    public Map<VSType, String> updateAppropriateVirtualServers(LoadBalancerEndpointConfiguration config, VTMResourceTranslator rt, LoadBalancer loadBalancer)
+    public Map<VTMAdapterUtils.VSType, String> updateAppropriateVirtualServers(LoadBalancerEndpointConfiguration config, VTMResourceTranslator rt, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException {
         VTMRestClient client = loadVTMRestClient(config);
-        Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+        Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
-        for (VSType vsType : vsNames.keySet()) {
+        for (VTMAdapterUtils.VSType vsType : vsNames.keySet()) {
             String vsName = vsNames.get(vsType);
 
-            if (vsType == VSType.REDIRECT_VS) {
+            if (vsType == VTMAdapterUtils.VSType.REDIRECT_VS) {
                 updateVirtualServer(client, vsName, rt.getcRedirectVServer());
             } else {
                 updateVirtualServer(client, vsName, rt.getcVServer());
@@ -465,9 +461,9 @@ public class VTMAdapterResources {
     public void createPersistentClasses(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException {
         VTMRestClient client = loadVTMRestClient(config);
         try {
-            client.getPersistence(StmConstants.HTTP_COOKIE);
+            client.getPersistence(VTMConstants.HTTP_COOKIE);
         } catch (VTMRestClientException clientException) {
-            LOG.error(String.format("Error retrieving Persistence Class '%s'.\n%s", StmConstants.HTTP_COOKIE,
+            LOG.error(String.format("Error retrieving Persistence Class '%s'.\n%s", VTMConstants.HTTP_COOKIE,
                     Arrays.toString(clientException.getStackTrace())));
         } catch (VTMRestClientObjectNotFoundException notFoundException) {
             Persistence persistence = new Persistence();
@@ -478,19 +474,19 @@ public class VTMAdapterResources {
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
-                LOG.info(String.format("Updating Persistence type %s...", StmConstants.HTTP_COOKIE));
-                client.createPersistence(StmConstants.HTTP_COOKIE, persistence);
-                LOG.info(String.format("Successfully updated Persistence type %s.", StmConstants.HTTP_COOKIE));
+                LOG.info(String.format("Updating Persistence type %s...", VTMConstants.HTTP_COOKIE));
+                client.createPersistence(VTMConstants.HTTP_COOKIE, persistence);
+                LOG.info(String.format("Successfully updated Persistence type %s.", VTMConstants.HTTP_COOKIE));
             } catch (Exception ex) {
-                LOG.error(String.format("Error creating Persistence Class '%s'.\n%s", StmConstants.HTTP_COOKIE,
+                LOG.error(String.format("Error creating Persistence Class '%s'.\n%s", VTMConstants.HTTP_COOKIE,
                         Arrays.toString(ex.getStackTrace())));
             }
         }
 
         try {
-            client.getPersistence(StmConstants.SOURCE_IP);
+            client.getPersistence(VTMConstants.SOURCE_IP);
         } catch (VTMRestClientException clientException) {
-            LOG.error(String.format("Error retrieving Persistence Class '%s'.\n%s", StmConstants.SOURCE_IP,
+            LOG.error(String.format("Error retrieving Persistence Class '%s'.\n%s", VTMConstants.SOURCE_IP,
                     Arrays.toString(clientException.getStackTrace())));
         } catch (VTMRestClientObjectNotFoundException notFoundException) {
             Persistence persistence = new Persistence();
@@ -501,19 +497,19 @@ public class VTMAdapterResources {
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
-                LOG.info(String.format("Updating Persistence type %s...", StmConstants.SOURCE_IP));
-                client.createPersistence(StmConstants.SOURCE_IP, persistence);
-                LOG.info(String.format("Successfully updated Persistence type %s.", StmConstants.SOURCE_IP));
+                LOG.info(String.format("Updating Persistence type %s...", VTMConstants.SOURCE_IP));
+                client.createPersistence(VTMConstants.SOURCE_IP, persistence);
+                LOG.info(String.format("Successfully updated Persistence type %s.", VTMConstants.SOURCE_IP));
             } catch (Exception ex) {
-                LOG.error(String.format("Error creating Persistence Class '%s'.\n%s", StmConstants.SOURCE_IP,
+                LOG.error(String.format("Error creating Persistence Class '%s'.\n%s", VTMConstants.SOURCE_IP,
                         Arrays.toString(ex.getStackTrace())));
             }
         }
 
         try {
-            client.getPersistence(StmConstants.SSL_ID);
+            client.getPersistence(VTMConstants.SSL_ID);
         } catch (VTMRestClientException clientException) {
-            LOG.error(String.format("Error retrieving Persistence Class '%s'.\n%s", StmConstants.SSL_ID,
+            LOG.error(String.format("Error retrieving Persistence Class '%s'.\n%s", VTMConstants.SSL_ID,
                     Arrays.toString(clientException.getStackTrace())));
         } catch (VTMRestClientObjectNotFoundException notFoundException) {
             Persistence persistence = new Persistence();
@@ -524,11 +520,11 @@ public class VTMAdapterResources {
             properties.setBasic(basic);
             persistence.setProperties(properties);
             try {
-                LOG.info(String.format("Updating Persistence type %s...", StmConstants.SSL_ID));
-                client.createPersistence(StmConstants.SSL_ID, persistence);
-                LOG.info(String.format("Successfully updated Persistence type %s.", StmConstants.SSL_ID));
+                LOG.info(String.format("Updating Persistence type %s...", VTMConstants.SSL_ID));
+                client.createPersistence(VTMConstants.SSL_ID, persistence);
+                LOG.info(String.format("Successfully updated Persistence type %s.", VTMConstants.SSL_ID));
             } catch (Exception ex) {
-                LOG.error(String.format("Error creating Persistence Class '%s'.\n%s", StmConstants.SSL_ID,
+                LOG.error(String.format("Error creating Persistence Class '%s'.\n%s", VTMConstants.SSL_ID,
                         Arrays.toString(ex.getStackTrace())));
             }
         }
@@ -648,7 +644,7 @@ public class VTMAdapterResources {
 
     public void setErrorFile(LoadBalancerEndpointConfiguration config, VTMRestClient client, LoadBalancer loadBalancer, String content) throws InsufficientRequestException, StmRollBackException {
         String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer.getId(), loadBalancer.getAccountId());
-        Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+        Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
         UserPages up = new UserPages();
         up.setErrorpage(content);
@@ -664,7 +660,7 @@ public class VTMAdapterResources {
 
         try {
             // Update client with new properties
-            for (VSType vsType : vsNames.keySet()) {
+            for (VTMAdapterUtils.VSType vsType : vsNames.keySet()) {
                 String vsName = vsNames.get(vsType);
                 String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
                 LOG.debug(String.format("Attempting to set the error file for %s (%s)", vsName, errorFileName));
@@ -674,7 +670,7 @@ public class VTMAdapterResources {
                 client.createExtraFile(errorFileName, errorFile);
                 LOG.info(String.format("Successfully uploaded the error file for %s (%s)", vsName, errorFileName));
 
-                if (vsType == VSType.REDIRECT_VS) {
+                if (vsType == VTMAdapterUtils.VSType.REDIRECT_VS) {
                     rt.translateRedirectVirtualServerResource(config, vsName, loadBalancer);
                     updateVirtualServer(client, vsName, rt.getcRedirectVServer());
                 } else {
@@ -703,20 +699,20 @@ public class VTMAdapterResources {
     public void deleteErrorFile(LoadBalancerEndpointConfiguration config, VTMRestClient client, LoadBalancer loadBalancer)
             throws InsufficientRequestException, StmRollBackException {
         String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
-        Map<VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+        Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
         loadBalancer.setUserPages(null);
 
         VTMResourceTranslator rt;
         try {
             // Update client with new properties
-            for (VSType vsType : vsNames.keySet()) {
+            for (VTMAdapterUtils.VSType vsType : vsNames.keySet()) {
                 String vsName = vsNames.get(vsType);
                 String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
                 LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", virtualServerName, errorFileName));
                 rt = new VTMResourceTranslator();
 
-                if (vsType == VSType.REDIRECT_VS) {
+                if (vsType == VTMAdapterUtils.VSType.REDIRECT_VS) {
                     rt.translateRedirectVirtualServerResource(config, vsName, loadBalancer);
                     updateVirtualServer(client, vsName, rt.getcRedirectVServer());
                 } else {

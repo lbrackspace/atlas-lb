@@ -72,7 +72,7 @@ public class SyncListener extends BaseListener {
                     LOG.debug(String.format("Successfully removed loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
                 } else {
                     LOG.debug(String.format("Deleting load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerStmService.deleteLoadBalancer(dbLoadBalancer);
+                    reverseProxyLoadBalancerVTMService.deleteLoadBalancer(dbLoadBalancer);
                     LOG.debug(String.format("Successfully deleted load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
                 }
             } catch (Exception e) {
@@ -113,7 +113,7 @@ public class SyncListener extends BaseListener {
 
                 if (isRestAdapter()) {
                     LOG.debug(String.format("Updating loadbalancer: %s in STM...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, dbLoadBalancer);
+                    reverseProxyLoadBalancerVTMService.updateLoadBalancer(dbLoadBalancer, dbLoadBalancer);
                     LOG.debug(String.format("Successfully Updated loadbalancer: %s in STM...", dbLoadBalancer.getId()));
                 } else {
                     LOG.debug(String.format("Syncing loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));

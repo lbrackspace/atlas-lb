@@ -1,8 +1,12 @@
-package org.openstack.atlas.adapter.helpers;
+package org.openstack.atlas.adapter.vtm;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.helpers.IpHelper;
+import org.openstack.atlas.adapter.helpers.StmConstants;
+import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
+import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.util.ca.StringUtils;
@@ -150,17 +154,15 @@ public class VTMResourceTranslator {
             basic.setSslDecrypt(true);
             basic.setEnabled(loadBalancer.isUsingSsl());
 
+            // Set cipher profiles
+            SslCipherProfile cipherProfile = loadBalancer.getSslTermination().getCipherProfile();
+            if(cipherProfile != null) {
+                ssl.setCipherSuites(cipherProfile.getCiphers());
+            }
 
-            //TODO: THIS NEEDS FIXED
-//            // Set cipher profiles
-//            SslCipherProfile cipherProfile = loadBalancer.getSslTermination().getCipherProfile();
-//            if(cipherProfile != null) {
-//                ssl.setSslCiphers(cipherProfile.getCiphers());
-//            }
-//
-//            // Set TLS version enable/disable
-//            ssl.setSslSupportTls1(loadBalancer.getSslTermination().isTls10Enabled() ? VirtualServerSsl.SslSupportTls1.ENABLED : VirtualServerSsl.SslSupportTls1.DISABLED);
-//            ssl.setSslSupportTls11(loadBalancer.getSslTermination().isTls11Enabled() ? VirtualServerSsl.SslSupportTls11.ENABLED : VirtualServerSsl.SslSupportTls11.DISABLED);
+            // Set TLS version enable/disable
+            ssl.setSupportTls1(loadBalancer.getSslTermination().isTls10Enabled() ? VirtualServerSsl.SupportTls1.ENABLED : VirtualServerSsl.SupportTls1.DISABLED);
+            ssl.setSupportTls11(loadBalancer.getSslTermination().isTls11Enabled() ? VirtualServerSsl.SupportTls11.ENABLED : VirtualServerSsl.SupportTls11.DISABLED);
 
             if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
                 ssl.setAddHttpHeaders(true);
@@ -225,35 +227,35 @@ public class VTMResourceTranslator {
             properties.setLog(log);
         }
 
-        //TODO: THIS NEEDS FIXED
+        //webcache settings
+        // Default
+        VirtualServerWebCache cache = new VirtualServerWebCache();
+        cache.setEnabled(false);
+        properties.setWebCache(cache);
+        if (loadBalancer.isContentCaching() != null) {
+            if (loadBalancer.isContentCaching()) {
+                cache.setEnabled(true);
+                properties.setWebCache(cache);
+                rules.add(StmConstants.CONTENT_CACHING);
+            }
+        }
 
-//        //webcache settings
-//        // Default
-//        VirtualServerWebcache cache = new VirtualServerWebcache();
-//        cache.setEnabled(false);
-//        properties.setWebCache(cache);
-//        if (loadBalancer.isContentCaching() != null) {
-//            if (loadBalancer.isContentCaching()) {
-//                cache.setEnabled(true);
-//                properties.setWebCache(cache);
-//                rules.add(StmConstants.CONTENT_CACHING);
-//            }
-//        }
-//
-//        //error file settings
-//        if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
-//            ce.setErrorFile(ZxtmNameBuilder.generateErrorPageName(vsName));
-//        } else {
-//            ce.setErrorFile("Default");
-//        }
-//        properties.setConnectionErrors(ce);
-//
-//        //X_forwarded headers
-//        if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
-//            basic.setAddXForwardedFor(true);
-//            basic.setAddXForwardedProto(true);
-//            rules.add(StmConstants.XFPORT);
-//        }
+        //error file settings
+        if (loadBalancer.getUserPages() != null && loadBalancer.getUserPages().getErrorpage() != null) {
+            ce.setErrorFile(ZxtmNameBuilder.generateErrorPageName(vsName));
+        } else {
+            ce.setErrorFile("Default");
+        }
+        properties.setConnectionErrors(ce);
+
+        //X_forwarded headers
+        if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
+            VirtualServerHttp vshttp = new VirtualServerHttp();
+            vshttp.setAddXForwardedFor(true);
+            vshttp.setAddXForwardedProto(true);
+            rules.add(StmConstants.XFPORT);
+            properties.setHttp(vshttp);
+        }
 
         //trafficscript or rule settings
         basic.setRequestRules(rules);
@@ -462,34 +464,34 @@ public class VTMResourceTranslator {
         }
         properties.setAccessRestriction(pac);
 
-        //TODO: THIS NEEDS FIXED
-
-
-//        ProtectionConnectionLimiting limiting = new ProtectionConnectionLimiting();
-//        if (limits != null) {
-//            Integer maxConnections = limits.getMaxConnections();
-//            if (maxConnections == null) maxConnections = 0;
+        ProtectionConcurrentConnections protectionConcurrentConnections = new ProtectionConcurrentConnections();
+        ProtectionConnectionRate limiting = new ProtectionConnectionRate();
+        if (limits != null) {
+            Integer maxConnections = limits.getMaxConnections();
+            if (maxConnections == null) maxConnections = 0;
+            // TODO: VERIFY CONNECTION SETTINGS
 //            limiting.setMax1Connections(maxConnections);
-//
-//            /* Zeus bug requires us to set per-process to false and ignore most of these settings */
-//            basic.setPerProcessConnectionCount(false);
-////            #NOTE: These values are  currently deprecated
+
+            /* Zeus bug requires us to set per-process to false and ignore most of these settings */
+            protectionConcurrentConnections.setPerProcessConnectionCount(false);
+//            #NOTE: These values are  currently deprecated
 //            limiting.setMinConnections(ConnectionThrottleDefaultConstants.getMinConnections());
-//            limiting.setRateTimer(ConnectionThrottleDefaultConstants.getRateInterval());
-//            limiting.setMaxConnectionRate(ConnectionThrottleDefaultConstants.getMaxConnectionRate());
-//            // We wont be using this, but it must be set to 0 as our default
+            limiting.setRateTimer(ConnectionThrottleDefaultConstants.getRateInterval());
+            limiting.setMaxConnectionRate(ConnectionThrottleDefaultConstants.getMaxConnectionRate());
+            // We wont be using this, but it must be set to 0 as our default
 //            limiting.setMax10Connections(0);
-//        } else {
+        } else {
 //            limiting.setMax1Connections(0);
-//
-//            /* Zeus bug requires us to set per-process to false */
-//            basic.setPerProcessConnectionCount(false);
+
+            /* Zeus bug requires us to set per-process to false */
+            protectionConcurrentConnections.setPerProcessConnectionCount(false);
 //            limiting.setMinConnections(0);
-//            limiting.setRateTimer(1);
-//            limiting.setMaxConnectionRate(0);
+            limiting.setRateTimer(1);
+            limiting.setMaxConnectionRate(0);
 //            limiting.setMax10Connections(0);
-//        }
-//        properties.setConnectionLimiting(limiting);
+        }
+        properties.setConnectionRate(limiting);
+        properties.setConcurrentConnections(protectionConcurrentConnections);
 
         properties.setBasic(basic);
         cProtection.setProperties(properties);
