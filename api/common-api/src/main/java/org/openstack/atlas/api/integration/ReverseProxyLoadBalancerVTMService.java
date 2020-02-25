@@ -66,6 +66,10 @@ public interface ReverseProxyLoadBalancerVTMService {
 
     void removeHealthMonitor(LoadBalancer loadBalancer) throws Exception;
 
+    void updateSessionPersistence(LoadBalancer loadBalancer, LoadBalancer queLb) throws Exception;
+
+    void removeSessionPersistence(LoadBalancer loadBalancer, LoadBalancer queLb) throws Exception;
+
     void uploadDefaultErrorFile(Integer clusterId, String content) throws Exception;
 
     void deleteErrorFile(LoadBalancer loadBalancer, UserPages up) throws Exception;

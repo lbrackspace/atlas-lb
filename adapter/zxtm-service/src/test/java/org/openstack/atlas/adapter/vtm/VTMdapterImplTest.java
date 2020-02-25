@@ -11,10 +11,12 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.VTMAdapterImplTestHelper;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ca.CertUtils;
@@ -702,6 +704,16 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         }
 
         @Test
+        public void testRemoveSslTermination() throws Exception {
+            adapterSpy.removeSslTermination(config, loadBalancer);
+
+            verify(resources).loadVTMRestClient(config);
+            verify(resources).deleteKeypair(client, secureVsName);
+            verify(resources).deleteVirtualServer(client, secureVsName);
+            verify(client).destroy();
+        }
+
+        @Test
         public void testUpdateSslCiphers() throws Exception {
             adapterSpy.updateSslTermination(config, loadBalancer, sslTermination);
 
@@ -717,12 +729,131 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         }
 
         @Test
-        public void testRemoveSslTermination() throws Exception {
-            adapterSpy.removeSslTermination(config, loadBalancer);
+        public void testEnableDisableTLS_11() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(Matchers.any())).thenReturn(vs);
+
+            adapterSpy.enableDisableTLS_11(config, loadBalancer, true);
 
             verify(resources).loadVTMRestClient(config);
-            verify(resources).deleteKeypair(client, secureVsName);
-            verify(resources).deleteVirtualServer(client, secureVsName);
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client).destroy();
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testEnableDisableTLS_11Exception() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(Matchers.any())).thenReturn(vs);
+            doThrow(StmRollBackException.class).when(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+
+            adapterSpy.enableDisableTLS_11(config, loadBalancer, true);
+
+            verify(resources).loadVTMRestClient(config);
+        }
+
+        @Test
+        public void testEnableDisableTLS_10() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(Matchers.any())).thenReturn(vs);
+
+            adapterSpy.enableDisableTLS_10(config, loadBalancer, true);
+
+            verify(resources).loadVTMRestClient(config);
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client).destroy();
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testEnableDisableTLS_10Exception() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(Matchers.any())).thenReturn(vs);
+            doThrow(StmRollBackException.class).when(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+
+            adapterSpy.enableDisableTLS_10(config, loadBalancer, true);
+
+            verify(resources).loadVTMRestClient(config);
+        }
+
+        @Test
+        public void testRetrieveCipherSuitesByVHost() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsssl.setCipherSuites("suites");
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(Matchers.any())).thenReturn(vs);
+
+            String cs = adapterSpy.getSslCiphersByVhost(config, loadBalancer.getAccountId(), loadBalancer.getId());
+
+            verify(resources).loadVTMRestClient(config);
+            verify(client).destroy();
+            Assert.assertEquals("suites", cs);
+        }
+
+        @Test(expected = EntityNotFoundException.class)
+        public void testRetrieveCipherSuitesByVHostException() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsssl.setCipherSuites("");
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(Matchers.any())).thenReturn(vs);
+
+            adapterSpy.getSslCiphersByVhost(config, loadBalancer.getAccountId(), loadBalancer.getId());
+
+            verify(resources).loadVTMRestClient(config);
+            verify(client).destroy();
+        }
+
+        @Test
+        public void testSetCipherSuitesByVHost() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(Matchers.any())).thenReturn(vs);
+
+            adapterSpy.setSslCiphersByVhost(config, loadBalancer.getAccountId(), loadBalancer.getId(), "suites");
+
+            verify(resources).loadVTMRestClient(config);
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client).destroy();
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testSetCipherSuitesByVHostException() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(Matchers.any())).thenReturn(vs);
+            doThrow(StmRollBackException.class).when(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+
+
+            adapterSpy.setSslCiphersByVhost(config, loadBalancer.getAccountId(), loadBalancer.getId(), "suites");
+
+            verify(resources).loadVTMRestClient(config);
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client).destroy();
         }
     }

@@ -39,10 +39,7 @@ public class VirtualServerStatsITest extends VTMTestBase {
 
     @Test
     public void getVirtualServerStats() throws InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
-        //Needs to have traffic ran through it to return values, we return 0 when this is encountered.
-        VTMRestClient client = new VTMRestClient();
-        String vsName = ZxtmNameBuilder.genVSName(lb);
-
+        //Needs to have traffic ran through it to return usage. CAFE verifies usage...
         Stats s = vtmAdapter.getVirtualServerStats(config, lb);
         Assert.assertNotNull(s);
     }

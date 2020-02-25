@@ -75,7 +75,7 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
 
         deleteSessionPersistenceListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerVTMService).removeSessionPersistence(lb, lb);
         Assert.assertEquals(lb.getSessionPersistence(), SessionPersistence.NONE);
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService).update(lb);
@@ -98,12 +98,12 @@ public class DeleteSessionPersistenceListenerTest extends STMTestBase {
     public void testDeleteInvalidSessionPersistence() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).removeSessionPersistence(lb, lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteSessionPersistenceListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerVTMService).removeSessionPersistence(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveSessionPersistenceEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_SESSION_PERSISTENCE), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));

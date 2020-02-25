@@ -22,7 +22,6 @@ public class GlobalSettingsITest extends VTMTestBase {
     public void setupClass() throws InterruptedException {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
-//        createSimpleLoadBalancer();
     }
 
     @After
@@ -35,12 +34,18 @@ public class GlobalSettingsITest extends VTMTestBase {
         teardownEverything();
     }
 
-
     @Test
-    public void getVirtualServerStats() throws InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException, RollBackException, RemoteException {
-        VTMRestClient client = new VTMRestClient();
+    public void getGlobalCiphers() throws InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException, RollBackException, RemoteException {
+        // Matches engineer defined cipher suites. Will need updating when cipher added
+        String ciphers = "SSL_ECDHE_RSA_WITH_AES_256_GCM_SHA384, SSL_ECDHE_RSA_WITH_AES_128_GCM_SHA256, " +
+                "SSL_ECDHE_RSA_WITH_AES_256_CBC_SHA384, SSL_ECDHE_RSA_WITH_AES_256_CBC_SHA, " +
+                "SSL_ECDHE_RSA_WITH_AES_128_CBC_SHA256, SSL_ECDHE_RSA_WITH_AES_128_CBC_SHA, " +
+                "SSL_RSA_WITH_AES_256_GCM_SHA384, SSL_RSA_WITH_AES_256_CBC_SHA256, SSL_RSA_WITH_AES_256_CBC_SHA, " +
+                "SSL_RSA_WITH_AES_128_GCM_SHA256, SSL_RSA_WITH_AES_128_CBC_SHA256, SSL_RSA_WITH_AES_128_CBC_SHA, " +
+                "SSL_RSA_WITH_3DES_EDE_CBC_SHA";
 
         String s = vtmAdapter.getSsl3Ciphers(config);
         Assert.assertNotNull(s);
+        Assert.assertEquals(ciphers, s);
     }
 }
