@@ -239,30 +239,29 @@ public class FullConfigITest extends VTMTestBase {
         }
     }
 
-    // protection is set to default TODO: reanalyze
-//    @Test
-//    public void updateFullyConfiguredLoadBalancerWithProtectionrollbacks() throws VTMRestClientException, IOException, VTMRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException, StmRollBackException {
-//        buildHydratedLb();
-//        vtmAdapter.updateLoadBalancer(config, lb, lb);
-//
-//        LoadBalancer clb = new LoadBalancer();
-//        clb.setHealthMonitor(lb.getHealthMonitor());
-//        try {
-//            LoadBalancer nlb = new LoadBalancer();
-//
-//            buildHydratedLb();
-//            vtmAdapter.updateLoadBalancer(config, lb, lb);
-//
-//            lb.getConnectionLimit().setMaxConnections(-2);
-//            nlb.setConnectionLimit(lb.getConnectionLimit());
-//
-//            vtmAdapter.updateLoadBalancer(config, lb, nlb);
-//            Assert.fail("Should have failed to update load balancer due to negative max connections");
-//
-//        } catch (Exception e) {
-//            verifyProtection(clb);
-//        }
-//    }
+    @Test
+    public void updateFullyConfiguredLoadBalancerWithProtectionrollbacks() throws VTMRestClientException, IOException, VTMRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException, StmRollBackException {
+        buildHydratedLb();
+        vtmAdapter.updateLoadBalancer(config, lb, lb);
+
+        LoadBalancer clb = new LoadBalancer();
+        clb.setHealthMonitor(lb.getHealthMonitor());
+        try {
+            LoadBalancer nlb = new LoadBalancer();
+
+            buildHydratedLb();
+            vtmAdapter.updateLoadBalancer(config, lb, lb);
+
+            lb.getConnectionLimit().setMaxConnections(-2);
+            nlb.setConnectionLimit(lb.getConnectionLimit());
+
+            vtmAdapter.updateLoadBalancer(config, lb, nlb);
+            Assert.fail("Should have failed to update load balancer due to negative max connections");
+
+        } catch (Exception e) {
+            verifyProtection(clb);
+        }
+    }
 
     @Test
     public void updateFullyConfiguredSslLoadBalancerWithSslRollbacks() throws VTMRestClientException, IPStringConversionException, VTMRestClientObjectNotFoundException, InsufficientRequestException {
@@ -525,7 +524,9 @@ public class FullConfigITest extends VTMTestBase {
 
         if (lb.getConnectionLimit() != null) {
             ProtectionConnectionRate cl = protection.getProperties().getConnectionRate();
+            Assert.assertEquals(Integer.valueOf(0), protection.getProperties().getConcurrentConnections().getMinConnections());
             Assert.assertEquals(Integer.valueOf(0), cl.getMaxConnectionRate());
+            Assert.assertEquals(lb.getConnectionLimit().getMaxConnections(), protection.getProperties().getConcurrentConnections().getMax1Connections());
             Assert.assertEquals(Integer.valueOf(1), cl.getRateTimer());
         }
 

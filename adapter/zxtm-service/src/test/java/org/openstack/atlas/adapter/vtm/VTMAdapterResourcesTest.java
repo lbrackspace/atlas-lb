@@ -9,21 +9,18 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.VTMTestBase;
-import org.openstack.atlas.adapter.helpers.StmConstants;
-import org.openstack.atlas.adapter.stm.StmAdapterResources;
-import org.rackspace.stingray.client.StingrayRestClient;
-import org.rackspace.stingray.client.bandwidth.Bandwidth;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.monitor.Monitor;
-import org.rackspace.stingray.client.persistence.Persistence;
-import org.rackspace.stingray.client.pool.Pool;
-import org.rackspace.stingray.client.protection.Protection;
-import org.rackspace.stingray.client.ssl.keypair.Keypair;
-import org.rackspace.stingray.client.traffic.ip.TrafficIp;
-import org.rackspace.stingray.client.virtualserver.VirtualServer;
+import org.rackspace.vtm.client.VTMRestClient;
+import org.rackspace.vtm.client.bandwidth.Bandwidth;
+import org.rackspace.vtm.client.exception.VTMRestClientException;
+import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
+import org.rackspace.vtm.client.monitor.Monitor;
+import org.rackspace.vtm.client.persistence.Persistence;
+import org.rackspace.vtm.client.pool.Pool;
+import org.rackspace.vtm.client.protection.Protection;
+import org.rackspace.vtm.client.ssl.keypair.Keypair;
+import org.rackspace.vtm.client.traffic.ip.TrafficIp;
+import org.rackspace.vtm.client.virtualserver.VirtualServer;
 
 import java.io.File;
 import java.util.Map;
@@ -34,7 +31,7 @@ import static org.mockito.Mockito.*;
 public class VTMAdapterResourcesTest extends VTMTestBase {
 
     public static class MiscFunctions {
-        private StmAdapterResources adapterResources;
+        private VTMAdapterResources adapterResources;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
@@ -43,12 +40,12 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         public void standUp() throws Exception {
             MockitoAnnotations.initMocks(this);
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
         }
 
         @Test
-        public void testLoadSTMRestClient() throws Exception {
-            StingrayRestClient returnedClient = adapterResources.loadSTMRestClient(config);
+        public void testLoadVTMRestClient() throws Exception {
+            VTMRestClient returnedClient = adapterResources.loadVTMRestClient(config);
 
             Assert.assertNotNull(returnedClient);
             verify(config).getRestEndpoint();
@@ -60,15 +57,15 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
 
     public static class VirtualServerOperations {
         private String vsName;
-        private StmAdapterResources adapterResources;
-        private ResourceTranslator resourceTranslator;
+        private VTMAdapterResources adapterResources;
+        private VTMResourceTranslator resourceTranslator;
         private VirtualServer virtualServer;
         private VirtualServer rollbackVirtualServer;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
 
         @Before
         public void standUp() throws Exception {
@@ -76,12 +73,12 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             setupIvars();
             vsName = loadBalancerName();
 
-            resourceTranslator = new ResourceTranslator();
+            resourceTranslator = new VTMResourceTranslator();
             resourceTranslator.translateLoadBalancerResource(config, vsName, lb, lb);
             virtualServer = resourceTranslator.getcVServer();
             rollbackVirtualServer = new VirtualServer();
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
 
             when(client.getVirtualServer(vsName)).thenReturn(rollbackVirtualServer);
         }
@@ -98,7 +95,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testUpdateVirtualServerClientFailure() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).updateVirtualServer(vsName, virtualServer);
             try {
                 adapterResources.updateVirtualServer(client, vsName, virtualServer);
@@ -125,7 +122,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testDeleteVirtualServerClientFailure() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).deleteVirtualServer(vsName);
             try {
                 adapterResources.deleteVirtualServer(client, vsName);
@@ -143,15 +140,15 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
 
     public static class KeypairOperations {
         private String vsName;
-        private StmAdapterResources adapterResources;
-        private ResourceTranslator resourceTranslator;
+        private VTMAdapterResources adapterResources;
+        private VTMResourceTranslator resourceTranslator;
         private Keypair keypair;
         private Keypair rollbackKeypair;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
 
         @Before
         public void standUp() throws Exception {
@@ -159,12 +156,12 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             setupIvars();
             vsName = loadBalancerName();
 
-            resourceTranslator = new ResourceTranslator();
+            resourceTranslator = new VTMResourceTranslator();
             resourceTranslator.translateLoadBalancerResource(config, vsName, lb, lb);
             keypair = resourceTranslator.getcKeypair();
             rollbackKeypair = new Keypair();
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
 
             when(client.getKeypair(vsName)).thenReturn(rollbackKeypair);
         }
@@ -181,7 +178,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testUpdateKeypairClientException() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).updateKeypair(vsName, keypair);
             try {
                 adapterResources.updateKeypair(client, vsName, keypair);
@@ -208,7 +205,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testDeleteKeypairClientException() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).deleteKeypair(vsName);
             try {
                 adapterResources.deleteKeypair(client, vsName);
@@ -227,15 +224,15 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
     public static class PoolOperations {
         private String vsName;
         private String poolName;
-        private StmAdapterResources adapterResources;
-        private ResourceTranslator resourceTranslator;
+        private VTMAdapterResources adapterResources;
+        private VTMResourceTranslator resourceTranslator;
         private Pool pool;
         private Pool rollbackPool;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
 
         @Before
         public void standUp() throws Exception {
@@ -244,12 +241,12 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             vsName = loadBalancerName();
             poolName = poolName();
 
-            resourceTranslator = new ResourceTranslator();
+            resourceTranslator = new VTMResourceTranslator();
             resourceTranslator.translateLoadBalancerResource(config, vsName, lb, lb);
             pool = resourceTranslator.getcPool();
             rollbackPool = new Pool();
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
 
             when(client.getPool(poolName)).thenReturn(rollbackPool);
         }
@@ -266,7 +263,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testUpdatePoolClientException() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).updatePool(vsName, pool);
             try {
                 adapterResources.updatePool(client, poolName, pool);
@@ -293,7 +290,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testDeletePoolClientException() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).deletePool(vsName);
             try {
                 adapterResources.deletePool(client, poolName);
@@ -311,15 +308,15 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
 
     public static class VirtualIpOperations {
         private String vsName;
-        private StmAdapterResources adapterResources;
-        private ResourceTranslator resourceTranslator;
+        private VTMAdapterResources adapterResources;
+        private VTMResourceTranslator resourceTranslator;
         private Map<String, TrafficIp> virtualIps;
         private TrafficIp rollbackIp;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
 
         @Before
         public void standUp() throws Exception {
@@ -327,12 +324,12 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             setupIvars();
             vsName = loadBalancerName();
 
-            resourceTranslator = new ResourceTranslator();
+            resourceTranslator = new VTMResourceTranslator();
             resourceTranslator.translateLoadBalancerResource(config, vsName, lb, lb);
             virtualIps = resourceTranslator.getcTrafficIpGroups();
             rollbackIp = new TrafficIp();
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
 
             when(client.getTrafficIp(anyString())).thenReturn(rollbackIp);
         }
@@ -349,7 +346,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testUpdateVirtualIpsClientError() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).updateTrafficIp(anyString(), any(TrafficIp.class));
             try {
                 adapterResources.updateVirtualIps(client, vsName, virtualIps);
@@ -368,15 +365,15 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
     public static class HealthMonitorOperations {
         private String vsName;
         private String monitorName;
-        private StmAdapterResources adapterResources;
-        private ResourceTranslator resourceTranslator;
+        private VTMAdapterResources adapterResources;
+        private VTMResourceTranslator resourceTranslator;
         private Monitor healthMonitor;
         private Monitor rollbackHealthMonitor;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
 
         @Before
         public void standUp() throws Exception {
@@ -385,12 +382,12 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             vsName = loadBalancerName();
             monitorName = monitorName();
 
-            resourceTranslator = new ResourceTranslator();
+            resourceTranslator = new VTMResourceTranslator();
             resourceTranslator.translateLoadBalancerResource(config, vsName, lb, lb);
             healthMonitor = resourceTranslator.getcMonitor();
             rollbackHealthMonitor = new Monitor();
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
 
             when(client.getMonitor(monitorName)).thenReturn(rollbackHealthMonitor);
         }
@@ -407,7 +404,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testUpdateHealthMonitorClientError() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).updateMonitor(monitorName, healthMonitor);
             try {
                 adapterResources.updateHealthMonitor(client, monitorName, healthMonitor);
@@ -434,7 +431,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testDeleteHealthMonitorClientError() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).deleteMonitor(monitorName);
             try {
                 adapterResources.deleteHealthMonitor(client, monitorName);
@@ -453,15 +450,15 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
     public static class ProtectionOperations {
         private String vsName;
         private String protectionName;
-        private StmAdapterResources adapterResources;
-        private ResourceTranslator resourceTranslator;
+        private VTMAdapterResources adapterResources;
+        private VTMResourceTranslator resourceTranslator;
         private Protection protection;
         private Protection rollbackProtection;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
 
         @Before
         public void standUp() throws Exception {
@@ -470,12 +467,12 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             vsName = loadBalancerName();
             protectionName = protectionClassName();
 
-            resourceTranslator = new ResourceTranslator();
+            resourceTranslator = new VTMResourceTranslator();
             resourceTranslator.translateLoadBalancerResource(config, vsName, lb, lb);
             protection = resourceTranslator.getcProtection();
             rollbackProtection = new Protection();
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
 
             when(client.getProtection(protectionName)).thenReturn(rollbackProtection);
         }
@@ -492,7 +489,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testUpdateProtectionClientError() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).updateProtection(protectionName, protection);
             try {
                 adapterResources.updateProtection(client, protectionName, protection);
@@ -519,7 +516,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testDeleteProtectionClientError() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).deleteProtection(protectionName);
             try {
                 adapterResources.deleteProtection(client, protectionName);
@@ -536,71 +533,71 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
     }
 
     public static class PersistenceOperations {
-        private StmAdapterResources adapterResources;
+        private VTMAdapterResources adapterResources;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
 
         @Before
         public void standUp() throws Exception {
             MockitoAnnotations.initMocks(this);
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
 
-            doReturn(client).when(adapterResources).loadSTMRestClient(config);
+            doReturn(client).when(adapterResources).loadVTMRestClient(config);
         }
 
         @Test
         public void testCreatePersistentClasses() throws Exception {
             adapterResources.createPersistentClasses(config);
 
-            verify(client).getPersistence(StmConstants.HTTP_COOKIE);
-            verify(client).getPersistence(StmConstants.SOURCE_IP);
-            verify(client).getPersistence(StmConstants.SSL_ID);
+            verify(client).getPersistence(VTMConstants.HTTP_COOKIE);
+            verify(client).getPersistence(VTMConstants.SOURCE_IP);
+            verify(client).getPersistence(VTMConstants.SSL_ID);
             verify(client).destroy();
             verifyNoMoreInteractions(client);
         }
 
         @Test
         public void testCreatePersistentClassesNoHttpCookie() throws Exception {
-            Exception exception = new StingrayRestClientObjectNotFoundException();
-            doThrow(exception).when(client).getPersistence(StmConstants.HTTP_COOKIE);
+            Exception exception = new VTMRestClientObjectNotFoundException();
+            doThrow(exception).when(client).getPersistence(VTMConstants.HTTP_COOKIE);
             adapterResources.createPersistentClasses(config);
 
-            verify(client).getPersistence(StmConstants.HTTP_COOKIE);
-            verify(client).createPersistence(eq(StmConstants.HTTP_COOKIE), any(Persistence.class));
-            verify(client).getPersistence(StmConstants.SOURCE_IP);
-            verify(client).getPersistence(StmConstants.SSL_ID);
+            verify(client).getPersistence(VTMConstants.HTTP_COOKIE);
+            verify(client).createPersistence(eq(VTMConstants.HTTP_COOKIE), any(Persistence.class));
+            verify(client).getPersistence(VTMConstants.SOURCE_IP);
+            verify(client).getPersistence(VTMConstants.SSL_ID);
             verify(client).destroy();
             verifyNoMoreInteractions(client);
         }
 
         @Test
         public void testCreatePersistentClassesNoSourceIp() throws Exception {
-            Exception exception = new StingrayRestClientObjectNotFoundException();
-            doThrow(exception).when(client).getPersistence(StmConstants.SOURCE_IP);
+            Exception exception = new VTMRestClientObjectNotFoundException();
+            doThrow(exception).when(client).getPersistence(VTMConstants.SOURCE_IP);
             adapterResources.createPersistentClasses(config);
 
-            verify(client).getPersistence(StmConstants.HTTP_COOKIE);
-            verify(client).getPersistence(StmConstants.SOURCE_IP);
-            verify(client).createPersistence(eq(StmConstants.SOURCE_IP), any(Persistence.class));
-            verify(client).getPersistence(StmConstants.SSL_ID);
+            verify(client).getPersistence(VTMConstants.HTTP_COOKIE);
+            verify(client).getPersistence(VTMConstants.SOURCE_IP);
+            verify(client).createPersistence(eq(VTMConstants.SOURCE_IP), any(Persistence.class));
+            verify(client).getPersistence(VTMConstants.SSL_ID);
             verify(client).destroy();
             verifyNoMoreInteractions(client);
         }
 
         @Test
         public void testCreatePersistentClassesNoSslId() throws Exception {
-            Exception exception = new StingrayRestClientObjectNotFoundException();
-            doThrow(exception).when(client).getPersistence(StmConstants.SSL_ID);
+            Exception exception = new VTMRestClientObjectNotFoundException();
+            doThrow(exception).when(client).getPersistence(VTMConstants.SSL_ID);
             adapterResources.createPersistentClasses(config);
 
-            verify(client).getPersistence(StmConstants.HTTP_COOKIE);
-            verify(client).getPersistence(StmConstants.SOURCE_IP);
-            verify(client).getPersistence(StmConstants.SSL_ID);
-            verify(client).createPersistence(eq(StmConstants.SSL_ID), any(Persistence.class));
+            verify(client).getPersistence(VTMConstants.HTTP_COOKIE);
+            verify(client).getPersistence(VTMConstants.SOURCE_IP);
+            verify(client).getPersistence(VTMConstants.SSL_ID);
+            verify(client).createPersistence(eq(VTMConstants.SSL_ID), any(Persistence.class));
             verify(client).destroy();
             verifyNoMoreInteractions(client);
         }
@@ -608,15 +605,15 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
 
     public static class RateLimitOperations {
         private String vsName;
-        private StmAdapterResources adapterResources;
-        private ResourceTranslator resourceTranslator;
+        private VTMAdapterResources adapterResources;
+        private VTMResourceTranslator resourceTranslator;
         private Bandwidth bandwidth;
         private Bandwidth rollbackBandwidth;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
 
         @Before
         public void standUp() throws Exception {
@@ -624,14 +621,14 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             setupIvars();
             vsName = loadBalancerName();
 
-            resourceTranslator = new ResourceTranslator();
+            resourceTranslator = new VTMResourceTranslator();
             resourceTranslator.translateLoadBalancerResource(config, vsName, lb, lb);
             bandwidth = resourceTranslator.getcBandwidth();
             rollbackBandwidth = new Bandwidth();
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
             doNothing().when(adapterResources).updateVirtualServer(eq(client), eq(vsName), any(VirtualServer.class));
-            doReturn(client).when(adapterResources).loadSTMRestClient(config);
+            doReturn(client).when(adapterResources).loadVTMRestClient(config);
             doReturn(rollbackBandwidth).when(client).getBandwidth(vsName);
             doReturn(new VirtualServer()).when(client).getVirtualServer(vsName);
         }
@@ -670,7 +667,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testDeleteRateLimitClientErrorBandwidth() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             doThrow(exception).when(client).deleteBandwidth(vsName);
             try {
                 adapterResources.deleteRateLimit(config, lb, vsName);
@@ -689,7 +686,7 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         @Test
         public void testDeleteRateLimitClientErrorServer() throws Exception {
             StmRollBackException rollBackException = null;
-            Exception exception = new StingrayRestClientException();
+            Exception exception = new VTMRestClientException();
             when(client.updateVirtualServer(eq(vsName), any(VirtualServer.class))).thenThrow(exception).thenReturn(new VirtualServer());
             try {
                 adapterResources.deleteRateLimit(config, lb, vsName);
@@ -712,15 +709,15 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
         private String vsName;
         private String sslVsName;
         private String errorFileName;
-        private StmAdapterResources adapterResources;
-        private ResourceTranslator resourceTranslator;
+        private VTMAdapterResources adapterResources;
+        private VTMResourceTranslator resourceTranslator;
         private String errorContent;
         private File errorFile;
 
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
-        private StingrayRestClient client;
+        private VTMRestClient client;
 
         @Before
         public void standUp() throws Exception {
@@ -731,11 +728,11 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
 
             errorFileName = errorFileName();
 
-            resourceTranslator = new ResourceTranslator();
+            resourceTranslator = new VTMResourceTranslator();
             resourceTranslator.translateLoadBalancerResource(config, vsName, lb, lb);
             errorContent = "My Errorfile Content";
 
-            adapterResources = spy(new StmAdapterResources());
+            adapterResources = spy(new VTMAdapterResources());
             errorFile = adapterResources.getFileWithContent(errorContent);
 
             when(adapterResources.getFileWithContent(errorContent)).thenReturn(errorFile);

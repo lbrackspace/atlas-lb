@@ -5,7 +5,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.openstack.atlas.adapter.stm.StmAdapterUtils;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 
@@ -44,11 +43,11 @@ public class VTMAdapterUtilsTest {
             loadBalancer.getSslTermination().setEnabled(true);
             loadBalancer.setHttpsRedirect(true);
 
-            Map<StmAdapterUtils.VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+            Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
             assertEquals(2, vsNames.size());
-            assertTrue(vsNames.containsKey(StmAdapterUtils.VSType.REDIRECT_VS));
-            assertTrue(vsNames.containsKey(StmAdapterUtils.VSType.SECURE_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.REDIRECT_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.SECURE_VS));
             assertTrue(vsNames.containsValue("22_1_R"));
             assertTrue(vsNames.containsValue("22_1_S"));
         }
@@ -56,11 +55,11 @@ public class VTMAdapterUtilsTest {
         @Test
         public void testGetVSNamesSslMixedNoRedirect() throws Exception {
             loadBalancer.getSslTermination().setEnabled(true);
-            Map<StmAdapterUtils.VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+            Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
             assertEquals(2, vsNames.size());
-            assertTrue(vsNames.containsKey(StmAdapterUtils.VSType.DEFAULT_VS));
-            assertTrue(vsNames.containsKey(StmAdapterUtils.VSType.SECURE_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.DEFAULT_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.SECURE_VS));
             assertTrue(vsNames.containsValue("22_1"));
             assertTrue(vsNames.containsValue("22_1_S"));
         }
@@ -69,31 +68,31 @@ public class VTMAdapterUtilsTest {
         public void testGetVSNamesSslOnlyNoRedirect() throws Exception {
             loadBalancer.getSslTermination().setEnabled(true);
             loadBalancer.getSslTermination().setSecureTrafficOnly(true);
-            Map<StmAdapterUtils.VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+            Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
             assertEquals(1, vsNames.size());
-            assertTrue(vsNames.containsKey(StmAdapterUtils.VSType.SECURE_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.SECURE_VS));
             assertTrue(vsNames.containsValue("22_1_S"));
         }
 
         @Test
         public void testGetVSNamesRedirectNoSsl() throws Exception {
             loadBalancer.setHttpsRedirect(true);
-            Map<StmAdapterUtils.VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+            Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
             assertEquals(2, vsNames.size());
-            assertTrue(vsNames.containsKey(StmAdapterUtils.VSType.DEFAULT_VS));
-            assertTrue(vsNames.containsKey(StmAdapterUtils.VSType.REDIRECT_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.DEFAULT_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.REDIRECT_VS));
             assertTrue(vsNames.containsValue("22_1"));
             assertTrue(vsNames.containsValue("22_1_R"));
         }
 
         @Test
         public void testGetVSNamesDefault() throws Exception {
-            Map<StmAdapterUtils.VSType, String> vsNames = StmAdapterUtils.getVSNamesForLB(loadBalancer);
+            Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
             assertEquals(1, vsNames.size());
-            assertTrue(vsNames.containsKey(StmAdapterUtils.VSType.DEFAULT_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.DEFAULT_VS));
             assertTrue(vsNames.containsValue("22_1"));
         }
 
