@@ -340,6 +340,36 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
+    public void updateSessionPersistence(LoadBalancer loadBalancer, LoadBalancer quelb) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
+        try {
+            if (getVersion(config.getRestEndpoint()) == 7) {
+                reverseProxyLoadBalancerVTMAdapter.updateSessionPersistence(config, loadBalancer, quelb);
+            } else {
+                reverseProxyLoadBalancerStmAdapter.updateSessionPersistence(config, loadBalancer, quelb);
+            }
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void removeSessionPersistence(LoadBalancer loadBalancer, LoadBalancer quelb) throws StmRollBackException, EntityNotFoundException, DecryptException, MalformedURLException, InsufficientRequestException {
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
+        try {
+            if (getVersion(config.getRestEndpoint()) == 7) {
+                reverseProxyLoadBalancerVTMAdapter.deleteSessionPersistence(config, loadBalancer, quelb);
+            } else {
+                reverseProxyLoadBalancerStmAdapter.deleteSessionPersistence(config, loadBalancer, quelb);
+            }
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
     public void suspendLoadBalancer(LoadBalancer lb) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {

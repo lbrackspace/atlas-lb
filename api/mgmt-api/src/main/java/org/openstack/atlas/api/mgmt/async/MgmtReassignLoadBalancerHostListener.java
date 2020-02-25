@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.jms.Message;
 import javax.persistence.EntityExistsException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MgmtReassignLoadBalancerHostListener extends BaseListener {
@@ -30,10 +31,11 @@ public class MgmtReassignLoadBalancerHostListener extends BaseListener {
                 }
 
                 if (isRestAdapter()) {
-                    //TODO: currently not supported in REST...
-                    LOG.debug("Modifying Host in ZXTM.. ");
-                    LOG.debug("Updating host to " + lb.getHost().getId() + " in zeus for loadbalancer " + lb.getId());
-                    reverseProxyLoadBalancerService.changeHostForLoadBalancer(dbLb, lb.getHost());
+                    LOG.debug("Updating host to " + lb.getHost().getId() + " in trafficmanager for loadbalancer " + lb.getId());
+                    //TODO: simplify this to use list object for changeHost Adapter call instead of repacking them
+                    ArrayList<LoadBalancer> lbs = new ArrayList<>();
+                    lbs.add(dbLb);
+                    reverseProxyLoadBalancerVTMService.changeHostForLoadBalancers(lbs, lb.getHost());
                 } else {
                     LOG.debug("Modifying Host in ZXTM.. ");
                     LOG.debug("Updating host to " + lb.getHost().getId() + " in zeus for loadbalancer " + lb.getId());

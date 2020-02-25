@@ -429,6 +429,24 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     }
 
     /*
+    Session Persistence Resources
+     */
+
+    @Override
+    public void updateSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer , LoadBalancer queLb)
+            throws InsufficientRequestException, StmRollBackException {
+        updateLoadBalancer(config, loadBalancer, queLb);
+    }
+
+    @Override
+    public void deleteSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb) throws StmRollBackException, InsufficientRequestException {
+        // Must null out session persistence value and then update loadbalancer
+        loadBalancer.setSessionPersistence(null);
+        updateLoadBalancer(config, loadBalancer, queLb);
+
+    }
+
+    /*
         Protection Resources
      */
 

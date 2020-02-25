@@ -467,26 +467,25 @@ public class VTMResourceTranslator {
         if (limits != null) {
             Integer maxConnections = limits.getMaxConnections();
             if (maxConnections == null) maxConnections = 0;
-            // TODO: VERIFY CONNECTION SETTINGS
-//            limiting.setMax1Connections(maxConnections);
+            protectionConcurrentConnections.setMax1Connections(maxConnections);
 
             /* Zeus bug requires us to set per-process to false and ignore most of these settings */
             protectionConcurrentConnections.setPerProcessConnectionCount(false);
 //            #NOTE: These values are  currently deprecated
-//            limiting.setMinConnections(ConnectionThrottleDefaultConstants.getMinConnections());
+            protectionConcurrentConnections.setMinConnections(ConnectionThrottleDefaultConstants.getMinConnections());
             limiting.setRateTimer(ConnectionThrottleDefaultConstants.getRateInterval());
             limiting.setMaxConnectionRate(ConnectionThrottleDefaultConstants.getMaxConnectionRate());
             // We wont be using this, but it must be set to 0 as our default
-//            limiting.setMax10Connections(0);
+            protectionConcurrentConnections.setMax10Connections(0);
         } else {
-//            limiting.setMax1Connections(0);
+            protectionConcurrentConnections.setMax1Connections(0);
 
             /* Zeus bug requires us to set per-process to false */
             protectionConcurrentConnections.setPerProcessConnectionCount(false);
-//            limiting.setMinConnections(0);
+            protectionConcurrentConnections.setMinConnections(0);
             limiting.setRateTimer(1);
             limiting.setMaxConnectionRate(0);
-//            limiting.setMax10Connections(0);
+            protectionConcurrentConnections.setMax10Connections(0);
         }
         properties.setConnectionRate(limiting);
         properties.setConcurrentConnections(protectionConcurrentConnections);

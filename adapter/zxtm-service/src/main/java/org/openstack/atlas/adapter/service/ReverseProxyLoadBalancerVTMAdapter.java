@@ -109,6 +109,11 @@ public interface ReverseProxyLoadBalancerVTMAdapter {
     public void updateRateLimit(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, RateLimit rateLimit)
             throws InsufficientRequestException, RollBackException;
 
+    public void updateSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb)
+            throws InsufficientRequestException, RollBackException;
+
+    public void deleteSessionPersistence(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, LoadBalancer queLb) throws StmRollBackException, InsufficientRequestException;
+
     public Stats getVirtualServerStats(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer)
             throws InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException;
 

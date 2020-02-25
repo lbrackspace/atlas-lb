@@ -597,6 +597,9 @@ public class VTMAdapterResources {
             LOG.warn(String.format("Error retrieving virtual server: %s, attempting to recreate... ", vsName));
         }
 
+
+        // TODO: Verify if this is still required, also verify logic and maybe split behavior if delete call isn't just
+        // a delete...
         VTMResourceTranslator rt = new VTMResourceTranslator();
         rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
         VirtualServer virtualServer = rt.getcVServer();

@@ -30,7 +30,7 @@ import java.util.Map;
 import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
-public class VTMAdapterResourcesTest extends VTMTestBase {
+public class StmAdapterResourcesTest extends VTMTestBase {
 
     public static class MiscFunctions {
         private StmAdapterResources adapterResources;
