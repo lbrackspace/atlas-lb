@@ -63,6 +63,11 @@
         <!--<property name="identityAuth" ref="identityAuth"/>-->
         <!--<property name="xmlJsonConfig" ref="xmlJsonConfig"/>-->
     <!--</bean>-->
+    <bean id="jsonValidationFilter"
+          class="org.openstack.atlas.api.mgmt.filters.JsonValidationFilter"
+          init-method="startConfig"
+          scope="singleton"
+          parent="validationFilter"/>
     <bean id="manageAuthFilter"
           class="org.openstack.atlas.api.mgmt.filters.ManageAuthFilter"
           init-method="startConfig"

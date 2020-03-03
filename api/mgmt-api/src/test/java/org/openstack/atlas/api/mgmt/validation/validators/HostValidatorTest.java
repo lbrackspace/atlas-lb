@@ -64,7 +64,6 @@ public class HostValidatorTest {
         h.setManagementIp(rndIp());
         h.setManagementSoapInterface(String.format("http://%s:8080/soap", rndIp()));
         h.setManagementRestInterface(String.format("http://%s:8080/rest", rndIp()));
-        h.setType((HostType) rndChoice(HostType.values()));
         h.setTrafficManagerName("someZuesNode.rackspace.com");
         h.setSoapEndpointActive(true);
         h.setRestEndpointActive(true);
