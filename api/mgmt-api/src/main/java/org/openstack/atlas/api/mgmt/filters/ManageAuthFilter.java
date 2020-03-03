@@ -78,6 +78,7 @@ public class ManageAuthFilter implements Filter {
         Set<String> groups;
         HttpServletRequest hreq = (HttpServletRequest) sreq;
         HttpServletResponse hresp = (HttpServletResponse) sresp;
+
         if(reverseRoleMap == null){
             synchronized(this){
                 reverseRoleMap = new HashMap<String, String>();

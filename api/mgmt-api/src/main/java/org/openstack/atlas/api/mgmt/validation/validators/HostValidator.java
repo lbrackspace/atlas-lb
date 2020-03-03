@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.mgmt.validation.validators;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
 import org.openstack.atlas.service.domain.entities.HostStatus;
 import org.openstack.atlas.api.mgmt.validation.contexts.ReassignHostContext;
 import org.openstack.atlas.api.validation.validators.ResourceValidator;
@@ -34,7 +35,7 @@ public class HostValidator implements ResourceValidator<Host> {
                 result(validationTarget().getNumberOfLoadBalancingConfigurations()).must().not().exist().forContext(PUT).withMessage("Must not specify the number of load balancing configurations.");
                 result(validationTarget().getNumberOfUniqueCustomers()).must().not().exist().forContext(PUT).withMessage("Must not specify the number of unique customers.");
                 result(validationTarget().getUtilization()).must().not().exist().forContext(PUT).withMessage("Must not specify the utilization.");
-                result(validationTarget().getType()).must().not().exist().forContext(PUT).withMessage("Must not specify the type.");
+                result(validationTarget().getType()).must().not().exist().forContext(PUT, POST).withMessage("Must not specify the type.");
 
                 result(validationTarget().getId()).must().exist().forContext(LOADBALANCER_PUT).withMessage("Host Id must be present on Loadbalancer Host Put method");
                 result(validationTarget().getName()).must().exist().forContext(POST).withMessage("Name must be present for host");

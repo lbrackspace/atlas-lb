@@ -34,6 +34,10 @@
         <filter-class>org.apache.logging.log4j.web.Log4jServletFilter</filter-class>
     </filter>
     <filter>
+        <filter-name>jsonValidationFilter</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter>
         <filter-name>manageAuthFilter</filter-name>
         <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
     </filter>
@@ -58,6 +62,10 @@
     </filter-mapping>
     <filter-mapping>
         <filter-name>manageAuthFilter</filter-name>
+        <servlet-name>CXFServlet</servlet-name>
+    </filter-mapping>
+    <filter-mapping>
+        <filter-name>jsonValidationFilter</filter-name>
         <servlet-name>CXFServlet</servlet-name>
     </filter-mapping>
     <filter-mapping>
