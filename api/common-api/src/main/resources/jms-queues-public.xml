@@ -114,6 +114,8 @@
     </bean>
 
     <bean id="reverseProxyLoadBalancerStmAdapter" class="org.openstack.atlas.adapter.stm.StmAdapterImpl"/>
+    <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
+    <bean id="reverseProxyLoadBalancerVTMAdapter" class="org.openstack.atlas.adapter.vtm.VTMAdapterImpl"/>
 
     <bean id="reverseProxyLoadBalancerStmService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceStmImpl">
         <property name="notificationService" ref="notificationService"/>
@@ -135,8 +137,6 @@
         <property name="configuration" ref="configuration"/>
         <property name="atlasCache" ref="atlasCache"/>
     </bean>
-
-    <bean id="reverseProxyLoadBalancerAdapter" class="org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl"/>
 
     <bean id="reverseProxyLoadBalancerService" class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl">
         <property name="notificationService" ref="notificationService"/>

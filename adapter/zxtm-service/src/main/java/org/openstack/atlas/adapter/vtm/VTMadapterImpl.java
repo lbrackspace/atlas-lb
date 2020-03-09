@@ -25,6 +25,7 @@ import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.debug.Debug;
 import org.rackspace.vtm.client.VTMRestClient;
+import org.rackspace.vtm.client.counters.GlobalCounters;
 import org.rackspace.vtm.client.counters.VirtualServerStats;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -677,10 +679,6 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         }
     }
 
-    public ZxtmServiceStubs getServiceStubs(LoadBalancerEndpointConfiguration config) throws AxisFault {
-        return ZxtmServiceStubs.getServiceStubs(config.getEndpointUrl(), config.getUsername(), config.getPassword());
-    }
-
 
     @Override
     public void updateCertificateMappings(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException {
@@ -983,6 +981,46 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         String cs = client.getGlobalSettings().getProperties().getSsl().getCipherSuites();
         client.destroy();
         return cs;
+    }
+
+    // Host stats
+    @Override
+    public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config) throws VTMRestClientObjectNotFoundException, VTMRestClientException {
+        VTMRestClient client = getResources().loadVTMRestClient(config);
+        GlobalCounters gc;
+        try {
+            gc = client.getGlobalCounters(config.getRestEndpoint());
+        } catch (URISyntaxException e) {
+            throw new VTMRestClientException("Unable to build connection to host");
+        }
+        client.destroy();
+        return gc.getProperties().getStatistics().getTotalConn();
+    }
+
+    @Override
+    public Long getHostBytesIn(LoadBalancerEndpointConfiguration config) throws VTMRestClientObjectNotFoundException, VTMRestClientException {
+        VTMRestClient client = getResources().loadVTMRestClient(config);
+        GlobalCounters gc;
+        try {
+            gc = client.getGlobalCounters(config.getRestEndpoint());
+        } catch (URISyntaxException e) {
+            throw new VTMRestClientException("Unable to build connection to host");
+        }
+        client.destroy();
+        return Long.valueOf(gc.getProperties().getStatistics().getTotalBytesIn());
+    }
+
+    @Override
+    public Long getHostBytesOut(LoadBalancerEndpointConfiguration config) throws VTMRestClientObjectNotFoundException, VTMRestClientException {
+        VTMRestClient client = getResources().loadVTMRestClient(config);
+        GlobalCounters gc;
+        try {
+            gc = client.getGlobalCounters(config.getRestEndpoint());
+        } catch (URISyntaxException e) {
+            throw new VTMRestClientException("Unable to build connection to host");
+        }
+        client.destroy();
+        return Long.valueOf(gc.getProperties().getStatistics().getTotalBytesOut());
     }
 
     /**

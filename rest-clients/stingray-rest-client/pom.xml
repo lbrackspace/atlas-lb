@@ -176,6 +176,7 @@
                         <sourcePath>${basedir}/src/main/resources/schema/vtm/config-virtual-server</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/vtm/config-settings</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/vtm/counters-virtual-server</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/vtm/counters-global</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/vtm/util</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/vtm/list</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/vtm/exception</sourcePath>

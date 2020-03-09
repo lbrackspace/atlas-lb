@@ -25,6 +25,7 @@ public class MgmtPollEndPointsListener extends BaseListener {
             HostEndpointPollThread epThread = new HostEndpointPollThread();
             epThread.setHost(epHost);
             epThread.setProxyService(reverseProxyLoadBalancerService);
+            epThread.setVTMProxyService(reverseProxyLoadBalancerVTMService);
             epThreads.add(epThread);
         }
         Debug.nop();

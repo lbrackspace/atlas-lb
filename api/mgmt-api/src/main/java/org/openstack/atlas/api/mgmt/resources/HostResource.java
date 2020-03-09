@@ -7,6 +7,7 @@ import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mgmt.validation.contexts.HostContext;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
@@ -362,8 +363,11 @@ public class HostResource extends ManagementDependencyProvider {
 
         try {
             host = hostService.getById(id);
-            connection = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host);
-
+            if (isRestAdapter()) {
+                connection = reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(host);
+            } else {
+                connection = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host);
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

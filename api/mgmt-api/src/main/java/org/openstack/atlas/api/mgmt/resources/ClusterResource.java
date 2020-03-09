@@ -278,6 +278,7 @@ public class ClusterResource extends ManagementDependencyProvider {
         return id;
     }
 
+    // TODO: Remove if undeeded, update to VTM service otherwise
     public String getUtilization(Integer id) {
         //get sum of max allowed connections for all host in cluster
         long maxAllowed = getHostRepository().getHostsConnectionsForCluster(id);

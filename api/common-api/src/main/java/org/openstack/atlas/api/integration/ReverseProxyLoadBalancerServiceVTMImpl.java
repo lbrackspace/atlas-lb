@@ -738,7 +738,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+    public String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         String globalCiphers = null;
         LoadBalancerEndpointConfiguration config = getConfigFirstAvaliableRest();
         try {
@@ -752,6 +752,31 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
             throw af;
         }
         return globalCiphers;
+    }
+
+    // Host stats
+    @Override
+    public int getTotalCurrentConnectionsForHost(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException {
+        // Call only available on version >= 7
+        LoadBalancerEndpointConfiguration config = getConfigHost(host);
+
+        return reverseProxyLoadBalancerVTMAdapter.getTotalCurrentConnectionsForHost(config);
+    }
+
+    @Override
+    public Long getHostBytesIn(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException {
+        // Call only available on version >= 7
+        LoadBalancerEndpointConfiguration config = getConfigHost(host);
+
+        return reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
+    }
+
+    @Override
+    public Long getHostBytesOut(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException {
+        // Call only available on version >= 7
+        LoadBalancerEndpointConfiguration config = getConfigHost(host);
+
+        return reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
     }
 
     public void setAtlasCache(AtlasCache atlasCache) {

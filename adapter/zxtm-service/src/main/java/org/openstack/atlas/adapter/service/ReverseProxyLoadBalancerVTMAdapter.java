@@ -143,4 +143,14 @@ public interface ReverseProxyLoadBalancerVTMAdapter {
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config)
             throws StmRollBackException;
 
+    // Host stats
+    int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config)
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException;
+
+    Long getHostBytesIn(LoadBalancerEndpointConfiguration config)
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException;
+
+    Long getHostBytesOut(LoadBalancerEndpointConfiguration config)
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException;
+
 }

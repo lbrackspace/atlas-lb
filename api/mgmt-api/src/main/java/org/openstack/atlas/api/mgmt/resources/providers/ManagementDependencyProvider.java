@@ -3,6 +3,8 @@ package org.openstack.atlas.api.mgmt.resources.providers;
 import java.util.ArrayList;
 import javax.ws.rs.core.HttpHeaders;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.events.repository.AlertRepository;
@@ -64,6 +66,7 @@ public class ManagementDependencyProvider {
     protected NotificationService notificationService;
     protected BlackListService blackListService;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+    protected ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     protected SuspensionService suspensionService;
     protected ClusterService clusterService;
     protected JobStateService jobStateService;
@@ -150,6 +153,10 @@ public class ManagementDependencyProvider {
 
     public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
         this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
+    }
+
+    public void setReverseProxyLoadBalancerVTMService(ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService) {
+        this.reverseProxyLoadBalancerVTMService = reverseProxyLoadBalancerVTMService;
     }
 
     public void setNotificationService(NotificationService notificationService) {
@@ -348,6 +355,12 @@ public class ManagementDependencyProvider {
         }
         return out;
     }
+
+    public boolean isRestAdapter() {
+        return configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null
+                && configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase("REST");
+    }
+
 
     private boolean isBypassAuth() {
         if (isMockitoAuth()) {
