@@ -2,9 +2,7 @@ package org.rackspace.vtm.client;
 
 import org.rackspace.vtm.client.bandwidth.Bandwidth;
 import org.rackspace.vtm.client.config.Configuration;
-import org.rackspace.vtm.client.counters.VirtualServerStats;
-import org.rackspace.vtm.client.counters.VirtualServerStatsProperties;
-import org.rackspace.vtm.client.counters.VirtualServerStatsStatistics;
+import org.rackspace.vtm.client.counters.*;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.vtm.client.glb.GlobalLoadBalancing;
@@ -32,6 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class VTMRestClient extends VTMRestClientManager {
@@ -93,7 +92,7 @@ public class VTMRestClient extends VTMRestClientManager {
                 || path.equals(ClientConstants.MONITOR_PATH) || path.equals(ClientConstants.MONITORSCRIPT_PATH)
                 || path.equals(ClientConstants.PROTECTION_PATH) || path.equals(ClientConstants.V_SERVER_PATH)
                 || path.equals(ClientConstants.TRAFFICMANAGER_PATH) || path.equals(ClientConstants.TRAFFICSCRIPT_PATH)
-                || path.equals(ClientConstants.GLOBAL_SETTINGS);
+                || path.equals(ClientConstants.GLOBAL_SETTINGS) || path.equals(ClientConstants.GLOBAL_COUNTERS);
     }
 
     /**
@@ -1139,10 +1138,22 @@ public class VTMRestClient extends VTMRestClientManager {
         try {
             stats = getItem(name, VirtualServerStats.class, ClientConstants.V_SERVER_PATH, endpoint);
         } catch (VTMRestClientObjectNotFoundException e) {
-            stats.setProperties(getZeroStats());
+            stats.setProperties(getZeroedVirtulServerStats());
         } catch (VTMRestClientException e) {
-            stats.setProperties(getZeroStats());
+            stats.setProperties(getZeroedVirtulServerStats());
         }
+        return stats;
+    }
+
+    /**
+     * @throws VTMRestClientObjectNotFoundException
+     */
+    public GlobalCounters getGlobalCounters(URI endpoint) throws URISyntaxException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+        GlobalCounters stats = new GlobalCounters();
+        String statsEndpoint = endpoint.toString().split("config")[0];
+        GlobalCountersProperties props = new GlobalCountersProperties();
+        props = getItem("", GlobalCountersProperties.class, ClientConstants.GLOBAL_COUNTERS, new URI(statsEndpoint));
+        stats.setProperties(props);
         return stats;
     }
 
@@ -1153,7 +1164,7 @@ public class VTMRestClient extends VTMRestClientManager {
         client.close();
     }
 
-    private VirtualServerStatsProperties getZeroStats() {
+    private VirtualServerStatsProperties getZeroedVirtulServerStats() {
         VirtualServerStatsProperties props = new VirtualServerStatsProperties();
         VirtualServerStatsStatistics stats = new VirtualServerStatsStatistics();
         stats.setConnectTimedOut(0L);

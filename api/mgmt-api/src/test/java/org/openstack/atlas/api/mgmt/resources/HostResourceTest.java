@@ -1,11 +1,20 @@
 package org.openstack.atlas.api.mgmt.resources;
 
 import org.dozer.DozerBeanMapperBuilder;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cidr;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.NetInterface;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.HostStatus;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
@@ -23,8 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 @Ignore
@@ -33,28 +42,66 @@ public class HostResourceTest {
     public static class whenRetrievingHostDetails {
         private ManagementAsyncService asyncService;
         private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+        private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
         private HostResource hostResource;
         private HostService hostService;
         private OperationResponse operationResponse;
+        private Host host;
+        // TODO: Refactor rest for annotations
+        @Mock
+        private RestApiConfiguration config;
 
         @Before
-        public void setUp() {
+        public void setUp() throws EntityNotFoundException {
+            MockitoAnnotations.initMocks(this);
             hostResource = new HostResource();
             hostResource.setMockitoAuth(true);
             HostRepository hrepo = mock(HostRepository.class);
             asyncService = mock(ManagementAsyncService.class);
             reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
+            reverseProxyLoadBalancerVTMService = mock(ReverseProxyLoadBalancerVTMService.class);
             hostService = mock(HostService.class);
             hostResource.setManagementAsyncService(asyncService);
             hostResource.setId(1);
             hostResource.setHostRepository(hrepo);
             hostResource.setHostService(hostService);
             hostResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
+            hostResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
+            hostResource.setConfiguration(config);
             operationResponse = new OperationResponse();
             operationResponse.setExecutedOkay(true);
             hostResource.setDozerMapper(DozerBeanMapperBuilder.create()
                     .withMappingFiles(mappingFile)
                     .build());
+            host = new Host();
+            host.setMaxConcurrentConnections(2);
+            host.setHostStatus(HostStatus.ACTIVE);
+            when(hrepo.getById(anyInt())).thenReturn(host);
+            when(hostService.getById(anyInt())).thenReturn(host);
+            when(hrepo.getNumberOfUniqueAccountsForHost(anyInt())).thenReturn(3);
+            when(hrepo.getActiveLoadBalancerForHost(anyInt())).thenReturn((long) 3);
+            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
+
+        }
+
+        @Test
+        public void shouldReturn200WhenRetrievingHost() throws Exception {
+            when(reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(host)).thenReturn(14);
+            Response resp = hostResource.getHost();
+            Assert.assertEquals(200, resp.getStatus());
+            verify(reverseProxyLoadBalancerService, times(0)).getTotalCurrentConnectionsForHost(host);
+            verify(reverseProxyLoadBalancerVTMService, times(1)).getTotalCurrentConnectionsForHost(host);
+        }
+
+        @Test
+        public void shouldReturn200WhenRetrievingHostViaSoap() throws Exception {
+            when(reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host)).thenReturn(14);
+            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
+
+            Response resp = hostResource.getHost();
+            Assert.assertEquals(200, resp.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(0)).getTotalCurrentConnectionsForHost(host);
+            verify(reverseProxyLoadBalancerService, times(1)).getTotalCurrentConnectionsForHost(host);
         }
 
         @Test
@@ -90,33 +137,7 @@ public class HostResourceTest {
             Assert.assertEquals(202, resp.getStatus());
         }
 
-//        @Test
-//        public void shouldreturn202whenESBisNormalWhenInactivHost() throws Exception {
-//            when(hostResource.disableEndPoint()).thenReturn(null);
-//            Response resp = hostResource.inactivateHost();
-//            Assert.assertEquals(202, resp.getStatus());
-//        }
-//
-//        @Test
-//        public void shouldreturn202whenESBisNormalWhenDisablEndPointEnablEn() throws Exception {
-//            when(hostResource.disableEndPoint()).thenReturn(null);
-//            Response resp = hostResource.disableEndPoint();
-//            Assert.assertEquals(200, resp.getStatus());
-//        }
-//
-//        @Test
-//        public void shouldreturn202whenESBisNormalWhenEnableEndPointEnablEn() throws Exception {
-//            when(hostResource.enableEndPoint()).thenReturn(null);
-//            Response resp = hostResource.enableEndPoint();
-//            Assert.assertEquals(200, resp.getStatus());
-//        }
 
-//        @Test
-//        public void shouldreturn202whenESBisNormalWhenDeleteHost() throws Exception {
-//            when(hostResource.deleteHost()).thenReturn(null);
-//            Response resp = hostResource.deleteHost();
-//            Assert.assertEquals(202, resp.getStatus());
-//        }
 
         public static class whenAddingSubnets {
             private ManagementAsyncService asyncService;
@@ -194,9 +215,7 @@ public class HostResourceTest {
             public void shouldIpv4Fail() {
                 Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress("192.168.1.1.111"));
             }
-
         }
-
     }
 }
 

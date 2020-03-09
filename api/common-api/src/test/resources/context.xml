@@ -68,6 +68,16 @@
           parent="reverseProxyLoadBalancerService">
     </bean>
 
+    <bean id="reverseProxyLoadBalancerVTMService"
+          class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService"
+          abstract="true">
+    </bean>
+
+    <bean id="reverseProxyLoadBalancerVTMServiceImpl"
+          class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMServiceImpl"
+          parent="reverseProxyLoadBalancerVTMService">
+    </bean>
+
     <bean id="loadBalancerService" class="org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl"
           parent="baseService">
         <property name="notificationService" ref="notificationService"/>

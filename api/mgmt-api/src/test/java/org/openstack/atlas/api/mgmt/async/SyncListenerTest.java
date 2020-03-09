@@ -41,7 +41,7 @@ public class SyncListenerTest extends VTMTestBase {
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
-    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private RestApiConfiguration config;
 
@@ -62,7 +62,7 @@ public class SyncListenerTest extends VTMTestBase {
         syncListener.setNotificationService(notificationService);
         syncListener.setUsageEventCollection(usageEventCollection);
         syncListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
-        syncListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerStmService);
+        syncListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         syncListener.setConfiguration(config);
     }
 
@@ -85,7 +85,7 @@ public class SyncListenerTest extends VTMTestBase {
 
         syncListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
+        verify(reverseProxyLoadBalancerVTMService).deleteLoadBalancer(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.DELETED);
     }
 
@@ -104,7 +104,7 @@ public class SyncListenerTest extends VTMTestBase {
 
         syncListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
     }
 

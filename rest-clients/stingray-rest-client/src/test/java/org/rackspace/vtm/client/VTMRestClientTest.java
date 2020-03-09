@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.rackspace.vtm.client.bandwidth.Bandwidth;
+import org.rackspace.vtm.client.counters.GlobalCounters;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.vtm.client.glb.GlobalLoadBalancing;
@@ -756,6 +757,19 @@ public class VTMRestClientTest {
             when(mockedResponse.readEntity((Class<Object>) Matchers.any())).thenThrow(Exception.class);
             when(mockedResponse.getStatus()).thenReturn(ClientConstants.BAD_REQUEST);
             GlobalSettings globalSettings = vtimRestClient.getGlobalSettings();
+        }
+
+        @Test
+        public void getGlobalCountersShouldReturnCounters() throws Exception {
+            GlobalCounters globalCounters = vtimRestClient.getGlobalCounters(new URI("TEST"));
+            Assert.assertNotNull(globalCounters);
+        }
+
+        @Test(expected = VTMRestClientException.class)
+        public void getGlobalCountersShouldThrowExceptionWhenResponseIsInvalid() throws VTMRestClientException, VTMRestClientObjectNotFoundException, URISyntaxException {
+            when(mockedResponse.readEntity((Class<Object>) Matchers.any())).thenThrow(Exception.class);
+            when(mockedResponse.getStatus()).thenReturn(ClientConstants.BAD_REQUEST);
+            GlobalCounters globalCounters = vtimRestClient.getGlobalCounters(new URI("TEST"));
         }
 
     }

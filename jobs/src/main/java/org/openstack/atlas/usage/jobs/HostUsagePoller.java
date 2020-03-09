@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
+import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
 import org.openstack.atlas.jobs.AbstractJob;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -30,6 +31,8 @@ public class HostUsagePoller extends AbstractJob {
 
     @Autowired
     private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
+    @Autowired
+    private ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
     @Autowired
     private HostRepository hostRepository;
     @Autowired
@@ -61,12 +64,22 @@ public class HostUsagePoller extends AbstractJob {
                 final LoadBalancerEndpointConfiguration config = HostConfigHelper.getConfig(host, hostRepository);
                 Calendar pollTime = Calendar.getInstance();
 
-                LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getEndpoint()));
-                long hostBytesIn = reverseProxyLoadBalancerAdapter.getHostBytesIn(config);
-                LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getEndpoint()));
-                long hostBytesOut = reverseProxyLoadBalancerAdapter.getHostBytesOut(config);
-
-                LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
+                // TODO: Make use of reverse proxy service instead of adapter directly...
+                long hostBytesIn;
+                long hostBytesOut;
+                if (!config.getRestEndpoint().toString().contains("/7.0")) {
+                    LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getEndpoint()));
+                    hostBytesIn = reverseProxyLoadBalancerAdapter.getHostBytesIn(config);
+                    LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getEndpoint()));
+                    hostBytesOut = reverseProxyLoadBalancerAdapter.getHostBytesOut(config);
+                    LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
+                } else {
+                    LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
+                    hostBytesIn = reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
+                    LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
+                    hostBytesOut = reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
+                    LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
+                }
 
                 LOG.debug(String.format("Saving usage snapshot for '%s' (%s)...", host.getName(), host.getEndpoint()));
                 addRecordForHost(host, hostBytesIn, hostBytesOut, pollTime);

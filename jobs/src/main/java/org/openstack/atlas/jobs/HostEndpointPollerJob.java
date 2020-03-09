@@ -3,8 +3,8 @@ package org.openstack.atlas.jobs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
+import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -27,8 +27,11 @@ import org.openstack.atlas.service.domain.entities.HostStatus;
 public class HostEndpointPollerJob extends AbstractJob {
     private final Log LOG = LogFactory.getLog(HostEndpointPollerJob.class);
 
+    // TODO refactor to use proxyService. Need to make it a component for autowiring..
+//    @Autowired
+//    private ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerServiceVTM;
     @Autowired
-    private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
+    private ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
     @Autowired
     private ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
     @Autowired
@@ -48,34 +51,31 @@ public class HostEndpointPollerJob extends AbstractJob {
     public void setup(JobExecutionContext jobExecutionContext) throws JobExecutionException {
     }
 
-    //TODO: refactor to use the async service...
+
     @Override
     public void run() throws Exception {
 
         try {
-            boolean endpointWorks;
             boolean restEndpointWorks;
             List<Host> hosts = hostRepository.getAll();
             for (Host host : hosts) {
                 if(host.getHostStatus() == HostStatus.OFFLINE){
                     continue;
                 }
-//                endpointWorks = reverseProxyLoadBalancerAdapter.isEndPointWorking(getConfigHost(host));
-//                if (endpointWorks) {
-//                    host.setSoapEndpointActive(Boolean.TRUE);
-//                    LOG.info("Host: " + host.getId() + " is active");
-//                } else {
-//                    host.setSoapEndpointActive(Boolean.FALSE);
-//                    LOG.info("Host: " + host.getId() + " is inactive");
-//                }
 
-                restEndpointWorks = reverseProxyLoadBalancerStmAdapter.isEndPointWorking(getConfigHost(host));
+                // Temp check until we refactor to use proxyService
+                if (!host.getRestEndpoint().contains("/7.0")) {
+                    restEndpointWorks = reverseProxyLoadBalancerStmAdapter.isEndPointWorking(getConfigHost(host));
+                } else {
+                    restEndpointWorks = reverseProxyLoadBalancerVTMAdapter.isEndPointWorking(getConfigHost(host));
+                }
+
                 if (restEndpointWorks) {
                     host.setRestEndpointActive(Boolean.TRUE);
-                    LOG.info("Host: " + host.getId() + " Rest Endpoint is active");
+                    LOG.info("Host: " + host.getId() + "Endpoint: " + host.getRestEndpoint() + " Rest Endpoint is active");
                 } else {
                     host.setRestEndpointActive(Boolean.FALSE);
-                    LOG.info("Host: " + host.getId() + " Rest Endpoint is inactive");
+                    LOG.info("Host: " + host.getId() + "Endpoint: " + host.getRestEndpoint() + " Rest Endpoint is inactive");
                 }
 
                 LOG.info("Host: " + host.getId() + " is being updated in the database.");

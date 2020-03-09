@@ -121,6 +121,8 @@ public class ClustersResource extends ManagementDependencyProvider {
         this.clusterResource = clusterResource;
     }
 
+
+    // TODO: Remove if undeeded, update to VTM service otherwise
     public String getUtilization(Cluster cl) {
         double utilization = 0;
         //get sum of max allowed connections for all host in cluster
