@@ -3,6 +3,7 @@ package org.openstack.atlas.api.resources.providers;
 import org.dozer.Mapper;
 import org.openstack.atlas.api.atom.AtomFeedAdapter;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.integration.AsyncService;
@@ -66,6 +67,7 @@ public class CommonDependencyProvider {
     protected LoadBalancerEventRepository loadBalancerEventRepository;
     protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    protected ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
 
     public void init() throws Exception{
         dozerMapper = dozerMapperBuilderBean.getDozerMapperObject();
@@ -77,6 +79,10 @@ public class CommonDependencyProvider {
 
     public void setReverseProxyLoadBalancerStmService(ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService) {
         this.reverseProxyLoadBalancerStmService = reverseProxyLoadBalancerStmService;
+    }
+
+    public void setReverseProxyLoadBalancerVTMService(ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService) {
+        this.reverseProxyLoadBalancerVTMService = reverseProxyLoadBalancerVTMService;
     }
 
     public void setProtocolsService(ProtocolsService protocolsService) {

@@ -576,7 +576,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         this.reverseProxyLoadBalancerStmAdapter = reverseProxyLoadBalancerStmAdapter;
     }
 
-    public void setReverseProxyLoadBalancerVTMdapter(ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter) {
+    public void setReverseProxyLoadBalancerVTMAdapter(ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter) {
         this.reverseProxyLoadBalancerVTMAdapter = reverseProxyLoadBalancerVTMAdapter;
     }
 
