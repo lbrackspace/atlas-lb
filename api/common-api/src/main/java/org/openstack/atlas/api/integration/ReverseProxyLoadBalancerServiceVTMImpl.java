@@ -68,7 +68,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     private int getVersion(URI endpoint) {
-        if (endpoint.getQuery().contains("/7.0/")) return 7;
+        if (endpoint.getPath().contains("/7.0/")) return 7;
         // default to version 3
         return 3;
     }
@@ -576,7 +576,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         this.reverseProxyLoadBalancerStmAdapter = reverseProxyLoadBalancerStmAdapter;
     }
 
-    public void setReverseProxyLoadBalancerVTMdapter(ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter) {
+    public void setReverseProxyLoadBalancerVTMAdapter(ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter) {
         this.reverseProxyLoadBalancerVTMAdapter = reverseProxyLoadBalancerVTMAdapter;
     }
 
