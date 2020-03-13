@@ -452,6 +452,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         return conn;
     }
 
+    // TODO: unused
     @Override
     public Integer getLoadBalancerCurrentConnections(LoadBalancer lb, boolean isSsl) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
@@ -465,6 +466,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         return conn;
     }
 
+    // TODO: unused
     @Override
     public Long getLoadBalancerBytesIn(LoadBalancer lb, boolean isSsl) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
@@ -478,6 +480,7 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
         return bytesIn;
     }
 
+    // TODO: unused
     @Override
     public Long getLoadBalancerBytesOut(LoadBalancer lb, boolean isSsl) throws Exception {
         LoadBalancerEndpointConfiguration config = getConfigHost(lb.getHost());
