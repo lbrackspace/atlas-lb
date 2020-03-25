@@ -93,7 +93,7 @@ public class ReassignLoadBalancerHostListenerTest extends VTMTestBase {
         lb.setHost(host);
         lbs.add(lb);
         when(esbRequest.getLoadBalancers()).thenReturn(lbs);
-        when(loadBalancerService.get(LOAD_BALANCER_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         reassignHostListener.doOnMessage(objectMessage);
@@ -119,7 +119,7 @@ public class ReassignLoadBalancerHostListenerTest extends VTMTestBase {
         lbs.add(lb);
         // Trigger exception
         when(esbRequest.getLoadBalancers()).thenReturn(null);
-        when(loadBalancerService.get(LOAD_BALANCER_ID)).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID)).thenReturn(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         try {

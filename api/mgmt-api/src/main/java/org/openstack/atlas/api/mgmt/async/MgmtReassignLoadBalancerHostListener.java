@@ -25,7 +25,7 @@ public class MgmtReassignLoadBalancerHostListener extends BaseListener {
             //Loop through and update the new configurations asynchronously
             for (LoadBalancer lb : requestLbs) {
                 try {
-                    dbLb = loadBalancerService.get(lb.getId());
+                    dbLb = loadBalancerService.getWithUserPages(lb.getId());
                 } catch (EntityNotFoundException e) {
                     throw new EntityExistsException("There was a problem retrieving one of the requesting load balancers configuration.");
                 }

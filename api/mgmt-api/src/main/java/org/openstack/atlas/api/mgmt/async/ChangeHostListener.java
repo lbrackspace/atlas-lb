@@ -43,6 +43,7 @@ public class ChangeHostListener extends BaseListener {
             for (Integer lbId : mdc.getIds()) {
                 lastLbId = lbId;
                 LoadBalancer lb = loadBalancerService.getWithUserPages(lbId);
+                lb.getUserPages();
                 dbLoadBalancers.add(lb);
                 lbIdString = lbIdString + ", " + lbId;
             }
