@@ -105,6 +105,17 @@ public class HostResourceTest {
         }
 
         @Test
+        public void shouldReturn200whenRetrievingHostViaRest() throws Exception {
+            when(reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(host)).thenReturn(11);
+            when(config.getString(anyString())).thenReturn("REST");
+
+            Response resp = hostResource.getHost();
+            Assert.assertEquals(200, resp.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(1)).getTotalCurrentConnectionsForHost(host);
+            verify(reverseProxyLoadBalancerService, times(0)).getTotalCurrentConnectionsForHost(host);
+        }
+
+        @Test
         public void shouldReturn200WhenEsbIsNormalDetails() throws Exception {
             Response resp = hostResource.retrieveHosts(0, 0);
             Assert.assertEquals(200, resp.getStatus());
