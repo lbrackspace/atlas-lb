@@ -17,6 +17,7 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.HealthMonitorService;
@@ -429,19 +430,19 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     //Deprecated
 
-//    @Override
-//    public Hostssubnet getSubnetMappings(Host host) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
-//        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
-//        String hostName = host.getTrafficManagerName();
-//        Hostssubnet hostssubnet;
-//        try {
-//            hostssubnet = reverseProxyLoadBalancerStmAdapter.getSubnetMappings(getConfig(host), hostName);
-//        } catch (RollBackException af) {
-//            checkAndSetIfSoapEndPointBad(hostConfig, af);
-//            throw af;
-//        }
-//        return hostssubnet;
-//    }
+    @Override
+    public Hostssubnet getSubnetMappings(Host host) throws RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
+        String hostName = host.getTrafficManagerName();
+        Hostssubnet hostssubnet;
+        try {
+            hostssubnet = reverseProxyLoadBalancerVTMAdapter.getSubnetMappings(getConfig(host), hostName);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(hostConfig, af);
+            throw af;
+        }
+        return hostssubnet;
+    }
 //
 //    @Override
 //    public void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {

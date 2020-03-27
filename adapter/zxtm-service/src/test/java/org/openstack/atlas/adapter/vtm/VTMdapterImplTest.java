@@ -17,6 +17,9 @@ import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
+import org.openstack.atlas.service.domain.pojos.Hostsubnet;
+import org.openstack.atlas.service.domain.pojos.NetInterface;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ca.CertUtils;
@@ -27,21 +30,23 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.monitor.Monitor;
 import org.rackspace.vtm.client.pool.Pool;
 import org.rackspace.vtm.client.pool.PoolBasic;
 import org.rackspace.vtm.client.pool.PoolProperties;
 import org.rackspace.vtm.client.protection.Protection;
 import org.rackspace.vtm.client.ssl.keypair.Keypair;
+import org.rackspace.vtm.client.tm.TrafficManager;
+import org.rackspace.vtm.client.tm.TrafficManagerBasic;
+import org.rackspace.vtm.client.tm.TrafficManagerProperties;
+import org.rackspace.vtm.client.tm.Trafficip;
 import org.rackspace.vtm.client.traffic.ip.TrafficIp;
 import org.rackspace.vtm.client.virtualserver.*;
 import org.rackspace.vtm.client.VTMRestClient;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.mockito.Mockito.*;
 
@@ -1080,6 +1085,82 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client).destroy();
         }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PrepareForTest({VTMResourceTranslator.class})
+    public static class whenGettingSubnetMappings {
+
+        private String vsName;
+        private String host;
+        private Set<String> networks = new LinkedHashSet<>();
+        private List<Trafficip> trafficIps;
+        private TrafficManager trafficManager;
+        private Trafficip trafficip;
+        private LoadBalancer loadBalancer;
+        private VTMResourceTranslator resourceTranslator;
+
+        @Mock
+        VTMRestClient client;
+        @Mock
+        LoadBalancerEndpointConfiguration config;
+        @Mock
+        private VTMAdapterResources resources;
+        @Spy
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
+
+        @Before
+        public void standUp() throws Exception {
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancer = generateLoadBalancer();
+            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+            trafficip = new Trafficip();
+            trafficip.setName("testTrafficIp");
+            networks.add("1.23.4.5");
+            networks.add("6.7.8.9.10");
+            trafficip.setNetworks(networks);
+            trafficIps = new ArrayList<>();
+            trafficIps.add(trafficip);
+            ArrayList<NetInterface> netInterfaces = new ArrayList<>();
+            NetInterface ni1 = new NetInterface();
+            ni1.setCidrs(new ArrayList<>());
+            netInterfaces.add(ni1);
+            host = "Test";
+            trafficManager = new TrafficManager();
+            TrafficManagerProperties trafficManagerProperties = new TrafficManagerProperties();
+            TrafficManagerBasic trafficManagerBasic = new TrafficManagerBasic();
+            trafficManagerBasic.setTrafficip(trafficIps);
+            trafficManagerProperties.setBasic(trafficManagerBasic);
+            trafficManager.setProperties(trafficManagerProperties);
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+
+            when(adapterSpy.getResources()).thenReturn(resources);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
+            when(client.getTrafficManager(any())).thenReturn(trafficManager);
+
+        }
+
+        @Test
+        public void testGetSubnetMappingsShouldReturnHostssubnet() throws Exception {
+            Hostssubnet hostssubnet = adapterSpy.getSubnetMappings(config, host);
+            Assert.assertEquals("1.23.4.5", hostssubnet.getHostsubnets().get(0).getNetInterfaces().get(0).getCidrs().get(0).getBlock());
+            Assert.assertEquals("testTrafficIp", hostssubnet.getHostsubnets().get(0).getNetInterfaces().get(0).getName());
+            verify(client, times(1)).getTrafficManager(host);
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testGetHostSubnetShouldRollback() throws Exception {
+            when(client.getTrafficManager(host)).thenThrow(VTMRestClientException.class);
+
+            adapterSpy.getSubnetMappings(config, host);
+            verify(client, times(1)).getTrafficManager(host);
+        }
+
+
     }
 
 }

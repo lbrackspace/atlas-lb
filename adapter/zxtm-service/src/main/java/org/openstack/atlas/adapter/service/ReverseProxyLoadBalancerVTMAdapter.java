@@ -9,6 +9,7 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.RateLimit;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
@@ -137,8 +138,8 @@ public interface ReverseProxyLoadBalancerVTMAdapter {
 //    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
 //            throws StmRollBackException;
 //
-//    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host)
-//            throws StmRollBackException;
+    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host)
+            throws StmRollBackException;
 
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config)
             throws StmRollBackException;
