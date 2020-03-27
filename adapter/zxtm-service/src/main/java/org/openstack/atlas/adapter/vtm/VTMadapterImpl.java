@@ -16,8 +16,7 @@ import org.openstack.atlas.adapter.vtm.VTMAdapterUtils.VSType;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.pojos.Stats;
-import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ca.StringUtils;
@@ -29,6 +28,8 @@ import org.rackspace.vtm.client.counters.GlobalCounters;
 import org.rackspace.vtm.client.counters.VirtualServerStats;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
+import org.rackspace.vtm.client.tm.TrafficManager;
+import org.rackspace.vtm.client.tm.Trafficip;
 import org.rackspace.vtm.client.traffic.ip.TrafficIp;
 import org.rackspace.vtm.client.virtualserver.VirtualServer;
 import org.rackspace.vtm.client.virtualserver.VirtualServerHttp;
@@ -1111,43 +1112,43 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
 //        }
 //    }
 //
-//    @Override
-//    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws StmRollBackException {
-//        VTMRestClient client;
-//        Hostssubnet ret = new Hostssubnet();
-//        try {
-//            client = loadVTMRestClient(config);
-//            TrafficManager trafficManager = client.getTrafficManager(host);
-//            //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
-//            List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
-//            List<Hostsubnet> subnetList = new ArrayList<Hostsubnet>();
-//            Hostsubnet hostsubnet = new Hostsubnet();
-//            hostsubnet.setName(host);
-//
-//            //Loop over trafficIPs (== interfaces) (eth0, eth1, etc)
-//            for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
-//                Set<String> networkSet = trafficManagerTrafficIp.getNetworks();
-//                NetInterface netInterface = new NetInterface();
-//                List<Cidr> cidrs = new ArrayList<Cidr>();
-//
-//                //Loop over networks (== cidr blocks)
-//                for (String block : networkSet) {
-//                    Cidr cidr = new Cidr();
-//                    cidr.setBlock(block);
-//                    cidrs.add(cidr);
-//                }
-//
-//                netInterface.setName(trafficManagerTrafficIp.getName());
-//                netInterface.setCidrs(cidrs);
-//                hostsubnet.getNetInterfaces().add(netInterface);
-//            }
-//            subnetList.add(hostsubnet);
-//            ret.setHostsubnets(subnetList);
-//        } catch (VTMRestClientObjectNotFoundException e) {
-//            throw new StmRollBackException("Failed retrieving subnet mappings", e);
-//        } catch (VTMRestClientException e) {
-//            throw new StmRollBackException("Failed retrieving subnet mappings", e);
-//        }
-//        return ret;
-//    }
+    @Override
+    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws StmRollBackException {
+        VTMRestClient client;
+        Hostssubnet ret = new Hostssubnet();
+        try {
+            client = getResources().loadVTMRestClient(config);
+            TrafficManager trafficManager = client.getTrafficManager(host);
+            //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
+            List<Trafficip> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
+            List<Hostsubnet> subnetList = new ArrayList<Hostsubnet>();
+            Hostsubnet hostsubnet = new Hostsubnet();
+            hostsubnet.setName(host);
+
+            //Loop over trafficIPs (== interfaces) (eth0, eth1, etc)
+            for (Trafficip trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+                Set<String> networkSet = trafficManagerTrafficIp.getNetworks();
+                NetInterface netInterface = new NetInterface();
+                List<Cidr> cidrs = new ArrayList<Cidr>();
+
+                //Loop over networks (== cidr blocks)
+                for (String block : networkSet) {
+                    Cidr cidr = new Cidr();
+                    cidr.setBlock(block);
+                    cidrs.add(cidr);
+                }
+
+                netInterface.setName(trafficManagerTrafficIp.getName());
+                netInterface.setCidrs(cidrs);
+                hostsubnet.getNetInterfaces().add(netInterface);
+            }
+            subnetList.add(hostsubnet);
+            ret.setHostsubnets(subnetList);
+        } catch (VTMRestClientObjectNotFoundException e) {
+            throw new StmRollBackException("Failed retrieving subnet mappings", e);
+        } catch (VTMRestClientException e) {
+            throw new StmRollBackException("Failed retrieving subnet mappings", e);
+        }
+        return ret;
+    }
 }

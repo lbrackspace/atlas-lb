@@ -132,7 +132,12 @@ public class HostResource extends ManagementDependencyProvider {
 
         try {
             domainHost = hostService.getById(id);
-            dHostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(domainHost);
+
+            if(configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase("REST")){
+                dHostssubnet = reverseProxyLoadBalancerVTMService.getSubnetMappings(domainHost);
+            } else {
+                dHostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(domainHost);
+            }
 
             if (dHostssubnet != null) {
                 for (org.openstack.atlas.service.domain.pojos.Hostsubnet hsub : dHostssubnet.getHostsubnets()) {

@@ -5,6 +5,7 @@ import javax.ws.rs.core.HttpHeaders;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.events.repository.AlertRepository;
@@ -73,6 +74,8 @@ public class ManagementDependencyProvider {
     protected AllowedDomainsService allowedDomainsService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected Configuration configuration;
+    protected RestApiConfiguration restApiConfiguration;
+
 
     public void init() throws Exception{
         dozerMapper = mgmtDozerMapperBuilderBean.getDozerMapperObject();

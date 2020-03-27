@@ -5,6 +5,7 @@ import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
@@ -104,7 +105,7 @@ public interface ReverseProxyLoadBalancerVTMService {
 
     //Deprecated
 
-//    Hostssubnet getSubnetMappings(Host host) throws Exception;
+    Hostssubnet getSubnetMappings(Host host) throws RemoteException, DecryptException, EntityNotFoundException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException;
 //
 //    void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
 //
