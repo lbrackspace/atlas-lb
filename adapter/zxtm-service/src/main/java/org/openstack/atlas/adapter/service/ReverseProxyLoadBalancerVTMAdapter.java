@@ -132,9 +132,9 @@ public interface ReverseProxyLoadBalancerVTMAdapter {
     public void enableDisableTLS_11(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isEnabled)
             throws RemoteException, InsufficientRequestException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException;
 
-//    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
-//            throws StmRollBackException;
-//
+    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
+            throws StmRollBackException;
+
 //    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
 //            throws StmRollBackException;
 //
