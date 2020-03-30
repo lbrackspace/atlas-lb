@@ -31,6 +31,7 @@ import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.vtm.client.tm.TrafficManager;
 import org.rackspace.vtm.client.tm.Trafficip;
 import org.rackspace.vtm.client.traffic.ip.TrafficIp;
+import org.rackspace.vtm.client.traffic.ip.TrafficIpIpMapping;
 import org.rackspace.vtm.client.virtualserver.VirtualServer;
 import org.rackspace.vtm.client.virtualserver.VirtualServerHttp;
 import org.rackspace.vtm.client.virtualserver.VirtualServerServerCertHostMapping;
@@ -1028,44 +1029,44 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
      * Deprecating these(SubnetMapping calls) as per ops. Unused call that is difficult to test, may support in future if needed... *
      */
 
-//    @Override
-//    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws StmRollBackException {
-//        VTMRestClient client;
-//        try {
-//            client = loadVTMRestClient(config);
-//            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
-//
-//            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
-//            for (Hostsubnet hostsubnet : subnetList) {
-//                String hsName = hostsubnet.getName();
-//                TrafficManager trafficManager = client.getTrafficManager(hsName);
-//                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = new ArrayList<TrafficManagerTrafficIp>();
-//                List<NetInterface> interfaceList = hostsubnet.getNetInterfaces();
-//
-//                //Loop over interfaces (eth0, eth1, etc)
-//                for (NetInterface netInterface : interfaceList) {
-//                    List<Cidr> cidrList = netInterface.getCidrs();
-//                    TrafficManagerTrafficIp trafficManagerTrafficIp = new TrafficManagerTrafficIp();
-//                    Set<String> networkList = new HashSet<String>();
-//
-//                    // Loop over Cidr list which contains one subnet per Cidr
-//                    for (Cidr cidr : cidrList) {
-//                        networkList.add(cidr.getBlock());
-//                    }
-//
-//                    trafficManagerTrafficIp.setName(netInterface.getName());
-//                    trafficManagerTrafficIp.setNetworks(networkList);
-//                    trafficManagerTrafficIpList.add(trafficManagerTrafficIp);
-//                }
-//                trafficManager.getProperties().getBasic().setTrafficip(trafficManagerTrafficIpList);
-//                client.updateTrafficManager(hsName, trafficManager);
-//            }
-//        } catch (VTMRestClientObjectNotFoundException e) {
-//            throw new StmRollBackException("Failed updating subnet mappings", e);
-//        } catch (VTMRestClientException e) {
-//            throw new StmRollBackException("Failed updating subnet mappings", e);
-//        }
-//    }
+    @Override
+    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws StmRollBackException {
+        VTMRestClient client = null;
+        try {
+            client = getResources().loadVTMRestClient(config);
+            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
+
+            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
+            for (Hostsubnet hostsubnet : subnetList) {
+                String hsName = hostsubnet.getName();
+                TrafficManager trafficManager = client.getTrafficManager(hsName);
+                List<Trafficip> trafficManagerTrafficIpList = new ArrayList<Trafficip>();
+                List<NetInterface> interfaceList = hostsubnet.getNetInterfaces();
+
+                //Loop over interfaces (eth0, eth1, etc)
+                for (NetInterface netInterface : interfaceList) {
+                    List<Cidr> cidrList = netInterface.getCidrs();
+                    Trafficip trafficManagerTrafficIp = new Trafficip();
+                    Set<String> networkList = new HashSet<String>();
+
+                    // Loop over Cidr list which contains one subnet per Cidr
+                    for (Cidr cidr : cidrList) {
+                        networkList.add(cidr.getBlock());
+                    }
+
+                    trafficManagerTrafficIp.setName(hsName);
+                    trafficManagerTrafficIp.setNetworks(networkList);
+                    trafficManagerTrafficIpList.add(trafficManagerTrafficIp);
+                }
+                trafficManager.getProperties().getBasic().setTrafficip(trafficManagerTrafficIpList);
+                client.updateTrafficManager(hsName, trafficManager);
+            }
+        } catch (VTMRestClientObjectNotFoundException | VTMRestClientException e) {
+            client.destroy();
+            throw new StmRollBackException("Failed updating subnet mappings", e);
+        }
+        client.destroy();
+    }
 //
 //    @Override
 //    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws StmRollBackException {
