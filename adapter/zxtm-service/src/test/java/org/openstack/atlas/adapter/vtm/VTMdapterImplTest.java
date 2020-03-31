@@ -17,10 +17,7 @@ import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Hostsubnet;
-import org.openstack.atlas.service.domain.pojos.NetInterface;
-import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.PemUtils;
@@ -1151,6 +1148,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             Assert.assertEquals("1.23.4.5", hostssubnet.getHostsubnets().get(0).getNetInterfaces().get(0).getCidrs().get(0).getBlock());
             Assert.assertEquals("testTrafficIp", hostssubnet.getHostsubnets().get(0).getNetInterfaces().get(0).getName());
             verify(client, times(1)).getTrafficManager(host);
+            verify(client).destroy();
+
         }
 
         @Test(expected = StmRollBackException.class)
@@ -1159,6 +1158,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             adapterSpy.getSubnetMappings(config, host);
             verify(client, times(1)).getTrafficManager(host);
+            verify(client).destroy();
+
         }
     }
 
@@ -1172,7 +1173,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         private ArrayList<Hostsubnet> hostssubnetList;
         private Hostssubnet hostssubnet;
         private Hostsubnet hostsubnet;
-        private NetInterface netInterface;
+        private ArrayList<NetInterface> netInterfaces;
         private TrafficManager trafficManager;
         private VTMResourceTranslator resourceTranslator;
         private ZeusSslTermination sslTermination;
@@ -1195,7 +1196,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             hostsubnet = new Hostsubnet();
             hostssubnet = new Hostssubnet();
             hostssubnetList = new ArrayList<>();
-            ArrayList<NetInterface> netInterfaces = new ArrayList<>();
+            netInterfaces = new ArrayList<>();
             NetInterface ni1 = new NetInterface();
             ni1.setCidrs(new ArrayList<>());
             netInterfaces.add(ni1);
@@ -1232,12 +1233,141 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
             verify(client).destroy();
+            Assert.assertEquals(1, trafficManager.getProperties().getBasic().getTrafficip().size());
+        }
+
+        @Test
+        public void testSetHostSubnetMultipleHosts() throws Exception {
+            NetInterface ni2 = new NetInterface();
+            Cidr c2 = new Cidr();
+            ArrayList<Cidr> c2list = new ArrayList<>();
+            ni2.setName("t2");
+            c2.setBlock("b2");
+            c2list.add(c2);
+            ni2.setCidrs(c2list);
+            netInterfaces.add(ni2);
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            adapterSpy.setSubnetMappings(config, hostssubnet);
+
+            verify(client, times(2)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+            Assert.assertEquals(2, trafficManager.getProperties().getBasic().getTrafficip().size());
         }
 
         @Test(expected = StmRollBackException.class)
         public void testSetHostSubnetShouldRollback() throws Exception {
             when(client.getTrafficManager(hostsubnet.getName())).thenThrow(VTMRestClientException.class);
             adapterSpy.setSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+        }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PrepareForTest({VTMResourceTranslator.class})
+    public static class WhenRemovingHostSubnetResources {
+        private String vsName;
+        private String secureVsName;
+        private LoadBalancer loadBalancer;
+        private ArrayList<Hostsubnet> hostssubnetList;
+        private Hostssubnet hostssubnet;
+        private Hostsubnet hostsubnet;
+        private ArrayList<NetInterface> netInterfaces;
+        private TrafficManager trafficManager;
+        private VTMResourceTranslator resourceTranslator;
+        private ZeusSslTermination sslTermination;
+
+        @Mock
+        private VTMAdapterResources resources;
+        @Mock
+        private LoadBalancerEndpointConfiguration config;
+        @Mock
+        private VTMRestClient client;
+        @Spy
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
+
+        @Before
+        public void standUp() throws Exception {
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancer = generateLoadBalancer();
+            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+            hostsubnet = new Hostsubnet();
+            hostssubnet = new Hostssubnet();
+            hostssubnetList = new ArrayList<>();
+            netInterfaces = new ArrayList<>();
+            NetInterface ni1 = new NetInterface();
+            ni1.setCidrs(new ArrayList<>());
+            netInterfaces.add(ni1);
+            hostsubnet.setName("h1");
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            trafficManager = new TrafficManager();
+            TrafficManagerProperties trafficManagerProperties = new TrafficManagerProperties();
+            TrafficManagerBasic trafficManagerBasic = new TrafficManagerBasic();
+            trafficManagerProperties.setBasic(trafficManagerBasic);
+            trafficManager.setProperties(trafficManagerProperties);
+
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+
+            when(adapterSpy.getResources()).thenReturn(resources);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
+            doReturn(trafficManager).when(client).updateTrafficManager(eq(hostsubnet.getName()), Matchers.any(TrafficManager.class));
+
+        }
+
+        @After
+        public void tearDown() {
+            //TODO figure out if I need to do any actual cleanup
+        }
+
+        @Test
+        public void testDeleteHostSubnet() throws Exception {
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            adapterSpy.deleteSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+            Assert.assertEquals(0, trafficManager.getProperties().getBasic().getTrafficip().size());
+
+        }
+
+        @Test
+        public void testDeleteHostSubnetMultipleHosts() throws Exception {
+            NetInterface ni2 = new NetInterface();
+            Cidr c2 = new Cidr();
+            ArrayList<Cidr> c2list = new ArrayList<>();
+            ni2.setName("t2");
+            c2.setBlock("b2");
+            c2list.add(c2);
+            ni2.setCidrs(c2list);
+            netInterfaces.add(ni2);
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            adapterSpy.deleteSubnetMappings(config, hostssubnet);
+
+            verify(client, times(2)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+            Assert.assertEquals(0, trafficManager.getProperties().getBasic().getTrafficip().size());
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testDeleteHostSubnetShouldRollback() throws Exception {
+            when(client.getTrafficManager(hostsubnet.getName())).thenThrow(VTMRestClientException.class);
+            adapterSpy.deleteSubnetMappings(config, hostssubnet);
 
             verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
             verify(client).destroy();

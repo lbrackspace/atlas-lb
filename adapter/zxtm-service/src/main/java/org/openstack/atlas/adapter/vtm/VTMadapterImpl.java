@@ -1067,52 +1067,53 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         }
         client.destroy();
     }
-//
-//    @Override
-//    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws StmRollBackException {
-//        VTMRestClient client;
-//        try {
-//            client = loadVTMRestClient(config);
-//            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
-//
-//            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
-//            for (Hostsubnet hostsubnet : subnetList) {
-//                String hsName = hostsubnet.getName();       // This name is of the form "dev1.lbaas.mysite.com"
-//                TrafficManager trafficManager = client.getTrafficManager(hsName);
-//                List<NetInterface> netInterfaceList = hostsubnet.getNetInterfaces();
-//                //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
-//                List<TrafficManagerTrafficIp> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
-//                Map<String, TrafficManagerTrafficIp> tipsMap = new HashMap<String, TrafficManagerTrafficIp>();
-//
-//                //Loop over tips to compile an indexed list by name
-//                for (TrafficManagerTrafficIp trafficManagerTrafficIp : trafficManagerTrafficIpList) {
-//                    tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
-//                }
-//
-//                //Loop over interfaces (eth0, eth1, etc)
-//                for (NetInterface netInterface : netInterfaceList) {
-//                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
-//
-//                    if (tipsMap.containsKey(netInterfaceName)) {
-//                        TrafficManagerTrafficIp tip = tipsMap.get(netInterfaceName);
-//                        Set<String> networkSet = tip.getNetworks();
-//                        List<Cidr> cidrList = netInterface.getCidrs(); //This is the list of objects containing subnet strings
-//
-//                        // Loop over Cidr list which contains one subnet per Cidr
-//                        for (Cidr cidr : cidrList) {
-//                            networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists
-//                        }
-//                    }
-//                }
-//                client.updateTrafficManager(hsName, trafficManager);
-//            }
-//        } catch (VTMRestClientObjectNotFoundException e) {
-//            throw new StmRollBackException("Failed removing subnet mappings", e);
-//        } catch (VTMRestClientException e) {
-//            throw new StmRollBackException("Failed removing subnet mappings", e);
-//        }
-//    }
-//
+
+    @Override
+    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet) throws StmRollBackException {
+        VTMRestClient client;
+        try {
+            client = getResources().loadVTMRestClient(config);
+            List<Hostsubnet> subnetList = hostssubnet.getHostsubnets();
+
+            //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
+            for (Hostsubnet hostsubnet : subnetList) {
+                String hsName = hostsubnet.getName();       // This name is of the form "dev1.lbaas.mysite.com"
+                TrafficManager trafficManager = client.getTrafficManager(hsName);
+                List<NetInterface> netInterfaceList = hostsubnet.getNetInterfaces();
+                //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
+                List<Trafficip> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
+                Map<String, Trafficip> tipsMap = new HashMap<String, Trafficip>();
+
+                //Loop over tips to compile an indexed list by name
+                for (Trafficip trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+                    tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
+                }
+
+                //Loop over interfaces (eth0, eth1, etc)
+                for (NetInterface netInterface : netInterfaceList) {
+                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
+
+                    if (tipsMap.containsKey(netInterfaceName)) {
+                        Trafficip tip = tipsMap.get(netInterfaceName);
+                        Set<String> networkSet = tip.getNetworks();
+                        List<Cidr> cidrList = netInterface.getCidrs(); //This is the list of objects containing subnet strings
+
+                        // Loop over Cidr list which contains one subnet per Cidr
+                        for (Cidr cidr : cidrList) {
+                            networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists
+                        }
+                    }
+                }
+                client.updateTrafficManager(hsName, trafficManager);
+            }
+        } catch (VTMRestClientObjectNotFoundException e) {
+            throw new StmRollBackException("Failed removing subnet mappings", e);
+        } catch (VTMRestClientException e) {
+            throw new StmRollBackException("Failed removing subnet mappings", e);
+        }
+        client.destroy();
+    }
+
     @Override
     public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host) throws StmRollBackException {
         VTMRestClient client;
@@ -1150,6 +1151,7 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         } catch (VTMRestClientException e) {
             throw new StmRollBackException("Failed retrieving subnet mappings", e);
         }
+        client.destroy();
         return ret;
     }
 }
