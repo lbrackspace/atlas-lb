@@ -135,9 +135,9 @@ public interface ReverseProxyLoadBalancerVTMAdapter {
     public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
             throws StmRollBackException;
 
-//    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
-//            throws StmRollBackException;
-//
+    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
+            throws StmRollBackException;
+
     public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host)
             throws StmRollBackException;
 

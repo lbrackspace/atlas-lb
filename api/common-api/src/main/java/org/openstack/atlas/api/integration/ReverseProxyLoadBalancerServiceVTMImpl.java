@@ -428,8 +428,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         return out;
     }
 
-    //Deprecated
-
+    // Host subnet mappings supported in vtmv7.0+
     @Override
     public Hostssubnet getSubnetMappings(Host host) throws RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
@@ -454,18 +453,18 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
             throw af;
         }
     }
-//
-//    @Override
-//    public void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
-//        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
-//        String hostName = host.getTrafficManagerName();
-//        try {
-//            reverseProxyLoadBalancerStmAdapter.deleteSubnetMappings(hostConfig, hostssubnet);
-//        } catch (RollBackException af) {
-//            checkAndSetIfSoapEndPointBad(hostConfig, af);
-//            throw af;
-//        }
-//    }
+
+    @Override
+    public void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
+        String hostName = host.getTrafficManagerName();
+        try {
+            reverseProxyLoadBalancerVTMAdapter.deleteSubnetMappings(hostConfig, hostssubnet);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(hostConfig, af);
+            throw af;
+        }
+    }
 
     @Override
     public void deleteErrorFile(LoadBalancer loadBalancer, UserPages up) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException, StmRollBackException {
