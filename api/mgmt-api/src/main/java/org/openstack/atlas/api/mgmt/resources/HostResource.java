@@ -381,6 +381,7 @@ public class HostResource extends ManagementDependencyProvider {
 
     // Mimics org.openstack.atlas.api.mgmt.async.MgmtSetHostSubnetMappingListener
     // But skips activeMQ so we can get a syncronouse response incase of an Error.
+    // TODO: see if we can migrate this to async. If not, rework this
     private void syncSetHostSubnet(EsbRequest req) throws Exception {
         org.openstack.atlas.service.domain.entities.Host rHost = req.getHost();
         org.openstack.atlas.service.domain.entities.Host dHost = null;
@@ -392,6 +393,10 @@ public class HostResource extends ManagementDependencyProvider {
         }
         hostssubnet = req.getHostssubnet();
         hostssubnet.getHostsubnets().get(0).setName(dHost.getTrafficManagerName());
-        reverseProxyLoadBalancerService.setSubnetMappings(dHost, hostssubnet);
+        if (isRestAdapter()) {
+            reverseProxyLoadBalancerVTMService.setSubnetMappings(dHost, hostssubnet);
+        } else {
+            reverseProxyLoadBalancerService.setSubnetMappings(dHost, hostssubnet);
+        }
     }
 }

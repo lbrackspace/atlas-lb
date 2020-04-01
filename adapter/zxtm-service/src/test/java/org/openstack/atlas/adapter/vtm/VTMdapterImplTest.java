@@ -1134,6 +1134,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             trafficManagerBasic.setTrafficip(trafficIps);
             trafficManagerProperties.setBasic(trafficManagerBasic);
             trafficManager.setProperties(trafficManagerProperties);
+
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
@@ -1159,8 +1160,87 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             adapterSpy.getSubnetMappings(config, host);
             verify(client, times(1)).getTrafficManager(host);
         }
-
-
     }
 
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PrepareForTest({VTMResourceTranslator.class})
+    public static class WhenModifyingHostSubnetResources {
+        private String vsName;
+        private String secureVsName;
+        private LoadBalancer loadBalancer;
+        private ArrayList<Hostsubnet> hostssubnetList;
+        private Hostssubnet hostssubnet;
+        private Hostsubnet hostsubnet;
+        private NetInterface netInterface;
+        private TrafficManager trafficManager;
+        private VTMResourceTranslator resourceTranslator;
+        private ZeusSslTermination sslTermination;
+
+        @Mock
+        private VTMAdapterResources resources;
+        @Mock
+        private LoadBalancerEndpointConfiguration config;
+        @Mock
+        private VTMRestClient client;
+        @Spy
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
+
+        @Before
+        public void standUp() throws Exception {
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancer = generateLoadBalancer();
+            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+            hostsubnet = new Hostsubnet();
+            hostssubnet = new Hostssubnet();
+            hostssubnetList = new ArrayList<>();
+            ArrayList<NetInterface> netInterfaces = new ArrayList<>();
+            NetInterface ni1 = new NetInterface();
+            ni1.setCidrs(new ArrayList<>());
+            netInterfaces.add(ni1);
+            hostsubnet.setName("h1");
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            trafficManager = new TrafficManager();
+            TrafficManagerProperties trafficManagerProperties = new TrafficManagerProperties();
+            TrafficManagerBasic trafficManagerBasic = new TrafficManagerBasic();
+            trafficManagerProperties.setBasic(trafficManagerBasic);
+            trafficManager.setProperties(trafficManagerProperties);
+
+            resourceTranslator = spy(new VTMResourceTranslator());
+            PowerMockito.mockStatic(VTMResourceTranslator.class);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+
+            when(adapterSpy.getResources()).thenReturn(resources);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
+            doReturn(trafficManager).when(client).updateTrafficManager(eq(hostsubnet.getName()), Matchers.any(TrafficManager.class));
+
+        }
+
+        @After
+        public void tearDown() {
+            //TODO figure out if I need to do any actual cleanup
+        }
+
+        @Test
+        public void testSetHostSubnet() throws Exception {
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            adapterSpy.setSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testSetHostSubnetShouldRollback() throws Exception {
+            when(client.getTrafficManager(hostsubnet.getName())).thenThrow(VTMRestClientException.class);
+            adapterSpy.setSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+        }
+    }
 }

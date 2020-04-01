@@ -444,17 +444,16 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         return hostssubnet;
     }
 //
-//    @Override
-//    public void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
-//        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
-//        String hostName = host.getTrafficManagerName();
-//        try {
-//            reverseProxyLoadBalancerStmAdapter.setSubnetMappings(hostConfig, hostssubnet);
-//        } catch (RollBackException af) {
-//            checkAndSetIfSoapEndPointBad(hostConfig, af);
-//            throw af;
-//        }
-//    }
+    @Override
+    public void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws RollBackException, MalformedURLException, DecryptException {
+        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
+        try {
+            reverseProxyLoadBalancerVTMAdapter.setSubnetMappings(hostConfig, hostssubnet);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(hostConfig, af);
+            throw af;
+        }
+    }
 //
 //    @Override
 //    public void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
