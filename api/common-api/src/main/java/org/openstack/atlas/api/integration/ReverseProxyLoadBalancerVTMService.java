@@ -107,8 +107,8 @@ public interface ReverseProxyLoadBalancerVTMService {
     Hostssubnet getSubnetMappings(Host host) throws RemoteException, DecryptException, EntityNotFoundException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException;
     
     void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
-//
-//    void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
+
+    void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
 
 
 }
