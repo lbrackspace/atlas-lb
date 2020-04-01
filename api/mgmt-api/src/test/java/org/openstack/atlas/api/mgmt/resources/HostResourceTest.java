@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.apache.commons.configuration2.Configuration;
 import org.dozer.DozerBeanMapperBuilder;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -51,6 +52,10 @@ public class HostResourceTest {
         @Mock
         private RestApiConfiguration config;
 
+
+
+
+
         @Before
         public void setUp() throws EntityNotFoundException {
             MockitoAnnotations.initMocks(this);
@@ -76,6 +81,7 @@ public class HostResourceTest {
             host = new Host();
             host.setMaxConcurrentConnections(2);
             host.setHostStatus(HostStatus.ACTIVE);
+
             when(hrepo.getById(anyInt())).thenReturn(host);
             when(hostService.getById(anyInt())).thenReturn(host);
             when(hrepo.getNumberOfUniqueAccountsForHost(anyInt())).thenReturn(3);
@@ -102,6 +108,26 @@ public class HostResourceTest {
             Assert.assertEquals(200, resp.getStatus());
             verify(reverseProxyLoadBalancerVTMService, times(0)).getTotalCurrentConnectionsForHost(host);
             verify(reverseProxyLoadBalancerService, times(1)).getTotalCurrentConnectionsForHost(host);
+        }
+
+        @Test
+        public void shouldReturn200whenRetrievingHostsSubnetMappingsViaRest() throws Exception {
+
+            Response resp = hostResource.retrieveHostsSubnetMappings();
+            Assert.assertEquals(200, resp.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(1)).getSubnetMappings(host);
+            verify(reverseProxyLoadBalancerService, times(0)).getSubnetMappings(host);
+        }
+
+        @Test
+        public void shouldReturn200whenRetrievingHostsSubnetMappingsViaSOAP() throws Exception{
+            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
+
+            Response resp = hostResource.retrieveHostsSubnetMappings();
+            Assert.assertEquals(200, resp.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(0)).getSubnetMappings(host);
+            verify(reverseProxyLoadBalancerService, times(1)).getSubnetMappings(host);
+
         }
 
         @Test
