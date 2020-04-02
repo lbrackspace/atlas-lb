@@ -1364,6 +1364,41 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             Assert.assertEquals(0, trafficManager.getProperties().getBasic().getTrafficip().size());
         }
 
+        @Test
+        public void testDeleteHostSubnetMultipleCidrs() throws Exception {
+            NetInterface ni2 = new NetInterface();
+            Cidr c2 = new Cidr();
+            ArrayList<Cidr> c2list = new ArrayList<>();
+            ni2.setName("t2");
+            c2.setBlock("b2");
+            c2list.add(c2);
+            ni2.setCidrs(c2list);
+            netInterfaces.add(ni2);
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList = new ArrayList<>();
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            Set<String> nets = new HashSet<>();
+            nets.add("b3");
+            nets.add("b2");
+            Trafficip tip = new Trafficip();
+            tip.setNetworks(nets);
+            tip.setName("h1");
+            ArrayList<Trafficip> tips = new ArrayList<>();
+            tips.add(tip);
+            trafficManager.getProperties().getBasic().setTrafficip(tips);
+
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            Assert.assertEquals(2, trafficManager.getProperties().getBasic().getTrafficip().get(0).getNetworks().size());
+
+            adapterSpy.deleteSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+            Assert.assertEquals(1, trafficManager.getProperties().getBasic().getTrafficip().get(0).getNetworks().size());
+        }
+
         @Test(expected = StmRollBackException.class)
         public void testDeleteHostSubnetShouldRollback() throws Exception {
             when(client.getTrafficManager(hostsubnet.getName())).thenThrow(VTMRestClientException.class);

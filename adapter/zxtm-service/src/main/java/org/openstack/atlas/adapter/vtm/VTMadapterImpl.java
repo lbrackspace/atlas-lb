@@ -1089,15 +1089,12 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
                     tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
                 }
 
-                //Loop over interfaces (eth0, eth1, etc)
-                for (NetInterface netInterface : netInterfaceList) {
-                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
-
-                    if (tipsMap.containsKey(netInterfaceName)) {
-                        Trafficip tip = tipsMap.get(netInterfaceName);
-                        Set<String> networkSet = tip.getNetworks();
-                        List<Cidr> cidrList = netInterface.getCidrs(); //This is the list of objects containing subnet strings
-
+                if (tipsMap.containsKey(hsName)) {
+                    Trafficip tip = tipsMap.get(hsName);
+                    Set<String> networkSet = tip.getNetworks();
+                    //Loop over interfaces (eth0, eth1, etc)
+                    for (NetInterface netInterface : netInterfaceList) {
+                        List<Cidr> cidrList = netInterface.getCidrs();
                         // Loop over Cidr list which contains one subnet per Cidr
                         for (Cidr cidr : cidrList) {
                             networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists

@@ -119,13 +119,6 @@
                      "default":       ""
                   },
 
-                  "community_edition_accepted": {
-                     "description":   "Whether user has accepted the Community Edition and will not be prompted for uploading a license key",
-
-                     "type":          "boolean",
-                     "default":       false
-                  },
-
                   "disk_serious": {
                      "description":   "The percentage level of disk usage that triggers a SERIOUS event log entry",
 

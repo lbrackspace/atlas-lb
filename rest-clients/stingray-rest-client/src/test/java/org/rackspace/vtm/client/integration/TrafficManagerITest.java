@@ -10,9 +10,12 @@ import org.rackspace.vtm.client.list.Child;
 import org.rackspace.vtm.client.tm.TrafficManager;
 import org.rackspace.vtm.client.tm.TrafficManagerBasic;
 import org.rackspace.vtm.client.tm.TrafficManagerProperties;
+import org.rackspace.vtm.client.tm.Trafficip;
 
 import javax.ws.rs.core.Response;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TrafficManagerITest extends VTMTestBase {
     TrafficManager manager;
@@ -82,5 +85,27 @@ public class TrafficManagerITest extends VTMTestBase {
         Response result = client.deleteTrafficManager(TESTNAME);
         Assert.assertEquals(204, result.getStatus());
         client.getTrafficManager(TESTNAME);
+    }
+
+    /**
+     * Tests the creation/updates of a Traffic Manager subnet mappings
+     *
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+     */
+    @Test
+    public void testUpdateTrafficManagerSubnetMappings() throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+        TrafficManager createdManager = client.createTrafficManager(TESTNAME, manager);
+        String t = manager.toString();
+        Assert.assertNotNull(createdManager);
+        List<Trafficip> tips = manager.getProperties().getBasic().getTrafficip();
+        Trafficip tip = new Trafficip();
+        tip.setName("t1");
+        Set<String> nets = new HashSet<>();
+        nets.add("192.168.0.0/16");
+        tip.setNetworks(nets);
+        tips.add(tip);
+        manager.getProperties().getBasic().setTrafficip(tips);
+        client.updateTrafficManager(TESTNAME, manager);
+
     }
 }
