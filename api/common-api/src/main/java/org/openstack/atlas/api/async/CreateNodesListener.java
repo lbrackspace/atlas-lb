@@ -41,7 +41,7 @@ public class CreateNodesListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug("Setting nodes in STM...");
-                reverseProxyLoadBalancerStmService.setNodes(dbLoadBalancer);
+                reverseProxyLoadBalancerVTMService.setNodes(dbLoadBalancer);
                 LOG.debug("Nodes successfully set.");
             } else {
                 LOG.debug("Setting nodes in ZXTM...");

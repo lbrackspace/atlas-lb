@@ -4,12 +4,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolProperties;
+
+import javax.ws.rs.core.Response;
 
 public class ClientExceptionITest extends StingrayTestBase {
     //Verify marshaling of all exception messages...
@@ -37,7 +38,7 @@ public class ClientExceptionITest extends StingrayTestBase {
      * Tests the creation of a Pool
      * Verifies using get and a comparison of content contained
      *
-     * @throws org.rackspace.stingray.client.exception.StingrayRestClientException,
+     * @throws StingrayRestClientException,
      *          StingrayRestClientObjectNotFoundException
      */
     @Test
@@ -50,5 +51,31 @@ public class ClientExceptionITest extends StingrayTestBase {
         client.deletePool(vsName);
     }
 
+
+    /**
+     * Tests that StingrayRestClientException is thrown.
+     * Checks to make sure StingrayRestClientFoundException is thrown by failing to createPool.
+     *
+     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     */
+    @Test(expected = StingrayRestClientException.class)
+    public void testThrowStingrayRestClientException() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        pool.setProperties(null);
+        Pool createdPool = client.createPool(vsName, pool);
+        Assert.assertNull(createdPool);
+    }
+
+    /**
+     * Tests the deletion of a Pool
+     * Checks return of the delete call, and checks to make sure StingrayRestClientObjectNotFoundException is thrown.
+     *
+     * @throws StingrayRestClientException, StingrayRestClientObjectNotFoundException
+     */
+    @Test(expected = StingrayRestClientObjectNotFoundException.class)
+    public void etestDeletePool() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException {
+        Response wasDeleted = client.deletePool(vsName);
+        Assert.assertEquals(204, wasDeleted.getStatus());
+        client.getPool(vsName);
+    }
 
 }

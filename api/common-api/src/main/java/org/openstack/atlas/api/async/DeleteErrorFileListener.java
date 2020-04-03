@@ -39,7 +39,7 @@ public class DeleteErrorFileListener extends BaseListener {
             try {
                 if (isRestAdapter()) {
                     LOG.debug(String.format("Deleting error file for %s in STM...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerStmService.deleteErrorFile(dbLoadBalancer, loadBalancerService.getUserPages(data.getLoadBalancerId(), data.getAccountId()));
+                    reverseProxyLoadBalancerVTMService.deleteErrorFile(dbLoadBalancer, loadBalancerService.getUserPages(data.getLoadBalancerId(), data.getAccountId()));
                     LOG.debug(String.format("Successfully deleted error file for %s in Zeus...", dbLoadBalancer.getId()));
                 } else {
                     LOG.debug(String.format("Deleting error file for %s in ZXTM...", dbLoadBalancer.getId()));

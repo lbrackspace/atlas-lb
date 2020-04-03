@@ -7,7 +7,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -41,7 +41,7 @@ public class UpdateNodeListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private Node nodeToUpdate;
     @Mock
@@ -64,7 +64,7 @@ public class UpdateNodeListenerTest extends STMTestBase {
         updateNodeListener = new UpdateNodeListener();
         updateNodeListener.setLoadBalancerService(loadBalancerService);
         updateNodeListener.setNotificationService(notificationService);
-        updateNodeListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        updateNodeListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         updateNodeListener.setConfiguration(config);
     }
 
@@ -80,7 +80,7 @@ public class UpdateNodeListenerTest extends STMTestBase {
 
         updateNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
+        verify(reverseProxyLoadBalancerVTMService).setNodes(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.UPDATE_NODE), eq(CategoryType.UPDATE), eq(EventSeverity.INFO));
     }
@@ -100,12 +100,12 @@ public class UpdateNodeListenerTest extends STMTestBase {
     public void testUpdateLoadBalancerWithInvalidNode() throws Exception {
         when(objectMessage.getObject()).thenReturn(lb);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).setNodes(lb);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).setNodes(lb);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         updateNodeListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).setNodes(lb);
+        verify(reverseProxyLoadBalancerVTMService).setNodes(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), anyString());
         verify(notificationService).saveNodeEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), eq(NODE_ID), anyString(), anyString(), eq(EventType.UPDATE_NODE), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));

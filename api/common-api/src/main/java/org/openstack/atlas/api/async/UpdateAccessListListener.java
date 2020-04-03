@@ -39,7 +39,7 @@ public class UpdateAccessListListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Update access list for load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.updateAccessList(dbLoadBalancer);
+                reverseProxyLoadBalancerVTMService.updateAccessList(dbLoadBalancer);
                 LOG.debug(String.format("Successfully updated access list in Zeus for load balancer '%d'.", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Update access list for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));

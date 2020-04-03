@@ -70,7 +70,7 @@ public class DeleteSslTerminationListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Deleting load balancer '%d' ssl termination in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.removeSslTermination(dbLoadBalancer);
+                reverseProxyLoadBalancerVTMService.removeSslTermination(dbLoadBalancer);
                 LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Deleting load balancer '%d' ssl termination in ZXTM...", dbLoadBalancer.getId()));

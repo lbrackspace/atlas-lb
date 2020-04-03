@@ -6,11 +6,10 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
-import org.openstack.atlas.api.mgmt.async.util.STMTestBase;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.api.mgmt.async.util.VTMTestBase;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
@@ -21,11 +20,10 @@ import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 
 import javax.jms.ObjectMessage;
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class SyncListenerTest extends STMTestBase {
+public class SyncListenerTest extends VTMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
@@ -43,7 +41,7 @@ public class SyncListenerTest extends STMTestBase {
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private RestApiConfiguration config;
 
@@ -64,7 +62,7 @@ public class SyncListenerTest extends STMTestBase {
         syncListener.setNotificationService(notificationService);
         syncListener.setUsageEventCollection(usageEventCollection);
         syncListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
-        syncListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        syncListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         syncListener.setConfiguration(config);
     }
 
@@ -87,7 +85,7 @@ public class SyncListenerTest extends STMTestBase {
 
         syncListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteLoadBalancer(lb);
+        verify(reverseProxyLoadBalancerVTMService).deleteLoadBalancer(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.DELETED);
     }
 
@@ -106,7 +104,7 @@ public class SyncListenerTest extends STMTestBase {
 
         syncListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).updateLoadBalancer(lb, lb);
+        verify(reverseProxyLoadBalancerVTMService).updateLoadBalancer(lb, lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
     }
 

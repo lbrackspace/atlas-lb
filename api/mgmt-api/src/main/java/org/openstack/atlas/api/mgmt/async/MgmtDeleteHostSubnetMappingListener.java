@@ -27,9 +27,8 @@ public class MgmtDeleteHostSubnetMappingListener extends BaseListener {
         hostssubnet.getHostsubnets().get(0).setName(dHost.getTrafficManagerName());
 
         if (isRestAdapter()) {
-            //TODO: currently not supported in REST...
             LOG.debug(String.format("Deleting host subnet mapping from host: %s", dHost.getId()));
-            reverseProxyLoadBalancerService.deleteSubnetMappings(dHost, hostssubnet);
+            reverseProxyLoadBalancerVTMService.deleteSubnetMappings(dHost, hostssubnet);
             LOG.debug(String.format("Deleted host subnet mapping from host: %s", dHost.getId()));
         } else {
             LOG.debug(String.format("Deleting host subnet mapping from host: %s", dHost.getId()));

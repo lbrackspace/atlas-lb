@@ -53,7 +53,7 @@ public class DeleteNodeListener extends BaseListener {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Removing node '%d' from load balancer '%d' in STM...", nodeToDelete.getId(), queueLb.getId()));
 //                dbLoadBalancer.setNodes(nodeService.getAllNodesByAccountIdLoadBalancerId(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.removeNode(dbLoadBalancer, nodeToDelete);
+                reverseProxyLoadBalancerVTMService.removeNode(dbLoadBalancer, nodeToDelete);
                 LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in STM.", nodeToDelete.getId(), queueLb.getId()));
             } else {
                 LOG.debug(String.format("Removing node '%d' from load balancer '%d' in ZXTM...", nodeToDelete.getId(), queueLb.getId()));

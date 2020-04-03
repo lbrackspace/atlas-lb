@@ -7,6 +7,7 @@ import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.mgmt.validation.contexts.HostContext;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
@@ -131,7 +132,12 @@ public class HostResource extends ManagementDependencyProvider {
 
         try {
             domainHost = hostService.getById(id);
-            dHostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(domainHost);
+
+            if(configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase("REST")){
+                dHostssubnet = reverseProxyLoadBalancerVTMService.getSubnetMappings(domainHost);
+            } else {
+                dHostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(domainHost);
+            }
 
             if (dHostssubnet != null) {
                 for (org.openstack.atlas.service.domain.pojos.Hostsubnet hsub : dHostssubnet.getHostsubnets()) {
@@ -362,8 +368,11 @@ public class HostResource extends ManagementDependencyProvider {
 
         try {
             host = hostService.getById(id);
-            connection = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host);
-
+            if (isRestAdapter()) {
+                connection = reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(host);
+            } else {
+                connection = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host);
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -372,6 +381,7 @@ public class HostResource extends ManagementDependencyProvider {
 
     // Mimics org.openstack.atlas.api.mgmt.async.MgmtSetHostSubnetMappingListener
     // But skips activeMQ so we can get a syncronouse response incase of an Error.
+    // TODO: see if we can migrate this to async. If not, rework this
     private void syncSetHostSubnet(EsbRequest req) throws Exception {
         org.openstack.atlas.service.domain.entities.Host rHost = req.getHost();
         org.openstack.atlas.service.domain.entities.Host dHost = null;
@@ -383,6 +393,10 @@ public class HostResource extends ManagementDependencyProvider {
         }
         hostssubnet = req.getHostssubnet();
         hostssubnet.getHostsubnets().get(0).setName(dHost.getTrafficManagerName());
-        reverseProxyLoadBalancerService.setSubnetMappings(dHost, hostssubnet);
+        if (isRestAdapter()) {
+            reverseProxyLoadBalancerVTMService.setSubnetMappings(dHost, hostssubnet);
+        } else {
+            reverseProxyLoadBalancerService.setSubnetMappings(dHost, hostssubnet);
+        }
     }
 }

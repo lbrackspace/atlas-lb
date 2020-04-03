@@ -2,12 +2,16 @@ package org.openstack.atlas.adapter.helpers;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.adapter.vtm.VTMConstants;
 import org.openstack.atlas.adapter.zxtm.ZxtmAdapterImpl;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.rackspace.stingray.client.StingrayRestClient;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.list.Child;
+import org.rackspace.vtm.client.VTMRestClient;
+import org.rackspace.vtm.client.exception.VTMRestClientException;
+import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -124,6 +128,55 @@ public class TrafficScriptHelper extends StmConstants {
         LOG.debug("Rate limit rules (traffic scripts) verification completed.");
     }
 
+    public static void addRateLimitScriptsIfNeeded(VTMRestClient client) throws IOException, VTMRestClientException {
+        LOG.debug("Verifying that rate limit rules (traffic scripts) are properly configured...");
+
+        boolean ruleRateLimitHttpExists = false;
+        boolean ruleRateLimitNonHttpExists = false;
+
+        List<org.rackspace.vtm.client.list.Child> rules = new ArrayList<>();
+        try {
+            rules = client.getTrafficscripts();
+        } catch (VTMRestClientObjectNotFoundException e) {
+            LOG.debug("There was an error in VTMRestClient: " + e);
+        }
+
+        for (org.rackspace.vtm.client.list.Child ruleName : rules) {
+            if (ruleName.getName().equals(StmConstants.RATE_LIMIT_HTTP)) ruleRateLimitHttpExists = true;
+            if (ruleName.getName().equals(StmConstants.RATE_LIMIT_NON_HTTP)) ruleRateLimitNonHttpExists = true;
+        }
+
+        if (!ruleRateLimitHttpExists) {
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", ZxtmAdapterImpl.ruleRateLimitHttp.getName()));
+            File createdRule = createRuleFile(StmConstants.RATE_LIMIT_HTTP, TrafficScriptHelper.getHttpRateLimitScript());
+
+            try {
+                client.createTrafficscript(StmConstants.RATE_LIMIT_HTTP, createdRule);
+            } catch (VTMRestClientObjectNotFoundException e) {
+                LOG.debug("There was an error in VTMRestClient: " + e);
+            }
+
+            createdRule.delete();
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", ZxtmAdapterImpl.ruleRateLimitHttp.getName()));
+        }
+
+        if (!ruleRateLimitNonHttpExists) {
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", ZxtmAdapterImpl.ruleRateLimitNonHttp.getName()));
+            File createdRule = createRuleFile(StmConstants.RATE_LIMIT_NON_HTTP, TrafficScriptHelper.getNonHttpRateLimitScript());
+
+            try {
+                client.createTrafficscript(StmConstants.RATE_LIMIT_NON_HTTP, createdRule);
+            } catch (VTMRestClientObjectNotFoundException e) {
+                LOG.debug("There was an error in VTMRestClient: " + e);
+            }
+
+            createdRule.delete();
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", ZxtmAdapterImpl.ruleRateLimitNonHttp.getName()));
+        }
+
+        LOG.debug("Rate limit rules (traffic scripts) verification completed.");
+    }
+
     public static void addXForwardedForScriptIfNeeded(ZxtmServiceStubs serviceStubs) throws RemoteException {
         LOG.debug("Verifying that the X-Forwarded-For rule (traffic script) is properly configured...");
 
@@ -195,6 +248,39 @@ public class TrafficScriptHelper extends StmConstants {
         LOG.debug("X-Forwarded-For rule (traffic script) verification completed.");
     }
 
+    public static void addXForwardedForScriptIfNeeded(VTMRestClient client) throws IOException, VTMRestClientException {
+        LOG.debug("Verifying that the X-Forwarded-For rule (traffic script) is properly configured...");
+
+        boolean ruleXForwardedForExists = false;
+        List<org.rackspace.vtm.client.list.Child> rules = new ArrayList<>();
+        try {
+            rules = client.getTrafficscripts();
+        } catch (VTMRestClientObjectNotFoundException e) {
+            LOG.debug("There was an error in VTMRestClient: " + e);
+        }
+
+        for (org.rackspace.vtm.client.list.Child ruleName : rules) {
+            if (ruleName.getName().equals(StmConstants.XFF)) ruleXForwardedForExists = true;
+        }
+
+        if (!ruleXForwardedForExists) {
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", StmConstants.XFF));
+            File crule = null;
+            crule = createRuleFile(StmConstants.XFF, TrafficScriptHelper.getXForwardedForHeaderScript());
+
+            try {
+                client.createTrafficscript(StmConstants.XFF, crule);
+            } catch (VTMRestClientObjectNotFoundException e) {
+                LOG.debug("There was an error in VTMRestClient: " + e);
+            }
+
+            crule.delete();
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmConstants.XFF));
+        }
+
+        LOG.debug("X-Forwarded-For rule (traffic script) verification completed.");
+    }
+
     public static void addXForwardedProtoScriptIfNeeded(ZxtmServiceStubs serviceStubs) throws RemoteException {
         LOG.debug("Verifying that the X-Forwarded-Proto rule (traffic script) is properly configured...");
 
@@ -237,6 +323,37 @@ public class TrafficScriptHelper extends StmConstants {
             try {
                 client.createTrafficscript(StmConstants.XFP, crule);
             } catch (StingrayRestClientObjectNotFoundException e) {
+                LOG.debug("There was an error in StingrayRestClient: " + e);
+            }
+
+             crule.delete();
+            LOG.info(String.format("Rule (traffic script) '%s' successfully added. Do not delete manually in the future :)", StmConstants.XFP));
+        }
+    }
+
+    public static void addXForwardedProtoScriptIfNeeded(VTMRestClient client) throws IOException, VTMRestClientException {
+        LOG.debug("Verifying that the X-Forwarded-Proto rule (traffic script) is properly configured...");
+
+        boolean ruleXForwardedProtoExists = false;
+        List<org.rackspace.vtm.client.list.Child> rules = null;
+        try {
+            rules = client.getTrafficscripts();
+        } catch (VTMRestClientObjectNotFoundException e) {
+            LOG.debug("There was an error in VTMRestClient: " + e);
+        }
+
+        for (org.rackspace.vtm.client.list.Child ruleName : rules) {
+            if (ruleName.getName().equals(VTMConstants.XFP)) ruleXForwardedProtoExists = true;
+        }
+
+        if (!ruleXForwardedProtoExists) {
+            LOG.warn(String.format("Rule (traffic script) '%s' does not exist. Adding as this should always exist...", StmConstants.XFP));
+            File crule = null;
+            crule = createRuleFile(StmConstants.XFP, TrafficScriptHelper.getXForwardedProtoHeaderScript());
+
+            try {
+                client.createTrafficscript(VTMConstants.XFP, crule);
+            } catch (VTMRestClientObjectNotFoundException e) {
                 LOG.debug("There was an error in StingrayRestClient: " + e);
             }
 

@@ -41,7 +41,7 @@ public class DeleteCertificateMappingListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Updating session persistence for load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.deleteCertificateMapping(dbLoadBalancer, queueCertMapping);
+                reverseProxyLoadBalancerVTMService.deleteCertificateMapping(dbLoadBalancer, queueCertMapping);
                 LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Removing certificate mapping '%d' from load balancer '%d' in ZXTM...", queueCertMapping.getId(), dataContainer.getLoadBalancerId()));

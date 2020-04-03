@@ -43,7 +43,7 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
                 try {
                     if (isRestAdapter()) {
                         LOG.debug(String.format("Removing suspension from load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                        reverseProxyLoadBalancerStmService.removeSuspension(dbLoadBalancer);
+                        reverseProxyLoadBalancerVTMService.removeSuspension(dbLoadBalancer);
                         LOG.debug(String.format("Successfully removed suspension from load balancer '%d' in STM.", dbLoadBalancer.getId()));
                     } else {
                         LOG.debug(String.format("Removing suspension from load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));

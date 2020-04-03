@@ -135,7 +135,7 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             }
             org.openstack.atlas.docs.loadbalancers.api.v1.Stats stats;
             if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equals("REST")) {
-                stats = dozerMapper.map(reverseProxyLoadBalancerStmService.getVirtualServerStats(loadBalancer),
+                stats = dozerMapper.map(reverseProxyLoadBalancerVTMService.getVirtualServerStats(loadBalancer),
                         org.openstack.atlas.docs.loadbalancers.api.v1.Stats.class);
             } else {
                 stats = dozerMapper.map(reverseProxyLoadBalancerService.getLoadBalancerStats(loadBalancer),

@@ -43,6 +43,7 @@ public class ChangeHostListener extends BaseListener {
             for (Integer lbId : mdc.getIds()) {
                 lastLbId = lbId;
                 LoadBalancer lb = loadBalancerService.getWithUserPages(lbId);
+                lb.getUserPages();
                 dbLoadBalancers.add(lb);
                 lbIdString = lbIdString + ", " + lbId;
             }
@@ -63,7 +64,7 @@ public class ChangeHostListener extends BaseListener {
         try {
             LOG.debug(String.format("Changing host for loadbalancer(s): %s in STM...", lbIdString));
 
-            reverseProxyLoadBalancerStmService.changeHostForLoadBalancers(dbLoadBalancers, mdc.getMoveHost());
+            reverseProxyLoadBalancerVTMService.changeHostForLoadBalancers(dbLoadBalancers, mdc.getMoveHost());
 
             // Update cluster for VIPs
             if (!newCluster.getId().equals(oldCluster.getId())) {

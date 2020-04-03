@@ -9,13 +9,9 @@ import org.junit.runners.MethodSorters;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
-import org.rackspace.stingray.client.list.Child;
 import org.rackspace.stingray.client.settings.GlobalSettings;
 import org.rackspace.stingray.client.settings.GlobalSettingsProperties;
 import org.rackspace.stingray.client.settings.GlobalSettingsSsl;
-
-import javax.ws.rs.core.Response;
-import java.util.List;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class GlobalSettingsITest extends StingrayTestBase {
@@ -57,8 +53,6 @@ public class GlobalSettingsITest extends StingrayTestBase {
         GlobalSettings globalSettings = client.getGlobalSettings();
         Assert.assertNotNull(globalSettings);
         Assert.assertEquals(ciphers, globalSettings.getProperties().getSsl().getSsl3Ciphers());
-
-
     }
 
 }

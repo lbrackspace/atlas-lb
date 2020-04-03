@@ -42,7 +42,7 @@ public class UpdateNodeListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.info(String.format("Updating nodes for load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.setNodes(dbLoadBalancer);
+                reverseProxyLoadBalancerVTMService.setNodes(dbLoadBalancer);
                 LOG.info(String.format("Successfully updated nodes for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
             } else {
                 LOG.info(String.format("Updating nodes for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));

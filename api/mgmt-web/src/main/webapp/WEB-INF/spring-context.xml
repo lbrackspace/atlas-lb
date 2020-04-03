@@ -114,6 +114,7 @@
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
         <property name="callbackService" ref="callbackService"/>
         <property name="reverseProxyLoadBalancerService" ref="reverseProxyLoadBalancerService"/>
+        <property name="reverseProxyLoadBalancerVTMService" ref="reverseProxyLoadBalancerVTMService"/>
 
         <property name="mgmtDozerMapperBuilderBean" ref="mgmtDozerMapperBuilderBean"/>
 

@@ -7,7 +7,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -37,7 +37,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
     @Mock
     private NotificationService notificationService;
     @Mock
-    private ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     @Mock
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
@@ -54,7 +54,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
         deleteErrorFileListener = new DeleteErrorFileListener();
         deleteErrorFileListener.setLoadBalancerService(loadBalancerService);
         deleteErrorFileListener.setNotificationService(notificationService);
-        deleteErrorFileListener.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+        deleteErrorFileListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
         deleteErrorFileListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteErrorFileListener.setConfiguration(config);
     }
@@ -73,7 +73,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteErrorFile(lb, null);
+        verify(reverseProxyLoadBalancerVTMService).deleteErrorFile(lb, null);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ACTIVE);
     }
 
@@ -99,7 +99,7 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
         deleteErrorFileListener.doOnMessage(objectMessage);
 
         verify(notificationService, never()).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(EntityNotFoundException.class), eq(AlertType.DATABASE_FAILURE.name()), eq(String.format("Load balancer '%d' not found in database.", lb.getId())));
-        verify(reverseProxyLoadBalancerStmService, never()).deleteErrorFile(lb, null);
+        verify(reverseProxyLoadBalancerVTMService, never()).deleteErrorFile(lb, null);
         verify(loadBalancerService, never()).setStatus(lb, LoadBalancerStatus.ACTIVE);
         verify(loadBalancerService, never()).setStatus(lb, LoadBalancerStatus.ERROR);
     }
@@ -110,12 +110,12 @@ public class DeleteErrorFileListenerTest extends STMTestBase {
         when(messageDataContainer.getAccountId()).thenReturn(ACCOUNT_ID);
         when(messageDataContainer.getLoadBalancerId()).thenReturn(LOAD_BALANCER_ID);
         when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
-        doThrow(Exception.class).when(reverseProxyLoadBalancerStmService).deleteErrorFile(lb, null);
+        doThrow(Exception.class).when(reverseProxyLoadBalancerVTMService).deleteErrorFile(lb, null);
         when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
 
         deleteErrorFileListener.doOnMessage(objectMessage);
 
-        verify(reverseProxyLoadBalancerStmService).deleteErrorFile(lb, null);
+        verify(reverseProxyLoadBalancerVTMService).deleteErrorFile(lb, null);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
         verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("Error setting Errorfile for %d_%d", lb.getAccountId(), lb.getId())));
     }

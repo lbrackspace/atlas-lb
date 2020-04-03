@@ -70,7 +70,7 @@ public class UpdateSslTerminationListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.info("Updating load balancer ssl termination in STM...");
-                reverseProxyLoadBalancerStmService.updateSslTermination(dbLoadBalancer, queTermination);
+                reverseProxyLoadBalancerVTMService.updateSslTermination(dbLoadBalancer, queTermination);
                 LOG.debug("Successfully updated a load balancer ssl termination in Zeus.");
             } else {
                 LOG.info("Updating load balancer ssl termination in ZXTM...");

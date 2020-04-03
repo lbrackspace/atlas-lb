@@ -41,7 +41,7 @@ public class UpdateSessionPersistenceListener extends BaseListener {
         try {
             if (isRestAdapter()) {
                 LOG.debug(String.format("Updating session persistence for load balancer '%d' in STM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerStmService.updateLoadBalancer(dbLoadBalancer, queueLb);
+                reverseProxyLoadBalancerVTMService.updateSessionPersistence(dbLoadBalancer, queueLb);
                 LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
             } else {
                 if (dbLoadBalancer.getSessionPersistence() != SessionPersistence.NONE) {

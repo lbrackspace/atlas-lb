@@ -10,11 +10,13 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.Stats;
@@ -313,6 +315,7 @@ public class LoadBalancerResourceTest {
     public static class WhenTestingStats {
         private LoadBalancerService loadBalancerService;
         private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
+        private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
         private AsyncService asyncService;
         private LoadBalancerResource loadBalancerResource;
         private RestApiConfiguration restApiConfiguration;
@@ -320,17 +323,21 @@ public class LoadBalancerResourceTest {
         private Mapper dozerBeanMapper;
         private Stats stats;
         org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer lb;
+        private LoadBalancer loadBalancer;
 
         private Response response;
 
         @Before
-        public void standUp() {
+        public void standUp() throws EntityNotFoundException {
             loadBalancerService = mock(LoadBalancerService.class);
             restApiConfiguration = mock(RestApiConfiguration.class);
             reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
+            reverseProxyLoadBalancerVTMService = mock(ReverseProxyLoadBalancerVTMService.class);
             asyncService = mock(AsyncService.class);
             memcachedClient = mock(MemcachedClient.class);
             dozerBeanMapper = mock(Mapper.class);
+
+
             loadBalancerResource = new LoadBalancerResource();
             loadBalancerResource.setId(1);
             loadBalancerResource.setAccountId(1234);
@@ -338,6 +345,7 @@ public class LoadBalancerResourceTest {
             loadBalancerResource.setAsyncService(asyncService);
             loadBalancerResource.setRestApiConfiguration(restApiConfiguration);
             loadBalancerResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
+            loadBalancerResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
             loadBalancerResource.setDozerMapper(dozerBeanMapper);
 
             stats = new Stats();
@@ -350,19 +358,42 @@ public class LoadBalancerResourceTest {
 
             lb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
             lb.setStatus("ACTIVE");
+
+            loadBalancer = new LoadBalancer();
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+            loadBalancer.setId(1);
+            loadBalancer.setAccountId(1234);
+            when(loadBalancerService.get(anyInt(), anyInt())).thenReturn(loadBalancer);
         }
 
-        @Ignore
+        @Test
+        public void shouldReturnOkWhenRetrievingStatsViaVTM() throws Exception {
+            doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
+            doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
+
+            doReturn("REST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
+            doReturn(stats).when(reverseProxyLoadBalancerVTMService).getVirtualServerStats(Matchers.any(LoadBalancer.class));
+
+
+            response = loadBalancerResource.retrieveLoadBalancerStats();
+            Assert.assertEquals(200, response.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(1)).getVirtualServerStats(loadBalancer);
+            verify(reverseProxyLoadBalancerService, times(0)).getLoadBalancerStats(loadBalancer);
+        }
+
         @Test
         public void shouldReturnOkWhenRetrievingStats() throws Exception {
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
             doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
 
-
-            when(loadBalancerService.get(ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(null);
+            doReturn("NOTREST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
             doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.any(LoadBalancer.class));
+
+
             response = loadBalancerResource.retrieveLoadBalancerStats();
             Assert.assertEquals(200, response.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(0)).getVirtualServerStats(loadBalancer);
+            verify(reverseProxyLoadBalancerService, times(1)).getLoadBalancerStats(loadBalancer);
         }
 
         @Test
