@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "515b9cf5_a746df17",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/providers/ManagementDependencyProviderTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 167,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-04-14T18:12:08Z",
+      "side": 1,
+      "message": "Not sure this is needed",
+      "revId": "60463da8645828da4550022d6f66a3ab3bf402a1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
