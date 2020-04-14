@@ -48,7 +48,7 @@ public class VirtualIpsResource extends ManagementDependencyProvider {
     @Path("availabilityreport")
     @GET
     public Response retrieveAvailabilityReports() {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
         List<org.openstack.atlas.service.domain.pojos.VirtualIpAvailabilityReport> dVipReports;
