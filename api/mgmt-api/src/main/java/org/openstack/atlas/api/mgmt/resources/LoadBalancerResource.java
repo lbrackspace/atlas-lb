@@ -43,7 +43,7 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
     @Path("host")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
     public Response getHost() {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
 

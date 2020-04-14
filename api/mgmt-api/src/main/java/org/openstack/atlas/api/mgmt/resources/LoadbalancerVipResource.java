@@ -67,7 +67,7 @@ public class LoadbalancerVipResource extends ManagementDependencyProvider {
 
     @GET
     public Response getVipsbyLoadBalancerId() {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
 

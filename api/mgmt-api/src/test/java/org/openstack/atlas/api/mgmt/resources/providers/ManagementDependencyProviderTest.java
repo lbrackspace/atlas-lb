@@ -154,5 +154,27 @@ public class ManagementDependencyProviderTest {
             Assert.assertNotNull(roles);
             Assert.assertTrue(roles.isEmpty());
         }
+
+        @Test
+        public void isUserInRoleShouldReturnTrueIfRoleStrContainsUserRoll() {
+            Boolean isCorrectRole = managementDependencyProvider.isUserInRole("support");
+            Assert.assertTrue(isCorrectRole);
+        }
+
+        @Test
+        public void isUserInRoleShouldReturnFalseIfRoleStrDoesNotContainUserRoll() {
+            List<String> groupList = new ArrayList<>();
+            groupList.add("user_group");
+
+            when(requestStateContainer.getHttpHeaders()).thenReturn(httpHeaders);
+            when(httpHeaders.getRequestHeader("LDAPGroups")).thenReturn(groupList);
+
+
+            Boolean isCorrectRole = managementDependencyProvider.isUserInRole("support");
+            Assert.assertFalse(isCorrectRole);
+        }
+
+
+
     }
 }
