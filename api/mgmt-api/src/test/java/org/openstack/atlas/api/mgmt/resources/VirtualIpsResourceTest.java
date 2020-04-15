@@ -40,7 +40,7 @@ public class VirtualIpsResourceTest {
             virtualIpsResource.setVipRepository(vpRepository);
             
             vips = new ArrayList<org.openstack.atlas.service.domain.entities.VirtualIp>();
-            
+
             virtualIpsResource.setManagementAsyncService(asyncService);
             virtualIpsResource.setId(12);
             operationResponse = new OperationResponse();

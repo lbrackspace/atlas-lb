@@ -30,7 +30,7 @@ public class VirtualIpResource extends ManagementDependencyProvider {
     @GET
     @Path("loadbalancers")
     public Response getLoadBalancersByVipId() {
-        if (!isUserInRole("cp,ops")) {
+        if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
         LoadBalancers rlbs = new LoadBalancers();

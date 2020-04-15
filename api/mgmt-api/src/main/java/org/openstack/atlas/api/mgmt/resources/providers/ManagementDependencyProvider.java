@@ -373,7 +373,7 @@ public class ManagementDependencyProvider {
                 return true;
             }
         } catch (NullPointerException ex) {
-            throw new IllegalArgumentException("No auth data founf\n", ex);
+            throw new IllegalArgumentException("No auth data found\n", ex);
         }
         return false;
     }
