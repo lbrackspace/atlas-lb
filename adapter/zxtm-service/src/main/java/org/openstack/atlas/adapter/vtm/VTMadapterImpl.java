@@ -789,7 +789,7 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
 //            List<VirtualServerServerCertHostMapping> curMappings = virtualServer.getProperties().getSsl().getServerCertHostMapping();
 
             // Remove item to be deleted
-            loadBalancer.getCertificateMappings().remove(certMappingToUpdate);
+            loadBalancer.getCertificateMappings().removeIf(cMapping -> certMappingToUpdate.getId().equals(cMapping.getId()));
 
             // Translate updated secure virtualserver, remove keypair and update virtualserver
             VirtualServer sVirtualServer = rt.translateVirtualServerResource(config, virtualServerNameSecure, loadBalancer);
