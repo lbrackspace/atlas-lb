@@ -61,9 +61,11 @@ public class MonitorITest extends VTMTestBase {
     public void testUpdateMonitor() throws VTMRestClientObjectNotFoundException, VTMRestClientException {
         int updateTimeout = 17;
         monitor.getProperties().getBasic().setTimeout(updateTimeout);
+        monitor.getProperties().getBasic().setType(MonitorBasic.Type.HTTP);
         Monitor updatedMonitor = client.updateMonitor(vsName, monitor);
         Assert.assertNotNull(updatedMonitor);
         Assert.assertEquals(updateTimeout, (int) updatedMonitor.getProperties().getBasic().getTimeout());
+        Assert.assertEquals(MonitorBasic.Type.HTTP, updatedMonitor.getProperties().getBasic().getType());
     }
 
 

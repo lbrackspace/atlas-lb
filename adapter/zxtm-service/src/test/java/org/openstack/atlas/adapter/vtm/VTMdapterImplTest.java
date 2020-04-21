@@ -1082,6 +1082,51 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client).destroy();
         }
+
+        @Test
+        public void testDeleteWithMultipleCertificateMappings() throws Exception {
+            VirtualServer vs = new VirtualServer();
+            VirtualServerServerCertHostMapping vshm = new VirtualServerServerCertHostMapping();
+            VirtualServerServerCertHostMapping vshm2 = new VirtualServerServerCertHostMapping();
+            vshm.setHost("thingHost");
+            vshm.setCertificate("cert12");
+            vshm2.setHost("thingHost2");
+            vshm2.setCertificate("cert22");
+            List<VirtualServerServerCertHostMapping> vsl = new ArrayList<>();
+            vsl.add(vshm);
+            vsl.add(vshm2);
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsssl.setServerCertHostMapping(vsl);
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(anyString())).thenReturn(vs);
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            CertificateMapping cmap = new CertificateMapping();
+            cmap.setCertificate("thing3");
+            cmap.setPrivateKey("thing23");
+            cmap.setIntermediateCertificate("thing33");
+            cmap.setHostName("thingHost3");
+            cmap.setId(3);
+            cms.add(cmap);
+            cms.add(certificateMapping);
+            loadBalancer.setCertificateMappings(cms);
+            adapterSpy.deleteCertificateMapping(config, loadBalancer, cmap);
+
+            String cname = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                    loadBalancer.getAccountId(), certificateMapping.getId());
+            // Called for each resource
+            verify(resources, times(1)).loadVTMRestClient(config);
+//            verify(zeusUtils, times(2)).buildZeusCrtFileLbassValidation(anyString(), anyString(), anyString());
+            verify(resourceTranslator, times(1)).translateVirtualServerResource(config, secureVsName, loadBalancer);
+            verify(resourceTranslator, times(0)).translateKeypairMappingsResource(loadBalancer, true);
+            verify(resources, times(1)).deleteKeypair(client, ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                    loadBalancer.getAccountId(), cmap.getId()));
+            verify(resources, times(0)).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
+            verify(resources, times(1)).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client, times(1)).destroy();
+        }
     }
 
     @RunWith(PowerMockRunner.class)

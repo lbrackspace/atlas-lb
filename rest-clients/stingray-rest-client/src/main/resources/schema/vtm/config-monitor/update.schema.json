@@ -39,13 +39,6 @@
                      "default":       true
                   },
 
-                  "can_use_ssl": {
-                     "description":   "Whether or not monitors of this type are capable of using SSL.",
-
-                     "type":          "boolean",
-                     "default":       false
-                  },
-
                   "delay": {
                      "description":   "The minimum time between calls to a monitor.",
 
@@ -53,18 +46,6 @@
                      "minimum":       1,
                      "maximum":       999990,
                      "default":       3
-                  },
-
-                  "editable_keys": {
-                     "description":   "Which of the monitor's configuration keys may be edited via the Admin Server UI.",
-
-                     "type":          "array",
-                     "default":       [],
-                     "uniqueItems":   true,
-
-                     "items": {
-                        "type":          "string"
-                     }
                   },
 
                   "factory": {
