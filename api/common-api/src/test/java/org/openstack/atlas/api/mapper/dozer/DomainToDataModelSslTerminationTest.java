@@ -31,13 +31,15 @@ public class DomainToDataModelSslTerminationTest {
 
         @Test
         public void shouldMapCipherStringNamesToCiphersType() {
-            String cipherNames = "ZES ,  DES  ,  AES   ,      NES";
+            String cipherNames = "ZES ,  DES  ,  AES   ,      NES  TES";
             Ciphers ciphers = mapper.map(cipherNames, Ciphers.class);
             Assert.assertEquals(ciphers.getCiphers().get(0).getName(), "AES");
             Assert.assertEquals(ciphers.getCiphers().get(1).getName(), "DES");
             Assert.assertEquals(ciphers.getCiphers().get(2).getName(), "NES");  // New Mario algo
-            Assert.assertEquals(ciphers.getCiphers().get(3).getName(), "ZES");
+            Assert.assertEquals(ciphers.getCiphers().get(3).getName(), "TES");
+            Assert.assertEquals(ciphers.getCiphers().get(4).getName(), "ZES");
             Assert.assertNotSame(ciphers.getCiphers().get(0).getName(), "Pfft");
+            Assert.assertEquals(ciphers.getCiphers().size(), 5);
             // Ciphernames should be alphabetized. To make them caonical
         }
 
