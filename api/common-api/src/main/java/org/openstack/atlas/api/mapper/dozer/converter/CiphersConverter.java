@@ -3,7 +3,7 @@ package org.openstack.atlas.api.mapper.dozer.converter;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
+
 import org.dozer.CustomConverter;
 import org.openstack.atlas.service.domain.exceptions.NoMappableConstantException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Ciphers;
@@ -29,7 +29,7 @@ public class CiphersConverter implements CustomConverter {
             return dbStr;
         } else if (srcValue.getClass() == dbStringClass && dstClass == apiCiphersClass) {
             String dbString = (String) srcValue;
-            List<String> cipherNames = convertCommaSeperatedList2ListOfStrings(dbString);
+            List<String> cipherNames = convertCommaAndSpaceSeparatedList2ListOfStrings(dbString);
             Ciphers ciphers = new Ciphers();
             List<Cipher> cipherList = ciphers.getCiphers();
             for (String cipherName : cipherNames) {
@@ -62,11 +62,14 @@ public class CiphersConverter implements CustomConverter {
         return out;
     }
 
-    List<String> convertCommaSeperatedList2ListOfStrings(String cos) {
+    List<String> convertCommaAndSpaceSeparatedList2ListOfStrings(String cos) {
         List<String> out = new ArrayList<String>();
-        for (String value : cos.split(",")) {
-            out.add(value.trim());
+        for (String value : cos.split("[\\s,]")) {
+            if(!value.equals("")) {
+                out.add(value.trim());
+            }
         }
+
         Collections.sort(out);
         return out;
     }
