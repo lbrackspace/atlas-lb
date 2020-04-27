@@ -61,6 +61,8 @@ public class ClientConstants {
     public static final String TRAFFICSCRIPT_PATH = "rules/";
     public static final String V_SERVER_PATH = "virtual_servers/";
     public static final String GLOBAL_SETTINGS = "global_settings/";
+    public static final String GLOBAL_COUNTERS = "status/local_tm/statistics/globals";
+
 
     /** Error messages for the Stingray Rest Client**/
     public static final String REQUEST_ERROR = "The Stingray Rest Client encountered a problem processing the request: ";

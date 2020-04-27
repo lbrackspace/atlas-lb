@@ -3,6 +3,7 @@ package org.openstack.atlas.api.integration;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
@@ -87,13 +88,13 @@ public interface ReverseProxyLoadBalancerVTMService {
 
     // Host stats
     int getTotalCurrentConnectionsForHost(Host host)
-            throws RemoteException, DecryptException, EntityNotFoundException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException;
+            throws RemoteException, DecryptException, EntityNotFoundException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, InsufficientRequestException;
 
     Long getHostBytesIn(Host host)
-            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException;
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException;
 
     Long getHostBytesOut(Host host)
-            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException;
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException;
 
     boolean isEndPointWorking(Host host) throws Exception;
 

@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
+import org.rackspace.stingray.client.counters.GlobalCounters;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
@@ -333,6 +334,7 @@ public class StingrayRestClientTest {
         private TrafficManager trafficManager;
         private TrafficIp trafficIp;
         private GlobalSettings globalSettings;
+        private GlobalCounters globalCounters;
 
 
 
@@ -358,8 +360,10 @@ public class StingrayRestClientTest {
             stingrayRestClientManager = spy(new StingrayRestClient());
             vsName = "12345_1234";
             globalSettings = new GlobalSettings();
+            globalCounters = new GlobalCounters();
 
             when(mockedResponse.readEntity(GlobalSettings.class)).thenReturn(globalSettings);
+            when(mockedResponse.readEntity(GlobalCounters.class)).thenReturn(globalCounters);
             when(mockedResponse.readEntity(TrafficIp.class)).thenReturn(trafficIp);
             when(mockedResponse.readEntity(TrafficManager.class)).thenReturn(trafficManager);
             when(mockedResponse.readEntity(Keypair.class)).thenReturn(keypair);
@@ -754,6 +758,19 @@ public class StingrayRestClientTest {
             when(mockedResponse.readEntity((Class<Object>) Matchers.any())).thenThrow(Exception.class);
             when(mockedResponse.getStatus()).thenReturn(ClientConstants.BAD_REQUEST);
             GlobalSettings globalSettings = stingrayRestClient.getGlobalSettings();
+        }
+
+        @Test
+        public void getGlobalCountersShouldReturnCounters() throws Exception {
+            GlobalCounters globalCounters = stingrayRestClient.getGlobalCounters(new URI("TEST"));
+            Assert.assertNotNull(globalCounters);
+        }
+
+        @Test(expected = StingrayRestClientException.class)
+        public void getGlobalCountersShouldThrowExceptionWhenResponseIsInvalid() throws StingrayRestClientException, StingrayRestClientObjectNotFoundException, URISyntaxException {
+            when(mockedResponse.readEntity((Class<Object>) Matchers.any())).thenThrow(Exception.class);
+            when(mockedResponse.getStatus()).thenReturn(ClientConstants.BAD_REQUEST);
+            GlobalCounters globalCounters = stingrayRestClient.getGlobalCounters(new URI("TEST"));
         }
 
     }

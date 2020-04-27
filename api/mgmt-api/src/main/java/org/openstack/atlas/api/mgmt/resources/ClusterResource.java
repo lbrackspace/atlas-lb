@@ -278,7 +278,7 @@ public class ClusterResource extends ManagementDependencyProvider {
         return id;
     }
 
-    // TODO: Remove if undeeded, update to VTM service otherwise
+    // TODO: Verify if we're going to use these methods or not. Properly test when/if used...
     public String getUtilization(Integer id) {
         //get sum of max allowed connections for all host in cluster
         long maxAllowed = getHostRepository().getHostsConnectionsForCluster(id);
@@ -290,7 +290,11 @@ public class ClusterResource extends ManagementDependencyProvider {
             for (org.openstack.atlas.service.domain.entities.Host dbHost : hosts) {
                 int conn = 0;
                 try {
-                    conn = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(dbHost);
+                    if (isRestAdapter()) {
+                        conn = reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(dbHost);
+                    } else {
+                        conn = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(dbHost);
+                    }
                 } catch (Exception e) {
                     LOG.error(e);
                     notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());
