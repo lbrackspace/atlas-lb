@@ -141,4 +141,15 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config)
             throws StmRollBackException;
 
+    // Host stats
+    int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config)
+            throws InsufficientRequestException, StmRollBackException;
+
+    Long getHostBytesIn(LoadBalancerEndpointConfiguration config)
+            throws InsufficientRequestException, StmRollBackException;
+
+    Long getHostBytesOut(LoadBalancerEndpointConfiguration config)
+            throws InsufficientRequestException, StmRollBackException;
+
+
 }

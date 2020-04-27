@@ -26,6 +26,7 @@ import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.counters.GlobalCounters;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -41,6 +42,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.rmi.RemoteException;
 import java.util.*;
 import org.apache.commons.lang3.NotImplementedException;
@@ -1133,6 +1135,46 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
     public String getSsl3Ciphers(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
         StingrayRestClient client = getResources().loadSTMRestClient(config);
         return client.getGlobalSettings().getProperties().getSsl().getSsl3Ciphers();
+    }
+
+    /*** Host stats ***/
+    @Override
+    public int getTotalCurrentConnectionsForHost(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        GlobalCounters gc;
+        try {
+            gc = client.getGlobalCounters(config.getRestEndpoint());
+        } catch (Exception e) {
+            throw new StmRollBackException(e.getCause().getMessage());
+        }
+        client.destroy();
+        return gc.getStatistics().getTotalCurrentConn();
+    }
+
+    @Override
+    public Long getHostBytesIn(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        GlobalCounters gc;
+        try {
+            gc = client.getGlobalCounters(config.getRestEndpoint());
+        } catch (Exception e) {
+            throw new StmRollBackException(e.getCause().getMessage());
+        }
+        client.destroy();
+        return Long.valueOf(gc.getStatistics().getTotalBytesIn());
+    }
+
+    @Override
+    public Long getHostBytesOut(LoadBalancerEndpointConfiguration config) throws InsufficientRequestException, StmRollBackException {
+        StingrayRestClient client = getResources().loadSTMRestClient(config);
+        GlobalCounters gc;
+        try {
+            gc = client.getGlobalCounters(config.getRestEndpoint());
+        } catch (Exception e) {
+            throw new StmRollBackException(e.getCause().getMessage());
+        }
+        client.destroy();
+        return Long.valueOf(gc.getStatistics().getTotalBytesOut());
     }
 
     /**

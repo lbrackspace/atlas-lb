@@ -6,6 +6,9 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.cfg.Configuration;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.jobs.AbstractJob;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -34,9 +37,13 @@ public class HostUsagePoller extends AbstractJob {
     @Autowired
     private ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
     @Autowired
+    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
+    @Autowired
     private HostRepository hostRepository;
     @Autowired
     private HostUsageRepository hostUsageRepository;
+    @Autowired
+    private Configuration configuration;
 
     @Override
     public Log getLogger() {
@@ -64,10 +71,10 @@ public class HostUsagePoller extends AbstractJob {
                 final LoadBalancerEndpointConfiguration config = HostConfigHelper.getConfig(host, hostRepository);
                 Calendar pollTime = Calendar.getInstance();
 
-                // TODO: Make use of reverse proxy service instead of adapter directly...
                 long hostBytesIn;
                 long hostBytesOut;
-                if (!config.getRestEndpoint().toString().contains("/7.0")) {
+
+                if (!isRestAdapter()) {
                     LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getEndpoint()));
                     hostBytesIn = reverseProxyLoadBalancerAdapter.getHostBytesIn(config);
                     LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getEndpoint()));
@@ -75,9 +82,9 @@ public class HostUsagePoller extends AbstractJob {
                     LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
                 } else {
                     LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
-                    hostBytesIn = reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
+                    hostBytesIn = reverseProxyLoadBalancerVTMService.getHostBytesIn(host);
                     LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
-                    hostBytesOut = reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
+                    hostBytesOut = reverseProxyLoadBalancerVTMService.getHostBytesOut(host);
                     LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
                 }
 
@@ -111,6 +118,11 @@ public class HostUsagePoller extends AbstractJob {
         hostUsage.setBandwidthBytesOut(hostBytesOut);
         hostUsage.setSnapshotTime(pollTime);
         hostUsageRepository.save(hostUsage);
+    }
+
+    public boolean isRestAdapter() {
+        return configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null
+                && configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase("REST");
     }
 
 }

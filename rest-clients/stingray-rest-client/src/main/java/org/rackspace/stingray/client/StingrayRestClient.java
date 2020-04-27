@@ -2,6 +2,7 @@ package org.rackspace.stingray.client;
 
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.config.Configuration;
+import org.rackspace.stingray.client.counters.GlobalCounters;
 import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -31,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 
 public class StingrayRestClient extends StingrayRestClientManager {
@@ -92,7 +94,7 @@ public class StingrayRestClient extends StingrayRestClientManager {
                 || path.equals(ClientConstants.MONITOR_PATH) || path.equals(ClientConstants.MONITORSCRIPT_PATH)
                 || path.equals(ClientConstants.PROTECTION_PATH) || path.equals(ClientConstants.V_SERVER_PATH)
                 || path.equals(ClientConstants.TRAFFICMANAGER_PATH) || path.equals(ClientConstants.TRAFFICSCRIPT_PATH)
-                || path.equals(ClientConstants.GLOBAL_SETTINGS);
+                || path.equals(ClientConstants.GLOBAL_SETTINGS) || path.equals(ClientConstants.GLOBAL_COUNTERS);
     }
 
     /**
@@ -1144,6 +1146,17 @@ public class StingrayRestClient extends StingrayRestClientManager {
         }
         return stats;
     }
+
+    /**
+     * @throws StingrayRestClientObjectNotFoundException
+     */
+    public GlobalCounters getGlobalCounters(URI endpoint) throws URISyntaxException, StingrayRestClientObjectNotFoundException, StingrayRestClientException {
+        String statsEndpoint = endpoint.toString().split("config")[0];
+        GlobalCounters counters;
+        counters = getItem("", GlobalCounters.class, ClientConstants.GLOBAL_COUNTERS, new URI(statsEndpoint));
+        return counters;
+    }
+
 
     /**
      * Destroy the StingrayRestClient

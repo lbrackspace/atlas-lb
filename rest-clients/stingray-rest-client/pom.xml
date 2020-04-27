@@ -152,6 +152,8 @@
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/config-virtual-server</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/config-settings</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/counters-virtual-server</sourcePath>
+                        <sourcePath>${basedir}/src/main/resources/schema/stingray/counters-global</sourcePath>
+
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/util</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/list</sourcePath>
                         <sourcePath>${basedir}/src/main/resources/schema/stingray/exception</sourcePath>
