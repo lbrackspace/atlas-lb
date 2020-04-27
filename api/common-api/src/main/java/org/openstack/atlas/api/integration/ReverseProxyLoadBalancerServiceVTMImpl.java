@@ -31,6 +31,7 @@ import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
+import org.springframework.stereotype.Component;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -39,6 +40,7 @@ import java.util.*;
 
 import static java.util.Calendar.getInstance;
 
+@Component
 public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadBalancerVTMService {
 
     final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceVTMImpl.class);
@@ -755,27 +757,33 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     // Host stats
     @Override
-    public int getTotalCurrentConnectionsForHost(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException {
-        // Call only available on version >= 7
+    public int getTotalCurrentConnectionsForHost(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
-
-        return reverseProxyLoadBalancerVTMAdapter.getTotalCurrentConnectionsForHost(config);
+        if (getVersion(config.getRestEndpoint()) == 7) {
+            return reverseProxyLoadBalancerVTMAdapter.getTotalCurrentConnectionsForHost(config);
+        } else {
+            return reverseProxyLoadBalancerStmAdapter.getTotalCurrentConnectionsForHost(config);
+        }
     }
 
     @Override
-    public Long getHostBytesIn(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException {
-        // Call only available on version >= 7
+    public Long getHostBytesIn(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
-
-        return reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
+        if (getVersion(config.getRestEndpoint()) == 7) {
+            return reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
+        } else {
+            return reverseProxyLoadBalancerStmAdapter.getHostBytesIn(config);
+        }
     }
 
     @Override
-    public Long getHostBytesOut(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException {
-        // Call only available on version >= 7
+    public Long getHostBytesOut(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
-
-        return reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
+        if (getVersion(config.getRestEndpoint()) == 7) {
+            return reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
+        } else {
+            return reverseProxyLoadBalancerStmAdapter.getHostBytesOut(config);
+        }
     }
 
     public void setAtlasCache(AtlasCache atlasCache) {

@@ -996,7 +996,7 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
             throw new VTMRestClientException("Unable to build connection to host");
         }
         client.destroy();
-        return gc.getProperties().getStatistics().getTotalConn();
+        return gc.getProperties().getStatistics().getTotalCurrentConn();
     }
 
     @Override
@@ -1026,7 +1026,7 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
     }
 
     /**
-     * Deprecating these(SubnetMapping calls) as per ops. Unused call that is difficult to test, may support in future if needed... *
+     * Host Subnet Mappings*
      */
 
     @Override

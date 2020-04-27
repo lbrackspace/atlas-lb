@@ -27,6 +27,9 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.rackspace.vtm.client.counters.GlobalCounters;
+import org.rackspace.vtm.client.counters.GlobalCountersProperties;
+import org.rackspace.vtm.client.counters.GlobalCountersStatistics;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.monitor.Monitor;
 import org.rackspace.vtm.client.pool.Pool;
@@ -43,6 +46,7 @@ import org.rackspace.vtm.client.virtualserver.*;
 import org.rackspace.vtm.client.VTMRestClient;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -1126,6 +1130,102 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             verify(resources, times(0)).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
             verify(resources, times(1)).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client, times(1)).destroy();
+        }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PrepareForTest({VTMResourceTranslator.class})
+    public static class whenRetrievingHostCounters {
+
+        private String vsName;
+        private String host;
+        private GlobalCounters globalCounters;
+        private VTMResourceTranslator resourceTranslator;
+
+        @Mock
+        VTMRestClient client;
+        @Mock
+        LoadBalancerEndpointConfiguration config;
+        @Mock
+        private VTMAdapterResources resources;
+        @Spy
+        private VTMadapterImpl adapterSpy = new VTMadapterImpl();
+
+        @Before
+        public void standUp() throws Exception {
+            MockitoAnnotations.initMocks(this);
+            globalCounters = new GlobalCounters();
+            GlobalCountersStatistics globalCountersStatistics = new GlobalCountersStatistics();
+            globalCountersStatistics.setTotalBytesIn(10);
+            globalCountersStatistics.setTotalBytesOut(20);
+            globalCountersStatistics.setTotalCurrentConn(2);
+            GlobalCountersProperties globalCountersProperties = new GlobalCountersProperties();
+            globalCountersProperties.setStatistics(globalCountersStatistics);
+            globalCounters.setProperties(globalCountersProperties);
+
+            when(adapterSpy.getResources()).thenReturn(resources);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
+            when(resources.loadVTMRestClient(config)).thenReturn(client);
+            when(client.getGlobalCounters(any())).thenReturn(globalCounters);
+
+        }
+
+        @Test
+        public void testGetTotalCurrentConnectionsForHost() throws Exception {
+            int totalCurrentConnectionsForHost = adapterSpy.getTotalCurrentConnectionsForHost(config);
+            Assert.assertEquals(2, totalCurrentConnectionsForHost);
+            verify(client, times(1)).getGlobalCounters(any());
+            verify(client).destroy();
+
+        }
+
+        @Test(expected = VTMRestClientException.class)
+        public void testGetTotalCurrentConnectionsForHostShouldHandleException() throws Exception {
+            when(client.getGlobalCounters(any())).thenThrow(URISyntaxException.class);
+
+            adapterSpy.getTotalCurrentConnectionsForHost(config);
+            verify(client, times(1)).getTrafficManager(host);
+            verify(client).destroy();
+
+        }
+
+        @Test
+        public void testGetBytesIn() throws Exception {
+            long bytesIn = adapterSpy.getHostBytesIn(config);
+            Assert.assertEquals(10, bytesIn);
+            verify(client, times(1)).getGlobalCounters(any());
+            verify(client).destroy();
+
+        }
+
+        @Test(expected = VTMRestClientException.class)
+        public void testGetBytesInShouldHandleException() throws Exception {
+            when(client.getGlobalCounters(any())).thenThrow(URISyntaxException.class);
+
+            adapterSpy.getHostBytesIn(config);
+            verify(client, times(1)).getTrafficManager(host);
+            verify(client).destroy();
+
+        }
+
+        @Test
+        public void testGetBytesOut() throws Exception {
+            long bytesOut = adapterSpy.getHostBytesOut(config);
+            Assert.assertEquals(20, bytesOut);
+            verify(client, times(1)).getGlobalCounters(any());
+            verify(client).destroy();
+
+        }
+
+        @Test(expected = VTMRestClientException.class)
+        public void testGetBytesOutShouldHandleException() throws Exception {
+            when(client.getGlobalCounters(any())).thenThrow(URISyntaxException.class);
+
+            adapterSpy.getHostBytesOut(config);
+            verify(client, times(1)).getTrafficManager(host);
+            verify(client).destroy();
+
         }
     }
 
