@@ -1026,7 +1026,7 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
     }
 
     /**
-     * Deprecating these(SubnetMapping calls) as per ops. Unused call that is difficult to test, may support in future if needed... *
+     * Subnet Mappings
      */
 
     @Override
@@ -1040,23 +1040,36 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
             for (Hostsubnet hostsubnet : subnetList) {
                 String hsName = hostsubnet.getName();
                 TrafficManager trafficManager = client.getTrafficManager(hsName);
-                List<Trafficip> trafficManagerTrafficIpList = new ArrayList<Trafficip>();
                 List<NetInterface> interfaceList = hostsubnet.getNetInterfaces();
+
+                //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
+                List<Trafficip> trafficManagerTrafficIpList = trafficManager.getProperties().getBasic().getTrafficip();
+                Map<String, Trafficip> tipsMap = new HashMap<String, Trafficip>();
+
+                //Loop over tips to compile an indexed list by name
+                for (Trafficip trafficManagerTrafficIp : trafficManagerTrafficIpList) {
+                    tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
+                }
 
                 //Loop over interfaces (eth0, eth1, etc)
                 for (NetInterface netInterface : interfaceList) {
-                    List<Cidr> cidrList = netInterface.getCidrs();
-                    Trafficip trafficManagerTrafficIp = new Trafficip();
-                    Set<String> networkList = new HashSet<String>();
+                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
 
-                    // Loop over Cidr list which contains one subnet per Cidr
-                    for (Cidr cidr : cidrList) {
-                        networkList.add(cidr.getBlock());
+                    Set<String> netSet = new HashSet<>();
+                    for (Cidr cidr : netInterface.getCidrs()) {
+                        netSet.add(cidr.getBlock());
                     }
 
-                    trafficManagerTrafficIp.setName(hsName);
-                    trafficManagerTrafficIp.setNetworks(networkList);
-                    trafficManagerTrafficIpList.add(trafficManagerTrafficIp);
+                    if (!tipsMap.containsKey(netInterfaceName)) {
+                        Trafficip newTip = new Trafficip();
+                        newTip.setName(netInterfaceName);
+                        newTip.setNetworks(netSet);
+                        trafficManagerTrafficIpList.add(newTip);
+                    } else {
+                        Trafficip tip = tipsMap.get(netInterfaceName);
+                        Set<String> netWorkSet = tip.getNetworks();
+                        netWorkSet.addAll(netSet);
+                    }
                 }
                 trafficManager.getProperties().getBasic().setTrafficip(trafficManagerTrafficIpList);
                 client.updateTrafficManager(hsName, trafficManager);
@@ -1077,7 +1090,7 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
 
             //Loop over Hosts ("dev1.lbaas.mysite.com", "dev2.lbaas.mysite.com", etc)
             for (Hostsubnet hostsubnet : subnetList) {
-                String hsName = hostsubnet.getName();       // This name is of the form "dev1.lbaas.mysite.com"
+                String hsName = hostsubnet.getName();
                 TrafficManager trafficManager = client.getTrafficManager(hsName);
                 List<NetInterface> netInterfaceList = hostsubnet.getNetInterfaces();
                 //trafficManagerTrafficIpList is the current list of TrafficIPs for the host
@@ -1089,15 +1102,23 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
                     tipsMap.put(trafficManagerTrafficIp.getName(), trafficManagerTrafficIp);
                 }
 
-                if (tipsMap.containsKey(hsName)) {
-                    Trafficip tip = tipsMap.get(hsName);
-                    Set<String> networkSet = tip.getNetworks();
-                    //Loop over interfaces (eth0, eth1, etc)
-                    for (NetInterface netInterface : netInterfaceList) {
-                        List<Cidr> cidrList = netInterface.getCidrs();
+                //Loop over interfaces (eth0, eth1, etc)
+                for (NetInterface netInterface : netInterfaceList) {
+                    String netInterfaceName = netInterface.getName(); //This name is of the form "eth0"
+
+                    if (tipsMap.containsKey(netInterfaceName)) {
+                        Trafficip tip = tipsMap.get(netInterfaceName);
+                        Set<String> networkSet = tip.getNetworks();
+                        List<Cidr> cidrList = netInterface.getCidrs(); //This is the list of objects containing subnet strings
+
                         // Loop over Cidr list which contains one subnet per Cidr
                         for (Cidr cidr : cidrList) {
                             networkSet.remove(cidr.getBlock()); //Remove the subnet if it exists
+                        }
+
+                        if (networkSet.isEmpty()) {
+                            // If we've removed all related blocks in this mapping, remove the mapping entirely
+                            trafficManager.getProperties().getBasic().getTrafficip().remove(tip);
                         }
                     }
                 }
