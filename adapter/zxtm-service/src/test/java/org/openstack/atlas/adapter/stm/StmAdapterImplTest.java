@@ -11,12 +11,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ResourceTranslator;
 import org.openstack.atlas.adapter.helpers.VTMAdapterImplTestHelper;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.PemUtils;
@@ -27,12 +28,17 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.pool.Pool;
 import org.rackspace.stingray.client.pool.PoolBasic;
 import org.rackspace.stingray.client.pool.PoolProperties;
 import org.rackspace.stingray.client.protection.Protection;
 import org.rackspace.stingray.client.ssl.keypair.Keypair;
+import org.rackspace.stingray.client.tm.TrafficManager;
+import org.rackspace.stingray.client.tm.TrafficManagerBasic;
+import org.rackspace.stingray.client.tm.TrafficManagerProperties;
+import org.rackspace.stingray.client.tm.Trafficip;
 import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.*;
 
@@ -952,4 +958,253 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
         }
     }
 
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PrepareForTest({ResourceTranslator.class})
+    public static class WhenModifyingHostSubnetResources {
+        private String vsName;
+        private String secureVsName;
+        private LoadBalancer loadBalancer;
+        private ArrayList<Hostsubnet> hostssubnetList;
+        private Hostssubnet hostssubnet;
+        private Hostsubnet hostsubnet;
+        private ArrayList<NetInterface> netInterfaces;
+        private TrafficManager trafficManager;
+        private ResourceTranslator resourceTranslator;
+        private ZeusSslTermination sslTermination;
+
+        @Mock
+        private StmAdapterResources resources;
+        @Mock
+        private LoadBalancerEndpointConfiguration config;
+        @Mock
+        private StingrayRestClient client;
+        @Spy
+        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+
+        @Before
+        public void standUp() throws Exception {
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancer = generateLoadBalancer();
+            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+            hostsubnet = new Hostsubnet();
+            hostssubnet = new Hostssubnet();
+            hostssubnetList = new ArrayList<>();
+            netInterfaces = new ArrayList<>();
+            NetInterface ni1 = new NetInterface();
+            ni1.setCidrs(new ArrayList<>());
+            netInterfaces.add(ni1);
+            hostsubnet.setName("h1");
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            trafficManager = new TrafficManager();
+            TrafficManagerProperties trafficManagerProperties = new TrafficManagerProperties();
+            TrafficManagerBasic trafficManagerBasic = new TrafficManagerBasic();
+            trafficManagerProperties.setBasic(trafficManagerBasic);
+            trafficManager.setProperties(trafficManagerProperties);
+
+            resourceTranslator = spy(new ResourceTranslator());
+            PowerMockito.mockStatic(ResourceTranslator.class);
+            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+
+            when(adapterSpy.getResources()).thenReturn(resources);
+            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            doReturn(trafficManager).when(client).updateTrafficManager(eq(hostsubnet.getName()), Matchers.any(TrafficManager.class));
+
+        }
+
+        @After
+        public void tearDown() {
+            //TODO figure out if I need to do any actual cleanup
+        }
+
+        @Test
+        public void testSetHostSubnet() throws Exception {
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            adapterSpy.setSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+            Assert.assertEquals(1, trafficManager.getProperties().getBasic().getTrafficip().size());
+        }
+
+        @Test
+        public void testSetHostSubnetMultipleHosts() throws Exception {
+            NetInterface ni2 = new NetInterface();
+            Cidr c2 = new Cidr();
+            ArrayList<Cidr> c2list = new ArrayList<>();
+            ni2.setName("t2");
+            c2.setBlock("b2");
+            c2list.add(c2);
+            ni2.setCidrs(c2list);
+            netInterfaces.add(ni2);
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            adapterSpy.setSubnetMappings(config, hostssubnet);
+
+            verify(client, times(2)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+            Assert.assertEquals(2, trafficManager.getProperties().getBasic().getTrafficip().size());
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testSetHostSubnetShouldRollback() throws Exception {
+            when(client.getTrafficManager(hostsubnet.getName())).thenThrow(StingrayRestClientException.class);
+            adapterSpy.setSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+        }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PrepareForTest({ResourceTranslator.class})
+    public static class WhenRemovingHostSubnetResources {
+        private String vsName;
+        private String secureVsName;
+        private LoadBalancer loadBalancer;
+        private ArrayList<Hostsubnet> hostssubnetList;
+        private Hostssubnet hostssubnet;
+        private Hostsubnet hostsubnet;
+        private ArrayList<NetInterface> netInterfaces;
+        private TrafficManager trafficManager;
+        private ResourceTranslator resourceTranslator;
+        private ZeusSslTermination sslTermination;
+
+        @Mock
+        private StmAdapterResources resources;
+        @Mock
+        private LoadBalancerEndpointConfiguration config;
+        @Mock
+        private StingrayRestClient client;
+        @Spy
+        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+
+        @Before
+        public void standUp() throws Exception {
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancer = generateLoadBalancer();
+            vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+            hostsubnet = new Hostsubnet();
+            hostssubnet = new Hostssubnet();
+            hostssubnetList = new ArrayList<>();
+            netInterfaces = new ArrayList<>();
+            NetInterface ni1 = new NetInterface();
+            ni1.setCidrs(new ArrayList<>());
+            netInterfaces.add(ni1);
+            hostsubnet.setName("h1");
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            trafficManager = new TrafficManager();
+            TrafficManagerProperties trafficManagerProperties = new TrafficManagerProperties();
+            TrafficManagerBasic trafficManagerBasic = new TrafficManagerBasic();
+            trafficManagerProperties.setBasic(trafficManagerBasic);
+            trafficManager.setProperties(trafficManagerProperties);
+
+            resourceTranslator = spy(new ResourceTranslator());
+            PowerMockito.mockStatic(ResourceTranslator.class);
+            PowerMockito.when(ResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+
+            when(adapterSpy.getResources()).thenReturn(resources);
+            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            doReturn(trafficManager).when(client).updateTrafficManager(eq(hostsubnet.getName()), Matchers.any(TrafficManager.class));
+
+        }
+
+        @After
+        public void tearDown() {
+            //TODO figure out if I need to do any actual cleanup
+        }
+
+        @Test
+        public void testDeleteHostSubnet() throws Exception {
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            adapterSpy.deleteSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+            Assert.assertEquals(0, trafficManager.getProperties().getBasic().getTrafficip().size());
+
+        }
+
+        @Test
+        public void testDeleteHostSubnetMultipleHosts() throws Exception {
+            NetInterface ni2 = new NetInterface();
+            Cidr c2 = new Cidr();
+            ArrayList<Cidr> c2list = new ArrayList<>();
+            ni2.setName("t2");
+            c2.setBlock("b2");
+            c2list.add(c2);
+            ni2.setCidrs(c2list);
+            netInterfaces.add(ni2);
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            adapterSpy.deleteSubnetMappings(config, hostssubnet);
+
+            verify(client, times(2)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+            Assert.assertEquals(0, trafficManager.getProperties().getBasic().getTrafficip().size());
+        }
+
+        @Test
+        public void testDeleteHostSubnetMultipleCidrs() throws Exception {
+            NetInterface ni2 = new NetInterface();
+            Cidr c2 = new Cidr();
+            ArrayList<Cidr> c2list = new ArrayList<>();
+            ni2.setName("ni2");
+            c2.setBlock("b2");
+            c2list.add(c2);
+            ni2.setCidrs(c2list);
+            netInterfaces.add(ni2);
+            hostsubnet.setNetInterfaces(netInterfaces);
+            hostssubnetList = new ArrayList<>();
+            hostssubnetList.add(hostsubnet);
+            hostssubnet.setHostsubnets(hostssubnetList);
+
+            Set<String> nets = new HashSet<>();
+            nets.add("b1");
+            Trafficip tip = new Trafficip();
+            tip.setNetworks(nets);
+            tip.setName("ni1");
+            Set<String> nets2 = new HashSet<>();
+            nets.add("b2");
+            Trafficip tip2 = new Trafficip();
+            tip2.setNetworks(nets2);
+            tip.setName("ni2");
+            ArrayList<Trafficip> tips = new ArrayList<>();
+            tips.add(tip);
+            trafficManager.getProperties().getBasic().setTrafficip(tips);
+
+            when(client.getTrafficManager(hostsubnet.getName())).thenReturn(trafficManager);
+            Assert.assertEquals(2, trafficManager.getProperties().getBasic().getTrafficip().get(0).getNetworks().size());
+
+            adapterSpy.deleteSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+            Assert.assertEquals(1, trafficManager.getProperties().getBasic().getTrafficip().get(0).getNetworks().size());
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testDeleteHostSubnetShouldRollback() throws Exception {
+            when(client.getTrafficManager(hostsubnet.getName())).thenThrow(StingrayRestClientException.class);
+            adapterSpy.deleteSubnetMappings(config, hostssubnet);
+
+            verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
+            verify(client).destroy();
+        }
+    }
 }

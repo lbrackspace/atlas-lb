@@ -1345,7 +1345,6 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             NetInterface ni1 = new NetInterface();
             ni1.setCidrs(new ArrayList<>());
             netInterfaces.add(ni1);
-            hostsubnet.setName("h1");
             hostsubnet.setNetInterfaces(netInterfaces);
             hostssubnetList.add(hostsubnet);
             hostssubnet.setHostsubnets(hostssubnetList);
@@ -1449,6 +1448,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             netInterfaces = new ArrayList<>();
             NetInterface ni1 = new NetInterface();
             ni1.setCidrs(new ArrayList<>());
+            ni1.setName("ni1");
             netInterfaces.add(ni1);
             hostsubnet.setName("h1");
             hostsubnet.setNetInterfaces(netInterfaces);
@@ -1514,7 +1514,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             NetInterface ni2 = new NetInterface();
             Cidr c2 = new Cidr();
             ArrayList<Cidr> c2list = new ArrayList<>();
-            ni2.setName("t2");
+            ni2.setName("ni2");
             c2.setBlock("b2");
             c2list.add(c2);
             ni2.setCidrs(c2list);
@@ -1525,11 +1525,15 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             hostssubnet.setHostsubnets(hostssubnetList);
 
             Set<String> nets = new HashSet<>();
-            nets.add("b3");
-            nets.add("b2");
+            nets.add("b1");
             Trafficip tip = new Trafficip();
             tip.setNetworks(nets);
-            tip.setName("h1");
+            tip.setName("ni1");
+            Set<String> nets2 = new HashSet<>();
+            nets.add("b2");
+            Trafficip tip2 = new Trafficip();
+            tip2.setNetworks(nets2);
+            tip.setName("ni2");
             ArrayList<Trafficip> tips = new ArrayList<>();
             tips.add(tip);
             trafficManager.getProperties().getBasic().setTrafficip(tips);

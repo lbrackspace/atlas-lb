@@ -7,6 +7,7 @@ import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
@@ -129,14 +130,14 @@ public interface ReverseProxyLoadBalancerStmAdapter {
     public void enableDisableTLS_11(LoadBalancerEndpointConfiguration conf, LoadBalancer loadBalancer, boolean isEnabled)
             throws RemoteException, InsufficientRequestException, RollBackException, StingrayRestClientObjectNotFoundException, StingrayRestClientException;
 
-//    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
-//            throws StmRollBackException;
-//
-//    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
-//            throws StmRollBackException;
-//
-//    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host)
-//            throws StmRollBackException;
+    public void setSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
+            throws StmRollBackException, InsufficientRequestException;
+
+    public void deleteSubnetMappings(LoadBalancerEndpointConfiguration config, Hostssubnet hostssubnet)
+            throws StmRollBackException, InsufficientRequestException;
+
+    public Hostssubnet getSubnetMappings(LoadBalancerEndpointConfiguration config, String host)
+            throws StmRollBackException, InsufficientRequestException;
 
     public boolean isEndPointWorking(LoadBalancerEndpointConfiguration config)
             throws StmRollBackException;
