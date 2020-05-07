@@ -133,7 +133,7 @@ public class HostResource extends ManagementDependencyProvider {
         try {
             domainHost = hostService.getById(id);
 
-            if(configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase("REST")){
+            if(isRestAdapter()){
                 dHostssubnet = reverseProxyLoadBalancerVTMService.getSubnetMappings(domainHost);
             } else {
                 dHostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(domainHost);

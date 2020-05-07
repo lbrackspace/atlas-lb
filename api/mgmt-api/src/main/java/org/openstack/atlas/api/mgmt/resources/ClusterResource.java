@@ -341,7 +341,12 @@ public class ClusterResource extends ManagementDependencyProvider {
         List<org.openstack.atlas.service.domain.entities.Host> hosts = clusterService.getHosts(clusterId);
         List<org.openstack.atlas.service.domain.pojos.Cidr> x;
         for (org.openstack.atlas.service.domain.entities.Host host : hosts) {
-            Hostssubnet hostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(host);
+            Hostssubnet hostssubnet;
+            if(isRestAdapter()){
+                hostssubnet = reverseProxyLoadBalancerVTMService.getSubnetMappings(host);
+            } else {
+                hostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(host);
+            }
             for (Hostsubnet hostsubnet : hostssubnet.getHostsubnets()) {
                 for (NetInterface ni : hostsubnet.getNetInterfaces()) {
                     for (org.openstack.atlas.service.domain.pojos.Cidr cidr : ni.getCidrs()) {
