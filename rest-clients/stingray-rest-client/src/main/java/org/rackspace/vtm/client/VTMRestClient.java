@@ -20,6 +20,9 @@ import org.rackspace.vtm.client.rate.Rate;
 import org.rackspace.vtm.client.settings.GlobalSettings;
 import org.rackspace.vtm.client.ssl.client.keypair.ClientKeypair;
 import org.rackspace.vtm.client.ssl.keypair.Keypair;
+import org.rackspace.vtm.client.status.Backup;
+import org.rackspace.vtm.client.status.BackupProperties;
+import org.rackspace.vtm.client.status.Backup_;
 import org.rackspace.vtm.client.tm.TrafficManager;
 import org.rackspace.vtm.client.traffic.ip.TrafficIp;
 import org.rackspace.vtm.client.util.ClientConstants;
@@ -92,7 +95,8 @@ public class VTMRestClient extends VTMRestClientManager {
                 || path.equals(ClientConstants.MONITOR_PATH) || path.equals(ClientConstants.MONITORSCRIPT_PATH)
                 || path.equals(ClientConstants.PROTECTION_PATH) || path.equals(ClientConstants.V_SERVER_PATH)
                 || path.equals(ClientConstants.TRAFFICMANAGER_PATH) || path.equals(ClientConstants.TRAFFICSCRIPT_PATH)
-                || path.equals(ClientConstants.GLOBAL_SETTINGS) || path.equals(ClientConstants.GLOBAL_COUNTERS);
+                || path.equals(ClientConstants.GLOBAL_SETTINGS) || path.equals(ClientConstants.GLOBAL_COUNTERS)
+                || path.equals(ClientConstants.STATUS_BACKUPS);
     }
 
     /**
@@ -231,7 +235,7 @@ public class VTMRestClient extends VTMRestClientManager {
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     public <T> T updateItem(String name, Class<T> clazz, String path, T obj, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
-        if (isPathValid(path)) {
+        if (isPathValid(path)  || clazz == BackupProperties.class) {
             Response response = requestManager.updateItem(endpoint, client, path + name, obj, cType);
             return (T) interpretResponse(response, clazz);
         } else {
@@ -730,6 +734,17 @@ public class VTMRestClient extends VTMRestClientManager {
         return createItem(name, Persistence.class, ClientConstants.PERSISTENCE_PATH, persistence);
     }
 
+    /**
+     * @param name        The name of the backup
+     * @param backup The Backup object used to create a host backup
+     * @return The configured Backup object
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+     */
+    public BackupProperties createBackup(String name, BackupProperties backup, String trafficManagerName) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+
+        String path = "status/" + trafficManagerName + "/"+ ClientConstants.STATUS_BACKUPS + "/";
+        return createItem(name, BackupProperties.class, path, backup);
+    }
 
     /**
      * @param name        The virtual server name related to the persistence

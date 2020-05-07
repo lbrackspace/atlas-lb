@@ -154,4 +154,9 @@ public interface ReverseProxyLoadBalancerVTMAdapter {
     Long getHostBytesOut(LoadBalancerEndpointConfiguration config)
             throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException;
 
+    // Host Backup
+
+    void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName)
+            throws RemoteException,VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException;
+
 }

@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.integration;
 
 
+import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
@@ -784,5 +785,17 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     public AtlasCache getAtlasCache() {
         return atlasCache;
+    }
+
+    @Override
+    public void createHostBackup(Host host, String backupName) throws RemoteException, MalformedURLException, DecryptException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+        // Call only available on version >= 7
+        LoadBalancerEndpointConfiguration config = getConfigHost(host);
+        try {
+            reverseProxyLoadBalancerVTMAdapter.createHostBackup(config, backupName);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
     }
 }
