@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.integration;
 
 
+import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
@@ -32,6 +33,8 @@ import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundE
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 import org.springframework.stereotype.Component;
+import org.rackspace.vtm.client.status.Backup;
+import org.rackspace.vtm.client.status.BackupProperties;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -803,5 +806,24 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     public AtlasCache getAtlasCache() {
         return atlasCache;
+    }
+
+    @Override
+    public void createHostBackup(Host host, String backupName) throws RemoteException, MalformedURLException, DecryptException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+//      Call only available on version >= 7
+        LoadBalancerEndpointConfiguration config = getConfigHost(host);
+//      Setting Properties for Backup
+        org.rackspace.vtm.client.status.Properties properties = new org.rackspace.vtm.client.status.Properties();
+        BackupProperties backupProperties = new BackupProperties();
+        backupProperties.setDescription(host.getName());
+        properties.setBackup(backupProperties);
+        org.rackspace.vtm.client.status.Backup backup = new Backup();
+        backup.setProperties(properties);
+        try {
+            reverseProxyLoadBalancerVTMAdapter.createHostBackup(config, backupName, backup);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
     }
 }

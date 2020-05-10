@@ -20,5 +20,8 @@ public interface VTMRequestManager {
 
     Response deleteItem(URI endpoint, Client client, String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException;
 
+    Response updateBackup(String endpoint, Client client, String path, Object object, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException;
+
+
 
 }
