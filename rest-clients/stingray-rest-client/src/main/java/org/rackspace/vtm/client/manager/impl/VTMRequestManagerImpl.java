@@ -147,6 +147,5 @@ public class VTMRequestManagerImpl implements VTMRequestManager {
         return Response.noContent().build();
     }
 
-
 }
 
