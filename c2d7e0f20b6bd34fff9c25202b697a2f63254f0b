@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b5ab0214_4b4b914f",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/integration/ReverseProxyLoadBalancerServiceVTMImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 816,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-05-11T14:30:18Z",
+      "side": 1,
+      "message": "This class is just a proxy and shouldn\u0027t know about any impl detail, i.e building the needed object. That should be done on either side of the proxy",
+      "revId": "c2d7e0f20b6bd34fff9c25202b697a2f63254f0b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "fa4e26cd_5e187697",
+        "filename": "rest-clients/stingray-rest-client/src/main/java/org/rackspace/vtm/client/VTMRestClient.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 240,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-05-11T14:30:18Z",
+      "side": 1,
+      "message": "Shouldn\u0027t alter generic client methods for this check. Put it in isPathValid like we discussed.",
+      "revId": "c2d7e0f20b6bd34fff9c25202b697a2f63254f0b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "0dde7c6b_ceb04907",
+        "filename": "rest-clients/stingray-rest-client/src/main/java/org/rackspace/vtm/client/VTMRestClient.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-05-11T14:30:18Z",
+      "side": 1,
+      "message": "The path should have already been altered by caller method, and validated with utility method. Generic method should not need to know this logic",
+      "revId": "c2d7e0f20b6bd34fff9c25202b697a2f63254f0b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
