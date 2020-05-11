@@ -51,10 +51,13 @@ public class BackupResource extends ManagementDependencyProvider {
                 LOG.warn(message);
                 throw new ImmutableEntityException(message);
             }
-
             try {
-                LOG.debug("Deleting backup in Zeus...");
-                reverseProxyLoadBalancerService.deleteHostBackup(domainHost, domainBackup.getName());
+                LOG.debug("Deleting backup in Traffic Manager...");
+                if(!isRestAdapter()) {
+                    reverseProxyLoadBalancerService.deleteHostBackup(domainHost, domainBackup.getName());
+                } else {
+                    reverseProxyLoadBalancerVTMService.deleteHostBackup(domainHost, domainBackup.getName());
+                }
                 LOG.info("Backup successfully deleted in Zeus.");
             } catch (ObjectDoesNotExist odno) {
                 String message = String.format("A backup named '%s' does not exist. Ignoring...", domainBackup.getName());
@@ -94,8 +97,12 @@ public class BackupResource extends ManagementDependencyProvider {
             }
 
             try {
-                LOG.info(String.format("Restoring host with backup '%s' in Zeus...", domainBackup.getName()));
-                reverseProxyLoadBalancerService.restoreHostBackup(domainHost, domainBackup.getName());
+                LOG.info(String.format("Restoring host with backup '%s' in Traffic Manager...", domainBackup.getName()));
+                if(!isRestAdapter()) {
+                    reverseProxyLoadBalancerService.restoreHostBackup(domainHost, domainBackup.getName());
+                } else {
+                    reverseProxyLoadBalancerVTMService.restoreHostBackup(domainHost, domainBackup.getName());
+                }
                 LOG.info(String.format("Host successfully restored with backup '%s' in Zeus.", domainBackup.getName()));
             } catch (ObjectDoesNotExist odno) {
                 String message = String.format("A backup named '%s' does not exist in Zeus. Cannot restore host!", domainBackup.getName());
