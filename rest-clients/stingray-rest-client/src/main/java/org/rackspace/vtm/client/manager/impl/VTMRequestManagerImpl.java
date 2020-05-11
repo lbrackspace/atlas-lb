@@ -147,6 +147,63 @@ public class VTMRequestManagerImpl implements VTMRequestManager {
         return Response.noContent().build();
     }
 
+    /**
+     * Implementation of the method for updating a backup through the REST api
+     *
+     * @param endpoint The REST URL endpoint for updating an item
+     * @param client   The client to handle the specific request
+     * @param path     The path to the specific object, including its name descriptor
+     * @param object   The generic object to be updated on Stingray's side
+     * @return Returns the entity inside the response of the REST api
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+     */
+    public Response updateBackup(String endpoint, Client client, String path, Object object, MediaType cType) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+        Response response;
+        VTMRequestManagerUtil rmu = new VTMRequestManagerUtil();
+
+        try {
+            response = client.target(endpoint + path)
+                    .request(cType)
+                    .put(Entity.entity(object, cType));
+        } catch (Exception e) {
+            throw new VTMRestClientException(ClientConstants.REQUEST_ERROR, e);
+        }
+
+        if (!rmu.isResponseValid(response)) {
+            rmu.buildFaultMessage(response);
+        }
+
+        return response;
+    }
+
+    /**
+     * Implementation of the method for deleting a backup through the REST api
+     *
+     * @param endpoint The REST URL endpoint for deleting an item
+     * @param client   The client to handle the specific request
+     * @param path     The path to the specific object, including its name descriptor
+     * @return Returns a boolean value evaluating the result of the operation
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+     */
+    @Override
+    public Response deleteBackup(String endpoint, Client client, String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
+        Response response;
+        VTMRequestManagerUtil rmu = new VTMRequestManagerUtil();
+
+        try {
+            response = client.target(endpoint + path)
+                    .request(MediaType.APPLICATION_JSON)
+                    .delete(Response.class);
+        } catch (Exception e) {
+            throw new VTMRestClientException(ClientConstants.REQUEST_ERROR, e);
+        }
+
+        if (!rmu.isResponseValid(response)) {
+            rmu.buildFaultMessage(response);
+        }
+        return Response.noContent().build();
+    }
+
 
 }
 

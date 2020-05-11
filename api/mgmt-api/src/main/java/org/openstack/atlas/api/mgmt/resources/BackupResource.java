@@ -51,10 +51,13 @@ public class BackupResource extends ManagementDependencyProvider {
                 LOG.warn(message);
                 throw new ImmutableEntityException(message);
             }
-
             try {
                 LOG.debug("Deleting backup in Zeus...");
-                reverseProxyLoadBalancerService.deleteHostBackup(domainHost, domainBackup.getName());
+                if(!isRestAdapter()) {
+                    reverseProxyLoadBalancerService.deleteHostBackup(domainHost, domainBackup.getName());
+                } else {
+                    reverseProxyLoadBalancerVTMService.deleteHostBackup(domainHost, domainBackup.getName());
+                }
                 LOG.info("Backup successfully deleted in Zeus.");
             } catch (ObjectDoesNotExist odno) {
                 String message = String.format("A backup named '%s' does not exist. Ignoring...", domainBackup.getName());

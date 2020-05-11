@@ -14,6 +14,7 @@ import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
+import org.rackspace.vtm.client.status.Backup;
 
 import java.rmi.RemoteException;
 import java.util.List;
@@ -153,5 +154,13 @@ public interface ReverseProxyLoadBalancerVTMAdapter {
 
     Long getHostBytesOut(LoadBalancerEndpointConfiguration config)
             throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException;
+
+    // Host Backup
+
+    void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName, Backup backup)
+            throws RemoteException,VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException;
+
+    void deleteHostBackup(LoadBalancerEndpointConfiguration config, String backupName)
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException;
 
 }
