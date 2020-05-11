@@ -2,20 +2,24 @@ package org.openstack.atlas.api.mgmt.resources;
 
 import org.apache.commons.configuration2.Configuration;
 import org.dozer.DozerBeanMapperBuilder;
+import org.dozer.Mapper;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceVTMImpl;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.api.mgmt.helpers.MgmtMapperBuilder;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cidr;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.NetInterface;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.HostStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
@@ -26,9 +30,15 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.service.domain.services.HostService;
+import org.openstack.atlas.service.domain.services.impl.HostServiceImpl;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
+import org.rackspace.vtm.client.exception.VTMRestClientException;
+import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 import sun.net.util.IPAddressUtil;
 
 import javax.ws.rs.core.Response;
+import java.net.MalformedURLException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -301,6 +311,7 @@ public class HostResourceTest {
                 Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress("192.168.1.1.111"));
             }
         }
+
     }
 }
 
