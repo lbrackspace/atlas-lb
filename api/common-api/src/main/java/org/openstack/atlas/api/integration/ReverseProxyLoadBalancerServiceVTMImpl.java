@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.integration;
 
 
+import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
@@ -32,6 +33,8 @@ import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundE
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 import org.springframework.stereotype.Component;
+import org.rackspace.vtm.client.status.Backup;
+import org.rackspace.vtm.client.status.BackupProperties;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -803,5 +806,30 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     public AtlasCache getAtlasCache() {
         return atlasCache;
+    }
+
+    @Override
+    public void createHostBackup(Host host, String backupName) throws RemoteException, MalformedURLException, DecryptException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+//      Call only available on version >= 7
+        LoadBalancerEndpointConfiguration config = getConfigHost(host);
+
+        try {
+            reverseProxyLoadBalancerVTMAdapter.createHostBackup(config, backupName);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
+    }
+
+    @Override
+    public void deleteHostBackup(Host host, String backupName) throws RemoteException, MalformedURLException, DecryptException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+//      Call only available on version >= 7
+        LoadBalancerEndpointConfiguration config = getConfigHost(host);
+        try {
+            reverseProxyLoadBalancerVTMAdapter.deleteHostBackup(config, backupName);
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
     }
 }

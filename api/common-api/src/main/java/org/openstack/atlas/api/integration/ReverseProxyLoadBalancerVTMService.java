@@ -111,5 +111,9 @@ public interface ReverseProxyLoadBalancerVTMService {
 
     void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws Exception;
 
+    void createHostBackup(Host host, String backupName) throws Exception;
+
+    void deleteHostBackup(Host host, String backupName) throws Exception;
+
 
 }

@@ -28,6 +28,10 @@ import org.rackspace.vtm.client.counters.GlobalCounters;
 import org.rackspace.vtm.client.counters.VirtualServerStats;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
+
+import org.rackspace.vtm.client.status.Backup;
+import org.rackspace.vtm.client.status.BackupProperties;
+import org.rackspace.vtm.client.status.Properties;
 import org.rackspace.vtm.client.tm.TrafficManager;
 import org.rackspace.vtm.client.tm.Trafficip;
 import org.rackspace.vtm.client.traffic.ip.TrafficIp;
@@ -1172,4 +1176,40 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         client.destroy();
         return ret;
     }
+
+    @Override
+    public void createHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws StmRollBackException, RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+        try {
+            //      Setting Properties for Backup
+            org.rackspace.vtm.client.status.Properties properties = new org.rackspace.vtm.client.status.Properties();
+            BackupProperties backupProperties = new BackupProperties();
+            backupProperties.setDescription(backupName);
+            properties.setBackup(backupProperties);
+            org.rackspace.vtm.client.status.Backup backup = new Backup();
+            backup.setProperties(properties);
+            VTMRestClient client = getResources().loadVTMRestClient(config);
+            client.createBackup(backupName, backup, config.getTrafficManagerName());
+        } catch (VTMRestClientObjectNotFoundException e){
+            throw new StmRollBackException("Backup resource not found", e);
+        } catch (VTMRestClientException e) {
+            throw  new StmRollBackException("Backup could not be created", e);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void deleteHostBackup(LoadBalancerEndpointConfiguration config, String backupName) throws StmRollBackException, RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+        try {
+            VTMRestClient client = getResources().loadVTMRestClient(config);
+            client.deleteBackup(backupName, config.getTrafficManagerName());
+        } catch (VTMRestClientObjectNotFoundException e){
+            throw new StmRollBackException("Backup resource not found", e);
+        } catch (VTMRestClientException e) {
+            throw  new StmRollBackException("Backup could not be created", e);
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

@@ -1,0 +1,51 @@
+{
+  "$schema":               "http://json-schema.org/draft-04/schema#",
+  "id":                    "/rvbd-schema/tm/7.0/status/local_tm/backups/full#update",
+  "title":                 "Backups",
+  "description":           "Full backups.",
+  "javaType" :             "org.rackspace.vtm.client.status.Backup",
+  "type":                  "object",
+  "resourceType":          "Dynamic",
+  "additionalProperties":  false,
+
+  "properties": {
+
+    "properties": {
+      "type":                  "object",
+      "additionalProperties":  false,
+
+      "properties": {
+
+        "backup": {
+          "javaType" :     "org.rackspace.vtm.client.status.BackupProperties",
+
+          "type":                  "object",
+          "additionalProperties":  false,
+
+          "properties": {
+            "description": {
+              "description":   "Description of the backup",
+
+              "type":          "string",
+              "default":       ""
+            },
+
+            "time_stamp": {
+              "description":   "Time the backup was created. Expressed as a UTC value.",
+
+              "type":          "integer",
+              "default":       0
+            },
+
+            "version": {
+              "description":   "Version of the traffic manager used to create the backup",
+
+              "type":          "string",
+              "default":       ""
+            }
+          }
+        }
+      }
+    }
+  }
+}

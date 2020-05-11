@@ -20,5 +20,4 @@ public interface VTMRequestManager {
 
     Response deleteItem(URI endpoint, Client client, String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException;
 
-
 }

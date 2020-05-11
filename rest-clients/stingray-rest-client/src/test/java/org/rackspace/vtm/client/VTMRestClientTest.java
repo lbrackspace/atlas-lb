@@ -26,6 +26,7 @@ import org.rackspace.vtm.client.rate.Rate;
 import org.rackspace.vtm.client.settings.GlobalSettings;
 import org.rackspace.vtm.client.ssl.client.keypair.ClientKeypair;
 import org.rackspace.vtm.client.ssl.keypair.Keypair;
+import org.rackspace.vtm.client.status.Backup;
 import org.rackspace.vtm.client.tm.TrafficManager;
 import org.rackspace.vtm.client.traffic.ip.TrafficIp;
 import org.rackspace.vtm.client.util.ClientConstants;
@@ -336,6 +337,7 @@ public class VTMRestClientTest {
         private TrafficManager trafficManager;
         private TrafficIp trafficIp;
         private GlobalSettings globalSettings;
+        private Backup backup;
 
 
 
@@ -800,6 +802,7 @@ public class VTMRestClientTest {
         private Keypair keypair;
         private TrafficManager trafficManager;
         private TrafficIp trafficIp;
+        private Backup  backup;
 
 
 
@@ -822,6 +825,7 @@ public class VTMRestClientTest {
             trafficManager = new TrafficManager();
             trafficIp = new TrafficIp();
             vtimRestClientManager = spy(new VTMRestClient());
+            backup = new Backup();
 
 
             when(mockedResponse.readEntity(TrafficIp.class)).thenReturn(trafficIp);
@@ -838,6 +842,7 @@ public class VTMRestClientTest {
             when(mockedResponse.readEntity(VirtualServer.class)).thenReturn(virtualServer);
             when(mockedResponse.readEntity(Pool.class)).thenReturn(pool);
             when(mockedResponse.readEntity(Bandwidth.class)).thenReturn(bandwidth);
+            when(mockedResponse.readEntity(Backup.class)).thenReturn(backup);
         }
 
         @Test(expected = VTMRestClientException.class)
@@ -1226,6 +1231,22 @@ public class VTMRestClientTest {
             Assert.assertNull(trafficIpThree);
         }
 
+        @Test
+        public void createBackupShouldNotReturnNull() throws Exception{
+            String tm = "z2.rackspace.com";
+            when(requestManager.updateItem(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any(), Matchers.<Bandwidth>any(), Matchers.<MediaType>any())).thenReturn(mockedResponse);
+            Backup backup2 = vtimRestClient.createBackup(vsName, backup, tm);
+            Assert.assertNotNull(vsName, backup2);
+        }
+
+        @Test(expected = VTMRestClientException.class)
+        public void createBackupShouldThrowException() throws VTMRestClientException, VTMRestClientObjectNotFoundException, URISyntaxException {
+            String tm = "z2.rackspace.com";
+            backup.setProperties(null);
+            Backup backup1 = vtimRestClient.createBackup(vsName, backup, tm);
+            Assert.assertNull(backup1);
+        }
+
     }
 
 
@@ -1578,7 +1599,19 @@ public class VTMRestClientTest {
 
         }
 
+        @Test
+        public void deleteBackupShouldReturnANoContentResponse() throws Exception {
+            String tm = "z2.rackspace.com";
+            Response rnc = Response.noContent().build();
+            when(requestManager.deleteItem(Matchers.<URI>any(), Matchers.<Client>any(), Matchers.<String>any())).thenReturn(rnc);
+            vsName = "12345_1234";
+            Response response = vtimRestClient.deleteBackup(vsName, tm);
+            Assert.assertEquals(204, response.getStatus());
+
+        }
+
     }
+
 
 
 

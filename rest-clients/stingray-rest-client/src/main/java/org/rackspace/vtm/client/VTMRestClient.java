@@ -20,6 +20,8 @@ import org.rackspace.vtm.client.rate.Rate;
 import org.rackspace.vtm.client.settings.GlobalSettings;
 import org.rackspace.vtm.client.ssl.client.keypair.ClientKeypair;
 import org.rackspace.vtm.client.ssl.keypair.Keypair;
+
+import org.rackspace.vtm.client.status.Backup;
 import org.rackspace.vtm.client.tm.TrafficManager;
 import org.rackspace.vtm.client.traffic.ip.TrafficIp;
 import org.rackspace.vtm.client.util.ClientConstants;
@@ -92,7 +94,8 @@ public class VTMRestClient extends VTMRestClientManager {
                 || path.equals(ClientConstants.MONITOR_PATH) || path.equals(ClientConstants.MONITORSCRIPT_PATH)
                 || path.equals(ClientConstants.PROTECTION_PATH) || path.equals(ClientConstants.V_SERVER_PATH)
                 || path.equals(ClientConstants.TRAFFICMANAGER_PATH) || path.equals(ClientConstants.TRAFFICSCRIPT_PATH)
-                || path.equals(ClientConstants.GLOBAL_SETTINGS) || path.equals(ClientConstants.GLOBAL_COUNTERS);
+                || path.equals(ClientConstants.GLOBAL_SETTINGS) || path.equals(ClientConstants.GLOBAL_COUNTERS)
+                || path.contains(ClientConstants.STATUS_BACKUPS);
     }
 
     /**
@@ -247,10 +250,11 @@ public class VTMRestClient extends VTMRestClientManager {
      * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
      */
     public Response deleteItem(String name, String path) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
-        if (isPathValid(path))
+        if (isPathValid(path)) {
             return requestManager.deleteItem(endpoint, client, path + name);
-        else
+        } else {
             throw new VTMRestClientException();
+        }
     }
 
     public VirtualServer createVirtualServer(String name, VirtualServer vs) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
@@ -728,6 +732,31 @@ public class VTMRestClient extends VTMRestClientManager {
      */
     public Persistence createPersistence(String name, Persistence persistence) throws VTMRestClientException, VTMRestClientObjectNotFoundException {
         return createItem(name, Persistence.class, ClientConstants.PERSISTENCE_PATH, persistence);
+    }
+
+    /**
+     * @param name        The name of the backup
+     * @param backup The Backup object used to create a host backup
+     * @return The configured Backup object
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+     */
+    public Backup createBackup(String name, Backup backup, String trafficManagerName) throws VTMRestClientException, VTMRestClientObjectNotFoundException, URISyntaxException {
+        String statsEndpoint = endpoint.toString().split("config")[0];
+        endpoint = new URI(statsEndpoint);
+        String path = "status/" + trafficManagerName + "/"+ ClientConstants.STATUS_BACKUPS + "/";
+        return createItem(name, Backup.class, path, backup);
+    }
+
+    /**
+     * @param name The virtual server name related to the persistence
+     * @throws VTMRestClientException, VTMRestClientObjectNotFoundException
+     * @return
+     */
+    public Response deleteBackup(String name, String trafficManagerName) throws VTMRestClientException, VTMRestClientObjectNotFoundException, URISyntaxException {
+        String statsEndpoint = endpoint.toString().split("config")[0];
+        endpoint = new URI(statsEndpoint);
+        String path = "status/" + trafficManagerName + "/"+ ClientConstants.STATUS_BACKUPS + "/";
+        return deleteItem(name, path);
     }
 
 
