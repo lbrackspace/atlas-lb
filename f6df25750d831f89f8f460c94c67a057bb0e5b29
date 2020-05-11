@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f70d8f01_a66ea11a",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/integration/ReverseProxyLoadBalancerServiceVTMImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 815,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-05-11T14:27:14Z",
+      "side": 1,
+      "message": "This class shouldn\u0027t know anything about the requirements for building require object. It\u0027s just a proxy, a pass through on that collects config information and passes to the biz logic class on the other side",
+      "revId": "f6df25750d831f89f8f460c94c67a057bb0e5b29",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "6860054f_b9111539",
+        "filename": "rest-clients/stingray-rest-client/src/main/java/org/rackspace/vtm/client/VTMRestClient.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 240,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-05-11T14:27:14Z",
+      "side": 1,
+      "message": "Put this logic in the isPathValid method so it will validate and allow the path for any call instead of updating this generic client method.",
+      "revId": "f6df25750d831f89f8f460c94c67a057bb0e5b29",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
