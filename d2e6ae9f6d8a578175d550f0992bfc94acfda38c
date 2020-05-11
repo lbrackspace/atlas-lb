@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9b203acc_f261c4b4",
+        "filename": "adapter/zxtm-service/src/main/java/org/openstack/atlas/adapter/vtm/VTMadapterImpl.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 1184,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-05-11T21:34:39Z",
+      "side": 1,
+      "message": "Why is this different from BackupProperties? Maybe we need to fix the javatype still?",
+      "revId": "d2e6ae9f6d8a578175d550f0992bfc94acfda38c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "84a4dee7_10a937e0",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/HostResourceTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-05-11T21:34:39Z",
+      "side": 1,
+      "message": "Think these resource tests belong in their respective resource test class",
+      "revId": "d2e6ae9f6d8a578175d550f0992bfc94acfda38c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
