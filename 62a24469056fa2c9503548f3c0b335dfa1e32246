@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5260aa68_47b54ea4",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/HostResourceTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-05-12T18:27:45Z",
+      "side": 1,
+      "message": "nit: Probably want to remove anything unused that was added here and we should avoid splat importing(*)",
+      "revId": "62a24469056fa2c9503548f3c0b335dfa1e32246",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
