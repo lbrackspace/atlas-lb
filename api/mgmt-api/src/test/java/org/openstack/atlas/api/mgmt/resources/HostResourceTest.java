@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.apache.commons.configuration2.Configuration;
 import org.dozer.DozerBeanMapperBuilder;
 import org.mockito.Matchers;
 import org.mockito.Mock;
@@ -21,7 +20,6 @@ import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -29,8 +27,6 @@ import org.openstack.atlas.service.domain.services.HostService;
 import sun.net.util.IPAddressUtil;
 
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -301,6 +297,7 @@ public class HostResourceTest {
                 Assert.assertFalse(IPAddressUtil.isIPv4LiteralAddress("192.168.1.1.111"));
             }
         }
+
     }
 }
 

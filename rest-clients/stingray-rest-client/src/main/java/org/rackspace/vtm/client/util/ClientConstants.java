@@ -62,6 +62,7 @@ public class ClientConstants {
     public static final String V_SERVER_PATH = "virtual_servers/";
     public static final String GLOBAL_SETTINGS = "global_settings/";
     public static final String GLOBAL_COUNTERS = "status/local_tm/statistics/globals";
+    public static final String STATUS_BACKUPS = "backups/full";
 
     /** Error messages for the VTM Rest Client**/
     public static final String REQUEST_ERROR = "The VTM Rest Client encountered a problem processing the request: ";
