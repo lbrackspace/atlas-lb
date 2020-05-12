@@ -43,7 +43,11 @@ public class HealthCheckResource extends ManagementDependencyProvider {
                 check.setTime(System.currentTimeMillis() - time);
                 return check;
             }
-            reverseProxyLoadBalancerService.getSubnetMappings(host);
+            if(isRestAdapter()){
+                reverseProxyLoadBalancerVTMService.getSubnetMappings(host);
+            } else {
+                reverseProxyLoadBalancerService.getSubnetMappings(host);
+            }
         } catch (Exception e) {
             check.setStatus("INACTIVE");
             check.setMessage(e.getMessage());

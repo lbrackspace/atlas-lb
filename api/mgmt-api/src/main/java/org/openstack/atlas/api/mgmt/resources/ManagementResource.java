@@ -114,7 +114,11 @@ public class ManagementResource extends ManagementDependencyProvider {
     public Response getGlobalCiphers() {       
         String cipherList;
         try {
-            cipherList = reverseProxyLoadBalancerService.getSsl3Ciphers();
+            if (isRestAdapter()) {
+                cipherList = reverseProxyLoadBalancerVTMService.getSsl3Ciphers();
+            } else {
+                cipherList = reverseProxyLoadBalancerService.getSsl3Ciphers();
+            }
         } catch (EntityNotFoundException ex) {
             return ResponseFactory.getErrorResponse(ex, "No soap end points available", "");
         } catch (Exception ex) {
