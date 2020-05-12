@@ -169,7 +169,7 @@ public class SslTerminationResource extends CommonDependencyProvider {
 
                     if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null
                             && restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase(REST)) {
-                        cipherList = reverseProxyLoadBalancerStmService.getSsl3Ciphers();
+                        cipherList = reverseProxyLoadBalancerVTMService.getSsl3Ciphers();
                     } else {
                         cipherList = reverseProxyLoadBalancerService.getSsl3Ciphers();
                     }

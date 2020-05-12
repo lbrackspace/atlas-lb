@@ -9,6 +9,7 @@ import org.mockito.*;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -34,6 +35,8 @@ public class SslTerminationResourceTest {
         ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         @Mock
         ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
+        @Mock
+        ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
         @Mock
         SslTerminationService sslTerminationService;
         @Mock
@@ -61,6 +64,7 @@ public class SslTerminationResourceTest {
             sslTermResource.setDozerMapper(dozerBeanMapper);
             sslTermResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
             sslTermResource.setReverseProxyLoadBalancerStmService(reverseProxyLoadBalancerStmService);
+            sslTermResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
             sslTermResource.setRestApiConfiguration(restApiConfiguration);
 
         }
@@ -95,25 +99,31 @@ public class SslTerminationResourceTest {
         @Test
         public void shouldReturnA200WhenReturningDefaultCiphersList() throws Exception {
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
-            doReturn("soap").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
+            doReturn("soap").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
             SslTermination sslTerm = new SslTermination();
             when(sslTerminationService.getSslTermination(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(sslTerm);
             doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerService).getSsl3Ciphers();
             response = sslTermResource.retrieveSupportedCiphers();
             org.junit.Assert.assertEquals(200, response.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(0)).getSsl3Ciphers();
+            verify(reverseProxyLoadBalancerStmService, times(0)).getSsl3Ciphers();
+            verify(reverseProxyLoadBalancerService, times(1)).getSsl3Ciphers();
         }
 
         @Test
         public void shouldReturnA200WhenReturningDefaultCiphersListREST() throws Exception {
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
-            doReturn("REST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
+            doReturn("REST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
             SslTermination sslTerm = new SslTermination();
             when(sslTerminationService.getSslTermination(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(sslTerm);
-            doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerStmService).getSsl3Ciphers();
+            doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerVTMService).getSsl3Ciphers();
             response = sslTermResource.retrieveSupportedCiphers();
             org.junit.Assert.assertEquals(200, response.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(1)).getSsl3Ciphers();
+            verify(reverseProxyLoadBalancerStmService, times(0)).getSsl3Ciphers();
+            verify(reverseProxyLoadBalancerService, times(0)).getSsl3Ciphers();
         }
 
         @Test
