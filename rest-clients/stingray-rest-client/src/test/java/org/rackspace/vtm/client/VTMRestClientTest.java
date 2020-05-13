@@ -9,6 +9,8 @@ import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.rackspace.vtm.client.bandwidth.Bandwidth;
 import org.rackspace.vtm.client.counters.GlobalCounters;
+import org.rackspace.vtm.client.counters.VirtualServerStats;
+import org.rackspace.vtm.client.counters.VirtualServerStatsProperties;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.vtm.client.glb.GlobalLoadBalancing;
@@ -337,6 +339,7 @@ public class VTMRestClientTest {
         private TrafficManager trafficManager;
         private TrafficIp trafficIp;
         private GlobalSettings globalSettings;
+        private VirtualServerStatsProperties virtualServerStats;
         private Backup backup;
 
 
@@ -363,7 +366,9 @@ public class VTMRestClientTest {
             vtimRestClientManager = spy(new VTMRestClient());
             vsName = "12345_1234";
             globalSettings = new GlobalSettings();
+            virtualServerStats = new VirtualServerStatsProperties();
 
+            when(mockedResponse.readEntity(VirtualServerStatsProperties.class)).thenReturn(virtualServerStats);
             when(mockedResponse.readEntity(GlobalSettings.class)).thenReturn(globalSettings);
             when(mockedResponse.readEntity(TrafficIp.class)).thenReturn(trafficIp);
             when(mockedResponse.readEntity(TrafficManager.class)).thenReturn(trafficManager);
@@ -772,6 +777,31 @@ public class VTMRestClientTest {
             when(mockedResponse.readEntity((Class<Object>) Matchers.any())).thenThrow(Exception.class);
             when(mockedResponse.getStatus()).thenReturn(ClientConstants.BAD_REQUEST);
             GlobalCounters globalCounters = vtimRestClient.getGlobalCounters(new URI("TEST"));
+        }
+
+        @Test
+        public void getVirtualServerStatsShouldReturnNonNull() throws Exception {
+            VirtualServerStats virtualServerStats = vtimRestClient.getVirtualServerStats(vsName, new URI("TEST"));
+            Assert.assertNotNull(virtualServerStats);
+            Assert.assertNotNull(virtualServerStats.getProperties());
+        }
+
+        @Test
+        public void getVirtualServerStatsShouldReturnNull() throws Exception{
+            when(mockedResponse.readEntity(VirtualServerStatsProperties.class)).thenReturn(null);
+            VirtualServerStats virtualServerStats = vtimRestClient.getVirtualServerStats(vsName, new URI("TEST"));
+            Assert.assertNotNull(virtualServerStats);
+            Assert.assertNull(virtualServerStats.getProperties());
+        }
+
+        @Test
+        public void getVirtualServerStatsShouldReturnDefaultValuesWhenResponseIsInvalid() throws VTMRestClientException, VTMRestClientObjectNotFoundException, URISyntaxException {
+            when(mockedResponse.readEntity((Class<Object>) Matchers.any())).thenThrow(Exception.class);
+            when(mockedResponse.getStatus()).thenReturn(ClientConstants.BAD_REQUEST);
+            VirtualServerStats virtualServerStats = vtimRestClient.getVirtualServerStats(vsName, new URI("TEST"));
+            Assert.assertNotNull(virtualServerStats);
+            Assert.assertNotNull(virtualServerStats.getProperties());
+            Assert.assertEquals(Long.valueOf(0), virtualServerStats.getProperties().getStatistics().getConnectTimedOut());
         }
 
     }

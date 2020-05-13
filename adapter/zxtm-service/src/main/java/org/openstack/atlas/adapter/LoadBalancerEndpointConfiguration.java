@@ -108,7 +108,7 @@ public class LoadBalancerEndpointConfiguration {
                 if (!restEndpoint.contains("/config")) {
                     LOG.error(String.format("Endpoint %s did not contain necessary string to build stats endpoint.", restEndpoint));
                 } else {
-                    restStatsEndpoints.add(new URI(restEndpoint.substring(0, restEndpoint.indexOf("/config")) + "/status//" + string + "/statistics/"));
+                    restStatsEndpoints.add(new URI(restEndpoint.substring(0, restEndpoint.indexOf("/config")) + "/status/" + string + "/statistics/"));
                 }
             }
         } catch (URISyntaxException e) {

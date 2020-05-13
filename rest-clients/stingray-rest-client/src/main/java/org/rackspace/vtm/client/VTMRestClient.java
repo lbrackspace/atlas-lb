@@ -1172,11 +1172,11 @@ public class VTMRestClient extends VTMRestClientManager {
      */
     public VirtualServerStats getVirtualServerStats(String name, URI endpoint) {
         VirtualServerStats stats = new VirtualServerStats();
+        VirtualServerStatsProperties statsProperties;
         try {
-            stats = getItem(name, VirtualServerStats.class, ClientConstants.V_SERVER_PATH, endpoint);
-        } catch (VTMRestClientObjectNotFoundException e) {
-            stats.setProperties(getZeroedVirtulServerStats());
-        } catch (VTMRestClientException e) {
+            statsProperties = getItem(name, VirtualServerStatsProperties.class, ClientConstants.V_SERVER_PATH, endpoint);
+            stats.setProperties(statsProperties);
+        } catch (VTMRestClientObjectNotFoundException | VTMRestClientException e) {
             stats.setProperties(getZeroedVirtulServerStats());
         }
         return stats;

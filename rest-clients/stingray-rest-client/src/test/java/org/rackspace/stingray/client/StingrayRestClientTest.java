@@ -9,6 +9,7 @@ import org.mockito.*;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.rackspace.stingray.client.bandwidth.Bandwidth;
 import org.rackspace.stingray.client.counters.GlobalCounters;
+import org.rackspace.stingray.client.counters.VirtualServerStats;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.stingray.client.glb.GlobalLoadBalancing;
@@ -335,6 +336,7 @@ public class StingrayRestClientTest {
         private TrafficIp trafficIp;
         private GlobalSettings globalSettings;
         private GlobalCounters globalCounters;
+        private VirtualServerStats virtualServerStats;
 
 
 
@@ -361,7 +363,9 @@ public class StingrayRestClientTest {
             vsName = "12345_1234";
             globalSettings = new GlobalSettings();
             globalCounters = new GlobalCounters();
+            virtualServerStats = new VirtualServerStats();
 
+            when(mockedResponse.readEntity(VirtualServerStats.class)).thenReturn(virtualServerStats);
             when(mockedResponse.readEntity(GlobalSettings.class)).thenReturn(globalSettings);
             when(mockedResponse.readEntity(GlobalCounters.class)).thenReturn(globalCounters);
             when(mockedResponse.readEntity(TrafficIp.class)).thenReturn(trafficIp);
@@ -771,6 +775,28 @@ public class StingrayRestClientTest {
             when(mockedResponse.readEntity((Class<Object>) Matchers.any())).thenThrow(Exception.class);
             when(mockedResponse.getStatus()).thenReturn(ClientConstants.BAD_REQUEST);
             GlobalCounters globalCounters = stingrayRestClient.getGlobalCounters(new URI("TEST"));
+        }
+
+        @Test
+        public void getVirtualServerStatsShouldReturnNonNull() throws Exception {
+            VirtualServerStats virtualServerStats = stingrayRestClient.getVirtualServerStats(vsName, new URI("TEST"));
+            Assert.assertNotNull(virtualServerStats);
+        }
+
+        @Test
+        public void getVirtualServerStatsShouldReturnNull() throws Exception{
+            when(mockedResponse.readEntity(VirtualServerStats.class)).thenReturn(null);
+            VirtualServerStats virtualServerStats = stingrayRestClient.getVirtualServerStats(vsName, new URI("TEST"));
+            Assert.assertNull(virtualServerStats);
+        }
+
+        @Test
+        public void getVirtualServerStatsShouldReturnDefaultValuesWhenResponseIsInvalid() throws StingrayRestClientException, URISyntaxException {
+            when(mockedResponse.readEntity((Class<Object>) Matchers.any())).thenThrow(Exception.class);
+            when(mockedResponse.getStatus()).thenReturn(ClientConstants.BAD_REQUEST);
+            VirtualServerStats virtualServerStats = stingrayRestClient.getVirtualServerStats(vsName, new URI("TEST"));
+            Assert.assertNotNull(virtualServerStats);
+            Assert.assertEquals(Long.valueOf(0), virtualServerStats.getStatistics().getConnectTimedOut());
         }
 
     }
