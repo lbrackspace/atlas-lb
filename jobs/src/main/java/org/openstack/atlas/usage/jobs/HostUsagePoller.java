@@ -81,10 +81,12 @@ public class HostUsagePoller extends AbstractJob {
                     hostBytesOut = reverseProxyLoadBalancerAdapter.getHostBytesOut(config);
                     LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
                 } else {
+                    // Load the lazy fields..
+                    Host hydratedHost = hostRepository.getById(host.getId());
                     LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
-                    hostBytesIn = reverseProxyLoadBalancerVTMService.getHostBytesIn(host);
+                    hostBytesIn = reverseProxyLoadBalancerVTMService.getHostBytesIn(hydratedHost);
                     LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
-                    hostBytesOut = reverseProxyLoadBalancerVTMService.getHostBytesOut(host);
+                    hostBytesOut = reverseProxyLoadBalancerVTMService.getHostBytesOut(hydratedHost);
                     LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
                 }
 

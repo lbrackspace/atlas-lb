@@ -101,7 +101,7 @@ public class HostUsagePollerTest {
         }
 
         @Test
-        public void shouldChooseSsoapAdapterToQueryAndRetrieveBytes() throws Exception {
+        public void shouldChooseSoapAdapterToQueryAndRetrieveBytes() throws Exception {
             when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
             List<Host> hosts = new ArrayList<>();
             host.setRestEndpoint("https://127.0.0.1:9070/config/thing/3.4");
@@ -114,10 +114,35 @@ public class HostUsagePollerTest {
             when(hostRepository.getAll()).thenReturn(hosts);
 
             hostUsagePoller.run();
-            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesIn(any());
-            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesOut(any());
+            verify(hostRepository, times(0)).getById(anyInt());
+            verify(reverseProxyLoadBalancerVTMService, times(0)).getHostBytesIn(any());
+            verify(reverseProxyLoadBalancerVTMService, times(0)).getHostBytesOut(any());
             verify(reverseProxyLoadBalancerAdapter, times(1)).getHostBytesIn(any());
             verify(reverseProxyLoadBalancerAdapter, times(1)).getHostBytesOut(any());
+            verify(hostUsageRepository).save(any());
+
+        }
+
+        @Test
+        public void shouldChooseRestAdapterToQueryAndRetrieveBytes() throws Exception {
+            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
+            List<Host> hosts = new ArrayList<>();
+            host.setRestEndpoint("https://127.0.0.1:9070/config/thing/3.4");
+            host.setEndpoint("https://127.0.0.1:9040/soap");
+            host.setTrafficManagerName("t1");
+            host.setHostStatus(HostStatus.ACTIVE);
+            host.setRestEndpointActive(false);
+            host.setCluster(cluster);
+            host.setId(1);
+            hosts.add(host);
+            when(hostRepository.getAll()).thenReturn(hosts);
+
+            hostUsagePoller.run();
+            verify(hostRepository, times(1)).getById(anyInt());
+            verify(reverseProxyLoadBalancerVTMService, times(1)).getHostBytesIn(anyObject());
+            verify(reverseProxyLoadBalancerVTMService, times(1)).getHostBytesOut(anyObject());
+            verify(reverseProxyLoadBalancerAdapter, times(0)).getHostBytesIn(any());
+            verify(reverseProxyLoadBalancerAdapter, times(0)).getHostBytesOut(any());
             verify(hostUsageRepository).save(any());
 
         }
