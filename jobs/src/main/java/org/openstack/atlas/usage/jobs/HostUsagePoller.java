@@ -5,6 +5,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
+import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.Configuration;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.net.ConnectException;
+import java.net.URI;
 import java.util.Calendar;
 import java.util.List;
 import org.openstack.atlas.service.domain.entities.HostStatus;
@@ -37,7 +39,7 @@ public class HostUsagePoller extends AbstractJob {
     @Autowired
     private ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
     @Autowired
-    private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
+    private ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
     @Autowired
     private HostRepository hostRepository;
     @Autowired
@@ -80,17 +82,23 @@ public class HostUsagePoller extends AbstractJob {
                     LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getEndpoint()));
                     hostBytesOut = reverseProxyLoadBalancerAdapter.getHostBytesOut(config);
                     LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
+                } else if (isVTMAdapter(config.getRestEndpoint())) {
+                    LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
+                    hostBytesIn = reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
+                    LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
+                    hostBytesOut = reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
+                    LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
                 } else {
                     LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
-                    hostBytesIn = reverseProxyLoadBalancerVTMService.getHostBytesIn(host);
+                    hostBytesIn = reverseProxyLoadBalancerStmAdapter.getHostBytesIn(config);
                     LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
-                    hostBytesOut = reverseProxyLoadBalancerVTMService.getHostBytesOut(host);
+                    hostBytesOut = reverseProxyLoadBalancerStmAdapter.getHostBytesOut(config);
                     LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
                 }
 
                 LOG.debug(String.format("Saving usage snapshot for '%s' (%s)...", host.getName(), host.getEndpoint()));
                 addRecordForHost(host, hostBytesIn, hostBytesOut, pollTime);
-                LOG.debug(String.format("Usage snapshot successfully saved."));
+                LOG.debug("Usage snapshot successfully saved.");
             } catch (DecryptException de) {
                 LOG.error(String.format("Error decrypting configuration for '%s' (%s)", host.getName(), host.getEndpoint()), de);
             } catch (AxisFault af) {
@@ -123,6 +131,11 @@ public class HostUsagePoller extends AbstractJob {
     public boolean isRestAdapter() {
         return configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null
                 && configuration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase("REST");
+    }
+
+    private boolean isVTMAdapter(URI endpoint) {
+        // TODO: Temp until we resolve/refactor spring autowiring issues and use the vtmService or remove old adapter versions
+        return endpoint.getPath().contains("/7.0/");
     }
 
 }

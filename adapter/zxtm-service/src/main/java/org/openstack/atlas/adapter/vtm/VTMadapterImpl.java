@@ -41,6 +41,7 @@ import org.rackspace.vtm.client.virtualserver.VirtualServerHttp;
 import org.rackspace.vtm.client.virtualserver.VirtualServerServerCertHostMapping;
 import org.rackspace.vtm.client.virtualserver.VirtualServerSsl;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,7 +51,7 @@ import java.rmi.RemoteException;
 import java.util.*;
 
 @Component
-public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
+public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
     public static Log LOG = LogFactory.getLog(VTMadapterImpl.class.getName());
     private VTMAdapterResources resources;
 
