@@ -96,6 +96,12 @@ public interface ReverseProxyLoadBalancerVTMService {
     Long getHostBytesOut(Host host)
             throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException;
 
+    Long getHostBytesIn(LoadBalancerEndpointConfiguration config)
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException;
+
+    Long getHostBytesOut(LoadBalancerEndpointConfiguration config)
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException;
+
     boolean isEndPointWorking(Host host) throws Exception;
 
     String getSslCiphers(Integer accountId, Integer loadbalancerId) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException;

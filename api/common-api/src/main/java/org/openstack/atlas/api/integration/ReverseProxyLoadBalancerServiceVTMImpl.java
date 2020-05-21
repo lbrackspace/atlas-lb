@@ -783,6 +783,17 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     @Override
     public Long getHostBytesIn(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
+        return getHostBytesIn(config);
+    }
+
+    @Override
+    public Long getHostBytesOut(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
+        LoadBalancerEndpointConfiguration config = getConfigHost(host);
+        return getHostBytesOut(config);
+    }
+
+    @Override
+    public Long getHostBytesIn(LoadBalancerEndpointConfiguration config) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
         if (getVersion(config.getRestEndpoint()) == 7) {
             return reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
         } else {
@@ -791,8 +802,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public Long getHostBytesOut(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
-        LoadBalancerEndpointConfiguration config = getConfigHost(host);
+    public Long getHostBytesOut(LoadBalancerEndpointConfiguration config) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
         if (getVersion(config.getRestEndpoint()) == 7) {
             return reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
         } else {

@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
@@ -43,7 +44,7 @@ public class HostUsagePollerTest {
         @Mock
         private ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
         @Mock
-        private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
+        private ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
         @Mock
         private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
         @Mock
@@ -63,7 +64,7 @@ public class HostUsagePollerTest {
             cluster.setPassword("d752bc12821edc4d53bd9b30c8d35b6b");
             host = new Host();
             hosts = new ArrayList<>();
-            host.setRestEndpoint("https://127.0.0.1:9070/config/thing/7.0");
+            host.setRestEndpoint("https://127.0.0.1:9070/config/thing/7.0/");
             host.setRestEndpointActive(false);
             host.setEndpoint("https://127.0.0.1:9040/soap");
             host.setTrafficManagerName("t1");
@@ -80,10 +81,33 @@ public class HostUsagePollerTest {
         }
 
         @Test
-        public void shouldChooseVTMServiceToQueryAndRetrievieBytes() throws Exception {
+        public void shouldChooseVTMAdapterToQueryAndRetrievieBytes() throws Exception {
             hostUsagePoller.run();
-            verify(reverseProxyLoadBalancerVTMService, times(1)).getHostBytesIn(any());
-            verify(reverseProxyLoadBalancerVTMService, times(1)).getHostBytesOut(any());
+            verify(reverseProxyLoadBalancerVTMAdapter, times(1)).getHostBytesIn(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerVTMAdapter, times(1)).getHostBytesOut(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerStmAdapter, times(0)).getHostBytesIn(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerStmAdapter, times(0)).getHostBytesOut(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerAdapter, times(0)).getHostBytesIn(any());
+            verify(reverseProxyLoadBalancerAdapter, times(0)).getHostBytesOut(any());
+            verify(hostUsageRepository).save(any());
+        }
+
+        @Test
+        public void shouldChooseStmAdapterToQueryAndRetrievieBytes() throws Exception {
+            List<Host> hosts = new ArrayList<>();
+            host.setRestEndpoint("https://127.0.0.1:9070/config/thing/3.4");
+            host.setEndpoint("https://127.0.0.1:9040/soap");
+            host.setTrafficManagerName("t1");
+            host.setHostStatus(HostStatus.ACTIVE);
+            host.setRestEndpointActive(false);
+            host.setCluster(cluster);
+            hosts.add(host);
+            when(hostRepository.getAll()).thenReturn(hosts);
+            hostUsagePoller.run();
+            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesIn(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesOut(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerStmAdapter, times(1)).getHostBytesIn(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerStmAdapter, times(1)).getHostBytesOut(any(LoadBalancerEndpointConfiguration.class));
             verify(reverseProxyLoadBalancerAdapter, times(0)).getHostBytesIn(any());
             verify(reverseProxyLoadBalancerAdapter, times(0)).getHostBytesOut(any());
             verify(hostUsageRepository).save(any());
@@ -93,15 +117,17 @@ public class HostUsagePollerTest {
         public void shouldChooseSoapAdapterToQueryAndRetrievieBytes() throws Exception {
             when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
             hostUsagePoller.run();
-            verify(reverseProxyLoadBalancerVTMService, times(0)).getHostBytesIn(any());
-            verify(reverseProxyLoadBalancerVTMService, times(0)).getHostBytesOut(any());
+            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesIn(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesOut(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerStmAdapter, times(0)).getHostBytesIn(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerStmAdapter, times(0)).getHostBytesOut(any(LoadBalancerEndpointConfiguration.class));
             verify(reverseProxyLoadBalancerAdapter, times(1)).getHostBytesIn(any());
             verify(reverseProxyLoadBalancerAdapter, times(1)).getHostBytesOut(any());
             verify(hostUsageRepository).save(any());
         }
 
         @Test
-        public void shouldChooseSsoapAdapterToQueryAndRetrieveBytes() throws Exception {
+        public void shouldChooseSoapAdapterToQueryAndRetrieveBytes() throws Exception {
             when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
             List<Host> hosts = new ArrayList<>();
             host.setRestEndpoint("https://127.0.0.1:9070/config/thing/3.4");
@@ -114,8 +140,10 @@ public class HostUsagePollerTest {
             when(hostRepository.getAll()).thenReturn(hosts);
 
             hostUsagePoller.run();
-            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesIn(any());
-            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesOut(any());
+            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesIn(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getHostBytesOut(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerStmAdapter, times(0)).getHostBytesIn(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerStmAdapter, times(0)).getHostBytesOut(any(LoadBalancerEndpointConfiguration.class));
             verify(reverseProxyLoadBalancerAdapter, times(1)).getHostBytesIn(any());
             verify(reverseProxyLoadBalancerAdapter, times(1)).getHostBytesOut(any());
             verify(hostUsageRepository).save(any());
