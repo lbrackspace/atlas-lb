@@ -1014,7 +1014,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
             throw new VTMRestClientException("Unable to build connection to host");
         }
         client.destroy();
-        return Long.valueOf(gc.getProperties().getStatistics().getTotalBytesIn());
+        return gc.getProperties().getStatistics().getTotalBytesIn();
     }
 
     @Override
@@ -1027,7 +1027,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
             throw new VTMRestClientException("Unable to build connection to host");
         }
         client.destroy();
-        return Long.valueOf(gc.getProperties().getStatistics().getTotalBytesOut());
+        return gc.getProperties().getStatistics().getTotalBytesOut();
     }
 
     /**

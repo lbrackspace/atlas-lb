@@ -9,6 +9,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.rackspace.vtm.client.counters.GlobalCountersStatistics;
 import org.rackspace.vtm.client.counters.VirtualServerStatsProperties;
 import org.rackspace.vtm.client.counters.VirtualServerStatsStatistics;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
@@ -288,6 +289,29 @@ public class VTMRequestManagerTest {
             Assert.assertThat(stats.getConnectionFailures(), instanceOf(Long.class));
             Assert.assertThat(stats.getBytesIn(), instanceOf(Long.class));
             Assert.assertThat(stats.getBytesOut(), instanceOf(Long.class));
+        }
+
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore("javax.management.*")
+    public static class VerifyGlobalCounterStatistics {
+        GlobalCountersStatistics gs;
+
+
+        @Before
+        public void standUp() throws URISyntaxException, IOException {
+            gs = new GlobalCountersStatistics();
+            gs.setTotalBytesIn(10L);
+            gs.setTotalBytesOut(10L);
+            gs.setTotalCurrentConn(10);
+        }
+
+        @Test
+        public void verifyCountersFields() {
+            Assert.assertThat(gs.getTotalBytesIn(), instanceOf(Long.class));
+            Assert.assertThat(gs.getTotalBytesOut(), instanceOf(Long.class));
+            Assert.assertThat(gs.getTotalCurrentConn(), instanceOf(Integer.class));
         }
 
     }

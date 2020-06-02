@@ -28,6 +28,8 @@ import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.rackspace.stingray.client.StingrayRestClient;
+import org.rackspace.stingray.client.counters.GlobalCounters;
+import org.rackspace.stingray.client.counters.GlobalCountersStatistics;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.monitor.Monitor;
 import org.rackspace.stingray.client.pool.Pool;
@@ -43,6 +45,7 @@ import org.rackspace.stingray.client.traffic.ip.TrafficIp;
 import org.rackspace.stingray.client.virtualserver.*;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -1205,6 +1208,100 @@ public class StmAdapterImplTest extends VTMAdapterImplTestHelper {
 
             verify(client, times(1)).updateTrafficManager(hostsubnet.getName(), trafficManager);
             verify(client).destroy();
+        }
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PrepareForTest({ResourceTranslator.class})
+    public static class whenRetrievingHostCounters {
+
+        private String vsName;
+        private String host;
+        private GlobalCounters globalCounters;
+        private ResourceTranslator resourceTranslator;
+
+        @Mock
+        StingrayRestClient client;
+        @Mock
+        LoadBalancerEndpointConfiguration config;
+        @Mock
+        private StmAdapterResources resources;
+        @Spy
+        private StmAdapterImpl adapterSpy = new StmAdapterImpl();
+
+        @Before
+        public void standUp() throws Exception {
+            MockitoAnnotations.initMocks(this);
+            globalCounters = new GlobalCounters();
+            GlobalCountersStatistics globalCountersStatistics = new GlobalCountersStatistics();
+            globalCountersStatistics.setTotalBytesIn(10L);
+            globalCountersStatistics.setTotalBytesOut(20L);
+            globalCountersStatistics.setTotalCurrentConn(2);
+            globalCounters.setStatistics(globalCountersStatistics);
+
+            when(adapterSpy.getResources()).thenReturn(resources);
+            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(resources.loadSTMRestClient(config)).thenReturn(client);
+            when(client.getGlobalCounters(any())).thenReturn(globalCounters);
+
+        }
+
+        @Test
+        public void testGetTotalCurrentConnectionsForHost() throws Exception {
+            int totalCurrentConnectionsForHost = adapterSpy.getTotalCurrentConnectionsForHost(config);
+            Assert.assertEquals(2, totalCurrentConnectionsForHost);
+            verify(client, times(1)).getGlobalCounters(any());
+            verify(client).destroy();
+
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testGetTotalCurrentConnectionsForHostShouldHandleException() throws Exception {
+            when(client.getGlobalCounters(any())).thenThrow(URISyntaxException.class);
+
+            adapterSpy.getTotalCurrentConnectionsForHost(config);
+            verify(client, times(1)).getTrafficManager(host);
+            verify(client).destroy();
+
+        }
+
+        @Test
+        public void testGetBytesIn() throws Exception {
+            long bytesIn = adapterSpy.getHostBytesIn(config);
+            Assert.assertEquals(10, bytesIn);
+            verify(client, times(1)).getGlobalCounters(any());
+            verify(client).destroy();
+
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testGetBytesInShouldHandleException() throws Exception {
+            when(client.getGlobalCounters(any())).thenThrow(URISyntaxException.class);
+
+            adapterSpy.getHostBytesIn(config);
+            verify(client, times(1)).getTrafficManager(host);
+            verify(client).destroy();
+
+        }
+
+        @Test
+        public void testGetBytesOut() throws Exception {
+            long bytesOut = adapterSpy.getHostBytesOut(config);
+            Assert.assertEquals(20, bytesOut);
+            verify(client, times(1)).getGlobalCounters(any());
+            verify(client).destroy();
+
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testGetBytesOutShouldHandleException() throws Exception {
+            when(client.getGlobalCounters(any())).thenThrow(URISyntaxException.class);
+
+            adapterSpy.getHostBytesOut(config);
+            verify(client, times(1)).getTrafficManager(host);
+            verify(client).destroy();
+
         }
     }
 }

@@ -1146,7 +1146,7 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             gc = client.getGlobalCounters(config.getRestEndpoint());
         } catch (Exception e) {
-            throw new StmRollBackException(e.getCause().getMessage());
+            throw new StmRollBackException("Unable to retrieve host counters");
         }
         client.destroy();
         return gc.getStatistics().getTotalCurrentConn();
@@ -1159,10 +1159,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             gc = client.getGlobalCounters(config.getRestEndpoint());
         } catch (Exception e) {
-            throw new StmRollBackException(e.getCause().getMessage());
+            throw new StmRollBackException("Unable to retrieve host counters");
         }
         client.destroy();
-        return Long.valueOf(gc.getStatistics().getTotalBytesIn());
+        return gc.getStatistics().getTotalBytesIn();
     }
 
     @Override
@@ -1172,10 +1172,10 @@ public class StmAdapterImpl implements ReverseProxyLoadBalancerStmAdapter {
         try {
             gc = client.getGlobalCounters(config.getRestEndpoint());
         } catch (Exception e) {
-            throw new StmRollBackException(e.getCause().getMessage());
+            throw new StmRollBackException("Unable to retrieve host counters");
         }
         client.destroy();
-        return Long.valueOf(gc.getStatistics().getTotalBytesOut());
+        return gc.getStatistics().getTotalBytesOut();
     }
 
     /**

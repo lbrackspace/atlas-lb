@@ -1157,8 +1157,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             MockitoAnnotations.initMocks(this);
             globalCounters = new GlobalCounters();
             GlobalCountersStatistics globalCountersStatistics = new GlobalCountersStatistics();
-            globalCountersStatistics.setTotalBytesIn(10);
-            globalCountersStatistics.setTotalBytesOut(20);
+            globalCountersStatistics.setTotalBytesIn(10L);
+            globalCountersStatistics.setTotalBytesOut(20L);
             globalCountersStatistics.setTotalCurrentConn(2);
             GlobalCountersProperties globalCountersProperties = new GlobalCountersProperties();
             globalCountersProperties.setStatistics(globalCountersStatistics);

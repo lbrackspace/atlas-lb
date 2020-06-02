@@ -9,6 +9,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
+import org.rackspace.stingray.client.counters.GlobalCountersStatistics;
 import org.rackspace.stingray.client.counters.VirtualServerStatsProperties;
 import org.rackspace.stingray.client.exception.StingrayRestClientException;
 import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
@@ -296,5 +297,27 @@ public class StingrayRequestManagerTest {
             Assert.assertThat(vs.getTotalConn(), instanceOf(Long.class));
         }
 
+    }
+
+    @RunWith(PowerMockRunner.class)
+    @PowerMockIgnore("javax.management.*")
+    public static class VerifyGlobalCounterStatistics {
+        GlobalCountersStatistics gs;
+
+
+        @Before
+        public void standUp() throws URISyntaxException, IOException {
+            gs = new GlobalCountersStatistics();
+            gs.setTotalBytesIn(10L);
+            gs.setTotalBytesOut(10L);
+            gs.setTotalCurrentConn(10);
+        }
+
+        @Test
+        public void verifyCountersFields() {
+            Assert.assertThat(gs.getTotalBytesIn(), instanceOf(Long.class));
+            Assert.assertThat(gs.getTotalBytesOut(), instanceOf(Long.class));
+            Assert.assertThat(gs.getTotalCurrentConn(), instanceOf(Integer.class));
+        }
     }
 }
