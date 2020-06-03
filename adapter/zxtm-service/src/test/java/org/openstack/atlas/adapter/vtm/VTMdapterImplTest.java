@@ -959,6 +959,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             verify(resourceTranslator).translateKeypairMappingsResource(loadBalancer, true);
             verify(resources).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client, times(0)).getVirtualServer(vsName);
+
             verify(client).destroy();
         }
 
@@ -991,6 +993,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
                     loadBalancer.getAccountId(), certificateMapping.getId()));
             verify(resources).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client, times(0)).getVirtualServer(vsName);
             verify(client).destroy();
         }
 
@@ -1129,6 +1132,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
                     loadBalancer.getAccountId(), cmap.getId()));
             verify(resources, times(0)).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
             verify(resources, times(1)).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client, times(0)).getVirtualServer(vsName);
             verify(client, times(1)).destroy();
         }
     }

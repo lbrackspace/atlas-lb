@@ -168,12 +168,12 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
                         getResources().updateVirtualServer(client, vsName, rt.getcRedirectVServer());
                         break;
                     case SECURE_VS:
-                        rt.translateVirtualServerResource(config, vsName, loadBalancer);
                         getResources().updateKeypair(client, vsName, rt.getcKeypair());
-                        getResources().updateVirtualServer(client, vsName, rt.getcVServer());
                         if (loadBalancer.getCertificateMappings() != null && loadBalancer.getCertificateMappings().size() > 0) {
                             updateCertificateMappings(config, loadBalancer);
                         }
+                        rt.translateVirtualServerResource(config, vsName, loadBalancer);
+                        getResources().updateVirtualServer(client, vsName, rt.getcVServer());
                         break;
                     default:
                         rt.translateVirtualServerResource(config, vsName, loadBalancer);
@@ -694,9 +694,6 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         VTMResourceTranslator rt = VTMResourceTranslator.getNewResourceTranslator();
 
         try {
-            // Retain current configuration for rollbacks
-            VirtualServer virtualServer = client.getVirtualServer(virtualServerNameSecure);
-            List<VirtualServerServerCertHostMapping> curMappings = virtualServer.getProperties().getSsl().getServerCertHostMapping();
 
             // Translate updated secure virtualserver
             VirtualServer sVirtualServer = rt.translateVirtualServerResource(config, virtualServerNameSecure, loadBalancer);
@@ -727,7 +724,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
             getResources().updateVirtualServer(client, virtualServerNameSecure, sVirtualServer);
 
         } catch (Exception ex) {
-            // TODO: rollback...
+            // TODO: rollback... for rollbacks we'll need to consider error handling around db failures as well...
             client.destroy();
             LOG.error("Exception updating load balancer: " + ex);
             throw new StmRollBackException("Failed to update loadbalancer", ex);

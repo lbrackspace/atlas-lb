@@ -53,11 +53,11 @@ public class SyncListener extends BaseListener {
 
         List<SnmpUsage> usages = new ArrayList<SnmpUsage>();
         try {
-            LOG.info(String.format("Collecting DELETE_LOADBALANCER usage for load balancer %s...", dbLoadBalancer.getId()));
+            LOG.info(String.format("Collecting pre-sync usage for load balancer %s...", dbLoadBalancer.getId()));
             usages = usageEventCollection.getUsage(dbLoadBalancer);
-            LOG.info(String.format("Successfully collected DELETE_LOADBALANCER usage for load balancer %s", dbLoadBalancer.getId()));
+            LOG.info(String.format("Successfully collected pre-sync usage for load balancer %s", dbLoadBalancer.getId()));
         } catch (UsageEventCollectionException e) {
-            LOG.error(String.format("Collection of the DELETE_LOADBALANCER usage event failed for " +
+            LOG.error(String.format("Collection of the pre-sync usage event failed for " +
                     "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
 
