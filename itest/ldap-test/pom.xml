@@ -4,19 +4,19 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-itest</artifactId>
-        <version>1.26.34-SNAPSHOT</version>
+        <version>1.26.34</version>
     </parent>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-ldap-test</artifactId>
     <name>Openstack :: Atlas :: Integration tests :: LDAP Tests</name>
-    <version>1.26.34-SNAPSHOT</version>
+    <version>1.26.34</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.openstack.atlas</groupId>
             <artifactId>atlas-mgmt-api</artifactId>
-            <version>1.26.34-SNAPSHOT</version>
+            <version>1.26.34</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
