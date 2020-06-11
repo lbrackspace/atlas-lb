@@ -6,6 +6,9 @@ Requirements
   * Glassfish >= 5.0
   * MySql/MariaDB
 
+
+TEST DO NOT MERGE
+
 Installation
 ------------
 
