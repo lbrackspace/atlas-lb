@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-ca-parent</artifactId>
-        <version>1.26.35-SNAPSHOT</version>
+        <version>1.27.00-SNAPSHOT</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
