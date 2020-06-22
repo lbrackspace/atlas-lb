@@ -144,7 +144,6 @@ public class ResourceTranslator {
         List<String> rules = new ArrayList<String>();
 
         properties.setBasic(basic);
-        properties.setSsl(ssl);
         cVServer = new VirtualServer();
         cVServer.setProperties(properties);
 
@@ -184,6 +183,8 @@ public class ResourceTranslator {
                 }
                 ssl.setServerCertHostMapping(cmappings);
             }
+            ssl.setServerCertDefault(vsName);
+            properties.setSsl(ssl);
 
         } else {
             basic.setPort(loadBalancer.getPort());
@@ -265,9 +266,6 @@ public class ResourceTranslator {
         //trafficIpGroup settings
         basic.setListenOnAny(false);
         basic.setListenOnTrafficIps(genGroupNameSet(loadBalancer));
-
-        //ssl settings
-        ssl.setServerCertDefault(vsName);
 
         return cVServer;
     }

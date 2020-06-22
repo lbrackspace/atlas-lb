@@ -182,6 +182,7 @@ public class VTMResourceTranslator {
                 }
                 ssl.setServerCertHostMapping(cmappings);
             }
+            ssl.setServerCertDefault(vsName);
             properties.setSsl(ssl);
         } else {
             basic.setPort(loadBalancer.getPort());
@@ -265,9 +266,6 @@ public class VTMResourceTranslator {
         //trafficIpGroup settings
         basic.setListenOnAny(false);
         basic.setListenOnTrafficIps(genGroupNameSet(loadBalancer));
-
-        //ssl settings
-        ssl.setServerCertDefault(vsName);
 
         return cVServer;
     }

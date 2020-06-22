@@ -273,6 +273,35 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
         }
 
         @Test
+        public void shouldCreateValidVirtualServerWithNoSslReferences() throws InsufficientRequestException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            VirtualServer createdServer = translator.translateVirtualServerResource(config, vsName, lb);
+            VirtualServerProperties createdProperties = createdServer.getProperties();
+            VirtualServerBasic createdBasic = createdServer.getProperties().getBasic();
+            VirtualServerTcp createdTcp = createdProperties.getTcp();
+            Assert.assertNull(createdProperties.getSsl());
+            expectedTcp.setProxyClose(isHalfClosed);
+            VirtualServerLog log = createdProperties.getLog();
+            Boolean cacheEnabled = createdProperties.getWebCache().getEnabled();
+            Assert.assertNotNull(log);
+            Assert.assertEquals(logFormat, log.getFormat());
+            Assert.assertTrue(cacheEnabled);
+            Assert.assertEquals(VirtualServerBasic.Protocol.fromValue(ZxtmConversionUtils.mapProtocol(lb.getProtocol()).getValue()), createdBasic.getProtocol());
+            Assert.assertEquals(lb.getPort(), createdBasic.getPort());
+            Assert.assertEquals(vsName, createdBasic.getPool());
+            Assert.assertTrue(createdBasic.getEnabled());
+            Assert.assertEquals(vsName, createdBasic.getProtectionClass());
+            Assert.assertEquals(expectedTcp, createdTcp);
+            Assert.assertFalse(createdBasic.getListenOnAny());
+            if (lb.isContentCaching())
+                rules.add(VTMConstants.CONTENT_CACHING);
+            Assert.assertEquals(rules.size(), createdBasic.getRequestRules().size());
+//            Assert.assertTrue(rules.containsAll(createdBasic.getRequest_rules()));
+
+//            Assert.assertEquals(expectedError, createdProperties.getConnectionErrors());
+        }
+
+        @Test
         public void shouldCreateValidVirtualServerWithSSLTermination() throws InsufficientRequestException {
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
             String secureName = ZxtmNameBuilder.genSslVSName(lb);
@@ -335,6 +364,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertEquals(VTMTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getCipherSuites());
             Assert.assertEquals(VirtualServerSsl.SupportTls1.ENABLED, createdServer.getProperties().getSsl().getSupportTls1());
             Assert.assertEquals(VirtualServerSsl.SupportTls11.DISABLED, createdServer.getProperties().getSsl().getSupportTls11());
+            Assert.assertEquals(secureName, createdProperties.getSsl().getServerCertDefault());
 
         }
 
