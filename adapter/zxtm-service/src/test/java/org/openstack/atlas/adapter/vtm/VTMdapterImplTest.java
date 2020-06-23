@@ -138,6 +138,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             verify(resources).deletePool(client, vsName);
             verify(resources).deleteVirtualServer(client, vsName);
             verify(resources).deleteVirtualServer(client, secureVsName);
+            verify(client).deleteExtraFile(vsName + "_error.html");
             verify(client).destroy();
         }
     }
