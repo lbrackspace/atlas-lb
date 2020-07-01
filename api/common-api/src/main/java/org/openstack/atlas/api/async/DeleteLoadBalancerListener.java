@@ -2,8 +2,7 @@ package org.openstack.atlas.api.async;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
-import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.events.UsageEvent;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionException;
@@ -12,9 +11,7 @@ import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
+import java.util.*;
 
 import static org.openstack.atlas.service.domain.events.entities.CategoryType.DELETE;
 import static org.openstack.atlas.service.domain.events.entities.EventSeverity.CRITICAL;
@@ -56,11 +53,29 @@ public class DeleteLoadBalancerListener extends BaseListener {
                     "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
 
+        // We don't want to remove shared vip vTM references, gather details for post vTM operations...
+        Set<LoadBalancerJoinVip> allVips = new HashSet<>(dbLoadBalancer.getLoadBalancerJoinVipSet());
+        Set<LoadBalancerJoinVip6> allVips6 = new HashSet<>(dbLoadBalancer.getLoadBalancerJoinVip6Set());
+
+        // Verify and remove shared vips from the lists to be purged in vTM
+        for (LoadBalancerJoinVip vipset : dbLoadBalancer.getLoadBalancerJoinVipSet()) {
+            if (loadBalancerService.isSharedVip4(dbLoadBalancer, vipset.getVirtualIp())) {
+                dbLoadBalancer.getLoadBalancerJoinVipSet().remove(vipset);
+            }
+        }
+
+        for (LoadBalancerJoinVip6 vipset : dbLoadBalancer.getLoadBalancerJoinVip6Set()) {
+            if (loadBalancerService.isSharedVip6(dbLoadBalancer, vipset.getVirtualIp())) {
+                dbLoadBalancer.getLoadBalancerJoinVip6Set().remove(vipset);
+            }
+        }
+
+        // Process vTM deletion...
         try {
             if (isRestAdapter()) {
-                LOG.debug(String.format("Deleting load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Deleting load balancer '%d' in backend...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.deleteLoadBalancer(dbLoadBalancer);
-                LOG.debug(String.format("Successfully deleted load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Successfully deleted load balancer '%d' in backend.", dbLoadBalancer.getId()));
             } else {
                 LOG.debug(String.format("Deleting load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
@@ -78,12 +93,18 @@ public class DeleteLoadBalancerListener extends BaseListener {
             return;
         }
 
+        // Set the appropriate vip sets for clean up...
+        dbLoadBalancer.setLoadBalancerJoinVipSet(allVips);
+        dbLoadBalancer.setLoadBalancerJoinVip6Set(allVips6);
+
+        // Ensure SSLTermination references are removed from the database
         if (dbLoadBalancer.hasSsl()) {
             LOG.debug(String.format("Deleting load balancer '%d' ssl termination in database...", dbLoadBalancer.getId()));
             sslTerminationService.deleteSslTermination(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId());
             LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in database.", dbLoadBalancer.getId()));
         }
 
+        // Mark the load balancer in a pseudo DELETED status for retention policy
         dbLoadBalancer = loadBalancerService.pseudoDelete(dbLoadBalancer);
         loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.DELETED);
 

@@ -11,16 +11,14 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.repository.*;
-import org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl;
-import org.openstack.atlas.service.domain.services.impl.HostServiceImpl;
-import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
-import org.openstack.atlas.service.domain.services.impl.LoadBalancerStatusHistoryServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -28,6 +26,41 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(Enclosed.class)
 public class LoadBalancerServiceImplTest {
+
+    public static class WhenCheckingForSharedVips {
+
+        private LoadBalancer lb;
+
+        @Mock
+        VirtualIpService virtualIpService;
+
+        @InjectMocks
+        LoadBalancerServiceImpl lbService;
+
+        @Before
+        public void standUp() {
+            MockitoAnnotations.initMocks(this);
+            lb = new LoadBalancer();
+        }
+
+        @Test
+        public void ShouldReturnVerifyIfSharedVip() {
+            when(virtualIpService.isVipAllocatedToAnotherLoadBalancer(any(), any())).thenReturn(Boolean.TRUE);
+            Assert.assertTrue(lbService.isSharedVip4(lb, new VirtualIp()));
+
+            when(virtualIpService.isVipAllocatedToAnotherLoadBalancer(any(), any())).thenReturn(Boolean.FALSE);
+            Assert.assertFalse(lbService.isSharedVip4(lb, new VirtualIp()));
+        }
+
+        @Test
+        public void ShouldReturnVerifyIfSharedVip6() {
+            when(virtualIpService.isIpv6VipAllocatedToAnotherLoadBalancer(any(), any())).thenReturn(Boolean.TRUE);
+            Assert.assertTrue(lbService.isSharedVip6(lb, new VirtualIpv6()));
+
+            when(virtualIpService.isIpv6VipAllocatedToAnotherLoadBalancer(any(), any())).thenReturn(Boolean.FALSE);
+            Assert.assertFalse(lbService.isSharedVip6(lb, new VirtualIpv6()));
+        }
+    }
 
     public static class WhenCheckingIfLoadBalancerLimitIsReached {
         Integer accountId = 1234;
