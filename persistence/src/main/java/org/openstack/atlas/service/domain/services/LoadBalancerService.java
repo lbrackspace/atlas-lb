@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.usage.BitTags;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface LoadBalancerService {
 
@@ -101,4 +102,8 @@ public interface LoadBalancerService {
     BitTags getCurrentBitTags(Integer lbId);
 
     Map<Integer, LoadBalancer> fetchLBsThatShareIPsWith(int loadBalancerId) throws EntityNotFoundException, BadRequestException;
+
+    boolean isSharedVip4(VirtualIp vip);
+
+    boolean isSharedVip6(VirtualIpv6 vip);
 }

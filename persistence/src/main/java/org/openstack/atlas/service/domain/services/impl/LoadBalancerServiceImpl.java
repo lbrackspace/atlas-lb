@@ -1032,6 +1032,17 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return sharedVips;
     }
 
+
+    public boolean isSharedVip4(VirtualIp vip) {
+        List<LoadBalancer> sharedLbs = virtualIpRepository.getLoadBalancersByVipId(vip.getId());
+        return sharedLbs.size() > 1;
+    }
+
+    public boolean isSharedVip6(VirtualIpv6 vip) {
+        List<LoadBalancer> sharedLbs = virtualIpRepository.getLoadBalancersByVipId(vip.getId());
+        return sharedLbs.size() > 1;
+    }
+
     private boolean checkLBProtocol(LoadBalancer loadBalancer) {
         return loadBalancer.getProtocol() == LoadBalancerProtocol.TCP || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_TCP
                 || loadBalancer.getProtocol() == LoadBalancerProtocol.DNS_UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP || loadBalancer.getProtocol() == LoadBalancerProtocol.UDP_STREAM || loadBalancer.getProtocol() == LoadBalancerProtocol.TCP_CLIENT_FIRST || loadBalancer.getProtocol() == LoadBalancerProtocol.TCP_STREAM;
