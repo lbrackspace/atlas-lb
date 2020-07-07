@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c6606882_300bcaf5",
+        "filename": "adapter/zxtm-service/src/test/java/org/openstack/atlas/adapter/vtm/VTMdapterImplTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 141,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-07-07T18:36:27Z",
+      "side": 1,
+      "message": "The delete logic looks good, but I would honestly add the other scenarios (_R, _S) and verify how many times things were called",
+      "revId": "a73eec4be88b28adb6f5f0645a1c9a4355044116",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
