@@ -138,7 +138,17 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             verify(resources).deletePool(client, vsName);
             verify(resources).deleteVirtualServer(client, vsName);
             verify(resources).deleteVirtualServer(client, secureVsName);
+            verify(client, times(1)).deleteExtraFile(vsName + "_error.html");
+            verify(client, times(1)).deleteExtraFile(vsName + "_S_error.html");
             verify(client).destroy();
+        }
+
+        @Test
+        public  void testDeleteLoadBalancerWithRedirect() throws Exception {
+            loadBalancer.setHttpsRedirect(true);
+            adapterSpy.deleteLoadBalancer(config, loadBalancer);
+            verify(client, times(1)).deleteExtraFile(vsName + "_R_error.html");
+            verify(client, times(1)).deleteExtraFile(vsName + "_S_error.html");
         }
     }
 
