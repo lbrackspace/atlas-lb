@@ -17,6 +17,8 @@ import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.*;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
+import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.ca.StringUtils;
@@ -230,15 +232,18 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         getResources().deleteHealthMonitor(client, virtualServerName);
         getResources().deleteProtection(client, virtualServerName);
 
-        try {
-            client.deleteExtraFile(errorPageName);
-            // Also delete any other permutations for the time being
-            String virtualServerSecureName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-            client.deleteExtraFile(virtualServerSecureName);
-            String virtualServerRedirectName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
-            client.deleteExtraFile(virtualServerRedirectName);
-        } catch (Exception ignoredException) {}
+        // Delete all permutations of error pages
+        for(VTMAdapterUtils.VSType vsType : vsNames.keySet()){
+            String vsName = vsNames.get(vsType);
+            String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
+            LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", virtualServerName, errorFileName));
 
+            try {
+                client.deleteExtraFile(errorFileName);
+            } catch (VTMRestClientObjectNotFoundException | VTMRestClientException e) {
+                LOG.warn(String.format("Cannot delete custom error page %s, it does not exist. Ignoring...", errorFileName));
+            }
+        }
         client.destroy();
         LOG.debug(String.format("Successfully removed loadbalancer: %s from the VTM service...", virtualServerName));
     }
