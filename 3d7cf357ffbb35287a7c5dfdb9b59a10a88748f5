@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dba52fe5_fe259346",
+        "filename": "adapter/zxtm-service/src/test/java/org/openstack/atlas/adapter/vtm/VTMdapterImplTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 150,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-07-07T20:33:38Z",
+      "side": 1,
+      "message": "We should make sure the regular one isn\u0027t called since there shouldn\u0027t be a reg vs in this case\nverify(client, times(0)).deleteExtraFile(vsName + \"error.html\");",
+      "revId": "3d7cf357ffbb35287a7c5dfdb9b59a10a88748f5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
