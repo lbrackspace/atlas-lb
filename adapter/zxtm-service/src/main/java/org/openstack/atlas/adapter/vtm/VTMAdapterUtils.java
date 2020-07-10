@@ -56,4 +56,18 @@ public class VTMAdapterUtils {
 
         return vsNamesMap;
     }
+
+    public static Map<VSType, String> getAllPossibleVSNamesForLB(LoadBalancer loadBalancer) throws InsufficientRequestException {
+        Integer lbId = loadBalancer.getId();
+        Integer accountId = loadBalancer.getAccountId();
+        String virtualServerName = ZxtmNameBuilder.genVSName(lbId, accountId);
+        String virtualSecureServerName = ZxtmNameBuilder.genSslVSName(lbId, accountId);
+        String virtualRedirectServerName = ZxtmNameBuilder.genRedirectVSName(lbId, accountId);
+        Map<VSType, String> vsNamesMap = new HashMap<>();
+
+        vsNamesMap.put(VSType.DEFAULT_VS, virtualServerName);
+        vsNamesMap.put(VSType.REDIRECT_VS, virtualRedirectServerName);
+        vsNamesMap.put(VSType.SECURE_VS, virtualSecureServerName);
+        return vsNamesMap;
+    }
 }
