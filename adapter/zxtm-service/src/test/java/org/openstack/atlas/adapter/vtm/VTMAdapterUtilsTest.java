@@ -96,5 +96,18 @@ public class VTMAdapterUtilsTest {
             assertTrue(vsNames.containsValue("22_1"));
         }
 
+        @Test
+        public void testShouldRetrieveAllPotentialVSNames() throws Exception {
+            Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getAllPossibleVSNamesForLB(loadBalancer);
+
+            assertEquals(3, vsNames.size());
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.DEFAULT_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.REDIRECT_VS));
+            assertTrue(vsNames.containsKey(VTMAdapterUtils.VSType.SECURE_VS));
+            assertTrue(vsNames.containsValue("22_1"));
+            assertTrue(vsNames.containsValue("22_1_R"));
+            assertTrue(vsNames.containsValue("22_1_S"));
+        }
+
     }
 }

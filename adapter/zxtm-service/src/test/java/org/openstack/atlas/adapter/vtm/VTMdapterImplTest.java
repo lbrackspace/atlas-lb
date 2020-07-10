@@ -60,6 +60,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
     public static class WhenModifyingLoadbalancerResources {
         private String vsName;
         private String secureVsName;
+        private String redirectVsName;
         private LoadBalancer loadBalancer;
         private VTMResourceTranslator resourceTranslator;
 
@@ -79,6 +80,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             loadBalancer = generateLoadBalancer();
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
             secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+            redirectVsName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
 
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
@@ -136,21 +138,53 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             verify(resources).deleteProtection(client, vsName);
             verify(adapterSpy).deleteVirtualIps(config, loadBalancer);
             verify(resources).deletePool(client, vsName);
-            verify(resources).deleteVirtualServer(client, vsName);
-            verify(resources).deleteVirtualServer(client, secureVsName);
+            verify(resources, times(1)).deleteVirtualServer(client, vsName);
+            verify(resources, times(1)).deleteVirtualServer(client, secureVsName);
+            verify(resources, times(1)).deleteVirtualServer(client, redirectVsName);
 
             verify(client, times(1)).deleteExtraFile(vsName + "_error.html");
             verify(client, times(1)).deleteExtraFile(vsName + "_S_error.html");
+            verify(client, times(1)).deleteExtraFile(vsName + "_error.html");
+
             verify(client).destroy();
+        }
+
+        @Test
+        public void testDeleteLoadBalancerFailureRemovingEPShouldContinueProcessing() throws Exception {
+            doThrow(new VTMRestClientException()).when(client).deleteExtraFile(vsName + "_error.html");
+
+            adapterSpy.deleteLoadBalancer(config, loadBalancer);
+
+            verify(resources, times(1)).loadVTMRestClient(config);
+            verify(resources, times(1)).deleteRateLimit(config, loadBalancer, vsName);
+            verify(resources, times(1)).deleteHealthMonitor(client, vsName);
+            verify(resources, times(1)).deleteProtection(client, vsName);
+            verify(adapterSpy, times(1)).deleteVirtualIps(config, loadBalancer);
+            verify(resources, times(1)).deletePool(client, vsName);
+            verify(resources, times(1)).deleteVirtualServer(client, vsName);
+            verify(resources, times(1)).deleteVirtualServer(client, secureVsName);
+            verify(resources, times(1)).deleteVirtualServer(client, redirectVsName);
+
+            verify(client, times(1)).deleteExtraFile(vsName + "_error.html");
+            verify(client, times(1)).deleteExtraFile(vsName + "_S_error.html");
+            verify(client, times(1)).deleteExtraFile(vsName + "_error.html");
+
+            verify(client, times(1)).destroy();
         }
 
         @Test
         public  void testDeleteLoadBalancerWithRedirect() throws Exception {
             loadBalancer.setHttpsRedirect(true);
             adapterSpy.deleteLoadBalancer(config, loadBalancer);
-            verify(client, times(0)).deleteExtraFile(vsName + "_error.html");
+            // Delete loadbalancer should now attempt to remove everything
+            verify(client, times(1)).deleteExtraFile(vsName + "_error.html");
             verify(client, times(1)).deleteExtraFile(vsName + "_R_error.html");
             verify(client, times(1)).deleteExtraFile(vsName + "_S_error.html");
+
+            verify(resources, times(1)).deleteVirtualServer(client, vsName);
+            verify(resources, times(1)).deleteVirtualServer(client, secureVsName);
+            verify(resources, times(1)).deleteVirtualServer(client, redirectVsName);
+            verify(client, times(1)).destroy();
         }
     }
 

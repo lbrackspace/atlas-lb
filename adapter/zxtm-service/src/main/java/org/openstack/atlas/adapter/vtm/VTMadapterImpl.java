@@ -192,18 +192,32 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
     public void deleteLoadBalancer(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException {
         VTMRestClient client = getResources().loadVTMRestClient(config);
         String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
-        String errorPageName = ZxtmNameBuilder.generateErrorPageName(virtualServerName);
 
-        Map<VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
+        // We want to ensure all potentially related data is purged...
+        Map<VSType, String> vsNames = VTMAdapterUtils.getAllPossibleVSNamesForLB(loadBalancer);
 
         LOG.debug(String.format("Removing loadbalancer: %s ...", virtualServerName));
         loadBalancer.setProcessingDeletion(true);
 
+        // Remove default named objects
         deleteVirtualIps(config, loadBalancer);
         getResources().deletePool(client, virtualServerName);
+        getResources().deleteRateLimit(config, loadBalancer, virtualServerName);
+        getResources().deleteHealthMonitor(client, virtualServerName);
+        getResources().deleteProtection(client, virtualServerName);
 
+        // Remove custom named objects
         for (VSType vsType : vsNames.keySet()) {
             String vsName = vsNames.get(vsType);
+
+            String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
+            LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", virtualServerName, errorFileName));
+
+            try {
+                client.deleteExtraFile(errorFileName);
+            } catch (VTMRestClientObjectNotFoundException | VTMRestClientException e) {
+                LOG.warn(String.format("Cannot delete custom error page %s, it does not exist. Ignoring...", errorFileName));
+            }
 
             switch(vsType) {
                 case REDIRECT_VS:
@@ -223,23 +237,6 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
                     break;
                 default:
                     getResources().deleteVirtualServer(client, vsName);
-            }
-        }
-
-        getResources().deleteRateLimit(config, loadBalancer, virtualServerName);
-        getResources().deleteHealthMonitor(client, virtualServerName);
-        getResources().deleteProtection(client, virtualServerName);
-
-        // Delete all permutations of error pages
-        for(VTMAdapterUtils.VSType vsType : vsNames.keySet()){
-            String vsName = vsNames.get(vsType);
-            String errorFileName = ZxtmNameBuilder.generateErrorPageName(vsName);
-            LOG.debug(String.format("Attempting to delete a custom error file for %s (%s)", virtualServerName, errorFileName));
-
-            try {
-                client.deleteExtraFile(errorFileName);
-            } catch (VTMRestClientObjectNotFoundException | VTMRestClientException e) {
-                LOG.warn(String.format("Cannot delete custom error page %s, it does not exist. Ignoring...", errorFileName));
             }
         }
         client.destroy();

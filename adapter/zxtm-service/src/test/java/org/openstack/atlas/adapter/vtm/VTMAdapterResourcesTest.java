@@ -136,6 +136,26 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             verify(client).updateVirtualServer(vsName, rollbackVirtualServer);
             verifyNoMoreInteractions(client);
         }
+
+        @Test
+        public void testDeleteVirtualServerClientFailureNoRollbackData() throws Exception {
+            StmRollBackException rollBackException = null;
+            Exception exception = new VTMRestClientException();
+            // a failure retrieving backup object shouldn't cause failure during removal
+            doThrow(exception).when(client).getVirtualServer(vsName);
+            doThrow(exception).when(client).deleteVirtualServer(vsName);
+            try {
+                adapterResources.deleteVirtualServer(client, vsName);
+            } catch (StmRollBackException rbe) {
+                rollBackException = rbe;
+            }
+
+            Assert.assertNotNull(rollBackException);
+            verify(client).getVirtualServer(vsName);
+            verify(client).deleteVirtualServer(vsName);
+            verify(client, times(0)).updateVirtualServer(vsName, rollbackVirtualServer);
+            verifyNoMoreInteractions(client);
+        }
     }
 
     public static class KeypairOperations {
@@ -217,6 +237,26 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             verify(client).getKeypair(vsName);
             verify(client).deleteKeypair(vsName);
             verify(client).updateKeypair(vsName, rollbackKeypair);
+            verifyNoMoreInteractions(client);
+        }
+
+        @Test
+        public void testDeleteKeypairClientExceptionNoRollbackData() throws Exception {
+            StmRollBackException rollBackException = null;
+            Exception exception = new VTMRestClientException();
+            // a failure retrieving backup object shouldn't cause failure during removal
+            doThrow(exception).when(client).getKeypair(vsName);
+            doThrow(exception).when(client).deleteKeypair(vsName);
+            try {
+                adapterResources.deleteKeypair(client, vsName);
+            } catch (StmRollBackException rbe) {
+                rollBackException = rbe;
+            }
+
+            Assert.assertNotNull(rollBackException);
+            verify(client).getKeypair(vsName);
+            verify(client).deleteKeypair(vsName);
+            verify(client, times(0)).updateKeypair(vsName, rollbackKeypair);
             verifyNoMoreInteractions(client);
         }
     }
@@ -302,6 +342,26 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             verify(client).getPool(poolName);
             verify(client).deletePool(poolName);
             verify(client).updatePool(poolName, rollbackPool);
+            verifyNoMoreInteractions(client);
+        }
+
+        @Test
+        public void testDeletePoolClientExceptionNoRollbackData() throws Exception {
+            StmRollBackException rollBackException = null;
+            Exception exception = new VTMRestClientException();
+            // a failure retrieving backup object shouldn't cause failure during removal
+            doThrow(exception).when(client).getPool(vsName);
+            doThrow(exception).when(client).deletePool(vsName);
+            try {
+                adapterResources.deletePool(client, poolName);
+            } catch (StmRollBackException rbe) {
+                rollBackException = rbe;
+            }
+
+            Assert.assertNotNull(rollBackException);
+            verify(client).getPool(poolName);
+            verify(client).deletePool(poolName);
+            verify(client, times(0)).updatePool(poolName, rollbackPool);
             verifyNoMoreInteractions(client);
         }
     }
@@ -445,6 +505,26 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             verify(client).updateMonitor(monitorName, rollbackHealthMonitor);
             verifyNoMoreInteractions(client);
         }
+
+        @Test
+        public void testDeleteHealthMonitorClientErrorNoRollbackData() throws Exception {
+            StmRollBackException rollBackException = null;
+            Exception exception = new VTMRestClientException();
+            // a failure retrieving backup object shouldn't cause failure during removal
+            doThrow(exception).when(client).getMonitor(monitorName);
+            doThrow(exception).when(client).deleteMonitor(monitorName);
+            try {
+                adapterResources.deleteHealthMonitor(client, monitorName);
+            } catch (StmRollBackException rbe) {
+                rollBackException = rbe;
+            }
+
+            Assert.assertNotNull(rollBackException);
+            verify(client).getMonitor(monitorName);
+            verify(client).deleteMonitor(monitorName);
+            verify(client, times(0)).updateMonitor(monitorName, rollbackHealthMonitor);
+            verifyNoMoreInteractions(client);
+        }
     }
 
     public static class ProtectionOperations {
@@ -528,6 +608,26 @@ public class VTMAdapterResourcesTest extends VTMTestBase {
             verify(client).getProtection(protectionName);
             verify(client).deleteProtection(protectionName);
             verify(client).updateProtection(protectionName, rollbackProtection);
+            verifyNoMoreInteractions(client);
+        }
+
+        @Test
+        public void testDeleteProtectionClientErrorNoRollbackData() throws Exception {
+            StmRollBackException rollBackException = null;
+            Exception exception = new VTMRestClientException();
+            // a failure retrieving backup object shouldn't cause failure during removal
+            doThrow(exception).when(client).getProtection(protectionName);
+            doThrow(exception).when(client).deleteProtection(protectionName);
+            try {
+                adapterResources.deleteProtection(client, protectionName);
+            } catch (StmRollBackException rbe) {
+                rollBackException = rbe;
+            }
+
+            Assert.assertNotNull(rollBackException);
+            verify(client).getProtection(protectionName);
+            verify(client).deleteProtection(protectionName);
+            verify(client, times(0)).updateProtection(protectionName, rollbackProtection);
             verifyNoMoreInteractions(client);
         }
     }

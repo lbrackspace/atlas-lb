@@ -102,9 +102,15 @@ public class VTMAdapterResources {
         VirtualServer curVs = null;
         try {
             curVs = client.getVirtualServer(vsName);
+        } catch (Exception ex) {
+            LOG.warn(String.format("VirtualServer couldn't be retrieved for rollback purposes: %s, " +
+                    "continuing with deleteVirtualServer. %s", vsName, ex.getLocalizedMessage()));
+        }
+
+        try {
             client.deleteVirtualServer(vsName);
         } catch (VTMRestClientObjectNotFoundException ex) {
-            LOG.error(String.format("Object not found when removing virtual server: %s, continue...", vsName));
+            LOG.error(String.format("VirtualServer not found during removal attempt, object is gone: %s, continue...", vsName));
         } catch (VTMRestClientException ex) {
             String em = String.format("Error removing virtual server: %s Attempting to RollBack... \n Exception: %s "
                     , vsName, ex);
@@ -167,6 +173,12 @@ public class VTMAdapterResources {
 
         try {
             keypair = client.getKeypair(vsName);
+        } catch (Exception ex) {
+            LOG.error(String.format("Keypair '%s' couldn't be retrieved for rollback purposes, " +
+                    "continuing with deleteKeypair. %s", vsName, ex.getLocalizedMessage()));
+        }
+
+        try {
             client.deleteKeypair(vsName);
         } catch (VTMRestClientObjectNotFoundException notFoundException) {
             LOG.error(String.format("Keypair '%s' not found during deletion attempt, continue...", vsName));
@@ -251,7 +263,8 @@ public class VTMAdapterResources {
         try {
             curPool = client.getPool(poolName);
         } catch (Exception e) {
-            LOG.warn(String.format("Could not load current pool: %s, continuing...", poolName));
+            LOG.warn(String.format("Pool couldn't be retrieved for rollback purposes: %s, " +
+                    "continuing with deletePool. %s", poolName, e.getLocalizedMessage()));
 
         }
 
@@ -259,8 +272,7 @@ public class VTMAdapterResources {
             client.deletePool(poolName);
             LOG.info(String.format("Successfully removed pool '%s'...", poolName));
         } catch (VTMRestClientObjectNotFoundException one) {
-            LOG.warn(String.format("Pool object already removed: %s, continue...", poolName));
-
+            LOG.warn(String.format("Pool removal failed, object is gone: %s, continue...", poolName));
         } catch (Exception ex) {
             String em = String.format("Error removing node pool: %s Attempting to RollBack... \n Exception: %s ", poolName, ex);
             LOG.error(em);
@@ -360,14 +372,19 @@ public class VTMAdapterResources {
             throws StmRollBackException {
 
         LOG.info(String.format("Removing  monitor '%s'...", monitorName));
-
         Monitor curMon = null;
         try {
             curMon = client.getMonitor(monitorName);
+        } catch (Exception ex) {
+            LOG.warn(String.format("Monitor couldn't be retrieved for rollback purposes: %s, " +
+                    "continuing to deleteHealthMonitor. %s", monitorName, ex.getLocalizedMessage()));
+        }
+
+        try {
             client.deleteMonitor(monitorName);
             LOG.info(String.format("Successfully removed monitor '%s'...", monitorName));
         } catch (VTMRestClientObjectNotFoundException ex) {
-            LOG.error(String.format("Monitor already removed: %s, continue...", monitorName));
+            LOG.error(String.format("Monitor removal failed, object is gone: %s, continue...", monitorName));
         } catch (VTMRestClientException ex) {
             String em = String.format("Error removing monitor: %s Attempting to RollBack... \n Exception: %s "
                     , monitorName, ex);
@@ -433,10 +450,17 @@ public class VTMAdapterResources {
         Protection curPro = null;
         try {
             curPro = client.getProtection(protectionName);
+            LOG.info(String.format("Successfully removed protection class '%s'...", protectionName));
+        } catch (Exception ex) {
+            LOG.warn(String.format("Protection couldn't be retrieved for rollback purposes: %s, " +
+                    "continuing with deleteProtection. %s", protectionName, ex.getLocalizedMessage()));
+        }
+
+        try {
             client.deleteProtection(protectionName);
             LOG.info(String.format("Successfully removed protection class '%s'...", protectionName));
         } catch (VTMRestClientObjectNotFoundException ex) {
-            LOG.error(String.format("Protection already removed: %s, continue...", protectionName));
+            LOG.error(String.format("Protection removal failed, object is gone: %s, continue...", protectionName));
         } catch (VTMRestClientException ex) {
             String em = String.format("Error removing protection: %s. Attempting to RollBack... \n Exception: %s "
                     , protectionName, ex);
