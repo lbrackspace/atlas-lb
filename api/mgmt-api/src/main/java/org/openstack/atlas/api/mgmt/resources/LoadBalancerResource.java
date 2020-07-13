@@ -46,7 +46,6 @@ public class LoadBalancerResource extends ManagementDependencyProvider {
         if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
-
         try {
             Host rlb = new Host();
             org.openstack.atlas.service.domain.entities.Host dlb = hostService.getHostsByLoadBalancerId(id);
