@@ -706,6 +706,29 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            // Ensure XFP is set appropriately
+            Assert.assertTrue(resourceTranslator.getcVServer().getProperties().getHttp().getAddXForwardedProto());
+            Assert.assertTrue(resourceTranslator.getcVServer().getProperties().getHttp().getAddXForwardedFor());
+            Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, resourceTranslator.getcVServer().getProperties().getHttp().getLocationRewrite());
+            verify(client).destroy();
+        }
+
+        @Test
+        public void testUpdateSslTerminationNonHTTP() throws Exception {
+            // Verify for that any other potentially allowed non-secure protocols httpHeaders are not set. 
+            loadBalancer.setProtocol(LoadBalancerProtocol.TCP);
+            adapterSpy.updateSslTermination(config, loadBalancer, sslTermination);
+
+            verify(resources).loadVTMRestClient(config);
+            verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
+            verify(resourceTranslator).translateKeypairResource(loadBalancer, true);
+            verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
+            verify(resourceTranslator).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);
+            verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
+            verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            // Ensure XFP is set appropriately
+            Assert.assertNull(resourceTranslator.getcVServer().getProperties().getHttp());
             verify(client).destroy();
         }
 
