@@ -565,10 +565,6 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator();
         translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
         VirtualServer createdServer = translator.getcVServer();
-        VirtualServerHttp http = new VirtualServerHttp();
-//        http.setLocationRewrite(EnumFactory.AcceptFrom.NEVER.toString());
-        http.setLocationRewrite(VirtualServerHttp.LocationRewrite.NEVER);
-        createdServer.getProperties().setHttp(http);
         if (loadBalancer.isSecureOnly()) {
             try {
                 // The secure virtual server becomes the primary
