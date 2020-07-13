@@ -4,19 +4,19 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-itest</artifactId>
-        <version>1.27.02-SNAPSHOT</version>
+        <version>1.27.02</version>
     </parent>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-auth-test</artifactId>
     <name>Openstack :: Atlas :: Integration tests :: Auth Tests</name>
-    <version>1.27.02-SNAPSHOT</version>
+    <version>1.27.02</version>
     <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
             <groupId>org.openstack.atlas</groupId>
             <artifactId>atlas-identity-auth</artifactId>
-            <version>1.27.02-SNAPSHOT</version>
+            <version>1.27.02</version>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
