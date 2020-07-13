@@ -140,6 +140,7 @@ public class VTMResourceTranslator {
         VirtualServerTcp tcp = new VirtualServerTcp();
         VirtualServerLog log;
         List<String> rules = new ArrayList<String>();
+        VirtualServerHttp vshttp = new VirtualServerHttp();
 
         properties.setBasic(basic);
 
@@ -164,9 +165,6 @@ public class VTMResourceTranslator {
 
             if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
                 ssl.setAddHttpHeaders(true);
-                VirtualServerHttp virtualServerHttp = new VirtualServerHttp();
-                virtualServerHttp.setLocationRewrite(VirtualServerHttp.LocationRewrite.NEVER);
-                properties.setHttp(virtualServerHttp);
             }
 
             // certificate mappings, related certificate/key pairs should be imported by now
@@ -249,7 +247,9 @@ public class VTMResourceTranslator {
 
         //X_forwarded headers
         if (loadBalancer.getProtocol() == LoadBalancerProtocol.HTTP) {
-            VirtualServerHttp vshttp = new VirtualServerHttp();
+            if (vsName.equals(ZxtmNameBuilder.genSslVSName(loadBalancer))) {
+                vshttp.setLocationRewrite(VirtualServerHttp.LocationRewrite.NEVER);
+            }
             vshttp.setAddXForwardedFor(true);
             vshttp.setAddXForwardedProto(true);
             rules.add(VTMConstants.XFPORT);
