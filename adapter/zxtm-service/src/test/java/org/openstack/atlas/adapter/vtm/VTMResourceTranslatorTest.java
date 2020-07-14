@@ -75,14 +75,11 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             expectedError.setErrorFile(errorFile);
             rules = new ArrayList<String>();
 
+            lb.setProtocol(protocol);
+
             if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
                 rules.add(VTMConstants.XFPORT);
-//                rules.add(VTMConstants.XFP);
             }
-//            else {
-//                rules = new ArrayList<String>();
-//                if (lb.getRateLimit() != null) rules.add(VTMConstants.RATE_LIMIT_NON_HTTP);
-//            }
             translator = new VTMResourceTranslator();
 
             ConnectionLimit connectionLimit = new ConnectionLimit();
@@ -94,7 +91,6 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             lb.setConnectionLogging(isConnectionLogging);
             lb.setHalfClosed(isHalfClosed);
             lb.setContentCaching(isContentCaching);
-            lb.setProtocol(protocol);
             lb.setConnectionLimit(connectionLimit);
             lb.setAccessLists(accessListSet);
         }
@@ -365,6 +361,86 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertEquals(VirtualServerSsl.SupportTls1.ENABLED, createdServer.getProperties().getSsl().getSupportTls1());
             Assert.assertEquals(VirtualServerSsl.SupportTls11.DISABLED, createdServer.getProperties().getSsl().getSupportTls11());
             Assert.assertEquals(secureName, createdProperties.getSsl().getServerCertDefault());
+            Assert.assertTrue(createdProperties.getHttp().getAddXForwardedFor());
+            Assert.assertTrue(createdProperties.getHttp().getAddXForwardedProto());
+            Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, createdProperties.getHttp().getLocationRewrite());
+
+        }
+
+        @Test
+        public void shouldCreateValidVirtualServerWithSSLTerminationNonHTTP() throws InsufficientRequestException {
+            // Verify for that any other potentially allowed non-secure protocols httpHeaders are not set.
+
+            initializeVars("%v %t %h %A:%p %n %B %b %T", LoadBalancerProtocol.TCP);
+            String secureName = ZxtmNameBuilder.genSslVSName(lb);
+
+            boolean isVsEnabled = true;
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(VTMTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(VTMTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(VTMTestConstants.SSL_KEY);
+            sslTermination.setTls10Enabled(true);
+            sslTermination.setTls11Enabled(false);
+
+            SslCipherProfile cipherProfile = new SslCipherProfile();
+            cipherProfile.setCiphers(VTMTestConstants.CIPHER_LIST);
+            cipherProfile.setComments("cipherpro1");
+            cipherProfile.setName("datenameid");
+            sslTermination.setCipherProfile(cipherProfile);
+            sslTermination.setCipherList(cipherProfile.getCiphers());
+
+            ZeusCrtFile zeusCertFile = new ZeusCrtFile();
+            zeusCertFile.setPublic_cert(VTMTestConstants.SSL_CERT);
+            zeusCertFile.setPrivate_key(VTMTestConstants.SSL_KEY);
+
+            ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+            zeusSslTermination.setCertIntermediateCert(VTMTestConstants.SSL_CERT);
+            zeusSslTermination.setSslTermination(sslTermination);
+
+            lb.setSslTermination(zeusSslTermination.getSslTermination());
+
+            VirtualServer createdServer = translator.translateVirtualServerResource(config, secureName, lb);
+            Assert.assertNotNull(createdServer);
+
+            VirtualServerProperties createdProperties = createdServer.getProperties();
+            VirtualServerBasic createdBasic = createdServer.getProperties().getBasic();
+            VirtualServerTcp createdTcp = createdProperties.getTcp();
+            expectedTcp.setProxyClose(isHalfClosed);
+            VirtualServerLog log = createdProperties.getLog();
+            Boolean cacheEnabled = createdProperties.getWebCache().getEnabled();
+            Assert.assertNotNull(log);
+            Assert.assertEquals(logFormat, log.getFormat());
+            Assert.assertTrue(cacheEnabled);
+            Assert.assertEquals(vsName, createdBasic.getPool());
+            Assert.assertTrue(createdBasic.getEnabled());
+            Assert.assertEquals(vsName, createdBasic.getProtectionClass());
+            Assert.assertEquals(expectedTcp, createdTcp);
+            Assert.assertFalse(createdBasic.getListenOnAny());
+            if (lb.isContentCaching()) {
+                rules.add(VTMConstants.CONTENT_CACHING);
+                Assert.assertTrue(createdBasic.getRequestRules().contains(VTMConstants.CONTENT_CACHING));
+            }
+            if (lb.getProtocol() == LoadBalancerProtocol.HTTP) {
+                Assert.assertTrue(createdBasic.getRequestRules().contains(VTMConstants.XFPORT));
+
+            }
+            Assert.assertEquals(rules.size(), createdBasic.getRequestRules().size());
+
+
+
+            Assert.assertEquals(VTMTestConstants.LB_SECURE_PORT, (int) createdBasic.getPort());
+            // TCP Maps to server_first
+            Assert.assertTrue("server_first".equalsIgnoreCase(createdBasic.getProtocol().toString()));
+            Assert.assertEquals(isVsEnabled, createdBasic.getEnabled());
+            Assert.assertEquals(vsName, createdBasic.getPool().toString());
+            Assert.assertEquals(true, createdBasic.getSslDecrypt());
+            Assert.assertEquals(VTMTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getCipherSuites());
+            Assert.assertEquals(VirtualServerSsl.SupportTls1.ENABLED, createdServer.getProperties().getSsl().getSupportTls1());
+            Assert.assertEquals(VirtualServerSsl.SupportTls11.DISABLED, createdServer.getProperties().getSsl().getSupportTls11());
+            Assert.assertEquals(secureName, createdProperties.getSsl().getServerCertDefault());
+            Assert.assertNull(createdProperties.getHttp());
 
         }
 
