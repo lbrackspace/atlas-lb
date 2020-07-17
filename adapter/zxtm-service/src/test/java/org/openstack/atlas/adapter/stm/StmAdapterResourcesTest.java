@@ -558,6 +558,9 @@ public class StmAdapterResourcesTest extends VTMTestBase {
             verify(client).getPersistence(StmConstants.HTTP_COOKIE);
             verify(client).getPersistence(StmConstants.SOURCE_IP);
             verify(client).getPersistence(StmConstants.SSL_ID);
+            Assert.assertEquals( "HTTP_COOKIE", StmConstants.HTTP_COOKIE);
+            Assert.assertEquals( "SOURCE_IP", StmConstants.SOURCE_IP);
+            Assert.assertEquals( "SSL_ID", StmConstants.SSL_ID);
             verify(client).destroy();
             verifyNoMoreInteractions(client);
         }
