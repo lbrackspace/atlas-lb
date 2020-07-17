@@ -5,16 +5,16 @@ import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 public class StmConstants {
 
     public static final LoadBalancerAlgorithm DEFAULT_ALGORITHM = LoadBalancerAlgorithm.RANDOM;
-    public static final String RATE_LIMIT_HTTP = "rate_limit_http";
-    public static final String RATE_LIMIT_NON_HTTP = "rate_limit_nonhttp";
-    public static final String CONTENT_CACHING = "content_caching";
-    public static final String XFF = "add_x_forwarded_for_header";
-    public static final String XFP = "add_x_forwarded_proto";
-    public static final String XFPORT = "add_x_forwarded_port";
-    public static final String HTTPS_REDIRECT = "force_https_redirect";
-    public static final String SOURCE_IP = "ip";
-    public static final String HTTP_COOKIE = "cookie";
-    public static final String SSL_ID = "ssl";
+    public static final String RATE_LIMIT_HTTP = "RATE_LIMIT_HTTP";
+    public static final String RATE_LIMIT_NON_HTTP = "RATE_LIMIT_NONHTTP";
+    public static final String CONTENT_CACHING = "CONTENT_CACHING";
+    public static final String XFF = "ADD_X_FORWARD_FOR_HEADER";
+    public static final String XFP = "ADD_X_FORWARDED_PROTO";
+    public static final String XFPORT = "ADD_X_FORWARDED_PORT";
+    public static final String HTTPS_REDIRECT = "FORCE_HTTPS_REDIRECT";
+    public static final String SOURCE_IP = "SOURCE_IP";
+    public static final String HTTP_COOKIE = "COOKIE";
+    public static final String SSL_ID = "SSL_ID";
     public static final String X_FORWARDED_FOR_SCRIPT = "http.addHeader( \"X-Forwarded-For\", request.getRemoteIP() );\n" +
             "http.addHeader( \"X-Forwarded-Port\", request.getLocalPort() );";
     public static final String X_FORWARDED_PROTO_SCRIPT = "$vserver = connection.getVirtualServer();\n" +
