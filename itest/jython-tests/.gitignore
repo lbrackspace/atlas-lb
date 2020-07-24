@@ -1,4 +1,0 @@
-target/*
-*.class
-*.json
-!example.json

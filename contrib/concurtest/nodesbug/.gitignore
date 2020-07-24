@@ -1,7 +1,0 @@
-*.idea
-config.cfg
-*.pyc
-*/*.pyc
-*.xml
-*.idea/*
-.idea

@@ -15,10 +15,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>snmp-test</module>
-        <module>jyson</module>
-        <module>jython-tests</module>
-        <module>ldap-test</module>
-        <module>auth-test</module>
         <module>rdns-test</module>
         <module>tls-inspect</module>
     </modules>
