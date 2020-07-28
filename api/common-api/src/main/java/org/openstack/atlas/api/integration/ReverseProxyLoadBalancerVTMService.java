@@ -110,6 +110,7 @@ public interface ReverseProxyLoadBalancerVTMService {
 
     String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException;
 
+    String getSsl3CiphersForLB(Integer loadBalancerID) throws RemoteException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException;
 
     Hostssubnet getSubnetMappings(Host host) throws RemoteException, DecryptException, EntityNotFoundException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, InsufficientRequestException;
     

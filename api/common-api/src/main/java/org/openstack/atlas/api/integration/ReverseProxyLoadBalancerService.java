@@ -139,4 +139,6 @@ public interface ReverseProxyLoadBalancerService {
     void setSslCiphers(Integer accountId, Integer loadbalancerId,String ciphersStr) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException;
 
     String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException;
+
+    String getSsl3CiphersForLB(Integer loadBalancerID) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException;
 }

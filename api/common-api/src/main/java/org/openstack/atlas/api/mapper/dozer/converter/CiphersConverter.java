@@ -33,7 +33,7 @@ public class CiphersConverter implements CustomConverter {
             Ciphers ciphers = new Ciphers();
             List<Cipher> cipherList = ciphers.getCiphers();
             for (String cipherName : cipherNames) {
-                Cipher cipher = new Cipher();
+                 Cipher cipher = new Cipher();
                 cipher.setName(cipherName);
                 cipherList.add(cipher);
             }

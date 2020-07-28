@@ -30,7 +30,7 @@ import javax.ws.rs.Produces;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
-import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
+
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
@@ -169,9 +169,9 @@ public class SslTerminationResource extends CommonDependencyProvider {
 
                     if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null
                             && restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase(REST)) {
-                        cipherList = reverseProxyLoadBalancerVTMService.getSsl3Ciphers();
+                        cipherList = reverseProxyLoadBalancerVTMService.getSsl3CiphersForLB(loadBalancerId);
                     } else {
-                        cipherList = reverseProxyLoadBalancerService.getSsl3Ciphers();
+                        cipherList = reverseProxyLoadBalancerService.getSsl3CiphersForLB(loadBalancerId);
                     }
                 }
             }
