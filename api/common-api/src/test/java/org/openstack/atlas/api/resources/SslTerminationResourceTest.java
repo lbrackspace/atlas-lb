@@ -58,6 +58,7 @@ public class SslTerminationResourceTest {
 
             sslTermResource = new SslTerminationResource();
             sslTermResource.setId(1);
+            sslTermResource.setLoadBalancerId(1);
             sslTermResource.setAccountId(1234);
             sslTermResource.setSslTerminationService(sslTerminationService);
             sslTermResource.setAsyncService(asyncService);
@@ -97,18 +98,23 @@ public class SslTerminationResourceTest {
         }
 
         @Test
+        public void shouldReturnCiphersFromHostOfLB() throws Exception {
+
+        }
+
+        @Test
         public void shouldReturnA200WhenReturningDefaultCiphersList() throws Exception {
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
             doReturn("soap").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
             SslTermination sslTerm = new SslTermination();
             when(sslTerminationService.getSslTermination(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(sslTerm);
-            doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerService).getSsl3Ciphers();
+            doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerService).getSsl3CiphersForLB(anyInt());
             response = sslTermResource.retrieveSupportedCiphers();
             org.junit.Assert.assertEquals(200, response.getStatus());
-            verify(reverseProxyLoadBalancerVTMService, times(0)).getSsl3Ciphers();
+            verify(reverseProxyLoadBalancerVTMService, times(0)).getSsl3CiphersForLB(1);
             verify(reverseProxyLoadBalancerStmService, times(0)).getSsl3Ciphers();
-            verify(reverseProxyLoadBalancerService, times(1)).getSsl3Ciphers();
+            verify(reverseProxyLoadBalancerService, times(1)).getSsl3CiphersForLB(1);
         }
 
         @Test
@@ -118,12 +124,12 @@ public class SslTerminationResourceTest {
             SslTermination sslTerm = new SslTermination();
             when(sslTerminationService.getSslTermination(ArgumentMatchers.<Integer>any(),
                     ArgumentMatchers.<Integer>any())).thenReturn(sslTerm);
-            doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerVTMService).getSsl3Ciphers();
+            doReturn("a,b,c,d,3des").when(reverseProxyLoadBalancerVTMService).getSsl3CiphersForLB(anyInt());
             response = sslTermResource.retrieveSupportedCiphers();
             org.junit.Assert.assertEquals(200, response.getStatus());
-            verify(reverseProxyLoadBalancerVTMService, times(1)).getSsl3Ciphers();
+            verify(reverseProxyLoadBalancerVTMService, times(1)).getSsl3CiphersForLB(1);
             verify(reverseProxyLoadBalancerStmService, times(0)).getSsl3Ciphers();
-            verify(reverseProxyLoadBalancerService, times(0)).getSsl3Ciphers();
+            verify(reverseProxyLoadBalancerService, times(0)).getSsl3CiphersForLB(1);
         }
 
         @Test
@@ -140,7 +146,7 @@ public class SslTerminationResourceTest {
             SslTermination sslTerm = new SslTermination();
             when(sslTerminationService.getSslTermination(
                     ArgumentMatchers.<Integer>any(), ArgumentMatchers.<Integer>any())).thenReturn(sslTerm);
-            doThrow(RemoteException.class).when(reverseProxyLoadBalancerService).getSsl3Ciphers();
+            doThrow(RemoteException.class).when(reverseProxyLoadBalancerService).getSsl3CiphersForLB(anyInt());
             response = sslTermResource.retrieveSupportedCiphers();
             org.junit.Assert.assertEquals(500, response.getStatus());
         }

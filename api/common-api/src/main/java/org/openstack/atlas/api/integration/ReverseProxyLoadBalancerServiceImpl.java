@@ -911,6 +911,19 @@ public class ReverseProxyLoadBalancerServiceImpl implements ReverseProxyLoadBala
     }
 
     @Override
+    public String getSsl3CiphersForLB(Integer loadBalancerId) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException {
+        String globalCiphers = null;
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancerId);
+        try {
+            globalCiphers = reverseProxyLoadBalancerAdapter.getSsl3Ciphers(config);
+        } catch (AxisFault af) {
+            checkAndSetIfSoapEndPointBad(config, af);
+            throw af;
+        }
+        return globalCiphers;
+    }
+
+    @Override
     public void removeCertificateMapping(Integer lbId, Integer accountId, CertificateMapping certMappingToDelete) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
