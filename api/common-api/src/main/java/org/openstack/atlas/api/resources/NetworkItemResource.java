@@ -30,7 +30,7 @@ public class NetworkItemResource extends CommonDependencyProvider {
 
             rLb = accessListService.markForDeletionNetworkItem(rLb);
 
-            asyncService.callAsyncLoadBalancingOperation(Operation.APPEND_TO_ACCESS_LIST, rLb);
+            asyncService.callAsyncLoadBalancingOperation(Operation.DELETE_ACCESS_LIST, rLb);
 
 
             return Response.status(Response.Status.ACCEPTED).build();
