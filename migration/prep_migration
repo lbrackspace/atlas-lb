@@ -3,7 +3,7 @@
 import traceback
 import datetime
 import stat
-import cPickle
+import pickle
 import string
 import time
 import json
@@ -80,11 +80,11 @@ def pad(digits,ch,val,**kargs):
     if not "side" in kargs:
         kargs["side"]="LEFT_DIR"
     if kargs["side"]=="LEFT_DIR" or kargs["side"]=="LEFT":
-        for i in xrange(0,digits-len(str_out)):
+        for i in range(0,digits-len(str_out)):
             str_out = ch + str_out
         return str_out
     if kargs["side"]=="RIGHT_DIR" or kargs["side"]=="RIGHT":
-        for i in xrange(0,digits-len(str_out)):
+        for i in range(0,digits-len(str_out)):
             str_out = str_out + ch
         return str_out
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     lfp = open(fullpath("~/populate.log"),"a")
     printf("prebuild started in dir %s\n",os.getcwd())
     migrations = getmigrations("schema")
-    for(migration_file,migration_dir) in migrations.items():
+    for(migration_file,migration_dir) in list(migrations.items()):
         printf("Writing migrations for %s into %s\n",migration_dir,migration_file)
         lfp.flush()
         fp = open(migration_file,"w")
