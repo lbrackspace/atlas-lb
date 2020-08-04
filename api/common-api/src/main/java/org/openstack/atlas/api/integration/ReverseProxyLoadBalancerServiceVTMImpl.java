@@ -769,6 +769,23 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         return globalCiphers;
     }
 
+    @Override
+    public String getSsl3CiphersForLB(Integer loadBalancerId) throws RemoteException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException {
+        String globalCiphers = null;
+        LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancerId);
+        try {
+            if (getVersion(config.getRestEndpoint()) == 7) {
+                globalCiphers = reverseProxyLoadBalancerVTMAdapter.getSsl3Ciphers(config);
+            } else {
+                globalCiphers = reverseProxyLoadBalancerStmAdapter.getSsl3Ciphers(config);
+            }
+        } catch (RollBackException af) {
+            checkAndSetIfRestEndPointBad(config, af);
+            throw af;
+        }
+        return globalCiphers;
+    }
+
     // Host stats
     @Override
     public int getTotalCurrentConnectionsForHost(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
