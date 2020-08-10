@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.integration.threads;
 
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -88,6 +89,8 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
             host.setId(1);
             host.setEndpoint("testEndpoint.com");
             host.setHostStatus(HostStatus.ACTIVE);
+            host.setTrafficManagerName("n1.com");
+            host.setZone(Zone.A);
             cluster.setId(1);
             cluster.setName("testCluster");
             loadBalancer.setHost(host);
@@ -97,8 +100,10 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
             soapEndPointHost.setId(2);
             soapEndPointHost.setEndpoint("https://soapEndPointHostTest/soap");
             failOverHost.setEndpoint("failover.com/soap");
+            failOverHost.setTrafficManagerName("nf1.com");
+            failOverHost.setZone(Zone.A);
             loadBalancerId = 1;
-            failOverHostNames.add("test.com/soap");
+            failOverHostNames.add("nf1.com");
             failoverHosts.add(failOverHost);
             logFileLocation = "test";
             host.setCluster(cluster);
@@ -134,10 +139,150 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
 
     }
 
+    public static class WhenRetrievingHostConfigs {
 
+        @Mock
+        HostService hostService;
+        @Mock
+        Configuration configuration;
+        @Mock
+        LoadBalancerRepository loadBalancerRepository;
+        @Mock
+        LoadBalancerServiceImpl loadBalancerService;
+        @Mock
+        ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
+        @Mock
+        ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
+        ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerServiceVTM;
 
+        Cluster cluster;
+        Host failOverHost;
+        Host soapEndPointHost;
+        LoadBalancer loadBalancer;
+        Host host;
+        List<String> failOverHostNames;
+        List<Host> failoverHosts;
+        String logFileLocation;
+        Integer loadBalancerId;
 
+        @Before
+        public void standUp() throws EntityNotFoundException, RemoteException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, InsufficientRequestException {
+            MockitoAnnotations.initMocks(this);
 
+            loadBalancerService = new LoadBalancerServiceImpl();
+            loadBalancer = new LoadBalancer();
+            host = new Host();
+            cluster = new Cluster();
+            soapEndPointHost = new Host();
+            failOverHost = new Host();
+            failOverHostNames = new ArrayList<>();
+            failoverHosts = new ArrayList<>();
 
+            reverseProxyLoadBalancerServiceVTM = new ReverseProxyLoadBalancerServiceVTMImpl();
+            reverseProxyLoadBalancerServiceVTM.setLoadBalancerService(loadBalancerService);
+            reverseProxyLoadBalancerServiceVTM.setHostService(hostService);
+            reverseProxyLoadBalancerServiceVTM.setConfiguration(configuration);
+            reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerVTMAdapter(reverseProxyLoadBalancerVTMAdapter);
+            reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerStmAdapter(reverseProxyLoadBalancerStmAdapter);
 
+            host.setName("testHost");
+            host.setId(1);
+            host.setEndpoint("https://endPointHostTest/soap");
+            host.setRestEndpoint("https://restEndPointHostTest/config/active");
+            host.setHostStatus(HostStatus.ACTIVE);
+            host.setZone(Zone.A);
+            host.setTrafficManagerName("n1.com");
+            cluster.setId(1);
+            cluster.setName("testCluster");
+            host.setCluster(cluster);
+            loadBalancer.setHost(host);
+            loadBalancer.setName("testLB");
+            loadBalancer.setId(1);
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+            soapEndPointHost.setId(2);
+            soapEndPointHost.setEndpoint("https://soapEndPointHostTest/soap");
+            Host failOverHost2 = new Host();
+            failOverHost.setEndpoint("failover.com/soap");
+            failOverHost.setZone(Zone.A);
+            failOverHost.setTrafficManagerName("nf1.com");
+            failOverHost2.setZone(Zone.B);
+            failOverHost2.setEndpoint("failover.com/soap");
+            failOverHost2.setTrafficManagerName("nf2.com");
+            loadBalancerId = 1;
+            failOverHostNames.add("test.com/soap");
+            failoverHosts.add(failOverHost);
+            failoverHosts.add(failOverHost2);
+            logFileLocation = "test";
+            host.setCluster(cluster);
+            loadBalancerService.setLoadBalancerRepository(loadBalancerRepository);
+            loadBalancerRepository.setLoadBalancerAttrs(loadBalancer);
+            loadBalancerService.setLoadBalancerAttrs(loadBalancer);
+
+            when(loadBalancerRepository.getById(anyInt())).thenReturn(loadBalancer);
+            when(hostService.getRestEndPointHost(anyInt())).thenReturn(host);
+            when(hostService.getFailoverHostNames(anyInt())).thenReturn(failOverHostNames);
+            when(hostService.getFailoverHosts(anyInt())).thenReturn(failoverHosts);
+            when(configuration.getString(anyString())).thenReturn(logFileLocation);
+        }
+
+        @Test
+        public void getConfigWithOneFailoverOnSameZone() throws Exception{
+            LoadBalancerEndpointConfiguration lbEndpointConfig = reverseProxyLoadBalancerServiceVTM.getConfig(host);
+            verify(hostService, times(1)).getRestEndPointHost(cluster.getId());
+            verify(hostService, times(1)).getFailoverHosts(cluster.getId());
+            Assert.assertEquals(1, lbEndpointConfig.getFailoverTrafficManagerNames().size());
+            Assert.assertTrue(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf1.com"));
+            Assert.assertFalse(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf2.com"));
+
+        }
+
+        @Test
+        public void getConfigWithTwoFailoversOnSameZone() throws Exception{
+            Host failOverHost3 = new Host();
+            failOverHost3.setEndpoint("failover3.com/soap");
+            failOverHost3.setZone(Zone.A);
+            failOverHost3.setTrafficManagerName("nf3.com");
+            failoverHosts.add(failOverHost3);
+            when(hostService.getFailoverHosts(anyInt())).thenReturn(failoverHosts);
+
+            LoadBalancerEndpointConfiguration lbEndpointConfig = reverseProxyLoadBalancerServiceVTM.getConfig(host);
+            verify(hostService, times(1)).getRestEndPointHost(cluster.getId());
+            verify(hostService, times(1)).getFailoverHosts(cluster.getId());
+            Assert.assertEquals(2, lbEndpointConfig.getFailoverTrafficManagerNames().size());
+            Assert.assertTrue(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf1.com"));
+            Assert.assertTrue(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf3.com"));
+            Assert.assertFalse(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf2.com"));
+
+        }
+
+        @Test
+        public void getConfigbyLoadBalancerIdWithOneFailoverOnSameZone() throws Exception{
+            LoadBalancerEndpointConfiguration lbEndpointConfig = reverseProxyLoadBalancerServiceVTM.getConfigbyLoadBalancerId(loadBalancerId);
+            verify(hostService, times(1)).getRestEndPointHost(cluster.getId());
+            verify(hostService, times(1)).getFailoverHosts(cluster.getId());
+            Assert.assertEquals(1, lbEndpointConfig.getFailoverTrafficManagerNames().size());
+            Assert.assertTrue(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf1.com"));
+            Assert.assertFalse(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf2.com"));
+
+        }
+
+        @Test
+        public void getConfigbyLoadBalancerIdWithTwoFailoversOnSameZone() throws Exception{
+            Host failOverHost3 = new Host();
+            failOverHost3.setEndpoint("failover3.com/soap");
+            failOverHost3.setZone(Zone.A);
+            failOverHost3.setTrafficManagerName("nf3.com");
+            failoverHosts.add(failOverHost3);
+            when(hostService.getFailoverHosts(anyInt())).thenReturn(failoverHosts);
+
+            LoadBalancerEndpointConfiguration lbEndpointConfig = reverseProxyLoadBalancerServiceVTM.getConfigbyLoadBalancerId(loadBalancerId);
+            verify(hostService, times(1)).getRestEndPointHost(cluster.getId());
+            verify(hostService, times(1)).getFailoverHosts(cluster.getId());
+            Assert.assertEquals(2, lbEndpointConfig.getFailoverTrafficManagerNames().size());
+            Assert.assertTrue(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf1.com"));
+            Assert.assertTrue(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf3.com"));
+            Assert.assertFalse(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf2.com"));
+
+        }
+    }
 }
