@@ -101,17 +101,52 @@ public class HostValidatorTest {
     }
 
     @Test
-    public void shouldAcceptifMissingStatusOnPost() {
+    public void shouldAcceptIfMissingStatusOnPost() {
         host.setStatus(null);
         res = hv.validate(host, POST);
         assertTrue(resultMessage(res, POST), res.passedValidation());
     }
 
     @Test
-    public void shouldRejectifStatusOnPost() {
+    public void shouldAcceptActiveStatusOnPost() {
         host.setStatus(HostStatus.ACTIVE);
         res = hv.validate(host, POST);
-        assertFalse(resultMessage(res, POST), res.passedValidation());
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAcceptBurn_InStatusOnPost() {
+        host.setStatus(HostStatus.BURN_IN);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAcceptFailoverStatusOnPost() {
+        host.setStatus(HostStatus.FAILOVER);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAcceptActive_TargetStatusOnPost() {
+        host.setStatus(HostStatus.ACTIVE_TARGET);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAllowOfflineStatusOnPost() {
+        host.setStatus(HostStatus.OFFLINE);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAllowSoap_Api_EndpointStatusOnPost() {
+        host.setStatus(HostStatus.SOAP_API_ENDPOINT);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
     }
 
     @Test

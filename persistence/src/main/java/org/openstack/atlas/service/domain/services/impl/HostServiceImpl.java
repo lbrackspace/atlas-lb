@@ -190,8 +190,9 @@ public class HostServiceImpl extends BaseService implements HostService {
             LOG.warn("Duplicate Host found! Sending failure response back to client...");
             throw new UnprocessableEntityException("Duplicate Host detected. a host is already configured with the specified management ip address. ");
         }
-
-        host.setHostStatus(HostStatus.BURN_IN);
+        if (host.getHostStatus() == null){
+            host.setHostStatus(HostStatus.BURN_IN);
+        }
         save(host);
         LOG.debug("Leaving " + getClass());
     }
