@@ -1,8 +1,8 @@
 package org.openstack.atlas.api.mgmt.validation.validators;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostStatus;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HostType;
-import org.openstack.atlas.service.domain.entities.HostStatus;
 import org.openstack.atlas.api.mgmt.validation.contexts.ReassignHostContext;
 import org.openstack.atlas.api.validation.validators.ResourceValidator;
 import org.openstack.atlas.api.validation.verifiers.MustBeInArray;
@@ -42,7 +42,6 @@ public class HostValidator implements ResourceValidator<Host> {
                 result(validationTarget().getClusterId()).must().exist().forContext(POST).withMessage("ClusterId must be present for host");
                 result(validationTarget().getCoreDeviceId()).must().exist().forContext(POST).withMessage("CoreDeviceId must be preset for host");
                 result(validationTarget().getStatus()).if_().exist().then().must().adhereTo(new MustBeInArray(HostStatus.values())).forContext(POST).withMessage("Status must be a valid host status.");
-                result(validationTarget().getStatus()).must().not().exist().forContext(POST).withMessage("Status must not be present for host");
                 result(validationTarget().getZone()).must().exist().forContext(POST).withMessage("Zone must be present for host");
                 result(validationTarget().getMaxConcurrentConnections()).must().exist().forContext(POST).withMessage("MaxConcurrentConnections must be preset for host");
                 result(validationTarget().getManagementIp()).must().exist().forContext(POST).withMessage("ManagementIpAddress must be preset for host");

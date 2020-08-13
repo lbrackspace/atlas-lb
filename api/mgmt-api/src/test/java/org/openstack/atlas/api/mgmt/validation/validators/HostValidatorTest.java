@@ -2,6 +2,7 @@ package org.openstack.atlas.api.mgmt.validation.validators;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.api.mgmt.validation.contexts.ReassignHostContext;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
@@ -25,8 +26,11 @@ public class HostValidatorTest {
     private ValidatorResult res;
     private static Random rnd = new Random();
 
+
+
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         host = rndHostPost();
         hv = new HostValidator();
     }
@@ -101,17 +105,57 @@ public class HostValidatorTest {
     }
 
     @Test
-    public void shouldAcceptifMissingStatusOnPost() {
+    public void shouldAcceptIfMissingStatusOnPost() {
         host.setStatus(null);
         res = hv.validate(host, POST);
         assertTrue(resultMessage(res, POST), res.passedValidation());
     }
 
     @Test
-    public void shouldRejectifStatusOnPost() {
+    public void shouldAcceptActiveStatusOnPost() {
         host.setStatus(HostStatus.ACTIVE);
         res = hv.validate(host, POST);
-        assertFalse(resultMessage(res, POST), res.passedValidation());
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAcceptBurnInStatusOnPost() {
+        host.setStatus(HostStatus.BURN_IN);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAcceptFailoverStatusOnPost() {
+        host.setStatus(HostStatus.FAILOVER);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAcceptActiveTargetStatusOnPost() {
+        host.setStatus(HostStatus.ACTIVE_TARGET);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldRejectIncorrectStatus() {
+        host.setStatus(HostStatus.fromValue("incorrectStatus"));
+    }
+
+    @Test
+    public void shouldAllowOfflineStatusOnPost() {
+        host.setStatus(HostStatus.OFFLINE);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAllowSoap_Api_EndpointStatusOnPost() {
+        host.setStatus(HostStatus.SOAP_API_ENDPOINT);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
     }
 
     @Test
