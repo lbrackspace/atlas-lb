@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0eaf2af2_3b1928da",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/validation/validators/HostValidatorTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-08-17T13:49:21Z",
+      "side": 1,
+      "message": "We should stick with conventional camelCase naming. Is there any negative cases we can add here?",
+      "revId": "09ecd15d9656331ff730502bccebef304aba1cce",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
