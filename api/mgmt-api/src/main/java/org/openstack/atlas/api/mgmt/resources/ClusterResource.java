@@ -2,6 +2,8 @@ package org.openstack.atlas.api.mgmt.resources;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+
+import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
@@ -93,6 +95,50 @@ public class ClusterResource extends ManagementDependencyProvider {
         }
 
         return Response.status(200).entity(rHosts).build();
+    }
+
+    @GET
+    @Path("hostssubnets")
+    public Response getClusterHostsSubnets() {
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
+
+        List<org.openstack.atlas.service.domain.entities.Host> dHosts;
+
+        try {
+            dHosts = clusterService.getHosts(id);
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
+
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet rHostssubnets = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet();
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet rHostsubnet;
+        org.openstack.atlas.service.domain.pojos.Hostssubnet dHostssubnet = new Hostssubnet();
+
+        try {
+            for (org.openstack.atlas.service.domain.entities.Host h : dHosts) {
+                try {
+                    dHostssubnet.getHostsubnets().addAll(reverseProxyLoadBalancerVTMService.getSubnetMappings(h).getHostsubnets());
+                } catch (StmRollBackException srex) {
+                    // Unable to Collect host data, most likely because host is down or non-existent in backend...ignore
+                }
+            }
+            if (dHostssubnet.getHostsubnets().size() > 0) {
+                for (org.openstack.atlas.service.domain.pojos.Hostsubnet hsub : dHostssubnet.getHostsubnets()) {
+                    rHostsubnet = (getDozerMapper().map(hsub, org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet.class));
+                    rHostssubnets.getHostsubnets().add(rHostsubnet);
+                }
+                return Response.status(200).entity(rHostssubnets).build();
+            }
+
+            BadRequest badRequest = new BadRequest();
+            badRequest.setCode(400);
+            badRequest.setMessage("Could not find any host networks");
+            return Response.status(400).entity(badRequest).build();
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, ex.getMessage(), null);
+        }
     }
 
     @GET
