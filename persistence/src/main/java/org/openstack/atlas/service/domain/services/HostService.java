@@ -84,6 +84,8 @@ public interface HostService {
 
     public Host getDefaultActiveHostAndActiveCluster(Integer accountId, boolean hasPublicVip) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
 
+    public Host getNotCurrentActiveHostAndActiveCluster(Integer accountId, boolean hasPublicVip, Integer hostId) throws ClusterStatusException, EntityNotFoundException, NoAvailableClusterException;
+
     public boolean isActiveHost(Host host) throws EntityNotFoundException;
 
 }

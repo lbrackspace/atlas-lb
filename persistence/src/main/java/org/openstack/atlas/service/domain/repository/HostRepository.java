@@ -467,4 +467,46 @@ public class HostRepository {
         }
         throw new EntityNotFoundException("ACTIVE_TARGET host not found");
     }
+
+    public Host getNotCurrentActiveHost(Integer clusterId, Integer hostId) throws EntityNotFoundException {
+        //get a host based on the following algorithm
+        //status = ACTIVE_TARGET, fewest concurrent connections and fewest number of assigned loadbalanders.
+        String sql = "SELECT h from Host h where h.cluster.id = :clusterId AND h.hostStatus= :hostStatus AND h.id <> :hostId "
+                + "AND h.maxConcurrentConnections = (select min(i.maxConcurrentConnections) "
+                + "from Host i where i.cluster.id = :clusterId AND i.hostStatus = :hostStatus AND i.id <> :hostId)";
+
+        Query qry = entityManager.createQuery(sql).setParameter("hostStatus", HostStatus.ACTIVE_TARGET).setParameter("clusterId", clusterId).setParameter("hostId", hostId);
+        List<Host> hosts = qry.getResultList();
+
+        if (hosts != null && hosts.size() > 0) {
+            if (hosts.size() == 1) {
+                return (hosts.get(0));
+            } else {
+                Host minhost = null;
+                long mincount = 0;
+                long count = 0;
+                //fewest number
+                for (Host h : hosts) {
+                    String query = "select count(*) from LoadBalancer lb where lb.host.id = :id and lb.status != 'DELETED'";
+                    List<Long> lst = entityManager.createQuery(query).setParameter("id", h.getId()).getResultList();
+                    count = lst.get(0).longValue();
+                    if (count == 0) {
+                        return h;
+                    } else {
+                        if (mincount == 0) {
+                            mincount = count;
+                            minhost = h;
+                        } else if (mincount <= count) {
+                            //do nothing
+                        } else {
+                            mincount = count;
+                            minhost = h;
+                        }
+                    }
+                }
+                return minhost;
+            }
+        }
+        throw new EntityNotFoundException("ACTIVE_TARGET host not found");
+    }
 }

@@ -44,6 +44,11 @@ public class HostServiceImpl extends BaseService implements HostService {
     }
 
     @Override
+    public Host getNotCurrentActiveHostAndActiveCluster(Integer accountId, boolean hasPublicVip, Integer hostId) throws ClusterStatusException, EntityNotFoundException, NoAvailableClusterException {
+        return hostRepository.getNotCurrentActiveHost(clusterRepository.getActiveCluster(accountId, hasPublicVip).getId(), hostId);
+    }
+
+    @Override
     @Transactional
     public void updateLoadBalancerSticky(LoadBalancer lb) throws EntityNotFoundException {
         LoadBalancer dbLb = loadBalancerRepository.getById(lb.getId());
