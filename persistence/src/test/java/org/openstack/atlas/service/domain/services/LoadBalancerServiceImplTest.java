@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -478,7 +479,7 @@ public class LoadBalancerServiceImplTest {
             lb.setHost(host);
 
             when(hostRepository.getById(Matchers.<Integer>any())).thenReturn(host);
-            when(hostRepository.getDefaultActiveHost(Matchers.<Integer>any())).thenReturn(host);
+            when(hostRepository.getDefaultActiveHost(Matchers.<Integer>any(), anyInt())).thenReturn(host);
             when(clusterRepository.getActiveCluster(null, false)).thenReturn(cluster);
             when(hostService.getById(ArgumentMatchers.<Integer>any())).thenReturn(host);
             when(loadBalancerStatusHistoryRepository.save(Matchers.<LoadBalancerStatusHistory>anyObject())).thenReturn(new LoadBalancerStatusHistory());

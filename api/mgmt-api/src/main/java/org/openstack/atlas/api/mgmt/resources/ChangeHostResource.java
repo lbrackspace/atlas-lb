@@ -60,7 +60,7 @@ public class ChangeHostResource extends ManagementDependencyProvider {
             Host newHost;
             try {
                 // Pick the specified host, or calculate one from a specified cluster
-                newHost = (newHostId != null) ? hostService.getById(newHostId) : hostRepository.getDefaultActiveHost(newClusterId);
+                newHost = (newHostId != null) ? hostService.getById(newHostId) : hostRepository.getDefaultActiveHost(newClusterId, null);
                 mdc.setMoveHost(newHost);
             } catch (EntityNotFoundException hnfe) {
                 BadRequestException bre = new BadRequestException((newHostId != null) ? BADHOST : BADCLUSTER);
