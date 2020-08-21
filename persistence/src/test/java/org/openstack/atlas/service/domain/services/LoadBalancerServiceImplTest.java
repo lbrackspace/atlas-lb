@@ -18,11 +18,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.internal.verification.VerificationModeFactory.times;
+
 
 @RunWith(Enclosed.class)
 public class LoadBalancerServiceImplTest {
@@ -429,25 +430,28 @@ public class LoadBalancerServiceImplTest {
         @Mock
         LoadBalancerStatusHistoryRepository loadBalancerStatusHistoryRepository;
 
+        @Mock
+        LoadBalancerStatusHistoryServiceImpl loadBalancerStatusHistoryService;
+        @Mock
+        HostServiceImpl hostService;
+
         @InjectMocks
         LoadBalancerServiceImpl lbService;
-        @InjectMocks
-        HostServiceImpl hostService;
+
         @InjectMocks
         ClusterServiceImpl clusterService;
-        @InjectMocks
-        LoadBalancerStatusHistoryServiceImpl loadBalancerStatusHistoryService;
 
         @Before
         public void standUp() throws EntityNotFoundException, UnprocessableEntityException, ClusterStatusException, NoAvailableClusterException {
             MockitoAnnotations.initMocks(this);
             lb = new LoadBalancer();
-            lbService = new LoadBalancerServiceImpl();
+//            lbService = new LoadBalancerServiceImpl();
             lbService.setLoadBalancerRepository(lbRepository);
             lbService.setVirtualIpRepository(virtualIpRepository);
 
 
-            hostService = new HostServiceImpl();
+
+//            hostService = new HostServiceImpl();
             hostService.setLoadBalancerRepository(lbRepository);
             hostService.setHostRepository(hostRepository);
 
@@ -458,6 +462,7 @@ public class LoadBalancerServiceImplTest {
             loadBalancerStatusHistoryService.setLoadBalancerStatusHistoryRepository(loadBalancerStatusHistoryRepository);
 
             hostService.setClusterRepository(clusterRepository);
+
 //            lbService.setHostService(hostService);
 //            lbService.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
 
@@ -478,7 +483,7 @@ public class LoadBalancerServiceImplTest {
             lb.setHost(host);
 
             when(hostRepository.getById(Matchers.<Integer>any())).thenReturn(host);
-            when(hostRepository.getDefaultActiveHost(Matchers.<Integer>any())).thenReturn(host);
+            when(hostRepository.getDefaultActiveHost(Matchers.<Integer>any(), anyInt())).thenReturn(host);
             when(clusterRepository.getActiveCluster(null, false)).thenReturn(cluster);
             when(hostService.getById(ArgumentMatchers.<Integer>any())).thenReturn(host);
             when(loadBalancerStatusHistoryRepository.save(Matchers.<LoadBalancerStatusHistory>anyObject())).thenReturn(new LoadBalancerStatusHistory());
@@ -506,6 +511,37 @@ public class LoadBalancerServiceImplTest {
 //            Assert.assertEquals((Object) 555555, newLb.getAccountId());
 //            Assert.assertEquals((Object) 3333, newLb.getId());
 //        }
+
+        @Test
+        public void shouldGetHostIdFromLbRepository() throws Exception {
+            List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
+            List<LoadBalancer> validLbs = new ArrayList<>();
+            LoadBalancer loadBalancer = new LoadBalancer();
+            LoadBalancer loadBalancer2 = new LoadBalancer();
+            loadBalancer2.setAccountId(4444);
+            Host host = new Host();
+            host.setId(1);
+            loadBalancer.setIsSticky(false);
+            lb.setIsSticky(false);
+            loadBalancer.setId(2);
+            loadBalancer.setAccountId(1234);
+            loadBalancer2.setHost(host);
+            loadBalancer2.setId(3);
+            validLbs.add(loadBalancer2);
+
+            lbs.add(loadBalancer);
+            when(lbRepository.getById(anyInt())).thenReturn(loadBalancer, loadBalancer2);
+            when(virtualIpRepository.getLoadBalancersByVipId(anyInt())).thenReturn(null);
+            when(hostService.getDefaultActiveHostAndActiveCluster(anyInt(),anyBoolean(),anyInt())).thenReturn(host);
+
+            List<LoadBalancer> loadBalancers = lbService.reassignLoadBalancerHost(lbs);
+
+            verify(lbRepository, times(4)).getById(anyInt());
+            Assert.assertEquals(validLbs.get(0).getHost(), loadBalancers.get(0).getHost());
+
+        }
+
+
 
         @Test(expected = BadRequestException.class)
         public void shouldFailIfLbisSticky() throws Exception {
