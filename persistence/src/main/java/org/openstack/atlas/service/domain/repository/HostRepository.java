@@ -421,19 +421,34 @@ public class HostRepository {
     }
 
     public Host getDefaultActiveHost(Integer clusterId) throws EntityNotFoundException {
+
+        Host minhost = getDefaultActiveHost(clusterId, null);
+
+        return minhost;
+
+    }
+
+    public Host getDefaultActiveHost(Integer clusterId, Integer hostId) throws EntityNotFoundException {
         //get a host based on the following algorithm
         //status = ACTIVE_TARGET, fewest concurrent connections and fewest number of assigned loadbalanders.
-        String sql = "SELECT h from Host h where h.cluster.id = :clusterId AND h.hostStatus= :hostStatus "
-                + "AND h.maxConcurrentConnections = (select min(i.maxConcurrentConnections) "
-                + "from Host i where i.cluster.id = :clusterId AND i.hostStatus = :hostStatus)";
+        Query qry;
+        String sql;
 
-//        String sql = "SELECT h from Host h where h.cluster.id = :clusterId"
-//                + " AND h.hostStatus = '"
-//                + HostStatus.ACTIVE_TARGET + "'"
-//                + " AND h.maxConcurrentConnections =  ( select min(i.maxConcurrentConnections) from Host i where i.hostStatus = '"
-//                + HostStatus.ACTIVE_TARGET + "')";
+        if (hostId == null) {
+            sql = "SELECT h from Host h where h.cluster.id = :clusterId AND h.hostStatus= :hostStatus "
+                    + "AND h.maxConcurrentConnections = (select min(i.maxConcurrentConnections) "
+                    + "from Host i where i.cluster.id = :clusterId AND i.hostStatus = :hostStatus)";
+            qry = entityManager.createQuery(sql).setParameter("hostStatus", HostStatus.ACTIVE_TARGET).setParameter("clusterId", clusterId);
+        } else {
 
-        Query qry = entityManager.createQuery(sql).setParameter("hostStatus", HostStatus.ACTIVE_TARGET).setParameter("clusterId", clusterId);
+            sql = "SELECT h from Host h where h.cluster.id = :clusterId AND h.hostStatus= :hostStatus AND h.id <> :hostId "
+                    + "AND h.maxConcurrentConnections = (select min(i.maxConcurrentConnections) "
+                    + "from Host i where i.cluster.id = :clusterId AND i.hostStatus = :hostStatus AND i.id <> :hostId)";
+
+            qry = entityManager.createQuery(sql).setParameter("hostStatus", HostStatus.ACTIVE_TARGET).setParameter("clusterId", clusterId).setParameter("hostId", hostId);
+
+        }
+
         List<Host> hosts = qry.getResultList();
 
         if (hosts != null && hosts.size() > 0) {
@@ -467,4 +482,5 @@ public class HostRepository {
         }
         throw new EntityNotFoundException("ACTIVE_TARGET host not found");
     }
+
 }

@@ -1159,7 +1159,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 }
                 lb.setHost(specifiedHost);
             } else {
-                lb.setHost(hostService.getDefaultActiveHostAndActiveCluster(lb.getAccountId(), loadBalancerHasPublicVip(lb)));
+                lb.setHost(hostService.getDefaultActiveHostAndActiveCluster(lb.getAccountId(), loadBalancerHasPublicVip(lb), loadBalancerRepository.getById(lb.getId()).getHost().getId()));
             }
         }
     }
