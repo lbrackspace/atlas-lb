@@ -30,6 +30,7 @@ public class DnsUtil {
         env.put(ContextInitial, "com.sun.jndi.dns.DnsContextFactory");
         env.put("com.sun.jndi.dns.timeout.initial", to);
         env.put("com.sun.jndi.dns.timeout.retries", rt);
+
         return env;
     }
 
@@ -40,11 +41,10 @@ public class DnsUtil {
         String msg;
         String fmt;
         int i;
-        Object obj;
         try {
             DirContext ctx = new InitialDirContext(env);
-            Attributes attrs = ctx.getAttributes(fqdn, record_types);
             for (i = 0; i < record_types.length; i++) {
+                Attributes attrs = ctx.getAttributes(fqdn, new String[] {record_types[i]});
                 Attribute attr = attrs.get(record_types[i]);
                 if (attr == null) {
                     continue; // No records of this type found
