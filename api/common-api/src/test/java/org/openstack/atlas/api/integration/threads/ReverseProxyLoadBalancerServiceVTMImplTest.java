@@ -8,6 +8,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.Spy;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
@@ -18,6 +19,7 @@ import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceVTMImp
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.HostService;
 import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
@@ -31,9 +33,7 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class ReverseProxyLoadBalancerServiceVTMImplTest {
@@ -135,7 +135,99 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
             verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getSsl3Ciphers(any(LoadBalancerEndpointConfiguration.class));
             verify(reverseProxyLoadBalancerStmAdapter, times(1)).getSsl3Ciphers(any(LoadBalancerEndpointConfiguration.class));
         }
+    }
 
+    public static class subnetMappings{
+
+        @Mock
+        HostService hostService;
+        @Mock
+        Configuration configuration;
+        @Mock
+        LoadBalancerRepository loadBalancerRepository;
+        @Mock
+        LoadBalancerServiceImpl loadBalancerService;
+        @Mock
+        ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
+        @Mock
+        ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
+        @Spy
+        ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerServiceVTM;
+
+        Cluster cluster;
+        Host failOverHost;
+        Host soapEndPointHost;
+        LoadBalancer loadBalancer;
+        Host host;
+        List<String> failOverHostNames;
+        List<Host> failoverHosts;
+        String logFileLocation;
+        Integer loadBalancerId;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, RemoteException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, InsufficientRequestException {
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancerService = new LoadBalancerServiceImpl();
+            loadBalancer = new LoadBalancer();
+            host = new Host();
+            cluster = new Cluster();
+            soapEndPointHost = new Host();
+            failOverHost = new Host();
+            failOverHostNames = new ArrayList<>();
+            failoverHosts = new ArrayList<>();
+
+            reverseProxyLoadBalancerServiceVTM = spy(new ReverseProxyLoadBalancerServiceVTMImpl());
+            reverseProxyLoadBalancerServiceVTM.setLoadBalancerService(loadBalancerService);
+            reverseProxyLoadBalancerServiceVTM.setHostService(hostService);
+            reverseProxyLoadBalancerServiceVTM.setConfiguration(configuration);
+            reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerVTMAdapter(reverseProxyLoadBalancerVTMAdapter);
+            reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerStmAdapter(reverseProxyLoadBalancerStmAdapter);
+
+            host.setName("testHost");
+            host.setId(1);
+            host.setEndpoint("https://test.com:3030/soap");
+            host.setRestEndpoint("https://test/api/tm/7.0/config/active/");
+            host.setHostStatus(HostStatus.ACTIVE);
+            host.setTrafficManagerName("n1.com");
+            host.setZone(Zone.A);
+            cluster.setId(1);
+            cluster.setName("testCluster");
+            loadBalancer.setHost(host);
+            loadBalancer.setName("testLB");
+            loadBalancer.setId(1);
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+            soapEndPointHost.setId(2);
+            soapEndPointHost.setEndpoint("https://soapEndPointHostTest/soap");
+            failOverHost.setEndpoint("failover.com/soap");
+            failOverHost.setTrafficManagerName("nf1.com");
+            failOverHost.setZone(Zone.A);
+            loadBalancerId = 1;
+            failOverHostNames.add("nf1.com");
+            failoverHosts.add(failOverHost);
+            logFileLocation = "test";
+            host.setCluster(cluster);
+            loadBalancerService.setLoadBalancerRepository(loadBalancerRepository);
+            loadBalancerRepository.setLoadBalancerAttrs(loadBalancer);
+            loadBalancerService.setLoadBalancerAttrs(loadBalancer);
+
+            when(loadBalancerRepository.getById(anyInt())).thenReturn(loadBalancer);
+            when(hostService.getRestEndPointHost(anyInt())).thenReturn(soapEndPointHost);
+            when(hostService.getFailoverHostNames(anyInt())).thenReturn(failOverHostNames);
+            when(hostService.getFailoverHosts(anyInt())).thenReturn(failoverHosts);
+            when(configuration.getString(anyString())).thenReturn(logFileLocation);
+        }
+
+        @Test
+        public void setSubnetMappingsShouldUseVTMAdapter() throws Exception{
+            soapEndPointHost.setRestEndpoint("https://test/api/tm/7.0/config/active/");
+            Hostssubnet hsubnet = new Hostssubnet();
+            reverseProxyLoadBalancerServiceVTM.setSubnetMappings(host, hsubnet);
+            verify(reverseProxyLoadBalancerServiceVTM, times(1)).getConfigHost(host);
+            verify(reverseProxyLoadBalancerVTMAdapter, times(1)).setSubnetMappings(any(LoadBalancerEndpointConfiguration.class), any());
+            verify(reverseProxyLoadBalancerStmAdapter, times(0)).setSubnetMappings(any(LoadBalancerEndpointConfiguration.class), any());
+
+        }
 
     }
 

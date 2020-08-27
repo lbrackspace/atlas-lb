@@ -454,7 +454,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     @Override
     public void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws RollBackException, MalformedURLException, DecryptException, InsufficientRequestException {
-        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
+        LoadBalancerEndpointConfiguration hostConfig = getConfigHost(host);
         try {
             if (getVersion(hostConfig.getRestEndpoint()) == 7) {
                 reverseProxyLoadBalancerVTMAdapter.setSubnetMappings(hostConfig, hostssubnet);
