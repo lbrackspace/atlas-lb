@@ -233,11 +233,38 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
     public void deleteCluster(Cluster cluster) throws ClusterNotEmptyException, EntityNotFoundException {
         List<Host> hosts = getHosts(cluster.getId());
         Cluster dbCluster = clusterRepository.getById(cluster.getId());
-        if(!hosts.isEmpty()){
+        if (!hosts.isEmpty()) {
             throw new ClusterNotEmptyException(String
                     .format("Before deleting a cluster make sure there is no host associated with cluster"));
         }
         clusterRepository.delete(dbCluster);
+    }
+
+    public void addVirtualIpBlocks(IPv4Ranges ranges, VirtualIpType vipType, Integer clusterId) throws BadRequestException, EntityNotFoundException {
+        LOG.debug("Entering " + getClass());
+
+        List<VirtualIp> vips = new ArrayList<>();
+        long ip;
+
+        Cluster cluster = clusterRepository.getClusterById(clusterId);
+
+        for (IPv4Range range : ranges.getRanges()) {
+            for (ip = range.getLo(); ip <= range.getHi(); ip++) {
+                VirtualIp vip = new VirtualIp();
+                vip.setIpAddress(IPv4ToolSet.long2ip(ip));
+                vip.setVipType(vipType);
+                vip.setCluster(cluster);
+                vip.setAllocated(false);
+                if (testForDuplicatesByCluster(vip, clusterId)) {
+                    LOG.warn(String.format("Duplicate vips detected. " +
+                            "IP addresses must be unique within a cluster: %s. Skipping...", vip.getIpAddress()));
+                    continue;
+                }
+                vips.add(vip);
+            }
+        }
+        LOG.info("Attempting to persist virtual ips from given ranges...");
+        virtualIpService.batchPersist(vips);
     }
 
     private boolean testForDuplicatesByCluster(VirtualIp vip, Integer clusterId) {

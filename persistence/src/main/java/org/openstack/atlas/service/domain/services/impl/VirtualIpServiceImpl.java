@@ -504,6 +504,12 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
     @Override
     @Transactional
+    public void batchPersist(List<VirtualIp> viplist) {
+        virtualIpRepository.batchPersist(viplist);
+    }
+
+    @Override
+    @Transactional
     public void updateCluster(VirtualIp vip, Cluster cluster) {
         vip.setCluster(cluster);
         virtualIpRepository.merge(vip);
