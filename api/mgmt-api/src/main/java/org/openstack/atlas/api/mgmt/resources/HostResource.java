@@ -11,6 +11,10 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4Range;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
+import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.operations.Operation;
@@ -20,6 +24,7 @@ import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHost
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
 import java.util.List;
 
 public class HostResource extends ManagementDependencyProvider {
@@ -165,6 +170,30 @@ public class HostResource extends ManagementDependencyProvider {
         if (!isUserInRole("cp,ops")) {
             return ResponseFactory.accessDenied();
         }
+         return addHostSubnetMappings(rHostssubnet, false, null);
+    }
+
+    @PUT
+    @Path("subnetmappings/addpublicvips")
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response putHostsSubnetMappingsAddPublicVips(Hostssubnet rHostssubnet) {
+        if (!isUserInRole("cp,ops")) {
+            return ResponseFactory.accessDenied();
+        }
+         return addHostSubnetMappings(rHostssubnet, true, VirtualIpType.PUBLIC);
+    }
+
+    @PUT
+    @Path("subnetmappings/addservicenetvips")
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response putHostsSubnetMappingsAddServicenetVips(Hostssubnet rHostssubnet) {
+        if (!isUserInRole("cp,ops")) {
+            return ResponseFactory.accessDenied();
+        }
+         return addHostSubnetMappings(rHostssubnet, true, VirtualIpType.SERVICENET);
+    }
+
+    public Response addHostSubnetMappings(Hostssubnet rHostssubnet, Boolean addvips, VirtualIpType vipType) {
         EsbRequest req = new EsbRequest();
         OperationResponse resp;
         org.openstack.atlas.service.domain.entities.Host dHost = new org.openstack.atlas.service.domain.entities.Host();
@@ -183,7 +212,32 @@ public class HostResource extends ManagementDependencyProvider {
         req.setHostssubnet(dHostssubnet);
 
         try {
+            // Set the subnets first
             syncSetHostSubnet(req);
+            // Add related subnet blocks to database if requested
+            if (addvips) {
+                try {
+                    IPv4Ranges ranges = new IPv4Ranges();
+                    org.openstack.atlas.service.domain.entities.Host host = hostRepository.getById(id);
+                    for (org.openstack.atlas.service.domain.pojos.Hostsubnet hs : dHostssubnet.getHostsubnets()) {
+                        for (org.openstack.atlas.service.domain.pojos.NetInterface ni : hs.getNetInterfaces()) {
+                            for (org.openstack.atlas.service.domain.pojos.Cidr cidr : ni.getCidrs()) {
+                                ranges.add(IPv4ToolSet.ipv4BlockToRange(cidr.getBlock()));
+                            }
+                        }
+                    }
+
+                    VirtualIpType vType = VirtualIpType.PUBLIC;
+                    if (vipType != null) {
+                        vType = vipType;
+                    }
+                    clusterService.addVirtualIpBlocks(ranges, vType, host.getCluster().getId());
+                } catch (Exception ex) {
+                    String stackTrace = getExtendedStackTrace(ex);
+                    return ResponseFactory.getResponseWithStatus(Response.Status.INTERNAL_SERVER_ERROR,
+                            "Failed to set virtualIps in database", stackTrace);
+                }
+            }
             return ResponseFactory.getSuccessResponse("Successfully put subnetmappings", 200);
 
         } catch (Exception ex) {

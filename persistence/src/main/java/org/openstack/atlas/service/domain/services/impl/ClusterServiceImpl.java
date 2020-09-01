@@ -163,6 +163,34 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
         return vipBlocks;
     }
 
+    @Override
+    @Transactional
+    public void addVirtualIpBlocks(IPv4Ranges ranges, VirtualIpType vipType, Integer clusterId) throws BadRequestException, EntityNotFoundException {
+        LOG.debug("Entering " + getClass());
+
+        VirtualIp vip;
+        long ip;
+
+        Cluster cluster = clusterRepository.getClusterById(clusterId);
+
+        for (IPv4Range range : ranges.getRanges()) {
+            for (ip = range.getLo(); ip <= range.getHi(); ip++) {
+                vip = new VirtualIp();
+                vip.setIpAddress(IPv4ToolSet.long2ip(ip));
+                vip.setVipType(vipType);
+                vip.setCluster(cluster);
+                vip.setAllocated(false);
+                if (testForDuplicatesByCluster(vip, clusterId)) {
+                    LOG.warn("Duplicate vips detected");
+                    throw new BadRequestException(String.format("IP addresses must be unique within a cluster: Ip is duplicated: %s", vip.getIpAddress()));
+                }
+
+                LOG.info(String.format("calling persist for %s\n", vip.getIpAddress()));
+                virtualIpService.persist(vip);
+            }
+        }
+    }
+
     private boolean testForDuplicatesByCluster(VirtualIp vip, Integer clusterId) {
         List<VirtualIp> dbVips = virtualIpService.getVipsByClusterId(clusterId);
         for (VirtualIp nvip : dbVips) {
