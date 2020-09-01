@@ -657,4 +657,51 @@ public class VirtualIpServiceImplTest {
             Assert.assertEquals(IpVersion.IPV4, vipMap.get(124).get(1).getIpVersion());
         }
     }
+
+    public static class WhenBatchUpdatingVips {
+        VirtualIpRepository virtualIpRepository;
+        LoadBalancerRepository loadBalancerRepository;
+        VirtualIpServiceImpl virtualIpService;
+        List<VirtualIp> vips = new ArrayList<VirtualIp>();
+
+        @Before
+        public void standUp() {
+            virtualIpRepository = mock(VirtualIpRepository.class);
+            loadBalancerRepository = mock(LoadBalancerRepository.class);
+            virtualIpService = new VirtualIpServiceImpl();
+            virtualIpService.setLoadBalancerRepository(loadBalancerRepository);
+            virtualIpService.setVirtualIpRepository(virtualIpRepository);
+
+            doNothing().when(virtualIpRepository).batchPersist(any());
+        }
+
+        @Test
+        public void shouldBatchUpdateMultipleVips() {
+            VirtualIp vip1 = new VirtualIp();
+            vip1.setAllocated(true);
+            vip1.setVipType(VirtualIpType.PUBLIC);
+            vip1.setIpVersion(IpVersion.IPV4);
+            VirtualIp vip2 = new VirtualIp();
+            vip2.setAllocated(true);
+            vip2.setVipType(VirtualIpType.SERVICENET);
+            vip2.setIpVersion(IpVersion.IPV4);
+            vips.add(vip1);
+            vips.add(vip2);
+
+            virtualIpService.batchPersist(vips);
+            verify(virtualIpRepository, times(1)).batchPersist(vips);
+        }
+
+        @Test
+        public void shouldBatchUpdateSingleVip() {
+            VirtualIp vip1 = new VirtualIp();
+            vip1.setAllocated(true);
+            vip1.setVipType(VirtualIpType.PUBLIC);
+            vip1.setIpVersion(IpVersion.IPV4);
+            vips.add(vip1);
+
+            virtualIpService.batchPersist(vips);
+            verify(virtualIpRepository, times(1)).batchPersist(vips);
+        }
+    }
 }

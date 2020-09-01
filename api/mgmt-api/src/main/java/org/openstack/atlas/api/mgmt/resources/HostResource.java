@@ -11,6 +11,10 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4Range;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
+import org.openstack.atlas.service.domain.entities.VirtualIpType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.operations.Operation;
@@ -162,10 +166,23 @@ public class HostResource extends ManagementDependencyProvider {
     @PUT
     @Path("subnetmappings")
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-    public Response putHostsSubnetMappings(Hostssubnet rHostssubnet) {
+    public Response putHostsSubnetMappings(Hostssubnet rHostssubnet,
+                                           @QueryParam("addpublicvips") Boolean addpublicvips,
+                                           @QueryParam("addservicenetvips") Boolean addservicenetvips) {
         if (!isUserInRole("cp,ops")) {
             return ResponseFactory.accessDenied();
         }
+
+        VirtualIpType vipType = null;
+        boolean addVips = false;
+        if (addpublicvips != null && addpublicvips) {
+            vipType =  VirtualIpType.PUBLIC;
+            addVips = true;
+        } else if (addservicenetvips != null && addservicenetvips) {
+            vipType =  VirtualIpType.SERVICENET;
+            addVips = true;
+        }
+
         EsbRequest req = new EsbRequest();
         OperationResponse resp;
         org.openstack.atlas.service.domain.entities.Host dHost = new org.openstack.atlas.service.domain.entities.Host();
@@ -176,23 +193,25 @@ public class HostResource extends ManagementDependencyProvider {
             badRequest.setCode(400);
             badRequest.setMessage("Invalid request");
             vFault.getMessages().add("Please specify only one host per request");
-            return Response.status(200).entity(badRequest).build();
+            return Response.status(400).entity(badRequest).build();
         }
+
         dHostssubnet = getDozerMapper().map(rHostssubnet, org.openstack.atlas.service.domain.pojos.Hostssubnet.class);
         dHost.setId(id);
         req.setHost(dHost);
         req.setHostssubnet(dHostssubnet);
 
-        try {
-            syncSetHostSubnet(req);
-            return ResponseFactory.getSuccessResponse("Successfully put subnetmappings", 200);
+        req.setAddVips(addVips);
+        req.setVirtualIpType(vipType);
 
+        try {
+            getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.SET_HOST_SUBNET_MAPPINGS, req);
+            return Response.status(202).build();
         } catch (Exception ex) {
-            String exName = ex.getClass().getName();
-            String stackTrace = getExtendedStackTrace(ex);
-            return ResponseFactory.getResponseWithStatus(Response.Status.INTERNAL_SERVER_ERROR, exName, stackTrace);
+            return ResponseFactory.getErrorResponse(ex, null, null);
         }
     }
+
 
     @DELETE
     @Path("subnetmappings")
@@ -414,24 +433,5 @@ public class HostResource extends ManagementDependencyProvider {
             System.out.println(e.getMessage());
         }
         return connection;
-    }
-
-    // Mimics org.openstack.atlas.api.mgmt.async.MgmtSetHostSubnetMappingListener
-    // But skips activeMQ so we can get a syncronouse response incase of an Error.
-    // TODO: see if we can migrate this to async. If not, rework this
-    private void syncSetHostSubnet(EsbRequest req) throws Exception {
-        org.openstack.atlas.service.domain.entities.Host rHost = req.getHost();
-        org.openstack.atlas.service.domain.entities.Host dHost = null;
-        org.openstack.atlas.service.domain.pojos.Hostssubnet hostssubnet;
-        try {
-            dHost = hostService.getById(rHost.getId());
-        } catch (EntityNotFoundException enfe) {
-            return;
-        }
-        hostssubnet = req.getHostssubnet();
-        hostssubnet.getHostsubnets().get(0).setName(dHost.getTrafficManagerName());
-
-            reverseProxyLoadBalancerVTMService.setSubnetMappings(dHost, hostssubnet);
-
     }
 }

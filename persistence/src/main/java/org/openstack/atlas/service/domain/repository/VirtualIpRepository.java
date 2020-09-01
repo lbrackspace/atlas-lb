@@ -446,4 +446,55 @@ public class VirtualIpRepository {
 
         return (Integer) hResults.get(0);
     }
+
+    public void batchPersist(List<VirtualIp> viplist){
+        List<VirtualIp> vipBatch = new ArrayList<>();
+        for ( int i = 0; i < viplist.size(); i++ ) {
+            vipBatch.add(viplist.get(i));
+            if (i % 20 == 0) {
+                String query = generateBatchInsertQuery(vipBatch);
+                entityManager.createNativeQuery(query).executeUpdate();
+                vipBatch.clear();
+            }
+        }
+    }
+
+    public String generateBatchInsertQuery(Collection<VirtualIp> vips) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("INSERT INTO virtual_ip_ipv4 (ip_address, type," +
+                "cluster_id, is_allocated) VALUES");
+        sb.append(generateFormattedValuesForList(vips));
+        return sb.toString();
+    }
+
+    private String generateFormattedValuesForList(Collection<VirtualIp> vips) {
+        String queryString = "";
+        for (VirtualIp vip : vips) {
+            queryString += generateFormattedValues(vip);
+            queryString += "),";
+        }
+        if (queryString.endsWith(",")) {
+            queryString = queryString.substring(0, queryString.lastIndexOf(','));
+        }
+        return queryString;
+    }
+
+    /**
+     * The order of the following appended values is deliberate.  Do no modify its order
+     * without modifying the order in the method generateBatchInsertQuery
+     */
+    private String generateFormattedValues(VirtualIp virtualIp) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("('");
+        sb.append(virtualIp.getIpAddress()).append("','");
+        sb.append(virtualIp.getVipType()).append("',");
+        sb.append(virtualIp.getCluster().getId()).append(",");
+        if (virtualIp.isAllocated()) {
+            sb.append("1");
+        } else {
+            sb.append("0");
+        }
+
+        return sb.toString();
+    }
 }

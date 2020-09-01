@@ -70,6 +70,8 @@ public interface VirtualIpService {
 
     public void persist(Object obj);
 
+    public void batchPersist(List<VirtualIp> viplist);
+
     public void updateCluster(VirtualIp vip, Cluster cluster);
 
     public void updateCluster(VirtualIpv6 vip, Cluster cluster);

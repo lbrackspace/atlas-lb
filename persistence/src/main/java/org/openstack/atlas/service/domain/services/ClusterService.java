@@ -1,6 +1,7 @@
 package org.openstack.atlas.service.domain.services;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ZeusRateLimitedLoadBalancer;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPBlocksOverLapException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPRangeTooBigException;
@@ -46,4 +47,5 @@ public interface ClusterService {
 
     public void updateCluster(Cluster cluster, Integer clusterId) throws EntityNotFoundException, BadRequestException;
 
+    public void addVirtualIpBlocks(IPv4Ranges ranges, VirtualIpType vipType, Integer clusterId) throws EntityNotFoundException;
 }
