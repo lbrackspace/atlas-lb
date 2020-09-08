@@ -31,4 +31,23 @@ public final class MossoConfig {
         return cryptoSecretKeySpec;
     }
 
+    /**
+     * The key spec to use for sensitive data related to SSL Termination
+     */
+    private static SecretKeySpec cryptoSecretKeySpecTerm;
+
+    /**
+     * Returns the secret key spec for sensitive data related to SSL Termination
+     *
+     * @return The secret key spec for sensitive data related to SSL Termination 
+     */
+    public static SecretKeySpec getCryptoKeySpecTerm() {
+
+        org.openstack.atlas.cfg.Configuration config = new LbConfiguration();
+        String key = config.getString(MossoConfigValues.term_crypto_key);
+        MossoConfig.cryptoSecretKeySpec = new SecretKeySpec(key.getBytes(),
+                CryptoUtilValues.TRANSFORMATION_ALG_AES);
+        return cryptoSecretKeySpec;
+    }
+
 }
