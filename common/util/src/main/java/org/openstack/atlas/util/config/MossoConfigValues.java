@@ -5,6 +5,7 @@ import org.openstack.atlas.cfg.ConfigurationKey;
 public enum MossoConfigValues implements ConfigurationKey {
     hm_crypto_key,
     hm_crypto_key_alt,
+    term_crypto_key,
     base_uri,
     rdns_crypto_key,
     rdns_admin_url,
