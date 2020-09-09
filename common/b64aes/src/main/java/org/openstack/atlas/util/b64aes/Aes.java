@@ -9,6 +9,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
@@ -24,6 +25,7 @@ public class Aes {
 
     private static final int rivSize = 4;
     private static final int PAGESIZE = 4096;
+    private static final int GCM_TAG_LENGTH = 16;
     private static Random rnd = new Random();
     private static final byte[] iv = new byte[]{111, -120, 13, -78,
         123, 21, 81, -13,
@@ -92,6 +94,65 @@ public class Aes {
             UnsupportedEncodingException,
             PaddingException, IOException {
         return new String(b64decrypt(b64ctext, key_str),"utf-8");
+    }
+
+    public static String b64encryptGCM(byte[] ptext, String key_str, String iv)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
+            IllegalBlockSizeException, BadPaddingException, IOException {
+        // parameter 'iv' is a key unique to the encrypted message
+        byte[] ctext = encryptGCM(ptext, sha256(key_str), iv);
+        return new String(Base64.encode(ctext, ctext.length));
+    }
+
+    public static byte[] encryptGCM(byte[] ptextBytes, byte[] keyBytes, String iv)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeyException, InvalidAlgorithmParameterException,
+            IOException, IllegalBlockSizeException, BadPaddingException {
+        // parameter 'iv' is a key unique to the encrypted message
+        SecretKey key = new SecretKeySpec(keyBytes, "AES");
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv.getBytes()));
+        byte[] ptextWithRandomVector = injectVector(ptextBytes, rivSize);
+        return cipher.doFinal(ptextWithRandomVector);
+    }
+
+    public static byte[] b64decryptGCM(String b64ctext, String key_str, String iv)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeySpecException, BadPaddingException,
+            InvalidKeyException, IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            UnsupportedEncodingException,
+            PaddingException, IOException {
+        // parameter 'iv' is a key unique to the encrypted message
+        byte[] ctextBytes = b64ctext.getBytes("UTF-8");
+        byte[] ctext = Base64.decode(ctextBytes, ctextBytes.length);
+        return decryptGCM(ctext, sha256(key_str), iv);
+    }
+
+    public static byte[] decryptGCM(byte[] ctextBytes, byte[] keyBytes, String iv)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeySpecException, BadPaddingException,
+            InvalidKeyException, IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            UnsupportedEncodingException,
+            PaddingException, IOException {
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        SecretKey key = new SecretKeySpec(keyBytes,"AES");
+        cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(GCM_TAG_LENGTH * 8, iv.getBytes()));
+        byte[] ptextBytes = cipher.doFinal(ctextBytes);
+        ptextBytes = removeVector(ptextBytes, rivSize);
+        return ptextBytes;
+    }
+
+    public static String b64decryptGCM_str(String b64ctext, String key_str, String iv)
+            throws NoSuchAlgorithmException, NoSuchPaddingException,
+            InvalidKeySpecException, BadPaddingException,
+            InvalidKeyException, IllegalBlockSizeException,
+            InvalidAlgorithmParameterException,
+            UnsupportedEncodingException,
+            PaddingException, IOException {
+        return new String(b64decryptGCM(b64ctext, key_str, iv),"utf-8");
     }
 
     public static byte[] sha256(String str_in) throws NoSuchAlgorithmException,
