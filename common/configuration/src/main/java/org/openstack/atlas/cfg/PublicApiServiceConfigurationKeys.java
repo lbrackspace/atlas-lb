@@ -41,5 +41,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     usage_timezone_code,
     usage_deletion_limit,
     stingray_stats_base_uri,
+    term_crypto_key,
     rest_api_retries
 }

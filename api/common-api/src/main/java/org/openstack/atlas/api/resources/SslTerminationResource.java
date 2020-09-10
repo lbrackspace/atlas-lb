@@ -17,9 +17,18 @@ import org.openstack.atlas.service.domain.exceptions.MethodNotAllowedException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.Consumes;
@@ -31,6 +40,7 @@ import javax.ws.rs.Produces;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
@@ -71,7 +81,16 @@ public class SslTerminationResource extends CommonDependencyProvider {
         }
 
         // Use database as default values. Also getSslTermination already does a null check :)
-        String pemKey = previousSslTerm.getPrivatekey();
+        String pemKey = null;
+        try {
+            // decrypt database key so we can revalidate with any new data
+            pemKey = Aes.b64decryptGCM_str(previousSslTerm.getPrivatekey(),
+                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                    (accountId + "_" + loadBalancerId));
+        } catch (Exception e) {
+            // It's possible the database key wasn't encrypted. Let cert utils verify and return appropriate exceptions.
+            pemKey = previousSslTerm.getPrivatekey();
+        }
         String imdCrts = previousSslTerm.getIntermediateCertificate();
         String userCrt = previousSslTerm.getCertificate();
 
