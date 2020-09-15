@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.helpers.SslTerminationUsage;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
@@ -18,6 +19,7 @@ import org.openstack.atlas.service.domain.exceptions.UsageEventCollectionExcepti
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.debug.Debug;
 
 import javax.jms.Message;
@@ -66,7 +68,6 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.error(String.format("Collection of the ssl usage event failed for " +
                     "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
-
         try {
             if (isRestAdapter()) {
                 LOG.info("Updating load balancer ssl termination in STM...");
