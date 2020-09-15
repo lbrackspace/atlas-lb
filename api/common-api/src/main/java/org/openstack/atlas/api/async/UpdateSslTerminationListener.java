@@ -66,7 +66,6 @@ public class UpdateSslTerminationListener extends BaseListener {
             LOG.error(String.format("Collection of the ssl usage event failed for " +
                     "load balancer: %s :: Exception: %s", dbLoadBalancer.getId(), e));
         }
-
         try {
             if (isRestAdapter()) {
                 LOG.info("Updating load balancer ssl termination in STM...");

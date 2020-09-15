@@ -3,6 +3,9 @@ package org.openstack.atlas.service.domain.services.impl;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.bouncycastle.jcajce.provider.asymmetric.rsa.BCRSAPrivateCrtKey;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
@@ -18,8 +21,10 @@ import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.debug.Debug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +34,9 @@ import java.util.*;
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
     protected static final ZeusUtils zeusUtils;
+    @Autowired
+    protected RestApiConfiguration restApiConfiguration;
+
     protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
 
     static {
@@ -47,6 +55,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         ZeusCrtFile zeusCrtFile = null;
 
         LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(lbId, accountId);
+
 
         //Verify ports and protocols...
         SslTerminationHelper.isProtocolSecure(dbLoadBalancer);
@@ -95,6 +104,22 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             LOG.warn("LoadBalancer ssl termination could not be found, ");
         }
 
+        if(dbTermination != null){
+            String pemKey = null;
+
+            try {
+                // decrypt database key so we can revalidate with any new data
+                pemKey = Aes.b64decryptGCM_str(dbTermination.getPrivatekey(), restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                        (accountId + "_" + lbId));
+            } catch (Exception e) {
+                // It's possible the database key wasn't encrypted. Let cert utils verify and return appropriate exceptions.
+                LOG.warn("Private key could not be decrypted, ");
+                pemKey = dbTermination.getPrivatekey();
+            }
+
+            dbTermination.setPrivatekey(pemKey);
+        }
+
         //we wont make it here if no dbTermination and no cert/key values.
         // If dbTermination is null on input to verifyAttributes then
         // verifyAttributes creates a new dbTermination instance
@@ -138,12 +163,24 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                 loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
             }
         }
+        // Encrypting SSL Termination
+        org.openstack.atlas.service.domain.entities.SslTermination encryptedTermination = dbTermination;
+        try{
+            LOG.info("Encrypting Privatekey");
+            String encryptedKey = Aes.b64encryptGCM(dbTermination.getPrivatekey().getBytes(), restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key), dbLoadBalancer.getAccountId() + "_" + dbLoadBalancer.getId());
+            encryptedTermination.setPrivatekey(encryptedKey);
+        } catch (Exception e) {
+            String msg = Debug.getEST(e);
+            LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", dbLoadBalancer.getId(), msg));
+            throw new BadRequestException("SSL termination could not be encrypted.");
+
+        }
 
         LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%s'", lbId));
-        sslTerminationRepository.setSslTermination(lbId, dbTermination);
+        sslTerminationRepository.setSslTermination(lbId, encryptedTermination);
         LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%s'", lbId));
 
-        zeusSslTermination.setSslTermination(dbTermination);
+        zeusSslTermination.setSslTermination(encryptedTermination);
         if (zeusCrtFile != null) {
             zeusSslTermination.setCertIntermediateCert(zeusCrtFile.getPublic_cert());
         }

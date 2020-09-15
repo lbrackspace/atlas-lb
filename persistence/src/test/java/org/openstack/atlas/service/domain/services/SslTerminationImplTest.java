@@ -106,5 +106,7 @@ public class SslTerminationImplTest {
                 Assert.fail(ex.toString());
             }
         }
+
     }
+
 }
