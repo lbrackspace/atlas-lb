@@ -142,7 +142,6 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         if (dbTermination != null) {
             if (!SslTerminationHelper.modificationStatus(sslTermination, dbLoadBalancer)) {
                 //Validate the certifications and key return the list of errors if there are any, otherwise, pass the transport object to async layer...
-                SslTerminationHelper.sanitizeSslCertKeyEntries(dbTermination);
                 zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(dbTermination.getPrivatekey(), dbTermination.getCertificate(), dbTermination.getIntermediateCertificate());
                 SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
             }

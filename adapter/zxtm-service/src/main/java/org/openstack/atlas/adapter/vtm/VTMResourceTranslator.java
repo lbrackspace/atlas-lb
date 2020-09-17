@@ -7,7 +7,10 @@ import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
@@ -44,10 +47,19 @@ public class VTMResourceTranslator {
     public Bandwidth cBandwidth;
     public Keypair cKeypair;
     public Map<String, Keypair> cKeypairMappings;
+
+    public RestApiConfiguration restApiConfiguration;
+
     protected static final ZeusUtils zeusUtil;
 
     static {
         zeusUtil = new ZeusUtils();
+    }
+
+    public static VTMResourceTranslator getNewResourceTranslator(RestApiConfiguration restApiConfiguration) {
+        VTMResourceTranslator translator = new VTMResourceTranslator();
+        translator.setRestApiConfiguration(restApiConfiguration);
+        return translator;
     }
 
     public static VTMResourceTranslator getNewResourceTranslator() {
@@ -496,7 +508,17 @@ public class VTMResourceTranslator {
 
     public Keypair translateKeypairResource(LoadBalancer loadBalancer, boolean careAboutCert)
             throws InsufficientRequestException {
-        ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(loadBalancer.getSslTermination().getPrivatekey(),
+        // Decrypt key
+        String privKey;
+        try {
+            privKey = Aes.b64decryptGCM_str(loadBalancer.getSslTermination().getPrivatekey(),
+                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                    (loadBalancer.getAccountId() + "_" + loadBalancer.getId()));
+        } catch (Exception ex) {
+            // Things should be properly encrypted at this point, we'll let validation double check...
+            privKey = loadBalancer.getSslTermination().getPrivatekey();
+        }
+        ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(privKey,
                 loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
         if (zeusCertFile.hasFatalErrors()) {
             String fmt = "StingrayCertFile generation Failure: %s";
@@ -530,8 +552,18 @@ public class VTMResourceTranslator {
         for (CertificateMapping cm : loadBalancer.getCertificateMappings()) {
 
             String certificateName = ZxtmNameBuilder.generateCertificateName(lbId, accountId, cm.getId());
+            // Decrypt key
+            String privKey;
+            try {
+                privKey = Aes.b64decryptGCM_str(cm.getPrivateKey(),
+                        restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                        (loadBalancer.getAccountId() + "_" + loadBalancer.getId()));
+            } catch (Exception ex) {
+                // Things should have been properly decrypted by this point, we'll let validation double check...
+                privKey = cm.getPrivateKey();
+            }
 
-            ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(cm.getPrivateKey(),
+            ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(privKey,
                     cm.getCertificate(), cm.getIntermediateCertificate());
             if (zeusCertFile.hasFatalErrors()) {
                 String fmt = "StingrayCertFile generation Failure: %s";
@@ -661,5 +693,13 @@ public class VTMResourceTranslator {
 
     public void setcKeypairMappings(Map<String, Keypair> cKeypairMappings) {
         this.cKeypairMappings = cKeypairMappings;
+    }
+
+    public RestApiConfiguration getRestApiConfiguration() {
+        return restApiConfiguration;
+    }
+
+    public void setRestApiConfiguration(RestApiConfiguration restApiConfiguration) {
+        this.restApiConfiguration = restApiConfiguration;
     }
 }

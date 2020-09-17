@@ -25,6 +25,8 @@ public class VTMTestConstants {
             "SSL_RSA_WITH_AES_256_GCM_SHA384, SSL_RSA_WITH_AES_256_CBC_SHA256, " +
             "SSL_RSA_WITH_AES_256_CBC_SHA, SSL_RSA_WITH_AES_128_GCM_SHA256, " +
             "SSL_RSA_WITH_AES_128_CBC_SHA256, SSL_RSA_WITH_AES_128_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA";
+    public static final String ENCRYPTION_KEY = "ppxb5fniQshy-U5yp-uJAXG2QTAmSrnHSlG56aO2iFrLTEMU0r1bhgm8TN25KRNezLxrN2JgxKkRu--Gx5R7Kw==";
+    public static final String IV = "testiv";
     public static final String SSL_KEY = ""
             + "-----BEGIN RSA PRIVATE KEY-----\n"
             + "MIIEowIBAAKCAQEAgqD3/FFqkcbYkB1ucRtt0PcQQgrmviNW/8xmehxCVAZleyMZ\n"
@@ -54,6 +56,41 @@ public class VTMTestConstants {
             + "N//bkwy/AXr5nQkfFFjAfkqhL/zay/9tH6eSsw54V1E/6F/7Bpvi\n"
             + "-----END RSA PRIVATE KEY-----\n"
             + "";
+    public static final String ENCRYPTED_SSL_KEY = "tdvaeR8dQLkz8324dzGNtlBCO5C" +
+            "+rWQSKil5QgbYvoVa2TJxlzo5fsdiRT9hpNUwixdu4eqcMhSzHJp9J9XkO9f5chK3/" +
+            "5lpWnfExlJQMZKxzQiMu6gX/2XV7Diuo7aY1frwde+Bq3rzOlxX+XwMKpOoooWG3qb" +
+            "eyPPrRUYCE/qvxHxgaYjh5wENIMd4nF2vJyIcvcMieSbGopajHU0TjPnv+CREaHGqL" +
+            "FT+dTppDraF6J64hxWoItyP0+XV2J0HfOFLm0VhXot+Td3als5jLZ5BmN80y+IIOyq" +
+            "EXuicIHaOmQRslQrmM4zSPneNukFjoXVMghv7wANtldU9mrqDsFA5dlxUZdRhqPWFZ" +
+            "+FQBOjDtxDECAXys6tvUlBHc6kYvyioc0LvsLG7tNlmpMT3Vq/9uFXacceWDQg2axr" +
+            "5a/LbmAhBPqsk/8D7m5jagrcMsRlWKnYUBPiJdfNGQcAePcD8pIjEVfUyq+t2NTEw8" +
+            "Vf6D+EGj3zWyLX6P0EBnyiCLl9bRn9+SFGjaPHFBm2tp8rB8oBiGTckm4BTVoBW/HW" +
+            "z+XfYIWBO/BbmZvxpzjs9v6CtCjxfVEiEp7CSxfS7HQERv/hJLzZWtihWcAwFSXhb7" +
+            "+a5DcJbW71RuDybH2cHF61ByKW11iVk7QJ3ncPTXqtp1qtsUCxv8htzc4w0GK3hTV1" +
+            "dvX8g6OoHeO3NaaknSgNPVXDqwF5bdhZ+S4efxHLTaZarKf6psSGCgZ7dB4mUsc9mo" +
+            "eKgFj+tDSHpJhS8mdrxYfE63QT51JpKFkAhBjQrW28o1YBSRBcIPw/nLlRlO8V2qLo" +
+            "UgkuCp/0H7YYtVGYPSGI4ClVIkwZBwV0JL8GI/41L1PevFr6I8NZ/m/JWO2TVb/iIV" +
+            "RRvxTGDiDztz10MbMTjHWI5MXr2hcRhxBj4+FL2UxP8nSGyH4COL+UwUwRg0RAcyT1" +
+            "6POQA9D7VI/ZGYJCJue5gsn7Jl52MVTGDE0sCBQmLjl+0rx0TIMRJ+t/L4TBlDnMgu" +
+            "CQyUBZ9UwUXKH/nrm++bhKEkBuiEy3n/tHjlhDD0zmrxcCYWSuYS+397/pYzFJO8sL" +
+            "YiEGQOrr5LIHbEt6pshjI5bkHkbuIQG3+WuJEWb2RI8HOzb1WtRRSoWGikCA5ozY2c" +
+            "v+F+s+eC1BkL047cQeGdE2L/jonDgAHaKv4aufEUtye3vy1diDl5PUknbKfPGLZ1aY" +
+            "53kHgYCcwlEbM109R5vbkKksrWrmxGsxnubS6ksRBXaQ8WDu7zLXTlYka2YfNLV/sM" +
+            "9IxzRV364KO8gU4ZE2SzUBr9HrzYYa+SKJdCZqFA2Vw12nUKYkdx4QX5Crx9++BeW9" +
+            "3KldVmJBPYRtk2YAm9iuLLW0W4Z6qdBHzxzGyPjbJXr3Scqp9IK6QuCawWldpKQyo7" +
+            "PYPFtbxfxdY+uQ0WYr58ULIvHHzpJHdkeM3s2Lm1neqfWthacBZmdXM+5QIS6XB7K+" +
+            "2NpLZ08AwFjOZbPmpPw8j9ufjP1yjZLa/8cx+cJcuGBKgNQ+Whl2QqEnbXal7uv7ai" +
+            "MdSpYcujBau8RexzQ3F6AHQbZiVWVEqAG60+LZLdCoR/GqdKTD1bNcLNUKYls3oFOe" +
+            "k07V7LT98GQQ+ChWP7/Z+zE2HbJJAtbsrcRh//Ztal43L9cIw3/GmUTLYbegk3i58N" +
+            "GVufnmilZaD5tO1Ag96aeuwTD+Q6jC+Riicu4Ux8PKPH2vowTiUF3Icpp+QTFp8ZaN" +
+            "SKAIAluzTQ6Oc2kbfplj/4/aKoW6n3K54uimIiLSRIgpgfXpH+w5GNbOuylff9wM0v" +
+            "o0j0uUWwd4L7YCAzjBktArs3q6O9EmoO5quaqLvbe4/zKO5KbX3arl2UePGSFuKhmh" +
+            "xpyWUgh5t4HVX9qu0avPP+T08SoSUncpL3SjAYdvh6ZvUS5MGWcVXQzkWDDDhC1BQN" +
+            "wtoJorBTLn2drkzKqtcoo9SLubMeEoY41MEgmKr4yroRtzF0+6CtkcI3v4TPKeCH2u" +
+            "coaFuN63qXoafel45SDXcpWJF6J0NzFkgS4ej1sygYtxWDsN5b9qV+K8fRYCqL3MB1" +
+            "ZeoBapBDkjn+qaBY0dDmZiBYHcxhI0zoYslnEDC9MHwdjg8I6Nh5pqtI51mhARgTUo" +
+            "zvvtuz/zWxkdmKilfVvtYy3rNETAm27HfpKBOO9gENb8Iew8BKiv2hd2sqJ+lUdBqW" +
+            "4zFHn+ApuJgA9a6dZ6LKEjag1vwGrRW7kZqFzfz3kzGnaqbsyaSQmB6";
     public static final String SSL_CERT = ""
             + "-----BEGIN CERTIFICATE-----\n"
             + "MIIEAzCCAuugAwIBAgIBATANBgkqhkiG9w0BAQsFADCBqjE2MDQGA1UEAwwtd3d3\n"
