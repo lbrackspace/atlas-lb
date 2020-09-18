@@ -171,8 +171,7 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         } catch (Exception e) {
             String msg = Debug.getEST(e);
             LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", dbLoadBalancer.getId(), msg));
-            throw new BadRequestException("SSL termination could not be encrypted.");
-
+            throw new BadRequestException("Error processing SSL termination private key, please verify formatting...");
         }
 
         LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%s'", lbId));
