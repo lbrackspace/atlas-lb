@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3d11c6e5_0b2285c2",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/SslTerminationServiceImplTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-09-18T04:01:55Z",
+      "side": 1,
+      "message": "Might as well pull this out if they\u0027re unused?",
+      "revId": "eeb71db8c6886fb529aeae233e52fd464a338b3a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
