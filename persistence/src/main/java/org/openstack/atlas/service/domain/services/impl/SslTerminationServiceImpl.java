@@ -199,6 +199,47 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     @Override
     @Transactional
+    public void validatePrivateKey(int lbId, int accountId,
+            org.openstack.atlas.service.domain.entities.SslTermination sslTermination, boolean saveKey) throws BadRequestException, EntityNotFoundException {
+        try {
+            // decrypt database key so we can revalidate with any new data
+            sslTermination.setPrivatekey(Aes.b64decryptGCM_str(sslTermination.getPrivatekey(),
+                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                    SslTerminationHelper.getLoadBalancerIv(accountId, lbId)));
+        } catch (Exception e) {
+            // It's possible the database key wasn't encrypted.
+            // Let cert utils verify and return appropriate exceptions.
+            LOG.warn(String.format("Private key could not be decrypted for load balancer id: %d", lbId));
+            sslTermination.setPrivatekey(sslTermination.getPrivatekey());
+        }
+
+        // validate decrypted key and related certs
+        ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(
+                sslTermination.getPrivatekey(), sslTermination.getCertificate(),
+                sslTermination.getIntermediateCertificate());
+        SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
+
+        if (saveKey) {
+            try {
+                LOG.info("Encrypting Privatekey");
+                String encryptedKey = Aes.b64encryptGCM(sslTermination.getPrivatekey().getBytes(),
+                        restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                        SslTerminationHelper.getLoadBalancerIv(accountId, lbId));
+                sslTermination.setPrivatekey(encryptedKey);
+            } catch (Exception e) {
+                String msg = Debug.getEST(e);
+                LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", lbId, msg));
+                throw new BadRequestException("Error processing SSL termination private key, please verify formatting...");
+            }
+
+            LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%d'", lbId));
+            sslTerminationRepository.setSslTermination(lbId, sslTermination);
+            LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%d'", lbId));
+        }
+    }
+
+    @Override
+    @Transactional
     public boolean deleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LOG.info("Deleting ssl termination from the database for loadbalancer: " + loadBalancerId);
         return sslTerminationRepository.removeSslTermination(loadBalancerId, accountId);
