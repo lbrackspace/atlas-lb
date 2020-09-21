@@ -2,6 +2,8 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.AccountLimitType;
 import org.openstack.atlas.service.domain.entities.CertificateMapping;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -13,8 +15,10 @@ import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryServ
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.debug.Debug;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +36,8 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Autowired
     private AccountLimitServiceImpl accountLimitService;
+    @Autowired
+    private RestApiConfiguration restApiConfiguration;
 
     static {
         zeusUtils = new ZeusUtils();
@@ -50,7 +56,16 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
         }
 
         detectDuplicateHostName(dbCertificateMappings, newMapping);
-        validateCertificateMapping(newMapping);
+        validateCertificateMapping(newMapping, messengerLb.getAccountId(), messengerLb.getId());
+        try {
+            newMapping.setPrivateKey(Aes.b64encryptGCM(newMapping.getPrivateKey().getBytes(),
+                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                    (messengerLb.getAccountId() + "_" + messengerLb.getId())));
+        } catch (Exception e) {
+            String msg = Debug.getEST(e);
+            LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", messengerLb.getId(), msg));
+            throw new BadRequestException("Error processing certificate mapping private key, please verify formatting...");
+        }
 
         if (newMapping.getIntermediateCertificate() != null && newMapping.getIntermediateCertificate().trim().isEmpty()) {
             newMapping.setIntermediateCertificate(null);
@@ -108,7 +123,17 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
                     dbCertMapping.setHostName(certificateMappingToUpdate.getHostName());
                 }
 
-                validateCertificateMapping(dbCertMapping);
+                validateCertificateMapping(dbCertMapping, messengerLb.getAccountId(), messengerLb.getId());
+                // With any new credentials now validated re-encrypt the key
+                try {
+                    dbCertMapping.setPrivateKey(Aes.b64encryptGCM(dbCertMapping.getPrivateKey().getBytes(),
+                            restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                            (messengerLb.getAccountId() + "_" + messengerLb.getId())));
+                } catch (Exception e) {
+                    String msg = Debug.getEST(e);
+                    LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", messengerLb.getId(), msg));
+                    throw new BadRequestException("Error processing certificate mapping private key, please verify formatting...");
+                }
                 break;
             }
         }
@@ -160,10 +185,16 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
         }
     }
 
-    private void validateCertificateMapping(CertificateMapping mapping) throws BadRequestException {
+    private void validateCertificateMapping(CertificateMapping mapping, int accountId, int lbId) throws BadRequestException {
         SslDetails sslDetails = new SslDetails(mapping.getPrivateKey(), mapping.getCertificate(), mapping.getIntermediateCertificate());
-        sslDetails = SslDetails.sanitize(sslDetails);
-
+        try {
+            // If update is calling we need to attempt to decrypt key
+            sslDetails.setPrivateKey(Aes.b64decryptGCM_str(mapping.getPrivateKey(), restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key), (accountId + "_" + lbId)));
+            mapping.setPrivateKey(sslDetails.getPrivateKey());
+        } catch (Exception ex) {
+            // At this time we must assume the keys simply weren't encrypted to begin with and let validation check...
+            sslDetails.setPrivateKey(mapping.getPrivateKey());
+        }
         ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(sslDetails.getPrivateKey(), sslDetails.getCertificate(), sslDetails.getIntermediateCertificate());
         SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
     }
