@@ -50,7 +50,10 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
     @Override
     @Transactional
-    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination, boolean isSync) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException {
+    public ZeusSslTermination updateSslTermination(int lbId, int accountId,
+                                                   SslTermination sslTermination,
+                                                   boolean isSync) throws EntityNotFoundException,
+            ImmutableEntityException, BadRequestException, UnprocessableEntityException {
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
         ZeusCrtFile zeusCrtFile = null;
 
@@ -64,11 +67,13 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         Map<Integer, List<LoadBalancer>> vipPorts = new TreeMap<Integer, List<LoadBalancer>>();
         Map<Integer, List<LoadBalancer>> vip6Ports = new TreeMap<Integer, List<LoadBalancer>>();
         if (!dbLoadBalancer.getLoadBalancerJoinVipSet().isEmpty()) {
-            vipPorts = virtualIpRepository.getPorts(dbLoadBalancer.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp().getId());
+            vipPorts = virtualIpRepository.getPorts(
+                    dbLoadBalancer.getLoadBalancerJoinVipSet().iterator().next().getVirtualIp().getId());
         }
 
         if (!dbLoadBalancer.getLoadBalancerJoinVip6Set().isEmpty()) {
-            vip6Ports = virtualIpv6Repository.getPorts(dbLoadBalancer.getLoadBalancerJoinVip6Set().iterator().next().getVirtualIp().getId());
+            vip6Ports = virtualIpv6Repository.getPorts(
+                    dbLoadBalancer.getLoadBalancerJoinVip6Set().iterator().next().getVirtualIp().getId());
         }
 
         if (!SslTerminationHelper.verifyPortSecurePort(dbLoadBalancer, sslTermination, vipPorts, vip6Ports)) {
@@ -78,17 +83,20 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
 
         //Validate that a cipher profile exists with the given name, if not throw an error.
         String cipherProfileName = sslTermination.getCipherProfile();
-        if (StringUtils.isNotBlank(cipherProfileName) && !cipherProfileName.equalsIgnoreCase(Constants.DEFAUlT_CIPHER_PROFILE_NAME)) {
+        if (StringUtils.isNotBlank(cipherProfileName) && !cipherProfileName.equalsIgnoreCase(
+                Constants.DEFAUlT_CIPHER_PROFILE_NAME)) {
             cipherProfileName = cipherProfileName.trim();
             if (!sslCipherProfileService.isCipherProfileAvailable(cipherProfileName)) {
-                throw new BadRequestException(String.format("No Cipher Profile found with the name: '%s'", cipherProfileName));
+                throw new BadRequestException(String.format("No Cipher Profile found with the name: '%s'",
+                        cipherProfileName));
             }
         }
 
         if (dbLoadBalancer.getHttpsRedirect() != null && dbLoadBalancer.getHttpsRedirect()) {
             //Must be secure-only
             if (sslTermination.getSecureTrafficOnly() != null && !sslTermination.getSecureTrafficOnly()) {
-                throw new BadRequestException("Cannot use 'mixed-mode' SSL termination while HTTPS Redirect is enabled.");
+                throw new BadRequestException("Cannot use 'mixed-mode' SSL " +
+                        "termination while HTTPS Redirect is enabled.");
             }
             //Must use secure port 443
             if (sslTermination.getSecurePort() != null && sslTermination.getSecurePort() != 443) {
@@ -105,18 +113,18 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         if(dbTermination != null){
-            String pemKey = null;
-
+            String pemKey;
             try {
                 // decrypt database key so we can revalidate with any new data
-                pemKey = Aes.b64decryptGCM_str(dbTermination.getPrivatekey(), restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                        (accountId + "_" + lbId));
+                pemKey = Aes.b64decryptGCM_str(dbTermination.getPrivatekey(),
+                        restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                        SslTerminationHelper.getLoadBalancerIv(dbLoadBalancer));
             } catch (Exception e) {
-                // It's possible the database key wasn't encrypted. Let cert utils verify and return appropriate exceptions.
+                // It's possible the database key wasn't encrypted.
+                // Let cert utils verify and return appropriate exceptions.
                 LOG.warn("Private key could not be decrypted, ");
                 pemKey = dbTermination.getPrivatekey();
             }
-
             dbTermination.setPrivatekey(pemKey);
         }
 
@@ -166,11 +174,14 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         org.openstack.atlas.service.domain.entities.SslTermination encryptedTermination = dbTermination;
         try{
             LOG.info("Encrypting Privatekey");
-            String encryptedKey = Aes.b64encryptGCM(dbTermination.getPrivatekey().getBytes(), restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key), dbLoadBalancer.getAccountId() + "_" + dbLoadBalancer.getId());
+            String encryptedKey = Aes.b64encryptGCM(dbTermination.getPrivatekey().getBytes(),
+                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                    SslTerminationHelper.getLoadBalancerIv(dbLoadBalancer));
             encryptedTermination.setPrivatekey(encryptedKey);
         } catch (Exception e) {
             String msg = Debug.getEST(e);
-            LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", dbLoadBalancer.getId(), msg));
+            LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n",
+                    dbLoadBalancer.getId(), msg));
             throw new BadRequestException("Error processing SSL termination private key, please verify formatting...");
         }
 

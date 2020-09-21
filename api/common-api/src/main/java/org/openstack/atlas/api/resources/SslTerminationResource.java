@@ -40,6 +40,7 @@ import javax.ws.rs.Produces;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.MediaType.APPLICATION_XML;
 
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
@@ -61,10 +62,12 @@ public class SslTerminationResource extends CommonDependencyProvider {
     public Response createSsl(SslTermination ssl) {
         ZeusUtils zeusUtils = new ZeusUtils();
         if (!ConfigurationHelper.isAllowed(restApiConfiguration, PublicApiServiceConfigurationKeys.ssl_termination)) {
-            return ResponseFactory.getErrorResponse(new MethodNotAllowedException("Resource not implemented yet..."), null, null);
+            return ResponseFactory.getErrorResponse(
+                    new MethodNotAllowedException("Resource not implemented yet..."), null, null);
         }
 
-        ValidatorResult result = ValidatorRepository.getValidatorFor(SslTermination.class).validate(ssl, HttpRequestType.PUT);
+        ValidatorResult result = ValidatorRepository.getValidatorFor(
+                SslTermination.class).validate(ssl, HttpRequestType.PUT);
         if (!result.passedValidation()) {
             return getValidationFaultResponse(result);
         }
@@ -81,12 +84,12 @@ public class SslTerminationResource extends CommonDependencyProvider {
         }
 
         // Use database as default values. Also getSslTermination already does a null check :)
-        String pemKey = null;
+        String pemKey;
         try {
             // decrypt database key so we can revalidate with any new data
             pemKey = Aes.b64decryptGCM_str(previousSslTerm.getPrivatekey(),
                     restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                    (accountId + "_" + loadBalancerId));
+                    SslTerminationHelper.getLoadBalancerIv(accountId, loadBalancerId));
         } catch (Exception e) {
             // It's possible the database key wasn't encrypted. Let cert utils verify and return appropriate exceptions.
             pemKey = previousSslTerm.getPrivatekey();
@@ -111,7 +114,8 @@ public class SslTerminationResource extends CommonDependencyProvider {
         }
 
         try {
-            ZeusSslTermination zeusSslTermination = sslTerminationService.updateSslTermination(loadBalancerId, accountId, ssl, false);
+            ZeusSslTermination zeusSslTermination = sslTerminationService.updateSslTermination(
+                    loadBalancerId, accountId, ssl, false);
 
             MessageDataContainer dataContainer = new MessageDataContainer();
             dataContainer.setAccountId(accountId);
@@ -120,7 +124,8 @@ public class SslTerminationResource extends CommonDependencyProvider {
             dataContainer.setZeusSslTermination(zeusSslTermination);
             dataContainer.setPreviousSslTermination(previousSslTerm);
 
-            SslTermination returnTermination = dozerMapper.map(zeusSslTermination.getSslTermination(), SslTermination.class);
+            SslTermination returnTermination = dozerMapper.map(
+                    zeusSslTermination.getSslTermination(), SslTermination.class);
 
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_SSL_TERMINATION, dataContainer);
             return Response.status(Response.Status.ACCEPTED).entity(returnTermination).build();

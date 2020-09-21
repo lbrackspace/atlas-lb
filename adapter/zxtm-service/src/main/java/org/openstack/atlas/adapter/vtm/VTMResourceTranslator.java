@@ -513,7 +513,7 @@ public class VTMResourceTranslator {
         try {
             privKey = Aes.b64decryptGCM_str(loadBalancer.getSslTermination().getPrivatekey(),
                     restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                    (loadBalancer.getAccountId() + "_" + loadBalancer.getId()));
+                    String.format("%d_%d", loadBalancer.getAccountId(), loadBalancer.getId()));
         } catch (Exception ex) {
             // Things should be properly encrypted at this point, we'll let validation double check...
             privKey = loadBalancer.getSslTermination().getPrivatekey();
@@ -557,7 +557,7 @@ public class VTMResourceTranslator {
             try {
                 privKey = Aes.b64decryptGCM_str(cm.getPrivateKey(),
                         restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                        (loadBalancer.getAccountId() + "_" + loadBalancer.getId()));
+                        String.format("%d_%d_%d", loadBalancer.getAccountId(), loadBalancer.getId(), cm.getId()));
             } catch (Exception ex) {
                 // Things should have been properly decrypted by this point, we'll let validation double check...
                 privKey = cm.getPrivateKey();

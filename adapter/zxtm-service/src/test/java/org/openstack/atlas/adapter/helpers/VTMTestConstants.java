@@ -91,6 +91,42 @@ public class VTMTestConstants {
             "ZeoBapBDkjn+qaBY0dDmZiBYHcxhI0zoYslnEDC9MHwdjg8I6Nh5pqtI51mhARgTUo" +
             "zvvtuz/zWxkdmKilfVvtYy3rNETAm27HfpKBOO9gENb8Iew8BKiv2hd2sqJ+lUdBqW" +
             "4zFHn+ApuJgA9a6dZ6LKEjag1vwGrRW7kZqFzfz3kzGnaqbsyaSQmB6";
+    public static final String ENCRYPTED_CERT_MAPPING_KEY_1 = "faM4Rr+NTLvRTTbc" +
+            "/fiSG1n3aiTI5U2B5b2b200JH2NX5yqmDj9nRf3MB58prEY4vB+863ZKU2+2L5g5pq" +
+            "Gxs/2d0yv1LJl5mReugnoOPEkCfBaqFwCJ4mIBTM4lQ+j6lR3jlX3MVmNU3l/d1cQM" +
+            "IFOgJZnWadqVb8/ShIM6poSDM7uQmg6Go0XqgD5TNaFuOMzuS+hfpDMOzPD0q+VFeG" +
+            "4JmTIR19gGYEUBsnaustmiB4sLHpworyq3hhTE1xBP6vEQ7H9BdWdZOPdhv2B6n761" +
+            "XKnwUibTePV1OMKFngPvEXzMV1Oqc+vFy4aTopY+qN/VGh3AYQFdQsros4gIA9WohK" +
+            "tyoRaKlooN17Y4VWx67806ZqsLsHniXKWkxxo1OqwbjiBxXSiL22zM+MnPNgU4Lby2" +
+            "wqgWECQ/PGjt3MWct5AcewLezkWYi+dlj1qRE0N5OHoTJoWP0Kxo5hssrjrFWPi/qn" +
+            "b0v/Z55lM/q3D04zc1x++CzCLBEce1jOOplnklTf/ruo2oCKxsLIv9EEy+2X5GygWO" +
+            "vlc0ig/1l1Qrb+Kx9QEM9cyXp+Ey2mTU4aij32BuytM9d8NX61jsdyarBx8CA1YuLb" +
+            "WZEd/RQryB9ieisD/a+knhjTJ0EJr/QMBixvBqKOzPH00LSYlnd2eY7fBiP+tbTZ8p" +
+            "vIyJm/0Bk7QPDVIvMAzYTUhiFNVJejV0qQ7Q4tB3FkQcrWdjQzqvWJOvs+0rx+f22p" +
+            "7TKeacng3qbgF3YJlzsz2wP9gykivt79iI0agp5IiGz5v47TKM6kz+4x6CJzNfVW26" +
+            "Tt0HASl/EdaLDFpVMcgsuPIBtMnZm1n87PtLh6zh7XBKenEIn1qagHD9SQmKBx/VeJ" +
+            "X0b2B5CeJp9G8o6kBYaXErpbb44CQ33fckoVvwqh5NB/WWh7r1FYyygr0nORrwVmtn" +
+            "kUP16eSglE+QFVzuedddkR/KcKrmeo8ZkZH1Vb9PLan1au/SmarsjedjEJkivv2eiw" +
+            "bOU1domA5OcE/fGxJl9FFtSxQcs/xtLFKckY5o3pJ2dtqZd2vQuZoAzdmnxRF/JSMv" +
+            "7iQsxFyn7GYnKk/KXu4XRO/nvjkW1ITSisdFZ/S2FJ6o+lVonbf5OXukBXyd/2rnRW" +
+            "leG8csEj17jhBfJ3Q3MoX1VNV5BhUThyZ9Zf7sq4LW5hAS2YNEkAjPrIRTMgYw0DSh" +
+            "6HvDsW6KbXGvB7tbI1Eziky9WKXPxc36f3iONrZ99nrG8aXOBgnSX6EopiD0mdD8GS" +
+            "5wTapajxhzF5fERx3H9+EYWZ9wjaBF2DsidV+D5MypkJg1jCVeny2SP3TdNV6ieEFn" +
+            "VdaRtHCrbihRJ3ZUbHl2FsYqXXYd4/HD6jqsmlaDP/yFmGS5EAOYSFQOhqit6WhE45" +
+            "mgewKFf0nMwPOcjEGGeLF1nTjnY5VK8tWO0vaOFCV1XHN+0LPG2uDAZJnHkiF0UV9j" +
+            "wVSny8oqLr+p8zrHy3yyWrYaVrkdZbj9WyC0haWuy2c8rBQ6m2nEOU0n0MDneVou+k" +
+            "Lr4PAIVDrbgrJyi+0V7ixeXki4uVINNQ6WokyDT+3spnYQ34jo7hYNuhGheQ28SqPG" +
+            "qDRKuisvdYIDCXLCWcTRgN7zVs3wVTyHYW7S6xW+dh4zOLL0T3UHQ158wlF9bB2haD" +
+            "qSYWXgwQB3HabYgnDpU91mcDZoaEvnbGHcyu6A2bEZnN/J+4yDhhotTTmPS2TKeB69" +
+            "5gzWnZwrirscbzmar2LUaxghzEk5LhyEUUtXB5vBlF9jVQLiTBDwZv5D3ALoW5N+ZL" +
+            "v2nw0PZnuxGRA4TXeyfqjZOvwbsnXQmJRtqaGMyGPpp8rIrZWq7Yw4bEllIy8Q2YRi" +
+            "OcknWl0tDPqJe5Tqrf+p7xFumPHUfD3kCR05xW28XqpktX7YIYcUSX9GV0VMhA80Sg" +
+            "dxR1d9fK9pJKrCFFOrh2MvenhwIwcX5tH6sBLQfJtReW+SH4/UJNGV40OiPglepMhd" +
+            "VrE+096UGdFGw2o24/Ggi2XELuNhNp3czb8KOOVtH9HyWaNrEWfhuiGDLdqmf9p4LS" +
+            "Rv3NMN9Mka0VgJ8saLf88XW6XflwAlndHrs69Qb/xMik2vrhSus0jgDYC5qfpwOZGA" +
+            "/qGg9tW8jF3aFOU70EfWX6h+NB9wOpqCSqSNx5KdkeRIF/D98J4X/FqgLToTbpyLt+" +
+            "Zh/Y/zgO3Zp92tP0olN64AhmY9vlQL8jq4TuzRmC2eGtVOJt9UHn24lvcPGtCSjfFA";
+    public static final String ENCRYPTED_CERT_MAPPING_KEY_2 = "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";
     public static final String SSL_CERT = ""
             + "-----BEGIN CERTIFICATE-----\n"
             + "MIIEAzCCAuugAwIBAgIBATANBgkqhkiG9w0BAQsFADCBqjE2MDQGA1UEAwwtd3d3\n"

@@ -60,7 +60,8 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
         try {
             newMapping.setPrivateKey(Aes.b64encryptGCM(newMapping.getPrivateKey().getBytes(),
                     restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                    (messengerLb.getAccountId() + "_" + messengerLb.getId())));
+                    SslTerminationHelper.getCertificateMappingIv(newMapping,
+                            messengerLb.getAccountId(), messengerLb.getId())));
         } catch (Exception e) {
             String msg = Debug.getEST(e);
             LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", messengerLb.getId(), msg));
@@ -128,7 +129,8 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
                 try {
                     dbCertMapping.setPrivateKey(Aes.b64encryptGCM(dbCertMapping.getPrivateKey().getBytes(),
                             restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                            (messengerLb.getAccountId() + "_" + messengerLb.getId())));
+                            SslTerminationHelper.getCertificateMappingIv(dbCertMapping,
+                                    messengerLb.getAccountId(), messengerLb.getId())));
                 } catch (Exception e) {
                     String msg = Debug.getEST(e);
                     LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", messengerLb.getId(), msg));
@@ -185,17 +187,22 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
         }
     }
 
-    private void validateCertificateMapping(CertificateMapping mapping, int accountId, int lbId) throws BadRequestException {
-        SslDetails sslDetails = new SslDetails(mapping.getPrivateKey(), mapping.getCertificate(), mapping.getIntermediateCertificate());
+    private void validateCertificateMapping(CertificateMapping mapping,
+                                            int accountId, int lbId) throws BadRequestException {
+        SslDetails sslDetails = new SslDetails(mapping.getPrivateKey(),
+                mapping.getCertificate(), mapping.getIntermediateCertificate());
         try {
             // If update is calling we need to attempt to decrypt key
-            sslDetails.setPrivateKey(Aes.b64decryptGCM_str(mapping.getPrivateKey(), restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key), (accountId + "_" + lbId)));
+            sslDetails.setPrivateKey(Aes.b64decryptGCM_str(mapping.getPrivateKey(),
+                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                    SslTerminationHelper.getCertificateMappingIv(mapping, accountId, lbId)));
             mapping.setPrivateKey(sslDetails.getPrivateKey());
         } catch (Exception ex) {
             // At this time we must assume the keys simply weren't encrypted to begin with and let validation check...
             sslDetails.setPrivateKey(mapping.getPrivateKey());
         }
-        ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(sslDetails.getPrivateKey(), sslDetails.getCertificate(), sslDetails.getIntermediateCertificate());
+        ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(sslDetails.getPrivateKey(),
+                sslDetails.getCertificate(), sslDetails.getIntermediateCertificate());
         SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
     }
 

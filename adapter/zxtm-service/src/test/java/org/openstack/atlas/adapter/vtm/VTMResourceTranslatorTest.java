@@ -627,7 +627,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             CertificateMapping cm = new CertificateMapping();
             cm.setId(1);
             cm.setHostName("h1");
-            cm.setPrivateKey(VTMTestConstants.ENCRYPTED_SSL_KEY);
+            cm.setPrivateKey(VTMTestConstants.ENCRYPTED_CERT_MAPPING_KEY_1);
             cm.setCertificate(VTMTestConstants.SSL_CERT);
             cms.add(cm);
 
@@ -702,7 +702,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             CertificateMapping cm2 = new CertificateMapping();
             cm2.setId(2);
             cm2.setHostName("h2");
-            cm2.setPrivateKey(VTMTestConstants.ENCRYPTED_SSL_KEY);
+            cm2.setPrivateKey(VTMTestConstants.ENCRYPTED_CERT_MAPPING_KEY_2);
             cm2.setCertificate(VTMTestConstants.SSL_CERT);
             cms.add(cm);
             cms.add(cm2);
