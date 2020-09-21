@@ -144,6 +144,34 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
 
     @Override
     @Transactional
+    public void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys) throws BadRequestException {
+        LOG.debug(String.format("Sync %d certificate mappings for load balancer: %d ",
+                messengerLb.getCertificateMappings().size(), messengerLb.getId()));
+        for (CertificateMapping certificateMapping : messengerLb.getCertificateMappings()) {
+                validateCertificateMapping(certificateMapping, messengerLb.getAccountId(), messengerLb.getId());
+                try {
+                    // With any updated credentials now validated re-encrypt the key
+                    certificateMapping.setPrivateKey(Aes.b64encryptGCM(certificateMapping.getPrivateKey().getBytes(),
+                            restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                            SslTerminationHelper.getCertificateMappingIv(certificateMapping,
+                                    messengerLb.getAccountId(), messengerLb.getId())));
+                } catch (Exception e) {
+                    String msg = Debug.getEST(e);
+                    LOG.error(String.format(
+                            "Error encrypting Private key on load balancr %d: %s\n", messengerLb.getId(), msg));
+                    throw new BadRequestException(
+                            "Error processing certificate mapping private keys, please verify formatting...");
+                }
+            }
+        if (saveKeys) {
+            certificateMappingRepository.update(messengerLb);
+            LOG.debug(String.format("Saved %d updated certificate mappings for load balancer: %d ",
+                    messengerLb.getCertificateMappings().size(), messengerLb.getId()));
+        }
+    }
+
+    @Override
+    @Transactional
     public void prepareForDelete(LoadBalancer messengerLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException {
         ensureSslTerminationConfigIsAvailable(messengerLb.getId());
         certificateMappingRepository.getByIdAndLoadBalancerId(messengerLb.getCertificateMappings().iterator().next().getId(), messengerLb.getId());

@@ -13,6 +13,8 @@ public interface SslTerminationService {
 
     public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination, boolean isSync) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException;
 
+    public void validatePrivateKey(int lbId, int accountId, org.openstack.atlas.service.domain.entities.SslTermination sslTermination, boolean saveKey) throws BadRequestException, EntityNotFoundException;
+
     public boolean deleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
 
     public void pseudoDeleteSslTermination(Integer loadBalancerid, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
