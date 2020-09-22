@@ -252,6 +252,7 @@ public class VTMResourceTranslator {
             }
             vshttp.setAddXForwardedFor(true);
             vshttp.setAddXForwardedProto(true);
+            vshttp.setStripXForwardedProto(false);
             rules.add(VTMConstants.XFPORT);
             properties.setHttp(vshttp);
         }

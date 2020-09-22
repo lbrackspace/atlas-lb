@@ -263,6 +263,9 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             if (lb.isContentCaching())
                 rules.add(VTMConstants.CONTENT_CACHING);
             Assert.assertEquals(rules.size(), createdBasic.getRequestRules().size());
+            Assert.assertTrue(createdProperties.getHttp().getAddXForwardedFor());
+            Assert.assertTrue(createdProperties.getHttp().getAddXForwardedProto());
+            Assert.assertFalse(createdProperties.getHttp().getStripXForwardedProto());
 //            Assert.assertTrue(rules.containsAll(createdBasic.getRequest_rules()));
 
 //            Assert.assertEquals(expectedError, createdProperties.getConnectionErrors());
@@ -292,6 +295,9 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             if (lb.isContentCaching())
                 rules.add(VTMConstants.CONTENT_CACHING);
             Assert.assertEquals(rules.size(), createdBasic.getRequestRules().size());
+            Assert.assertTrue(createdProperties.getHttp().getAddXForwardedFor());
+            Assert.assertTrue(createdProperties.getHttp().getAddXForwardedProto());
+            Assert.assertFalse(createdProperties.getHttp().getStripXForwardedProto());
 //            Assert.assertTrue(rules.containsAll(createdBasic.getRequest_rules()));
 
 //            Assert.assertEquals(expectedError, createdProperties.getConnectionErrors());
@@ -363,6 +369,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertEquals(secureName, createdProperties.getSsl().getServerCertDefault());
             Assert.assertTrue(createdProperties.getHttp().getAddXForwardedFor());
             Assert.assertTrue(createdProperties.getHttp().getAddXForwardedProto());
+            Assert.assertFalse(createdProperties.getHttp().getStripXForwardedProto());
             Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, createdProperties.getHttp().getLocationRewrite());
 
         }
