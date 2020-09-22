@@ -57,6 +57,8 @@ public class ManagementDependencyProvider {
     protected TicketService ticketService;
     protected AccountLimitService accountLimitService;
     protected LoadBalancerService loadBalancerService;
+    protected SslTerminationService sslTerminationService;
+    protected CertificateMappingService certificateMappingService;
     protected VirtualIpService virtualIpService;
     protected HostService hostService;
     protected GroupService groupService;
@@ -94,6 +96,14 @@ public class ManagementDependencyProvider {
 
     public void setLoadBalancerService(LoadBalancerService loadBalancerService) {
         this.loadBalancerService = loadBalancerService;
+    }
+
+    public void setSslTerminationService(SslTerminationService sslTerminationService) {
+        this.sslTerminationService = sslTerminationService;
+    }
+
+    public void setCertificateMappingService(CertificateMappingService certificateMappingService) {
+        this.certificateMappingService = certificateMappingService;
     }
 
     public void setVirtualIpService(VirtualIpService virtualIpService) {

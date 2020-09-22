@@ -24,6 +24,7 @@ import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.SslTerminationRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl;
 import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.PemUtils;
@@ -32,13 +33,15 @@ import org.openstack.atlas.util.ca.exceptions.RsaException;
 import org.openstack.atlas.util.ca.util.StaticHelpers;
 import org.openstack.atlas.util.ca.util.X509ChainEntry;
 import org.openstack.atlas.util.ca.util.X509PathBuilder;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
+import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 
 import javax.ws.rs.core.Response;
 import java.security.KeyPair;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(Enclosed.class)
@@ -60,6 +63,7 @@ public class SslTerminationServiceImplTest {
         VirtualIpRepository virtualIpRepository;
         @Mock
         SslCipherProfileService sslCipherProfileService;
+
 
 
         @InjectMocks
@@ -185,6 +189,24 @@ public class SslTerminationServiceImplTest {
             when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
             ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(613, 5806065, sslTermination, true);
 
+        }
+
+        @Test
+        public void shouldValidatePrivateKey() throws Exception {
+            String privateKey = Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv);
+            sslTerminationToBeUpdated.setPrivatekey(privateKey);
+            sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
+        }
+        @Test(expected = BadRequestException.class)
+        public void shouldThrowErrorforInvalidPrivateKey() throws Exception {
+            sslTerminationToBeUpdated.setPrivatekey("badkey");
+            sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
+        }
+
+        @Test
+        public void  shouldValidateUnencryptedKey() throws Exception {
+            sslTerminationToBeUpdated.setPrivatekey(workingUserKey);
+            sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
         }
 
     }

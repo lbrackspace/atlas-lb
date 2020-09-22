@@ -171,7 +171,7 @@ public class CertificateMappingServiceImplTest {
 
             loadBalancer.setProtocol(LoadBalancerProtocol.HTTP);
             loadBalancer.setCertificateMappings(certMapSet);
-            ;
+
 
             when(restApiConfiguration.getString(
                     PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testCrypto");
@@ -220,6 +220,8 @@ public class CertificateMappingServiceImplTest {
         // Update
         @Test
         public void shouldAcceptValidDataForUpdate() throws Exception {
+            dbCertMapping.setPrivateKey(Aes.b64encryptGCM(privateKey.getBytes(), "testCrypto", iv1));
+
             loadBalancer.getCertificateMappings().add(dbCertMapping);
 
             certificateMappingService.update(loadBalancer);
@@ -260,6 +262,25 @@ public class CertificateMappingServiceImplTest {
 
             certificateMappingService.update(loadBalancer);
         }
+
+        @Test
+        public void shouldValidateDecryptedPrivateKeys() throws Exception{
+            certificateMappingService.validatePrivateKeys(loadBalancer, true);
+        }
+        @Test
+        public void shouldValidateEncryptedPrivateKeys() throws Exception {
+            certificateMappingToBeUpdated.setPrivateKey(encryptedKey);
+            certificateMappingService.validatePrivateKeys(loadBalancer, true);
+        }
+        @Test(expected = BadRequestException.class)
+        public void shouldThrowExceptionWithBadPrivateKey() throws Exception {
+            certificateMappingToBeUpdated.setPrivateKey(null);
+            certificateMappingService.validatePrivateKeys(loadBalancer, true);
+        }
+
+
+
+
     }
 
 }

@@ -43,20 +43,14 @@ public class SyncResource extends ManagementDependencyProvider {
             mdc.setAccountId(lb.getAccountId());
             mdc.setLoadBalancerStatus(lb.getStatus());
             SslTermination sslTerm = lb.getSslTermination();
+
+            // Validate private key and related credentials, store encrypted keys in the case db has yet to be updated
+            // These will throw BadRequestExceptions if keys fail to validate or store
             if (sslTerm != null) {
-                // Verify sslTerm won't break the LB during sync attempt
-                String crt = sslTerm.getCertificate();
-                String key = sslTerm.getPrivatekey();
-                String imd = sslTerm.getIntermediateCertificate();
-                ZeusCrtFile zcf = zeusUtils.buildZeusCrtFileLbassValidation(key, crt, imd);
-                if (zcf.hasFatalErrors()) {
-                    BadRequest sslFault = new BadRequest();
-                    sslFault.setValidationErrors(new ValidationErrors());
-                    sslFault.getValidationErrors().getMessages().add(SSLTERMBREAK); // Complain about SSL borkage
-                    sslFault.getValidationErrors().getMessages().addAll(zcf.getFatalErrorList());
-                    return Response.status(Response.Status.BAD_REQUEST).entity(sslFault).build();
-                }
+                sslTerminationService.validatePrivateKey(loadBalancerId, lb.getAccountId(), sslTerm, true);
             }
+            certificateMappingService.validatePrivateKeys(lb, true);
+
             if (lb.getStatus().equals(LoadBalancerStatus.SUSPENDED)) {
                 BadRequestException bre = new BadRequestException("Cannot Sync a Suspended Load Balancer, Please Check With Operations For Further Information...");
                 return ResponseFactory.getErrorResponse(bre, null, null);
