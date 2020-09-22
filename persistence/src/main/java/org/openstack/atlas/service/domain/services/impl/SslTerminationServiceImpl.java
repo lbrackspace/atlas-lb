@@ -163,11 +163,9 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             }
         }
         // Encrypting SSL Termination
-        org.openstack.atlas.service.domain.entities.SslTermination encryptedTermination = dbTermination;
         try{
             LOG.info("Encrypting Privatekey");
-            String encryptedKey = Aes.b64encryptGCM(dbTermination.getPrivatekey().getBytes(), restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key), dbLoadBalancer.getAccountId() + "_" + dbLoadBalancer.getId());
-            encryptedTermination.setPrivatekey(encryptedKey);
+            dbTermination.setPrivatekey(Aes.b64encryptGCM(dbTermination.getPrivatekey().getBytes(), restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key), dbLoadBalancer.getAccountId() + "_" + dbLoadBalancer.getId()));
         } catch (Exception e) {
             String msg = Debug.getEST(e);
             LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", dbLoadBalancer.getId(), msg));
@@ -175,10 +173,10 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
         }
 
         LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%s'", lbId));
-        sslTerminationRepository.setSslTermination(lbId, encryptedTermination);
+        sslTerminationRepository.setSslTermination(lbId, dbTermination);
         LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%s'", lbId));
 
-        zeusSslTermination.setSslTermination(encryptedTermination);
+        zeusSslTermination.setSslTermination(dbTermination);
         if (zeusCrtFile != null) {
             zeusSslTermination.setCertIntermediateCert(zeusCrtFile.getPublic_cert());
         }

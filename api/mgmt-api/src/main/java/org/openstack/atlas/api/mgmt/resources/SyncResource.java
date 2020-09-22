@@ -1,5 +1,9 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
@@ -13,8 +17,12 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.core.Response;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
+import org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.debug.Debug;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.PENDING_UPDATE;
 
@@ -23,6 +31,11 @@ public class SyncResource extends ManagementDependencyProvider {
     private static final String SSLTERMBREAK = "SyncCall will result in this loadbalancer going into error status as the sslTermination is invalid. Consider deleting the ssltermination on this Lb before attempting to sync.";
     private static final ZeusUtils zeusUtils;
     private int loadBalancerId;
+    @Autowired
+    protected RestApiConfiguration restApiConfiguration;
+
+    protected final Log LOG = LogFactory.getLog(SslTerminationServiceImpl.class);
+
 
     static {
         zeusUtils = new ZeusUtils();
@@ -47,6 +60,12 @@ public class SyncResource extends ManagementDependencyProvider {
                 // Verify sslTerm won't break the LB during sync attempt
                 String crt = sslTerm.getCertificate();
                 String key = sslTerm.getPrivatekey();
+                try {
+                    key = Aes.b64decryptGCM_str(key, restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key), lb.getAccountId() + "_" + lb.getId());
+                } catch (Exception e){
+                    // It's possible the database key wasn't encrypted. Let cert utils verify and return appropriate exceptions.
+                    LOG.warn("Private key could not be decrypted, ");
+                }
                 String imd = sslTerm.getIntermediateCertificate();
                 ZeusCrtFile zcf = zeusUtils.buildZeusCrtFileLbassValidation(key, crt, imd);
                 if (zcf.hasFatalErrors()) {
