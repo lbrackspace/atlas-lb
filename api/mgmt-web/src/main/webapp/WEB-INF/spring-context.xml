@@ -108,6 +108,8 @@
         <property name="groupService" ref="groupService"/>
         <property name="blackListService" ref="blackListService"/>
         <property name="hostService" ref="hostService"/>
+        <property name="sslTerminationService" ref="sslTerminationService"/>
+        <property name="certificateMappingService" ref="certificateMappingService"/>
         <property name="rateLimitingService" ref="rateLimitingService"/>
         <property name="notificationService" ref="notificationService"/>
         <property name="allowedDomainsService" ref="allowedDomainsService"/>

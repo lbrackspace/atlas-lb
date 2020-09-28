@@ -220,14 +220,10 @@ public class CertificateMappingServiceImplTest {
         // Update
         @Test
         public void shouldAcceptValidDataForUpdate() throws Exception {
-            dbCertMapping.setPrivateKey(Aes.b64encryptGCM(privateKey.getBytes(), "testCrypto", iv1));
-
-            loadBalancer.getCertificateMappings().add(dbCertMapping);
-
             certificateMappingService.update(loadBalancer);
 
             String dkey = Aes.b64decryptGCM_str(
-                    loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv1);
+                    loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv);
             Assert.assertEquals(dkey, privateKey);
             verify(certificateMappingRepository, times(1)).update(loadBalancer);
         }
@@ -277,9 +273,22 @@ public class CertificateMappingServiceImplTest {
             certificateMappingToBeUpdated.setPrivateKey(null);
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
         }
+        @Test(expected = BadRequestException.class)
+        public void shouldThrowExceptionWhenUnableToReadUsrCrt() throws Exception {
+            certificateMappingToBeUpdated.setCertificate("badCrt");
+            certificateMappingService.validatePrivateKeys(loadBalancer, true);
+        }
+        @Test
+        public void shouldValidateCertificateMappingWithNoIntermediateKey() throws Exception {
+            certificateMappingToBeUpdated.setIntermediateCertificate(null);
+            certificateMappingService.validatePrivateKeys(loadBalancer, true);
+        }
+        @Test
+        public void shouldValidateLBWithMultipleCertMappings() throws Exception {
+            loadBalancer.getCertificateMappings().add(dbCertMapping);
+            certificateMappingService.validatePrivateKeys(loadBalancer, true);
 
-
-
+        }
 
     }
 

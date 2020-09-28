@@ -209,6 +209,12 @@ public class SslTerminationServiceImplTest {
             sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
         }
 
+        @Test(expected = BadRequestException.class)
+        public void shouldThrowErrorWhenUsrCrtIsInvalid() throws Exception {
+            sslTerminationToBeUpdated.setCertificate("badCert");
+            sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
+        }
+
     }
 
 }
