@@ -220,14 +220,10 @@ public class CertificateMappingServiceImplTest {
         // Update
         @Test
         public void shouldAcceptValidDataForUpdate() throws Exception {
-            dbCertMapping.setPrivateKey(Aes.b64encryptGCM(privateKey.getBytes(), "testCrypto", iv1));
-
-            loadBalancer.getCertificateMappings().add(dbCertMapping);
-
             certificateMappingService.update(loadBalancer);
 
             String dkey = Aes.b64decryptGCM_str(
-                    loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv1);
+                    loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv);
             Assert.assertEquals(dkey, privateKey);
             verify(certificateMappingRepository, times(1)).update(loadBalancer);
         }
