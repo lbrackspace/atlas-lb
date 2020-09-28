@@ -56,7 +56,13 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
         }
 
         detectDuplicateHostName(dbCertificateMappings, newMapping);
-        validateCertificateMapping(newMapping, messengerLb.getAccountId(), messengerLb.getId());
+        validateCertificateMapping(newMapping);
+
+
+        if (newMapping.getIntermediateCertificate() != null && newMapping.getIntermediateCertificate().trim().isEmpty()) {
+            newMapping.setIntermediateCertificate(null);
+        }
+        newMapping = certificateMappingRepository.save(newMapping, messengerLb.getId());
         try {
             newMapping.setPrivateKey(Aes.b64encryptGCM(newMapping.getPrivateKey().getBytes(),
                     restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
@@ -66,10 +72,6 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
             String msg = Debug.getEST(e);
             LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", messengerLb.getId(), msg));
             throw new BadRequestException("Error processing certificate mapping private key, please verify formatting...");
-        }
-
-        if (newMapping.getIntermediateCertificate() != null && newMapping.getIntermediateCertificate().trim().isEmpty()) {
-            newMapping.setIntermediateCertificate(null);
         }
 
         setLbToPendingUpdate(messengerLb);
@@ -231,6 +233,13 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
         }
         ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(sslDetails.getPrivateKey(),
                 sslDetails.getCertificate(), sslDetails.getIntermediateCertificate());
+        SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
+    }
+
+    private void validateCertificateMapping(CertificateMapping mapping) throws BadRequestException {
+        SslDetails sslDetails = new SslDetails((mapping.getPrivateKey()), mapping.getCertificate(), mapping.getIntermediateCertificate());
+        sslDetails = SslDetails.sanitize((sslDetails));
+        ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(sslDetails.getPrivateKey(), sslDetails.getCertificate(), sslDetails.getIntermediateCertificate());
         SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
     }
 

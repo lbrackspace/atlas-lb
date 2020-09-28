@@ -7,9 +7,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+import org.mockito.internal.InOrderImpl;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
@@ -77,6 +76,7 @@ public class CertificateMappingServiceImplTest {
         String encryptedKey;
         String iv;
         String iv1;
+        HashSet<CertificateMapping> certMapSet;
 
         private static KeyPair userKey;
         private static X509CertificateHolder userCrt;
@@ -157,7 +157,7 @@ public class CertificateMappingServiceImplTest {
             certificateMappingToBeUpdated.setPrivateKey(privateKey);
             certificateMappingToBeUpdated.setCertificate(workingUserCrt);
             certificateMappingToBeUpdated.setIntermediateCertificate(workingUserChain);
-            HashSet<CertificateMapping> certMapSet = new HashSet<>();
+            certMapSet = new HashSet<>();
             certMapSet.add(certificateMappingToBeUpdated);
 
             dbCertMapping = new CertificateMapping();
@@ -216,18 +216,30 @@ public class CertificateMappingServiceImplTest {
                     AccountLimitType.CERTIFICATE_MAPPING_LIMIT)).thenReturn(0);
             certificateMappingService.create(loadBalancer);
         }
+        @Test
+        public void shouldSaveCertificateMappingTwice() throws Exception {
+            ArgumentCaptor<CertificateMapping> captor = ArgumentCaptor.forClass(CertificateMapping.class);
+            dbCertMapping.setPrivateKey(privateKey);
+            certificateMappingService.create(loadBalancer);
+            verify(certificateMappingRepository, times(2)).save(captor.capture(), anyInt());
+            List<CertificateMapping> certificateMappings = captor.getAllValues();
+            Assert.assertEquals(certificateMappingToBeUpdated, certificateMappings.get(0));
+            String deCryptedKey = Aes.b64decryptGCM_str(certificateMappings.get(1).getPrivateKey(), "testCrypto", iv);
+            Assert.assertEquals(privateKey, deCryptedKey);
+        }
+        @Test
+        public void shouldPassWithCertMappingIdNullOnCreate() throws Exception {
+            certificateMappingToBeUpdated.setId(null);
+            certificateMappingService.create(loadBalancer);
+        }
 
         // Update
         @Test
         public void shouldAcceptValidDataForUpdate() throws Exception {
-            dbCertMapping.setPrivateKey(Aes.b64encryptGCM(privateKey.getBytes(), "testCrypto", iv1));
-
-            loadBalancer.getCertificateMappings().add(dbCertMapping);
-
             certificateMappingService.update(loadBalancer);
 
             String dkey = Aes.b64decryptGCM_str(
-                    loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv1);
+                    loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv);
             Assert.assertEquals(dkey, privateKey);
             verify(certificateMappingRepository, times(1)).update(loadBalancer);
         }
@@ -277,9 +289,22 @@ public class CertificateMappingServiceImplTest {
             certificateMappingToBeUpdated.setPrivateKey(null);
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
         }
+        @Test(expected = BadRequestException.class)
+        public void shouldThrowExceptionWhenUnableToReadUsrCrt() throws Exception {
+            certificateMappingToBeUpdated.setCertificate("badCrt");
+            certificateMappingService.validatePrivateKeys(loadBalancer, true);
+        }
+        @Test
+        public void shouldValidateCertificateMappingWithNoIntermediateKey() throws Exception {
+            certificateMappingToBeUpdated.setIntermediateCertificate(null);
+            certificateMappingService.validatePrivateKeys(loadBalancer, true);
+        }
+        @Test
+        public void shouldValidateLBWithMultipleCertMappings() throws Exception {
+            loadBalancer.getCertificateMappings().add(dbCertMapping);
+            certificateMappingService.validatePrivateKeys(loadBalancer, true);
 
-
-
+        }
 
     }
 

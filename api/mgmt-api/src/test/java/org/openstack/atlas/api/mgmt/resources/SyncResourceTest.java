@@ -19,6 +19,7 @@ import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.services.impl.CertificateMappingServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
 import org.openstack.atlas.util.ca.exceptions.RsaException;
@@ -66,6 +67,7 @@ public class SyncResourceTest {
          private static String workingUserKey;
          private static String workingUserCrt;
          private static String workingUserChain;
+         private static String iv;
 
          @BeforeClass
          public static void setUpClass() throws RsaException, NotAnX509CertificateException {
@@ -128,6 +130,7 @@ public class SyncResourceTest {
              sslTermination = new SslTermination();
              loadBalancer.setId(123);
              loadBalancer.setAccountId(12345);
+             iv = loadBalancer.getAccountId() + "_" + loadBalancer.getId();
              loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
              sslTermination.setSecurePort(443);
              sslTermination.setPrivatekey(workingUserKey);
@@ -149,16 +152,17 @@ public class SyncResourceTest {
 
         }
         @Test
-         public void syncShouldReturn400() throws Exception {
+        public void syncShouldReturn400() throws Exception {
              loadBalancer.setStatus(LoadBalancerStatus.SUSPENDED);
              Response response = syncResource.sync();
              Assert.assertEquals(400, response.getStatus());
-
-
         }
-
-
-
+        @Test
+        public void syncShouldReturn202WithEncryptedKey() throws Exception {
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
+            Response response = syncResource.sync();
+            Assert.assertEquals(202, response.getStatus());
+        }
 
     }
 
