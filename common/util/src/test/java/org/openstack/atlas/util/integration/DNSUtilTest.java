@@ -1,18 +1,18 @@
 
-package org.openstack.atlas.util.ip;
+package org.openstack.atlas.util.integration;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.openstack.atlas.util.ip.DnsUtil;
 
-import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class DNSUtilTest {
 
     private final String testDomain = "developer.rackspace.com";

@@ -13,6 +13,8 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.helpers.*;
 import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -60,6 +62,8 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
         private Set<AccessList> lists;
         @Mock
         private LoadBalancerEndpointConfiguration config;
+        @Mock
+        private RestApiConfiguration restApiConfiguration;
 
 
         public void initializeVars(String logFormat, LoadBalancerProtocol protocol) throws InsufficientRequestException {
@@ -81,6 +85,8 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
                 rules.add(VTMConstants.XFPORT);
             }
             translator = new VTMResourceTranslator();
+            translator.setRestApiConfiguration(restApiConfiguration);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(VTMTestConstants.ENCRYPTION_KEY);
 
             ConnectionLimit connectionLimit = new ConnectionLimit();
             Set<AccessList> accessListSet = new HashSet<AccessList>();
@@ -375,6 +381,76 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
         }
 
         @Test
+        public void shouldCreateValidVirtualServerWithSSLTerminationEncryptedKey() throws InsufficientRequestException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            String secureName = ZxtmNameBuilder.genSslVSName(lb);
+
+            boolean isVsEnabled = true;
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(VTMTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(VTMTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(VTMTestConstants.ENCRYPTED_SSL_KEY);
+            sslTermination.setTls10Enabled(true);
+            sslTermination.setTls11Enabled(false);
+
+            SslCipherProfile cipherProfile = new SslCipherProfile();
+            cipherProfile.setCiphers(VTMTestConstants.CIPHER_LIST);
+            cipherProfile.setComments("cipherpro1");
+            cipherProfile.setName("datenameid");
+            sslTermination.setCipherProfile(cipherProfile);
+            sslTermination.setCipherList(cipherProfile.getCiphers());
+
+            ZeusCrtFile zeusCertFile = new ZeusCrtFile();
+            zeusCertFile.setPublic_cert(VTMTestConstants.SSL_CERT);
+            zeusCertFile.setPrivate_key(VTMTestConstants.ENCRYPTED_SSL_KEY);
+
+            ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
+            zeusSslTermination.setCertIntermediateCert(VTMTestConstants.SSL_CERT);
+            zeusSslTermination.setSslTermination(sslTermination);
+
+            lb.setSslTermination(zeusSslTermination.getSslTermination());
+
+            VirtualServer createdServer = translator.translateVirtualServerResource(config, secureName, lb);
+            Assert.assertNotNull(createdServer);
+
+            VirtualServerProperties createdProperties = createdServer.getProperties();
+            VirtualServerBasic createdBasic = createdServer.getProperties().getBasic();
+            VirtualServerTcp createdTcp = createdProperties.getTcp();
+            expectedTcp.setProxyClose(isHalfClosed);
+            VirtualServerLog log = createdProperties.getLog();
+            Boolean cacheEnabled = createdProperties.getWebCache().getEnabled();
+            Assert.assertNotNull(log);
+            Assert.assertEquals(logFormat, log.getFormat());
+            Assert.assertTrue(cacheEnabled);
+            Assert.assertEquals(vsName, createdBasic.getPool());
+            Assert.assertTrue(createdBasic.getEnabled());
+            Assert.assertEquals(vsName, createdBasic.getProtectionClass());
+            Assert.assertEquals(expectedTcp, createdTcp);
+            Assert.assertFalse(createdBasic.getListenOnAny());
+            if (lb.isContentCaching()) {
+                rules.add(VTMConstants.CONTENT_CACHING);
+            }
+            Assert.assertEquals(rules.size(), createdBasic.getRequestRules().size());
+
+
+            Assert.assertEquals(VTMTestConstants.LB_SECURE_PORT, (int) createdBasic.getPort());
+            Assert.assertTrue(lb.getProtocol().toString().equalsIgnoreCase(createdBasic.getProtocol().toString()));
+            Assert.assertEquals(isVsEnabled, createdBasic.getEnabled());
+            Assert.assertEquals(vsName, createdBasic.getPool().toString());
+            Assert.assertEquals(true, createdBasic.getSslDecrypt());
+            Assert.assertEquals(VTMTestConstants.CIPHER_LIST, createdServer.getProperties().getSsl().getCipherSuites());
+            Assert.assertEquals(VirtualServerSsl.SupportTls1.ENABLED, createdServer.getProperties().getSsl().getSupportTls1());
+            Assert.assertEquals(VirtualServerSsl.SupportTls11.DISABLED, createdServer.getProperties().getSsl().getSupportTls11());
+            Assert.assertEquals(secureName, createdProperties.getSsl().getServerCertDefault());
+            Assert.assertTrue(createdProperties.getHttp().getAddXForwardedFor());
+            Assert.assertTrue(createdProperties.getHttp().getAddXForwardedProto());
+            Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, createdProperties.getHttp().getLocationRewrite());
+
+        }
+
+        @Test
         public void shouldCreateValidVirtualServerWithSSLTerminationNonHTTP() throws InsufficientRequestException {
             // Verify for that any other potentially allowed non-secure protocols httpHeaders are not set.
 
@@ -558,6 +634,32 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             CertificateMapping cm = new CertificateMapping();
             cm.setId(1);
             cm.setHostName("h1");
+            cm.setPrivateKey(VTMTestConstants.ENCRYPTED_CERT_MAPPING_KEY_1);
+            cm.setCertificate(VTMTestConstants.SSL_CERT);
+            cms.add(cm);
+
+            lb.setCertificateMappings(cms);
+
+            Map<String, Keypair> translatedMappings = translator.translateKeypairMappingsResource(lb, true);
+            Assert.assertNotNull(translatedMappings);
+
+            String cname = lb.getId() + "_" + lb.getAccountId() + "_1";
+
+            Keypair m1 = translatedMappings.get(cname);
+            Assert.assertNotNull(m1);
+            Assert.assertEquals(VTMTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
+            Assert.assertEquals(VTMTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
+        }
+
+        @Test
+        public void shouldUnencryptedTranslateKeyPairCertMappings() throws InsufficientRequestException {
+            // This case should only ever hit if database has yet to be updated
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            CertificateMapping cm = new CertificateMapping();
+            cm.setId(1);
+            cm.setHostName("h1");
             cm.setPrivateKey(VTMTestConstants.SSL_KEY);
             cm.setCertificate(VTMTestConstants.SSL_CERT);
             cms.add(cm);
@@ -573,7 +675,24 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertNotNull(m1);
             Assert.assertEquals(VTMTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
             Assert.assertEquals(VTMTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
+        }
 
+        @Test(expected = InsufficientRequestException.class)
+        public void shouldFailToDecryptKeyForTranslateKeyPair() throws InsufficientRequestException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("WrongKey");
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            CertificateMapping cm = new CertificateMapping();
+            cm.setId(1);
+            cm.setHostName("h1");
+            cm.setPrivateKey(VTMTestConstants.ENCRYPTED_SSL_KEY);
+            cm.setCertificate(VTMTestConstants.SSL_CERT);
+            cms.add(cm);
+
+            lb.setCertificateMappings(cms);
+
+            translator.translateKeypairMappingsResource(lb, true);
         }
 
         @Test
@@ -590,7 +709,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             CertificateMapping cm2 = new CertificateMapping();
             cm2.setId(2);
             cm2.setHostName("h2");
-            cm2.setPrivateKey(VTMTestConstants.SSL_KEY);
+            cm2.setPrivateKey(VTMTestConstants.ENCRYPTED_CERT_MAPPING_KEY_2);
             cm2.setCertificate(VTMTestConstants.SSL_CERT);
             cms.add(cm);
             cms.add(cm2);

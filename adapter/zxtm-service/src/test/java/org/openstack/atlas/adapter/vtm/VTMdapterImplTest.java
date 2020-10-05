@@ -15,6 +15,8 @@ import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.VTMAdapterImplTestHelper;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.*;
@@ -69,6 +71,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
+        private RestApiConfiguration restApiConfiguration;
+        @Mock
         private VTMRestClient client;
         @Spy
         private VTMadapterImpl adapterSpy = new VTMadapterImpl();
@@ -84,7 +88,9 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
+            resourceTranslator.setRestApiConfiguration(restApiConfiguration);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadVTMRestClient(config)).thenReturn(client);
@@ -201,6 +207,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
+        private RestApiConfiguration restApiConfiguration;
+        @Mock
         private VTMRestClient client;
         @Spy
         private VTMadapterImpl adapterSpy = new VTMadapterImpl();
@@ -214,7 +222,9 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
+            resourceTranslator.setRestApiConfiguration(restApiConfiguration);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
 
             PowerMockito.mockStatic(TrafficScriptHelper.class);
             when(adapterSpy.getResources()).thenReturn(resources);
@@ -268,6 +278,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
+        private RestApiConfiguration restApiConfiguration;
+        @Mock
         private VTMRestClient client;
         @Spy
         private VTMadapterImpl adapterSpy = new VTMadapterImpl();
@@ -281,7 +293,9 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
+            resourceTranslator.setRestApiConfiguration(restApiConfiguration);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadVTMRestClient(config)).thenReturn(client);
@@ -708,6 +722,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
+        private RestApiConfiguration restApiConfiguration;
+        @Mock
         private VTMRestClient client;
         @Spy
         private VTMadapterImpl adapterSpy = new VTMadapterImpl();
@@ -723,7 +739,9 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
+            resourceTranslator.setRestApiConfiguration(restApiConfiguration);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadVTMRestClient(config)).thenReturn(client);
@@ -952,6 +970,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
+        private RestApiConfiguration restApiConfiguration;
+        @Mock
         private VTMRestClient client;
         @Spy
         private VTMadapterImpl adapterSpy = new VTMadapterImpl();
@@ -982,12 +1002,15 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
+            resourceTranslator.setRestApiConfiguration(restApiConfiguration);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
+            PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
 
             zeusUtils = spy(new ZeusUtils());
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadVTMRestClient(config)).thenReturn(client);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testKey");
             doNothing().when(resources).updateKeypair(eq(client), anyString(), Matchers.any(Keypair.class));
             doNothing().when(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
             doNothing().when(resources).updateVirtualIps(eq(client), eq(vsName), anyMapOf(String.class, TrafficIp.class));

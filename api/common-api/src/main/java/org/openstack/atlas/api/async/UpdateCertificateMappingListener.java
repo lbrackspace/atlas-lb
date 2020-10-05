@@ -40,9 +40,9 @@ public class UpdateCertificateMappingListener extends BaseListener {
 
         try {
             if (isRestAdapter()) {
-                LOG.debug(String.format("Updating session persistence for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Updating certificate mappings for load balancer '%d' in vTM...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.updateCertificateMapping(dbLoadBalancer, queueCertMapping);
-                LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Successfully updated certificate mappings for load balancer '%d' in vTM...", dbLoadBalancer.getId()));
             } else {
                 LOG.info(String.format("Adding/Updating certificate mapping '%d' for load balancer '%d' in ZXTM...", queueCertMapping.getId(), dbLoadBalancer.getId()));
                 CertificateMapping dbCertMapping = certificateMappingService.getByIdAndLoadBalancerId(queueCertMapping.getId(), dbLoadBalancer.getId());

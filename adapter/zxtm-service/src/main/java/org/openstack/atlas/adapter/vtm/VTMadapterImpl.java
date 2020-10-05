@@ -14,6 +14,7 @@ import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
 import org.openstack.atlas.adapter.vtm.VTMAdapterUtils.VSType;
 import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.*;
@@ -40,6 +41,7 @@ import org.rackspace.vtm.client.virtualserver.VirtualServer;
 import org.rackspace.vtm.client.virtualserver.VirtualServerHttp;
 import org.rackspace.vtm.client.virtualserver.VirtualServerServerCertHostMapping;
 import org.rackspace.vtm.client.virtualserver.VirtualServerSsl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -54,6 +56,9 @@ import java.util.*;
 public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
     public static Log LOG = LogFactory.getLog(VTMadapterImpl.class.getName());
     private VTMAdapterResources resources;
+
+    @Autowired
+    RestApiConfiguration restApiConfiguration;
 
     protected static final ZeusUtils zeusUtil;
     static {
@@ -74,7 +79,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
             throws InsufficientRequestException, StmRollBackException {
         VTMRestClient client = getResources().loadVTMRestClient(config);
         String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
-        VTMResourceTranslator rt = VTMResourceTranslator.getNewResourceTranslator();
+        VTMResourceTranslator rt = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
 
         Map<VTMAdapterUtils.VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
@@ -122,7 +127,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
             throws InsufficientRequestException, StmRollBackException {
         VTMRestClient client = getResources().loadVTMRestClient(config);
         String virtualServerName = ZxtmNameBuilder.genVSName(loadBalancer);
-        VTMResourceTranslator rt = VTMResourceTranslator.getNewResourceTranslator();
+        VTMResourceTranslator rt = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
 
         Map<VSType, String> vsNames = VTMAdapterUtils.getVSNamesForLB(loadBalancer);
 
@@ -302,7 +307,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
     @Override
     public void updateVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException {
         VTMRestClient client = getResources().loadVTMRestClient(config);
-        VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator();
+        VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
         LOG.debug(String.format("Updating virtual ips for virtual server %s", vsName));
@@ -317,7 +322,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
     @Override
     public void deleteVirtualIps(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer, List<Integer> vipIds) throws InsufficientRequestException, StmRollBackException {
         VTMRestClient client = getResources().loadVTMRestClient(config);
-        VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator();
+        VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
         translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
@@ -415,7 +420,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
             throws InsufficientRequestException, StmRollBackException {
 
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator();
+        VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
         VTMRestClient client = getResources().loadVTMRestClient(config);
 
         translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
@@ -562,7 +567,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         VTMRestClient client = getResources().loadVTMRestClient(config);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
-        VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator();
+        VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
         translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
         VirtualServer createdServer = translator.getcVServer();
         if (loadBalancer.isSecureOnly()) {
@@ -687,28 +692,17 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
     public void updateCertificateMappings(LoadBalancerEndpointConfiguration config, LoadBalancer loadBalancer) throws InsufficientRequestException, StmRollBackException {
         final String virtualServerNameSecure = ZxtmNameBuilder.genSslVSName(loadBalancer.getId(), loadBalancer.getAccountId());
         VTMRestClient client = getResources().loadVTMRestClient(config);
-        VTMResourceTranslator rt = VTMResourceTranslator.getNewResourceTranslator();
+        VTMResourceTranslator rt = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
 
         try {
 
             // Translate updated secure virtualserver
             VirtualServer sVirtualServer = rt.translateVirtualServerResource(config, virtualServerNameSecure, loadBalancer);
-            // map keypairs
+            // map keypairs and validate cert/key pairs
             rt.translateKeypairMappingsResource(loadBalancer, true);
 
             for (CertificateMapping certMappingToUpdate : loadBalancer.getCertificateMappings()) {
                 String certificateName = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(), loadBalancer.getAccountId(), certMappingToUpdate.getId());
-
-                String userKey = certMappingToUpdate.getPrivateKey();
-                String userCrt = certMappingToUpdate.getCertificate();
-                String imdCrt = certMappingToUpdate.getIntermediateCertificate();
-                ZeusCrtFile zeusCrtFile = zeusUtil.buildZeusCrtFileLbassValidation(userKey, userCrt, imdCrt);
-
-                if (zeusCrtFile.hasFatalErrors()) {
-                    String errors = StringUtils.joinString(zeusCrtFile.getFatalErrorList(), ",");
-                    String msg = String.format("ZeusCrtFile generation failure: %s", errors);
-                    throw new InsufficientRequestException(msg);
-                }
 
                 // Make sure we removed old cert keypair for mapping
                 getResources().deleteKeypair(client, certificateName);
@@ -737,18 +731,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         final String certificateName = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(), loadBalancer.getAccountId(), certMappingToUpdate.getId());
 
         VTMRestClient client = getResources().loadVTMRestClient(config);
-        VTMResourceTranslator rt = VTMResourceTranslator.getNewResourceTranslator();
-
-        String userKey = certMappingToUpdate.getPrivateKey();
-        String userCrt = certMappingToUpdate.getCertificate();
-        String imdCrt = certMappingToUpdate.getIntermediateCertificate();
-        ZeusCrtFile zeusCrtFile = zeusUtil.buildZeusCrtFileLbassValidation(userKey, userCrt, imdCrt);
-
-        if (zeusCrtFile.hasFatalErrors()) {
-            String errors = StringUtils.joinString(zeusCrtFile.getFatalErrorList(), ",");
-            String msg = String.format("ZeusCrtFile generation failure: %s", errors);
-            throw new InsufficientRequestException(msg);
-        }
+        VTMResourceTranslator rt = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
 
         try {
             // Retain current configuration for rollbacks
@@ -757,7 +740,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
 
             // Translate updated secure virtualserver
             VirtualServer sVirtualServer = rt.translateVirtualServerResource(config, virtualServerNameSecure, loadBalancer);
-            // map keypairs
+            // map keypairs and validate cert/key pairs
             rt.translateKeypairMappingsResource(loadBalancer, true);
             // Remove cert keypair for mapping
             getResources().deleteKeypair(client, certificateName);

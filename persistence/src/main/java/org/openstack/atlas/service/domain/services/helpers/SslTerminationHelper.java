@@ -76,6 +76,18 @@ public final class SslTerminationHelper {
         }
     }
 
+    public static String getLoadBalancerIv(LoadBalancer loadBalancer) {
+        return getLoadBalancerIv(loadBalancer.getAccountId(), loadBalancer.getId());
+    }
+
+    public static String getLoadBalancerIv(int accountId, int lbId) {
+        return String.format("%d_%d", accountId, lbId);
+    }
+
+    public static String getCertificateMappingIv(CertificateMapping certificateMapping, int accountId, int lbId) {
+        return String.format("%d_%d_%d", accountId, lbId, certificateMapping.getId());
+    }
+
     /**
      * Copies the fields apiSslTermination from to dbTermination.
      * @param apiSslTermination

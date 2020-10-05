@@ -30,5 +30,4 @@ public final class MossoConfig {
                 CryptoUtilValues.TRANSFORMATION_ALG_AES);
         return cryptoSecretKeySpec;
     }
-
 }
