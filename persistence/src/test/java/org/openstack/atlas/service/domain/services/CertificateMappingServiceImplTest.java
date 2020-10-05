@@ -245,6 +245,17 @@ public class CertificateMappingServiceImplTest {
         }
 
         @Test
+        public void shouldAcceptValidDataWithoutHostnameForUpdate() throws Exception {
+            loadBalancer.getCertificateMappings().iterator().next().setHostName(null);
+            certificateMappingService.update(loadBalancer);
+
+            String dkey = Aes.b64decryptGCM_str(
+                    loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv);
+            Assert.assertEquals(dkey, privateKey);
+            verify(certificateMappingRepository, times(1)).update(loadBalancer);
+        }
+
+        @Test
         public void shouldAcceptValidChangeCertDataForUpdate() throws Exception {
             dbCertMapping.setPrivateKey(encryptedKey);
             LoadBalancer lb = new LoadBalancer();
@@ -256,6 +267,31 @@ public class CertificateMappingServiceImplTest {
             lb.setId(loadBalancer.getId());
             when(loadBalancerRepository.getByIdAndAccountId(anyInt(), anyInt())).thenReturn(lb);
 
+            // Trigger using db supplied key
+            loadBalancer.getCertificateMappings().iterator().next().setPrivateKey(null);
+            certificateMappingService.update(loadBalancer);
+
+            // The key should have been decrypted, validated with updated certs and re-encrypted
+            Assert.assertNotEquals(encryptedKey, lb.getCertificateMappings().iterator().next().getPrivateKey());
+            String dkey = Aes.b64decryptGCM_str(
+                    lb.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv);
+            Assert.assertEquals(privateKey, dkey);
+            verify(certificateMappingRepository, times(1)).update(lb);
+        }
+
+        @Test
+        public void shouldAcceptValidChangeCertDataWithoutHostnameForUpdate() throws Exception {
+            dbCertMapping.setPrivateKey(encryptedKey);
+            LoadBalancer lb = new LoadBalancer();
+            loadBalancer.setId(613);
+            loadBalancer.setAccountId(5806065);
+            dbCertMapping.setId(2);
+            lb.getCertificateMappings().add(dbCertMapping);
+            lb.setAccountId(loadBalancer.getAccountId());
+            lb.setId(loadBalancer.getId());
+            when(loadBalancerRepository.getByIdAndAccountId(anyInt(), anyInt())).thenReturn(lb);
+
+            loadBalancer.getCertificateMappings().iterator().next().setHostName(null);
             // Trigger using db supplied key
             loadBalancer.getCertificateMappings().iterator().next().setPrivateKey(null);
             certificateMappingService.update(loadBalancer);

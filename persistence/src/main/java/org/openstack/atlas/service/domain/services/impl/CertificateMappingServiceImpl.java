@@ -245,7 +245,7 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
 
     private CertificateMapping getMappingWithDuplicateHostName(CertificateMapping newMapping, Collection<CertificateMapping> dbCertificateMappings) {
         for (CertificateMapping dbCertificateMapping : dbCertificateMappings) {
-            if (newMapping.getHostName().equals(dbCertificateMapping.getHostName())) {
+            if (newMapping.getHostName() != null && newMapping.getHostName().equals(dbCertificateMapping.getHostName())) {
                 return dbCertificateMapping;
             }
         }
