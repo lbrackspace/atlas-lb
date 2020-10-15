@@ -77,6 +77,7 @@ public class CertificateMappingServiceImplTest {
         String iv;
         String iv1;
         HashSet<CertificateMapping> certMapSet;
+        ArrayList<CertificateMapping> certMapList;
 
         private static KeyPair userKey;
         private static X509CertificateHolder userCrt;
@@ -166,7 +167,7 @@ public class CertificateMappingServiceImplTest {
             dbCertMapping.setPrivateKey(Aes.b64encryptGCM(privateKey.getBytes(), "testCrypto", iv1));
             dbCertMapping.setCertificate(workingUserCrt);
             dbCertMapping.setIntermediateCertificate(workingUserChain);
-            ArrayList<CertificateMapping> certMapList = new ArrayList<>();
+            certMapList = new ArrayList<>();
             certMapList.add(dbCertMapping);
 
             loadBalancer.setProtocol(LoadBalancerProtocol.HTTP);
@@ -341,6 +342,25 @@ public class CertificateMappingServiceImplTest {
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
 
         }
+        // Delete
+        @Test
+        public void shouldLoopThroughCertMappingForLB() throws Exception {
+            certMapList.add(certificateMappingToBeUpdated);
+            when(certificateMappingService.getAllForLoadBalancerId(loadBalancer.getId())).thenReturn(certMapList);
+            certificateMappingService.deleteAllCertMappingForLB(loadBalancer.getId());
+            verify(certificateMappingRepository, times(1)).delete(loadBalancer, dbCertMapping.getId());
+            verify(certificateMappingRepository, times(1)).delete(loadBalancer, certificateMappingToBeUpdated.getId());
+        }
+
+        @Test
+        public void shouldNotLoopThroughEmptyCertMappingListForLB()throws Exception{
+            certMapList = new ArrayList<>();
+            when(certificateMappingService.getAllForLoadBalancerId(loadBalancer.getId())).thenReturn(certMapList);
+            certificateMappingService.deleteAllCertMappingForLB(loadBalancer.getId());
+            verify(certificateMappingRepository, times(0)).delete(any(LoadBalancer.class), anyInt());
+        }
+
+
 
     }
 

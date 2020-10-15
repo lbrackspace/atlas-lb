@@ -14,6 +14,8 @@ public interface CertificateMappingService {
 
     CertificateMapping getByIdAndLoadBalancerId(Integer id, Integer lbId) throws EntityNotFoundException;
 
+    void deleteAllCertMappingForLB(Integer lbId) throws EntityNotFoundException;
+
     void update(LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, BadRequestException, ImmutableEntityException;
 
     void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys) throws BadRequestException;

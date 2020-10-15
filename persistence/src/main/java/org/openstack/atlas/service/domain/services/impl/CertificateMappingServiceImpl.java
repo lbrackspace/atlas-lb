@@ -91,6 +91,13 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
     }
 
     @Override
+    public void deleteAllCertMappingForLB(Integer lbId) throws EntityNotFoundException {
+        for(CertificateMapping certificateMapping : getAllForLoadBalancerId(lbId)){
+            deleteByIdAndLoadBalancerId(certificateMapping.getId(), lbId);
+        }
+    }
+
+    @Override
     @Transactional
     public void update(LoadBalancer messengerLb) throws EntityNotFoundException, UnprocessableEntityException, BadRequestException, ImmutableEntityException {
         ensureSslTerminationConfigIsAvailable(messengerLb.getId());
