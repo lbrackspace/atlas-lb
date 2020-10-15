@@ -16,11 +16,9 @@ import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.services.LoadBalancerService;
-import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
-import org.openstack.atlas.service.domain.services.NotificationService;
-import org.openstack.atlas.service.domain.services.SslTerminationService;
+import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
+import org.openstack.atlas.service.domain.services.impl.CertificateMappingServiceImpl;
 import org.openstack.atlas.usagerefactor.SnmpUsage;
 import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 
@@ -56,18 +54,38 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
     private SslTerminationService sslTerminationService;
     @Mock
     private RestApiConfiguration config;
+    @Mock
+    private CertificateMappingServiceImpl certificateMappingService;
 
     private DeleteLoadBalancerListener deleteLoadBalancerListener;
+    CertificateMapping certificateMapping;
+    CertificateMapping certificateMapping2;
+    HashSet<CertificateMapping> certificateMappings;
+    ArrayList<CertificateMapping> certificateMappingArrayList;
 
     @Before
     public void standUp() {
         MockitoAnnotations.initMocks(this);
         setupIvars();
         usages = new ArrayList<SnmpUsage>();
+        certificateMappings = new HashSet<>();
+        certificateMappingArrayList = new ArrayList<>();
 
         LOAD_BALANCER_ID = lb.getId();
         ACCOUNT_ID = lb.getAccountId();
         lb.setUserName(USERNAME);
+        certificateMapping = new CertificateMapping();
+        certificateMapping2 = new CertificateMapping();
+        certificateMapping2.setId(321);
+        certificateMapping2.setPrivateKey("testPK2");
+        certificateMapping2.setCertificate("testCert2");
+        certificateMapping.setId(123);
+        certificateMapping.setPrivateKey("testPK");
+        certificateMapping.setCertificate("testCert");
+        certificateMappings.add(certificateMapping);
+        certificateMappingArrayList.add(certificateMapping);
+        certificateMappings.add(certificateMapping2);
+        certificateMappingArrayList.add(certificateMapping2);
 
         deleteLoadBalancerListener = new DeleteLoadBalancerListener();
         deleteLoadBalancerListener.setLoadBalancerService(loadBalancerService);
@@ -76,6 +94,7 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         deleteLoadBalancerListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         deleteLoadBalancerListener.setUsageEventCollection(usageEventCollection);
         deleteLoadBalancerListener.setSslTerminationService(sslTerminationService);
+        deleteLoadBalancerListener.setCertificateMappingService(certificateMappingService);
         deleteLoadBalancerListener.setConfiguration(config);
     }
 
@@ -178,6 +197,24 @@ public class DeleteLoadBalancerListenerTest extends STMTestBase {
         verify(sslTerminationService).deleteSslTermination(LOAD_BALANCER_ID, ACCOUNT_ID);
         verify(loadBalancerService).pseudoDelete(lb);
         verify(loadBalancerStatusHistoryService).save(ACCOUNT_ID, LOAD_BALANCER_ID, LoadBalancerStatus.DELETED);
+        verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_LOADBALANCER), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
+    }
+
+    @Test
+    public void testDeleteValidLoadBalancerWithCertMapping() throws Exception {
+        lb.setSslTermination(new SslTermination());
+        lb.setCertificateMappings(certificateMappings);
+        when(objectMessage.getObject()).thenReturn(lb);
+        when(loadBalancerService.getWithUserPages(LOAD_BALANCER_ID, ACCOUNT_ID)).thenReturn(lb);
+        when(usageEventCollection.getUsage(lb)).thenReturn(usages);
+        when(loadBalancerService.pseudoDelete(lb)).thenReturn(lb);
+        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
+        when(certificateMappingService.getAllForLoadBalancerId(anyInt())).thenReturn(certificateMappingArrayList);
+
+        deleteLoadBalancerListener.doOnMessage(objectMessage);
+
+        verify(certificateMappingService, times(1)).deleteByIdAndLoadBalancerId(certificateMapping.getId(), lb.getId());
+        verify(certificateMappingService, times(1)).deleteByIdAndLoadBalancerId(certificateMapping2.getId(), lb.getId());
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_LOADBALANCER), eq(CategoryType.DELETE), eq(EventSeverity.INFO));
     }
 

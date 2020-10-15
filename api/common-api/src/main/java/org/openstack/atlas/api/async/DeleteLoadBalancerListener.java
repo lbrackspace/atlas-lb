@@ -97,6 +97,16 @@ public class DeleteLoadBalancerListener extends BaseListener {
         dbLoadBalancer.setLoadBalancerJoinVipSet(allVips);
         dbLoadBalancer.setLoadBalancerJoinVip6Set(allVips6);
 
+        // Ensure Certificate Mapping References are removed from the database
+        if(!dbLoadBalancer.getCertificateMappings().isEmpty()){
+            LOG.debug(String.format("Deleting load balancer '%d'  certificate mapping in database...", dbLoadBalancer.getId()));
+            for(CertificateMapping certificateMapping : certificateMappingService.getAllForLoadBalancerId(dbLoadBalancer.getId())){
+                certificateMappingService.deleteByIdAndLoadBalancerId(certificateMapping.getId(), dbLoadBalancer.getId());
+            }
+            LOG.debug(String.format("Successfully deleted load balancer certificate mapping '%d' in database.", dbLoadBalancer.getId()));
+        }
+
+
         // Ensure SSLTermination references are removed from the database
         if (dbLoadBalancer.hasSsl()) {
             LOG.debug(String.format("Deleting load balancer '%d' ssl termination in database...", dbLoadBalancer.getId()));
