@@ -3,17 +3,15 @@ package org.openstack.atlas.service.domain.services;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public interface SslTerminationService {
 
     public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination, boolean isSync) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException;
 
-    public void validatePrivateKey(int lbId, int accountId, org.openstack.atlas.service.domain.entities.SslTermination sslTermination, boolean saveKey) throws BadRequestException, EntityNotFoundException;
+    public ZeusCrtFile validatePrivateKey(int lbId, int accountId, org.openstack.atlas.service.domain.entities.SslTermination sslTermination, boolean saveKey) throws BadRequestException, EntityNotFoundException, UnprocessableEntityException;
 
     public boolean deleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
 

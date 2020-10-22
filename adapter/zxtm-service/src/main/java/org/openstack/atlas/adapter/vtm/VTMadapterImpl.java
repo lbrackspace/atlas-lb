@@ -1,8 +1,5 @@
 package org.openstack.atlas.adapter.vtm;
 
-import com.zxtm.service.client.*;
-import org.apache.axis.AxisFault;
-import org.apache.axis.types.UnsignedInt;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
@@ -13,15 +10,13 @@ import org.openstack.atlas.adapter.helpers.IpHelper;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
 import org.openstack.atlas.adapter.vtm.VTMAdapterUtils.VSType;
-import org.openstack.atlas.adapter.zxtm.ZxtmServiceStubs;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
-import org.openstack.atlas.util.ca.StringUtils;
-import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.openstack.atlas.util.debug.Debug;
 import org.rackspace.vtm.client.VTMRestClient;
@@ -36,14 +31,11 @@ import org.rackspace.vtm.client.status.Properties;
 import org.rackspace.vtm.client.tm.TrafficManager;
 import org.rackspace.vtm.client.tm.Trafficip;
 import org.rackspace.vtm.client.traffic.ip.TrafficIp;
-import org.rackspace.vtm.client.traffic.ip.TrafficIpIpMapping;
 import org.rackspace.vtm.client.virtualserver.VirtualServer;
-import org.rackspace.vtm.client.virtualserver.VirtualServerHttp;
 import org.rackspace.vtm.client.virtualserver.VirtualServerServerCertHostMapping;
 import org.rackspace.vtm.client.virtualserver.VirtualServerSsl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
@@ -309,7 +301,15 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         VTMRestClient client = getResources().loadVTMRestClient(config);
         VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+        try {
+            translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+        } catch (UnprocessableEntityException e) {
+            String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
+            LOG.error(e);
+            LOG.error(em);
+            client.destroy();
+            throw new StmRollBackException(em, e);
+        }
         LOG.debug(String.format("Updating virtual ips for virtual server %s", vsName));
         getResources().updateVirtualIps(client, vsName, translator.getcTrafficIpGroups());
         LOG.debug(String.format("Updating virtual server %s for virtual ip configuration update", vsName));
@@ -325,7 +325,14 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
 
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
+        try {
+            translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
+        } catch (UnprocessableEntityException e) {
+            String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
+            LOG.error(e);
+            LOG.error(em);
+            throw new StmRollBackException(em, e);
+        }
         Map<String, TrafficIp> curTigMap = translator.getcTrafficIpGroups();
 
         Set<LoadBalancerJoinVip> jvipsToRemove = new HashSet<LoadBalancerJoinVip>();
@@ -348,7 +355,14 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
 
         if (!jvipsToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVipSet().removeAll(jvipsToRemove);
         if (!jvips6ToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVip6Set().removeAll(jvips6ToRemove);
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
+        try {
+            translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
+        } catch (UnprocessableEntityException e) {
+            String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
+            LOG.error(e);
+            LOG.error(em);
+            throw new StmRollBackException(em, e);
+        }
         // After translating, we need to add the vips back into the LB object so that the Listener can properly remove them from the DB
         if (!jvipsToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVipSet().addAll(jvipsToRemove);
         if (!jvips6ToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVip6Set().addAll(jvips6ToRemove);
@@ -423,7 +437,14 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
         VTMRestClient client = getResources().loadVTMRestClient(config);
 
-        translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+        try {
+            translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
+        } catch (UnprocessableEntityException e) {
+            String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
+            LOG.error(e);
+            LOG.error(em);
+            throw new StmRollBackException(em, e);
+        }
         getResources().updateHealthMonitor(client, vsName, translator.getcMonitor());
         getResources().updatePool(client, vsName, translator.getcPool());
         client.destroy();
@@ -568,7 +589,14 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         String sslVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
         VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
-        translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
+        try {
+            translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
+        } catch (UnprocessableEntityException e) {
+            String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
+            LOG.error(e);
+            LOG.error(em);
+            throw new StmRollBackException(em, e);
+        }
         VirtualServer createdServer = translator.getcVServer();
         if (loadBalancer.isSecureOnly()) {
             try {

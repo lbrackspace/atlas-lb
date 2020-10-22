@@ -82,6 +82,7 @@ public class SslTerminationResourceTest {
 
         @InjectMocks
         SslTerminationResource sslTermResource;
+        private String iv;
 
         @BeforeClass
         public static void setUpClass() throws RsaException, NotAnX509CertificateException {
@@ -150,6 +151,9 @@ public class SslTerminationResourceTest {
             sslTermResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
             sslTermResource.setRestApiConfiguration(restApiConfiguration);
 
+            iv = String.format("%d_%d", sslTermResource.getAccountId(), sslTermResource.getId());
+
+
         }
 
         @Test
@@ -189,6 +193,8 @@ public class SslTerminationResourceTest {
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.ssl_termination);
             doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.ssl_termination);
             doReturn("REST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
+            doReturn("nZr4u7x!A%D*F-Ja").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+
             SslTermination sslTerm = new SslTermination();
             sslTerm.setPrivatekey(null);
             sslTerm.setCertificate(null);
@@ -213,13 +219,17 @@ public class SslTerminationResourceTest {
         }
 
         @Test
-        public void shouldInalidateUserSuppliedDataWithBrokenKey() throws Exception {
+        public void shouldInvalidateUserSuppliedBrokenKey() throws Exception {
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.ssl_termination);
             doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.ssl_termination);
             doReturn("REST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
+            doReturn("testCrypto2").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+
             SslTermination sslTerm = new SslTermination();
-            sslTerm.setPrivatekey(null);
+            String encryptedKey = Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto2", iv);
+
+            sslTerm.setPrivatekey(encryptedKey);
             sslTerm.setCertificate(null);
             sslTerm.setIntermediateCertificate(null);
 
@@ -247,6 +257,8 @@ public class SslTerminationResourceTest {
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.ssl_termination);
             doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.ssl_termination);
             doReturn("REST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
+            doReturn("nZr4u7x!A%D*F-Ja").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+
             SslTermination sslTerm = new SslTermination();
             sslTerm.setPrivatekey(null);
             sslTerm.setCertificate(null);
@@ -271,45 +283,13 @@ public class SslTerminationResourceTest {
         }
 
         @Test
-        public void shouldFailToDecryptValidDatabaseKey() throws Exception {
-            // If the database key fails to decrypt it most likely is because it was never encrypted and will
-            // be encrypted by the service layer prior to storing or updating it.
+        public void shouldFailToDecryptUnencryptedDatabaseKeyAndInvalidateBrokenCert() throws Exception {
+            // All keys in database should have been encrypted, if we fail it should bubble up as a bigger problem to resolve...
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
             doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.ssl_termination);
             doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.ssl_termination);
             doReturn("REST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
-            doReturn("nZr4u7x!A%D*F-Ja").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.term_crypto_key);
-
-            SslTermination sslTerm = new SslTermination();
-            sslTerm.setPrivatekey(workingUserKey);
-            sslTerm.setCertificate(workingUserCrt);
-            sslTerm.setIntermediateCertificate(workingUserChain);
-
-            when(sslTerminationService.getSslTermination(ArgumentMatchers.<Integer>any(),
-                    ArgumentMatchers.<Integer>any())).thenReturn(sslTerm);
-
-            org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination rsslTerm = new org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination();
-            rsslTerm.setSecurePort(23);
-
-            ZeusSslTermination rzTerm = new ZeusSslTermination();
-            rzTerm.setSslTermination(sslTerm);
-            when(sslTerminationService.updateSslTermination(sslTermResource.getLoadBalancerId(),
-                    sslTermResource.getAccountId(), rsslTerm, false)).thenReturn(rzTerm);
-
-            response = sslTermResource.createSsl(rsslTerm);
-            // since key just wasn't encrypted we should pass validation and get 202 response
-            org.junit.Assert.assertEquals(202, response.getStatus());
-        }
-
-        @Test
-        public void shouldFailToDecryptValidDatabaseKeyAndInvalidateBrokenCert() throws Exception {
-            // If the database key fails to decrypt it most likely is because it was never encrypted and will
-            // be encrypted by the service layer prior to storing or updating it.
-            doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
-            doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.ssl_termination);
-            doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.ssl_termination);
-            doReturn("REST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
-            doReturn("nZr4u7x!A%D*F-Ja").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+            doReturn("testCrypto2").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.term_crypto_key);
 
             SslTermination sslTerm = new SslTermination();
             sslTerm.setPrivatekey(workingUserKey);
@@ -328,8 +308,7 @@ public class SslTerminationResourceTest {
                     sslTermResource.getAccountId(), rsslTerm, false)).thenReturn(rzTerm);
 
             response = sslTermResource.createSsl(rsslTerm);
-            // since key just wasn't encrypted we should pass validation and get 202 response
-            org.junit.Assert.assertEquals(400, response.getStatus());
+            org.junit.Assert.assertEquals(500, response.getStatus());
         }
 
         @Test
@@ -358,7 +337,7 @@ public class SslTerminationResourceTest {
                     sslTermResource.getAccountId(), rsslTerm, false)).thenReturn(rzTerm);
 
             response = sslTermResource.createSsl(rsslTerm);
-            org.junit.Assert.assertEquals(400, response.getStatus());
+            org.junit.Assert.assertEquals(500, response.getStatus());
         }
 
         @Test

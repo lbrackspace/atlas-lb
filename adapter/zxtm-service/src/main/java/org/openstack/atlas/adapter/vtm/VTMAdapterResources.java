@@ -8,6 +8,7 @@ import org.openstack.atlas.adapter.exceptions.StmRollBackException;
 import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.UserPages;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.rackspace.vtm.client.VTMRestClient;
 import org.rackspace.vtm.client.bandwidth.Bandwidth;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
@@ -580,6 +581,12 @@ public class VTMAdapterResources {
             LOG.error(String.format("Failed to add rate limit for virtual server %s -- REST Client exception", vsName));
             client.destroy();
             throw new StmRollBackException("Add rate limit request canceled.", e);
+        } catch (UnprocessableEntityException e) {
+            String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
+            LOG.error(e);
+            LOG.error(em);
+            client.destroy();
+            throw new StmRollBackException(em, e);
         }
         client.destroy();
     }
@@ -605,6 +612,12 @@ public class VTMAdapterResources {
             LOG.error(String.format("Failed to update rate limit for virtual server %s -- REST Client exception", vsName));
             client.destroy();
             throw new StmRollBackException("Update rate limit request canceled.", e);
+        } catch (UnprocessableEntityException e) {
+            String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
+            LOG.error(e);
+            LOG.error(em);
+            client.destroy();
+            throw new StmRollBackException(em, e);
         }
         client.destroy();
     }
@@ -625,7 +638,15 @@ public class VTMAdapterResources {
         // TODO: Verify if this is still required, also verify logic and maybe split behavior if delete call isn't just
         // a delete...
         VTMResourceTranslator rt = new VTMResourceTranslator();
-        rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
+        try {
+            rt.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
+        } catch (UnprocessableEntityException e) {
+            String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
+            LOG.error(e);
+            LOG.error(em);
+            client.destroy();
+            throw new StmRollBackException(em, e);
+        }
         VirtualServer virtualServer = rt.getcVServer();
         VirtualServerProperties properties = virtualServer.getProperties();
         VirtualServerBasic basic = properties.getBasic();

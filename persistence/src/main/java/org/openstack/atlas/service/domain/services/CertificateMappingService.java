@@ -18,7 +18,7 @@ public interface CertificateMappingService {
 
     void update(LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, BadRequestException, ImmutableEntityException;
 
-    void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys) throws BadRequestException;
+    void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys) throws BadRequestException, UnprocessableEntityException;
 
     void prepareForDelete(LoadBalancer lb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
 

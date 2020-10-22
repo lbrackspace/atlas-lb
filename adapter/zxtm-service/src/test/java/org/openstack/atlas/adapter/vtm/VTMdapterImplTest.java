@@ -1,9 +1,7 @@
 package org.openstack.atlas.adapter.vtm;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
@@ -19,10 +17,17 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.CertUtils;
 import org.openstack.atlas.util.ca.PemUtils;
+import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
+import org.openstack.atlas.util.ca.exceptions.RsaException;
+import org.openstack.atlas.util.ca.util.StaticHelpers;
+import org.openstack.atlas.util.ca.util.X509ChainEntry;
+import org.openstack.atlas.util.ca.util.X509PathBuilder;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
 import org.powermock.api.mockito.PowerMockito;
@@ -49,6 +54,7 @@ import org.rackspace.vtm.client.VTMRestClient;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.security.KeyPair;
 import java.util.*;
 
 import static org.mockito.Mockito.*;
@@ -57,7 +63,7 @@ import static org.mockito.Mockito.*;
 public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*", "javax.crypto.*"})
     @PrepareForTest({VTMResourceTranslator.class})
     public static class WhenModifyingLoadbalancerResources {
         private String vsName;
@@ -86,9 +92,15 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
             redirectVsName = ZxtmNameBuilder.genRedirectVSName(loadBalancer);
 
+            loadBalancer.getSslTermination().setPrivatekey(
+                    Aes.b64encryptGCM(loadBalancer.getSslTermination().getPrivatekey().getBytes(),
+                            "testKey", loadBalancer.getAccountId() + "_" + loadBalancer.getId()));
+
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
             resourceTranslator.setRestApiConfiguration(restApiConfiguration);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testKey");
+
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
 
@@ -195,7 +207,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*", "javax.crypto.*"})
     @PrepareForTest({VTMResourceTranslator.class, TrafficScriptHelper.class})
     public static class WhenModifyingVirtualIpResources {
         private String vsName;
@@ -219,10 +231,15 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             loadBalancer = generateLoadBalancer();
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+            loadBalancer.getSslTermination().setPrivatekey(
+                    Aes.b64encryptGCM(loadBalancer.getSslTermination().getPrivatekey().getBytes(),
+                            "testKey", loadBalancer.getAccountId() + "_" + loadBalancer.getId()));
 
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
             resourceTranslator.setRestApiConfiguration(restApiConfiguration);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testKey");
+
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
 
@@ -266,7 +283,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*", "javax.crypto.*"})
     @PrepareForTest(VTMResourceTranslator.class)
     public static class WhenModifyingHealthMonitorResources {
         private String vsName;
@@ -290,10 +307,15 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             loadBalancer = generateLoadBalancer();
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
+            loadBalancer.getSslTermination().setPrivatekey(
+                    Aes.b64encryptGCM(loadBalancer.getSslTermination().getPrivatekey().getBytes(),
+                            "testKey", loadBalancer.getAccountId() + "_" + loadBalancer.getId()));
 
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
             resourceTranslator.setRestApiConfiguration(restApiConfiguration);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testKey");
+
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
 
@@ -708,7 +730,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*", "javax.crypto.*"})
     @PrepareForTest({VTMResourceTranslator.class})
     public static class WhenModifyingSSLResources {
         private String vsName;
@@ -737,11 +759,17 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
             sslTermination = new ZeusSslTermination();
 
+            loadBalancer.getSslTermination().setPrivatekey(
+                    Aes.b64encryptGCM(loadBalancer.getSslTermination().getPrivatekey().getBytes(),
+                            "testKey", loadBalancer.getAccountId() + "_" + loadBalancer.getId()));
+
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
             resourceTranslator.setRestApiConfiguration(restApiConfiguration);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
+
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testKey");
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadVTMRestClient(config)).thenReturn(client);
@@ -775,6 +803,48 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             Assert.assertTrue(resourceTranslator.getcVServer().getProperties().getHttp().getAddXForwardedFor());
             Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, resourceTranslator.getcVServer().getProperties().getHttp().getLocationRewrite());
             verify(client).destroy();
+        }
+
+        @Test
+        public void testUpdateSslTerminationRevisedEncryptKey() throws Exception {
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testKeyBroken");
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testKey");
+            adapterSpy.updateSslTermination(config, loadBalancer, sslTermination);
+
+            verify(resources).loadVTMRestClient(config);
+            verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
+            verify(resourceTranslator).translateKeypairResource(loadBalancer, true);
+            verify(resources).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
+            verify(resourceTranslator).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);
+            verify(resources).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
+            verify(resources).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            // Ensure XFP is set appropriately
+            Assert.assertTrue(resourceTranslator.getcVServer().getProperties().getHttp().getAddXForwardedProto());
+            Assert.assertTrue(resourceTranslator.getcVServer().getProperties().getHttp().getAddXForwardedFor());
+            Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, resourceTranslator.getcVServer().getProperties().getHttp().getLocationRewrite());
+            verify(client).destroy();
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testUpdateSslTerminationRevisedEncryptKeyNull() throws Exception {
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testKeyBroken");
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn(null);
+            adapterSpy.updateSslTermination(config, loadBalancer, sslTermination);
+
+            verify(resources).loadVTMRestClient(config);
+            verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
+            verify(resourceTranslator).translateKeypairResource(loadBalancer, true);
+            verify(resources, times(0)).updateKeypair(eq(client), eq(secureVsName), Matchers.any(Keypair.class));
+            verify(resourceTranslator, times(0)).translateLoadBalancerResource(config, secureVsName, loadBalancer, loadBalancer);
+            verify(resources, times(0)).updateProtection(eq(client), eq(vsName), Matchers.any(Protection.class));
+            verify(resources, times(0)).updateVirtualIps(eq(client), eq(secureVsName), anyMapOf(String.class, TrafficIp.class));
+            verify(resources, times(0)).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            // Ensure XFP is set appropriately
+            Assert.assertTrue(resourceTranslator.getcVServer().getProperties().getHttp().getAddXForwardedProto());
+            Assert.assertTrue(resourceTranslator.getcVServer().getProperties().getHttp().getAddXForwardedFor());
+            Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, resourceTranslator.getcVServer().getProperties().getHttp().getLocationRewrite());
+            verify(client, times(1)).destroy();
         }
 
         @Test
@@ -952,8 +1022,8 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
     }
 
     @RunWith(PowerMockRunner.class)
-    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*"})
-    @PrepareForTest({VTMResourceTranslator.class, ZeusUtils.class, CertUtils.class, PemUtils.class})
+    @PowerMockIgnore({"org.bouncycastle.*", "javax.management.*", "javax.crypto.*"})
+    @PrepareForTest({VTMResourceTranslator.class})
     public static class WhenModifyingCertificateMappingResources {
         private String vsName;
         private String secureVsName;
@@ -961,10 +1031,6 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         private VTMResourceTranslator resourceTranslator;
         private CertificateMapping certificateMapping;
 
-        @Mock
-        private ZeusUtils zeusUtils;
-        @Mock
-        private CertUtils certUtils;
         @Mock
         private VTMAdapterResources resources;
         @Mock
@@ -976,37 +1042,92 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
         @Spy
         private VTMadapterImpl adapterSpy = new VTMadapterImpl();
 
+        String iv;
+        String ivlb;
+
+        private static KeyPair userKey;
+        private static X509CertificateHolder userCrt;
+        private static Set<X509CertificateHolder> imdCrts;
+        private static X509CertificateHolder rootCA;
+        private static final int keySize = 512; // Keeping the key small for testing
+        private static List<X509ChainEntry> chainEntries;
+        // These are for testing pre defined keys and certs
+        private static String workingRootCa;
+        private static String workingUserKey;
+        private static String workingUserCrt;
+        private static String workingUserChain;
+
+        @BeforeClass
+        public static void setUpClass() throws RsaException, NotAnX509CertificateException {
+            List<X509CertificateHolder> orderImds = new ArrayList<X509CertificateHolder>();
+            long now = System.currentTimeMillis();
+            long lastYear = now - (long) 1000 * 24 * 60 * 60 * 365;
+            long nextYear = now + (long) 1000 * 24 * 60 * 60 * 365;
+            Date notBefore = new Date(lastYear);
+            Date notAfter = new Date(nextYear);
+            String wtf = String.format("%s\n%s", StaticHelpers.getDateString(notBefore),
+                    StaticHelpers.getDateString(notAfter));
+            List<String> subjNames = new ArrayList<String>();
+            // Root SubjName
+            subjNames.add("CN=RootCA");
+
+            // Add the middle subjs
+            for (int i = 1; i <= 7; i++) {
+                String fmt = "CN=Intermedite Cert %s";
+                String subjName = String.format(fmt, i);
+                subjNames.add(subjName);
+            }
+
+            // Lastly add the end user subj
+            String subjName = "CN=www.rackexp.org";
+            subjNames.add(subjName);
+            chainEntries = X509PathBuilder.newChain(subjNames, keySize, notBefore, notAfter);
+            int lastIdx = chainEntries.size() - 1;
+            rootCA = chainEntries.get(0).getX509Holder();
+            userCrt = chainEntries.get(lastIdx).getX509Holder();
+            userKey = chainEntries.get(lastIdx).getKey();
+
+            imdCrts = new HashSet<X509CertificateHolder>();
+            for (int i = 1; i < lastIdx; i++) {
+                imdCrts.add(chainEntries.get(i).getX509Holder());
+                orderImds.add(chainEntries.get(i).getX509Holder());
+            }
+
+            workingRootCa = PemUtils.toPemString(rootCA);
+            workingUserCrt = PemUtils.toPemString(userCrt);
+            workingUserKey = PemUtils.toPemString(userKey);
+            Collections.reverse(orderImds);
+            StringBuilder sb = new StringBuilder();
+            for (X509CertificateHolder imd : orderImds) {
+                sb = sb.append(PemUtils.toPemString(imd)).append("\n");
+            }
+            workingUserChain = sb.toString();
+        }
+
         @Before
         public void standUp() throws Exception {
             MockitoAnnotations.initMocks(this);
 
             loadBalancer = generateLoadBalancer();
+            iv = String.format("%d_%d_%d", loadBalancer.getAccountId(), loadBalancer.getId(), 2);
+            ivlb = String.format("%d_%d", loadBalancer.getAccountId(), loadBalancer.getId());
             vsName = ZxtmNameBuilder.genVSName(loadBalancer);
             secureVsName = ZxtmNameBuilder.genSslVSName(loadBalancer);
+            loadBalancer.getSslTermination().setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testKey", ivlb));
+            loadBalancer.getSslTermination().setIntermediateCertificate(workingUserChain);
+            loadBalancer.getSslTermination().setCertificate(workingUserCrt);
             certificateMapping = new CertificateMapping();
-            certificateMapping.setCertificate("thing");
-            certificateMapping.setPrivateKey("thing2");
-            certificateMapping.setIntermediateCertificate("thing3");
+            certificateMapping.setCertificate(workingUserCrt);
+            certificateMapping.setPrivateKey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testKey", iv));
+            certificateMapping.setIntermediateCertificate(workingUserChain);
             certificateMapping.setHostName("thingHost");
             certificateMapping.setId(2);
-
-            ZeusCrtFile zcf = new ZeusCrtFile();
-            zcf.setPrivate_key(certificateMapping.getPrivateKey());
-            zcf.setPublic_cert(certificateMapping.getCertificate() + certificateMapping.getIntermediateCertificate());
-            PowerMockito.mockStatic(PemUtils.class);
-            PowerMockito.mockStatic(CertUtils.class);
-            PowerMockito.mockStatic(ZeusUtils.class);
-            PowerMockito.when(zeusUtils.buildZeusCrtFileLbassValidation(certificateMapping.getPrivateKey(),
-                    certificateMapping.getCertificate(),
-                    certificateMapping.getIntermediateCertificate())).thenReturn(zcf);
 
             resourceTranslator = spy(new VTMResourceTranslator());
             PowerMockito.mockStatic(VTMResourceTranslator.class);
             resourceTranslator.setRestApiConfiguration(restApiConfiguration);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator()).thenReturn(resourceTranslator);
             PowerMockito.when(VTMResourceTranslator.getNewResourceTranslator(any())).thenReturn(resourceTranslator);
-
-            zeusUtils = spy(new ZeusUtils());
 
             when(adapterSpy.getResources()).thenReturn(resources);
             when(resources.loadVTMRestClient(config)).thenReturn(client);
@@ -1029,7 +1150,7 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             VirtualServer vs = new VirtualServer();
             VirtualServerServerCertHostMapping vshm = new VirtualServerServerCertHostMapping();
             vshm.setHost("thingHost1");
-            vshm.setCertificate("cert12");
+            vshm.setCertificate(workingUserCrt);
             List<VirtualServerServerCertHostMapping> vsl = new ArrayList<>();
             vsl.add(vshm);
             VirtualServerProperties vsp = new VirtualServerProperties();
@@ -1051,6 +1172,78 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             verify(resourceTranslator).translateKeypairMappingsResource(loadBalancer, true);
             verify(resources).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
             verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client, times(0)).getVirtualServer(vsName);
+
+            verify(client).destroy();
+        }
+
+        @Test
+        public void testUpdateCertificateMappingNewRevisedEncryptionKey() throws Exception {
+            // This should fail to decrypt first time and then use the _rev key
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testKeyBroken");
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testKey");
+
+            VirtualServer vs = new VirtualServer();
+            VirtualServerServerCertHostMapping vshm = new VirtualServerServerCertHostMapping();
+            vshm.setHost("thingHost1");
+            vshm.setCertificate(workingUserCrt);
+            List<VirtualServerServerCertHostMapping> vsl = new ArrayList<>();
+            vsl.add(vshm);
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsssl.setServerCertHostMapping(vsl);
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(anyString())).thenReturn(vs);
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            cms.add(certificateMapping);
+            loadBalancer.setCertificateMappings(cms);
+            adapterSpy.updateCertificateMapping(config, loadBalancer, certificateMapping);
+
+            String cname = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                    loadBalancer.getAccountId(), certificateMapping.getId());
+            verify(resources).loadVTMRestClient(config);
+            verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
+            verify(resourceTranslator).translateKeypairMappingsResource(loadBalancer, true);
+            verify(resources).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
+            verify(resources).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
+            verify(client, times(0)).getVirtualServer(vsName);
+
+            verify(client).destroy();
+        }
+
+        @Test(expected = StmRollBackException.class)
+        public void testUpdateCertificateMappingNewRevisedEncryptionKeyNull() throws Exception {
+            // This should fail to decrypt first time and then use the _rev key
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testKeyBroken");
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn(null);
+
+            VirtualServer vs = new VirtualServer();
+            VirtualServerServerCertHostMapping vshm = new VirtualServerServerCertHostMapping();
+            vshm.setHost("thingHost1");
+            vshm.setCertificate(workingUserCrt);
+            List<VirtualServerServerCertHostMapping> vsl = new ArrayList<>();
+            vsl.add(vshm);
+            VirtualServerProperties vsp = new VirtualServerProperties();
+            VirtualServerSsl vsssl = new VirtualServerSsl();
+            vsssl.setServerCertHostMapping(vsl);
+            vsp.setSsl(vsssl);
+            vs.setProperties(vsp);
+            when(client.getVirtualServer(anyString())).thenReturn(vs);
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            cms.add(certificateMapping);
+            loadBalancer.setCertificateMappings(cms);
+            adapterSpy.updateCertificateMapping(config, loadBalancer, certificateMapping);
+
+            String cname = ZxtmNameBuilder.generateCertificateName(loadBalancer.getId(),
+                    loadBalancer.getAccountId(), certificateMapping.getId());
+            verify(resources).loadVTMRestClient(config);
+            verify(resourceTranslator).translateVirtualServerResource(config, secureVsName, loadBalancer);
+            verify(resourceTranslator).translateKeypairMappingsResource(loadBalancer, true);
+            verify(resources, times(0)).updateKeypair(eq(client), eq(cname), Matchers.any(Keypair.class));
+            verify(resources, times(0)).updateVirtualServer(eq(client), eq(secureVsName), any(VirtualServer.class));
             verify(client, times(0)).getVirtualServer(vsName);
 
             verify(client).destroy();
@@ -1129,9 +1322,9 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
             VirtualServerServerCertHostMapping vshm = new VirtualServerServerCertHostMapping();
             VirtualServerServerCertHostMapping vshm2 = new VirtualServerServerCertHostMapping();
             vshm.setHost("thingHost");
-            vshm.setCertificate("cert12");
+            vshm.setCertificate(workingUserCrt);
             vshm2.setHost("thingHost2");
-            vshm2.setCertificate("cert22");
+            vshm2.setCertificate(workingUserCrt);
             List<VirtualServerServerCertHostMapping> vsl = new ArrayList<>();
             vsl.add(vshm);
             vsl.add(vshm2);
@@ -1144,11 +1337,12 @@ public class VTMdapterImplTest extends VTMAdapterImplTestHelper {
 
             Set<CertificateMapping> cms = new HashSet<>();
             CertificateMapping cmap = new CertificateMapping();
-            cmap.setCertificate("thing3");
-            cmap.setPrivateKey("thing23");
-            cmap.setIntermediateCertificate("thing33");
-            cmap.setHostName("thingHost3");
             cmap.setId(3);
+            cmap.setPrivateKey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testKey",
+                    loadBalancer.getAccountId() + "_" + loadBalancer.getId() + "_" + cmap.getId()));
+            cmap.setCertificate(workingUserCrt);
+            cmap.setIntermediateCertificate(workingUserChain);
+            cmap.setHostName("thingHost3");
             cms.add(cmap);
             cms.add(certificateMapping);
             loadBalancer.setCertificateMappings(cms);

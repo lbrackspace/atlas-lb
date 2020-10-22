@@ -7,11 +7,13 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.pojos.SslDetails;
 import org.openstack.atlas.service.domain.util.StringUtilities;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 
 import java.util.List;
 import java.util.Map;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SecurityProtocol;
+import org.openstack.atlas.util.debug.Debug;
 
 public final class SslTerminationHelper {
 
@@ -76,6 +78,34 @@ public final class SslTerminationHelper {
         }
     }
 
+    public static String encryptPrivateKey(int accountId, int lbId,
+                                           String rawKey, String encryptionKey) throws BadRequestException {
+        try {
+            return Aes.b64encryptGCM(rawKey.getBytes(), encryptionKey,
+                    SslTerminationHelper.getLoadBalancerIv(accountId, lbId));
+        } catch (Exception e) {
+            String msg = Debug.getEST(e);
+            LOG.error(String.format("Error encrypting Private key on loadbalancr %d, %s\n",
+                    lbId, msg));
+            throw new BadRequestException("Error processing certificate mapping private key, " +
+                    "please verify formatting...");
+        }
+    }
+
+    public static String encryptPrivateKeyForCertMapping(int accountId, int lbId, int mappingId,
+                                     String rawKey, String encryptionKey) throws BadRequestException {
+        try {
+            return Aes.b64encryptGCM(rawKey.getBytes(), encryptionKey,
+                    SslTerminationHelper.getCertificateMappingIv(mappingId, accountId, lbId));
+        } catch (Exception e) {
+            String msg = Debug.getEST(e);
+            LOG.error(String.format("Error encrypting Private key on loadbalancr %d for mapping %d, %s\n",
+                    lbId, mappingId, msg));
+            throw new BadRequestException("Error processing certificate mapping private key, " +
+                    "please verify formatting...");
+        }
+    }
+
     public static String getLoadBalancerIv(LoadBalancer loadBalancer) {
         return getLoadBalancerIv(loadBalancer.getAccountId(), loadBalancer.getId());
     }
@@ -86,6 +116,10 @@ public final class SslTerminationHelper {
 
     public static String getCertificateMappingIv(CertificateMapping certificateMapping, int accountId, int lbId) {
         return String.format("%d_%d_%d", accountId, lbId, certificateMapping.getId());
+    }
+
+    public static String getCertificateMappingIv(int mappingId, int accountId, int lbId) {
+        return String.format("%d_%d_%d", accountId, lbId, mappingId);
     }
 
     /**

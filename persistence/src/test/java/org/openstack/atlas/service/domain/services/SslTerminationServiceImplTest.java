@@ -14,6 +14,7 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
+import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -25,6 +26,8 @@ import org.openstack.atlas.service.domain.repository.SslTerminationRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
+import org.openstack.atlas.service.domain.services.impl.LoadBalancerStatusHistoryServiceImpl;
+import org.openstack.atlas.service.domain.services.impl.SslCipherProfileServiceImpl;
 import org.openstack.atlas.service.domain.services.impl.SslTerminationServiceImpl;
 import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.PemUtils;
@@ -35,9 +38,17 @@ import org.openstack.atlas.util.ca.util.X509ChainEntry;
 import org.openstack.atlas.util.ca.util.X509PathBuilder;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -57,13 +68,14 @@ public class SslTerminationServiceImplTest {
         LoadBalancerRepository loadBalancerRepository;
 
         @Mock
+        LoadBalancerStatusHistoryServiceImpl loadBalancerStatusHistoryServiceImpl;
+        LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
+
+        @Mock
         SslTerminationRepository sslTerminationRepository;
 
         @Mock
-        VirtualIpRepository virtualIpRepository;
-        @Mock
-        SslCipherProfileService sslCipherProfileService;
-
+        SslCipherProfileServiceImpl sslCipherProfileService;
 
 
         @InjectMocks
@@ -81,6 +93,9 @@ public class SslTerminationServiceImplTest {
         private static String workingUserKey;
         private static String workingUserCrt;
         private static String workingUserChain;
+
+        int lbId = 613;
+        int accountId = 580606;
 
 
         LoadBalancer loadBalancer;
@@ -136,8 +151,11 @@ public class SslTerminationServiceImplTest {
 
 
         @Before
-        public void setUp() throws EntityNotFoundException {
+        public void setUp() throws EntityNotFoundException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, UnprocessableEntityException {
             MockitoAnnotations.initMocks(this);
+
+            iv = accountId + "_" + lbId;
+
             loadBalancer = new LoadBalancer();
             sslTerminationService.setSslTerminationRepository(sslTerminationRepository);
             sslTerminationService.setLoadBalancerRepository(loadBalancerRepository);
@@ -149,46 +167,135 @@ public class SslTerminationServiceImplTest {
             sslTerminationToBeUpdated.setSecureTrafficOnly(false);
             sslTerminationToBeUpdated.setIntermediateCertificate(workingUserChain);
             sslTermination.setSecurePort(443);
-            sslTermination.setPrivatekey(workingUserKey);
+            // Going forward, all keys should have been encrypted prior to database storage...
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
             sslTermination.setCertificate(workingUserCrt);
             sslTermination.setEnabled(true);
             sslTermination.setSecureTrafficOnly(false);
             loadBalancer.setProtocol(LoadBalancerProtocol.HTTP);
             loadBalancer.setSslTermination(sslTerminationToBeUpdated);
-            loadBalancer.setId(613);
-            loadBalancer.setAccountId(5806065);
-            iv = loadBalancer.getAccountId() + "_" + loadBalancer.getId();
+            loadBalancer.setId(lbId);
+            loadBalancer.setAccountId(accountId);
 
             when(loadBalancerRepository.getByIdAndAccountId(anyInt(), anyInt())).thenReturn(loadBalancer);
             when(sslTerminationRepository.getSslTerminationByLbId(anyInt(), anyInt())).thenReturn(sslTerminationToBeUpdated);
             when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testCrypto");
 
+            when(loadBalancerRepository.testAndSetStatus(any(), any(), any(), anyBoolean())).thenReturn(Boolean.TRUE);
+            loadBalancerStatusHistoryService = loadBalancerStatusHistoryServiceImpl;
+            when(loadBalancerStatusHistoryService.save(loadBalancer.getAccountId(),
+                    loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)).thenReturn(null);
+
         }
 
         @Test
         public void shouldReturnEncryptedPrivateKey() throws Exception {
-            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(613, 5806065, sslTermination, true);
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
+
+            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, false);
             Assert.assertNotEquals(zeusSslTermination.getSslTermination().getPrivatekey(), workingUserKey);
             String dtest = Aes.b64decryptGCM_str(zeusSslTermination.getSslTermination().getPrivatekey(), "testCrypto", iv);
             Assert.assertEquals(dtest, workingUserKey);
-
+            verify(sslTerminationRepository, times(1)).setSslTermination(any(), any());
+            verify(loadBalancerStatusHistoryService, times(1)).save(loadBalancer.getAccountId(),
+                    loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
         @Test
-        public void shouldNotThrowErrorWhenPrivateKeyIsEncryptedFromDB() throws Exception {
-            String privateKey = Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv);
-            sslTerminationToBeUpdated.setPrivatekey(privateKey);
-            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(613, 5806065, sslTermination, true);
+        public void shouldReturnEncryptedPrivateKeyRevisedEncryptKey() throws Exception {
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
+
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testCryptoBroken");
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto");
+
+            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, false);
             Assert.assertNotEquals(zeusSslTermination.getSslTermination().getPrivatekey(), workingUserKey);
             String dtest = Aes.b64decryptGCM_str(zeusSslTermination.getSslTermination().getPrivatekey(), "testCrypto", iv);
             Assert.assertEquals(dtest, workingUserKey);
+            verify(sslTerminationRepository, times(1)).setSslTermination(any(), any());
+            verify(loadBalancerStatusHistoryService, times(1)).save(loadBalancer.getAccountId(),
+                    loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
-        @Test(expected = BadRequestException.class)
-        public void shouldThrowErrorWhenCrpytoKeyIsNotFoud() throws BadRequestException, ImmutableEntityException, UnprocessableEntityException, EntityNotFoundException {
-            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
-            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(613, 5806065, sslTermination, true);
+        @Test
+        public void shouldReturnEncryptedPrivateKeyEncryptKeyNull() throws Exception {
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
 
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto");
+
+            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, false);
+            Assert.assertNotEquals(zeusSslTermination.getSslTermination().getPrivatekey(), workingUserKey);
+            String dtest = Aes.b64decryptGCM_str(zeusSslTermination.getSslTermination().getPrivatekey(), "testCrypto", iv);
+            Assert.assertEquals(dtest, workingUserKey);
+            verify(sslTerminationRepository, times(1)).setSslTermination(any(), any());
+            verify(loadBalancerStatusHistoryService, times(1)).save(loadBalancer.getAccountId(),
+                    loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        }
+
+        @Test
+        public void shouldReturnEncryptedPrivateKeyReencryptedWithRevisedEncryptKey() throws Exception {
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
+
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto2");
+
+            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, false);
+            Assert.assertNotEquals(zeusSslTermination.getSslTermination().getPrivatekey(), workingUserKey);
+            String dtest = Aes.b64decryptGCM_str(zeusSslTermination.getSslTermination().getPrivatekey(), "testCrypto2", iv);
+            Assert.assertEquals(dtest, workingUserKey);
+            verify(sslTerminationRepository, times(1)).setSslTermination(any(), any());
+            verify(loadBalancerStatusHistoryService, times(1)).save(loadBalancer.getAccountId(),
+                    loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        }
+
+        @Test(expected = UnprocessableEntityException.class)
+        public void shouldFailEncryptedPrivateKeyRevisedEncryptKeyNull() throws Exception {
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
+
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn(null);
+
+            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, false);
+            Assert.assertNotEquals(zeusSslTermination.getSslTermination().getPrivatekey(), workingUserKey);
+            String dtest = Aes.b64decryptGCM_str(zeusSslTermination.getSslTermination().getPrivatekey(), "testCrypto", iv);
+            Assert.assertEquals(dtest, workingUserKey);
+            verify(sslTerminationRepository, times(1)).setSslTermination(any(), any());
+            verify(loadBalancerStatusHistoryService, times(1)).save(loadBalancer.getAccountId(),
+                    loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        }
+
+        @Test
+        public void shouldReturnEncryptedPrivateKeyWithSync() throws Exception {
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
+
+            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, true);
+            Assert.assertNotEquals(zeusSslTermination.getSslTermination().getPrivatekey(), workingUserKey);
+            String dtest = Aes.b64decryptGCM_str(zeusSslTermination.getSslTermination().getPrivatekey(), "testCrypto", iv);
+            Assert.assertEquals(dtest, workingUserKey);
+            verify(sslTerminationRepository, times(1)).setSslTermination(any(), any());
+            verify(loadBalancerStatusHistoryService, times(0)).save(loadBalancer.getAccountId(),
+                    loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        }
+
+        @Test
+        public void shouldReturnEncryptedPrivateKeyWithRevisedEncryptionKey() throws Exception {
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto2", iv));
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto2");
+
+            // validate should fail first attempt with regular key and use the revised key return appropriate results
+            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, false);
+            Assert.assertNotEquals(zeusSslTermination.getSslTermination().getPrivatekey(), workingUserKey);
+            String dtest = Aes.b64decryptGCM_str(zeusSslTermination.getSslTermination().getPrivatekey(), "testCrypto2", iv);
+            Assert.assertEquals(dtest, workingUserKey);
+            verify(sslTerminationRepository, times(1)).setSslTermination(any(), any());
+            verify(loadBalancerStatusHistoryService, times(1)).save(loadBalancer.getAccountId(),
+                    loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        }
+
+        @Test(expected = UnprocessableEntityException.class)
+        public void shouldThrowErrorWhenEncryptKeysNull() throws BadRequestException, ImmutableEntityException, UnprocessableEntityException, EntityNotFoundException {
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
+            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, true);
         }
 
         @Test
@@ -196,21 +303,48 @@ public class SslTerminationServiceImplTest {
             String privateKey = Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv);
             sslTerminationToBeUpdated.setPrivatekey(privateKey);
             sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
-        }
-        @Test(expected = BadRequestException.class)
-        public void shouldThrowErrorforInvalidPrivateKey() throws Exception {
-            sslTerminationToBeUpdated.setPrivatekey("badkey");
-            sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
+            String dtest = Aes.b64decryptGCM_str(sslTerminationToBeUpdated.getPrivatekey(), "testCrypto", iv);
+            Assert.assertEquals(dtest, workingUserKey);
         }
 
         @Test
-        public void  shouldValidateUnencryptedKey() throws Exception {
+        public void shouldValidatePrivateKeyEncryptKeyNull() throws Exception {
+            String privateKey = Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto");
+            sslTerminationToBeUpdated.setPrivatekey(privateKey);
+            sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
+            String dtest = Aes.b64decryptGCM_str(sslTerminationToBeUpdated.getPrivatekey(), "testCrypto", iv);
+            Assert.assertEquals(dtest, workingUserKey);
+        }
+
+        @Test
+        public void shouldValidatePrivateKeyReencryptWithRevisedEncryptKey() throws Exception {
+            String privateKey = Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto2");
+            sslTerminationToBeUpdated.setPrivatekey(privateKey);
+            sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
+            String dtest = Aes.b64decryptGCM_str(sslTerminationToBeUpdated.getPrivatekey(), "testCrypto2", iv);
+            Assert.assertEquals(dtest, workingUserKey);
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldThrowErrorforInvalidPrivateKey() throws Exception {
+            String privateKey = Aes.b64encryptGCM("badkey".getBytes(), "testCrypto", iv);
+            sslTerminationToBeUpdated.setPrivatekey(privateKey);
+            sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
+        }
+
+        @Test(expected = UnprocessableEntityException.class)
+        public void  shouldErrorOnValidateUnencryptedKey() throws Exception {
             sslTerminationToBeUpdated.setPrivatekey(workingUserKey);
             sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
         }
 
         @Test(expected = BadRequestException.class)
         public void shouldThrowErrorWhenUsrCrtIsInvalid() throws Exception {
+            String privateKey = Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv);
+            sslTerminationToBeUpdated.setPrivatekey(privateKey);
             sslTerminationToBeUpdated.setCertificate("badCert");
             sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
         }

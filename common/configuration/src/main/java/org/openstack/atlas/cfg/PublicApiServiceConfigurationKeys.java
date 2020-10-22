@@ -42,5 +42,6 @@ public enum PublicApiServiceConfigurationKeys implements ConfigurationKey {
     usage_deletion_limit,
     stingray_stats_base_uri,
     term_crypto_key,
+    term_crypto_key_rev,
     rest_api_retries
 }

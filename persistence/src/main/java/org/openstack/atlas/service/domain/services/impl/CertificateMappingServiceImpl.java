@@ -58,21 +58,20 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
         detectDuplicateHostName(dbCertificateMappings, newMapping);
         validateCertificateMapping(newMapping);
 
-
         if (newMapping.getIntermediateCertificate() != null && newMapping.getIntermediateCertificate().trim().isEmpty()) {
             newMapping.setIntermediateCertificate(null);
         }
+        // We need the mapping id to build the iv
         newMapping = certificateMappingRepository.save(newMapping, messengerLb.getId());
-        try {
-            newMapping.setPrivateKey(Aes.b64encryptGCM(newMapping.getPrivateKey().getBytes(),
-                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                    SslTerminationHelper.getCertificateMappingIv(newMapping,
-                            messengerLb.getAccountId(), messengerLb.getId())));
-        } catch (Exception e) {
-            String msg = Debug.getEST(e);
-            LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", messengerLb.getId(), msg));
-            throw new BadRequestException("Error processing certificate mapping private key, please verify formatting...");
+
+        // If the revised encryption key exists we should be using that one...
+        String encryptionKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+        if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev) != null) {
+            encryptionKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev);
         }
+        newMapping.setPrivateKey(SslTerminationHelper.encryptPrivateKeyForCertMapping(
+                messengerLb.getAccountId(), messengerLb.getId(), newMapping.getId(),
+                newMapping.getPrivateKey(), encryptionKey));
 
         setLbToPendingUpdate(messengerLb);
         return certificateMappingRepository.save(newMapping, messengerLb.getId());
@@ -113,11 +112,20 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
         detectDuplicateHostName(dbCertMappings, certificateMappingToUpdate);
 
         LOG.debug("Certificate mappings on dbLoadBalancer: " + dbCertMappings.size());
+
+        // If the revised encryption key exists we should be using that one...
+        String encryptionKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+        if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev) != null) {
+            encryptionKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev);
+        }
         for (CertificateMapping dbCertMapping : dbCertMappings) {
             if (dbCertMapping.getId().equals(certificateMappingToUpdate.getId())) {
                 LOG.info("Certificate mapping to be update found: " + dbCertMapping.getId());
                 if (certificateMappingToUpdate.getPrivateKey() != null) {
-                    dbCertMapping.setPrivateKey(certificateMappingToUpdate.getPrivateKey());
+                    // Updated private key, let's encrypt it...
+                    dbCertMapping.setPrivateKey(SslTerminationHelper.encryptPrivateKeyForCertMapping(
+                            dbLb.getAccountId(), dbLb.getId(), dbCertMapping.getId(),
+                            certificateMappingToUpdate.getPrivateKey(), encryptionKey));
                 }
                 if (certificateMappingToUpdate.getCertificate() != null) {
                     dbCertMapping.setCertificate(certificateMappingToUpdate.getCertificate());
@@ -134,17 +142,9 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
                 }
 
                 validateCertificateMapping(dbCertMapping, messengerLb.getAccountId(), messengerLb.getId());
-                // With any new credentials now validated re-encrypt the key
-                try {
-                    dbCertMapping.setPrivateKey(Aes.b64encryptGCM(dbCertMapping.getPrivateKey().getBytes(),
-                            restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                            SslTerminationHelper.getCertificateMappingIv(dbCertMapping,
-                                    messengerLb.getAccountId(), messengerLb.getId())));
-                } catch (Exception e) {
-                    String msg = Debug.getEST(e);
-                    LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", messengerLb.getId(), msg));
-                    throw new BadRequestException("Error processing certificate mapping private key, please verify formatting...");
-                }
+//                // With any updated credentials now validated re-encrypt the key
+                dbCertMapping.setPrivateKey(SslTerminationHelper.encryptPrivateKeyForCertMapping(dbLb.getAccountId(),
+                        dbLb.getId(), dbCertMapping.getId(), dbCertMapping.getPrivateKey(), encryptionKey));
                 break;
             }
         }
@@ -155,23 +155,31 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
 
     @Override
     @Transactional
-    public void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys) throws BadRequestException {
+    public void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys) throws BadRequestException,
+            UnprocessableEntityException {
         LOG.debug(String.format("Sync %d certificate mappings for load balancer: %d ",
                 messengerLb.getCertificateMappings().size(), messengerLb.getId()));
+
+        // If the revised encryption key exists we should be using that one...
+        String encryptionKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+        if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev) != null) {
+            encryptionKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev);
+        }
         for (CertificateMapping certificateMapping : messengerLb.getCertificateMappings()) {
                 validateCertificateMapping(certificateMapping, messengerLb.getAccountId(), messengerLb.getId());
                 try {
                     // With any updated credentials now validated re-encrypt the key
                     certificateMapping.setPrivateKey(Aes.b64encryptGCM(certificateMapping.getPrivateKey().getBytes(),
-                            restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                            SslTerminationHelper.getCertificateMappingIv(certificateMapping,
-                                    messengerLb.getAccountId(), messengerLb.getId())));
+                            encryptionKey,
+                            SslTerminationHelper.getCertificateMappingIv(
+                                    certificateMapping, messengerLb.getAccountId(), messengerLb.getId())));
                 } catch (Exception e) {
                     String msg = Debug.getEST(e);
                     LOG.error(String.format(
-                            "Error encrypting Private key on load balancr %d: %s\n", messengerLb.getId(), msg));
-                    throw new BadRequestException(
-                            "Error processing certificate mapping private keys, please verify formatting...");
+                            "Error encrypting Private key on load balancr %d for mapping %s, %s\n",
+                            messengerLb.getId(), certificateMapping.getId(), msg));
+                    throw new UnprocessableEntityException(
+                            "Error processing certificate mapping private keys, please contact support...");
                 }
             }
         if (saveKeys) {
@@ -225,7 +233,7 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
     }
 
     private void validateCertificateMapping(CertificateMapping mapping,
-                                            int accountId, int lbId) throws BadRequestException {
+                                            int accountId, int lbId) throws BadRequestException, UnprocessableEntityException {
         SslDetails sslDetails = new SslDetails(mapping.getPrivateKey(),
                 mapping.getCertificate(), mapping.getIntermediateCertificate());
         try {
@@ -235,9 +243,22 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
                     SslTerminationHelper.getCertificateMappingIv(mapping, accountId, lbId)));
             mapping.setPrivateKey(sslDetails.getPrivateKey());
         } catch (Exception ex) {
-            // At this time we must assume the keys simply weren't encrypted to begin with and let validation check...
-            sslDetails.setPrivateKey(mapping.getPrivateKey());
+            try {
+                // It's possible the encryption key has been revised, try again...
+                sslDetails.setPrivateKey(Aes.b64decryptGCM_str(mapping.getPrivateKey(),
+                        restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev),
+                        SslTerminationHelper.getCertificateMappingIv(mapping, accountId, lbId)));
+                mapping.setPrivateKey(sslDetails.getPrivateKey());
+            } catch (Exception e) {
+                // If we've failed here then we have something else quite wrong and failures should bubble up
+                String msg = Debug.getEST(e);
+                LOG.error(String.format("Error encrypting Private key on loadbalancr %d for mapping %s; %s\n",
+                        lbId, mapping.getId(), msg));
+                throw new UnprocessableEntityException("Error processing Certificate Mapping " +
+                        "private key, please contact support...");
+            }
         }
+
         ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(sslDetails.getPrivateKey(),
                 sslDetails.getCertificate(), sslDetails.getIntermediateCertificate());
         SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
@@ -245,7 +266,6 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
 
     private void validateCertificateMapping(CertificateMapping mapping) throws BadRequestException {
         SslDetails sslDetails = new SslDetails((mapping.getPrivateKey()), mapping.getCertificate(), mapping.getIntermediateCertificate());
-        sslDetails = SslDetails.sanitize((sslDetails));
         ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(sslDetails.getPrivateKey(), sslDetails.getCertificate(), sslDetails.getIntermediateCertificate());
         SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
     }

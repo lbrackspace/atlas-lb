@@ -17,7 +17,9 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 import org.rackspace.vtm.client.bandwidth.Bandwidth;
@@ -36,7 +38,14 @@ import org.rackspace.vtm.client.traffic.ip.TrafficIp;
 import org.rackspace.vtm.client.traffic.ip.TrafficIpBasic;
 import org.rackspace.vtm.client.virtualserver.*;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 import static org.mockito.Mockito.when;
@@ -60,10 +69,12 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
         private AccessList accessListAllowed;
         private String ipAddressAllowed;
         private Set<AccessList> lists;
+        private String encryptedKey;
         @Mock
         private LoadBalancerEndpointConfiguration config;
         @Mock
         private RestApiConfiguration restApiConfiguration;
+        private String iv;
 
 
         public void initializeVars(String logFormat, LoadBalancerProtocol protocol) throws InsufficientRequestException {
@@ -627,7 +638,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
 
 
         @Test
-        public void shouldTranslateKeyPairCertMappings() throws InsufficientRequestException {
+        public void shouldTranslateKeyPairCertMappings() throws InsufficientRequestException, UnprocessableEntityException {
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
 
             Set<CertificateMapping> cms = new HashSet<>();
@@ -652,15 +663,19 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
         }
 
         @Test
-        public void shouldUnencryptedTranslateKeyPairCertMappings() throws InsufficientRequestException {
+        public void shouldTranslateKeyPairCertMappingsRevisedEncryptKey() throws InsufficientRequestException, UnprocessableEntityException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException {
             // This case should only ever hit if database has yet to be updated
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+
+            iv = String.format("%d_%d_%d", lb.getAccountId(), lb.getId(), 1);
+            encryptedKey = Aes.b64encryptGCM(VTMTestConstants.SSL_KEY.getBytes(), "testCrypto2", iv);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto2");
 
             Set<CertificateMapping> cms = new HashSet<>();
             CertificateMapping cm = new CertificateMapping();
             cm.setId(1);
             cm.setHostName("h1");
-            cm.setPrivateKey(VTMTestConstants.SSL_KEY);
+            cm.setPrivateKey(encryptedKey);
             cm.setCertificate(VTMTestConstants.SSL_CERT);
             cms.add(cm);
 
@@ -673,12 +688,35 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
 
             Keypair m1 = translatedMappings.get(cname);
             Assert.assertNotNull(m1);
+
             Assert.assertEquals(VTMTestConstants.SSL_KEY, m1.getProperties().getBasic().getPrivate());
             Assert.assertEquals(VTMTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
         }
 
-        @Test(expected = InsufficientRequestException.class)
-        public void shouldFailToDecryptKeyForTranslateKeyPair() throws InsufficientRequestException {
+        @Test(expected = UnprocessableEntityException.class)
+        public void shouldFailTranslateKeyPairCertMappingsRevisedEncryptKeyNull() throws InsufficientRequestException, UnprocessableEntityException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException {
+            // This case should only ever hit if database has yet to be updated
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+
+            iv = String.format("%d_%d_%d", lb.getAccountId(), lb.getId(), 1);
+            encryptedKey = Aes.b64encryptGCM(VTMTestConstants.SSL_KEY.getBytes(), "testCrypto2", iv);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn(null);
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            CertificateMapping cm = new CertificateMapping();
+            cm.setId(1);
+            cm.setHostName("h1");
+            cm.setPrivateKey(encryptedKey);
+            cm.setCertificate(VTMTestConstants.SSL_CERT);
+            cms.add(cm);
+
+            lb.setCertificateMappings(cms);
+
+            Map<String, Keypair> translatedMappings = translator.translateKeypairMappingsResource(lb, true);
+        }
+
+        @Test(expected = UnprocessableEntityException.class)
+        public void shouldFailToDecryptKeyForTranslateKeyPair() throws InsufficientRequestException, UnprocessableEntityException {
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
             when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("WrongKey");
 
@@ -696,14 +734,18 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
         }
 
         @Test
-        public void shouldTranslateKeyPairCertMappingsMultiple() throws InsufficientRequestException {
+        public void shouldTranslateKeyPairCertMappingsMultiple() throws InsufficientRequestException, UnprocessableEntityException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException {
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+
+            iv = String.format("%d_%d_%d", lb.getAccountId(), lb.getId(), 1);
+            encryptedKey = Aes.b64encryptGCM(VTMTestConstants.SSL_KEY.getBytes(), "testCrypto2", iv);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto2");
 
             Set<CertificateMapping> cms = new HashSet<>();
             CertificateMapping cm = new CertificateMapping();
             cm.setId(1);
             cm.setHostName("h1");
-            cm.setPrivateKey(VTMTestConstants.SSL_KEY);
+            cm.setPrivateKey(encryptedKey);
             cm.setCertificate(VTMTestConstants.SSL_CERT);
 
             CertificateMapping cm2 = new CertificateMapping();
@@ -773,9 +815,11 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
         private VTMResourceTranslator translator;
         @Mock
         private LoadBalancerEndpointConfiguration config;
+        private String iv;
+        private String encryptedKey;
 
         @Before
-        public void standUp() throws IPStringConversionException {
+        public void standUp() throws IPStringConversionException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, IOException, BadPaddingException, InvalidKeyException, InvalidKeySpecException {
             MockitoAnnotations.initMocks(this);
             setupIvars();
             int acctId = 1234567890;
@@ -810,6 +854,9 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
 
             //found in /etc/openstack/atlas/
             failoverHost = "development.lbaas.rackspace.net";
+            
+            iv = String.format("%d_%d", lb.getAccountId(), lb.getId());
+            encryptedKey = Aes.b64encryptGCM(VTMTestConstants.SSL_KEY.getBytes(), "testCrypto2", iv);
 
             //traffic group name Lb ID _ VIP ID
             expectedGroupName6 = Integer.toString(TEST_ACCOUNT_ID) + "_" + Integer.toString(ip6.getId());

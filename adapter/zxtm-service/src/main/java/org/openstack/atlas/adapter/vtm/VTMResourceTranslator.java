@@ -10,6 +10,7 @@ import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.StringUtils;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
@@ -67,13 +68,13 @@ public class VTMResourceTranslator {
     }
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
-                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException {
+                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException, UnprocessableEntityException {
         translateLoadBalancerResource(config, vsName, loadBalancer, queLb, true, true);
     }
 
     public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
                                               String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert, boolean vipsEnabled)
-            throws InsufficientRequestException {
+            throws InsufficientRequestException, UnprocessableEntityException {
         //Order matters when translating the entire entity.
         if (loadBalancer.getHealthMonitor() != null) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
@@ -508,17 +509,26 @@ public class VTMResourceTranslator {
     }
 
     public Keypair translateKeypairResource(LoadBalancer loadBalancer, boolean careAboutCert)
-            throws InsufficientRequestException {
+            throws InsufficientRequestException, UnprocessableEntityException {
         // Decrypt key
         String privKey;
         try {
+            // decrypt database key so we can revalidate with any new data
             privKey = Aes.b64decryptGCM_str(loadBalancer.getSslTermination().getPrivatekey(),
                     restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
                     String.format("%d_%d", loadBalancer.getAccountId(), loadBalancer.getId()));
-        } catch (Exception ex) {
-            // Things should be properly encrypted at this point, we'll let validation double check...
-            privKey = loadBalancer.getSslTermination().getPrivatekey();
+        } catch (Exception e) {
+            try {
+                // It's possible the encryption key has been revised, try again...
+                privKey = Aes.b64decryptGCM_str(loadBalancer.getSslTermination().getPrivatekey(),
+                        restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev),
+                        String.format("%d_%d", loadBalancer.getAccountId(), loadBalancer.getId()));
+            } catch (Exception ex) {
+                // If we've failed here then we have something else quite wrong and failures should bubble up
+                throw new UnprocessableEntityException(ex.getMessage());
+            }
         }
+
         ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(privKey,
                 loadBalancer.getSslTermination().getCertificate(), loadBalancer.getSslTermination().getIntermediateCertificate());
         if (zeusCertFile.hasFatalErrors()) {
@@ -543,7 +553,7 @@ public class VTMResourceTranslator {
     }
 
     public Map<String, Keypair> translateKeypairMappingsResource(LoadBalancer loadBalancer,
-                                                    boolean careAboutCert) throws InsufficientRequestException {
+                                                    boolean careAboutCert) throws InsufficientRequestException, UnprocessableEntityException {
         Integer lbId = loadBalancer.getId();
         Integer accountId = loadBalancer.getAccountId();
 
@@ -556,12 +566,20 @@ public class VTMResourceTranslator {
             // Decrypt key
             String privKey;
             try {
+                // decrypt database key so we can revalidate with any new data
                 privKey = Aes.b64decryptGCM_str(cm.getPrivateKey(),
                         restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
                         String.format("%d_%d_%d", loadBalancer.getAccountId(), loadBalancer.getId(), cm.getId()));
-            } catch (Exception ex) {
-                // Things should have been properly decrypted by this point, we'll let validation double check...
-                privKey = cm.getPrivateKey();
+            } catch (Exception e) {
+                try {
+                    // It's possible the encryption key has been revised, try again...
+                    privKey = Aes.b64decryptGCM_str(cm.getPrivateKey(),
+                            restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev),
+                            String.format("%d_%d_%d", loadBalancer.getAccountId(), loadBalancer.getId(), cm.getId()));
+                } catch (Exception ex) {
+                    // If we've failed here then we have something else quite wrong and failures should bubble up
+                    throw new UnprocessableEntityException(ex.getMessage());
+                }
             }
 
             ZeusCrtFile zeusCertFile = zeusUtil.buildZeusCrtFileLbassValidation(privKey,

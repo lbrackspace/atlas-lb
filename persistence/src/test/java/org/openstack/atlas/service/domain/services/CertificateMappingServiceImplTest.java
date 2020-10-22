@@ -199,8 +199,9 @@ public class CertificateMappingServiceImplTest {
            Assert.assertEquals(workingUserCrt, cmap.getCertificate());
            Assert.assertEquals(workingUserChain, cmap.getIntermediateCertificate());
         }
+
         @Test(expected = BadRequestException.class)
-        public void shouldFailBecauseInvalidKey() throws Exception {
+        public void shouldFailBecauseInvalidCert() throws Exception {
             loadBalancer.getCertificateMappings().iterator().next().setPrivateKey("broken");
             certificateMappingService.create(loadBalancer);
         }
@@ -217,6 +218,7 @@ public class CertificateMappingServiceImplTest {
                     AccountLimitType.CERTIFICATE_MAPPING_LIMIT)).thenReturn(0);
             certificateMappingService.create(loadBalancer);
         }
+
         @Test
         public void shouldSaveCertificateMappingTwice() throws Exception {
             ArgumentCaptor<CertificateMapping> captor = ArgumentCaptor.forClass(CertificateMapping.class);
@@ -228,10 +230,35 @@ public class CertificateMappingServiceImplTest {
             String deCryptedKey = Aes.b64decryptGCM_str(certificateMappings.get(1).getPrivateKey(), "testCrypto", iv);
             Assert.assertEquals(privateKey, deCryptedKey);
         }
+
         @Test
         public void shouldPassWithCertMappingIdNullOnCreate() throws Exception {
+            when(certificateMappingRepository.save(certificateMappingToBeUpdated, loadBalancer.getId())).thenReturn(dbCertMapping);
             certificateMappingToBeUpdated.setId(null);
             certificateMappingService.create(loadBalancer);
+            verify(certificateMappingRepository, times(2)).save(any(), anyInt());
+        }
+
+        @Test
+        public void shouldPassWithCertMappingIdNullOnCreateRevisedEncryptKey() throws Exception {
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testCryptoBroken");
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto");
+            when(certificateMappingRepository.save(certificateMappingToBeUpdated, loadBalancer.getId())).thenReturn(dbCertMapping);
+            certificateMappingToBeUpdated.setId(null);
+            certificateMappingService.create(loadBalancer);
+            verify(certificateMappingRepository, times(2)).save(any(), anyInt());
+        }
+
+        @Test
+        public void shouldPassWithCertMappingIdNullOnCreateRevisedEncryptKeyNull() throws Exception {
+            // Will be forced to used the original encryption key
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testCryptoBroken");
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn(null);
+            when(certificateMappingRepository.save(certificateMappingToBeUpdated, loadBalancer.getId())).thenReturn(dbCertMapping);
+            certificateMappingToBeUpdated.setId(null);
+            certificateMappingService.create(loadBalancer);
+            verify(certificateMappingRepository, times(2)).save(any(), anyInt());
+
         }
 
         // Update
@@ -243,6 +270,41 @@ public class CertificateMappingServiceImplTest {
                     loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv);
             Assert.assertEquals(dkey, privateKey);
             verify(certificateMappingRepository, times(1)).update(loadBalancer);
+        }
+
+        @Test
+        public void shouldAcceptValidDataForUpdateWithRevisedEncryptKey() throws Exception {
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto");
+
+            certificateMappingService.update(loadBalancer);
+
+            String dkey = Aes.b64decryptGCM_str(
+                    loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto", iv);
+            Assert.assertEquals(privateKey, dkey);
+            verify(certificateMappingRepository, times(1)).update(loadBalancer);
+        }
+
+        @Test
+        public void shouldAcceptValidDataForUpdateReencryptWithRevisedEncryptKey() throws Exception {
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto2");
+
+            certificateMappingService.update(loadBalancer);
+
+            String dkey = Aes.b64decryptGCM_str(
+                    loadBalancer.getCertificateMappings().iterator().next().getPrivateKey(), "testCrypto2", iv);
+            Assert.assertEquals(privateKey, dkey);
+            verify(certificateMappingRepository, times(1)).update(loadBalancer);
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldFailValidDataForUpdateWithRevisedEncryptKeyNull() throws Exception {
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn(null);
+
+            certificateMappingService.update(loadBalancer);
+
+            verify(certificateMappingRepository, times(0)).update(loadBalancer);
         }
 
         @Test
@@ -312,36 +374,47 @@ public class CertificateMappingServiceImplTest {
             certificateMappingService.update(loadBalancer);
         }
 
-        @Test
-        public void shouldValidateDecryptedPrivateKeys() throws Exception{
+        @Test(expected = UnprocessableEntityException.class)
+        public void shouldFailToValidateDecryptedPrivateKeys() throws Exception{
+            // all private keys should be encrypted at this point, any failures here should bubble up and be resolved
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
         }
+
         @Test
         public void shouldValidateEncryptedPrivateKeys() throws Exception {
             certificateMappingToBeUpdated.setPrivateKey(encryptedKey);
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
         }
-        @Test(expected = BadRequestException.class)
+
+        @Test(expected = UnprocessableEntityException.class)
         public void shouldThrowExceptionWithBadPrivateKey() throws Exception {
             certificateMappingToBeUpdated.setPrivateKey(null);
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
         }
+
         @Test(expected = BadRequestException.class)
         public void shouldThrowExceptionWhenUnableToReadUsrCrt() throws Exception {
+            certificateMappingToBeUpdated.setPrivateKey(encryptedKey);
             certificateMappingToBeUpdated.setCertificate("badCrt");
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
         }
+
         @Test
         public void shouldValidateCertificateMappingWithNoIntermediateKey() throws Exception {
+            certificateMappingToBeUpdated.setPrivateKey(encryptedKey);
             certificateMappingToBeUpdated.setIntermediateCertificate(null);
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
         }
+
         @Test
         public void shouldValidateLBWithMultipleCertMappings() throws Exception {
+            certificateMappingToBeUpdated.setPrivateKey(Aes.b64encryptGCM(privateKey.getBytes(),
+                    "testCrypto", iv));
             loadBalancer.getCertificateMappings().add(dbCertMapping);
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
 
         }
+
         // Delete
         @Test
         public void shouldLoopThroughCertMappingForLB() throws Exception {

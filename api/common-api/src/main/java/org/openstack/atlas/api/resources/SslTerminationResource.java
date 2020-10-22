@@ -14,6 +14,7 @@ import org.openstack.atlas.docs.loadbalancers.api.v1.Ciphers;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.MethodNotAllowedException;
+import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
@@ -44,6 +45,7 @@ import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.debug.Debug;
 
 public class SslTerminationResource extends CommonDependencyProvider {
 
@@ -84,15 +86,26 @@ public class SslTerminationResource extends CommonDependencyProvider {
         }
 
         // Use database as default values. Also getSslTermination already does a null check :)
-        String pemKey;
-        try {
-            // decrypt database key so we can revalidate with any new data
-            pemKey = Aes.b64decryptGCM_str(previousSslTerm.getPrivatekey(),
-                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
-                    SslTerminationHelper.getLoadBalancerIv(accountId, loadBalancerId));
-        } catch (Exception e) {
-            // It's possible the database key wasn't encrypted. Let cert utils verify and return appropriate exceptions.
-            pemKey = previousSslTerm.getPrivatekey();
+        String pemKey = null;
+        String encryptionKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+        if (previousSslTerm.getPrivatekey() != null) {
+            try {
+                // decrypt database key so we can revalidate with any new data
+                pemKey = Aes.b64decryptGCM_str(previousSslTerm.getPrivatekey(), encryptionKey,
+                        SslTerminationHelper.getLoadBalancerIv(accountId, loadBalancerId));
+            } catch (Exception e) {
+                try {
+                    // It's possible the encryption key has been revised, try again...
+                    pemKey = Aes.b64decryptGCM_str(previousSslTerm.getPrivatekey(),
+                            restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev),
+                            SslTerminationHelper.getLoadBalancerIv(accountId, loadBalancerId));
+                } catch (Exception ex) {
+                    // If we've failed here then we have something else quite wrong and failures should bubble up
+                    String msg = Debug.getEST(ex);
+                    return ResponseFactory.getErrorResponse(ex, "Error processing SSL termination " +
+                            "private key, please contact support...", null);
+                }
+            }
         }
         String imdCrts = previousSslTerm.getIntermediateCertificate();
         String userCrt = previousSslTerm.getCertificate();
@@ -113,7 +126,12 @@ public class SslTerminationResource extends CommonDependencyProvider {
             return resp;
         }
 
+        if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev) != null) {
+            encryptionKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev);
+        }
         try {
+            ssl.setPrivatekey(SslTerminationHelper.encryptPrivateKey(accountId, loadBalancerId, pemKey, encryptionKey));
+
             ZeusSslTermination zeusSslTermination = sslTerminationService.updateSslTermination(
                     loadBalancerId, accountId, ssl, false);
 
