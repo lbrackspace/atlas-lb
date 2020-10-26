@@ -28,7 +28,6 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes(\\.json|\\.xml)?/?$", Nodes.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes/\\d+(\\.json|\\.xml)?/?$", Node.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/metadata(\\.json|\\.xml)?/?$", Metadata.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/metadata/\\d+(\\.json|\\.xml)?/?$", Meta.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/sessionpersistence(\\.json|\\.xml)?/?$", SessionPersistence.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
@@ -38,7 +37,6 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/contentcaching(\\.json|\\.xml)?/?$", ContentCaching.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/connectionlogging(\\.json|\\.xml)?/?$", ConnectionLogging.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes/\\d+/metadata(\\.json|\\.xml)?/?$", Metadata.class));
-        getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/nodes/\\d+/metadata/\\d+(\\.json|\\.xml)?/?$", Meta.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/\\d+/virtualips(\\.json|\\.xml)?/?$", VirtualIp.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/connectionthrottle(\\.json|\\.xml)?/?$", ConnectionThrottle.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/virtualip(\\.json|\\.xml)?/?$", VirtualIp.class));
