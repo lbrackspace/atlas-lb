@@ -6,10 +6,7 @@ import org.codehaus.jackson.map.SerializationConfig;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.codehaus.jackson.map.deser.CustomDeserializerFactory;
 import org.codehaus.jackson.map.ser.CustomSerializerFactory;
-import org.openstack.atlas.api.helpers.JsonDeserializer.DateTimeDeserializer;
-import org.openstack.atlas.api.helpers.JsonDeserializer.DeserializerProviderBuilder;
-import org.openstack.atlas.api.helpers.JsonDeserializer.ObjectWrapperDeserializer;
-import org.openstack.atlas.api.helpers.JsonDeserializer.PropertyListDeserializer;
+import org.openstack.atlas.api.helpers.JsonDeserializer.*;
 import org.openstack.atlas.api.helpers.JsonSerializer.DateTimeSerializer;
 import org.openstack.atlas.api.helpers.JsonSerializer.ObjectWrapperSerializer;
 import org.openstack.atlas.api.helpers.JsonSerializer.PropertyCollectionSerializer;
@@ -70,7 +67,7 @@ public class JsonObjectMapper extends ObjectMapper {
         csf.addSpecificMapping(Nodes.class, new PropertyCollectionSerializer(serConf, Nodes.class, "getNodes"));
         csf.addSpecificMapping(Metadata.class, new PropertyCollectionSerializer(serConf, Metadata.class, "getMetas"));
 
-        cdf.addSpecificMapping(Metadata.class, new PropertyListDeserializer(Metadata.class, Meta.class, "getMetas"));
+        cdf.addSpecificMapping(Metadata.class, new MetadataDeserializer(Metadata.class, Meta.class, "getMetas"));
         cdf.addSpecificMapping(AccessList.class, new PropertyListDeserializer(AccessList.class, NetworkItem.class, "getNetworkItems"));
 
 
