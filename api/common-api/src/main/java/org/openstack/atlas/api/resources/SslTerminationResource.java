@@ -88,31 +88,21 @@ public class SslTerminationResource extends CommonDependencyProvider {
         // Use database as default values. Also getSslTermination already does a null check :)
         String pemKey = null;
         String encryptionKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key);
-        if (previousSslTerm.getPrivatekey() != null) {
-            try {
-                // decrypt database key so we can revalidate with any new data
-                pemKey = Aes.b64decryptGCM_str(previousSslTerm.getPrivatekey(), encryptionKey,
-                        SslTerminationHelper.getLoadBalancerIv(accountId, loadBalancerId));
-            } catch (Exception e) {
-                try {
-                    // It's possible the encryption key has been revised, try again...
-                    pemKey = Aes.b64decryptGCM_str(previousSslTerm.getPrivatekey(),
-                            restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev),
-                            SslTerminationHelper.getLoadBalancerIv(accountId, loadBalancerId));
-                } catch (Exception ex) {
-                    // If we've failed here then we have something else quite wrong and failures should bubble up
-                    String msg = Debug.getEST(ex);
-                    return ResponseFactory.getErrorResponse(ex, "Error processing SSL termination " +
-                            "private key, please contact support...", null);
-                }
-            }
-        }
+
         String imdCrts = previousSslTerm.getIntermediateCertificate();
         String userCrt = previousSslTerm.getCertificate();
 
         // But if the values are present in the Rest Object they override the default values
         if (ssl.getPrivatekey() != null) {
             pemKey = ssl.getPrivatekey();
+        } else if (previousSslTerm.getPrivatekey() != null) {
+            try {
+                // decrypt database key so we can revalidate with any new data
+                pemKey = sslTerminationService.decryptPrivateKey(loadBalancerId, accountId, previousSslTerm.getPrivatekey(), true);
+            } catch (Exception e) {
+                return ResponseFactory.getErrorResponse(e, "Error processing SSL termination " +
+                        "please try again later or notify support if problem persists....", null);
+            }
         }
         if (ssl.getIntermediateCertificate() != null) {
             imdCrts = ssl.getIntermediateCertificate();

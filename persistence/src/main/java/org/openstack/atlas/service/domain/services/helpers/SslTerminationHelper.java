@@ -5,6 +5,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.InternalProcessingException;
 import org.openstack.atlas.service.domain.pojos.SslDetails;
 import org.openstack.atlas.service.domain.util.StringUtilities;
 import org.openstack.atlas.util.b64aes.Aes;
@@ -79,7 +80,7 @@ public final class SslTerminationHelper {
     }
 
     public static String encryptPrivateKey(int accountId, int lbId,
-                                           String rawKey, String encryptionKey) throws BadRequestException {
+                                           String rawKey, String encryptionKey) throws InternalProcessingException {
         try {
             return Aes.b64encryptGCM(rawKey.getBytes(), encryptionKey,
                     SslTerminationHelper.getLoadBalancerIv(accountId, lbId));
@@ -87,13 +88,13 @@ public final class SslTerminationHelper {
             String msg = Debug.getEST(e);
             LOG.error(String.format("Error encrypting Private key on loadbalancr %d, %s\n",
                     lbId, msg));
-            throw new BadRequestException("Error processing certificate mapping private key, " +
-                    "please verify formatting...");
+            throw new InternalProcessingException("Error processing certificate mapping private key, " +
+                    "please try again later or notify support if problem persists...");
         }
     }
 
     public static String encryptPrivateKeyForCertMapping(int accountId, int lbId, int mappingId,
-                                     String rawKey, String encryptionKey) throws BadRequestException {
+                                     String rawKey, String encryptionKey) throws InternalProcessingException {
         try {
             return Aes.b64encryptGCM(rawKey.getBytes(), encryptionKey,
                     SslTerminationHelper.getCertificateMappingIv(mappingId, accountId, lbId));
@@ -101,8 +102,8 @@ public final class SslTerminationHelper {
             String msg = Debug.getEST(e);
             LOG.error(String.format("Error encrypting Private key on loadbalancr %d for mapping %d, %s\n",
                     lbId, mappingId, msg));
-            throw new BadRequestException("Error processing certificate mapping private key, " +
-                    "please verify formatting...");
+            throw new InternalProcessingException("Error processing certificate mapping private key, " +
+                    "please try again later or notify support if problem persists...");
         }
     }
 

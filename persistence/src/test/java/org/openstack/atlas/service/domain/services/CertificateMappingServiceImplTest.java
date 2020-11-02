@@ -65,6 +65,9 @@ public class CertificateMappingServiceImplTest {
         @Mock
         AccountLimitServiceImpl accountLimitService;
 
+        @Mock
+        NotificationService notificationService;
+
 
         @InjectMocks
         CertificateMappingServiceImpl certificateMappingService;
@@ -187,7 +190,7 @@ public class CertificateMappingServiceImplTest {
 
             when(certificateMappingRepository.save(any(), anyInt())).thenReturn(certificateMappingToBeUpdated);
             when(certificateMappingRepository.getAllForLoadBalancerId(anyInt())).thenReturn(certMapList);
-
+            doNothing().when(notificationService).saveAlert(any(), any(), any(), any(), any());
         }
 
         // Create
@@ -297,7 +300,7 @@ public class CertificateMappingServiceImplTest {
             verify(certificateMappingRepository, times(1)).update(loadBalancer);
         }
 
-        @Test(expected = BadRequestException.class)
+        @Test(expected = InternalProcessingException.class)
         public void shouldFailValidDataForUpdateWithRevisedEncryptKeyNull() throws Exception {
             when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
             when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn(null);
@@ -305,6 +308,7 @@ public class CertificateMappingServiceImplTest {
             certificateMappingService.update(loadBalancer);
 
             verify(certificateMappingRepository, times(0)).update(loadBalancer);
+            verify(notificationService, times(1)).saveAlert(any(), any(), any(), any(), any());
         }
 
         @Test
@@ -374,10 +378,11 @@ public class CertificateMappingServiceImplTest {
             certificateMappingService.update(loadBalancer);
         }
 
-        @Test(expected = UnprocessableEntityException.class)
+        @Test(expected = InternalProcessingException.class)
         public void shouldFailToValidateDecryptedPrivateKeys() throws Exception{
             // all private keys should be encrypted at this point, any failures here should bubble up and be resolved
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
+            verify(notificationService, times(1)).saveAlert(any(), any(), any(), any(), any());
         }
 
         @Test
@@ -386,10 +391,11 @@ public class CertificateMappingServiceImplTest {
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
         }
 
-        @Test(expected = UnprocessableEntityException.class)
+        @Test(expected = InternalProcessingException.class)
         public void shouldThrowExceptionWithBadPrivateKey() throws Exception {
             certificateMappingToBeUpdated.setPrivateKey(null);
             certificateMappingService.validatePrivateKeys(loadBalancer, true);
+            verify(notificationService, times(1)).saveAlert(any(), any(), any(), any(), any());
         }
 
         @Test(expected = BadRequestException.class)

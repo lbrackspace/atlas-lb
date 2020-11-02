@@ -48,8 +48,8 @@ public class SyncResource extends ManagementDependencyProvider {
             // These will throw BadRequestExceptions if keys fail to validate or store
             if (sslTerm != null) {
                 sslTerminationService.validatePrivateKey(loadBalancerId, lb.getAccountId(), sslTerm, true);
+                certificateMappingService.validatePrivateKeys(lb, true);
             }
-            certificateMappingService.validatePrivateKeys(lb, true);
 
             if (lb.getStatus().equals(LoadBalancerStatus.SUSPENDED)) {
                 BadRequestException bre = new BadRequestException("Cannot Sync a Suspended Load Balancer, Please Check With Operations For Further Information...");

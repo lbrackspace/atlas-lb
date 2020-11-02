@@ -8,12 +8,10 @@ import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SslTermination;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
+import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.service.domain.services.SslCipherProfileService;
 import org.openstack.atlas.service.domain.services.SslTerminationService;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
@@ -29,6 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.API_FAILURE;
 
 @Service
 public class SslTerminationServiceImpl extends BaseService implements SslTerminationService {
@@ -46,13 +46,15 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Autowired
     private SslCipherProfileService sslCipherProfileService;
+    @Autowired
+    private NotificationService notificationService;
 
     @Override
     @Transactional
     public ZeusSslTermination updateSslTermination(int lbId, int accountId,
                                                    SslTermination sslTermination,
                                                    boolean isSync) throws EntityNotFoundException,
-            ImmutableEntityException, BadRequestException, UnprocessableEntityException {
+            ImmutableEntityException, BadRequestException, UnprocessableEntityException, InternalProcessingException {
         ZeusSslTermination zeusSslTermination = new ZeusSslTermination();
         ZeusCrtFile zeusCrtFile = null;
 
@@ -170,27 +172,9 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
     public ZeusCrtFile validatePrivateKey(int lbId, int accountId,
                                           org.openstack.atlas.service.domain.entities.SslTermination sslTermination,
                                           boolean saveKey)
-            throws BadRequestException, EntityNotFoundException, UnprocessableEntityException {
-        String encrypiontKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+            throws BadRequestException, EntityNotFoundException, InternalProcessingException {
 
-        try {
-            // decrypt database key so we can revalidate with any new data
-            sslTermination.setPrivatekey(Aes.b64decryptGCM_str(sslTermination.getPrivatekey(), encrypiontKey,
-                    SslTerminationHelper.getLoadBalancerIv(accountId, lbId)));
-        } catch (Exception e) {
-            try {
-            // It's possible the encryption key has been revised, try again...
-            sslTermination.setPrivatekey(Aes.b64decryptGCM_str(sslTermination.getPrivatekey(),
-                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev),
-                    SslTerminationHelper.getLoadBalancerIv(accountId, lbId)));
-            } catch (Exception ex) {
-                // If we've failed here then we have something else quite wrong and failures should bubble up
-                String msg = Debug.getEST(ex);
-                LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", lbId, msg));
-                throw new UnprocessableEntityException("Error processing SSL termination " +
-                        "private key, please contact support...");
-            }
-        }
+        sslTermination.setPrivatekey(decryptPrivateKey(lbId, accountId, sslTermination.getPrivatekey(), true));
 
         // validate decrypted key and related certs
         ZeusCrtFile zeusCrtFile = zeusUtils.buildZeusCrtFileLbassValidation(
@@ -198,19 +182,15 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
                 sslTermination.getIntermediateCertificate());
         SslTerminationHelper.verifyCertificationCredentials(zeusCrtFile);
 
-        try {
-            LOG.info("Encrypting Private key");
-            if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev) != null) {
-                encrypiontKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev);
-            }
-            String encryptedKey = Aes.b64encryptGCM(sslTermination.getPrivatekey().getBytes(), encrypiontKey,
-                    SslTerminationHelper.getLoadBalancerIv(accountId, lbId));
-            sslTermination.setPrivatekey(encryptedKey);
-        } catch (Exception e) {
-            String msg = Debug.getEST(e);
-            LOG.error(String.format("Error encrypting Private key on loadbalancr %d: %s\n", lbId, msg));
-            throw new BadRequestException("Error processing SSL termination private key, please verify formatting...");
+        LOG.debug("Encrypting Private key");
+        String encrypiontKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key);
+        if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev) != null) {
+            encrypiontKey = restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev);
         }
+
+        String encryptedKey = SslTerminationHelper.encryptPrivateKey(
+                accountId, lbId, sslTermination.getPrivatekey(), encrypiontKey);
+        sslTermination.setPrivatekey(encryptedKey);
 
         if (saveKey) {
             LOG.info(String.format("Saving ssl termination to the data base for loadbalancer: '%d'", lbId));
@@ -218,6 +198,34 @@ public class SslTerminationServiceImpl extends BaseService implements SslTermina
             LOG.info(String.format("Succesfully saved ssl termination to the data base for loadbalancer: '%d'", lbId));
         }
         return zeusCrtFile;
+    }
+
+    @Override
+    @Transactional
+    public String decryptPrivateKey(int lbId, int accountId, String keyToDecrypt, boolean saveAlert) throws InternalProcessingException {
+
+        try {
+            // decrypt database key so we can revalidate with any new data
+            return Aes.b64decryptGCM_str(keyToDecrypt,
+                    restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                    SslTerminationHelper.getLoadBalancerIv(accountId, lbId));
+        } catch (Exception e) {
+            try {
+                // It's possible the encryption key has been revised, try again...
+                return Aes.b64decryptGCM_str(keyToDecrypt,
+                        restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev),
+                        SslTerminationHelper.getLoadBalancerIv(accountId, lbId));
+            } catch (Exception ex) {
+                // If we've failed here then we have something else quite wrong and failures should bubble up
+                String msg = String.format("Error decrypting Private key on loadbalancr %d: %s", lbId, Debug.getEST(ex));
+                LOG.error(msg);
+                if (saveAlert) {
+                    notificationService.saveAlert(accountId, lbId, ex, API_FAILURE.name(), String.format("Error decrypting Private key on loadbalancr %d", lbId));
+                }
+                throw new InternalProcessingException("Error processing SSL termination " +
+                        "private key, please try again later or notify support if problem persists...");
+            }
+        }
     }
 
     @Override

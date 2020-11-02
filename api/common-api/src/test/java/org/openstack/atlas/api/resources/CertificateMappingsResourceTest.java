@@ -242,7 +242,7 @@ public class CertificateMappingsResourceTest {
         }
 
         @Test
-        public void shouldCreateCertificateMapping() throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, LimitReachedException {
+        public void shouldCreateCertificateMapping() throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, LimitReachedException, InternalProcessingException {
             when(certificateMappingService.create(any())).thenReturn(certificateMappingList.get(0));
 
             response = certificateMappingsResource.createCertificateMapping(apiCertificateMapping);
@@ -256,7 +256,7 @@ public class CertificateMappingsResourceTest {
         }
 
         @Test
-        public void shouldFailToCreateCertificateMapping() throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, LimitReachedException {
+        public void shouldFailToCreateCertificateMapping() throws EntityNotFoundException, UnprocessableEntityException, ImmutableEntityException, BadRequestException, LimitReachedException, InternalProcessingException {
             certificateMappingList.get(0).setPrivateKey("broken");
             apiCertificateMapping.setPrivateKey("broken");
             when(certificateMappingService.create(any())).thenReturn(certificateMappingList.get(0));

@@ -17,6 +17,7 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.v1.PersistenceType;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.InternalProcessingException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.b64aes.Aes;
@@ -638,7 +639,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
 
 
         @Test
-        public void shouldTranslateKeyPairCertMappings() throws InsufficientRequestException, UnprocessableEntityException {
+        public void shouldTranslateKeyPairCertMappings() throws InsufficientRequestException, InternalProcessingException {
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
 
             Set<CertificateMapping> cms = new HashSet<>();
@@ -663,7 +664,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
         }
 
         @Test
-        public void shouldTranslateKeyPairCertMappingsRevisedEncryptKey() throws InsufficientRequestException, UnprocessableEntityException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException {
+        public void shouldTranslateKeyPairCertMappingsRevisedEncryptKey() throws InsufficientRequestException, InternalProcessingException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException {
             // This case should only ever hit if database has yet to be updated
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
 
@@ -693,8 +694,8 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertEquals(VTMTestConstants.SSL_CERT, m1.getProperties().getBasic().getPublic());
         }
 
-        @Test(expected = UnprocessableEntityException.class)
-        public void shouldFailTranslateKeyPairCertMappingsRevisedEncryptKeyNull() throws InsufficientRequestException, UnprocessableEntityException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException {
+        @Test(expected = InternalProcessingException.class)
+        public void shouldFailTranslateKeyPairCertMappingsRevisedEncryptKeyNull() throws InsufficientRequestException, InternalProcessingException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException {
             // This case should only ever hit if database has yet to be updated
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
 
@@ -715,8 +716,8 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Map<String, Keypair> translatedMappings = translator.translateKeypairMappingsResource(lb, true);
         }
 
-        @Test(expected = UnprocessableEntityException.class)
-        public void shouldFailToDecryptKeyForTranslateKeyPair() throws InsufficientRequestException, UnprocessableEntityException {
+        @Test(expected = InternalProcessingException.class)
+        public void shouldFailToDecryptKeyForTranslateKeyPair() throws InsufficientRequestException, InternalProcessingException {
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
             when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("WrongKey");
 
@@ -734,7 +735,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
         }
 
         @Test
-        public void shouldTranslateKeyPairCertMappingsMultiple() throws InsufficientRequestException, UnprocessableEntityException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException {
+        public void shouldTranslateKeyPairCertMappingsMultiple() throws InsufficientRequestException, InternalProcessingException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException {
             initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
 
             iv = String.format("%d_%d_%d", lb.getAccountId(), lb.getId(), 1);

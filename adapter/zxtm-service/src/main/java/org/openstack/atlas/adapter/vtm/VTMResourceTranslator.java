@@ -10,6 +10,7 @@ import org.openstack.atlas.adapter.zxtm.ZxtmConversionUtils;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.InternalProcessingException;
 import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
 import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.StringUtils;
@@ -67,14 +68,13 @@ public class VTMResourceTranslator {
         return new VTMResourceTranslator();
     }
 
-    public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
-                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb) throws InsufficientRequestException, UnprocessableEntityException {
+    public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config, String vsName, LoadBalancer loadBalancer, LoadBalancer queLb)
+            throws InsufficientRequestException, InternalProcessingException {
         translateLoadBalancerResource(config, vsName, loadBalancer, queLb, true, true);
     }
 
-    public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config,
-                                              String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert, boolean vipsEnabled)
-            throws InsufficientRequestException, UnprocessableEntityException {
+    public void translateLoadBalancerResource(LoadBalancerEndpointConfiguration config, String vsName, LoadBalancer loadBalancer, LoadBalancer queLb, boolean careAboutCert, boolean vipsEnabled)
+            throws InsufficientRequestException, InternalProcessingException {
         //Order matters when translating the entire entity.
         if (loadBalancer.getHealthMonitor() != null) translateMonitorResource(loadBalancer);
         if (loadBalancer.getRateLimit() != null) translateBandwidthResource(loadBalancer);
@@ -509,7 +509,7 @@ public class VTMResourceTranslator {
     }
 
     public Keypair translateKeypairResource(LoadBalancer loadBalancer, boolean careAboutCert)
-            throws InsufficientRequestException, UnprocessableEntityException {
+            throws InsufficientRequestException, InternalProcessingException {
         // Decrypt key
         String privKey;
         try {
@@ -525,7 +525,7 @@ public class VTMResourceTranslator {
                         String.format("%d_%d", loadBalancer.getAccountId(), loadBalancer.getId()));
             } catch (Exception ex) {
                 // If we've failed here then we have something else quite wrong and failures should bubble up
-                throw new UnprocessableEntityException(ex.getMessage());
+                throw new InternalProcessingException(ex.getMessage());
             }
         }
 
@@ -552,8 +552,8 @@ public class VTMResourceTranslator {
         return cKeypair;
     }
 
-    public Map<String, Keypair> translateKeypairMappingsResource(LoadBalancer loadBalancer,
-                                                    boolean careAboutCert) throws InsufficientRequestException, UnprocessableEntityException {
+    public Map<String, Keypair> translateKeypairMappingsResource(LoadBalancer loadBalancer, boolean careAboutCert)
+            throws InsufficientRequestException, InternalProcessingException {
         Integer lbId = loadBalancer.getId();
         Integer accountId = loadBalancer.getAccountId();
 
@@ -578,7 +578,7 @@ public class VTMResourceTranslator {
                             String.format("%d_%d_%d", loadBalancer.getAccountId(), loadBalancer.getId(), cm.getId()));
                 } catch (Exception ex) {
                     // If we've failed here then we have something else quite wrong and failures should bubble up
-                    throw new UnprocessableEntityException(ex.getMessage());
+                    throw new InternalProcessingException(ex.getMessage());
                 }
             }
 
