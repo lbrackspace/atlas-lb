@@ -12,6 +12,7 @@ import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.SslDetails;
 import org.openstack.atlas.service.domain.services.CertificateMappingService;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
+import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
 import org.openstack.atlas.service.domain.services.helpers.StringHelper;
 import org.openstack.atlas.service.domain.util.Constants;
@@ -27,6 +28,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.API_FAILURE;
+
 @Service
 public class CertificateMappingServiceImpl extends BaseService implements CertificateMappingService {
     private final Log LOG = LogFactory.getLog(CertificateMappingServiceImpl.class);
@@ -38,6 +41,8 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
     private AccountLimitServiceImpl accountLimitService;
     @Autowired
     private RestApiConfiguration restApiConfiguration;
+    @Autowired
+    private NotificationService notificationService;
 
     static {
         zeusUtils = new ZeusUtils();
@@ -45,7 +50,7 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
 
     @Override
     @Transactional
-    public CertificateMapping create(LoadBalancer messengerLb) throws UnprocessableEntityException, EntityNotFoundException, BadRequestException, ImmutableEntityException, LimitReachedException {
+    public CertificateMapping create(LoadBalancer messengerLb) throws UnprocessableEntityException, EntityNotFoundException, BadRequestException, ImmutableEntityException, LimitReachedException, InternalProcessingException {
         ensureSslTerminationConfigIsAvailable(messengerLb.getId());
         List<CertificateMapping> dbCertificateMappings = certificateMappingRepository.getAllForLoadBalancerId(messengerLb.getId());
         CertificateMapping newMapping = messengerLb.getCertificateMappings().iterator().next();
@@ -98,7 +103,7 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
 
     @Override
     @Transactional
-    public void update(LoadBalancer messengerLb) throws EntityNotFoundException, UnprocessableEntityException, BadRequestException, ImmutableEntityException {
+    public void update(LoadBalancer messengerLb) throws EntityNotFoundException, UnprocessableEntityException, BadRequestException, ImmutableEntityException, InternalProcessingException {
         ensureSslTerminationConfigIsAvailable(messengerLb.getId());
         LoadBalancer dbLb = loadBalancerRepository.getByIdAndAccountId(messengerLb.getId(), messengerLb.getAccountId());
         Set<CertificateMapping> dbCertMappings = dbLb.getCertificateMappings();
@@ -155,8 +160,8 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
 
     @Override
     @Transactional
-    public void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys) throws BadRequestException,
-            UnprocessableEntityException {
+    public void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys)
+            throws BadRequestException, InternalProcessingException {
         LOG.debug(String.format("Sync %d certificate mappings for load balancer: %d ",
                 messengerLb.getCertificateMappings().size(), messengerLb.getId()));
 
@@ -178,8 +183,9 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
                     LOG.error(String.format(
                             "Error encrypting Private key on load balancr %d for mapping %s, %s\n",
                             messengerLb.getId(), certificateMapping.getId(), msg));
-                    throw new UnprocessableEntityException(
-                            "Error processing certificate mapping private keys, please contact support...");
+                    throw new InternalProcessingException(
+                            "Error processing certificate mapping private keys, " +
+                                    "please try again later or notify support if problem persists...");
                 }
             }
         if (saveKeys) {
@@ -232,8 +238,8 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
         }
     }
 
-    private void validateCertificateMapping(CertificateMapping mapping,
-                                            int accountId, int lbId) throws BadRequestException, UnprocessableEntityException {
+    private void validateCertificateMapping(CertificateMapping mapping, int accountId, int lbId)
+            throws BadRequestException, InternalProcessingException {
         SslDetails sslDetails = new SslDetails(mapping.getPrivateKey(),
                 mapping.getCertificate(), mapping.getIntermediateCertificate());
         try {
@@ -251,11 +257,14 @@ public class CertificateMappingServiceImpl extends BaseService implements Certif
                 mapping.setPrivateKey(sslDetails.getPrivateKey());
             } catch (Exception e) {
                 // If we've failed here then we have something else quite wrong and failures should bubble up
-                String msg = Debug.getEST(e);
-                LOG.error(String.format("Error encrypting Private key on loadbalancr %d for mapping %s; %s\n",
-                        lbId, mapping.getId(), msg));
-                throw new UnprocessableEntityException("Error processing Certificate Mapping " +
-                        "private key, please contact support...");
+                String msg = String.format("Error encrypting Private key on loadbalancr %d for mapping %s; %s\n",
+                        lbId, mapping.getId(), Debug.getEST(e));
+                LOG.error(msg);
+                notificationService.saveAlert(accountId, lbId, ex, API_FAILURE.name(),
+                        String.format("Error encrypting Private key on loadbalancr %d for mapping %s",
+                        lbId, mapping.getId()));
+                throw new InternalProcessingException("Error processing Certificate Mapping " +
+                        "private key, please try again later or notify support if problem persists...");
             }
         }
 

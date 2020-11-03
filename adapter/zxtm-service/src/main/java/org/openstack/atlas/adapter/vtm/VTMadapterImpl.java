@@ -13,7 +13,7 @@ import org.openstack.atlas.adapter.vtm.VTMAdapterUtils.VSType;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exceptions.InternalProcessingException;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.openstack.atlas.service.domain.util.StringUtilities;
@@ -303,7 +303,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         String vsName = ZxtmNameBuilder.genVSName(loadBalancer);
         try {
             translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
-        } catch (UnprocessableEntityException e) {
+        } catch (InternalProcessingException e) {
             String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
             LOG.error(e);
             LOG.error(em);
@@ -327,7 +327,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
 
         try {
             translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
-        } catch (UnprocessableEntityException e) {
+        } catch (InternalProcessingException e) {
             String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
             LOG.error(e);
             LOG.error(em);
@@ -357,7 +357,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         if (!jvips6ToRemove.isEmpty()) loadBalancer.getLoadBalancerJoinVip6Set().removeAll(jvips6ToRemove);
         try {
             translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer, false, true);
-        } catch (UnprocessableEntityException e) {
+        } catch (InternalProcessingException e) {
             String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
             LOG.error(e);
             LOG.error(em);
@@ -439,7 +439,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
 
         try {
             translator.translateLoadBalancerResource(config, vsName, loadBalancer, loadBalancer);
-        } catch (UnprocessableEntityException e) {
+        } catch (InternalProcessingException e) {
             String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
             LOG.error(e);
             LOG.error(em);
@@ -591,7 +591,7 @@ public class  VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
         VTMResourceTranslator translator = VTMResourceTranslator.getNewResourceTranslator(restApiConfiguration);
         try {
             translator.translateLoadBalancerResource(config, sslVsName, loadBalancer, loadBalancer);
-        } catch (UnprocessableEntityException e) {
+        } catch (InternalProcessingException e) {
             String em = String.format("Failed decrypting private keys during translation for loadbalancer %d", loadBalancer.getId());
             LOG.error(e);
             LOG.error(em);

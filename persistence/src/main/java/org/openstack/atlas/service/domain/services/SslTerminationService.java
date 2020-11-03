@@ -9,9 +9,11 @@ import java.util.Map;
 
 public interface SslTerminationService {
 
-    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination, boolean isSync) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException;
+    public ZeusSslTermination updateSslTermination(int lbId, int accountId, SslTermination sslTermination, boolean isSync) throws EntityNotFoundException, ImmutableEntityException, BadRequestException, UnprocessableEntityException, InternalProcessingException;
 
-    public ZeusCrtFile validatePrivateKey(int lbId, int accountId, org.openstack.atlas.service.domain.entities.SslTermination sslTermination, boolean saveKey) throws BadRequestException, EntityNotFoundException, UnprocessableEntityException;
+    public ZeusCrtFile validatePrivateKey(int lbId, int accountId, org.openstack.atlas.service.domain.entities.SslTermination sslTermination, boolean saveKey) throws BadRequestException, EntityNotFoundException, UnprocessableEntityException, InternalProcessingException;
+
+    public String decryptPrivateKey(int lbId, int accountId, String keyToDecrypt, boolean saveAlert) throws InternalProcessingException;
 
     public boolean deleteSslTermination(Integer loadBalancerId, Integer accountId) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
 

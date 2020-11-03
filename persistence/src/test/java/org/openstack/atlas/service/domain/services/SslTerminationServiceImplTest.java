@@ -16,10 +16,7 @@ import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.SslTermination;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.exceptions.UnprocessableEntityException;
+import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.SslTerminationRepository;
@@ -53,6 +50,7 @@ import java.util.*;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
+import static org.openstack.atlas.service.domain.services.helpers.AlertType.API_FAILURE;
 
 
 @RunWith(Enclosed.class)
@@ -76,6 +74,9 @@ public class SslTerminationServiceImplTest {
 
         @Mock
         SslCipherProfileServiceImpl sslCipherProfileService;
+
+        @Mock
+        NotificationService notificationService;
 
 
         @InjectMocks
@@ -185,6 +186,7 @@ public class SslTerminationServiceImplTest {
             loadBalancerStatusHistoryService = loadBalancerStatusHistoryServiceImpl;
             when(loadBalancerStatusHistoryService.save(loadBalancer.getAccountId(),
                     loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE)).thenReturn(null);
+            doNothing().when(notificationService).saveAlert(any(), any(), any(), any(), any());
 
         }
 
@@ -248,7 +250,7 @@ public class SslTerminationServiceImplTest {
                     loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
-        @Test(expected = UnprocessableEntityException.class)
+        @Test(expected = InternalProcessingException.class)
         public void shouldFailEncryptedPrivateKeyRevisedEncryptKeyNull() throws Exception {
             sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
 
@@ -262,6 +264,8 @@ public class SslTerminationServiceImplTest {
             verify(sslTerminationRepository, times(1)).setSslTermination(any(), any());
             verify(loadBalancerStatusHistoryService, times(1)).save(loadBalancer.getAccountId(),
                     loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+            verify(notificationService, times(1)).saveAlert(any(), any(), any(), any(), any());
+
         }
 
         @Test
@@ -292,10 +296,11 @@ public class SslTerminationServiceImplTest {
                     loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
-        @Test(expected = UnprocessableEntityException.class)
-        public void shouldThrowErrorWhenEncryptKeysNull() throws BadRequestException, ImmutableEntityException, UnprocessableEntityException, EntityNotFoundException {
+        @Test(expected = InternalProcessingException.class)
+        public void shouldThrowErrorWhenEncryptKeysNull() throws BadRequestException, ImmutableEntityException, UnprocessableEntityException, EntityNotFoundException, InternalProcessingException {
             when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn(null);
             ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, true);
+            verify(notificationService, times(1)).saveAlert(any(), any(), any(), any(), any());
         }
 
         @Test
@@ -335,10 +340,12 @@ public class SslTerminationServiceImplTest {
             sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
         }
 
-        @Test(expected = UnprocessableEntityException.class)
+        @Test(expected = InternalProcessingException.class)
         public void  shouldErrorOnValidateUnencryptedKey() throws Exception {
             sslTerminationToBeUpdated.setPrivatekey(workingUserKey);
             sslTerminationService.validatePrivateKey(loadBalancer.getId(), loadBalancer.getAccountId(), sslTerminationToBeUpdated, true);
+            verify(notificationService, times(1)).saveAlert(any(), any(), any(), any(), any());
+
         }
 
         @Test(expected = BadRequestException.class)

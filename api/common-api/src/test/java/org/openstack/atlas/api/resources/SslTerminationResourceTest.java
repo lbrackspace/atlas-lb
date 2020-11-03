@@ -21,6 +21,7 @@ import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.InternalProcessingException;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.service.domain.services.SslTerminationService;
 import org.openstack.atlas.util.b64aes.Aes;
@@ -180,6 +181,8 @@ public class SslTerminationResourceTest {
 
             ZeusSslTermination rzTerm = new ZeusSslTermination();
             rzTerm.setSslTermination(sslTerm);
+            when(sslTerminationService.decryptPrivateKey(sslTermResource.getLoadBalancerId(),
+                    sslTermResource.getAccountId(), eKey, true)).thenReturn(workingUserKey);
             when(sslTerminationService.updateSslTermination(sslTermResource.getLoadBalancerId(),
                     sslTermResource.getAccountId(), rsslTerm, false)).thenReturn(rzTerm);
 
@@ -304,6 +307,8 @@ public class SslTerminationResourceTest {
 
             ZeusSslTermination rzTerm = new ZeusSslTermination();
             rzTerm.setSslTermination(sslTerm);
+            doThrow(InternalProcessingException.class).when(sslTerminationService).decryptPrivateKey(sslTermResource.getLoadBalancerId(),
+                    sslTermResource.getAccountId(), workingUserKey, true);
             when(sslTerminationService.updateSslTermination(sslTermResource.getLoadBalancerId(),
                     sslTermResource.getAccountId(), rsslTerm, false)).thenReturn(rzTerm);
 
@@ -333,6 +338,8 @@ public class SslTerminationResourceTest {
 
             ZeusSslTermination rzTerm = new ZeusSslTermination();
             rzTerm.setSslTermination(sslTerm);
+            doThrow(InternalProcessingException.class).when(sslTerminationService).decryptPrivateKey(sslTermResource.getLoadBalancerId(),
+                    sslTermResource.getAccountId(), "invalidKey", true);
             when(sslTerminationService.updateSslTermination(sslTermResource.getLoadBalancerId(),
                     sslTermResource.getAccountId(), rsslTerm, false)).thenReturn(rzTerm);
 

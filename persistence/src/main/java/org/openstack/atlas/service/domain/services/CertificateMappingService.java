@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CertificateMappingService {
 
-    CertificateMapping create(LoadBalancer lb) throws UnprocessableEntityException, EntityNotFoundException, BadRequestException, ImmutableEntityException, LimitReachedException;
+    CertificateMapping create(LoadBalancer lb) throws UnprocessableEntityException, EntityNotFoundException, BadRequestException, ImmutableEntityException, LimitReachedException, InternalProcessingException;
 
     List<CertificateMapping> getAllForLoadBalancerId(Integer lbId) throws EntityNotFoundException;
 
@@ -16,9 +16,9 @@ public interface CertificateMappingService {
 
     void deleteAllCertMappingForLB(Integer lbId) throws EntityNotFoundException;
 
-    void update(LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, BadRequestException, ImmutableEntityException;
+    void update(LoadBalancer lb) throws EntityNotFoundException, UnprocessableEntityException, BadRequestException, ImmutableEntityException, InternalProcessingException;
 
-    void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys) throws BadRequestException, UnprocessableEntityException;
+    void validatePrivateKeys(LoadBalancer messengerLb, boolean saveKeys) throws BadRequestException, UnprocessableEntityException, InternalProcessingException;
 
     void prepareForDelete(LoadBalancer lb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
 
