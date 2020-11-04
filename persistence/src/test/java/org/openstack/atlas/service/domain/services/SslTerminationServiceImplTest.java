@@ -203,6 +203,13 @@ public class SslTerminationServiceImplTest {
                     loadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
 
+        @Test(expected = BadRequestException.class)
+        public void shouldThrowErrorForTCPClientFirstProtocol() throws Exception {
+            sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
+            loadBalancer.setProtocol(LoadBalancerProtocol.TCP_CLIENT_FIRST);
+            ZeusSslTermination zeusSslTermination =  sslTerminationService.updateSslTermination(lbId, accountId, sslTermination, false);
+        }
+
         @Test
         public void shouldReturnEncryptedPrivateKeyRevisedEncryptKey() throws Exception {
             sslTermination.setPrivatekey(Aes.b64encryptGCM(workingUserKey.getBytes(), "testCrypto", iv));
