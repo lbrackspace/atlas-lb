@@ -160,6 +160,10 @@ public class VTMResourceTranslator {
         cVServer = new VirtualServer();
         cVServer.setProperties(properties);
 
+        // Virtual server should have http2 enabled by default
+        VirtualServerHttp2 http2 = new VirtualServerHttp2();
+        http2.setEnabled(Boolean.TRUE);
+        properties.setHttp2(http2);
         //basic virtual server settings
         if (vsName.equals(ZxtmNameBuilder.genSslVSName(loadBalancer))) {
             basic.setPort(loadBalancer.getSslTermination().getSecurePort());

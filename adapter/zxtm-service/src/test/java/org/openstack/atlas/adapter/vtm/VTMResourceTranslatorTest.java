@@ -284,6 +284,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertTrue(createdProperties.getHttp().getAddXForwardedFor());
             Assert.assertTrue(createdProperties.getHttp().getAddXForwardedProto());
             Assert.assertFalse(createdProperties.getHttp().getStripXForwardedProto());
+            Assert.assertTrue(createdProperties.getHttp2().getEnabled());
 //            Assert.assertTrue(rules.containsAll(createdBasic.getRequest_rules()));
 
 //            Assert.assertEquals(expectedError, createdProperties.getConnectionErrors());
@@ -316,6 +317,8 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertTrue(createdProperties.getHttp().getAddXForwardedFor());
             Assert.assertTrue(createdProperties.getHttp().getAddXForwardedProto());
             Assert.assertFalse(createdProperties.getHttp().getStripXForwardedProto());
+            Assert.assertTrue(createdProperties.getHttp2().getEnabled());
+
 //            Assert.assertTrue(rules.containsAll(createdBasic.getRequest_rules()));
 
 //            Assert.assertEquals(expectedError, createdProperties.getConnectionErrors());
@@ -389,6 +392,8 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertTrue(createdProperties.getHttp().getAddXForwardedProto());
             Assert.assertFalse(createdProperties.getHttp().getStripXForwardedProto());
             Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, createdProperties.getHttp().getLocationRewrite());
+            Assert.assertTrue(createdProperties.getHttp2().getEnabled());
+
 
         }
 
@@ -459,6 +464,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertTrue(createdProperties.getHttp().getAddXForwardedFor());
             Assert.assertTrue(createdProperties.getHttp().getAddXForwardedProto());
             Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, createdProperties.getHttp().getLocationRewrite());
+            Assert.assertTrue(createdProperties.getHttp2().getEnabled());
 
         }
 
@@ -536,7 +542,7 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertEquals(VirtualServerSsl.SupportTls11.DISABLED, createdServer.getProperties().getSsl().getSupportTls11());
             Assert.assertEquals(secureName, createdProperties.getSsl().getServerCertDefault());
             Assert.assertNull(createdProperties.getHttp());
-
+            Assert.assertTrue(createdProperties.getHttp2().getEnabled());
         }
 
         @Test
@@ -635,6 +641,8 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             VirtualServerSsl vssl = createdServer.getProperties().getSsl();
             Assert.assertEquals(2, vssl.getServerCertHostMapping().size());
             Assert.assertTrue(vssl.getServerCertHostMapping().containsAll(vshm));
+            Assert.assertTrue(createdProperties.getHttp2().getEnabled());
+
         }
 
 
