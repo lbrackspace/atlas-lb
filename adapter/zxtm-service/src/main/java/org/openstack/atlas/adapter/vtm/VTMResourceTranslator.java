@@ -515,13 +515,14 @@ public class VTMResourceTranslator {
     public Keypair translateKeypairResource(LoadBalancer loadBalancer, boolean careAboutCert)
             throws InsufficientRequestException, InternalProcessingException {
         // Decrypt key
-        String privKey;
+        String privKey = null;
         try {
             // decrypt database key so we can revalidate with any new data
             privKey = Aes.b64decryptGCM_str(loadBalancer.getSslTermination().getPrivatekey(),
                     restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
                     String.format("%d_%d", loadBalancer.getAccountId(), loadBalancer.getId()));
         } catch (Exception e) {
+            String msg = e.getMessage();
             try {
                 // It's possible the encryption key has been revised, try again...
                 privKey = Aes.b64decryptGCM_str(loadBalancer.getSslTermination().getPrivatekey(),
@@ -529,7 +530,10 @@ public class VTMResourceTranslator {
                         String.format("%d_%d", loadBalancer.getAccountId(), loadBalancer.getId()));
             } catch (Exception ex) {
                 // If we've failed here then we have something else quite wrong and failures should bubble up
-                throw new InternalProcessingException(ex.getMessage());
+                if (careAboutCert) {
+                    if (ex.getMessage() != null) {msg = ex.getMessage();}
+                    throw new InternalProcessingException(msg);
+                }
             }
         }
 
@@ -568,13 +572,14 @@ public class VTMResourceTranslator {
 
             String certificateName = ZxtmNameBuilder.generateCertificateName(lbId, accountId, cm.getId());
             // Decrypt key
-            String privKey;
+            String privKey = null;
             try {
                 // decrypt database key so we can revalidate with any new data
                 privKey = Aes.b64decryptGCM_str(cm.getPrivateKey(),
                         restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
                         String.format("%d_%d_%d", loadBalancer.getAccountId(), loadBalancer.getId(), cm.getId()));
             } catch (Exception e) {
+                String msg = e.getMessage();
                 try {
                     // It's possible the encryption key has been revised, try again...
                     privKey = Aes.b64decryptGCM_str(cm.getPrivateKey(),
@@ -582,7 +587,10 @@ public class VTMResourceTranslator {
                             String.format("%d_%d_%d", loadBalancer.getAccountId(), loadBalancer.getId(), cm.getId()));
                 } catch (Exception ex) {
                     // If we've failed here then we have something else quite wrong and failures should bubble up
-                    throw new InternalProcessingException(ex.getMessage());
+                    if (careAboutCert) {
+                        if (ex.getMessage() != null) {msg = ex.getMessage();}
+                        throw new InternalProcessingException(msg);
+                    }
                 }
             }
 

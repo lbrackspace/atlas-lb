@@ -394,7 +394,6 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, createdProperties.getHttp().getLocationRewrite());
             Assert.assertTrue(createdProperties.getHttp2().getEnabled());
 
-
         }
 
         @Test
@@ -466,6 +465,67 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             Assert.assertEquals(VirtualServerHttp.LocationRewrite.NEVER, createdProperties.getHttp().getLocationRewrite());
             Assert.assertTrue(createdProperties.getHttp2().getEnabled());
 
+        }
+
+        @Test
+        public void shouldFailButNotCareTranslateKeypairWithSSLTerminationEncryptedKey() throws InsufficientRequestException, InternalProcessingException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testCrypto3");
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(VTMTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(VTMTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(VTMTestConstants.ENCRYPTED_SSL_KEY);
+            sslTermination.setTls10Enabled(true);
+            sslTermination.setTls11Enabled(false);
+
+            lb.setSslTermination(sslTermination);
+
+            Keypair translatedkp = translator.translateKeypairResource(lb, false);
+            Assert.assertNull(translatedkp);
+
+        }
+
+        @Test(expected = InternalProcessingException.class)
+        public void shouldFailAndCareTranslateKeypairWithSSLTerminationEncryptedKey() throws InsufficientRequestException, InternalProcessingException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key)).thenReturn("testCrypto3");
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(VTMTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(VTMTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(VTMTestConstants.ENCRYPTED_SSL_KEY);
+            sslTermination.setTls10Enabled(true);
+            sslTermination.setTls11Enabled(false);
+
+            lb.setSslTermination(sslTermination);
+
+            Keypair translatedkp = translator.translateKeypairResource(lb, true);
+            Assert.assertNull(translatedkp);
+        }
+
+        @Test
+        public void shouldTranslateKeypairWithSSLTerminationEncryptedKey() throws InsufficientRequestException, InternalProcessingException {
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+
+            SslTermination sslTermination = new SslTermination();
+            sslTermination.setSecureTrafficOnly(false);
+            sslTermination.setEnabled(true);
+            sslTermination.setSecurePort(VTMTestConstants.LB_SECURE_PORT);
+            sslTermination.setCertificate(VTMTestConstants.SSL_CERT);
+            sslTermination.setPrivatekey(VTMTestConstants.ENCRYPTED_SSL_KEY);
+            sslTermination.setTls10Enabled(true);
+            sslTermination.setTls11Enabled(false);
+
+            lb.setSslTermination(sslTermination);
+
+            Keypair translatedkp = translator.translateKeypairResource(lb, true);
+            Assert.assertNotNull(translatedkp);
+            Assert.assertEquals(VTMTestConstants.SSL_KEY, translatedkp.getProperties().getBasic().getPrivate());
         }
 
         @Test
@@ -722,6 +782,30 @@ public class VTMResourceTranslatorTest extends VTMTestBase {
             lb.setCertificateMappings(cms);
 
             Map<String, Keypair> translatedMappings = translator.translateKeypairMappingsResource(lb, true);
+        }
+
+        @Test()
+        public void shouldFailTranslateKeyPairCertMappingsRevisedEncryptKeyNullButNotCare() throws InsufficientRequestException, InternalProcessingException, NoSuchPaddingException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException, IOException, InvalidKeySpecException {
+            // This case should only ever hit if database has yet to be updated
+            initializeVars("%v %{Host}i %h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-Agent}i\" %n", LoadBalancerProtocol.HTTP);
+
+            iv = String.format("%d_%d_%d", lb.getAccountId(), lb.getId(), 1);
+            encryptedKey = Aes.b64encryptGCM(VTMTestConstants.SSL_KEY.getBytes(), "testCrypto2", iv);
+            when(restApiConfiguration.getString(PublicApiServiceConfigurationKeys.term_crypto_key_rev)).thenReturn("testCrypto3");
+
+            Set<CertificateMapping> cms = new HashSet<>();
+            CertificateMapping cm = new CertificateMapping();
+            cm.setId(1);
+            cm.setHostName("h1");
+            cm.setPrivateKey(encryptedKey);
+            cm.setCertificate(VTMTestConstants.SSL_CERT);
+            cms.add(cm);
+
+            lb.setCertificateMappings(cms);
+
+            Map<String, Keypair> translatedMappings = translator.translateKeypairMappingsResource(lb, false);
+            Assert.assertNull(translatedMappings);
+
         }
 
         @Test(expected = InternalProcessingException.class)
