@@ -133,11 +133,9 @@ public class HostResource extends ManagementDependencyProvider {
         try {
             domainHost = hostService.getById(id);
 
-            if(isRestAdapter()){
+
                 dHostssubnet = reverseProxyLoadBalancerVTMService.getSubnetMappings(domainHost);
-            } else {
-                dHostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(domainHost);
-            }
+
 
             if (dHostssubnet != null) {
                 for (org.openstack.atlas.service.domain.pojos.Hostsubnet hsub : dHostssubnet.getHostsubnets()) {
@@ -368,11 +366,9 @@ public class HostResource extends ManagementDependencyProvider {
 
         try {
             host = hostService.getById(id);
-            if (isRestAdapter()) {
+
                 connection = reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(host);
-            } else {
-                connection = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host);
-            }
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -393,10 +389,8 @@ public class HostResource extends ManagementDependencyProvider {
         }
         hostssubnet = req.getHostssubnet();
         hostssubnet.getHostsubnets().get(0).setName(dHost.getTrafficManagerName());
-        if (isRestAdapter()) {
+
             reverseProxyLoadBalancerVTMService.setSubnetMappings(dHost, hostssubnet);
-        } else {
-            reverseProxyLoadBalancerService.setSubnetMappings(dHost, hostssubnet);
-        }
+
     }
 }

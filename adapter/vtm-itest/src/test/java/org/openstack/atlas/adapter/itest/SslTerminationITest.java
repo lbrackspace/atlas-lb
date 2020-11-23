@@ -1,11 +1,8 @@
 package org.openstack.atlas.adapter.itest;
 
 
-import org.bouncycastle.asn1.x509.Certificate;
 import org.junit.*;
-import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.RollBackException;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.helpers.VTMNameBuilder;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
@@ -45,8 +42,8 @@ public class SslTerminationITest extends VTMTestBase {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
         createSimpleLoadBalancer();
-        normalName = ZxtmNameBuilder.genVSName(lb);
-        secureName = ZxtmNameBuilder.genSslVSName(lb);
+        normalName = VTMNameBuilder.genVSName(lb);
+        secureName = VTMNameBuilder.genSslVSName(lb);
     }
 
     @After
@@ -238,8 +235,8 @@ public class SslTerminationITest extends VTMTestBase {
 
     private void deleteSslTermination() {
         try {
-            String vsName = ZxtmNameBuilder.genVSName(lb);
-            String vsSslName = ZxtmNameBuilder.genSslVSName(lb);
+            String vsName = VTMNameBuilder.genVSName(lb);
+            String vsSslName = VTMNameBuilder.genSslVSName(lb);
             try {
                 VirtualServer createdNormalVs = vtmClient.getVirtualServer(normalName);
             } catch (Exception e) {
@@ -274,8 +271,8 @@ public class SslTerminationITest extends VTMTestBase {
             int securePort = VTMTestConstants.LB_SECURE_PORT;
             int normalPort = VTMTestConstants.LB_PORT;
             boolean isConnectionLogging = true;
-            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
-            String normalVsName = ZxtmNameBuilder.genVSName(lb);
+            String secureVsName = VTMNameBuilder.genSslVSName(lb);
+            String normalVsName = VTMNameBuilder.genVSName(lb);
             vtmAdapter.updateSslTermination(config, lb, new ZeusSslTermination());
             VirtualServer createdSecureVs = vtmClient.getVirtualServer(secureVsName);
             Assert.assertEquals(securePort, (int) createdSecureVs.getProperties().getBasic().getPort());
@@ -311,9 +308,9 @@ public class SslTerminationITest extends VTMTestBase {
         setSslTermination();
 
         try {
-            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
-            String cname1 = ZxtmNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), 1);
-            String cname2 = ZxtmNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), 2);
+            String secureVsName = VTMNameBuilder.genSslVSName(lb);
+            String cname1 = VTMNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), 1);
+            String cname2 = VTMNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), 2);
 
             VirtualServer createdSecureVs = vtmClient.getVirtualServer(secureVsName);
             VirtualServerSsl vssl = createdSecureVs.getProperties().getSsl();
@@ -377,7 +374,7 @@ public class SslTerminationITest extends VTMTestBase {
     private void verifyRemoveCertificateMappings() {
 
         try {
-            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
+            String secureVsName = VTMNameBuilder.genSslVSName(lb);
 
             VirtualServer createdSecureVs = vtmClient.getVirtualServer(secureVsName);
             VirtualServerSsl vssl = createdSecureVs.getProperties().getSsl();
@@ -430,9 +427,9 @@ public class SslTerminationITest extends VTMTestBase {
         setSslTermination();
 
         try {
-            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
-            String vsName = ZxtmNameBuilder.genVSName(lb);
-            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+            String secureVsName = VTMNameBuilder.genSslVSName(lb);
+            String vsName = VTMNameBuilder.genVSName(lb);
+            String redirectVsName = VTMNameBuilder.genRedirectVSName(lb);
 
             VirtualServer createdSecureVs = vtmClient.getVirtualServer(secureVsName);
             Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
@@ -465,9 +462,9 @@ public class SslTerminationITest extends VTMTestBase {
         setSslTermination();
 
         try {
-            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
-            String vsName = ZxtmNameBuilder.genVSName(lb);
-            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+            String secureVsName = VTMNameBuilder.genSslVSName(lb);
+            String vsName = VTMNameBuilder.genVSName(lb);
+            String redirectVsName = VTMNameBuilder.genRedirectVSName(lb);
 
             VirtualServer createdSecureVs = vtmClient.getVirtualServer(secureVsName);
             Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
@@ -501,9 +498,9 @@ public class SslTerminationITest extends VTMTestBase {
         setSslTermination();
 
         try {
-            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
-            String vsName = ZxtmNameBuilder.genVSName(lb);
-            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+            String secureVsName = VTMNameBuilder.genSslVSName(lb);
+            String vsName = VTMNameBuilder.genVSName(lb);
+            String redirectVsName = VTMNameBuilder.genRedirectVSName(lb);
 
             VirtualServer createdSecureVs = vtmClient.getVirtualServer(secureVsName);
             Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
@@ -547,9 +544,9 @@ public class SslTerminationITest extends VTMTestBase {
         setSslTermination();
 
         try {
-            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
-            String vsName = ZxtmNameBuilder.genVSName(lb);
-            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+            String secureVsName = VTMNameBuilder.genSslVSName(lb);
+            String vsName = VTMNameBuilder.genVSName(lb);
+            String redirectVsName = VTMNameBuilder.genRedirectVSName(lb);
 
             VirtualServer createdSecureVs = vtmClient.getVirtualServer(secureVsName);
             Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
@@ -626,9 +623,9 @@ public class SslTerminationITest extends VTMTestBase {
         setSslTermination();
 
         try {
-            String secureVsName = ZxtmNameBuilder.genSslVSName(lb);
-            String vsName = ZxtmNameBuilder.genVSName(lb);
-            String redirectVsName = ZxtmNameBuilder.genRedirectVSName(lb);
+            String secureVsName = VTMNameBuilder.genSslVSName(lb);
+            String vsName = VTMNameBuilder.genVSName(lb);
+            String redirectVsName = VTMNameBuilder.genRedirectVSName(lb);
 
             VirtualServer createdSecureVs = vtmClient.getVirtualServer(secureVsName);
             Assert.assertTrue(createdSecureVs.getProperties().getBasic().getEnabled());
@@ -806,7 +803,7 @@ public class SslTerminationITest extends VTMTestBase {
             boolean isSslTermEnabled = true;
             setSslTermination(isSslTermEnabled, allowSecureTrafficOnly);
             VirtualServer createdVs = null;
-            createdVs = vtmClient.getVirtualServer(ZxtmNameBuilder.genSslVSName(lb));
+            createdVs = vtmClient.getVirtualServer(VTMNameBuilder.genSslVSName(lb));
 
 
             Assert.assertEquals(EnumFactory.AcceptFrom.NEVER.toString(),

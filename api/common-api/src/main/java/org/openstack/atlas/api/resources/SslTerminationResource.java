@@ -199,12 +199,8 @@ public class SslTerminationResource extends CommonDependencyProvider {
                     // Defaults not set by API grab defaults from vtm global settings
                     //TODO need to confirm if we need to get this from the cache or some configuration.
 
-                    if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest) != null
-                            && restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equalsIgnoreCase(REST)) {
                         cipherList = reverseProxyLoadBalancerVTMService.getSsl3CiphersForLB(loadBalancerId);
-                    } else {
-                        cipherList = reverseProxyLoadBalancerService.getSsl3CiphersForLB(loadBalancerId);
-                    }
+
                 }
             }
             //Convert the list into JAXB pojo Ciphers.java

@@ -1,15 +1,13 @@
 package org.openstack.atlas.api.integration;
 
 
-import org.apache.axis.AxisFault;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
 import org.openstack.atlas.adapter.helpers.IpHelper;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
 import org.openstack.atlas.api.helpers.CacheKeyGen;
 import org.openstack.atlas.api.helpers.DateHelpers;
@@ -28,12 +26,9 @@ import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.util.crypto.CryptoUtil;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.openstack.atlas.util.debug.Debug;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 import org.springframework.stereotype.Component;
-import org.rackspace.vtm.client.status.Backup;
 
 
 import java.net.MalformedURLException;
@@ -47,8 +42,6 @@ import static java.util.Calendar.getInstance;
 public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadBalancerVTMService {
 
     final Log LOG = LogFactory.getLog(ReverseProxyLoadBalancerServiceVTMImpl.class);
-    // We support multiple back end REST adapters here, decide based on endpoint versions
-    private ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
     private ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
     private LoadBalancerService loadBalancerService;
     private HostService hostService;
@@ -80,14 +73,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void createLoadBalancer(LoadBalancer lb) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void createLoadBalancer(LoadBalancer lb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.createLoadBalancer(config, lb);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.createLoadBalancer(config, lb);
-            }
+            reverseProxyLoadBalancerVTMAdapter.createLoadBalancer(config, lb);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -95,14 +84,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateLoadBalancer(LoadBalancer lb, LoadBalancer queLb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
+    public void updateLoadBalancer(LoadBalancer lb, LoadBalancer queLb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateLoadBalancer(config, lb, queLb);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateLoadBalancer(config, lb, queLb);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateLoadBalancer(config, lb, queLb);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -110,14 +95,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteLoadBalancer(LoadBalancer lb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
+    public void deleteLoadBalancer(LoadBalancer lb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteLoadBalancer(config, lb);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteLoadBalancer(config, lb);
-            }
+            reverseProxyLoadBalancerVTMAdapter.deleteLoadBalancer(config, lb);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -125,14 +106,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void setRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
+    public void setRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.setRateLimit(config, loadBalancer, rateLimit);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.setRateLimit(config, loadBalancer, rateLimit);
-            }
+            reverseProxyLoadBalancerVTMAdapter.setRateLimit(config, loadBalancer, rateLimit);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -140,14 +117,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteRateLimit(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
+    public void deleteRateLimit(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteRateLimit(config, loadBalancer);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteRateLimit(config, loadBalancer);
-            }
+            reverseProxyLoadBalancerVTMAdapter.deleteRateLimit(config, loadBalancer);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -155,14 +128,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException, MalformedURLException {
+    public void updateRateLimit(LoadBalancer loadBalancer, RateLimit rateLimit) throws RemoteException, InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateRateLimit(config, loadBalancer, rateLimit);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateRateLimit(config, loadBalancer, rateLimit);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateRateLimit(config, loadBalancer, rateLimit);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -182,11 +151,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         }
 
         try {
-            if (getVersion(configOld.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.changeHostForLoadBalancers(configOld, configNew, lbs, retryCount);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.changeHostForLoadBalancers(configOld, configNew, lbs, retryCount);
-            }
+            reverseProxyLoadBalancerVTMAdapter.changeHostForLoadBalancers(configOld, configNew, lbs, retryCount);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(configOld, af);
             checkAndSetIfRestEndPointBad(configNew, af);
@@ -195,14 +160,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void addVirtualIps(Integer lbId, Integer accountId, LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void addVirtualIps(Integer lbId, Integer accountId, LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lbId);
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateVirtualIps(config, loadBalancer);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateVirtualIps(config, loadBalancer);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateVirtualIps(config, loadBalancer);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -210,14 +171,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void setNodes(LoadBalancer lb) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void setNodes(LoadBalancer lb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.setNodes(config, lb);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.setNodes(config, lb);
-            }
+            reverseProxyLoadBalancerVTMAdapter.setNodes(config, lb);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -225,14 +182,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeNode(LoadBalancer lb, Node node) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void removeNode(LoadBalancer lb, Node node) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.removeNode(config, lb, node);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.removeNode(config, lb, node);
-            }
+            reverseProxyLoadBalancerVTMAdapter.removeNode(config, lb, node);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -240,14 +193,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeNodes(LoadBalancer lb, List<Node> nodesToRemove) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void removeNodes(LoadBalancer lb, List<Node> nodesToRemove) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.removeNodes(config, lb, nodesToRemove);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.removeNodes(config, lb, nodesToRemove);
-            }
+            reverseProxyLoadBalancerVTMAdapter.removeNodes(config, lb, nodesToRemove);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -255,14 +204,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateAccessList(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void updateAccessList(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateAccessList(config, loadBalancer);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateAccessList(config, loadBalancer);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateAccessList(config, loadBalancer);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -271,14 +216,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteAccessList(LoadBalancer lb, List<Integer> accessListToDelete) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void deleteAccessList(LoadBalancer lb, List<Integer> accessListToDelete) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteAccessList(config, lb, accessListToDelete);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteAccessList(config, lb, accessListToDelete);
-            }
+            reverseProxyLoadBalancerVTMAdapter.deleteAccessList(config, lb, accessListToDelete);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -286,14 +227,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateConnectionThrottle(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void updateConnectionThrottle(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateConnectionThrottle(config, loadBalancer);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateConnectionThrottle(config, loadBalancer);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateConnectionThrottle(config, loadBalancer);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -301,14 +238,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteConnectionThrottle(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void deleteConnectionThrottle(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteConnectionThrottle(config, loadBalancer);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteConnectionThrottle(config, loadBalancer);
-            }
+            reverseProxyLoadBalancerVTMAdapter.deleteConnectionThrottle(config, loadBalancer);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -316,14 +249,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateHealthMonitor(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void updateHealthMonitor(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateHealthMonitor(config, loadBalancer);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateHealthMonitor(config, loadBalancer);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateHealthMonitor(config, loadBalancer);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -331,14 +260,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeHealthMonitor(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void removeHealthMonitor(LoadBalancer loadBalancer) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteHealthMonitor(config, loadBalancer);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteHealthMonitor(config, loadBalancer);
-            }
+            reverseProxyLoadBalancerVTMAdapter.deleteHealthMonitor(config, loadBalancer);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -346,14 +271,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateSessionPersistence(LoadBalancer loadBalancer, LoadBalancer quelb) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void updateSessionPersistence(LoadBalancer loadBalancer, LoadBalancer quelb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateSessionPersistence(config, loadBalancer, quelb);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateSessionPersistence(config, loadBalancer, quelb);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateSessionPersistence(config, loadBalancer, quelb);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -361,14 +282,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeSessionPersistence(LoadBalancer loadBalancer, LoadBalancer quelb) throws StmRollBackException, EntityNotFoundException, DecryptException, MalformedURLException, InsufficientRequestException {
+    public void removeSessionPersistence(LoadBalancer loadBalancer, LoadBalancer quelb) throws VTMRollBackException, EntityNotFoundException, DecryptException, InsufficientRequestException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteSessionPersistence(config, loadBalancer, quelb);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteSessionPersistence(config, loadBalancer, quelb);
-            }
+            reverseProxyLoadBalancerVTMAdapter.deleteSessionPersistence(config, loadBalancer, quelb);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -376,14 +293,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void suspendLoadBalancer(LoadBalancer lb) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void suspendLoadBalancer(LoadBalancer lb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.addSuspension(config, lb);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.addSuspension(config, lb);
-            }
+            reverseProxyLoadBalancerVTMAdapter.addSuspension(config, lb);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -391,14 +304,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeSuspension(LoadBalancer lb) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void removeSuspension(LoadBalancer lb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.removeSuspension(config, lb);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.removeSuspension(config, lb);
-            }
+            reverseProxyLoadBalancerVTMAdapter.removeSuspension(config, lb);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -406,14 +315,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteVirtualIps(LoadBalancer lb, List<Integer> ids, UserPages up) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void deleteVirtualIps(LoadBalancer lb, List<Integer> ids, UserPages up) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteVirtualIps(config, lb, ids);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteVirtualIps(config, lb, ids);
-            }
+            reverseProxyLoadBalancerVTMAdapter.deleteVirtualIps(config, lb, ids);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -422,29 +327,21 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public boolean isEndPointWorking(Host host) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public boolean isEndPointWorking(Host host) throws RollBackException, MalformedURLException, DecryptException {
         boolean out;
         LoadBalancerEndpointConfiguration hostConfig = getConfigHost(host);
-        if (getVersion(hostConfig.getRestEndpoint()) == 7) {
-            out = reverseProxyLoadBalancerVTMAdapter.isEndPointWorking(hostConfig);
-        } else {
-            out = reverseProxyLoadBalancerStmAdapter.isEndPointWorking(hostConfig);
-        }
+        out = reverseProxyLoadBalancerVTMAdapter.isEndPointWorking(hostConfig);
         return out;
     }
 
     // Host subnet mappings
     @Override
-    public Hostssubnet getSubnetMappings(Host host) throws RollBackException, MalformedURLException, DecryptException, InsufficientRequestException {
+    public Hostssubnet getSubnetMappings(Host host) throws RollBackException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration hostConfig = getConfigHost(host);
         String hostName = host.getTrafficManagerName();
         Hostssubnet hostssubnet;
         try {
-            if (getVersion(hostConfig.getRestEndpoint()) == 7) {
-                hostssubnet = reverseProxyLoadBalancerVTMAdapter.getSubnetMappings(hostConfig, hostName);
-            } else {
-                hostssubnet = reverseProxyLoadBalancerStmAdapter.getSubnetMappings(hostConfig, hostName);
-            }
+            hostssubnet = reverseProxyLoadBalancerVTMAdapter.getSubnetMappings(hostConfig, hostName);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(hostConfig, af);
             throw af;
@@ -453,14 +350,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws RollBackException, MalformedURLException, DecryptException, InsufficientRequestException {
+    public void setSubnetMappings(Host host, Hostssubnet hostssubnet) throws RollBackException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration hostConfig = getConfigHost(host);
         try {
-            if (getVersion(hostConfig.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.setSubnetMappings(hostConfig, hostssubnet);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.setSubnetMappings(hostConfig, hostssubnet);
-            }
+            reverseProxyLoadBalancerVTMAdapter.setSubnetMappings(hostConfig, hostssubnet);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(hostConfig, af);
             throw af;
@@ -468,14 +361,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws InsufficientRequestException, RollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+    public void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws RollBackException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
         try {
-            if (getVersion(hostConfig.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteSubnetMappings(hostConfig, hostssubnet);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteSubnetMappings(hostConfig, hostssubnet);
-            }
+            reverseProxyLoadBalancerVTMAdapter.deleteSubnetMappings(hostConfig, hostssubnet);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(hostConfig, af);
             throw af;
@@ -483,15 +372,11 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteErrorFile(LoadBalancer loadBalancer, UserPages up) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException, StmRollBackException {
+    public void deleteErrorFile(LoadBalancer loadBalancer, UserPages up) throws EntityNotFoundException, DecryptException, InsufficientRequestException, VTMRollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteErrorFile(config, loadBalancer);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteErrorFile(config, loadBalancer);
-            }
-        } catch (StmRollBackException ex) {
+            reverseProxyLoadBalancerVTMAdapter.deleteErrorFile(config, loadBalancer);
+        } catch (VTMRollBackException ex) {
             checkAndSetIfRestEndPointBad(config, ex);
             throw ex;
         }
@@ -499,37 +384,25 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     @Override
     public void setErrorFile(LoadBalancer loadBalancer, String content)
-            throws InsufficientRequestException, StmRollBackException, MalformedURLException, EntityNotFoundException, DecryptException {
+            throws InsufficientRequestException, VTMRollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.setErrorFile(config, loadBalancer, content);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.setErrorFile(config, loadBalancer, content);
-            }
-        } catch (StmRollBackException ex) {
+            reverseProxyLoadBalancerVTMAdapter.setErrorFile(config, loadBalancer, content);
+        } catch (VTMRollBackException ex) {
             checkAndSetIfRestEndPointBad(config, ex);
             throw ex;
         }
     }
 
     @Override
-    public void uploadDefaultErrorFile(Integer clusterId, String content) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RemoteException, RollBackException {
+    public void uploadDefaultErrorFile(Integer clusterId, String content) throws EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyClusterId(clusterId);
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.uploadDefaultErrorFile(config, content);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.uploadDefaultErrorFile(config, content);
-            }
+            reverseProxyLoadBalancerVTMAdapter.uploadDefaultErrorFile(config, content);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
         }
-    }
-
-    public void setReverseProxyLoadBalancerStmAdapter(ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter) {
-        this.reverseProxyLoadBalancerStmAdapter = reverseProxyLoadBalancerStmAdapter;
     }
 
     public void setReverseProxyLoadBalancerVTMAdapter(ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter) {
@@ -540,14 +413,14 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         this.configuration = configuration;
     }
 
-    private void checkAndSetIfRestEndPointBad(LoadBalancerEndpointConfiguration config, StmRollBackException ex) {
+    private void checkAndSetIfRestEndPointBad(LoadBalancerEndpointConfiguration config, VTMRollBackException ex) {
         Host configuredHost = config.getEndpointUrlHost();
         if (IpHelper.isNetworkConnectionException(ex)) {
             LOG.error(String.format("REST endpoint %s went bad marking host[%d] as bad. Exception was %s", configuredHost.getRestEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
             configuredHost.setRestEndpointActive(Boolean.FALSE);
             hostService.update(configuredHost);
         } else {
-            LOG.warn(String.format("REST endpoint %s on host[%d] throw an STM Fault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getRestEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
+            LOG.warn(String.format("REST endpoint %s on host[%d] throw an backend Fault but not marking as bad as it was not a network connection error: Exception was %s", configuredHost.getRestEndpoint(), configuredHost.getId(), Debug.getExtendedStackTrace(ex)));
         }
     }
 
@@ -562,14 +435,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateCertificateMappings(LoadBalancer loadBalancer) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
+    public void updateCertificateMappings(LoadBalancer loadBalancer) throws EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateCertificateMappings(config, loadBalancer);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateCertificateMappings(config, loadBalancer);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateCertificateMappings(config, loadBalancer);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -577,14 +446,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateCertificateMapping(LoadBalancer loadBalancer, CertificateMapping certificateMapping) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
+    public void updateCertificateMapping(LoadBalancer loadBalancer, CertificateMapping certificateMapping) throws EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateCertificateMapping(config, loadBalancer, certificateMapping);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateCertificateMapping(config, loadBalancer, certificateMapping);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateCertificateMapping(config, loadBalancer, certificateMapping);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -592,14 +457,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void deleteCertificateMapping(LoadBalancer loadBalancer, CertificateMapping certificateMapping) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
+    public void deleteCertificateMapping(LoadBalancer loadBalancer, CertificateMapping certificateMapping) throws EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.deleteCertificateMapping(config, loadBalancer, certificateMapping);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.deleteCertificateMapping(config, loadBalancer, certificateMapping);
-            }
+            reverseProxyLoadBalancerVTMAdapter.deleteCertificateMapping(config, loadBalancer, certificateMapping);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -607,14 +468,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void updateSslTermination(LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
+    public void updateSslTermination(LoadBalancer loadBalancer, ZeusSslTermination sslTermination) throws EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancer.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.updateSslTermination(config, loadBalancer, sslTermination);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.updateSslTermination(config, loadBalancer, sslTermination);
-            }
+            reverseProxyLoadBalancerVTMAdapter.updateSslTermination(config, loadBalancer, sslTermination);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -622,14 +479,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void removeSslTermination(LoadBalancer lb) throws RemoteException, MalformedURLException, EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
+    public void removeSslTermination(LoadBalancer lb) throws EntityNotFoundException, DecryptException, InsufficientRequestException, RollBackException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.removeSslTermination(config, lb);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.removeSslTermination(config, lb);
-            }
+            reverseProxyLoadBalancerVTMAdapter.removeSslTermination(config, lb);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -637,7 +490,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public Stats getVirtualServerStats(LoadBalancer loadBalancer) throws EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, StingrayRestClientObjectNotFoundException, StingrayRestClientException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+    public Stats getVirtualServerStats(LoadBalancer loadBalancer) throws EntityNotFoundException, MalformedURLException, DecryptException, InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         Integer accountId = loadBalancer.getAccountId();
         Integer loadbalancerId = loadBalancer.getId();
         LoadBalancerEndpointConfiguration config = getConfigHost(loadBalancerService.get(loadbalancerId).getHost());
@@ -647,11 +500,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         long cal = getInstance().getTimeInMillis();
         stats = (Stats) atlasCache.get(key);
         if (stats == null) {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                stats = reverseProxyLoadBalancerVTMAdapter.getVirtualServerStats(config, loadBalancer);
-            } else {
-                stats = reverseProxyLoadBalancerStmAdapter.getVirtualServerStats(config, loadBalancer);
-            }
+            stats = reverseProxyLoadBalancerVTMAdapter.getVirtualServerStats(config, loadBalancer);
             LOG.info("Date:" + DateHelpers.getDate(Calendar.getInstance().getTime()) + " AccountID: " + accountId + " GetLoadBalancerStats, Missed from cache, retrieved from api... Time taken: " + DateHelpers.getTotalTimeTaken(cal) + " ms");
             atlasCache.set(key, stats);
         } else {
@@ -662,15 +511,11 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public String getSslCiphers(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, RemoteException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+    public String getSslCiphers(Integer accountId, Integer loadbalancerId) throws EntityNotFoundException, RemoteException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
         String ciphers = null;
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.getSslCiphersByVhost(config, accountId, loadbalancerId);
-            } else {
-                ciphers = reverseProxyLoadBalancerStmAdapter.getSslCiphersByVhost(config, accountId, loadbalancerId);
-            }
+            ciphers = reverseProxyLoadBalancerVTMAdapter.getSslCiphersByVhost(config, accountId, loadbalancerId);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -679,14 +524,10 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void setSslCiphers(Integer accountId, Integer loadbalancerId, String ciphers) throws EntityNotFoundException, RemoteException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+    public void setSslCiphers(Integer accountId, Integer loadbalancerId, String ciphers) throws EntityNotFoundException, RemoteException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadbalancerId);
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                reverseProxyLoadBalancerVTMAdapter.setSslCiphersByVhost(config, accountId, loadbalancerId, ciphers);
-            } else {
-                reverseProxyLoadBalancerStmAdapter.setSslCiphersByVhost(config, accountId, loadbalancerId, ciphers);
-            }
+            reverseProxyLoadBalancerVTMAdapter.setSslCiphersByVhost(config, accountId, loadbalancerId, ciphers);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -694,15 +535,11 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+    public String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         String globalCiphers = null;
         LoadBalancerEndpointConfiguration config = getConfigFirstAvaliableRest();
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                globalCiphers = reverseProxyLoadBalancerVTMAdapter.getSsl3Ciphers(config);
-            } else {
-                globalCiphers = reverseProxyLoadBalancerStmAdapter.getSsl3Ciphers(config);
-            }
+            globalCiphers = reverseProxyLoadBalancerVTMAdapter.getSsl3Ciphers(config);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -711,15 +548,11 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public String getSsl3CiphersForLB(Integer loadBalancerId) throws RemoteException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException {
+    public String getSsl3CiphersForLB(Integer loadBalancerId) throws RemoteException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException {
         String globalCiphers = null;
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(loadBalancerId);
         try {
-            if (getVersion(config.getRestEndpoint()) == 7) {
-                globalCiphers = reverseProxyLoadBalancerVTMAdapter.getSsl3Ciphers(config);
-            } else {
-                globalCiphers = reverseProxyLoadBalancerStmAdapter.getSsl3Ciphers(config);
-            }
+            globalCiphers = reverseProxyLoadBalancerVTMAdapter.getSsl3Ciphers(config);
         } catch (RollBackException af) {
             checkAndSetIfRestEndPointBad(config, af);
             throw af;
@@ -729,43 +562,31 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     // Host stats
     @Override
-    public int getTotalCurrentConnectionsForHost(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
+    public int getTotalCurrentConnectionsForHost(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
-        if (getVersion(config.getRestEndpoint()) == 7) {
-            return reverseProxyLoadBalancerVTMAdapter.getTotalCurrentConnectionsForHost(config);
-        } else {
-            return reverseProxyLoadBalancerStmAdapter.getTotalCurrentConnectionsForHost(config);
-        }
+        return reverseProxyLoadBalancerVTMAdapter.getTotalCurrentConnectionsForHost(config);
     }
 
     @Override
-    public Long getHostBytesIn(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
+    public Long getHostBytesIn(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         return getHostBytesIn(config);
     }
 
     @Override
-    public Long getHostBytesOut(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
+    public Long getHostBytesOut(Host host) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         return getHostBytesOut(config);
     }
 
     @Override
-    public Long getHostBytesIn(LoadBalancerEndpointConfiguration config) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
-        if (getVersion(config.getRestEndpoint()) == 7) {
-            return reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
-        } else {
-            return reverseProxyLoadBalancerStmAdapter.getHostBytesIn(config);
-        }
+    public Long getHostBytesIn(LoadBalancerEndpointConfiguration config) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+        return reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
     }
 
     @Override
-    public Long getHostBytesOut(LoadBalancerEndpointConfiguration config) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException {
-        if (getVersion(config.getRestEndpoint()) == 7) {
-            return reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
-        } else {
-            return reverseProxyLoadBalancerStmAdapter.getHostBytesOut(config);
-        }
+    public Long getHostBytesOut(LoadBalancerEndpointConfiguration config) throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+        return reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
     }
 
     public void setAtlasCache(AtlasCache atlasCache) {
@@ -858,7 +679,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         return new LoadBalancerEndpointConfiguration(host, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, logFileLocation, failoverHosts);
     }
 
-    public LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException, MalformedURLException {
+    public LoadBalancerEndpointConfiguration getConfigbyLoadBalancerId(Integer lbId) throws EntityNotFoundException, DecryptException {
         LoadBalancer loadBalancer = loadBalancerService.get(lbId);
         Host host = loadBalancer.getHost();
         Cluster cluster = host.getCluster();

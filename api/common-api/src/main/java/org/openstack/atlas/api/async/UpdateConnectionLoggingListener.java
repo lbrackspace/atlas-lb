@@ -38,18 +38,12 @@ public class UpdateConnectionLoggingListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
-                LOG.debug(String.format("Updating connection logging for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Updating connection logging for load balancer '%d' in backend...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.updateLoadBalancer(dbLoadBalancer, queueLb);
-                LOG.debug(String.format("Successfully updated connection logging for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            } else {
-                LOG.debug(String.format("Updating connection logging for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.updateConnectionLogging(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated connection logging for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            }
+                LOG.debug(String.format("Successfully updated connection logging for load balancer '%d' backend...", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error updating connection logging for load balancer '%d' in Zeus.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error updating connection logging for load balancer '%d' backend...", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);

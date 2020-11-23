@@ -3,8 +3,8 @@ package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
+import org.openstack.atlas.adapter.helpers.VTMNameBuilder;
 import org.rackspace.vtm.client.VTMRestClient;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
@@ -35,9 +35,9 @@ public class UpdateContentCachingITest extends VTMTestBase {
 
     @Test
     public void setContentCaching() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
-        String vsName = ZxtmNameBuilder.genVSName(lb);
+        String vsName = VTMNameBuilder.genVSName(lb);
 
         lb.setContentCaching(Boolean.TRUE);
         vtmAdapter.updateLoadBalancer(config, lb, lb);
@@ -47,9 +47,9 @@ public class UpdateContentCachingITest extends VTMTestBase {
 
     @Test
     public void defaultContentCaching() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
-        String vsName = ZxtmNameBuilder.genVSName(lb);
+        String vsName = VTMNameBuilder.genVSName(lb);
 
         vtmAdapter.updateLoadBalancer(config, lb, lb);
 
@@ -58,9 +58,9 @@ public class UpdateContentCachingITest extends VTMTestBase {
 
     @Test
     public void updateContentCaching() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
-        String vsName = ZxtmNameBuilder.genVSName(lb);
+        String vsName = VTMNameBuilder.genVSName(lb);
 
         lb.setContentCaching(Boolean.TRUE);
         vtmAdapter.updateLoadBalancer(config, lb, lb);

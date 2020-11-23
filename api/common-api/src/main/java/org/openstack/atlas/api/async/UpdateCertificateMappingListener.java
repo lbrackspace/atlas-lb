@@ -39,19 +39,12 @@ public class UpdateCertificateMappingListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
                 LOG.debug(String.format("Updating certificate mappings for load balancer '%d' in vTM...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.updateCertificateMapping(dbLoadBalancer, queueCertMapping);
                 LOG.debug(String.format("Successfully updated certificate mappings for load balancer '%d' in vTM...", dbLoadBalancer.getId()));
-            } else {
-                LOG.info(String.format("Adding/Updating certificate mapping '%d' for load balancer '%d' in ZXTM...", queueCertMapping.getId(), dbLoadBalancer.getId()));
-                CertificateMapping dbCertMapping = certificateMappingService.getByIdAndLoadBalancerId(queueCertMapping.getId(), dbLoadBalancer.getId());
-                reverseProxyLoadBalancerService.updateCertificateMapping(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbCertMapping);
-                LOG.debug(String.format("Successfully added/updated certificate mapping '%d' for load balancer '%d' in Zeus...", queueCertMapping.getId(), dbLoadBalancer.getId()));
-            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error adding/updating certificate mapping '%d' in Zeus for loadbalancer '%d'.", queueCertMapping.getId(), dbLoadBalancer.getId());
+            String alertDescription = String.format("Error adding/updating certificate mapping '%d' backend.. for loadbalancer '%d'.", queueCertMapping.getId(), dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dataContainer);

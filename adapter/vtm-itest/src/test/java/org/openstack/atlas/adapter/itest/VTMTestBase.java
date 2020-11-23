@@ -5,9 +5,9 @@ import Util.VTMConfiguration;
 import org.junit.Assert;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.helpers.VTMNameBuilder;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
+import org.openstack.atlas.adapter.vtm.VTMResourceTranslator;
 import org.openstack.atlas.adapter.vtm.VTMadapterImpl;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
@@ -134,48 +134,48 @@ public class VTMTestBase extends VTMTestConstants {
     }
 
     protected static String loadBalancerName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genVSName(lb);
+        return VTMNameBuilder.genVSName(lb);
     }
 
     protected static String secureLoadBalancerName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
+        return VTMNameBuilder.genSslVSName(lb.getId(), lb.getAccountId());
     }
 
     protected static String poolName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genVSName(lb);
+        return VTMNameBuilder.genVSName(lb);
     }
 
     protected static String protectionClassName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genVSName(lb);
+        return VTMNameBuilder.genVSName(lb);
     }
 
     protected static String secureProtectionClassName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genSslVSName(lb);
+        return VTMNameBuilder.genSslVSName(lb);
     }
 
     protected static String trafficIpGroupName(VirtualIp vip) throws InsufficientRequestException {
-        return ZxtmNameBuilder.generateTrafficIpGroupName(lb, vip);
+        return VTMNameBuilder.generateTrafficIpGroupName(lb, vip);
     }
 
     protected static String trafficIpGroupName(VirtualIpv6 ipv6Vip) throws InsufficientRequestException {
-        return ZxtmNameBuilder.generateTrafficIpGroupName(lb, ipv6Vip);
+        return VTMNameBuilder.generateTrafficIpGroupName(lb, ipv6Vip);
     }
 
     protected static String rateLimitName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genVSName(lb);
+        return VTMNameBuilder.genVSName(lb);
     }
 
     protected static String errorFileName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.generateErrorPageName(lb.getId(), lb.getAccountId());
+        return VTMNameBuilder.generateErrorPageName(lb.getId(), lb.getAccountId());
     }
 
     protected static String monitorName() throws InsufficientRequestException {
-        return ZxtmNameBuilder.genVSName(lb);
+        return VTMNameBuilder.genVSName(lb);
     }
 
     protected static void createSimpleLoadBalancer() {
         VTMRestClient tclient;
-        ResourceTranslator translator = new ResourceTranslator();
+        VTMResourceTranslator translator = new VTMResourceTranslator();
         try {
             vtmAdapter.createLoadBalancer(config, lb);
             VirtualServer vs;
@@ -330,7 +330,7 @@ public class VTMTestBase extends VTMTestConstants {
             if (lb.getCertificateMappings() != null) {
                 List<Child> kpl = vtmClient.getKeypairs();
                 for (CertificateMapping cm : lb.getCertificateMappings()) {
-                    String zn = ZxtmNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), cm.getId());
+                    String zn = VTMNameBuilder.generateCertificateName(lb.getId(), lb.getAccountId(), cm.getId());
                     Assert.assertFalse(kpl.contains(zn));
                 }
             }

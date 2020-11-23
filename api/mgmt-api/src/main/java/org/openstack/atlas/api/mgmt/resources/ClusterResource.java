@@ -3,7 +3,7 @@ package org.openstack.atlas.api.mgmt.resources;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
@@ -12,16 +12,10 @@ import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClus
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Hostsubnet;
 import org.openstack.atlas.service.domain.pojos.NetInterface;
-import static org.openstack.atlas.util.ip.IPUtils.isValidIpv4Subnet;
-import static org.openstack.atlas.util.ip.IPUtils.isValidIpv6Subnet;
-import org.openstack.atlas.lb.helpers.ipstring.IPv4Range;
-import org.openstack.atlas.lb.helpers.ipstring.IPv4Ranges;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
 
 import org.openstack.atlas.util.ip.IPv4Cidrs;
-import org.openstack.atlas.util.ip.IPv6Cidrs;
 import org.openstack.atlas.util.ip.IPv4Cidr;
-import org.openstack.atlas.util.ip.IPv6Cidr;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
@@ -120,7 +114,7 @@ public class ClusterResource extends ManagementDependencyProvider {
             for (org.openstack.atlas.service.domain.entities.Host h : dHosts) {
                 try {
                     dHostssubnet.getHostsubnets().addAll(reverseProxyLoadBalancerVTMService.getSubnetMappings(h).getHostsubnets());
-                } catch (StmRollBackException srex) {
+                } catch (VTMRollBackException srex) {
                     // Unable to Collect host data, most likely because host is down or non-existent in backend...ignore
                 }
             }
@@ -336,11 +330,9 @@ public class ClusterResource extends ManagementDependencyProvider {
             for (org.openstack.atlas.service.domain.entities.Host dbHost : hosts) {
                 int conn = 0;
                 try {
-                    if (isRestAdapter()) {
+
                         conn = reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(dbHost);
-                    } else {
-                        conn = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(dbHost);
-                    }
+
                 } catch (Exception e) {
                     LOG.error(e);
                     notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());
@@ -392,11 +384,9 @@ public class ClusterResource extends ManagementDependencyProvider {
         List<org.openstack.atlas.service.domain.pojos.Cidr> x;
         for (org.openstack.atlas.service.domain.entities.Host host : hosts) {
             Hostssubnet hostssubnet;
-            if(isRestAdapter()){
+
                 hostssubnet = reverseProxyLoadBalancerVTMService.getSubnetMappings(host);
-            } else {
-                hostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(host);
-            }
+
             for (Hostsubnet hostsubnet : hostssubnet.getHostsubnets()) {
                 for (NetInterface ni : hostsubnet.getNetInterfaces()) {
                     for (org.openstack.atlas.service.domain.pojos.Cidr cidr : ni.getCidrs()) {

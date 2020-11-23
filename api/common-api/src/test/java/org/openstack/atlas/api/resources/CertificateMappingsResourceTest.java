@@ -7,20 +7,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
 import org.openstack.atlas.api.integration.AsyncService;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMappings;
-import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ItemNotFound;
 import org.openstack.atlas.service.domain.entities.CertificateMapping;
-import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.exceptions.*;
-import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.services.CertificateMappingService;
-import org.openstack.atlas.service.domain.services.ContentCachingService;
 import org.openstack.atlas.service.domain.services.impl.CertificateMappingServiceImpl;
 import org.openstack.atlas.util.ca.PemUtils;
 import org.openstack.atlas.util.ca.exceptions.NotAnX509CertificateException;
@@ -29,7 +23,6 @@ import org.openstack.atlas.util.ca.util.StaticHelpers;
 import org.openstack.atlas.util.ca.util.X509ChainEntry;
 import org.openstack.atlas.util.ca.util.X509PathBuilder;
 
-import javax.jms.JMSException;
 import javax.ws.rs.core.Response;
 
 import java.security.KeyPair;
@@ -46,7 +39,6 @@ public class CertificateMappingsResourceTest {
     public static class WhenRetrievingCertificateMappings {
         private CertificateMappingsResource certificateMappingsResource;
         private CertificateMappingService certificateMappingService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private AsyncService asyncService;
         private Response response;
 
@@ -57,7 +49,6 @@ public class CertificateMappingsResourceTest {
         public void setUp() {
 
             certificateMappingService = mock(CertificateMappingServiceImpl.class);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             asyncService = mock(AsyncService.class);
             certificateMappingsResource = new CertificateMappingsResource();
             certificateMappingsResource.setAccountId(222222);
@@ -132,7 +123,6 @@ public class CertificateMappingsResourceTest {
     public static class WhenCreatingCertificateMappings {
         private CertificateMappingsResource certificateMappingsResource;
         private CertificateMappingService certificateMappingService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private AsyncService asyncService;
         private Response response;
 
@@ -206,7 +196,6 @@ public class CertificateMappingsResourceTest {
             privateKey = workingUserKey;
 
             certificateMappingService = mock(CertificateMappingServiceImpl.class);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             asyncService = mock(AsyncService.class);
             certificateMappingsResource = new CertificateMappingsResource();
             certificateMappingsResource.setAccountId(222222);

@@ -3,8 +3,8 @@ package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
+import org.openstack.atlas.adapter.helpers.VTMNameBuilder;
 import org.openstack.atlas.service.domain.util.Constants;
 import org.rackspace.vtm.client.VTMRestClient;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
@@ -59,7 +59,7 @@ public class GlobalErrorFileITest extends VTMTestBase {
     }
 
     private void setDefaultErrorFile() throws Exception {
-        //vsName = ZxtmNameBuilder.genVSName(lb);
+        //vsName = VTMNameBuilder.genVSName(lb);
 
         //This is mgmt call to set 'default' file other than stm Default, lb should have Default at this point.
         vtmAdapter.uploadDefaultErrorFile(config, defaultPageContent);
@@ -74,7 +74,7 @@ public class GlobalErrorFileITest extends VTMTestBase {
     }
 
     private void setCustomErrorFile() throws Exception {
-        vsName = ZxtmNameBuilder.genVSName(lb);
+        vsName = VTMNameBuilder.genVSName(lb);
         Scanner reader;
         String content;
         Assert.assertFalse(customPageContent.equals(customPageContent2)); //assert our assumption
@@ -96,7 +96,7 @@ public class GlobalErrorFileITest extends VTMTestBase {
         Assert.assertEquals(customPageContent2, content);
     }
 
-    private void deleteErrorFile() throws InsufficientRequestException, StmRollBackException, VTMRestClientException, VTMRestClientObjectNotFoundException {
+    private void deleteErrorFile() throws InsufficientRequestException, VTMRollBackException, VTMRestClientException, VTMRestClientObjectNotFoundException {
         final String errorFileName = errorFileName();
         File errorFile = vtmClient.getExtraFile(errorFileName);
 

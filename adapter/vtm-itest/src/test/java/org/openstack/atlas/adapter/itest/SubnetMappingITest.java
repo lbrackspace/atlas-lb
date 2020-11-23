@@ -3,7 +3,7 @@ package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
 import org.openstack.atlas.service.domain.pojos.*;
 import org.rackspace.vtm.client.VTMRestClient;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
@@ -28,7 +28,7 @@ public class SubnetMappingITest extends VTMTestBase {
     }
 
     @Test
-    public void retrieveHostSubnetMappings() throws StmRollBackException {
+    public void retrieveHostSubnetMappings() throws VTMRollBackException {
         // Use defaults...
         Hostsubnet testSubnetMapping = getTestHostSubnet(null, null);
         if (testSubnetMapping == null) {
@@ -47,7 +47,7 @@ public class SubnetMappingITest extends VTMTestBase {
     }
 
     @Test
-    public void addAndRemoveHostSubnetMapping() throws StmRollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+    public void addAndRemoveHostSubnetMapping() throws VTMRollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         String newCidr = "10.2.2.2/14";
         String newInterface = "test13";
 
@@ -77,7 +77,7 @@ public class SubnetMappingITest extends VTMTestBase {
     }
 
     @Test
-    public void addAndRemoveHostSubnetMappingWithExistingSubnetMappings() throws StmRollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
+    public void addAndRemoveHostSubnetMappingWithExistingSubnetMappings() throws VTMRollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         String newCidr = "10.2.2.2/14";
         String newInterface = "test13";
 
@@ -118,7 +118,7 @@ public class SubnetMappingITest extends VTMTestBase {
 
     }
 
-    private Hostsubnet createTestSubnet(String name, String block) throws StmRollBackException {
+    private Hostsubnet createTestSubnet(String name, String block) throws VTMRollBackException {
         String cidrBlock = "10.1.1.1/24";
         if (block != null) cidrBlock = block;
         if (name == null) name = testNetInterface;
@@ -140,7 +140,7 @@ public class SubnetMappingITest extends VTMTestBase {
         hostssubnet.setHostsubnets(lhsm);
         try {
             vtmAdapter.setSubnetMappings(config, hostssubnet);
-        } catch (StmRollBackException e) {
+        } catch (VTMRollBackException e) {
             Assert.fail("Failed to create test subnet mappings " + e.getCause().toString());
         }
 
@@ -149,7 +149,7 @@ public class SubnetMappingITest extends VTMTestBase {
         return testSubnetMapping;
     }
 
-    private Hostsubnet getTestHostSubnet(String name, String block) throws StmRollBackException {
+    private Hostsubnet getTestHostSubnet(String name, String block) throws VTMRollBackException {
         String cidrBlock = "10.1.1.1/24";
         if (name == null) name = testNetInterface;
         if (block != null) cidrBlock = block;
@@ -194,7 +194,7 @@ public class SubnetMappingITest extends VTMTestBase {
         Assert.assertTrue(blocks.contains(cidrBlock));
     }
 
-    private void deleteSubnetMapping(Hostssubnet hostssubnet, String name, String block) throws StmRollBackException {
+    private void deleteSubnetMapping(Hostssubnet hostssubnet, String name, String block) throws VTMRollBackException {
         String cidrBlock = "10.1.1.1/24";
         if (name == null) name = testNetInterface;
         if (block != null) cidrBlock = block;

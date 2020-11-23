@@ -37,15 +37,10 @@ public class DeleteRateLimitListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
-                LOG.debug("Deleting rate limit in STM...");
+                LOG.debug("Deleting rate limit in backend...");
                 reverseProxyLoadBalancerVTMService.deleteRateLimit(dbLoadBalancer);
                 LOG.debug("Successfully deleted rate limit in STM.");
-            } else {
-                LOG.debug("Deleting rate limit in ZXTM...");
-                reverseProxyLoadBalancerService.deleteRateLimit(dbLoadBalancer);
-                LOG.debug("Successfully deleted rate limit in ZXTM.");
-            }
+
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
 

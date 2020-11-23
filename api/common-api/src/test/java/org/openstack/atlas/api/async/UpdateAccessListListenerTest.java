@@ -5,13 +5,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.*;
-import org.openstack.atlas.api.async.util.STMTestBase;
+import org.openstack.atlas.api.async.util.VTMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.events.entities.AccessListEvent;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
 import org.openstack.atlas.service.domain.events.entities.EventType;
@@ -32,7 +31,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class UpdateAccessListListenerTest extends STMTestBase {
+public class UpdateAccessListListenerTest extends VTMTestBase {
 
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;

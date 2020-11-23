@@ -4,8 +4,8 @@ package org.openstack.atlas.adapter.itest;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
+import org.openstack.atlas.adapter.helpers.VTMNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerProtocol;
 import org.rackspace.vtm.client.VTMRestClient;
@@ -37,9 +37,9 @@ public class UpdateProtocolITest extends VTMTestBase {
     //These tests need to run in order -- HTTPS is the first test
     @Test
     public void aupdateProtocolToHTTPS() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
-        String vsName = ZxtmNameBuilder.genVSName(lb);
+        String vsName = VTMNameBuilder.genVSName(lb);
 
         Assert.assertEquals(VirtualServerBasic.Protocol.fromValue(LoadBalancerProtocol.HTTP.name().toLowerCase()),
                 client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());
@@ -54,9 +54,9 @@ public class UpdateProtocolITest extends VTMTestBase {
     //These tests need to run in order -- HTTP is the second test
     @Test
     public void bupdateProtocolToHTTP() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
-        String vsName = ZxtmNameBuilder.genVSName(lb);
+        String vsName = VTMNameBuilder.genVSName(lb);
 
         Assert.assertEquals(VirtualServerBasic.Protocol.fromValue(LoadBalancerProtocol.HTTPS.name().toLowerCase()),
                 client.getVirtualServer(vsName).getProperties().getBasic().getProtocol());

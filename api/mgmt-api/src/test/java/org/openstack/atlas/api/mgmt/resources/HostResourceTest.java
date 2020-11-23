@@ -4,7 +4,6 @@ import org.dozer.DozerBeanMapperBuilder;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
@@ -37,7 +36,6 @@ public class HostResourceTest {
     static final String mappingFile = "loadbalancing-dozer-management-mapping.xml";
     public static class whenRetrievingHostDetails {
         private ManagementAsyncService asyncService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
         private HostResource hostResource;
         private HostService hostService;
@@ -54,14 +52,12 @@ public class HostResourceTest {
             hostResource.setMockitoAuth(true);
             HostRepository hrepo = mock(HostRepository.class);
             asyncService = mock(ManagementAsyncService.class);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             reverseProxyLoadBalancerVTMService = mock(ReverseProxyLoadBalancerVTMService.class);
             hostService = mock(HostService.class);
             hostResource.setManagementAsyncService(asyncService);
             hostResource.setId(1);
             hostResource.setHostRepository(hrepo);
             hostResource.setHostService(hostService);
-            hostResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
             hostResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
             hostResource.setConfiguration(config);
             operationResponse = new OperationResponse();
@@ -86,19 +82,7 @@ public class HostResourceTest {
             when(reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(host)).thenReturn(14);
             Response resp = hostResource.getHost();
             Assert.assertEquals(200, resp.getStatus());
-            verify(reverseProxyLoadBalancerService, times(0)).getTotalCurrentConnectionsForHost(host);
             verify(reverseProxyLoadBalancerVTMService, times(1)).getTotalCurrentConnectionsForHost(host);
-        }
-
-        @Test
-        public void shouldReturn200WhenRetrievingHostViaSoap() throws Exception {
-            when(reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(host)).thenReturn(14);
-            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
-
-            Response resp = hostResource.getHost();
-            Assert.assertEquals(200, resp.getStatus());
-            verify(reverseProxyLoadBalancerVTMService, times(0)).getTotalCurrentConnectionsForHost(host);
-            verify(reverseProxyLoadBalancerService, times(1)).getTotalCurrentConnectionsForHost(host);
         }
 
         @Test
@@ -107,18 +91,6 @@ public class HostResourceTest {
             Response resp = hostResource.retrieveHostsSubnetMappings();
             Assert.assertEquals(200, resp.getStatus());
             verify(reverseProxyLoadBalancerVTMService, times(1)).getSubnetMappings(host);
-            verify(reverseProxyLoadBalancerService, times(0)).getSubnetMappings(host);
-        }
-
-        @Test
-        public void shouldReturn200whenRetrievingHostsSubnetMappingsViaSOAP() throws Exception{
-            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
-
-            Response resp = hostResource.retrieveHostsSubnetMappings();
-            Assert.assertEquals(200, resp.getStatus());
-            verify(reverseProxyLoadBalancerVTMService, times(0)).getSubnetMappings(host);
-            verify(reverseProxyLoadBalancerService, times(1)).getSubnetMappings(host);
-
         }
 
         @Test
@@ -164,7 +136,6 @@ public class HostResourceTest {
             private Hostssubnet hsubs;
             private NetInterface ni;
             private Cidr cidr;
-            private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
             private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
             private HostService hostService;
             private Host host;
@@ -180,12 +151,10 @@ public class HostResourceTest {
                 hostResource.setMockitoAuth(true);
                 HostRepository hrepo = mock(HostRepository.class);
                 asyncService = mock(ManagementAsyncService.class);
-                reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
                 reverseProxyLoadBalancerVTMService = mock(ReverseProxyLoadBalancerVTMService.class);
                 hostService = mock(HostService.class);
                 hostResource.setManagementAsyncService(asyncService);
                 hostResource.setHostService(hostService);
-                hostResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
                 hostResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
                 hostResource.setConfiguration(config);
 
@@ -230,7 +199,6 @@ public class HostResourceTest {
                 Response resp = hostResource.putHostsSubnetMappings(hsubs);
                 Assert.assertEquals(200, resp.getStatus());
                 verify(reverseProxyLoadBalancerVTMService, times(1)).setSubnetMappings(any(), any());
-                verify(reverseProxyLoadBalancerService, times(0)).setSubnetMappings(any(), any());
             }
             @Test
             public void shouldreturn202whenESBisNormalWhenaddSubnetWIpv4() throws Exception {
@@ -242,36 +210,6 @@ public class HostResourceTest {
                 Response resp = hostResource.putHostsSubnetMappings(hsubs);
                 Assert.assertEquals(200, resp.getStatus());
                 verify(reverseProxyLoadBalancerVTMService, times(1)).setSubnetMappings(any(), any());
-                verify(reverseProxyLoadBalancerService, times(0)).setSubnetMappings(any(), any());
-            }
-
-            @Test
-            public void shouldreturn202whenESBisNormalWhenaddSubnetWIpv6Soap() throws Exception {
-                when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("notREST");
-
-                cidr.setBlock("fe80::200:f8ff:fe21:67cf/16");
-
-                ni.getCidrs().add(cidr);
-                hsub.getNetInterfaces().add(ni);
-                hsubs.getHostsubnets().add(hsub);
-                Response resp = hostResource.putHostsSubnetMappings(hsubs);
-                Assert.assertEquals(200, resp.getStatus());
-                verify(reverseProxyLoadBalancerVTMService, times(0)).setSubnetMappings(any(), any());
-                verify(reverseProxyLoadBalancerService, times(1)).setSubnetMappings(any(), any());
-            }
-            @Test
-            public void shouldreturn202whenESBisNormalWhenaddSubnetWIpv4Soap() throws Exception {
-                when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("notREST");
-
-                cidr.setBlock("192.168.0.1/24");
-
-                ni.getCidrs().add(cidr);
-                hsub.getNetInterfaces().add(ni);
-                hsubs.getHostsubnets().add(hsub);
-                Response resp = hostResource.putHostsSubnetMappings(hsubs);
-                Assert.assertEquals(200, resp.getStatus());
-                verify(reverseProxyLoadBalancerVTMService, times(0)).setSubnetMappings(any(), any());
-                verify(reverseProxyLoadBalancerService, times(1)).setSubnetMappings(any(), any());
             }
 
             @Test

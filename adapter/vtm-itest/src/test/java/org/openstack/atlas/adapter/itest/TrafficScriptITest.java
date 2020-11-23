@@ -1,9 +1,8 @@
 package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
-import org.openstack.atlas.adapter.helpers.StmConstants;
 import org.openstack.atlas.adapter.helpers.TrafficScriptHelper;
-import org.openstack.atlas.adapter.vtm.VTMConstants;
+import org.openstack.atlas.adapter.helpers.VTMConstants;
 import org.rackspace.vtm.client.VTMRestClient;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
@@ -31,45 +30,19 @@ public class TrafficScriptITest extends VTMTestBase {
     }
 
     @Test
-    public void testAddRateLimitScript() throws VTMRestClientObjectNotFoundException, VTMRestClientException, IOException {
-        VTMRestClient client = new VTMRestClient();
-
-        File script = null;
-        try {
-            client.deleteTrafficscript(StmConstants.RATE_LIMIT_HTTP);       //Either this will fail, meaning there is no script already
-            script = client.getTraffiscript(StmConstants.RATE_LIMIT_HTTP);  //Or this will fail, if the above line succeeds
-        } catch (VTMRestClientObjectNotFoundException objectNotFoundException) {
-            Assert.assertNull(script);                                      //So we'll get to here one way or another
-        }
-
-        try {
-            client.deleteTrafficscript(StmConstants.RATE_LIMIT_NON_HTTP);      //Either this will fail, meaning there is no script already
-            script = client.getTraffiscript(StmConstants.RATE_LIMIT_NON_HTTP); //Or this will fail, if the above line succeeds
-        } catch (VTMRestClientObjectNotFoundException objectNotFoundException) {
-            Assert.assertNull(script);                                         //So we'll get to here one way or another
-        }
-
-        TrafficScriptHelper.addRateLimitScriptsIfNeeded(client);
-        script = client.getTraffiscript(StmConstants.RATE_LIMIT_HTTP);
-        Assert.assertNotNull(script);
-        script = client.getTraffiscript(StmConstants.RATE_LIMIT_NON_HTTP);
-        Assert.assertNotNull(script);
-    }
-
-    @Test
     public void testAddXForwardedForScript() throws VTMRestClientObjectNotFoundException, VTMRestClientException, IOException {
         VTMRestClient client = new VTMRestClient();
 
         File script = null;
         try {
-            client.deleteTrafficscript(StmConstants.XFF);           //Either this will fail, meaning there is no script already
-            script = client.getTraffiscript(StmConstants.XFF);      //Or this will fail, if the above line succeeds
+            client.deleteTrafficscript(VTMConstants.XFF);           //Either this will fail, meaning there is no script already
+            script = client.getTraffiscript(VTMConstants.XFF);      //Or this will fail, if the above line succeeds
         } catch (VTMRestClientObjectNotFoundException objectNotFoundException) {
             Assert.assertNull(script);                              //So we'll get to here one way or another
         }
 
         TrafficScriptHelper.addXForwardedForScriptIfNeeded(client);
-        script = client.getTraffiscript(StmConstants.XFF);
+        script = client.getTraffiscript(VTMConstants.XFF);
         Assert.assertNotNull(script);
     }
 
@@ -86,7 +59,7 @@ public class TrafficScriptITest extends VTMTestBase {
         }
 
         TrafficScriptHelper.addXForwardedProtoScriptIfNeeded(client);
-        script = client.getTraffiscript(StmConstants.XFP);
+        script = client.getTraffiscript(VTMConstants.XFP);
         Assert.assertNotNull(script);
     }
 

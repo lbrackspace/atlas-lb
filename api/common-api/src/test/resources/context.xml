@@ -58,16 +58,6 @@
     <bean id="updateSslTerminationListener" class="org.openstack.atlas.api.async.UpdateSslTerminationListener">
     </bean>
 
-    <bean id="reverseProxyLoadBalancerService"
-          class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService"
-          abstract="true">
-    </bean>
-
-    <bean id="reverseProxyLoadBalancerServiceImpl"
-          class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl"
-          parent="reverseProxyLoadBalancerService">
-    </bean>
-
     <bean id="reverseProxyLoadBalancerVTMService"
           class="org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService"
           abstract="true">

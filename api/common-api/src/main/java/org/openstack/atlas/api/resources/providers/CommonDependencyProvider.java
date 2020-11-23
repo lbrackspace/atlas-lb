@@ -2,12 +2,10 @@ package org.openstack.atlas.api.resources.providers;
 
 import org.dozer.Mapper;
 import org.openstack.atlas.api.atom.AtomFeedAdapter;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerStmService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.integration.AsyncService;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
@@ -65,20 +63,10 @@ public class CommonDependencyProvider {
     protected AllowedDomainsService allowedDomainsService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected LoadBalancerEventRepository loadBalancerEventRepository;
-    protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
-    protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     protected ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
 
     public void init() throws Exception{
         dozerMapper = dozerMapperBuilderBean.getDozerMapperObject();
-    }
-
-    public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
-        this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
-    }
-
-    public void setReverseProxyLoadBalancerStmService(ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService) {
-        this.reverseProxyLoadBalancerStmService = reverseProxyLoadBalancerStmService;
     }
 
     public void setReverseProxyLoadBalancerVTMService(ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService) {

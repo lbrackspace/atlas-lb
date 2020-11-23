@@ -2,12 +2,11 @@ package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.helpers.VTMNameBuilder;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.AccessListType;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
 import org.rackspace.vtm.client.VTMRestClient;
-import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 import org.rackspace.vtm.client.protection.Protection;
 import org.rackspace.vtm.client.protection.ProtectionConnectionRate;
 
@@ -41,7 +40,7 @@ public class ConnectionThrottleITest extends VTMTestBase {
         // deprecated values set to defaults
         setConnectionLimitParams(1, 55, 0, 0);
 
-        vsName = ZxtmNameBuilder.genVSName(lb);
+        vsName = VTMNameBuilder.genVSName(lb);
     }
 
     @After

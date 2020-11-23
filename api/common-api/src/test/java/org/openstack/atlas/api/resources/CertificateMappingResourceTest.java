@@ -8,7 +8,6 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.openstack.atlas.api.integration.AsyncService;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.v1.CertificateMappings;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
@@ -39,7 +38,6 @@ public class CertificateMappingResourceTest {
     public static class WhenRetrievingCertificateMapping {
         private CertificateMappingResource certificateMappingResource;
         private CertificateMappingServiceImpl certificateMappingService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private AsyncService asyncService;
         private Response response;
 
@@ -51,7 +49,6 @@ public class CertificateMappingResourceTest {
         public void setUp() {
 
             certificateMappingService = mock(CertificateMappingServiceImpl.class);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             asyncService = mock(AsyncService.class);
             certificateMappingResource = new CertificateMappingResource();
             certificateMappingResource.setAccountId(222222);
@@ -102,7 +99,6 @@ public class CertificateMappingResourceTest {
     public static class WhenUpdatingCertificateMappings {
         private CertificateMappingResource certificateMappingResource;
         private CertificateMappingService certificateMappingService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private AsyncService asyncService;
         private Response response;
 
@@ -176,7 +172,6 @@ public class CertificateMappingResourceTest {
             privateKey = workingUserKey;
 
             certificateMappingService = mock(CertificateMappingServiceImpl.class);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             asyncService = mock(AsyncService.class);
             certificateMappingResource = new CertificateMappingResource();
             certificateMappingResource.setAccountId(222222);

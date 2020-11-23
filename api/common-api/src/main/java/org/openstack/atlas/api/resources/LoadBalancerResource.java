@@ -134,13 +134,10 @@ public class LoadBalancerResource extends CommonDependencyProvider {
                 throw new ImmutableEntityException("The load balancer is not available to display statistics.");
             }
             org.openstack.atlas.docs.loadbalancers.api.v1.Stats stats;
-            if (restApiConfiguration.getString(PublicApiServiceConfigurationKeys.adapter_soap_rest).equals("REST")) {
+
                 stats = dozerMapper.map(reverseProxyLoadBalancerVTMService.getVirtualServerStats(loadBalancer),
                         org.openstack.atlas.docs.loadbalancers.api.v1.Stats.class);
-            } else {
-                stats = dozerMapper.map(reverseProxyLoadBalancerService.getLoadBalancerStats(loadBalancer),
-                        org.openstack.atlas.docs.loadbalancers.api.v1.Stats.class);
-            }
+
 
             return Response.status(Response.Status.OK).entity(stats).build();
         } catch (Exception e) {

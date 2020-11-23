@@ -3,15 +3,13 @@ package org.openstack.atlas.api.integration;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Stats;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
-import org.rackspace.stingray.client.exception.StingrayRestClientException;
-import org.rackspace.stingray.client.exception.StingrayRestClientObjectNotFoundException;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 
@@ -88,29 +86,29 @@ public interface ReverseProxyLoadBalancerVTMService {
 
     // Host stats
     int getTotalCurrentConnectionsForHost(Host host)
-            throws RemoteException, DecryptException, EntityNotFoundException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, InsufficientRequestException;
+            throws RemoteException, DecryptException, EntityNotFoundException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, InsufficientRequestException;
 
     Long getHostBytesIn(Host host)
-            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException;
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, VTMRollBackException, InsufficientRequestException;
 
     Long getHostBytesOut(Host host)
-            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException;
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, VTMRollBackException, InsufficientRequestException;
 
     Long getHostBytesIn(LoadBalancerEndpointConfiguration config)
-            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException;
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, VTMRollBackException, InsufficientRequestException;
 
     Long getHostBytesOut(LoadBalancerEndpointConfiguration config)
-            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, StmRollBackException, InsufficientRequestException;
+            throws RemoteException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, DecryptException, VTMRollBackException, InsufficientRequestException;
 
     boolean isEndPointWorking(Host host) throws Exception;
 
-    String getSslCiphers(Integer accountId, Integer loadbalancerId) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException;
+    String getSslCiphers(Integer accountId, Integer loadbalancerId) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException;
 
-    void setSslCiphers(Integer accountId, Integer loadbalancerId, String ciphersStr) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException;
+    void setSslCiphers(Integer accountId, Integer loadbalancerId, String ciphersStr) throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException;
 
-    String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException;
+    String getSsl3Ciphers() throws RemoteException, EntityNotFoundException, MalformedURLException, DecryptException, RollBackException, InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException;
 
-    String getSsl3CiphersForLB(Integer loadBalancerID) throws RemoteException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException, StingrayRestClientException, StingrayRestClientObjectNotFoundException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException;
+    String getSsl3CiphersForLB(Integer loadBalancerID) throws RemoteException, EntityNotFoundException, DecryptException, RollBackException, InsufficientRequestException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException;
 
     Hostssubnet getSubnetMappings(Host host) throws RemoteException, DecryptException, EntityNotFoundException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, MalformedURLException, InsufficientRequestException;
     

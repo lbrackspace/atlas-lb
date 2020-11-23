@@ -3,15 +3,11 @@ package org.openstack.atlas.api.async;
 import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers.*;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
-import org.openstack.atlas.api.async.util.STMTestBase;
+import org.openstack.atlas.api.async.util.VTMTestBase;
 import org.openstack.atlas.api.atom.EntryHelper;
-import org.openstack.atlas.api.helpers.SslTerminationUsage;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
@@ -34,13 +30,12 @@ import javax.jms.ObjectMessage;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.powermock.api.mockito.PowerMockito.whenNew;
 
-public class UpdateSslTerminationListenerTest extends STMTestBase {
+public class UpdateSslTerminationListenerTest extends VTMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
@@ -218,7 +213,7 @@ public class UpdateSslTerminationListenerTest extends STMTestBase {
         verify(reverseProxyLoadBalancerVTMService).updateSslTermination(lb, queTermination);
         Assert.assertEquals(lb.getStatus(), LoadBalancerStatus.ERROR);
         verify(loadBalancerService).update(lb);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("An error occurred while creating loadbalancer ssl termination '%d' in Zeus", lb.getId())));
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("An error occurred while creating loadbalancer ssl termination '%d' backend..", lb.getId())));
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.UPDATE_SSL_TERMINATION), eq(CategoryType.UPDATE), eq(EventSeverity.CRITICAL));
     }
 }

@@ -1,7 +1,7 @@
 package org.openstack.atlas.api.helpers;
 
 
-import org.openstack.atlas.api.exceptions.StingrayTimeoutException;
+import org.openstack.atlas.api.exceptions.VTMTimeoutException;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
@@ -30,7 +30,7 @@ public class ResponseMapper {
                 inf.setMessage((message == null) ? "Object not Found" : message);
                 inf.setCode(getStatus(ErrorReason.ENTITY_NOT_FOUND));
                 return inf;
-            case STINGRAY_TIMEOUT:
+            case VTM_TIMEOUT:
                 lbf.setMessage((message == null) ? "We are currently saturated with requests. Please try again later." : message);
                 lbf.setDetails(details);
                 return lbf;
@@ -100,8 +100,8 @@ public class ResponseMapper {
         }
         if (e instanceof EntityNotFoundException) {
             return getFault(ErrorReason.ENTITY_NOT_FOUND, message, details);
-        } else if (e instanceof StingrayTimeoutException) {
-            return getFault(ErrorReason.STINGRAY_TIMEOUT, message, details);
+        } else if (e instanceof VTMTimeoutException) {
+            return getFault(ErrorReason.VTM_TIMEOUT, message, details);
         } else if (e instanceof OutOfVipsException) {
             return getFault(ErrorReason.OUT_OF_VIPS, message, details);
         } else if (e instanceof ClusterStatusException) {
@@ -148,8 +148,8 @@ public class ResponseMapper {
             status = 200;
         } else if (e instanceof EntityNotFoundException) {
             status = getStatus(ErrorReason.ENTITY_NOT_FOUND);
-        } else if (e instanceof StingrayTimeoutException) {
-            status = getStatus(ErrorReason.STINGRAY_TIMEOUT);
+        } else if (e instanceof VTMTimeoutException) {
+            status = getStatus(ErrorReason.VTM_TIMEOUT);
         }  else if (e instanceof SingletonEntityAlreadyExistsException) {
             status = getStatus(ErrorReason.IMMUTABLE_ENTITY);
         } else if (e instanceof OutOfVipsException) {
@@ -205,7 +205,7 @@ public class ResponseMapper {
             case OUT_OF_VIPS:
                 status = 500;
                 break;
-            case STINGRAY_TIMEOUT:
+            case VTM_TIMEOUT:
                 status = 503;
                 break;
             case CLUSTER_STATUS:

@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>atlas-vtm-itest</artifactId>
-    <name>Openstack :: Atlas :: Adapter :: STM Test</name>
+    <name>Openstack :: Atlas :: Adapter ::  TM Test</name>
 
     <dependencies>
         <dependency>
