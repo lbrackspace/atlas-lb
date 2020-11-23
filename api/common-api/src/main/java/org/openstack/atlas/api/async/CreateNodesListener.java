@@ -39,15 +39,10 @@ public class CreateNodesListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
                 LOG.debug("Setting nodes in STM...");
                 reverseProxyLoadBalancerVTMService.setNodes(dbLoadBalancer);
                 LOG.debug("Nodes successfully set.");
-            } else {
-                LOG.debug("Setting nodes in ZXTM...");
-                reverseProxyLoadBalancerService.setNodes(dbLoadBalancer);
-                LOG.debug("Nodes successfully set.");
-            }
+
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = "Error setting nodes in Zeus for loadbalancer #" + dbLoadBalancer.getId();

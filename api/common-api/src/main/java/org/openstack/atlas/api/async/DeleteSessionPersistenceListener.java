@@ -40,16 +40,10 @@ public class DeleteSessionPersistenceListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
                 LOG.debug(String.format("Removing session persistence for load balancer '%d' in STM...", queLb.getId()));
                 queLb.setSessionPersistence(SessionPersistence.NONE);
                 reverseProxyLoadBalancerVTMService.removeSessionPersistence(dbLoadBalancer, queLb);
                 LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in Zeus.", queLb.getId()));
-            } else {
-                LOG.debug(String.format("Removing session persistence for load balancer '%d' in ZXTM...", queLb.getId()));
-                reverseProxyLoadBalancerService.removeSessionPersistence(queLb.getId(), queLb.getAccountId());
-                LOG.debug(String.format("Successfully removed session persistence for load balancer '%d' in Zeus.", queLb.getId()));
-            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error removing session persistence in Zeus for loadbalancer '%d'.", queLb.getId());

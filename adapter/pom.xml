@@ -15,7 +15,6 @@
     <modules>
         <module>zxtm-stubs</module>
         <module>zxtm-service</module>
-        <module>zxtm-itest</module>
         <module>stm-itest</module>
         <module>vtm-itest</module>
         <module>itest-hibernate-adapter</module>

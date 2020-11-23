@@ -135,11 +135,8 @@ public class ClustersResource extends ManagementDependencyProvider {
             for (org.openstack.atlas.service.domain.entities.Host dbHost : hosts) {
                 int conn = 0;
                 try {
-                    if (isRestAdapter()) {
                         conn = reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(dbHost);
-                    } else {
-                        conn = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(dbHost);
-                    }
+
                 } catch (Exception e) {
                     LOG.error(e);
                     notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());

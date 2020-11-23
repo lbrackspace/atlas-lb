@@ -6,6 +6,7 @@ import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
+import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.JobName;
@@ -30,7 +31,7 @@ public class RateLimitDeletionJob extends AbstractJob {
     @Autowired
     private LoadBalancerRepository loadBalancerRepository;
     @Autowired
-    private ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
+    private ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
     @Autowired
     private HostRepository hostRepository;
 
@@ -71,10 +72,8 @@ public class RateLimitDeletionJob extends AbstractJob {
 
                 try {
                     LOG.info(String.format("Attempting to remove rate limit with id..'%s' from zeus... ", rl.getId()));
-                    reverseProxyLoadBalancerAdapter.deleteRateLimit(config, rl.getLoadbalancer());
+                    reverseProxyLoadBalancerVTMAdapter.deleteRateLimit(config, rl.getLoadbalancer());
                     LOG.info("Removed the rate limit from zeus...");
-                } catch (RemoteException e) {
-                    e.printStackTrace();
                 } catch (InsufficientRequestException e) {
                     e.printStackTrace();
                 } catch (RollBackException e) {

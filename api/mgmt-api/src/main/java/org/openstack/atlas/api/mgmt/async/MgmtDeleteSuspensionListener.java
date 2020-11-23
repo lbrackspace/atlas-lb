@@ -41,15 +41,10 @@ public class MgmtDeleteSuspensionListener extends BaseListener {
                     || dbLoadBalancer.getStatus().equals(LoadBalancerStatus.PENDING_UPDATE)) {//the requested lb will be in PENDING_UPDATE
 
                 try {
-                    if (isRestAdapter()) {
                         LOG.debug(String.format("Removing suspension from load balancer '%d' in STM...", dbLoadBalancer.getId()));
                         reverseProxyLoadBalancerVTMService.removeSuspension(dbLoadBalancer);
                         LOG.debug(String.format("Successfully removed suspension from load balancer '%d' in STM.", dbLoadBalancer.getId()));
-                    } else {
-                        LOG.debug(String.format("Removing suspension from load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                        reverseProxyLoadBalancerService.removeSuspension(dbLoadBalancer);
-                        LOG.debug(String.format("Successfully removed suspension from load balancer '%d' in ZXMT.", dbLoadBalancer.getId()));
-                    }
+
                 } catch (Exception e) {
                     loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
                     String alertDescription = String.format("Error removing suspension from load balancer '%d' in Zeus.", dbLoadBalancer.getId());

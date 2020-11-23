@@ -50,17 +50,10 @@ public class DeleteNodeListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
                 LOG.debug(String.format("Removing node '%d' from load balancer '%d' in STM...", nodeToDelete.getId(), queueLb.getId()));
 //                dbLoadBalancer.setNodes(nodeService.getAllNodesByAccountIdLoadBalancerId(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.removeNode(dbLoadBalancer, nodeToDelete);
                 LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in STM.", nodeToDelete.getId(), queueLb.getId()));
-            } else {
-                LOG.debug(String.format("Removing node '%d' from load balancer '%d' in ZXTM...", nodeToDelete.getId(), queueLb.getId()));
-                reverseProxyLoadBalancerService.setNodesPriorities(ZxtmNameBuilder.genVSName(dbLoadBalancer), dbLoadBalancer);
-                reverseProxyLoadBalancerService.removeNode(queueLb.getId(), queueLb.getAccountId(), nodeToDelete);
-                LOG.debug(String.format("Successfully removed node '%d' from load balancer '%d' in Zeus.", nodeToDelete.getId(), queueLb.getId()));
-            }
         } catch (Exception e) {
             loadBalancerService.setStatusForOp(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error removing node '%d' in Zeus for loadbalancer '%d'.", nodeToDelete.getId(), queueLb.getId());

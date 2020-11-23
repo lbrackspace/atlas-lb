@@ -21,16 +21,11 @@ public class DeleteExpiredRateLimitListener extends BaseListener {
         if (!rateLimits.isEmpty()) {
             for (RateLimit rl : rateLimits) {
                 LoadBalancer lb = rl.getLoadbalancer();
-                if (isRestAdapter()) {
                     LOG.debug(String.format("Attempting to remove expired rate limit for load balancer in STM... '%d' ...", lb.getId()));
                     reverseProxyLoadBalancerVTMService.deleteRateLimit(lb);
                     LOG.debug(String.format("expired rate limits were removed from STM..loadbalancer in STM...'%s'..", lb.getId())
                             + "Now we can remove the from the database...");
-                } else {
-                    LOG.debug(String.format("Attempting to remove expired rate limit for load balancer in ZXTM... '%d' ...", lb.getId()));
-                    reverseProxyLoadBalancerService.deleteRateLimit(lb);
-                    LOG.debug(String.format("expired rate limits were removed from ZXTM..loadbalancer...'%s'..", lb.getId()));
-                }
+
                 try {
                     rateLimitingService.removeLimitByExpiration(rl.getId());
                 } catch (Exception e) {

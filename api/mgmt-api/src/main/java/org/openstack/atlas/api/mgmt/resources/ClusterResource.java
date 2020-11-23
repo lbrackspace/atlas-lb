@@ -336,11 +336,9 @@ public class ClusterResource extends ManagementDependencyProvider {
             for (org.openstack.atlas.service.domain.entities.Host dbHost : hosts) {
                 int conn = 0;
                 try {
-                    if (isRestAdapter()) {
+
                         conn = reverseProxyLoadBalancerVTMService.getTotalCurrentConnectionsForHost(dbHost);
-                    } else {
-                        conn = reverseProxyLoadBalancerService.getTotalCurrentConnectionsForHost(dbHost);
-                    }
+
                 } catch (Exception e) {
                     LOG.error(e);
                     notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), "Error during getting total connections for host " + dbHost.getId());
@@ -392,11 +390,9 @@ public class ClusterResource extends ManagementDependencyProvider {
         List<org.openstack.atlas.service.domain.pojos.Cidr> x;
         for (org.openstack.atlas.service.domain.entities.Host host : hosts) {
             Hostssubnet hostssubnet;
-            if(isRestAdapter()){
+
                 hostssubnet = reverseProxyLoadBalancerVTMService.getSubnetMappings(host);
-            } else {
-                hostssubnet = reverseProxyLoadBalancerService.getSubnetMappings(host);
-            }
+
             for (Hostsubnet hostsubnet : hostssubnet.getHostsubnets()) {
                 for (NetInterface ni : hostsubnet.getNetInterfaces()) {
                     for (org.openstack.atlas.service.domain.pojos.Cidr cidr : ni.getCidrs()) {

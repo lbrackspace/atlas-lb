@@ -45,20 +45,11 @@ public class DeleteNodesListener extends BaseListener {
         String doomedIdsStr = StringConverter.integersAsString(doomedNodeIds);
 
         try {
-            if (isRestAdapter()) {
                 LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in STM...", doomedIdsStr, msg.getLoadBalancerId()));
                 reverseProxyLoadBalancerVTMService.removeNodes(dbLoadBalancer, doomedNodes);
                 // Removes node from load balancer in DB
                 dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, doomedNodes);
                 LOG.debug(String.format("Successfully removed nodes '[%s]' from load balancer '%d' in Zeus.", doomedIdsStr, msg.getLoadBalancerId()));
-            } else {
-                LOG.debug(String.format("Removing nodes '[%s]' from load balancer '%d' in ZXTM...", doomedIdsStr, msg.getLoadBalancerId()));
-                dbLoadBalancer = nodeService.delNodes(dbLoadBalancer, doomedNodes);
-//                Set<Node> survivingNodes = nodeService.getAllNodesByAccountIdLoadBalancerId(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId());
-                reverseProxyLoadBalancerService.setNodesPriorities(ZxtmNameBuilder.genVSName(dbLoadBalancer), dbLoadBalancer);
-                reverseProxyLoadBalancerService.removeNodes(msg.getLoadBalancerId(), msg.getAccountId(), doomedNodes);
-                LOG.debug(String.format("Successfully removed nodes '[%s]' from load balancer '%d' in Zeus.", doomedIdsStr, msg.getLoadBalancerId()));
-            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error removing nodes '%s' in Zeus for loadbalancer '%d'.", doomedIdsStr, msg.getLoadBalancerId());

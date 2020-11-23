@@ -68,11 +68,7 @@ public class BackupsResource extends ManagementDependencyProvider {
 
             try {
                 LOG.info("Creating backup in Backend...");
-                if(!isRestAdapter()){
-                    reverseProxyLoadBalancerService.createHostBackup(domainHost, backup.getName());
-                } else {
-                    reverseProxyLoadBalancerVTMService.createHostBackup(domainHost, backup.getName());
-                }
+                reverseProxyLoadBalancerVTMService.createHostBackup(domainHost, backup.getName());
                 LOG.info("Backup successfully created in Backend.");
             } catch (ObjectAlreadyExists oae) {
                 String message = String.format("A backup named '%s' already exists. Please try a different name.", backup.getName());

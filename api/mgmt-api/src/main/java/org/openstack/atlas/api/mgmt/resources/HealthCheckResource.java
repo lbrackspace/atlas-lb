@@ -15,7 +15,6 @@ import java.io.FileNotFoundException;
 
 public class HealthCheckResource extends ManagementDependencyProvider {
 
-    protected ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
 
     @GET
     public Response getHealthCheck() throws EntityNotFoundException {
@@ -43,11 +42,9 @@ public class HealthCheckResource extends ManagementDependencyProvider {
                 check.setTime(System.currentTimeMillis() - time);
                 return check;
             }
-            if(isRestAdapter()){
+
                 reverseProxyLoadBalancerVTMService.getSubnetMappings(host);
-            } else {
-                reverseProxyLoadBalancerService.getSubnetMappings(host);
-            }
+
         } catch (Exception e) {
             check.setStatus("INACTIVE");
             check.setMessage(e.getMessage());

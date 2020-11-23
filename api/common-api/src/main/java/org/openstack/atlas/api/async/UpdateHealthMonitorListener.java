@@ -39,15 +39,9 @@ public class UpdateHealthMonitorListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
                 LOG.debug(String.format("Updating health monitor for load balancer '%d' in STM...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.updateHealthMonitor(dbLoadBalancer);
                 LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            } else {
-                LOG.debug(String.format("Updating health monitor for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.updateHealthMonitor(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated health monitor for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error updating health monitor in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());

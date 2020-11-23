@@ -40,18 +40,9 @@ public class UpdateNodeListener extends BaseListener {
         Node nodeToUpdate = getNodeToUpdate(queueLb);
 
         try {
-            if (isRestAdapter()) {
                 LOG.info(String.format("Updating nodes for load balancer '%d' in STM...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.setNodes(dbLoadBalancer);
                 LOG.info(String.format("Successfully updated nodes for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            } else {
-                LOG.info(String.format("Updating nodes for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                String poolName = ZxtmNameBuilder.genVSName(dbLoadBalancer);
-                reverseProxyLoadBalancerService.setNodes(dbLoadBalancer);
-                reverseProxyLoadBalancerService.setNodesPriorities(poolName, dbLoadBalancer);
-                LOG.info(String.format("Successfully updated nodes for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-
-            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error updating node '%d' in Zeus for loadbalancer '%d'.", nodeToUpdate.getId(), dbLoadBalancer.getId());

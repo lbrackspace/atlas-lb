@@ -38,15 +38,9 @@ public class UpdateContentCachingListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
                 LOG.debug(String.format("Updating content caching for load balancer '%d' in STM...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.updateLoadBalancer(dbLoadBalancer, queLb);
                 LOG.debug(String.format("Successfully updated content caching for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            } else {
-                LOG.debug(String.format("Updating connection throttle for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.updateContentCaching(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             String alertDescription = String.format("Error updating content caching for load balancer '%d' in Zeus.", dbLoadBalancer.getId());
