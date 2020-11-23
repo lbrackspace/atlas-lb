@@ -62,7 +62,7 @@ public class ChangeHostListener extends BaseListener {
         final Cluster newCluster = mdc.getMoveHost().getCluster();
 
         try {
-            LOG.debug(String.format("Changing host for loadbalancer(s): %s in STM...", lbIdString));
+            LOG.debug(String.format("Changing host for loadbalancer(s): %s in backend...", lbIdString));
 
             reverseProxyLoadBalancerVTMService.changeHostForLoadBalancers(dbLoadBalancers, mdc.getMoveHost());
 
@@ -96,7 +96,7 @@ public class ChangeHostListener extends BaseListener {
                 loadBalancerService.update(dbLoadBalancer);
             }
 
-            LOG.debug(String.format("Successfully Changed Host for loadbalancer(s): %s in STM...", lbIdString));
+            LOG.debug(String.format("Successfully Changed Host for loadbalancer(s): %s in backend...", lbIdString));
         } catch (Exception e) {
             String msg = String.format("Error moving LB(s): %s in ChangeHostListener(), setting status to ERROR.", lbIdString);
             LOG.error(msg, e);

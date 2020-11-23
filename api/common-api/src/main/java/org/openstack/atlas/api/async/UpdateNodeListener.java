@@ -2,7 +2,6 @@ package org.openstack.atlas.api.async;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.Node;
@@ -40,21 +39,12 @@ public class UpdateNodeListener extends BaseListener {
         Node nodeToUpdate = getNodeToUpdate(queueLb);
 
         try {
-            if (isRestAdapter()) {
-                LOG.info(String.format("Updating nodes for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                LOG.info(String.format("Updating nodes for load balancer '%d' in backend...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.setNodes(dbLoadBalancer);
-                LOG.info(String.format("Successfully updated nodes for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            } else {
-                LOG.info(String.format("Updating nodes for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                String poolName = ZxtmNameBuilder.genVSName(dbLoadBalancer);
-                reverseProxyLoadBalancerService.setNodes(dbLoadBalancer);
-                reverseProxyLoadBalancerService.setNodesPriorities(poolName, dbLoadBalancer);
-                LOG.info(String.format("Successfully updated nodes for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-
-            }
+                LOG.info(String.format("Successfully updated nodes for load balancer '%d' backend...", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error updating node '%d' in Zeus for loadbalancer '%d'.", nodeToUpdate.getId(), dbLoadBalancer.getId());
+            String alertDescription = String.format("Error updating node '%d' backend.. for loadbalancer '%d'.", nodeToUpdate.getId(), dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb, nodeToUpdate);

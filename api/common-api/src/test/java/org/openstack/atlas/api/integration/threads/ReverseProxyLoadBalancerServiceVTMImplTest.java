@@ -12,9 +12,7 @@ import org.mockito.Spy;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
-import org.openstack.atlas.adapter.vtm.VTMAdapterResources;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceVTMImpl;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.service.domain.entities.*;
@@ -51,8 +49,6 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
         LoadBalancerServiceImpl loadBalancerService;
         @Mock
         ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
-        @Mock
-        ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
         ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerServiceVTM;
 
         Cluster cluster;
@@ -83,7 +79,6 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
             reverseProxyLoadBalancerServiceVTM.setHostService(hostService);
             reverseProxyLoadBalancerServiceVTM.setConfiguration(configuration);
             reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerVTMAdapter(reverseProxyLoadBalancerVTMAdapter);
-            reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerStmAdapter(reverseProxyLoadBalancerStmAdapter);
 
             host.setName("testHost");
             host.setId(1);
@@ -124,16 +119,7 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
             soapEndPointHost.setRestEndpoint("https://test/api/tm/7.0/config/active/");
             reverseProxyLoadBalancerServiceVTM.getSsl3CiphersForLB(loadBalancerId);
             verify(reverseProxyLoadBalancerVTMAdapter, times(1)).getSsl3Ciphers(any(LoadBalancerEndpointConfiguration.class));
-            verify(reverseProxyLoadBalancerStmAdapter, times(0)).getSsl3Ciphers(any(LoadBalancerEndpointConfiguration.class));
 
-        }
-
-        @Test
-        public void getSSL3CiphersForLBShouldUseSTMAdapter() throws Exception{
-            soapEndPointHost.setRestEndpoint("https://test/api/tm/3.4/config/active/");
-            reverseProxyLoadBalancerServiceVTM.getSsl3CiphersForLB(loadBalancerId);
-            verify(reverseProxyLoadBalancerVTMAdapter, times(0)).getSsl3Ciphers(any(LoadBalancerEndpointConfiguration.class));
-            verify(reverseProxyLoadBalancerStmAdapter, times(1)).getSsl3Ciphers(any(LoadBalancerEndpointConfiguration.class));
         }
     }
 
@@ -149,8 +135,6 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
         LoadBalancerServiceImpl loadBalancerService;
         @Mock
         ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
-        @Mock
-        ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
         @Spy
         ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerServiceVTM;
 
@@ -182,7 +166,6 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
             reverseProxyLoadBalancerServiceVTM.setHostService(hostService);
             reverseProxyLoadBalancerServiceVTM.setConfiguration(configuration);
             reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerVTMAdapter(reverseProxyLoadBalancerVTMAdapter);
-            reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerStmAdapter(reverseProxyLoadBalancerStmAdapter);
 
             host.setName("testHost");
             host.setId(1);
@@ -225,7 +208,6 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
             reverseProxyLoadBalancerServiceVTM.setSubnetMappings(host, hsubnet);
             verify(reverseProxyLoadBalancerServiceVTM, times(1)).getConfigHost(host);
             verify(reverseProxyLoadBalancerVTMAdapter, times(1)).setSubnetMappings(any(LoadBalancerEndpointConfiguration.class), any());
-            verify(reverseProxyLoadBalancerStmAdapter, times(0)).setSubnetMappings(any(LoadBalancerEndpointConfiguration.class), any());
 
         }
 
@@ -243,8 +225,6 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
         LoadBalancerServiceImpl loadBalancerService;
         @Mock
         ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
-        @Mock
-        ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
         ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerServiceVTM;
 
         Cluster cluster;
@@ -275,7 +255,6 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
             reverseProxyLoadBalancerServiceVTM.setHostService(hostService);
             reverseProxyLoadBalancerServiceVTM.setConfiguration(configuration);
             reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerVTMAdapter(reverseProxyLoadBalancerVTMAdapter);
-            reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerStmAdapter(reverseProxyLoadBalancerStmAdapter);
 
             host.setName("testHost");
             host.setId(1);

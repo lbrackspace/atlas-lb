@@ -2,7 +2,7 @@ package org.openstack.atlas.adapter.itest;
 
 
 import org.junit.*;
-import org.openstack.atlas.adapter.helpers.ResourceTranslator;
+import org.openstack.atlas.adapter.vtm.VTMResourceTranslator;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerJoinVip6;
 import org.openstack.atlas.service.domain.entities.Node;
@@ -103,7 +103,7 @@ public class Ipv6ITest extends VTMTestBase {
 
     protected static void createSimpleIpv6LoadBalancer() {
         VTMRestClient tclient;
-        ResourceTranslator translator = new ResourceTranslator();
+        VTMResourceTranslator translator = new VTMResourceTranslator();
 
         try {
             vtmAdapter.createLoadBalancer(config, lb);

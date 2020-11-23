@@ -7,7 +7,6 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceVTMImpl;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
 import org.openstack.atlas.cfg.ConfigurationKey;
@@ -33,7 +32,6 @@ public class BackupResourceTest {
         private ManagementAsyncService asyncService;
         private OperationResponse operationResponse;
         private ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerVTMServiceImpl;
-        private ReverseProxyLoadBalancerServiceImpl reverseProxyLoadBalancerServiceImpl;
         private Host host;
         private HostServiceImpl hostService;
         private RestApiConfiguration config;
@@ -45,12 +43,10 @@ public class BackupResourceTest {
             config = mock(RestApiConfiguration.class);
             domainBackup = mock(org.openstack.atlas.service.domain.entities.Backup.class);
             reverseProxyLoadBalancerVTMServiceImpl =  mock(ReverseProxyLoadBalancerServiceVTMImpl.class);
-            reverseProxyLoadBalancerServiceImpl = mock(ReverseProxyLoadBalancerServiceImpl.class);
             hostService = mock(HostServiceImpl.class);
             host = mock(Host.class);
             backupResource = new BackupResource();
             backupResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMServiceImpl);
-            backupResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerServiceImpl);
             backupResource.setManagementAsyncService(asyncService);
             backupResource.setHostService(hostService);
             backupResource.setMockitoAuth(true);
@@ -79,14 +75,6 @@ public class BackupResourceTest {
             Assert.assertEquals(200,response.getStatus());
         }
 
-        @Test
-        public void deleteBackupShouldReturn200ViaSOAP() throws Exception {
-            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
-            Response response = backupResource.deleteBackup();
-            verify(reverseProxyLoadBalancerServiceImpl, times(1)).deleteHostBackup(host, domainBackup.getName());
-            Assert.assertEquals(200,response.getStatus());
-        }
-
     }
 
     public static class whenRestoringBackup {
@@ -97,7 +85,6 @@ public class BackupResourceTest {
         private ManagementAsyncService asyncService;
         private OperationResponse operationResponse;
         private ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerVTMServiceImpl;
-        private ReverseProxyLoadBalancerServiceImpl reverseProxyLoadBalancerServiceImpl;
         private Host host;
         private HostServiceImpl hostService;
         private RestApiConfiguration config;
@@ -109,12 +96,10 @@ public class BackupResourceTest {
             config = mock(RestApiConfiguration.class);
             domainBackup = mock(org.openstack.atlas.service.domain.entities.Backup.class);
             reverseProxyLoadBalancerVTMServiceImpl =  mock(ReverseProxyLoadBalancerServiceVTMImpl.class);
-            reverseProxyLoadBalancerServiceImpl = mock(ReverseProxyLoadBalancerServiceImpl.class);
             hostService = mock(HostServiceImpl.class);
             host = mock(Host.class);
             backupResource = new BackupResource();
             backupResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMServiceImpl);
-            backupResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerServiceImpl);
             backupResource.setManagementAsyncService(asyncService);
             backupResource.setHostService(hostService);
             backupResource.setMockitoAuth(true);
@@ -142,16 +127,6 @@ public class BackupResourceTest {
             verify(reverseProxyLoadBalancerVTMServiceImpl, times(1)).restoreHostBackup(host, domainBackup.getName());
             Assert.assertEquals(200,response.getStatus());
         }
-
-        @Test
-        public void deleteBackupShouldReturn200ViaSOAP() throws Exception {
-            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
-            Response response = backupResource.restoreBackup();
-            verify(reverseProxyLoadBalancerServiceImpl, times(1)).restoreHostBackup(host, domainBackup.getName());
-            Assert.assertEquals(200,response.getStatus());
-        }
-
-
 
 
     }

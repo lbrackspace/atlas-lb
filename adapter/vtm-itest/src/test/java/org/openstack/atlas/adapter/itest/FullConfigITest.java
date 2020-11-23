@@ -2,9 +2,9 @@ package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
-import org.openstack.atlas.adapter.helpers.ResourceTranslator;
-import org.openstack.atlas.adapter.helpers.ZeusNodePriorityContainer;
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
+import org.openstack.atlas.adapter.helpers.VTMNodePriorityContainer;
+import org.openstack.atlas.adapter.vtm.VTMResourceTranslator;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.pojos.ZeusSslTermination;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
@@ -44,7 +44,7 @@ public class FullConfigITest extends VTMTestBase {
     Node n3;
 
     /**
-     * Have to run in order, some tests depend on others for values in STM...
+     * Have to run in order, some tests depend on others for values in backend...
      */
 
     @BeforeClass
@@ -207,7 +207,7 @@ public class FullConfigITest extends VTMTestBase {
     }
 
     @Test
-    public void updateFullyConfiguredLoadBalancerWithHealthMonitorRollbacks() throws VTMRestClientException, IOException, VTMRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException, StmRollBackException {
+    public void updateFullyConfiguredLoadBalancerWithHealthMonitorRollbacks() throws VTMRestClientException, IOException, VTMRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException, VTMRollBackException {
         buildHydratedLb();
         vtmAdapter.updateLoadBalancer(config, lb, lb);
 
@@ -240,7 +240,7 @@ public class FullConfigITest extends VTMTestBase {
     }
 
     @Test
-    public void updateFullyConfiguredLoadBalancerWithProtectionrollbacks() throws VTMRestClientException, IOException, VTMRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException, StmRollBackException {
+    public void updateFullyConfiguredLoadBalancerWithProtectionrollbacks() throws VTMRestClientException, IOException, VTMRestClientObjectNotFoundException, InsufficientRequestException, IPStringConversionException, VTMRollBackException {
         buildHydratedLb();
         vtmAdapter.updateLoadBalancer(config, lb, lb);
 
@@ -418,7 +418,7 @@ public class FullConfigITest extends VTMTestBase {
 
     private VirtualServer verifyVS(LoadBalancer lb) throws InsufficientRequestException, VTMRestClientException, VTMRestClientObjectNotFoundException, IOException {
         VirtualServer vs = client.getVirtualServer(loadBalancerName());
-        ResourceTranslator translator = new ResourceTranslator();
+        VTMResourceTranslator translator = new VTMResourceTranslator();
 
         Assert.assertNotNull(vs);
         Assert.assertEquals(true, vs.getProperties().getBasic().getEnabled());
@@ -478,7 +478,7 @@ public class FullConfigITest extends VTMTestBase {
             }
         }
 
-        ZeusNodePriorityContainer znpc = new ZeusNodePriorityContainer(lb.getNodes());
+        VTMNodePriorityContainer znpc = new VTMNodePriorityContainer(lb.getNodes());
         Assert.assertEquals(znpc.hasSecondary(), pool.getProperties().getLoadBalancing().getPriorityEnabled());
 
         Assert.assertEquals(lb.getTimeout(), pool.getProperties().getConnection().getMaxReplyTime());

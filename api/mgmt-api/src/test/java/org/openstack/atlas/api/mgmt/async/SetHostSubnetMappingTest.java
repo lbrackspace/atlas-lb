@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.api.mgmt.async.util.VTMTestBase;
 import org.openstack.atlas.cfg.ConfigurationKey;
@@ -21,7 +20,6 @@ import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.usagerefactor.collection.UsageEventCollection;
 
 import javax.jms.ObjectMessage;
-import javax.persistence.RollbackException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,8 +48,6 @@ public class SetHostSubnetMappingTest extends VTMTestBase {
     private LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     @Mock
     private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
-    @Mock
-    private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     @Mock
     private RestApiConfiguration config;
 
@@ -90,7 +86,6 @@ public class SetHostSubnetMappingTest extends VTMTestBase {
         mgmtSetHostSubnetMappingListener.setVirtualIpService(virtualIpService);
         mgmtSetHostSubnetMappingListener.setLoadBalancerStatusHistoryService(loadBalancerStatusHistoryService);
         mgmtSetHostSubnetMappingListener.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
-        mgmtSetHostSubnetMappingListener.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
         mgmtSetHostSubnetMappingListener.setConfiguration(config);
     }
 
@@ -135,46 +130,7 @@ public class SetHostSubnetMappingTest extends VTMTestBase {
         mgmtSetHostSubnetMappingListener.doOnMessage(objectMessage);
 
         verify(reverseProxyLoadBalancerVTMService, times(1)).setSubnetMappings(host, hostssubnet);
-        verify(reverseProxyLoadBalancerService, times(0)).setSubnetMappings(host, hostssubnet);
     }
 
-    @Test
-    public void testSetSubnetMappingsSoap() throws Exception {
 
-        lb.setStatus(LoadBalancerStatus.PENDING_UPDATE);
-
-        MessageDataContainer mdc = new MessageDataContainer();
-        mdc.setLoadBalancerId(lb.getId());
-        mdc.setAccountId(lb.getAccountId());
-        mdc.setLoadBalancerStatus(lb.getStatus());
-
-        Host moveHost = new Host();
-        Cluster mCluster = new Cluster();
-        mCluster.setId(1);
-        moveHost.setId(13);
-        moveHost.setCluster(mCluster);
-        mdc.setMoveHost(moveHost);
-
-        ArrayList lbids = new ArrayList<>();
-        lbids.add(lb.getId());
-        mdc.setIds(lbids);
-
-        when(objectMessage.getObject()).thenReturn(esbRequest);
-        List<LoadBalancer> lbs = new ArrayList<>();
-        Host host = new Host();
-        host.setId(12);
-        host.setCluster(mCluster);
-        host.setTrafficManagerName("t1");
-        lb.setHost(host);
-        lbs.add(lb);
-        when(esbRequest.getHost()).thenReturn(host);
-        when(esbRequest.getHostssubnet()).thenReturn(hostssubnet);
-        when(hostService.getById(12)).thenReturn(host);
-        when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
-
-        mgmtSetHostSubnetMappingListener.doOnMessage(objectMessage);
-
-        verify(reverseProxyLoadBalancerVTMService, times(0)).setSubnetMappings(host, hostssubnet);
-        verify(reverseProxyLoadBalancerService, times(1)).setSubnetMappings(host, hostssubnet);
-    }
 }

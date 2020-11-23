@@ -1,12 +1,10 @@
 package org.openstack.atlas.api.integration.threads;
 
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.service.domain.entities.Host;
 
 public class HostEndpointPollThread extends Thread {
 
-    private ReverseProxyLoadBalancerService proxyService;
     private ReverseProxyLoadBalancerVTMService vtmProxyService;
     private Host host;
     private boolean endPointWorking = false;
@@ -16,7 +14,6 @@ public class HostEndpointPollThread extends Thread {
     @Override
     public void run() {
         try {
-            endPointWorking = proxyService.isEndPointWorking(host);
             restEndPointWorking = vtmProxyService.isEndPointWorking(host);
             return;
         } catch (Exception ex) {
@@ -39,13 +36,6 @@ public class HostEndpointPollThread extends Thread {
         return sb.toString();
     }
 
-    public ReverseProxyLoadBalancerService getProxyService() {
-        return proxyService;
-    }
-
-    public void setProxyService(ReverseProxyLoadBalancerService proxyService) {
-        this.proxyService = proxyService;
-    }
 
     public ReverseProxyLoadBalancerVTMService getVTMProxyService() {
         return vtmProxyService;

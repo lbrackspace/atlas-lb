@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.api.async.util.STMTestBase;
+import org.openstack.atlas.api.async.util.VTMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
@@ -20,11 +20,10 @@ import org.openstack.atlas.service.domain.services.helpers.AlertType;
 
 import javax.jms.ObjectMessage;
 
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class DeleteErrorFileListenerTest extends STMTestBase {
+public class DeleteErrorFileListenerTest extends VTMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
 

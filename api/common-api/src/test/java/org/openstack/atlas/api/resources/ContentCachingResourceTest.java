@@ -7,7 +7,6 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.openstack.atlas.api.integration.AsyncService;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ContentCaching;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
@@ -32,7 +31,6 @@ public class ContentCachingResourceTest {
     public static class WhenRetrievingResources {
         private ContentCachingResource contentCachingResource;
         private ContentCachingService contentCachingService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private AsyncService asyncService;
         private Response response;
 
@@ -41,7 +39,6 @@ public class ContentCachingResourceTest {
         public void setUp() {
 
             contentCachingService = mock(ContentCachingService.class);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             asyncService = mock(AsyncService.class);
             contentCachingResource = new ContentCachingResource();
             contentCachingResource.setAccountId(222222);

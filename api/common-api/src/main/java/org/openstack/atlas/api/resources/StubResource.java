@@ -41,7 +41,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import javax.ws.rs.core.Response;
-import org.openstack.atlas.api.exceptions.StingrayTimeoutException;
+import org.openstack.atlas.api.exceptions.VTMTimeoutException;
 
 import org.openstack.atlas.api.helpers.ConfigurationHelper;
 import org.openstack.atlas.api.helpers.ResponseFactory;
@@ -504,7 +504,7 @@ public class StubResource extends CommonDependencyProvider {
         ListOfStrings los = new ListOfStrings();
         Map<String, Exception> map = new HashMap<String, Exception>();
         map.put("entitynotfound", new EntityNotFoundException());
-        map.put("stingraytimeout", new StingrayTimeoutException("timeout"));
+        map.put("stingraytimeout", new VTMTimeoutException("timeout"));
         map.put("outofvips", new OutOfVipsException("out of vips"));
         map.put("clusterstatus", new ClusterStatusException("cluster error"));
         map.put("noavailablecluster", new NoAvailableClusterException("no clust4er"));

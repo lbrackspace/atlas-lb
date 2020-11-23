@@ -13,7 +13,6 @@ import org.openstack.atlas.service.domain.repository.*;
 import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRepository;
 import org.openstack.atlas.api.integration.AsyncService;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.mgmt.helpers.LDAPTools.MossoAuthConfig;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
 import org.openstack.atlas.api.resources.providers.RequestStateContainer;
@@ -67,7 +66,6 @@ public class ManagementDependencyProvider {
     protected CallbackService callbackService;
     protected NotificationService notificationService;
     protected BlackListService blackListService;
-    protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
     protected SuspensionService suspensionService;
     protected ClusterService clusterService;
@@ -160,10 +158,6 @@ public class ManagementDependencyProvider {
 
     public void setTicketService(TicketService ticketService) {
         this.ticketService = ticketService;
-    }
-
-    public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
-        this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
     }
 
     public void setReverseProxyLoadBalancerVTMService(ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService) {

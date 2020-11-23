@@ -3,7 +3,6 @@ package org.openstack.atlas.jobs;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.LoadBalancerEndpointConfiguration;
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerStmAdapter;
 import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerVTMAdapter;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.Host;
@@ -33,8 +32,6 @@ public class HostEndpointPollerJob extends AbstractJob {
     @Autowired
     private ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
     @Autowired
-    private ReverseProxyLoadBalancerStmAdapter reverseProxyLoadBalancerStmAdapter;
-    @Autowired
     private HostRepository hostRepository;
 
     @Override
@@ -63,12 +60,7 @@ public class HostEndpointPollerJob extends AbstractJob {
                     continue;
                 }
 
-                // Temp check until we refactor to use proxyService
-                if (!host.getRestEndpoint().contains("/7.0")) {
-                    restEndpointWorks = reverseProxyLoadBalancerStmAdapter.isEndPointWorking(getConfigHost(host));
-                } else {
-                    restEndpointWorks = reverseProxyLoadBalancerVTMAdapter.isEndPointWorking(getConfigHost(host));
-                }
+                restEndpointWorks = reverseProxyLoadBalancerVTMAdapter.isEndPointWorking(getConfigHost(host));
 
                 if (restEndpointWorks) {
                     host.setRestEndpointActive(Boolean.TRUE);

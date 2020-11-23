@@ -39,19 +39,12 @@ public class DeleteCertificateMappingListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
-                LOG.debug(String.format("Updating session persistence for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Updating session persistence for load balancer '%d' in backend...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.deleteCertificateMapping(dbLoadBalancer, queueCertMapping);
-                LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            } else {
-                LOG.debug(String.format("Removing certificate mapping '%d' from load balancer '%d' in ZXTM...", queueCertMapping.getId(), dataContainer.getLoadBalancerId()));
-                CertificateMapping dbCertMapping = certificateMappingService.getByIdAndLoadBalancerId(queueCertMapping.getId(), dbLoadBalancer.getId());
-                reverseProxyLoadBalancerService.removeCertificateMapping(dataContainer.getLoadBalancerId(), dataContainer.getAccountId(), dbCertMapping);
-                LOG.debug(String.format("Successfully removed certificate mapping '%d' from load balancer '%d' in Zeus.", queueCertMapping.getId(), dataContainer.getLoadBalancerId()));
-            }
+                LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' backend.....", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error removing certificate mapping '%d' in Zeus for loadbalancer '%d'.", queueCertMapping.getId(), dataContainer.getLoadBalancerId());
+            String alertDescription = String.format("Error removing certificate mapping '%d' backend.. for loadbalancer '%d'.", queueCertMapping.getId(), dataContainer.getLoadBalancerId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dataContainer.getAccountId(), dataContainer.getLoadBalancerId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dataContainer);

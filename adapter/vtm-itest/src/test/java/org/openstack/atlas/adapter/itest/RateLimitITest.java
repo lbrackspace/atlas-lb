@@ -4,7 +4,7 @@ package org.openstack.atlas.adapter.itest;
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.helpers.VTMNameBuilder;
 import org.openstack.atlas.service.domain.entities.RateLimit;
 import org.rackspace.vtm.client.VTMRestClient;
 import org.rackspace.vtm.client.bandwidth.Bandwidth;
@@ -45,7 +45,7 @@ public class RateLimitITest extends VTMTestBase {
         RateLimit rateLimit;
         Bandwidth bandwidth;
         try {
-            vsName = ZxtmNameBuilder.genVSName(lb);
+            vsName = VTMNameBuilder.genVSName(lb);
             client = new VTMRestClient();
 
             rateLimit = new RateLimit();
@@ -75,7 +75,7 @@ public class RateLimitITest extends VTMTestBase {
     // Test Get (though we need Set to work for this to work)
     @Test
     public void testGetRateLimit() throws Exception {
-        String vsName = ZxtmNameBuilder.genVSName(lb);
+        String vsName = VTMNameBuilder.genVSName(lb);
         VTMRestClient client = new VTMRestClient();
         RateLimit rateLimit = new RateLimit();
         Bandwidth bandwidth;
@@ -90,7 +90,7 @@ public class RateLimitITest extends VTMTestBase {
     // Test Set (though we need Get to work for this to work)
     @Test
     public void testSetRateLimit() throws Exception {
-        String vsName = ZxtmNameBuilder.genVSName(lb);
+        String vsName = VTMNameBuilder.genVSName(lb);
         VTMRestClient client = new VTMRestClient();
         RateLimit rateLimit = new RateLimit();
         Bandwidth bandwidth;
@@ -112,7 +112,7 @@ public class RateLimitITest extends VTMTestBase {
     // Test Delete (though we need Set and Get for this to work)
     @Test(expected = VTMRestClientObjectNotFoundException.class)
     public void testDeleteRateLimit() throws Exception {
-        String vsName = ZxtmNameBuilder.genVSName(lb);
+        String vsName = VTMNameBuilder.genVSName(lb);
         VTMRestClient client = new VTMRestClient();
         RateLimit rateLimit = new RateLimit();
         Bandwidth bandwidth;

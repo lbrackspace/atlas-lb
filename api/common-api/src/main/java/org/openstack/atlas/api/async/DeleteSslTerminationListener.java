@@ -68,19 +68,13 @@ public class DeleteSslTerminationListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
-                LOG.debug(String.format("Deleting load balancer '%d' ssl termination in STM...", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Deleting load balancer '%d' ssl termination in backend...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.removeSslTermination(dbLoadBalancer);
-                LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId()));
-            } else {
-                LOG.debug(String.format("Deleting load balancer '%d' ssl termination in ZXTM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.removeSslTermination(dbLoadBalancer);
-                LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' in Zeus.", dbLoadBalancer.getId()));
-            }
+                LOG.debug(String.format("Successfully deleted load balancer ssl termination '%d' backend...", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             LOG.error(String.format("LoadBalancer status before error was: '%s'", dbLoadBalancer.getStatus()));
-            String alertDescription = String.format("Error deleting loadbalancer '%d' ssl termination in Zeus.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error deleting loadbalancer '%d' ssl termination backend...", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(errorMsgLB);

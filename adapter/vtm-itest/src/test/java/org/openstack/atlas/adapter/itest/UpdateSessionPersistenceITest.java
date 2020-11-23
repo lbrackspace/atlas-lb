@@ -3,13 +3,11 @@ package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
-import org.openstack.atlas.adapter.exceptions.StmRollBackException;
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
 import org.openstack.atlas.service.domain.entities.SessionPersistence;
 import org.rackspace.vtm.client.VTMRestClient;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
-
-import javax.mail.Session;
 
 public class UpdateSessionPersistenceITest extends VTMTestBase {
 
@@ -37,7 +35,7 @@ public class UpdateSessionPersistenceITest extends VTMTestBase {
 
     @Test
     public void updateSessionPersistenceHTTP() throws InsufficientRequestException,
-          VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+          VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
         lb.setSessionPersistence(SessionPersistence.HTTP_COOKIE);
         vtmAdapter.updateLoadBalancer(config, lb, lb);
@@ -48,7 +46,7 @@ public class UpdateSessionPersistenceITest extends VTMTestBase {
 
     @Test
     public void updateSessionPersistenceSourceIP() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
         lb.setSessionPersistence(SessionPersistence.SOURCE_IP);
         vtmAdapter.updateLoadBalancer(config, lb, lb);
@@ -59,7 +57,7 @@ public class UpdateSessionPersistenceITest extends VTMTestBase {
 
     @Test
     public void updateSessionPersistenceSSLID() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
         lb.setSessionPersistence(SessionPersistence.SSL_ID);
         vtmAdapter.updateLoadBalancer(config, lb, lb);
@@ -70,7 +68,7 @@ public class UpdateSessionPersistenceITest extends VTMTestBase {
 
     @Test
     public void removeSessionPersistenceHTTP() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
 
         //Set as NONE
@@ -96,7 +94,7 @@ public class UpdateSessionPersistenceITest extends VTMTestBase {
 
     @Test
     public void removeSessionPersistenceSourceIP() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
 
         //Set as NONE
@@ -122,7 +120,7 @@ public class UpdateSessionPersistenceITest extends VTMTestBase {
 
     @Test
     public void removeSessionPersistenceSSLID() throws InsufficientRequestException,
-            VTMRestClientObjectNotFoundException, VTMRestClientException, StmRollBackException {
+            VTMRestClientObjectNotFoundException, VTMRestClientException, VTMRollBackException {
         VTMRestClient client = new VTMRestClient();
 
         //Set as NONE

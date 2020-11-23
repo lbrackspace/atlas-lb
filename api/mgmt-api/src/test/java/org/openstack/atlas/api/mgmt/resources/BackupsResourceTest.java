@@ -9,7 +9,6 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceImpl;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerServiceVTMImpl;
 import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
 import org.openstack.atlas.cfg.ConfigurationKey;
@@ -42,7 +41,6 @@ public class BackupsResourceTest {
         private ManagementAsyncService asyncService;
         private OperationResponse operationResponse;
         private ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerVTMServiceImpl;
-        private ReverseProxyLoadBalancerServiceImpl reverseProxyLoadBalancerServiceImpl;
         private Host host;
         private org.openstack.atlas.service.domain.entities.Backup domainBackup;
         private HostServiceImpl hostService;
@@ -55,12 +53,10 @@ public class BackupsResourceTest {
             config = mock(RestApiConfiguration.class);
             domainBackup = mock(org.openstack.atlas.service.domain.entities.Backup.class);
             reverseProxyLoadBalancerVTMServiceImpl =  mock(ReverseProxyLoadBalancerServiceVTMImpl.class);
-            reverseProxyLoadBalancerServiceImpl = mock(ReverseProxyLoadBalancerServiceImpl.class);
             hostService = mock(HostServiceImpl.class);
             host = mock(Host.class);
             backupsResource = new BackupsResource();
             backupsResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMServiceImpl);
-            backupsResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerServiceImpl);
             backupsResource.setManagementAsyncService(asyncService);
             backupsResource.setHostService(hostService);
             backupsResource.setMockitoAuth(true);
@@ -96,12 +92,5 @@ public class BackupsResourceTest {
             Assert.assertEquals(400,response.getStatus());
         }
 
-        @Test
-        public void createBackupShouldReturn200ViaSOAP() throws Exception {
-            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
-            Response response = backupsResource.createBackup(backup);
-            verify(reverseProxyLoadBalancerServiceImpl, times(1)).createHostBackup(host, backup.getName());
-            Assert.assertEquals(200,response.getStatus());
-        }
     }
 }

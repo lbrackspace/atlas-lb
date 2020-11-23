@@ -66,15 +66,9 @@ public class SyncListener extends BaseListener {
             finalStatus = DELETED;
 
             try {
-                if (!isRestAdapter()) {
-                    LOG.debug(String.format("Removing loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
-                    LOG.debug(String.format("Successfully removed loadbalancer for sync in ZXTM for LB: %s", dbLoadBalancer.getId()));
-                } else {
                     LOG.debug(String.format("Deleting load balancer '%d' in backend...", dbLoadBalancer.getId()));
                     reverseProxyLoadBalancerVTMService.deleteLoadBalancer(dbLoadBalancer);
                     LOG.debug(String.format("Successfully deleted load balancer '%d' in backend.", dbLoadBalancer.getId()));
-                }
             } catch (Exception e) {
                 String msg = String.format("Error deleting loadbalancer #%d in SyncListener(): ", mdc.getLoadBalancerId());
                 loadBalancerService.setStatus(dbLoadBalancer, ERROR);
@@ -111,15 +105,9 @@ public class SyncListener extends BaseListener {
             try {
                 LOG.debug(String.format("Syncing load balancer %s setting status to PENDING_UPDATE", dbLoadBalancer.getId()));
 
-                if (isRestAdapter()) {
-                    LOG.debug(String.format("Updating loadbalancer: %s in STM...", dbLoadBalancer.getId()));
+                    LOG.debug(String.format("Updating loadbalancer: %s in backend...", dbLoadBalancer.getId()));
                     reverseProxyLoadBalancerVTMService.updateLoadBalancer(dbLoadBalancer, dbLoadBalancer);
-                    LOG.debug(String.format("Successfully Updated loadbalancer: %s in STM...", dbLoadBalancer.getId()));
-                } else {
-                    LOG.debug(String.format("Syncing loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerService.syncLoadBalancer(dbLoadBalancer);
-                    LOG.debug(String.format("Successfully synced loadbalancer: %s in ZXTM...", dbLoadBalancer.getId()));
-                }
+                    LOG.debug(String.format("Successfully Updated loadbalancer: %s in backend...", dbLoadBalancer.getId()));
 
                 LOG.debug(String.format("Sync of load balancer %s complete, updating status and saving events and usage...", dbLoadBalancer.getId()));
 

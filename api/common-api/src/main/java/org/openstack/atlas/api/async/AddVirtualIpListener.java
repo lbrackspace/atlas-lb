@@ -51,18 +51,13 @@ public class AddVirtualIpListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
-                LOG.debug(String.format("Adding Virtual ip to load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Adding Virtual ip to load balancer '%d' in backend...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.addVirtualIps(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer);
-                LOG.debug("Successfully added virtual ip in Zeus.");
-            } else {
-                LOG.debug(String.format("Adding Virtual ip to load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.addVirtualIps(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer);
-                LOG.debug("Successfully added virtual ip in Zeus.");
-            }
+                LOG.debug("Successfully added virtual ip in backend.");
+
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error adding virtual ip in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error adding virtual ip backend.. for loadbalancer '%d'.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(dataContainer);

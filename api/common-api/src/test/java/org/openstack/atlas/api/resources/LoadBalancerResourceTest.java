@@ -4,7 +4,6 @@ import net.spy.memcached.MemcachedClient;
 import org.dozer.Mapper;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -14,7 +13,6 @@ import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.api.integration.AsyncService;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -96,7 +94,6 @@ public class LoadBalancerResourceTest {
 
     public static class WhenUpdatingResources {
         private LoadBalancerService loadBalancerService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private AsyncService asyncService;
         private Mapper dozerMapper;
         private LoadBalancerResource loadBalancerResource;
@@ -105,7 +102,6 @@ public class LoadBalancerResourceTest {
         @Before
         public void standUp() {
             loadBalancerService = mock(LoadBalancerService.class);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             asyncService = mock(AsyncService.class);
             dozerMapper = mock(Mapper.class);
             loadBalancerResource = new LoadBalancerResource();
@@ -260,7 +256,6 @@ public class LoadBalancerResourceTest {
 
     public static class WhenDeletingALoadBalancer {
         private LoadBalancerService loadBalancerService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private AsyncService asyncService;
         private LoadBalancerResource loadBalancerResource;
         private Response response;
@@ -268,7 +263,6 @@ public class LoadBalancerResourceTest {
         @Before
         public void standUp() {
             loadBalancerService = mock(LoadBalancerService.class);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             asyncService = mock(AsyncService.class);
             loadBalancerResource = new LoadBalancerResource();
             loadBalancerResource.setId(1);
@@ -314,7 +308,6 @@ public class LoadBalancerResourceTest {
 
     public static class WhenTestingStats {
         private LoadBalancerService loadBalancerService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
         private AsyncService asyncService;
         private LoadBalancerResource loadBalancerResource;
@@ -331,7 +324,6 @@ public class LoadBalancerResourceTest {
         public void standUp() throws EntityNotFoundException {
             loadBalancerService = mock(LoadBalancerService.class);
             restApiConfiguration = mock(RestApiConfiguration.class);
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             reverseProxyLoadBalancerVTMService = mock(ReverseProxyLoadBalancerVTMService.class);
             asyncService = mock(AsyncService.class);
             memcachedClient = mock(MemcachedClient.class);
@@ -344,7 +336,6 @@ public class LoadBalancerResourceTest {
             loadBalancerResource.setLoadBalancerService(loadBalancerService);
             loadBalancerResource.setAsyncService(asyncService);
             loadBalancerResource.setRestApiConfiguration(restApiConfiguration);
-            loadBalancerResource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
             loadBalancerResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
             loadBalancerResource.setDozerMapper(dozerBeanMapper);
 
@@ -378,22 +369,6 @@ public class LoadBalancerResourceTest {
             response = loadBalancerResource.retrieveLoadBalancerStats();
             Assert.assertEquals(200, response.getStatus());
             verify(reverseProxyLoadBalancerVTMService, times(1)).getVirtualServerStats(loadBalancer);
-            verify(reverseProxyLoadBalancerService, times(0)).getLoadBalancerStats(loadBalancer);
-        }
-
-        @Test
-        public void shouldReturnOkWhenRetrievingStats() throws Exception {
-            doReturn(true).when(restApiConfiguration).hasKeys(PublicApiServiceConfigurationKeys.stats);
-            doReturn("true").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
-
-            doReturn("NOTREST").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.adapter_soap_rest);
-            doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.any(LoadBalancer.class));
-
-
-            response = loadBalancerResource.retrieveLoadBalancerStats();
-            Assert.assertEquals(200, response.getStatus());
-            verify(reverseProxyLoadBalancerVTMService, times(0)).getVirtualServerStats(loadBalancer);
-            verify(reverseProxyLoadBalancerService, times(1)).getLoadBalancerStats(loadBalancer);
         }
 
         @Test
@@ -402,7 +377,6 @@ public class LoadBalancerResourceTest {
             doReturn("false").when(restApiConfiguration).getString(PublicApiServiceConfigurationKeys.stats);
 
             when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
-            doReturn(stats).when(reverseProxyLoadBalancerService).getLoadBalancerStats(Matchers.any(LoadBalancer.class));
             response = loadBalancerResource.retrieveLoadBalancerStats();
             Assert.assertEquals(400, response.getStatus());
         }
