@@ -28,7 +28,7 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>atlas-zxtm-service</artifactId>
+            <artifactId>atlas-vtm-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

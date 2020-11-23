@@ -1,11 +1,12 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import com.zxtm.service.client.ObjectDoesNotExist;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -53,20 +54,12 @@ public class BackupResource extends ManagementDependencyProvider {
             }
             try {
                 LOG.debug("Deleting backup in Traffic Manager...");
-                if(!isRestAdapter()) {
-                    reverseProxyLoadBalancerService.deleteHostBackup(domainHost, domainBackup.getName());
-                } else {
-                    reverseProxyLoadBalancerVTMService.deleteHostBackup(domainHost, domainBackup.getName());
-                }
-                LOG.info("Backup successfully deleted in Zeus.");
-            } catch (ObjectDoesNotExist odno) {
-                String message = String.format("A backup named '%s' does not exist. Ignoring...", domainBackup.getName());
+                reverseProxyLoadBalancerVTMService.deleteHostBackup(domainHost, domainBackup.getName());
+                LOG.info("Backup successfully deleted backend...");
+            } catch (VTMRollBackException oae) {
+                String message = String.format("Unable to create backup %s", oae.getMessage());
                 LOG.warn(message);
-            } catch (Exception e) {
-                String message = String.format("Error deleting backup '%d' in Zeus.", domainBackup.getId());
-                LOG.error(message, e);
-                notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), message);
-                throw e;
+                throw new BadRequestException(message);
             }
 
             LOG.debug("Removing the backup from the database...");
@@ -98,18 +91,15 @@ public class BackupResource extends ManagementDependencyProvider {
 
             try {
                 LOG.info(String.format("Restoring host with backup '%s' in Traffic Manager...", domainBackup.getName()));
-                if(!isRestAdapter()) {
-                    reverseProxyLoadBalancerService.restoreHostBackup(domainHost, domainBackup.getName());
-                } else {
-                    reverseProxyLoadBalancerVTMService.restoreHostBackup(domainHost, domainBackup.getName());
-                }
-                LOG.info(String.format("Host successfully restored with backup '%s' in Zeus.", domainBackup.getName()));
-            } catch (ObjectDoesNotExist odno) {
-                String message = String.format("A backup named '%s' does not exist in Zeus. Cannot restore host!", domainBackup.getName());
-                LOG.error(message);
-                notificationService.saveAlert(odno, AlertType.ZEUS_FAILURE.name(), message);
-                throw new EntityNotFoundException(message);
+                reverseProxyLoadBalancerVTMService.restoreHostBackup(domainHost, domainBackup.getName());
+                LOG.info(String.format("Host successfully restored with backup '%s' backend...", domainBackup.getName()));
             } catch (Exception e) {
+                if (e.getMessage().contains("Backup resource not found")) {
+                    String message = String.format("A backup named '%s' does not exist backend... Cannot restore host!", domainBackup.getName());
+                    LOG.error(message);
+                    notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), message);
+                    throw new EntityNotFoundException(message);
+                }
                 String error = "Error during restore backup.";
                 LOG.error(error, e);
                 notificationService.saveAlert(e, AlertType.ZEUS_FAILURE.name(), error);

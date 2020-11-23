@@ -22,7 +22,7 @@ public class OperationResponse implements Serializable {
         OUT_OF_VIPS,
         OVER_LIMIT,
         SERVICE_UNAVAILABLE,
-        STINGRAY_TIMEOUT,
+        VTM_TIMEOUT,
         UNAUTHORIZED,
         UNKNOWN,
         UNPROCESSABLE_ENTITY

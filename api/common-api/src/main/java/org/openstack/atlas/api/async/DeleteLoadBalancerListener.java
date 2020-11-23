@@ -72,19 +72,13 @@ public class DeleteLoadBalancerListener extends BaseListener {
 
         // Process vTM deletion...
         try {
-            if (isRestAdapter()) {
                 LOG.debug(String.format("Deleting load balancer '%d' in backend...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.deleteLoadBalancer(dbLoadBalancer);
                 LOG.debug(String.format("Successfully deleted load balancer '%d' in backend.", dbLoadBalancer.getId()));
-            } else {
-                LOG.debug(String.format("Deleting load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.deleteLoadBalancer(dbLoadBalancer);
-                LOG.debug(String.format("Successfully deleted load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            }
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
             LOG.error(String.format("LoadBalancer status before error was: '%s'", dbLoadBalancer.getStatus()));
-            String alertDescription = String.format("Error deleting loadbalancer '%d' in Zeus.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error deleting loadbalancer '%d' backend...", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);

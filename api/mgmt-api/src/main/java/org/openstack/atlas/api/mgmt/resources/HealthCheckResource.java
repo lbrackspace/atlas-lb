@@ -1,6 +1,5 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.adapter.service.ReverseProxyLoadBalancerAdapter;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.HealthCheck;
@@ -15,7 +14,6 @@ import java.io.FileNotFoundException;
 
 public class HealthCheckResource extends ManagementDependencyProvider {
 
-    protected ReverseProxyLoadBalancerAdapter reverseProxyLoadBalancerAdapter;
 
     @GET
     public Response getHealthCheck() throws EntityNotFoundException {
@@ -43,11 +41,9 @@ public class HealthCheckResource extends ManagementDependencyProvider {
                 check.setTime(System.currentTimeMillis() - time);
                 return check;
             }
-            if(isRestAdapter()){
+
                 reverseProxyLoadBalancerVTMService.getSubnetMappings(host);
-            } else {
-                reverseProxyLoadBalancerService.getSubnetMappings(host);
-            }
+
         } catch (Exception e) {
             check.setStatus("INACTIVE");
             check.setMessage(e.getMessage());

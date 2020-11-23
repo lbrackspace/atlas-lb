@@ -1,7 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.helpers.VTMNameBuilder;
 import org.openstack.atlas.service.domain.entities.LoadBalancerAlgorithm;
 import org.openstack.atlas.service.domain.entities.Node;
 import org.openstack.atlas.service.domain.entities.NodeType;
@@ -36,7 +36,7 @@ public class SetNodesITest extends VTMTestBase {
         Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
         setupIvars();
         createSimpleLoadBalancer();
-        vsName = ZxtmNameBuilder.genVSName(lb);
+        vsName = VTMNameBuilder.genVSName(lb);
         lb.setAlgorithm(LoadBalancerAlgorithm.WEIGHTED_LEAST_CONNECTIONS);
         vtmAdapter.updateLoadBalancer(config, lb, lb);
     }

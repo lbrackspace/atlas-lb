@@ -40,18 +40,12 @@ public class UpdateConnectionThrottleListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
-                LOG.debug(String.format("Updating connection throttle for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Updating connection throttle for load balancer '%d' in backend...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.updateConnectionThrottle(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            } else {
-                LOG.debug(String.format("Updating connection throttle for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                reverseProxyLoadBalancerService.updateConnectionThrottle(dbLoadBalancer);
-                LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' in Zeus.", dbLoadBalancer.getId()));
-            }
+                LOG.debug(String.format("Successfully updated connection throttle for load balancer '%d' backend...", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error updating connection throttle in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error updating connection throttle backend.. for loadbalancer '%d'.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);

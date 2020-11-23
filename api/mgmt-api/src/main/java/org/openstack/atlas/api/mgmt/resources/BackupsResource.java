@@ -1,17 +1,14 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Backup;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Backups;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
-import org.openstack.atlas.service.domain.operations.OperationResponse;
-import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
-import com.zxtm.service.client.InvalidObjectName;
-import com.zxtm.service.client.ObjectAlreadyExists;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -68,18 +65,10 @@ public class BackupsResource extends ManagementDependencyProvider {
 
             try {
                 LOG.info("Creating backup in Backend...");
-                if(!isRestAdapter()){
-                    reverseProxyLoadBalancerService.createHostBackup(domainHost, backup.getName());
-                } else {
-                    reverseProxyLoadBalancerVTMService.createHostBackup(domainHost, backup.getName());
-                }
+                reverseProxyLoadBalancerVTMService.createHostBackup(domainHost, backup.getName());
                 LOG.info("Backup successfully created in Backend.");
-            } catch (ObjectAlreadyExists oae) {
-                String message = String.format("A backup named '%s' already exists. Please try a different name.", backup.getName());
-                LOG.warn(message);
-                throw new BadRequestException(message);
-            } catch (InvalidObjectName ion) {
-                String message = String.format("Backup name is invalid. Please try a different name.");
+            } catch (VTMRollBackException oae) {
+                String message = String.format("Unable to create backup %s", oae.getMessage());
                 LOG.warn(message);
                 throw new BadRequestException(message);
             }

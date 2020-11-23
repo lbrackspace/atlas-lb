@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.cfg.ConfigurationKey;
@@ -17,11 +16,9 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.LbaasFault;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.services.ClusterService;
-import org.openstack.atlas.service.domain.services.HostService;
 
 import javax.ws.rs.core.Response;
 
@@ -40,19 +37,16 @@ public class ClusterResourceTest {
         private OperationResponse response;
         private Configuration configuration;
         private ClusterService clusterService;
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
         private List<Host> hosts;
 
         @Before
         public void setUp() {
-            reverseProxyLoadBalancerService = mock(ReverseProxyLoadBalancerService.class);
             reverseProxyLoadBalancerVTMService = mock(ReverseProxyLoadBalancerVTMService.class);
             clusterService = mock(ClusterService.class);
 
             resource = new ClusterResource();
             resource.setMockitoAuth(true);
-            resource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
             resource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
             resource.setClusterService(clusterService);
             response = new OperationResponse();
@@ -79,21 +73,9 @@ public class ClusterResourceTest {
 
             Response resp = resource.addVirtualIpBlocks(new VirtualIpBlocks());
             Assert.assertEquals(200, resp.getStatus());
-            verify(reverseProxyLoadBalancerService, times(0)).getSubnetMappings(any());
             verify(reverseProxyLoadBalancerVTMService, times(1)).getSubnetMappings(any());
         }
 
-        @Test
-        public void addVirtualIpBlocksShouldCallSoapService() throws Exception {
-            when(configuration.getString(Matchers.<ConfigurationKey>any())).thenReturn("NOTREST");
-
-            when(reverseProxyLoadBalancerService.getSubnetMappings(any())).thenReturn(new Hostssubnet());
-
-            Response resp = resource.addVirtualIpBlocks(new VirtualIpBlocks());
-            Assert.assertEquals(200, resp.getStatus());
-            verify(reverseProxyLoadBalancerService, times(1)).getSubnetMappings(any());
-            verify(reverseProxyLoadBalancerVTMService, times(0)).getSubnetMappings(any());
-        }
     }
 
     public static class whenRetrievingAllHostNetworks {
@@ -103,8 +85,6 @@ public class ClusterResourceTest {
 
         @Mock
         private ClusterService clusterService;
-        @Mock
-        private ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
         @Mock
         private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
 
@@ -126,7 +106,6 @@ public class ClusterResourceTest {
 
             resource = new ClusterResource();
             resource.setMockitoAuth(true);
-            resource.setReverseProxyLoadBalancerService(reverseProxyLoadBalancerService);
             resource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
             resource.setClusterService(clusterService);
             response = new OperationResponse();

@@ -1,7 +1,7 @@
 package org.openstack.atlas.adapter.itest;
 
 import org.junit.*;
-import org.openstack.atlas.adapter.helpers.ZxtmNameBuilder;
+import org.openstack.atlas.adapter.helpers.VTMNameBuilder;
 import org.openstack.atlas.service.domain.entities.AccessList;
 import org.openstack.atlas.service.domain.entities.AccessListType;
 import org.openstack.atlas.service.domain.entities.ConnectionLimit;
@@ -50,7 +50,7 @@ public class AccessListITest extends VTMTestBase {
             Thread.sleep(SLEEP_TIME_BETWEEN_TESTS);
             setupIvars();
             createSimpleLoadBalancer();
-            name = ZxtmNameBuilder.genVSName(lb);
+            name = VTMNameBuilder.genVSName(lb);
         } catch(Exception e) {
             Assert.fail(e.getMessage() + "\n" + Arrays.toString(e.getStackTrace()));
         }

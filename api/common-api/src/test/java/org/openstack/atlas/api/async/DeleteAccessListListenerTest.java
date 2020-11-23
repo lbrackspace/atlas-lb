@@ -7,13 +7,11 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.api.async.util.STMTestBase;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.api.async.util.VTMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.service.domain.entities.AccessList;
-import org.openstack.atlas.service.domain.entities.IpVersion;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.events.entities.CategoryType;
 import org.openstack.atlas.service.domain.events.entities.EventSeverity;
@@ -37,7 +35,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.*;
 
-public class DeleteAccessListListenerTest extends STMTestBase {
+public class DeleteAccessListListenerTest extends VTMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";

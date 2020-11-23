@@ -39,20 +39,12 @@ public class UpdateSessionPersistenceListener extends BaseListener {
         }
 
         try {
-            if (isRestAdapter()) {
-                LOG.debug(String.format("Updating session persistence for load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                LOG.debug(String.format("Updating session persistence for load balancer '%d' in backend...", dbLoadBalancer.getId()));
                 reverseProxyLoadBalancerVTMService.updateSessionPersistence(dbLoadBalancer, queueLb);
-                LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-            } else {
-                if (dbLoadBalancer.getSessionPersistence() != SessionPersistence.NONE) {
-                    LOG.debug(String.format("Updating session persistence for load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                    reverseProxyLoadBalancerService.updateSessionPersistence(dbLoadBalancer.getId(), dbLoadBalancer.getAccountId(), dbLoadBalancer.getSessionPersistence());
-                    LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' in Zeus...", dbLoadBalancer.getId()));
-                }
-            }
+                LOG.debug(String.format("Successfully updated session persistence for load balancer '%d' backend.....", dbLoadBalancer.getId()));
         } catch (Exception e) {
             loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
-            String alertDescription = String.format("Error updating session persistence in Zeus for loadbalancer '%d'.", dbLoadBalancer.getId());
+            String alertDescription = String.format("Error updating session persistence backend.. for loadbalancer '%d'.", dbLoadBalancer.getId());
             LOG.error(alertDescription, e);
             notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
             sendErrorToEventResource(queueLb);

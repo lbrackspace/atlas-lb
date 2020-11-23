@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.openstack.atlas.api.async.util.STMTestBase;
+import org.openstack.atlas.api.async.util.VTMTestBase;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.cfg.RestApiConfiguration;
@@ -38,7 +38,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
-public class DeleteSslTerminationListenerTest extends STMTestBase {
+public class DeleteSslTerminationListenerTest extends VTMTestBase {
     private Integer LOAD_BALANCER_ID;
     private Integer ACCOUNT_ID;
     private String USERNAME = "SOME_USERNAME";
@@ -180,7 +180,7 @@ public class DeleteSslTerminationListenerTest extends STMTestBase {
         Assert.assertEquals(lb.getUserName(), USERNAME);
         verify(reverseProxyLoadBalancerVTMService).removeSslTermination(lb);
         verify(loadBalancerService).setStatus(lb, LoadBalancerStatus.ERROR);
-        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("Error deleting loadbalancer '%d' ssl termination in Zeus.", lb.getId())));
+        verify(notificationService).saveAlert(eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), isA(Exception.class), eq(AlertType.ZEUS_FAILURE.name()), eq(String.format("Error deleting loadbalancer '%d' ssl termination backend...", lb.getId())));
         verify(notificationService).saveLoadBalancerEvent(eq(USERNAME), eq(ACCOUNT_ID), eq(LOAD_BALANCER_ID), anyString(), anyString(), eq(EventType.DELETE_SSL_TERMINATION), eq(CategoryType.DELETE), eq(EventSeverity.CRITICAL));
         verify(usageEventCollection).collectUsageAndProcessUsageRecords(eq(lb), eq(UsageEvent.SSL_OFF), any(Calendar.class));
     }

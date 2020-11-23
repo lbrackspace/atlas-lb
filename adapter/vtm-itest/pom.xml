@@ -9,12 +9,12 @@
     </parent>
 
     <artifactId>atlas-vtm-itest</artifactId>
-    <name>Openstack :: Atlas :: Adapter :: STM Test</name>
+    <name>Openstack :: Atlas :: Adapter ::  VTM Test</name>
 
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>atlas-zxtm-service</artifactId>
+            <artifactId>atlas-vtm-service</artifactId>
             <version>${project.version}</version>
         </dependency>
 

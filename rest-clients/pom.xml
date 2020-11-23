@@ -19,7 +19,7 @@
         <module>atomhopper</module>
         <module>objs</module>
         <module>dns</module>
-        <module>stingray-rest-client</module>
+        <module>vtm-rest-client</module>
         <module>java-cloudfiles</module>
     </modules>
 
@@ -39,28 +39,28 @@
                         <configuration>
                             <instrumentation>
                                 <excludes>
-                                    <exclude>org/rackspace/stingray/client/action/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/bandwidth/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/config/**/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/counters/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/exception/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/extra/**/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/glb/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/list/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/location/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/manager/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/monitor/**/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/persistence/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/pool/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/protection/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/rate/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/settings/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/ssl/**/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/tmi/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/tm/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/traffic/**/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/trafficscript/*.class</exclude>
-                                    <exclude>org/rackspace/stingray/client/virtualserver/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/action/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/bandwidth/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/config/**/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/counters/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/exception/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/extra/**/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/glb/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/list/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/location/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/manager/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/monitor/**/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/persistence/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/pool/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/protection/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/rate/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/settings/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/ssl/**/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/tmi/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/tm/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/traffic/**/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/trafficscript/*.class</exclude>
+                                    <exclude>org/rackspace/vtm/client/virtualserver/*.class</exclude>
                                     <exclude>org/openstack/identity/client/access/**/*.class</exclude>
                                     <exclude>org/openstack/identity/client/api/**/*.class</exclude>
                                     <exclude>org/openstack/identity/client/domain/**/*.class</exclude>

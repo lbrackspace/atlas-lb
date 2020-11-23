@@ -51,19 +51,14 @@ public class MgmtCreateSuspensionListener extends BaseListener {
                 }
 
                 try {
-                    if (isRestAdapter()) {
-                        LOG.debug(String.format("Suspending load balancer '%d' in STM...", dbLoadBalancer.getId()));
+                        LOG.debug(String.format("Suspending load balancer '%d' in backend...", dbLoadBalancer.getId()));
                         reverseProxyLoadBalancerVTMService.suspendLoadBalancer(dbLoadBalancer);
                         LOG.debug(String.format("Successfully suspended load balancer '%d' in STM.", dbLoadBalancer.getId()));
-                    } else {
-                        LOG.debug(String.format("Suspending load balancer '%d' in ZXTM...", dbLoadBalancer.getId()));
-                        reverseProxyLoadBalancerService.suspendLoadBalancer(dbLoadBalancer);
-                        LOG.debug(String.format("Successfully suspended load balancer '%d' in ZXTM.", dbLoadBalancer.getId()));
-                    }
+
                 } catch (Exception e) {
                     loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
 
-                    String alertDescription = String.format("Error suspending load balancer '%d' in Zeus.", dbLoadBalancer.getId());
+                    String alertDescription = String.format("Error suspending load balancer '%d' backend...", dbLoadBalancer.getId());
                     LOG.error(alertDescription, e);
                     notificationService.saveAlert(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), e, ZEUS_FAILURE.name(), alertDescription);
                     sendErrorToEventResource(dbLoadBalancer);

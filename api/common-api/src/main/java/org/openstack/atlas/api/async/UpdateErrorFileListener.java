@@ -48,15 +48,9 @@ public class UpdateErrorFileListener extends BaseListener {
             }
 
             try {
-                if (isRestAdapter()) {
-                    LOG.debug("Attempting to set error file in STM...calling setErrorFile");
+                    LOG.debug("Attempting to set error file in backend...calling setErrorFile");
                     reverseProxyLoadBalancerVTMService.setErrorFile(dbLoadBalancer, content);
-                    LOG.debug("Successfully updated error file in zeus.");
-                } else {
-                    LOG.debug("Attempting to set error file in ZXTM...calling setErrorFile");
-                    reverseProxyLoadBalancerService.setErrorFile(dbLoadBalancer, content);
-                    LOG.debug("Successfully updated error file in zeus.");
-                }
+                    LOG.debug("Successfully updated error file backend...");
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ACTIVE);
             } catch (Exception e) {
                 loadBalancerService.setStatus(dbLoadBalancer, LoadBalancerStatus.ERROR);
@@ -69,15 +63,9 @@ public class UpdateErrorFileListener extends BaseListener {
 
         } else if (clusterId != null) {
             try {
-                if (isRestAdapter()) {
-                    LOG.debug("Attempting to upload default error file in STM...calling uploadDefaultErrorFile");
+                    LOG.debug("Attempting to upload default error file in backend...calling uploadDefaultErrorFile");
                     reverseProxyLoadBalancerVTMService.uploadDefaultErrorFile(clusterId, content);
-                    LOG.debug("Successfully uploaded default error file in zeus.");
-                } else {
-                    LOG.debug("Attempting to upload default error file in ZXTM...calling uploadDefaultErrorFile");
-                    reverseProxyLoadBalancerService.uploadDefaultErrorFile(clusterId, content);
-                    LOG.debug("Successfully uploaded default error file in zeus.");
-                }
+                    LOG.debug("Successfully uploaded default error file backend...");
             } catch (Exception e) {
                 String tmpMsg = String.format("Error uploading default error file...");
                 LOG.error(tmpMsg, e);

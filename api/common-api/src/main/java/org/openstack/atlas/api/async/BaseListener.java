@@ -2,7 +2,6 @@ package org.openstack.atlas.api.async;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
@@ -41,9 +40,7 @@ public abstract class BaseListener implements MessageListener {
     protected SslCipherProfileService sslCipherProfileService;
     protected CertificateMappingService certificateMappingService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
-    protected ReverseProxyLoadBalancerService reverseProxyLoadBalancerService;
     protected ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
-//    protected ReverseProxyLoadBalancerStmService reverseProxyLoadBalancerStmService;
     //    protected UsageEventProcessor usageEventProcessor;
     protected UsageEventCollection usageEventCollection;
     protected String REST = "REST";
@@ -99,10 +96,6 @@ public abstract class BaseListener implements MessageListener {
 
     public void setNodeService(NodeService nodeService) {
         this.nodeService = nodeService;
-    }
-
-    public void setReverseProxyLoadBalancerService(ReverseProxyLoadBalancerService reverseProxyLoadBalancerService) {
-        this.reverseProxyLoadBalancerService = reverseProxyLoadBalancerService;
     }
 
     public void setReverseProxyLoadBalancerVTMService(ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService) {
