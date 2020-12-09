@@ -152,8 +152,15 @@ public class HostValidatorTest {
     }
 
     @Test
-    public void shouldAllowSoap_Api_EndpointStatusOnPost() {
+    public void shouldAllowSoapApiEndpointStatusOnPost() {
         host.setStatus(HostStatus.SOAP_API_ENDPOINT);
+        res = hv.validate(host, POST);
+        assertTrue(resultMessage(res, POST), res.passedValidation());
+    }
+
+    @Test
+    public void shouldAllowRestApiEndpointStatusOnPost() {
+        host.setStatus(HostStatus.REST_API_ENDPOINT);
         res = hv.validate(host, POST);
         assertTrue(resultMessage(res, POST), res.passedValidation());
     }

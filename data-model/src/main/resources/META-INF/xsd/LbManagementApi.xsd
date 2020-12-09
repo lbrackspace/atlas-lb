@@ -320,6 +320,7 @@
             <xsd:enumeration value="ACTIVE"/>
             <xsd:enumeration value="FAILOVER"/>
             <xsd:enumeration value="SOAP_API_ENDPOINT"/>
+            <xsd:enumeration value="REST_API_ENDPOINT"/>
         </xsd:restriction>
     </xsd:simpleType>
 
