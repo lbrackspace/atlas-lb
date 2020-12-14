@@ -66,12 +66,6 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         this.healthMonitorService = healthMonitorService;
     }
 
-    private int getVersion(URI endpoint) {
-        if (endpoint.getPath().contains("/7.0/")) return 7;
-        // default to version 3
-        return 3;
-    }
-
     @Override
     public void createLoadBalancer(LoadBalancer lb) throws InsufficientRequestException, RollBackException, EntityNotFoundException, DecryptException {
         LoadBalancerEndpointConfiguration config = getConfigbyLoadBalancerId(lb.getId());
@@ -598,10 +592,8 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void createHostBackup(Host host, String backupName) throws RemoteException, MalformedURLException, DecryptException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
-//      Call only available on version >= 7
+    public void createHostBackup(Host host, String backupName) throws RemoteException, DecryptException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
-
         try {
             reverseProxyLoadBalancerVTMAdapter.createHostBackup(config, backupName);
         } catch (RollBackException af) {
@@ -611,8 +603,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
     }
 
     @Override
-    public void restoreHostBackup(Host host, String backupName) throws RemoteException, MalformedURLException, DecryptException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
-//      Call only available on version >= 7
+    public void restoreHostBackup(Host host, String backupName) throws RemoteException, DecryptException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
 
         try {
@@ -625,7 +616,6 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     @Override
     public void deleteHostBackup(Host host, String backupName) throws RemoteException, MalformedURLException, DecryptException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException {
-//      Call only available on version >= 7
         LoadBalancerEndpointConfiguration config = getConfigHost(host);
         try {
             reverseProxyLoadBalancerVTMAdapter.deleteHostBackup(config, backupName);
@@ -638,18 +628,18 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     LoadBalancerEndpointConfiguration getConfigbyClusterId(Integer clusterId) throws EntityNotFoundException, DecryptException {
         Cluster cluster = hostService.getClusterById(clusterId);
-        Host soapEndpointHost = hostService.getRestEndPointHost(cluster.getId());
+        Host restEndPointHost = hostService.getRestEndPointHost(cluster.getId());
         List<String> failoverHostNames = hostService.getFailoverHostNames(cluster.getId());
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
         List<Host> failoverHosts = hostService.getFailoverHosts(cluster.getId());
 
-        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), soapEndpointHost, failoverHostNames, logFileLocation, failoverHosts);
+        return new LoadBalancerEndpointConfiguration(restEndPointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), restEndPointHost, failoverHostNames, logFileLocation, failoverHosts);
     }
 
     @Override
-    public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException, MalformedURLException {
+    public LoadBalancerEndpointConfiguration getConfig(Host host) throws DecryptException {
         Cluster cluster = host.getCluster();
-        Host soapEndpointHost = hostService.getRestEndPointHost(cluster.getId());
+        Host restEndpointHost = hostService.getRestEndPointHost(cluster.getId());
         List<Host> failoverHosts = new ArrayList<>();
         List<String> failoverHostNames = new ArrayList<>();
         for (Host h : hostService.getFailoverHosts(cluster.getId())) {
@@ -660,11 +650,11 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         }
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
 
-        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, logFileLocation, failoverHosts);
+        return new LoadBalancerEndpointConfiguration(restEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, logFileLocation, failoverHosts);
     }
 
     @Override
-    public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException, MalformedURLException {
+    public LoadBalancerEndpointConfiguration getConfigHost(Host host) throws DecryptException {
         Cluster cluster = host.getCluster();
         List<Host> failoverHosts = new ArrayList<>();
         List<String> failoverHostNames = new ArrayList<>();
@@ -683,7 +673,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
         LoadBalancer loadBalancer = loadBalancerService.get(lbId);
         Host host = loadBalancer.getHost();
         Cluster cluster = host.getCluster();
-        Host soapEndpointHost = hostService.getRestEndPointHost(cluster.getId());
+        Host restEndpointHost = hostService.getRestEndPointHost(cluster.getId());
         List<Host> failoverHosts = new ArrayList<>();
         List<String> failoverHostNames = new ArrayList<>();
         for (Host h : hostService.getFailoverHosts(cluster.getId())) {
@@ -693,7 +683,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
             }
         }
         String logFileLocation = configuration.getString(PublicApiServiceConfigurationKeys.access_log_file_location);
-        return new LoadBalancerEndpointConfiguration(soapEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, logFileLocation, failoverHosts);
+        return new LoadBalancerEndpointConfiguration(restEndpointHost, cluster.getUsername(), CryptoUtil.decrypt(cluster.getPassword()), host, failoverHostNames, logFileLocation, failoverHosts);
     }
 
     public LoadBalancerEndpointConfiguration getConfigFirstAvaliableRest() throws EntityNotFoundException, DecryptException {

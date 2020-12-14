@@ -75,5 +75,15 @@ public class HostUsagePollerTest {
             verify(hostUsageRepository).save(any());
         }
 
+        @Test
+        public void shouldChooseVTMAdapterToQueryAndRetrievieBytesForRestEndpoint() throws Exception {
+            host.setHostStatus(HostStatus.REST_API_ENDPOINT);
+            when(hostRepository.getAll()).thenReturn(hosts);
+
+            hostUsagePoller.run();
+            verify(reverseProxyLoadBalancerVTMAdapter, times(1)).getHostBytesIn(any(LoadBalancerEndpointConfiguration.class));
+            verify(reverseProxyLoadBalancerVTMAdapter, times(1)).getHostBytesOut(any(LoadBalancerEndpointConfiguration.class));
+            verify(hostUsageRepository).save(any());
+        }
     }
 }

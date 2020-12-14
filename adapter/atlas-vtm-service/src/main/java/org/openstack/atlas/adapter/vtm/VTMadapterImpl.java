@@ -880,11 +880,11 @@ public class VTMadapterImpl implements ReverseProxyLoadBalancerVTMAdapter {
             client.createExtraFile(Constants.DEFAULT_ERRORFILE, errorFile);
             LOG.info("Successfully uploaded the default error file...");
         } catch (IOException e) {
-            LOG.error(String.format("Failed to upload default ErrorFile for %s -- IO exception", config.getEndpointUrl()));
+            LOG.error(String.format("Failed to upload default ErrorFile for %s -- IO exception", config.getRestEndpoint()));
         } catch (VTMRestClientException ce) {
-            LOG.error(String.format("Failed to upload default ErrorFile for %s -- REST Client exception", config.getEndpointUrl()));
+            LOG.error(String.format("Failed to upload default ErrorFile for %s -- REST Client exception", config.getRestEndpoint()));
         } catch (VTMRestClientObjectNotFoundException onf) {
-            LOG.error(String.format("Failed to upload default ErrorFile for %s -- Object not found", config.getEndpointUrl()));
+            LOG.error(String.format("Failed to upload default ErrorFile for %s -- Object not found", config.getRestEndpoint()));
         }
 
         if (errorFile != null) //noinspection ResultOfMethodCallIgnored

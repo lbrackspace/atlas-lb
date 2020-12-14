@@ -199,7 +199,7 @@ public class HostRepository {
 
     public Host getFirstAvailableRestEndPointHost() throws EntityNotFoundException {
         String hqlStr = "from Host h where h.restEndpointActive = 1 "
-                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER','REST_API_ENDPOINT') "
+                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER', 'REST_API_ENDPOINT') "
                 + "order by h.hostStatus desc, h.id asc";
         Query q = entityManager.createQuery(hqlStr);
         List<Host> hosts = q.getResultList();
@@ -227,7 +227,7 @@ public class HostRepository {
 
     public Host getRestEndPointHost(Integer clusterId) {
         String hqlStr = "from Host h where h.restEndpointActive  = 1 "
-                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER', 'SOAP_API_ENDPOINT') "
+                + "and h.hostStatus in ('ACTIVE_TARGET', 'FAILOVER', 'SOAP_API_ENDPOINT', 'REST_API_ENDPOINT') "
                 + "and h.cluster.id = :clusterId "
                 + "order by h.hostStatus desc, h.id asc";
         Query q = entityManager.createQuery(hqlStr).setParameter("clusterId", clusterId).setMaxResults(1);
