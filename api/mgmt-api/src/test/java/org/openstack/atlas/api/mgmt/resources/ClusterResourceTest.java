@@ -19,6 +19,7 @@ import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.services.ClusterService;
+import org.openstack.atlas.service.domain.services.HostService;
 
 import javax.ws.rs.core.Response;
 
@@ -236,6 +237,121 @@ public class ClusterResourceTest {
             verify(reverseProxyLoadBalancerVTMService, times(0)).getSubnetMappings(host2);
 
             Assert.assertEquals("Could not find any host networks", resp.readEntity(LbaasFault.class).getMessage());
+        }
+    }
+
+
+    public static class whenRetrievingClusterEndpointHost {
+        private ClusterResource resource;
+        private OperationResponse response;
+        private Configuration configuration;
+
+        @Mock
+        private HostService hostService;
+        @Mock
+        private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
+
+        Cluster cluster;
+        List<Host> hosts;
+        Host failOverHost;
+        Host soapEndPointHost;
+        Host host;
+        Host host2;
+        List<String> failOverHostNames;
+        List<Host> failoverHosts;
+        String logFileLocation;
+        Integer loadBalancerId;
+        Hostssubnet hostssubnet;
+
+        @Before
+        public void setUp() {
+            MockitoAnnotations.initMocks(this);
+
+            resource = new ClusterResource();
+            resource.setMockitoAuth(true);
+            resource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
+            resource.setHostService(hostService);
+            response = new OperationResponse();
+            response.setExecutedOkay(true);
+            configuration = mock(Configuration.class);
+            resource.setConfiguration(configuration);
+            resource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
+
+            hosts = new ArrayList<>();
+            host = new Host();
+            host2 = new Host();
+            cluster = new Cluster();
+            soapEndPointHost = new Host();
+            failOverHost = new Host();
+            failOverHostNames = new ArrayList<>();
+            failoverHosts = new ArrayList<>();
+
+            resource.setId(1);
+
+            host.setName("testHost");
+            host2.setName("testHost2");
+            host.setId(1);
+            host.setId(2);
+            host.setEndpoint("https://endPointHostTest/soap");
+            host2.setEndpoint("https://endPointHostTest2/soap");
+            host.setRestEndpoint("https://restEndPointHostTest/config/active");
+            host2.setRestEndpoint("https://restEndPointHostTest2/config/active");
+            host.setHostStatus(HostStatus.ACTIVE);
+            host2.setHostStatus(HostStatus.REST_API_ENDPOINT);
+            host.setZone(Zone.A);
+            host2.setZone(Zone.A);
+            host.setTrafficManagerName("n1.com");
+            host2.setTrafficManagerName("n2.com");
+            cluster.setId(1);
+            cluster.setName("testCluster");
+            soapEndPointHost.setId(3);
+            soapEndPointHost.setEndpoint("https://soapEndPointHostTest/soap");
+            Host failOverHost2 = new Host();
+            failOverHost.setEndpoint("failover.com/soap");
+            failOverHost.setZone(Zone.A);
+            failOverHost.setTrafficManagerName("nf1.com");
+            failOverHost2.setZone(Zone.B);
+            failOverHost2.setEndpoint("failover.com/soap");
+            failOverHost2.setTrafficManagerName("nf2.com");
+            loadBalancerId = 1;
+            failOverHostNames.add("test.com/soap");
+            failoverHosts.add(failOverHost);
+            failoverHosts.add(failOverHost2);
+            logFileLocation = "test";
+            host.setCluster(cluster);
+            hosts.add(host);
+            hosts.add(host2);
+
+            hostssubnet = new org.openstack.atlas.service.domain.pojos.Hostssubnet();
+            org.openstack.atlas.service.domain.pojos.Hostsubnet h1 = new org.openstack.atlas.service.domain.pojos.Hostsubnet();
+            h1.setName("h1");
+            h1.setNetInterfaces(new ArrayList<>());
+            hostssubnet.getHostsubnets().add(h1);
+
+            when(hostService.getRestEndPointHost(anyInt())).thenReturn(host2);
+            when(configuration.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
+        }
+
+        @Test
+        public void shouldRetrieveEndpointHostForCluster() throws Exception {
+            Response resp = resource.getClusterEndPointHost();
+            Assert.assertEquals(200, resp.getStatus());
+            verify(hostService, times(1)).getRestEndPointHost(1);
+
+            org.openstack.atlas.docs.loadbalancers.api.management.v1.Host h = resp.readEntity(org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
+            Assert.assertEquals(HostStatus.REST_API_ENDPOINT.toString(), h.getStatus().toString());
+            Assert.assertEquals("https://restEndPointHostTest2/config/active", h.getManagementRestInterface());
+        }
+
+        @Test
+        public void shouldReturn500OnFailureRetrivingEndpointHost() {
+            when(hostService.getRestEndPointHost(anyInt())).thenThrow(Exception.class);
+
+            Response resp = resource.getClusterEndPointHost();
+            Assert.assertEquals(500, resp.getStatus());
+            verify(hostService, times(1)).getRestEndPointHost(1);
         }
     }
 }
