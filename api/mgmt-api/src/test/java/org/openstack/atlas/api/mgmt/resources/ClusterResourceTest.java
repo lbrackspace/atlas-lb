@@ -339,6 +339,7 @@ public class ClusterResourceTest {
             Response resp = resource.getClusterEndPointHost();
             Assert.assertEquals(200, resp.getStatus());
             verify(hostService, times(1)).getRestEndPointHost(1);
+            verify(hostService, times(0)).getEndPointHost(1);
 
             org.openstack.atlas.docs.loadbalancers.api.management.v1.Host h = resp.readEntity(org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
             Assert.assertEquals(HostStatus.REST_API_ENDPOINT.toString(), h.getStatus().toString());
@@ -351,6 +352,33 @@ public class ClusterResourceTest {
 
             Response resp = resource.getClusterEndPointHost();
             Assert.assertEquals(500, resp.getStatus());
+            verify(hostService, times(1)).getRestEndPointHost(1);
+            verify(hostService, times(0)).getEndPointHost(1);
+        }
+
+        @Test
+        public void shouldReturnSoapEndpointHostIfNoRest() {
+            when(hostService.getRestEndPointHost(anyInt())).thenReturn(null);
+            when(hostService.getEndPointHost(anyInt())).thenReturn(host);
+
+            Response resp = resource.getClusterEndPointHost();
+            Assert.assertEquals(200, resp.getStatus());
+            verify(hostService, times(1)).getRestEndPointHost(1);
+            verify(hostService, times(1)).getEndPointHost(1);
+            org.openstack.atlas.docs.loadbalancers.api.management.v1.Host h = resp.readEntity(org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
+            Assert.assertEquals(HostStatus.ACTIVE.toString(), h.getStatus().toString());
+            Assert.assertEquals("https://endPointHostTest/soap", h.getManagementSoapInterface());
+            Assert.assertEquals("https://restEndPointHostTest/config/active", h.getManagementRestInterface());
+        }
+
+        @Test
+        public void shouldReturn404OnNullEndpointHost() {
+            when(hostService.getRestEndPointHost(anyInt())).thenReturn(null);
+            when(hostService.getEndPointHost(anyInt())).thenReturn(null);
+
+            Response resp = resource.getClusterEndPointHost();
+            Assert.assertEquals(404, resp.getStatus());
+            verify(hostService, times(1)).getRestEndPointHost(1);
             verify(hostService, times(1)).getRestEndPointHost(1);
         }
     }
