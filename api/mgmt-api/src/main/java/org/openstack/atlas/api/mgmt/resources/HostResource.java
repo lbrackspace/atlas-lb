@@ -253,7 +253,7 @@ public class HostResource extends ManagementDependencyProvider {
         }
         try {
             org.openstack.atlas.service.domain.entities.Host dHost = new org.openstack.atlas.service.domain.entities.Host();
-            dHost.setSoapEndpointActive(Boolean.TRUE);
+            dHost.setRestEndpointActive(Boolean.TRUE);
             dHost.setId(id);
             hostService.updateHost(dHost);
             return ResponseFactory.getSuccessResponse("EndPoint Enabled", 200);
@@ -272,7 +272,7 @@ public class HostResource extends ManagementDependencyProvider {
         }
         try {
             org.openstack.atlas.service.domain.entities.Host dHost = new org.openstack.atlas.service.domain.entities.Host();
-            dHost.setSoapEndpointActive(Boolean.FALSE);
+            dHost.setRestEndpointActive(Boolean.FALSE);
             dHost.setId(id);
             hostService.updateHost(dHost);
             return ResponseFactory.getSuccessResponse("EndPoint Disabled", 200);
