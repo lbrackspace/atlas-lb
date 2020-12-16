@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1ca3ddee_6cf3181d",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/resources/ErrorPageResourceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-12-16T20:10:06Z",
+      "side": 1,
+      "message": "We should validate that the response built the entity as we expect.",
+      "revId": "a692c0f60d072aeb7cde61e6c41a5b88961ff034",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "7d6ceeac_da2331a3",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/resources/ErrorPageResourceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-12-16T20:10:06Z",
+      "side": 1,
+      "message": "We should validate that the response built the entity as we expect.",
+      "revId": "a692c0f60d072aeb7cde61e6c41a5b88961ff034",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
