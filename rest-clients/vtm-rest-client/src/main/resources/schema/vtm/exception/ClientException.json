@@ -1,8 +1,8 @@
 {
     "$schema":       "http://json-schema.org/draft-04/schema#",
     "id":            "/rvbd-schema/tm/7.0/config/active/exception#ClientException",
-    "title":         "Stingray Rest Client Exception",
-    "description":   "The Stingray Rest Client exception wrapper for client errors",
+    "title":         "VTM Rest Client Exception",
+    "description":   "The VTM Rest Client exception wrapper for client errors",
     "javaType" :     "org.rackspace.vtm.client.exception.ClientException",
     "type":          "object",
     "required":      true,

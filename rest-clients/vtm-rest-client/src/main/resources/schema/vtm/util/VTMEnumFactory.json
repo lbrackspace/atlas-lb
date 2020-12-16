@@ -2,14 +2,14 @@
     "$schema":       "http://json-schema.org/draft-04/schema#",
     "id":            "/rvbd-schema/tm/3.4/config/active/util#factory",
     "title":         "Pool",
-    "description":   "The ENUM factory for the Stingray Rest API",
+    "description":   "The ENUM factory for the VTM Rest API",
     "javaType" :     "org.rackspace.vtm.client.util.EnumFactory",
     "type":          "object",
     "required":      true,
 
     "properties": {
         "accept_from": {
-            "description":   "The Enum Factory for Stingray Rest API ENUM",
+            "description":   "The Enum Factory for VTM Rest API ENUM",
 
             "type":          "string",
             "required":      false,
