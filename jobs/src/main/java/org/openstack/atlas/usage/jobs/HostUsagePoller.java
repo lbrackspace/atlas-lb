@@ -65,11 +65,11 @@ public class HostUsagePoller extends AbstractJob {
 
                 long hostBytesIn;
                 long hostBytesOut;
-                    LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
-                    hostBytesIn = reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
-                    LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
-                    hostBytesOut = reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
-                    LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
+                LOG.debug(String.format("Retrieving host bytes in from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
+                hostBytesIn = reverseProxyLoadBalancerVTMAdapter.getHostBytesIn(config);
+                LOG.debug(String.format("Retrieving host bytes out from '%s' (%s)...", host.getName(), host.getRestEndpoint()));
+                hostBytesOut = reverseProxyLoadBalancerVTMAdapter.getHostBytesOut(config);
+                LOG.info(String.format("Host Name: '%s', Bandwidth In: %d, Bandwidth Out: %d", host.getName(), hostBytesIn, hostBytesOut));
 
                 LOG.debug(String.format("Saving usage snapshot for '%s' (%s)...", host.getName(), host.getEndpoint()));
                 addRecordForHost(host, hostBytesIn, hostBytesOut, pollTime);

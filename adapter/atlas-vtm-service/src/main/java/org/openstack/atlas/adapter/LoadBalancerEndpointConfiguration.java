@@ -31,7 +31,6 @@ public class LoadBalancerEndpointConfiguration {
     private Host endpointUrlHost;
     private String logFileLocation;
     private List<URI> restStatsEndpoints;
-    private List<URI> soapStatsEndpoints;
 
     public LoadBalancerEndpointConfiguration(Host soapEndpoint, String username, String password, Host trafficManagerHost, List<String> failoverTrafficManagerNames, List<Host> failoverHosts) {
         try {
@@ -55,7 +54,6 @@ public class LoadBalancerEndpointConfiguration {
         buildRestStatsEndpoints(soapEndpoint.getRestEndpoint(), this.trafficManagerName, this.failoverTrafficManagerNames);
 
         this.failoverHosts = failoverHosts;
-        buildSoapStatsEndpoints(soapEndpoint.getEndpoint(), this.failoverHosts);
         LOG.info(String.format("Selecting %s as SoapEndpoint", this.endpointUrl));
     }
 
@@ -82,7 +80,6 @@ public class LoadBalancerEndpointConfiguration {
         buildRestStatsEndpoints(soapEndpoint.getRestEndpoint(), this.trafficManagerName, this.failoverTrafficManagerNames);
 
         this.failoverHosts = failoverHosts;
-        buildSoapStatsEndpoints(soapEndpoint.getEndpoint(), this.failoverHosts);
         LOG.info(String.format("Selecting %s as SoapEndPoint", this.endpointUrl));
         LOG.info(String.format("Selecting %s as RestEndPoint", this.restEndpoint));
     }
@@ -110,18 +107,6 @@ public class LoadBalancerEndpointConfiguration {
                 } else {
                     restStatsEndpoints.add(new URI(restEndpoint.substring(0, restEndpoint.indexOf("/config")) + "/status/" + string + "/statistics/"));
                 }
-            }
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void buildSoapStatsEndpoints(String soapEndpoint, List<Host> failoverTrafficManagerHosts) {
-        soapStatsEndpoints = new ArrayList<URI>();
-        try {
-            soapStatsEndpoints.add(new URI(soapEndpoint));
-            for (Host h : failoverTrafficManagerHosts) {
-                soapStatsEndpoints.add(new URI(h.getEndpoint()));
             }
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -182,13 +167,5 @@ public class LoadBalancerEndpointConfiguration {
 
     public void setRestStatsEndpoints(List<URI> endpoints) {
         this.restStatsEndpoints = endpoints;
-    }
-
-    public List<URI> getSoapStatsEndpoints() {
-        return soapStatsEndpoints;
-    }
-
-    public void setSoapStatsEndpoints(List<URI> soapStatsEndpoints) {
-        this.soapStatsEndpoints = soapStatsEndpoints;
     }
 }
