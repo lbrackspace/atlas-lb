@@ -1,6 +1,7 @@
 package org.openstack.atlas.api.mgmt.resources;
 
 import org.dozer.DozerBeanMapperBuilder;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -127,7 +128,6 @@ public class HostResourceTest {
         }
 
 
-
         public static class whenAddingSubnets {
             private ManagementAsyncService asyncService;
             private HostResource hostResource;
@@ -236,6 +236,84 @@ public class HostResourceTest {
             }
         }
 
+
+    public static class whenEnablingDisablingEnpoint {
+            private HostResource hostResource;
+            private HostService hostService;
+            // TODO: Refactor rest for annotations
+            @Mock
+            private RestApiConfiguration config;
+
+            @Before
+            public void setUp() throws EntityNotFoundException {
+                MockitoAnnotations.initMocks(this);
+                hostResource = new HostResource();
+                hostResource.setMockitoAuth(true);
+                HostRepository hrepo = mock(HostRepository.class);
+                hostService = mock(HostService.class);
+                hostResource.setHostService(hostService);
+                hostResource.setConfiguration(config);
+
+                hostResource.setId(1);
+                hostResource.setHostRepository(hrepo);
+
+                doNothing().when(hostService).updateHost(anyObject());
+                when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
+
+            }
+
+            @Test
+            public void shouldEnableRestEndpoint() throws Exception {
+                Response resp = hostResource.enableEndPoint();
+                Assert.assertEquals(200, resp.getStatus());
+
+                ArgumentCaptor<Host> argument = ArgumentCaptor.forClass(Host.class);
+                verify(hostService, times(1)).updateHost(argument.capture());
+                Assert.assertEquals(1, argument.getValue().getId().intValue());
+                Assert.assertTrue(argument.getValue().getRestEndpointActive());
+                Assert.assertNull(argument.getValue().getSoapEndpointActive());
+            }
+
+            @Test
+            public void shouldReturn500FailToEnableRestEndpoint() throws Exception {
+                doThrow(Exception.class).when(hostService).updateHost(anyObject());
+
+                Response resp = hostResource.enableEndPoint();
+                Assert.assertEquals(500, resp.getStatus());
+
+                ArgumentCaptor<Host> argument = ArgumentCaptor.forClass(Host.class);
+                verify(hostService, times(1)).updateHost(argument.capture());
+                Assert.assertEquals(1, argument.getValue().getId().intValue());
+                Assert.assertTrue(argument.getValue().getRestEndpointActive());
+                Assert.assertNull(argument.getValue().getSoapEndpointActive());
+            }
+
+            @Test
+            public void shouldDisableRestEndpoint() throws Exception {
+                Response resp = hostResource.disableEndPoint();
+                Assert.assertEquals(200, resp.getStatus());
+
+                ArgumentCaptor<Host> argument = ArgumentCaptor.forClass(Host.class);
+                verify(hostService, times(1)).updateHost(argument.capture());
+                Assert.assertEquals(1, argument.getValue().getId().intValue());
+                Assert.assertFalse(argument.getValue().getRestEndpointActive());
+                Assert.assertNull(argument.getValue().getSoapEndpointActive());
+            }
+
+            @Test
+            public void shouldReturn500FailToDisableRestEndpoint() throws Exception {
+                doThrow(Exception.class).when(hostService).updateHost(anyObject());
+
+                Response resp = hostResource.disableEndPoint();
+                Assert.assertEquals(500, resp.getStatus());
+
+                ArgumentCaptor<Host> argument = ArgumentCaptor.forClass(Host.class);
+                verify(hostService, times(1)).updateHost(argument.capture());
+                Assert.assertEquals(1, argument.getValue().getId().intValue());
+                Assert.assertFalse(argument.getValue().getRestEndpointActive());
+                Assert.assertNull(argument.getValue().getSoapEndpointActive());
+            }
+        }
     }
 }
 
