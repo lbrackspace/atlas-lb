@@ -3,6 +3,7 @@ package org.openstack.atlas.api.mgmt.resources;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.dozer.MappingException;
 import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
@@ -240,6 +241,19 @@ public class ClusterResource extends ManagementDependencyProvider {
 
         try {
             dHost = hostService.getRestEndPointHost(clusterId);
+
+            // TODO: remove following check when we've fully migrated off soap...
+            if (dHost == null) {
+                // try to find soap endpoint host in case we've yet to migrate off it
+                dHost = hostService.getEndPointHost(clusterId);
+            }
+
+            // unable to find endpoint host
+            if (dHost == null) {
+                return Response.status(404).build();
+            }
+
+            // map the endpoint host we found
             rHost = getDozerMapper().map(dHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
