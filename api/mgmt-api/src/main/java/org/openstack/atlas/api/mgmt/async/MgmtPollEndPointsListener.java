@@ -48,6 +48,7 @@ public class MgmtPollEndPointsListener extends BaseListener {
                 continue;
             }
 
+            // TODO: remove soap checks from here after we've migrated entirely to rest
             if (epThread.isEndPointWorking()) {
                 LOG.info(String.format("Thread %s reports host is up Marking HOST GOOD", epThread.toString()));
                 epThread.getHost().setSoapEndpointActive(Boolean.TRUE);

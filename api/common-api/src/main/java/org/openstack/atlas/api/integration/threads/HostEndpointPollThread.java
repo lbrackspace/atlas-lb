@@ -30,7 +30,7 @@ public class HostEndpointPollThread extends Thread {
             sb.append("null");
         } else {
             sb.append("host_id=").append(host.getId());
-            sb.append(", url=").append(host.getEndpoint().toString());
+            sb.append(", url=").append(host.getRestEndpoint().toString());
         }
         sb.append("}");
         return sb.toString();
