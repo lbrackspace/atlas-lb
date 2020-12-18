@@ -230,7 +230,7 @@ public class ClusterResource extends ManagementDependencyProvider {
 
     @GET
     @Path("endpoint")
-    public Response getClusterSoapEndPoint() {
+    public Response getClusterEndPointHost() {
         if (!isUserInRole("cp,ops,support")) {
             return ResponseFactory.accessDenied();
         }
@@ -239,7 +239,7 @@ public class ClusterResource extends ManagementDependencyProvider {
         org.openstack.atlas.service.domain.entities.Host dHost;
 
         try {
-            dHost = hostService.getEndPointHost(clusterId);
+            dHost = hostService.getRestEndPointHost(clusterId);
             rHost = getDozerMapper().map(dHost, org.openstack.atlas.docs.loadbalancers.api.management.v1.Host.class);
         } catch (Exception ex) {
             return ResponseFactory.getErrorResponse(ex, null, null);
