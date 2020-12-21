@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c651fa45_98032dcb",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/resources/ConnectionLoggingResourceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-12-21T18:04:35Z",
+      "side": 1,
+      "message": "Think this shouldn\u0027t be ignored. Seems to be a valid test. If not we should remove it instead of leaving it ignored here.",
+      "revId": "0cada1a7d46caef9ef2b0c309c19801db998ade9",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
