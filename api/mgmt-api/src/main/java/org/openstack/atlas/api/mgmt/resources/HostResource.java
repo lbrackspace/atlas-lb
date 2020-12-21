@@ -20,7 +20,10 @@ import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHost
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class HostResource extends ManagementDependencyProvider {
 
@@ -199,9 +202,13 @@ public class HostResource extends ManagementDependencyProvider {
             return ResponseFactory.accessDenied();
         }
         EsbRequest req = new EsbRequest();
+        List<String> errors = new ArrayList<>();
+        HashMap<String, Boolean> netInterfaceBooleanHashMap = new HashMap<>();
         OperationResponse resp;
         org.openstack.atlas.service.domain.entities.Host dHost = new org.openstack.atlas.service.domain.entities.Host();
         org.openstack.atlas.service.domain.pojos.Hostssubnet dHostssubnet;
+
+
         if (rHostssubnet.getHostsubnets().size() != 1) {
             ValidationErrors vFault = new ValidationErrors();
             BadRequest badRequest = new BadRequest();
@@ -210,7 +217,41 @@ public class HostResource extends ManagementDependencyProvider {
             vFault.getMessages().add("Please specify only one host per request");
             return Response.status(200).entity(badRequest).build();
         }
+
         dHostssubnet = getDozerMapper().map(rHostssubnet, org.openstack.atlas.service.domain.pojos.Hostssubnet.class);
+
+        try{
+            org.openstack.atlas.service.domain.entities.Host domainHost = hostService.getById(id);
+            org.openstack.atlas.service.domain.pojos.Hostssubnet hostsubnet = reverseProxyLoadBalancerVTMService.getSubnetMappings(domainHost);
+            for (org.openstack.atlas.service.domain.pojos.Hostsubnet dHsub : dHostssubnet.getHostsubnets()){
+                for(org.openstack.atlas.service.domain.pojos.NetInterface dNetInterface : dHsub.getNetInterfaces()){
+                    netInterfaceBooleanHashMap.put(dNetInterface.getName(), false);
+                    for (org.openstack.atlas.service.domain.pojos.Hostsubnet hsub : hostsubnet.getHostsubnets()) {
+                        for (org.openstack.atlas.service.domain.pojos.NetInterface netInterface : hsub.getNetInterfaces()) {
+                            if(netInterfaceBooleanHashMap.containsKey(netInterface.getName())) {
+                                netInterfaceBooleanHashMap.replace(netInterface.getName(), true);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, e.getMessage(), null);
+        }
+        if(netInterfaceBooleanHashMap.containsValue(false)) {
+            ValidationErrors vFault = new ValidationErrors();
+            BadRequest badRequest = new BadRequest();
+            badRequest.setCode(400);
+            String errorMessages = "NetInterface not found";
+            badRequest.setMessage(errorMessages);
+            for(Map.Entry<String, Boolean> entry : netInterfaceBooleanHashMap.entrySet()){
+                if(!entry.getValue()) {
+                    errorMessages = errorMessages + " " + entry.getKey();
+                }
+            }
+            return Response.status(404).entity(badRequest).build();
+        }
+
         dHost.setId(id);
         req.setHost(dHost);
         req.setHostssubnet(dHostssubnet);

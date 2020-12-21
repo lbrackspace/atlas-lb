@@ -136,10 +136,17 @@ public class HostResourceTest {
             private Hostssubnet hsubs;
             private NetInterface ni;
             private Cidr cidr;
+            private Hostsubnet hsub2;
+            private Hostssubnet hsubs2;
+            private NetInterface ni2;
+            private Cidr cidr2;
             private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
             private HostService hostService;
             private Host host;
             private org.openstack.atlas.service.domain.pojos.Hostssubnet hostssubnet;
+            private org.openstack.atlas.service.domain.pojos.NetInterface netInterface;
+            private org.openstack.atlas.service.domain.pojos.NetInterface netInterface2;
+            private org.openstack.atlas.service.domain.pojos.Cidr cidr3;
             // TODO: Refactor rest for annotations
             @Mock
             private RestApiConfiguration config;
@@ -168,11 +175,17 @@ public class HostResourceTest {
                 host = new Host();
                 host.setMaxConcurrentConnections(2);
                 host.setHostStatus(HostStatus.ACTIVE);
-
+                netInterface = new org.openstack.atlas.service.domain.pojos.NetInterface();
+                netInterface2 = new org.openstack.atlas.service.domain.pojos.NetInterface();
+                cidr3 = new org.openstack.atlas.service.domain.pojos.Cidr();
+                cidr3.setBlock("123.78.1.2/27");
                 hostssubnet = new org.openstack.atlas.service.domain.pojos.Hostssubnet();
                 org.openstack.atlas.service.domain.pojos.Hostsubnet h1 = new org.openstack.atlas.service.domain.pojos.Hostsubnet();
                 h1.setName("t1");
                 hostssubnet.getHostsubnets().add(h1);
+
+                h1.getNetInterfaces().add(netInterface);
+                h1.getNetInterfaces().add(netInterface2);
 
                 when(hrepo.getById(anyInt())).thenReturn(host);
                 when(hostService.getById(anyInt())).thenReturn(host);
@@ -187,6 +200,16 @@ public class HostResourceTest {
                 ni = new NetInterface();
                 cidr = new Cidr();
                 ni.setName("name");
+
+                hsub2 = new Hostsubnet();
+                hsubs2 = new Hostssubnet();
+                ni2 = new NetInterface();
+                cidr2 = new Cidr();
+                ni2.setName("name2");
+                cidr2.setBlock("123.78.1.1/27");
+                ni2.getCidrs().add(cidr2);
+                hsub2.getNetInterfaces().add(ni2);
+                hsubs2.getHostsubnets().add(hsub2);
             }
 
             @Test
@@ -200,6 +223,55 @@ public class HostResourceTest {
                 Assert.assertEquals(200, resp.getStatus());
                 verify(reverseProxyLoadBalancerVTMService, times(1)).setSubnetMappings(any(), any());
             }
+
+            @Test
+            public void shouldReturn404WhenNoMatchingSubnetMappingsFound() throws Exception {
+                netInterface.setName("name3");
+                netInterface2.setName("name4");
+                when(reverseProxyLoadBalancerVTMService.getSubnetMappings(any(Host.class))).thenReturn(hostssubnet);
+
+                Response response = hostResource.delHostsSubnetMappings(hsubs2);
+                Assert.assertEquals(404, response.getStatus());
+            }
+            @Test
+            public void shouldReturn200WhenMatchingSubnetMappingsFoundInList() throws Exception {
+                netInterface.setName("name2");
+                netInterface2.setName("name");
+                hsub2.getNetInterfaces().add(ni);
+                when(reverseProxyLoadBalancerVTMService.getSubnetMappings(any(Host.class))).thenReturn(hostssubnet);
+
+                Response response = hostResource.delHostsSubnetMappings(hsubs2);
+                Assert.assertEquals(200, response.getStatus());
+            }
+
+            @Test
+            public void shouldReturn404IfOneNetinterfaceDoesNotMatch() throws Exception {
+                netInterface.setName("name2");
+                netInterface2.setName("brokenName");
+                hsub2.getNetInterfaces().add(ni);
+                when(reverseProxyLoadBalancerVTMService.getSubnetMappings(any(Host.class))).thenReturn(hostssubnet);
+
+                Response response = hostResource.delHostsSubnetMappings(hsubs2);
+                Assert.assertEquals(404, response.getStatus());
+            }
+
+            @Test
+            public void shouldReturn200WhenMatchingSubnetMappingsFound() throws Exception {
+                netInterface.setName("name2");
+                when(reverseProxyLoadBalancerVTMService.getSubnetMappings(any(Host.class))).thenReturn(hostssubnet);
+
+                Response response = hostResource.delHostsSubnetMappings(hsubs2);
+                Assert.assertEquals(200, response.getStatus());
+            }
+            @Test
+            public void shouldReturn404WhenNoSubnetMappingsFound() throws Exception {
+                when(reverseProxyLoadBalancerVTMService.getSubnetMappings(any(Host.class))).thenReturn(hostssubnet);
+
+                Response response = hostResource.delHostsSubnetMappings(hsubs2);
+                Assert.assertEquals(404, response.getStatus());
+            }
+
+
             @Test
             public void shouldreturn202whenESBisNormalWhenaddSubnetWIpv4() throws Exception {
                 cidr.setBlock("192.168.0.1/24");
