@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d17b935e_e8ddc82d",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/HostResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-12-21T17:27:03Z",
+      "side": 1,
+      "message": "This would cause fail on all interfaces that don\u0027t match, which could be everything depending on order?",
+      "revId": "38e26be18629f80c5d41fead3ce3474f4638818f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "82e9f744_51bd252c",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/HostResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 254,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2020-12-21T17:27:03Z",
+      "side": 1,
+      "message": "Do we want to return the list of subnets not found?",
+      "revId": "38e26be18629f80c5d41fead3ce3474f4638818f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735",
+      "unresolved": true
+    }
+  ]
+}
