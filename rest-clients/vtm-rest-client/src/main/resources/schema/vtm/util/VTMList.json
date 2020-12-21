@@ -1,16 +1,16 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "id": "/rvbd-schema/tm/3.4/config/active/list#",
-    "title": "StingrayList",
+    "title": "VTMList",
     "description": "List of items by name and the href used to get specific item information.",
-    "javaType": "org.rackspace.stingray.client.util.StingrayList",
+    "javaType": "org.rackspace.vtm.client.util.VTMList",
     "type": "object",
     "properties": {
-        "stingrayList": {
+        "vtmList": {
             "type": "array",
             "required": true,
             "items": {
-                "javaType": "org.rackspace.stingray.client.util.StingrayListItem",
+                "javaType": "org.rackspace.vtm.client.util.VTMListItem",
                 "type": "object",
                 "properties": {
                     "name": {
