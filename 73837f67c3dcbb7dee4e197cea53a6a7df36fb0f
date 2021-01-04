@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c5a46e45_021a676f",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/resources/AlgorithmsResourceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-04T20:17:07Z",
+      "side": 1,
+      "message": "We set up the object and the mocked return. We could/should probably make sure the entity is being returned as expected. At least verify some of the settings maybe? Think I seen similar in other patches I reviewed. If we\u0027re not going to because we don\u0027t have need to check the entity outputs then there\u0027s no point in hydrating an entity. Though, in most cases that verification is needed.",
+      "revId": "73837f67c3dcbb7dee4e197cea53a6a7df36fb0f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "56d59653_5c300e39",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/resources/AlgorithmsResourceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-04T20:17:07Z",
+      "side": 1,
+      "message": "Test name not matching behavior. When no algo\u0027s are found, re; the query returns an empty set an empty algo array is returned. If DB comms, or maybe even enum\u0027s don\u0027t exist an exception/serverError/500 is thrown. Think I seen other sorta off names in the other patches i glossed over.",
+      "revId": "73837f67c3dcbb7dee4e197cea53a6a7df36fb0f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
