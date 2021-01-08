@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "67b388d9_eaae3005",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-08T16:19:37Z",
+      "side": 1,
+      "message": "This LGTM but we\u0027re not going to merge this one yet.. going to build other patches on top. ",
+      "revId": "c70f93b92ed700bee81100c6c441afba95b65b1d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
