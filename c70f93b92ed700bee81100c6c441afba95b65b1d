@@ -16,6 +16,23 @@
       "message": "This LGTM but we\u0027re not going to merge this one yet.. going to build other patches on top. ",
       "revId": "c70f93b92ed700bee81100c6c441afba95b65b1d",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "03dfac41_28ce75b6",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1017275
+      },
+      "writtenOn": "2021-01-08T21:39:31Z",
+      "side": 1,
+      "message": "lgtm!",
+      "revId": "c70f93b92ed700bee81100c6c441afba95b65b1d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
