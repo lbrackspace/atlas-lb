@@ -8,6 +8,8 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ClusterSourceAddresses;
+import org.openstack.atlas.docs.loadbalancers.api.v1.RegionalSourceAddresses;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.repository.*;
@@ -599,5 +601,49 @@ public class LoadBalancerServiceImplTest {
             Assert.assertEquals((Object) 55555, newLb.getAccountId());
 
         }
+    }
+
+    public static class GetClusterSourceAddress{
+
+        @InjectMocks
+        LoadBalancerServiceImpl lbService = new LoadBalancerServiceImpl();
+
+        @Mock
+        HostRepository hostRepository;
+
+        Cluster cluster = new Cluster();
+
+        Host host = new Host();
+
+        List<org.openstack.atlas.service.domain.entities.Host> hosts = new ArrayList<>();
+
+        @Before
+        public void standUp() throws EntityNotFoundException {
+            MockitoAnnotations.initMocks(this);
+            cluster.setId(1);
+            host.setName("testHost");
+            cluster.setClusterType(ClusterType.INTERNAL);
+            host.setCluster(cluster);
+            host.setIpv4Public("ipv4p");
+            host.setIpv4Servicenet("ipv4s");
+            host.setIpv6Public("ipv6p");
+            host.setIpv6Servicenet("ipv6s");
+            hosts.add(host);
+
+        }
+
+        @Test
+        public void ShouldReturnAListOfHostByClusterType(){
+            ClusterSourceAddresses clusterSourceAddresses;
+            when(hostRepository.getAllHostsByClusterId(ArgumentMatchers.anyInt())).thenReturn(hosts);
+            clusterSourceAddresses = lbService.getClusterSourceAddresses(1);
+            Assert.assertTrue(clusterSourceAddresses.getIpv4Servicenets().get(0).equals("ipv4s"));
+            Assert.assertTrue(clusterSourceAddresses.getIpv6Servicenets().get(0).equals("ipv6s"));
+            Assert.assertTrue(clusterSourceAddresses.getIpv4Publicnets().get(0).equals("ipv4p"));
+            Assert.assertTrue(clusterSourceAddresses.getIpv6Publicnets().get(0).equals("ipv6p"));
+
+
+        }
+
     }
 }

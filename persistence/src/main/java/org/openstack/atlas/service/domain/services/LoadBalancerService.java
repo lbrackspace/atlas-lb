@@ -1,6 +1,7 @@
 package org.openstack.atlas.service.domain.services;
 
 import javassist.tools.rmi.ObjectNotFoundException;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ClusterSourceAddresses;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.AccountBilling;
@@ -106,4 +107,6 @@ public interface LoadBalancerService {
     boolean isSharedVip4(LoadBalancer lb, VirtualIp vip);
 
     boolean isSharedVip6(LoadBalancer lb, VirtualIpv6 vip);
+
+    public ClusterSourceAddresses getClusterSourceAddresses(Integer clusterId);
 }
