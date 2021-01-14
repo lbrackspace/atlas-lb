@@ -2,7 +2,9 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ClusterSourceAddresses;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ProtocolPortBindings;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.deadlock.DeadLockRetry;
 import org.openstack.atlas.service.domain.entities.*;
@@ -470,6 +472,22 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
                 throw new BadRequestException(ccErr);
             }
         }
+    }
+
+    @Transactional
+    public ClusterSourceAddresses getClusterSourceAddresses(Integer clusterId) {
+        List<Host> hosts = hostRepository.getAllHostsByClusterId(clusterId);
+        ClusterSourceAddresses csa = new ClusterSourceAddresses();
+        SourceAddresses sa;
+        for (Host h : hosts) {
+            sa = new SourceAddresses();
+            sa.setIpv4Public(h.getIpv4Public());
+            sa.setIpv4Servicenet(h.getIpv4Servicenet());
+            sa.setIpv6Public(h.getIpv6Public());
+            sa.setIpv6Servicenet(h.getIpv6Servicenet());
+            csa.getSourceAddresses().add(sa);
+        }
+        return csa;
     }
 
     @Transactional
