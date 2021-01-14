@@ -60,6 +60,20 @@
         <xsd:attribute name="ipv6Public" type="xsd:string"/>
     </xsd:complexType>
 
+    <xsd:element name="regionalSourceAddresses" type="tns:regionalSourceAddresses"/>
+    <xsd:complexType name="regionalSourceAddresses">
+        <xsd:sequence>
+            <xsd:element name="sourceAddresses" minOccurs="1" maxOccurs="unbounded" type="tns:sourceAddresses"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="clusterSourceAddresses" type="tns:clusterSourceAddresses"/>
+    <xsd:complexType name="clusterSourceAddresses">
+        <xsd:sequence>
+            <xsd:element name="sourceAddresses" minOccurs="1" maxOccurs="unbounded" type="tns:sourceAddresses"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
     <xsd:element name="stats" type="tns:stats"/>
     <xsd:complexType name="stats">
         <xsd:attribute name="connectTimeOut" type="xsd:long"/>
