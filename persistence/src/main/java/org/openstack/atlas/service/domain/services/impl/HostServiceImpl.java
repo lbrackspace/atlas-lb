@@ -1,5 +1,7 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.RegionalSourceAddresses;
+import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.Customer;
@@ -369,4 +371,18 @@ public class HostServiceImpl extends BaseService implements HostService {
         Host host = hostRepository.getFirstAvailableRestEndPointHost();
         return host;
     }
+
+    @Transactional
+    public RegionalSourceAddresses getRegionalSourceAddresses(ClusterType cType) {
+        List<Host> hosts = hostRepository.getAllHostsByClusterType(cType);
+        RegionalSourceAddresses rsa = new RegionalSourceAddresses();
+        for (Host h : hosts) {
+            rsa.getIpv4Publics().add(h.getIpv4Public());
+            rsa.getIpv4Servicenets().add(h.getIpv4Servicenet());
+            rsa.getIpv6Publics().add(h.getIpv6Public());
+            rsa.getIpv4Servicenets().add(h.getIpv6Servicenet());
+        }
+        return rsa;
+    }
+
 }
