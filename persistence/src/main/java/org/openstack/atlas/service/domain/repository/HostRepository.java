@@ -1,11 +1,12 @@
 package org.openstack.atlas.service.domain.repository;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.Customer;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -481,6 +482,24 @@ public class HostRepository {
             }
         }
         throw new EntityNotFoundException("ACTIVE_TARGET host not found");
+    }
+
+    //CLB-1199
+    public List<Host> getAllHostsByClusterId(Integer cid){
+        String hqlStr = "from Host h where h.cluster.id = :clusterId";
+        List<Host> hosts;
+        hosts = entityManager.createQuery(hqlStr).setParameter("clusterId", cid).getResultList();
+        return hosts;
+    }
+
+    public List<Host> getAllHostsByClusterType(ClusterType clusterType){
+        List<Host> hosts;
+        String hqlStr = "from Host h where h.cluster.clusterStatus = :clusterStatus AND h.cluster.clusterType = :clusterType";
+        Query query = entityManager.createQuery(hqlStr);
+        query.setParameter("clusterStatus", ClusterStatus.ACTIVE);
+        query.setParameter("clusterType", clusterType);
+        hosts = query.getResultList();
+        return hosts;
     }
 
 }
