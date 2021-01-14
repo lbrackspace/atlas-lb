@@ -63,14 +63,45 @@
     <xsd:element name="regionalSourceAddresses" type="tns:regionalSourceAddresses"/>
     <xsd:complexType name="regionalSourceAddresses">
         <xsd:sequence>
-            <xsd:element name="sourceAddresses" minOccurs="1" maxOccurs="unbounded" type="tns:sourceAddresses"/>
+            <xsd:element name="ipv4Servicenets" type="tns:ipv4Servicenets" minOccurs="0"/>
+            <xsd:element name="ipv6Servicenets" type="tns:ipv6Servicenets" minOccurs="0"/>
+            <xsd:element name="ipv4Publics" type="tns:ipv4Publics" minOccurs="0"/>
+            <xsd:element name="ipv6Publics" type="tns:ipv6Publics" minOccurs="0"/>
         </xsd:sequence>
     </xsd:complexType>
 
     <xsd:element name="clusterSourceAddresses" type="tns:clusterSourceAddresses"/>
     <xsd:complexType name="clusterSourceAddresses">
         <xsd:sequence>
-            <xsd:element name="sourceAddresses" minOccurs="1" maxOccurs="unbounded" type="tns:sourceAddresses"/>
+            <xsd:element name="ipv4Servicenets" type="tns:ipv4Servicenets" minOccurs="0"/>
+            <xsd:element name="ipv6Servicenets" type="tns:ipv6Servicenets" minOccurs="0"/>
+            <xsd:element name="ipv4Publics" type="tns:ipv4Publics" minOccurs="0"/>
+            <xsd:element name="ipv6Publics" type="tns:ipv6Publics" minOccurs="0"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:element name="ipv4Servicenets" type="tns:ipv4Servicenets"/>
+    <xsd:complexType name="ipv4Servicenets">
+        <xsd:sequence>
+            <xsd:element name="ipv4Servicenet" minOccurs="1" maxOccurs="unbounded" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="ipv6Servicenets" type="tns:ipv6Servicenets"/>
+    <xsd:complexType name="ipv6Servicenets">
+        <xsd:sequence>
+            <xsd:element name="ipv6Servicenet" minOccurs="1" maxOccurs="unbounded" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="ipv4Publics" type="tns:ipv4Publics"/>
+    <xsd:complexType name="ipv4Publics">
+        <xsd:sequence>
+            <xsd:element name="ipv4Public" minOccurs="1" maxOccurs="unbounded" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:element name="ipv6Publics" type="tns:ipv6Publics"/>
+    <xsd:complexType name="ipv6Publics">
+        <xsd:sequence>
+            <xsd:element name="ipv6Public" minOccurs="1" maxOccurs="unbounded" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
 
