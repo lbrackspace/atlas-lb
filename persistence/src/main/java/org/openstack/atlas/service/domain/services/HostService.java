@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
+import org.openstack.atlas.docs.loadbalancers.api.v1.RegionalSourceAddresses;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.Customer;
@@ -87,5 +88,7 @@ public interface HostService {
     public Host getDefaultActiveHostAndActiveCluster(Integer accountId, boolean hasPublicVip, Integer hostId) throws ClusterStatusException, EntityNotFoundException, NoAvailableClusterException;
 
     public boolean isActiveHost(Host host) throws EntityNotFoundException;
+
+    public RegionalSourceAddresses getRegionalSourceAddresses(ClusterType cType);
 
 }
