@@ -8,18 +8,19 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
+import org.openstack.atlas.service.domain.entities.Cluster;
+import org.openstack.atlas.service.domain.entities.ClusterType;
 import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.HostStatus;
-
-
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class HostRepositoryTest {
@@ -115,5 +116,81 @@ public class HostRepositoryTest {
            Host reHost = hostRepository.getRestEndPointHost(1);
            Assert.assertNull(reHost);
        }
+   }
+
+   //CLB-1199
+   public static class WhenRetrievingHosts{
+
+       @Mock
+       Query qry;
+       @Mock
+       EntityManager entityManager;
+       @InjectMocks
+       HostRepository hostRepository;
+
+       Host host;
+       Cluster cluster;
+       List<Host> hosts;
+
+       @Before
+       public void standUp(){
+
+           MockitoAnnotations.initMocks(this);
+
+           host = new Host();
+           cluster = new Cluster();
+           cluster.setClusterType(ClusterType.INTERNAL);
+           cluster.setStatus(ClusterStatus.ACTIVE);
+           hosts = new ArrayList<>();
+
+           host.setId(1);
+           host.setCluster(cluster);
+           hosts.add(host);
+       }
+
+       @Test
+       public void shouldReturnListOfHostsWithSpecifiedClusterId(){
+           String hqlStr = "from Host h where h.cluster.id = :clusterId";
+           when(entityManager.createQuery(hqlStr)).thenReturn(qry);
+           when(qry.setParameter("clusterId", 1)).thenReturn(qry);
+           when(qry.getResultList()).thenReturn(hosts);
+           List<Host> hostList = hostRepository.getAllHostsByClusterId(1);
+           Assert.assertTrue(hostList.size() > 0);
+       }
+
+       @Test
+       public void shouldReturnEmptyListOfHostsWhenSpecifiedClusterIdDoestExist(){
+           hosts.remove(0);
+           String hqlStr = "from Host h where h.cluster.id = :clusterId";
+           when(entityManager.createQuery(hqlStr)).thenReturn(qry);
+           when(qry.setParameter("clusterId", 1)).thenReturn(qry);
+           when(qry.getResultList()).thenReturn(hosts);
+           List<Host> hostList = hostRepository.getAllHostsByClusterId(1);
+           Assert.assertTrue(hostList.size() == 0);
+       }
+
+       @Test
+       public void shouldReturnListOfActiveHostsWithSpecifiedClusterType(){
+           String hqlStr = "from Host h where h.cluster.clusterStatus = :clusterStatus AND h.cluster.clusterType = :clusterType";
+           when(entityManager.createQuery(hqlStr)).thenReturn(qry);
+           when(qry.setParameter("clusterStatus", ClusterStatus.ACTIVE)).thenReturn(qry);
+           when(qry.setParameter("clusterType", ClusterType.INTERNAL)).thenReturn(qry);
+           when(qry.getResultList()).thenReturn(hosts);
+           List<Host> hostList = hostRepository.getAllHostsByClusterType(ClusterType.INTERNAL);
+           Assert.assertTrue(hostList.size() > 0);
+       }
+
+       @Test
+       public void shouldReturnEmptyListOfHostsWhenSpecifiedClusterTypeDoestMatch(){
+           hosts.remove(0);
+           String hqlStr = "from Host h where h.cluster.clusterStatus = :clusterStatus AND h.cluster.clusterType = :clusterType";
+           when(entityManager.createQuery(hqlStr)).thenReturn(qry);
+           when(qry.setParameter("clusterStatus", ClusterStatus.ACTIVE)).thenReturn(qry);
+           when(qry.setParameter("clusterType", ClusterType.STANDARD)).thenReturn(qry);
+           when(qry.getResultList()).thenReturn(hosts);
+           List<Host> hostList = hostRepository.getAllHostsByClusterType(ClusterType.STANDARD);
+           Assert.assertTrue(hostList.size() == 0);
+       }
+
    }
 }
