@@ -10,9 +10,13 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.api.integration.AsyncService;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ClusterSourceAddresses;
+import org.openstack.atlas.service.domain.entities.Cluster;
+import org.openstack.atlas.service.domain.entities.Host;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -379,6 +383,90 @@ public class LoadBalancerResourceTest {
             when(loadBalancerService.get(ArgumentMatchers.<Integer>any())).thenReturn(null);
             response = loadBalancerResource.retrieveLoadBalancerStats();
             Assert.assertEquals(400, response.getStatus());
+        }
+
+
+    }
+
+    public static class WhenRetrievingClusterSourceAddresses {
+        private static final String publicDozerConfigFile = "loadbalancing-dozer-mapping.xml";
+
+        private LoadBalancerService loadBalancerService;
+        private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
+        private AsyncService asyncService;
+        private LoadBalancerResource loadBalancerResource;
+        private RestApiConfiguration restApiConfiguration;
+        private MemcachedClient memcachedClient;
+        private ClusterSourceAddresses clusterSourceAddresses;
+        org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer lb;
+        private LoadBalancer loadBalancer;
+
+        private Response response;
+
+        @Before
+        public void standUp() throws EntityNotFoundException {
+            loadBalancerService = mock(LoadBalancerService.class);
+            restApiConfiguration = mock(RestApiConfiguration.class);
+            reverseProxyLoadBalancerVTMService = mock(ReverseProxyLoadBalancerVTMService.class);
+            asyncService = mock(AsyncService.class);
+            memcachedClient = mock(MemcachedClient.class);
+
+
+            loadBalancerResource = new LoadBalancerResource();
+            loadBalancerResource.setId(1);
+            loadBalancerResource.setAccountId(1234);
+            loadBalancerResource.setLoadBalancerService(loadBalancerService);
+            loadBalancerResource.setAsyncService(asyncService);
+            loadBalancerResource.setRestApiConfiguration(restApiConfiguration);
+            loadBalancerResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
+            loadBalancerResource.setDozerMapper(MapperBuilder.getConfiguredMapper(publicDozerConfigFile));
+
+            clusterSourceAddresses = new ClusterSourceAddresses();
+            clusterSourceAddresses.getIpv6Publicnets().add("2001:4801:79f1:0000:0000:0000:0000:0003");
+            clusterSourceAddresses.getIpv4Publicnets().add("172.0.0.1");
+            clusterSourceAddresses.getIpv4Servicenets().add("10.0.0.1");
+
+            lb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
+            lb.setStatus("ACTIVE");
+
+            loadBalancer = new LoadBalancer();
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+            loadBalancer.setId(1);
+            loadBalancer.setAccountId(1234);
+            Host h = new Host();
+            Cluster cluster = new Cluster();
+            cluster.setId(123);
+            h.setCluster(cluster);
+            loadBalancer.setHost(h);
+            when(loadBalancerService.get(anyInt(), anyInt())).thenReturn(loadBalancer);
+            when(loadBalancerService.getClusterSourceAddresses(anyInt())).thenReturn(clusterSourceAddresses);
+
+        }
+
+        @Test
+        public void shouldReturnOkWhenRetrievingClusterSourceAddresses() {
+            response = loadBalancerResource.retrieveClusterSourceAddresses();
+            Assert.assertEquals(200, response.getStatus());
+            verify(loadBalancerService, times(1)).getClusterSourceAddresses(123);
+            ClusterSourceAddresses csa = (ClusterSourceAddresses) response.getEntity();
+            Assert.assertEquals(1, csa.getIpv4Publicnets().size());
+            Assert.assertEquals("172.0.0.1", csa.getIpv4Publicnets().get(0));
+        }
+
+        @Test
+        public void shouldHandleExceptionsWhenRetrievingClusterSourceAddresses() {
+            doThrow(Exception.class).when(loadBalancerService).getClusterSourceAddresses(anyInt());
+            response = loadBalancerResource.retrieveClusterSourceAddresses();
+            Assert.assertEquals(500, response.getStatus());
+            verify(loadBalancerService, times(1)).getClusterSourceAddresses(123);
+        }
+
+        @Test
+        public void shouldHandleEntityNotFoundExceptionsWhenRetrievingClusterSourceAddresses() throws EntityNotFoundException {
+            doThrow(EntityNotFoundException.class).when(loadBalancerService).get(anyInt(), anyInt());
+            response = loadBalancerResource.retrieveClusterSourceAddresses();
+            Assert.assertEquals(404, response.getStatus());
+            verify(loadBalancerService, times(0)).getClusterSourceAddresses(123);
         }
     }
 }
