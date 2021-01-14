@@ -12,6 +12,7 @@ import org.openstack.atlas.api.resources.providers.CommonDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
+import org.openstack.atlas.docs.loadbalancers.api.v1.ClusterSourceAddresses;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.exceptions.ImmutableEntityException;
@@ -116,6 +117,21 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.LoadBalancer dbLb = loadBalancerService.get(domainLb.getId(), domainLb.getAccountId());
             asyncService.callAsyncLoadBalancingOperation(Operation.UPDATE_LOADBALANCER, dbLb);
             return Response.status(Response.Status.ACCEPTED).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @GET
+    @Path("clustersourceaddresses")
+    @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
+    public Response retrieveClusterSourceAddresses() {
+
+        try {
+            org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer = loadBalancerService.get(id, accountId);
+            Integer cId = loadBalancer.getHost().getCluster().getId();
+            ClusterSourceAddresses csa = loadBalancerService.getClusterSourceAddresses(cId);
+            return Response.status(Response.Status.OK).entity(csa).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
