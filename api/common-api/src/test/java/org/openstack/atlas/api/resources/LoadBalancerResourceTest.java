@@ -398,6 +398,7 @@ public class LoadBalancerResourceTest {
         private RestApiConfiguration restApiConfiguration;
         private MemcachedClient memcachedClient;
         private ClusterSourceAddresses clusterSourceAddresses;
+        private ClusterSourceAddresses emptyClusterSourceAddresses;
         org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer lb;
         private LoadBalancer loadBalancer;
 
@@ -425,6 +426,8 @@ public class LoadBalancerResourceTest {
             clusterSourceAddresses.getIpv6Publicnets().add("2001:4801:79f1:0000:0000:0000:0000:0003");
             clusterSourceAddresses.getIpv4Publicnets().add("172.0.0.1");
             clusterSourceAddresses.getIpv4Servicenets().add("10.0.0.1");
+
+            emptyClusterSourceAddresses = new ClusterSourceAddresses();
 
             lb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
             lb.setStatus("ACTIVE");
@@ -468,5 +471,20 @@ public class LoadBalancerResourceTest {
             Assert.assertEquals(404, response.getStatus());
             verify(loadBalancerService, times(0)).getClusterSourceAddresses(123);
         }
+
+        @Test
+        public void shouldReturnNullWhenClusterSourceAddressesAreEmpty() throws Exception {
+            when(loadBalancerService.getClusterSourceAddresses(anyInt())).thenReturn(emptyClusterSourceAddresses);
+
+            response = loadBalancerResource.retrieveClusterSourceAddresses();
+            Assert.assertEquals(200, response.getStatus());
+            verify(loadBalancerService, times(1)).getClusterSourceAddresses(123);
+            ClusterSourceAddresses csa = (ClusterSourceAddresses) response.getEntity();
+            Assert.assertNull(null, csa.getIpv4Publicnets());
+
+        }
+
+
+
     }
 }

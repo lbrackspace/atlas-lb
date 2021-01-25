@@ -131,6 +131,18 @@ public class LoadBalancerResource extends CommonDependencyProvider {
             org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer = loadBalancerService.get(id, accountId);
             Integer cId = loadBalancer.getHost().getCluster().getId();
             ClusterSourceAddresses csa = loadBalancerService.getClusterSourceAddresses(cId);
+            if(csa.getIpv4Publicnets().size() == 0){
+                csa.setIpv4Publicnets(null);
+            }
+            if(csa.getIpv4Servicenets().size() == 0) {
+                csa.setIpv4Servicenets(null);
+            }
+            if(csa.getIpv6Publicnets().size() == 0) {
+                csa.setIpv6Publicnets(null);
+            }
+            if (csa.getIpv6Servicenets().size() == 0) {
+                csa.setIpv6Servicenets(null);
+            }
             return Response.status(Response.Status.OK).entity(csa).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
