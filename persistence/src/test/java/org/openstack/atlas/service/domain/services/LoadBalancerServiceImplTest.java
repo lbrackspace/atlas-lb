@@ -645,5 +645,22 @@ public class LoadBalancerServiceImplTest {
 
         }
 
+        @Test
+        public void shouldReturnNullIfHostIpsNotSet () {
+            hosts.clear();
+            ClusterSourceAddresses clusterSourceAddresses;
+            when(hostRepository.getAllHostsByClusterId(ArgumentMatchers.anyInt())).thenReturn(hosts);
+            clusterSourceAddresses = lbService.getClusterSourceAddresses(1);
+            Assert.assertNull(clusterSourceAddresses.getIpv4Servicenets());
+            Assert.assertNull(clusterSourceAddresses.getIpv6Servicenets());
+            Assert.assertNull(clusterSourceAddresses.getIpv4Publicnets());
+            Assert.assertNull(clusterSourceAddresses.getIpv6Publicnets());
+
+
+
+
+        }
+
+
     }
 }
