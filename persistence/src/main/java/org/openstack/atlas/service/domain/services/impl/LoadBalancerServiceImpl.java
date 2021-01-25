@@ -483,6 +483,20 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
             if (h.getIpv6Public() != null) {csa.getIpv6Publicnets().add(h.getIpv6Public());}
             if (h.getIpv6Servicenet() != null) {csa.getIpv6Servicenets().add(h.getIpv6Servicenet());}
         }
+
+        if(csa.getIpv4Publicnets().size() == 0){
+            csa.setIpv4Publicnets(null);
+        }
+        if(csa.getIpv4Servicenets().size() == 0) {
+            csa.setIpv4Servicenets(null);
+        }
+        if(csa.getIpv6Publicnets().size() == 0) {
+            csa.setIpv6Publicnets(null);
+        }
+        if (csa.getIpv6Servicenets().size() == 0) {
+            csa.setIpv6Servicenets(null);
+        }
+
         return csa;
     }
 

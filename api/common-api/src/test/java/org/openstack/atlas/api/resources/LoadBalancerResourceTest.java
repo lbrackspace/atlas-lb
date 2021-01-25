@@ -426,6 +426,7 @@ public class LoadBalancerResourceTest {
             clusterSourceAddresses.getIpv4Publicnets().add("172.0.0.1");
             clusterSourceAddresses.getIpv4Servicenets().add("10.0.0.1");
 
+
             lb = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer();
             lb.setStatus("ACTIVE");
 
@@ -468,5 +469,6 @@ public class LoadBalancerResourceTest {
             Assert.assertEquals(404, response.getStatus());
             verify(loadBalancerService, times(0)).getClusterSourceAddresses(123);
         }
+
     }
 }
