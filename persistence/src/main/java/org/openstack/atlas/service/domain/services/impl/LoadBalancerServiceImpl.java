@@ -474,9 +474,22 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Transactional
-    public ClusterSourceAddresses getClusterSourceAddresses(Integer clusterId) {
-        List<Host> hosts = hostRepository.getAllHostsByClusterId(clusterId);
+    public ClusterSourceAddresses getClusterSourceAddresses(Integer clusterId, Integer accountId) {
+
+        String key = CacheKeyGen.generateKeyName(accountId);
+        List<Host> hosts;
         ClusterSourceAddresses csa = new ClusterSourceAddresses();
+        hosts = (ArrayList<Host>) atlasCache.get(key);
+
+        if(hosts == null) {
+
+            LOG.debug("Setting Hosts in cache for: " + " at " + Calendar.getInstance().getTime().toString());
+            hosts = hostRepository.getAllHostsByClusterId(clusterId);
+            atlasCache.set(key, hosts);
+        } else {
+            LOG.debug("Retrieved Hosts from cache for: " + clusterId + " at " + Calendar.getInstance().getTime().toString());
+        }
+
         for (Host h : hosts) {
             if (h.getIpv4Public() != null) {csa.getIpv4Publicnets().add(h.getIpv4Public());}
             if (h.getIpv4Servicenet() != null) {csa.getIpv4Servicenets().add(h.getIpv4Servicenet());}
