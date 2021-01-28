@@ -21,6 +21,7 @@ public class RootResource extends CommonDependencyProvider {
     @Context
     HttpHeaders requestHeaders;
     private RequestStateContainer origContainer;
+    private RegionalSourceAddressesResource regionalSourceAddressesResource;
 
     @PathParam("id")
     private Integer accountId;
@@ -35,6 +36,12 @@ public class RootResource extends CommonDependencyProvider {
         this.loadBalancersResource.setRequestHeaders(hh);
         this.loadBalancersResource.setAccountId(accountId);
         return loadBalancersResource;
+    }
+
+    @Path("regionalsourceaddresses")
+    public RegionalSourceAddressesResource retrieveRegionalSourceAddressesResource() {
+        this.regionalSourceAddressesResource.setAccountId(accountId);
+        return regionalSourceAddressesResource;
     }
 
     @Path("throw")
@@ -64,5 +71,9 @@ public class RootResource extends CommonDependencyProvider {
 
     public void setOrigContainer(RequestStateContainer origContainer) {
         this.origContainer = origContainer;
+    }
+
+    public void setRegionalSourceAddressesResource(RegionalSourceAddressesResource regionalSourceAddressesResource) {
+        this.regionalSourceAddressesResource = regionalSourceAddressesResource;
     }
 }

@@ -633,6 +633,16 @@ public class ClusterRepository {
         }
     }
 
+    public ClusterType getClusterTypeByAccountId(Integer accountId) {
+        String qry = "Select al.clusterType from Account al where id = :aid";
+        List<ClusterType> cType = entityManager.createQuery(qry)
+                .setParameter("aid", accountId)
+                .getResultList();
+        return cType.get(0);
+    }
+
+    // add getClusterTypeById
+
     public class VipMap {
 
         private List<Integer> keys = new ArrayList<Integer>();
