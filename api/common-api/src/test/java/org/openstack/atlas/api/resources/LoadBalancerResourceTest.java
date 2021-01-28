@@ -440,7 +440,7 @@ public class LoadBalancerResourceTest {
             h.setCluster(cluster);
             loadBalancer.setHost(h);
             when(loadBalancerService.get(anyInt(), anyInt())).thenReturn(loadBalancer);
-            when(loadBalancerService.getClusterSourceAddresses(anyInt())).thenReturn(clusterSourceAddresses);
+            when(loadBalancerService.getClusterSourceAddresses(anyInt(), anyInt())).thenReturn(clusterSourceAddresses);
 
         }
 
@@ -448,7 +448,7 @@ public class LoadBalancerResourceTest {
         public void shouldReturnOkWhenRetrievingClusterSourceAddresses() {
             response = loadBalancerResource.retrieveClusterSourceAddresses();
             Assert.assertEquals(200, response.getStatus());
-            verify(loadBalancerService, times(1)).getClusterSourceAddresses(123);
+            verify(loadBalancerService, times(1)).getClusterSourceAddresses(123, 1234);
             ClusterSourceAddresses csa = (ClusterSourceAddresses) response.getEntity();
             Assert.assertEquals(1, csa.getIpv4Publicnets().size());
             Assert.assertEquals("172.0.0.1", csa.getIpv4Publicnets().get(0));
@@ -456,10 +456,10 @@ public class LoadBalancerResourceTest {
 
         @Test
         public void shouldHandleExceptionsWhenRetrievingClusterSourceAddresses() {
-            doThrow(Exception.class).when(loadBalancerService).getClusterSourceAddresses(anyInt());
+            doThrow(Exception.class).when(loadBalancerService).getClusterSourceAddresses(anyInt(), anyInt());
             response = loadBalancerResource.retrieveClusterSourceAddresses();
             Assert.assertEquals(500, response.getStatus());
-            verify(loadBalancerService, times(1)).getClusterSourceAddresses(123);
+            verify(loadBalancerService, times(1)).getClusterSourceAddresses(123, 1234);
         }
 
         @Test
@@ -467,7 +467,7 @@ public class LoadBalancerResourceTest {
             doThrow(EntityNotFoundException.class).when(loadBalancerService).get(anyInt(), anyInt());
             response = loadBalancerResource.retrieveClusterSourceAddresses();
             Assert.assertEquals(404, response.getStatus());
-            verify(loadBalancerService, times(0)).getClusterSourceAddresses(123);
+            verify(loadBalancerService, times(0)).getClusterSourceAddresses(123, 1234);
         }
 
     }
