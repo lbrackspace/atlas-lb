@@ -37,6 +37,12 @@ public class RootResource extends CommonDependencyProvider {
         return loadBalancersResource;
     }
 
+    @Path("regionalsourceaddresses")
+    public RegionalSourceAddressesResource retrieveRegionalSourceAddressesResource() {
+        this.regionalSourceAddressesResource.setAccountId(accountId);
+        return regionalSourceAddressesResource;
+    }
+
     @Path("throw")
     public ThrowResource retrieveThrowResource() {
         return throwResource;
