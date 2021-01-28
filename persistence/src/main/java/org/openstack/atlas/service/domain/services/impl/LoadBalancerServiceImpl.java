@@ -474,28 +474,45 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
     }
 
     @Transactional
-    public ClusterSourceAddresses getClusterSourceAddresses(Integer clusterId) {
-        List<Host> hosts = hostRepository.getAllHostsByClusterId(clusterId);
-        ClusterSourceAddresses csa = new ClusterSourceAddresses();
-        for (Host h : hosts) {
-            if (h.getIpv4Public() != null) {csa.getIpv4Publicnets().add(h.getIpv4Public());}
-            if (h.getIpv4Servicenet() != null) {csa.getIpv4Servicenets().add(h.getIpv4Servicenet());}
-            if (h.getIpv6Public() != null) {csa.getIpv6Publicnets().add(h.getIpv6Public());}
-            if (h.getIpv6Servicenet() != null) {csa.getIpv6Servicenets().add(h.getIpv6Servicenet());}
+    public ClusterSourceAddresses getClusterSourceAddresses(Integer clusterId, Integer accountId) {
+
+        String key = CacheKeyGen.generateKeyName(accountId + clusterId);
+        List<Host> hosts;
+        ClusterSourceAddresses csa;
+        csa = (ClusterSourceAddresses) atlasCache.get(key);
+
+        if(csa == null) {
+            csa = new ClusterSourceAddresses();
+            hosts = hostRepository.getAllHostsByClusterId(clusterId);
+
+
+            for (Host h : hosts) {
+                if (h.getIpv4Public() != null) {csa.getIpv4Publicnets().add(h.getIpv4Public());}
+                if (h.getIpv4Servicenet() != null) {csa.getIpv4Servicenets().add(h.getIpv4Servicenet());}
+                if (h.getIpv6Public() != null) {csa.getIpv6Publicnets().add(h.getIpv6Public());}
+                if (h.getIpv6Servicenet() != null) {csa.getIpv6Servicenets().add(h.getIpv6Servicenet());}
+            }
+
+            if(csa.getIpv4Publicnets().size() == 0){
+                csa.setIpv4Publicnets(null);
+            }
+            if(csa.getIpv4Servicenets().size() == 0) {
+                csa.setIpv4Servicenets(null);
+            }
+            if(csa.getIpv6Publicnets().size() == 0) {
+                csa.setIpv6Publicnets(null);
+            }
+            if (csa.getIpv6Servicenets().size() == 0) {
+                csa.setIpv6Servicenets(null);
+            }
+
+            LOG.debug("Setting ClusterSourceAddresses in cache for: " + " at " + Calendar.getInstance().getTime().toString());
+            atlasCache.set(key, csa);
+
+        } else {
+            LOG.debug("Retrieved ClusterSourceAddresses from cache for: " + clusterId + " at " + Calendar.getInstance().getTime().toString());
         }
 
-        if(csa.getIpv4Publicnets().size() == 0){
-            csa.setIpv4Publicnets(null);
-        }
-        if(csa.getIpv4Servicenets().size() == 0) {
-            csa.setIpv4Servicenets(null);
-        }
-        if(csa.getIpv6Publicnets().size() == 0) {
-            csa.setIpv6Publicnets(null);
-        }
-        if (csa.getIpv6Servicenets().size() == 0) {
-            csa.setIpv6Servicenets(null);
-        }
 
         return csa;
     }

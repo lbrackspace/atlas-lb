@@ -108,5 +108,5 @@ public interface LoadBalancerService {
 
     boolean isSharedVip6(LoadBalancer lb, VirtualIpv6 vip);
 
-    public ClusterSourceAddresses getClusterSourceAddresses(Integer clusterId);
+    public ClusterSourceAddresses getClusterSourceAddresses(Integer clusterId, Integer accountId);
 }
