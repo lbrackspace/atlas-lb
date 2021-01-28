@@ -382,6 +382,19 @@ public class HostServiceImpl extends BaseService implements HostService {
             if (h.getIpv6Public() != null) {rsa.getIpv6Publicnets().add(h.getIpv6Public());}
             if (h.getIpv6Servicenet() != null) {rsa.getIpv6Servicenets().add(h.getIpv6Servicenet());}
         }
+
+        if(rsa.getIpv4Publicnets().size() == 0){
+            rsa.setIpv4Publicnets(null);
+        }
+        if(rsa.getIpv4Servicenets().size() == 0) {
+            rsa.setIpv4Servicenets(null);
+        }
+        if(rsa.getIpv6Publicnets().size() == 0) {
+            rsa.setIpv6Publicnets(null);
+        }
+        if (rsa.getIpv6Servicenets().size() == 0) {
+            rsa.setIpv6Servicenets(null);
+        }
         return rsa;
     }
 

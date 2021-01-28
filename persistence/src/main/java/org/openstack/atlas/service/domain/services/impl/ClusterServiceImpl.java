@@ -163,6 +163,13 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
         return vipBlocks;
     }
 
+    @Override
+    @Transactional
+    public ClusterType getClusterTypeByAccountId(Integer accountId) {
+        ClusterType cType = clusterRepository.getClusterTypeByAccountId(accountId);
+        return cType;
+    }
+
     private boolean testForDuplicatesByCluster(VirtualIp vip, Integer clusterId) {
         List<VirtualIp> dbVips = virtualIpService.getVipsByClusterId(clusterId);
         for (VirtualIp nvip : dbVips) {
