@@ -10,10 +10,12 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.openstack.atlas.docs.loadbalancers.api.v1.ClusterSourceAddresses;
 import org.openstack.atlas.docs.loadbalancers.api.v1.RegionalSourceAddresses;
+import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.repository.*;
 import org.openstack.atlas.service.domain.services.impl.*;
+import org.openstack.atlas.service.domain.util.CacheKeyGen;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -611,7 +613,12 @@ public class LoadBalancerServiceImplTest {
         @Mock
         HostRepository hostRepository;
 
+        @Mock
+        AtlasCache atlasCache;
+
         Cluster cluster = new Cluster();
+        ClusterSourceAddresses csa;
+        String key;
 
         Host host = new Host();
 
@@ -628,7 +635,11 @@ public class LoadBalancerServiceImplTest {
             host.setIpv4Servicenet("ipv4s");
             host.setIpv6Public("ipv6p");
             host.setIpv6Servicenet("ipv6s");
+            csa = new ClusterSourceAddresses();
             hosts.add(host);
+
+            key = CacheKeyGen.generateKeyName( 1234 + 1);
+
 
         }
 
@@ -636,21 +647,29 @@ public class LoadBalancerServiceImplTest {
         public void ShouldReturnAListOfHostByClusterType(){
             ClusterSourceAddresses clusterSourceAddresses;
             when(hostRepository.getAllHostsByClusterId(ArgumentMatchers.anyInt())).thenReturn(hosts);
-            clusterSourceAddresses = lbService.getClusterSourceAddresses(1);
+            clusterSourceAddresses = lbService.getClusterSourceAddresses(1, 1234);
             Assert.assertTrue(clusterSourceAddresses.getIpv4Servicenets().get(0).equals("ipv4s"));
             Assert.assertTrue(clusterSourceAddresses.getIpv6Servicenets().get(0).equals("ipv6s"));
             Assert.assertTrue(clusterSourceAddresses.getIpv4Publicnets().get(0).equals("ipv4p"));
             Assert.assertTrue(clusterSourceAddresses.getIpv6Publicnets().get(0).equals("ipv6p"));
 
+            csa = (ClusterSourceAddresses) verify(atlasCache).get("csa" + key);
+            verify(atlasCache).set("csa" + key, clusterSourceAddresses);
 
+            Assert.assertNull(csa);
         }
 
         @Test
         public void shouldReturnNullIfHostIpsNotSet () {
             hosts.clear();
+            csa.setIpv6Servicenets(null);
+            csa.setIpv6Publicnets(null);
+            csa.setIpv4Servicenets(null);
+            csa.setIpv4Publicnets(null);
             ClusterSourceAddresses clusterSourceAddresses;
             when(hostRepository.getAllHostsByClusterId(ArgumentMatchers.anyInt())).thenReturn(hosts);
-            clusterSourceAddresses = lbService.getClusterSourceAddresses(1);
+            when(atlasCache.get(anyString())).thenReturn(csa);
+            clusterSourceAddresses = lbService.getClusterSourceAddresses(1, 1234);
             Assert.assertNull(clusterSourceAddresses.getIpv4Servicenets());
             Assert.assertNull(clusterSourceAddresses.getIpv6Servicenets());
             Assert.assertNull(clusterSourceAddresses.getIpv4Publicnets());
@@ -659,8 +678,8 @@ public class LoadBalancerServiceImplTest {
 
 
 
-        }
 
+        }
 
     }
 }

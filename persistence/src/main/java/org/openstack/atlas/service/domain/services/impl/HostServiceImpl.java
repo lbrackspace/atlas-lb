@@ -2,18 +2,25 @@ package org.openstack.atlas.service.domain.services.impl;
 
 import org.openstack.atlas.docs.loadbalancers.api.v1.RegionalSourceAddresses;
 import org.openstack.atlas.docs.loadbalancers.api.v1.SourceAddresses;
+import org.openstack.atlas.service.domain.cache.AtlasCache;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.Customer;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId;
 import org.openstack.atlas.service.domain.services.HostService;
+import org.openstack.atlas.service.domain.util.CacheKeyGen;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Calendar;
 import java.util.List;
 
 @Service
 public class HostServiceImpl extends BaseService implements HostService {
+
+    @Autowired
+    private AtlasCache atlasCache;
 
     @Override
     public Host getById(Integer id) throws EntityNotFoundException {
@@ -373,28 +380,47 @@ public class HostServiceImpl extends BaseService implements HostService {
     }
 
     @Transactional
-    public RegionalSourceAddresses getRegionalSourceAddresses(ClusterType cType) {
-        List<Host> hosts = hostRepository.getAllHostsByClusterType(cType);
-        RegionalSourceAddresses rsa = new RegionalSourceAddresses();
-        for (Host h : hosts) {
-            if (h.getIpv4Public() != null) {rsa.getIpv4Publicnets().add(h.getIpv4Public());}
-            if (h.getIpv4Servicenet() != null) {rsa.getIpv4Servicenets().add(h.getIpv4Servicenet());}
-            if (h.getIpv6Public() != null) {rsa.getIpv6Publicnets().add(h.getIpv6Public());}
-            if (h.getIpv6Servicenet() != null) {rsa.getIpv6Servicenets().add(h.getIpv6Servicenet());}
+    public RegionalSourceAddresses getRegionalSourceAddresses(ClusterType cType, Integer accountId) {
+        String key = CacheKeyGen.generateKeyName(accountId);
+
+
+        List<Host> hosts;
+        RegionalSourceAddresses rsa;
+
+        rsa = (RegionalSourceAddresses) atlasCache.get("rsa" + key);
+
+        if(rsa == null) {
+            rsa = new RegionalSourceAddresses();
+            hosts = hostRepository.getAllHostsByClusterType(cType);
+
+            for (Host h : hosts) {
+                if (h.getIpv4Public() != null) {rsa.getIpv4Publicnets().add(h.getIpv4Public());}
+                if (h.getIpv4Servicenet() != null) {rsa.getIpv4Servicenets().add(h.getIpv4Servicenet());}
+                if (h.getIpv6Public() != null) {rsa.getIpv6Publicnets().add(h.getIpv6Public());}
+                if (h.getIpv6Servicenet() != null) {rsa.getIpv6Servicenets().add(h.getIpv6Servicenet());}
+            }
+
+            if(rsa.getIpv4Publicnets().size() == 0){
+                rsa.setIpv4Publicnets(null);
+            }
+            if(rsa.getIpv4Servicenets().size() == 0) {
+                rsa.setIpv4Servicenets(null);
+            }
+            if(rsa.getIpv6Publicnets().size() == 0) {
+                rsa.setIpv6Publicnets(null);
+            }
+            if (rsa.getIpv6Servicenets().size() == 0) {
+                rsa.setIpv6Servicenets(null);
+            }
+
+            LOG.debug("Setting RegionalSourceAddresses in cache for: " + " at " + Calendar.getInstance().getTime().toString());
+            atlasCache.set("rsa" + key, rsa);
+
+
+        } else {
+            LOG.debug("Retrieved RegionalSourceAddresses from cache for: " + cType + " at " + Calendar.getInstance().getTime().toString());
         }
 
-        if(rsa.getIpv4Publicnets().size() == 0){
-            rsa.setIpv4Publicnets(null);
-        }
-        if(rsa.getIpv4Servicenets().size() == 0) {
-            rsa.setIpv4Servicenets(null);
-        }
-        if(rsa.getIpv6Publicnets().size() == 0) {
-            rsa.setIpv6Publicnets(null);
-        }
-        if (rsa.getIpv6Servicenets().size() == 0) {
-            rsa.setIpv6Servicenets(null);
-        }
         return rsa;
     }
 

@@ -89,6 +89,6 @@ public interface HostService {
 
     public boolean isActiveHost(Host host) throws EntityNotFoundException;
 
-    public RegionalSourceAddresses getRegionalSourceAddresses(ClusterType cType);
+    public RegionalSourceAddresses getRegionalSourceAddresses(ClusterType cType, Integer accountId);
 
 }

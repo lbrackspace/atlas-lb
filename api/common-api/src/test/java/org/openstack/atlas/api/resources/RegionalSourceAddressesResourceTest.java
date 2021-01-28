@@ -44,7 +44,7 @@ public class RegionalSourceAddressesResourceTest {
         @Test
         public void shouldReturnRegionalSourceAddressesWith200() {
             when(clusterService.getClusterTypeByAccountId(ArgumentMatchers.anyInt())).thenReturn(ClusterType.STANDARD);
-            doReturn(regionalSourceAddresses).when(hostService).getRegionalSourceAddresses(ArgumentMatchers.eq(ClusterType.STANDARD));
+            doReturn(regionalSourceAddresses).when(hostService).getRegionalSourceAddresses(ArgumentMatchers.eq(ClusterType.STANDARD), anyInt());
             response = regionalSourceAddressesResource.retrieveRegionalSourceAddresses();
             Assert.assertEquals(200, response.getStatus());
         }
@@ -52,7 +52,7 @@ public class RegionalSourceAddressesResourceTest {
         @Test
         public void shouldThrowEntityNotFoundExceptionWithStatusCode404() {
             when(clusterService.getClusterTypeByAccountId(ArgumentMatchers.anyInt())).thenReturn(null);
-            doThrow(EntityNotFoundException.class).when(hostService).getRegionalSourceAddresses(ArgumentMatchers.eq(null));
+            doThrow(EntityNotFoundException.class).when(hostService).getRegionalSourceAddresses(ArgumentMatchers.eq(null), anyInt());
             response = regionalSourceAddressesResource.retrieveRegionalSourceAddresses();
             Assert.assertEquals(404, response.getStatus());
         }

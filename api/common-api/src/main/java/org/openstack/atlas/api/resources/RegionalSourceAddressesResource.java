@@ -24,7 +24,7 @@ public class RegionalSourceAddressesResource extends CommonDependencyProvider {
 
         try {
             ClusterType cType = clusterService.getClusterTypeByAccountId(accountId);
-            RegionalSourceAddresses rsa = hostService.getRegionalSourceAddresses(cType);
+            RegionalSourceAddresses rsa = hostService.getRegionalSourceAddresses(cType, accountId);
             return Response.status(Response.Status.OK).entity(rsa).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
