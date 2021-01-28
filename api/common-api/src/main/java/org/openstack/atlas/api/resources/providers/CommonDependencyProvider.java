@@ -2,11 +2,11 @@ package org.openstack.atlas.api.resources.providers;
 
 import org.dozer.Mapper;
 import org.openstack.atlas.api.atom.AtomFeedAdapter;
-import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
-import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.integration.AsyncService;
+import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
+import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRepository;
@@ -64,6 +64,8 @@ public class CommonDependencyProvider {
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected LoadBalancerEventRepository loadBalancerEventRepository;
     protected ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
+    protected HostService hostService;
+    protected ClusterService clusterService;
 
     public void init() throws Exception{
         dozerMapper = dozerMapperBuilderBean.getDozerMapperObject();
@@ -173,6 +175,10 @@ public class CommonDependencyProvider {
         this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
     }
 
+    public void setHostService(HostService hostService) {
+        this.hostService = hostService;
+    }
+
     public DozerMapperBuilderBean getDozerMapperBuilderBean() {
         return dozerMapperBuilderBean;
     }
@@ -224,6 +230,10 @@ public class CommonDependencyProvider {
 
     public void setRestApiConfiguration(RestApiConfiguration restApiConfiguration) {
         this.restApiConfiguration = restApiConfiguration;
+    }
+
+    public void setClusterService(ClusterService clusterService) {
+        this.clusterService = clusterService;
     }
 
     public List<String> verifyNodeDomains(Collection<Node> nodes) throws BadRequestException {

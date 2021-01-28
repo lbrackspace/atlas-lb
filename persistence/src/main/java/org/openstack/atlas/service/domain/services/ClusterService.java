@@ -5,10 +5,7 @@ import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPBlocksOverLapExcepti
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPRangeTooBigException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
-import org.openstack.atlas.service.domain.entities.AccountGroup;
-import org.openstack.atlas.service.domain.entities.Cluster;
-import org.openstack.atlas.service.domain.entities.Host;
-import org.openstack.atlas.service.domain.entities.VirtualIp;
+import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
@@ -43,4 +40,6 @@ public interface ClusterService {
     public List<VirtualIpAvailabilityReport> getVirtualIpAvailabilityReport(Integer clusterId);
 
     public VirtualIpBlocks addVirtualIpBlocks(VirtualIpBlocks vipBlocks, Integer clusterId) throws BadRequestException, IPStringConversionException, IPBlocksOverLapException, IPRangeTooBigException, IPOctetOutOfRangeException, EntityNotFoundException;
+
+    public ClusterType getClusterTypeByAccountId(Integer accountId);
 }
