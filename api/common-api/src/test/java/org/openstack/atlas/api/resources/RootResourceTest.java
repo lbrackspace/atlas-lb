@@ -39,5 +39,13 @@ public class RootResourceTest {
             verify(mockedLoadBalancersResource).setRequestHeaders(ArgumentMatchers.<HttpHeaders>any());
             verify(mockedLoadBalancersResource).setAccountId(ArgumentMatchers.<Integer>any());
         }
+
+        @Test
+        public void shouldSetAccountIdForRegionalSourceAddressesResource() {
+            RegionalSourceAddressesResource mockedRegionalSourceAddresses = mock(RegionalSourceAddressesResource.class);
+            rootResource.setRegionalSourceAddressesResource(mockedRegionalSourceAddresses);
+            rootResource.retrieveRegionalSourceAddressesResource();
+            verify(mockedRegionalSourceAddresses).setAccountId(ArgumentMatchers.<Integer>any());
+        }
     }
 }

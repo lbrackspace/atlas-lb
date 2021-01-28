@@ -117,6 +117,8 @@
         <property name="sslCipherProfileService" ref="sslCipherProfileService"/>
         <property name="certificateMappingService" ref="certificateMappingService"/>
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
+        <property name="clusterService" ref="clusterService"/>
+        <property name="hostService" ref="hostService"/>
     </bean>
 
     <!--DOZER SETTINGS-->
@@ -144,6 +146,11 @@
         <property name="origContainer" ref="requestStateContainer"/>
         <property name="throwResource">
             <bean class="org.openstack.atlas.api.resources.ThrowResource"
+                  parent="commonDependencyProvider"
+                  scope="request"/>
+        </property>
+        <property name="regionalSourceAddressesResource">
+            <bean class="org.openstack.atlas.api.resources.RegionalSourceAddressesResource"
                   parent="commonDependencyProvider"
                   scope="request"/>
         </property>
@@ -333,5 +340,4 @@
                   scope="request"/>
         </property>
     </bean>
-
 </beans>
