@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7d5dca4a_71320205",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-29T17:30:05Z",
+      "side": 1,
+      "message": "lgtm, minor key naming concern and additional unit testing",
+      "revId": "6e00a5b24e50e5c104ecb2cb2beada449e2bc1c6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e3bdfda4_6d3b4d2c",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/LoadBalancerServiceImpl.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 479,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-29T17:30:05Z",
+      "side": 1,
+      "message": "Think we should be explicit for keyname, there could be other things we cache in the future that might collide. Let\u0027s do something like csa/clustersourceaddress-\u003caid\u003e-\u003ccid\u003e. The regional side will be similar",
+      "revId": "6e00a5b24e50e5c104ecb2cb2beada449e2bc1c6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "516deea1_3724b7ac",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/LoadBalancerServiceImplTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 669,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-29T17:30:05Z",
+      "side": 1,
+      "message": "Add negative cache tests if cache is empty?",
+      "revId": "6e00a5b24e50e5c104ecb2cb2beada449e2bc1c6",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
