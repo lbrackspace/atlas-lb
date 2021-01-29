@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "37fe8319_e15e134b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-29T17:24:48Z",
+      "side": 1,
+      "message": "This seems to work and looks good for the most part. Just some nits/tests/cleanup",
+      "revId": "1453afa085371f90112176615817760a75fb244e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "500d0d99_4b76b6dc",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/providers/CommonDependencyProvider.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-29T17:24:48Z",
+      "side": 1,
+      "message": "Unused imports should be cleaned up",
+      "revId": "1453afa085371f90112176615817760a75fb244e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "f070cc5b_5426e529",
+        "filename": "api/common-api/src/main/resources/spring-context-public.xml",
+        "patchSetId": 3
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-29T17:24:48Z",
+      "side": 1,
+      "message": "Nit: move this up above loadbalancerResource def for readability",
+      "revId": "1453afa085371f90112176615817760a75fb244e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "49817941_3b711eae",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/resources/RegionalSourceAddressesResourceTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-29T17:24:48Z",
+      "side": 1,
+      "message": "Negative cases?",
+      "revId": "1453afa085371f90112176615817760a75fb244e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "24662663_a33ec379",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/ClusterServiceImpl.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-01-29T17:24:48Z",
+      "side": 1,
+      "message": "Tests for repository/service?",
+      "revId": "1453afa085371f90112176615817760a75fb244e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
