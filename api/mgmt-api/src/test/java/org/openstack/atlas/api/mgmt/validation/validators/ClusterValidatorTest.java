@@ -1,9 +1,9 @@
 package org.openstack.atlas.api.mgmt.validation.validators;
 
+import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.DataCenter;
-import org.openstack.atlas.api.mgmt.validation.validators.ClusterValidator;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.junit.Before;
 import org.junit.Test;
@@ -140,44 +140,44 @@ public class ClusterValidatorTest {
         }
 
         @Test
-        public void shouldRejectNullDescription() {
+        public void shouldAcceptNullDescription() {
             cluster.setDescription(null);
-            ValidatorResult result = cTest.validate(cluster, POST);
-            assertFalse(resultMessage(result, POST), result.passedValidation());
+            ValidatorResult result = cTest.validate(cluster, HttpRequestType.PUT);
+            assertTrue(resultMessage(result, POST), result.passedValidation());
         }
 
         @Test
-        public void shouldRejectDataCenter() {
+        public void shouldAcceptDataCenter() {
             cluster.setDataCenter(DataCenter.LON);
-            ValidatorResult result = cTest.validate(cluster, PUT);
-            assertFalse(resultMessage(result, PUT), result.passedValidation());
+            ValidatorResult result = cTest.validate(cluster, HttpRequestType.PUT);
+            assertTrue(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldRejectHostMachines() {
             cluster.setNumberOfHostMachines(2);
-            ValidatorResult result = cTest.validate(cluster, PUT);
+            ValidatorResult result = cTest.validate(cluster, HttpRequestType.PUT);
             assertFalse(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldRejectLbConfigs() {
             cluster.setNumberOfLoadBalancingConfigurations(2);
-            ValidatorResult result = cTest.validate(cluster, PUT);
+            ValidatorResult result = cTest.validate(cluster, HttpRequestType.PUT);
             assertFalse(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldRejectUniqueCustomers() {
             cluster.setNumberOfUniqueCustomers(2);
-            ValidatorResult result = cTest.validate(cluster, PUT);
+            ValidatorResult result = cTest.validate(cluster, HttpRequestType.PUT);
             assertFalse(resultMessage(result, PUT), result.passedValidation());
         }
 
         @Test
         public void shouldRejectUtiliztation() {
             cluster.setUtilization("1%");
-            ValidatorResult result = cTest.validate(cluster, PUT);
+            ValidatorResult result = cTest.validate(cluster, HttpRequestType.PUT);
             assertFalse(resultMessage(result, PUT), result.passedValidation());
         }
 
