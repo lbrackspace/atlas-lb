@@ -5,16 +5,24 @@ import java.util.HashSet;
 
 import org.dozer.MappingException;
 import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
+import org.openstack.atlas.api.mgmt.validation.contexts.ClusterContext;
+import org.openstack.atlas.api.mgmt.validation.contexts.HostContext;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
 import org.openstack.atlas.service.domain.entities.AccountLimit;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.InternalProcessingException;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Hostsubnet;
 import org.openstack.atlas.service.domain.pojos.NetInterface;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
 
+import org.openstack.atlas.service.domain.services.ClusterService;
+import org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl;
+import org.openstack.atlas.util.crypto.CryptoUtil;
+import org.openstack.atlas.util.debug.Debug;
 import org.openstack.atlas.util.ip.IPv4Cidrs;
 import org.openstack.atlas.util.ip.IPv4Cidr;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
@@ -31,6 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.ws.spi.http.HttpContext;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -315,6 +324,38 @@ public class ClusterResource extends ManagementDependencyProvider {
             dataModelCls.setUtilization("0.0%");
 
             return Response.status(200).entity(dataModelCls).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @PUT
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response updateCluster(Cluster cluster) throws BadRequestException {
+        org.openstack.atlas.service.domain.entities.Cluster domainCl;
+        if (!isUserInRole("ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        ValidatorResult result = ValidatorRepository.getValidatorFor(Cluster.class).validate(cluster, HttpRequestType.PUT);
+        if (!result.passedValidation()) {
+            return Response.status(400).entity(HttpResponseBuilder.buildBadRequestResponse("Validation fault", result.getValidationErrorMessages())).build();
+        }
+        if(cluster.getPassword() != null) {
+           String pemKey = cluster.getPassword();
+                try {
+                    CryptoUtil.decrypt(pemKey);
+                } catch (Exception e) {
+                    BadRequest badRequest = new BadRequest();
+                    badRequest.setCode(400);
+                    String errorMessages = "Error decrypting Private key on cluster, please check that your key is encrypted";
+                    badRequest.setMessage(errorMessages);
+                    return Response.status(400).entity(badRequest).build();
+                }
+        }
+        try {
+            org.openstack.atlas.service.domain.entities.Cluster domainCluster = getDozerMapper().map(cluster, org.openstack.atlas.service.domain.entities.Cluster.class);
+            clusterService.updateCluster(domainCluster, id);
+            return ResponseFactory.getSuccessResponse("PUT Operation Succeeded", 200);
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
