@@ -41,4 +41,7 @@ public interface ClusterService {
     public ClusterType getClusterTypeByAccountId(Integer accountId);
 
     public void deleteCluster(Cluster cluster) throws ClusterNotEmptyException;
+
+    public void updateCluster(Cluster cluster, Integer clusterId) throws EntityNotFoundException, BadRequestException;
+
 }
