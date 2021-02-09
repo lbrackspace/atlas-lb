@@ -382,4 +382,63 @@ public class ClusterResourceTest {
             verify(hostService, times(1)).getRestEndPointHost(1);
         }
     }
+
+    public static class whenUpdatingAcLuster {
+
+        ClusterResource clusterResource;
+
+        @Mock
+        ClusterService clusterService;
+
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster cluster;
+
+        @Before
+        public void setUp() {
+
+            MockitoAnnotations.initMocks(this);
+            clusterResource = new ClusterResource();
+            clusterResource.setClusterService(clusterService);
+            clusterResource.setMockitoAuth(true);
+            clusterResource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
+
+            cluster = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster();
+
+            cluster.setName("dev");
+            cluster.setDescription("test");
+            
+
+        }
+
+        @Test
+        public void shouldReturn200WhenUpdatingACluster() throws Exception {
+
+            Response response = clusterResource.updateCluster(cluster);
+            Assert.assertEquals(200, response.getStatus());
+
+        }
+
+        @Test
+        public void shouldReturn400WhenClusterNotNamed() throws Exception  {
+            cluster.setName(null);
+            Response response = clusterResource.updateCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+        }
+
+        @Test
+        public void shouldReturn400WhenClusterHasId() throws Exception  {
+            cluster.setId(1);
+            Response response = clusterResource.updateCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+        }
+
+        @Test
+        public void shouldReturn400WhenClusterHasDataCenter() throws Exception  {
+            cluster.setDataCenter(org.openstack.atlas.docs.loadbalancers.api.management.v1.DataCenter.DFW);
+            Response response = clusterResource.updateCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+        }
+
+    }
 }
