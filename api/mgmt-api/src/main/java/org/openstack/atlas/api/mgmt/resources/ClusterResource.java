@@ -5,6 +5,8 @@ import java.util.HashSet;
 
 import org.dozer.MappingException;
 import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
+import org.openstack.atlas.api.mgmt.validation.contexts.ClusterContext;
+import org.openstack.atlas.api.mgmt.validation.contexts.HostContext;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
@@ -15,6 +17,8 @@ import org.openstack.atlas.service.domain.pojos.Hostsubnet;
 import org.openstack.atlas.service.domain.pojos.NetInterface;
 import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
 
+import org.openstack.atlas.service.domain.services.ClusterService;
+import org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl;
 import org.openstack.atlas.util.ip.IPv4Cidrs;
 import org.openstack.atlas.util.ip.IPv4Cidr;
 import org.openstack.atlas.service.domain.services.helpers.AlertType;
@@ -318,6 +322,32 @@ public class ClusterResource extends ManagementDependencyProvider {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+
+    @PUT
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response updateCluster(Cluster cluster) {
+        org.openstack.atlas.service.domain.entities.Cluster domainCl;
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
+        ValidatorResult result = ValidatorRepository.getValidatorFor(Cluster.class).validate(cluster, ClusterContext.PUT);
+        cluster.setId(id);
+        if (!result.passedValidation()) {
+            return Response.status(400).entity(HttpResponseBuilder.buildBadRequestResponse("Validation fault", result.getValidationErrorMessages())).build();
+        }
+
+        try {
+            org.openstack.atlas.service.domain.entities.Cluster domainCluster = getDozerMapper().map(cluster, org.openstack.atlas.service.domain.entities.Cluster.class);
+            clusterService.updateCluster(domainCluster);
+
+            return ResponseFactory.getSuccessResponse("PUT Operation Succeeded", 200);
+        } catch (Exception e) {
+
+            return ResponseFactory.getErrorResponse(e, null, null);
+
+        }
+
     }
 
     public void setVirtualIpsResource(VirtualIpsResource virtualIpsResource) {

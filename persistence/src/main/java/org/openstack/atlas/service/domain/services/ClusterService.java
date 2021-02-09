@@ -42,4 +42,6 @@ public interface ClusterService {
     public VirtualIpBlocks addVirtualIpBlocks(VirtualIpBlocks vipBlocks, Integer clusterId) throws BadRequestException, IPStringConversionException, IPBlocksOverLapException, IPRangeTooBigException, IPOctetOutOfRangeException, EntityNotFoundException;
 
     public ClusterType getClusterTypeByAccountId(Integer accountId);
+
+    public void updateCluster(Cluster cluster) throws EntityNotFoundException;
 }

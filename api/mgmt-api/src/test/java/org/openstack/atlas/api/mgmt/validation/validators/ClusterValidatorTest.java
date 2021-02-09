@@ -1,5 +1,6 @@
 package org.openstack.atlas.api.mgmt.validation.validators;
 
+import org.openstack.atlas.api.mgmt.validation.contexts.ClusterContext;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.DataCenter;
@@ -149,7 +150,7 @@ public class ClusterValidatorTest {
         @Test
         public void shouldRejectDataCenter() {
             cluster.setDataCenter(DataCenter.LON);
-            ValidatorResult result = cTest.validate(cluster, PUT);
+            ValidatorResult result = cTest.validate(cluster, ClusterContext.PUT);
             assertFalse(resultMessage(result, PUT), result.passedValidation());
         }
 
