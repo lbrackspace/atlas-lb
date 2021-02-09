@@ -124,6 +124,43 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
     public List<VirtualIpAvailabilityReport> getVirtualIpAvailabilityReport(Integer clusterId) {
         return clusterRepository.getVirtualIpAvailabilityReport(clusterId);
     }
+    @Override
+    @Transactional
+    public void updateCluster(Cluster queueCluster) throws EntityNotFoundException {
+        Cluster dbCluster = get(queueCluster.getId());
+
+        if(queueCluster.getName() == null){
+            queueCluster.setName(dbCluster.getName());
+        }
+        if(queueCluster.getClusterIpv6Cidr() == null) {
+            queueCluster.setClusterIpv6Cidr(dbCluster.getClusterIpv6Cidr());
+        }
+        if(queueCluster.getDataCenter() == null) {
+            queueCluster.setDataCenter(dbCluster.getDataCenter());
+        }
+        if(queueCluster.getClusterType() == null) {
+            queueCluster.setClusterType(dbCluster.getClusterType());
+        }
+        if(queueCluster.getDescription() == null) {
+            queueCluster.setDescription(dbCluster.getDescription());
+        }
+        if(queueCluster.getPassword() == null) {
+            queueCluster.setPassword(dbCluster.getPassword());
+        }
+        if(queueCluster.getUserName() == null) {
+            queueCluster.setUsername(dbCluster.getUsername());
+        }
+        if(queueCluster.getVirtualIps() == null) {
+            queueCluster.setVirtualIps(dbCluster.getVirtualIps());
+        }
+        if(queueCluster.getStatus() == null) {
+            queueCluster.setStatus(dbCluster.getStatus());
+        }
+
+        clusterRepository.update(queueCluster);
+
+    }
+
 
     @Override
     @Transactional
