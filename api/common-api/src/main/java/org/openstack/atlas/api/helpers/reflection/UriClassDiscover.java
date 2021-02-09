@@ -48,6 +48,8 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/ssltermination(\\.json|\\.xml)?/?$", SslTermination.class));
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/certificatemapping(\\.json|\\.xml)?/?$", CertificateMapping.class));
         getrList().add(new REFCN(".*/management/hosts(\\.json|\\.xml)?/?$", Host.class));
+        getrList().add(new REFCN(".*/management/clusters/\\d+(\\.json|\\.xml)?/?$", org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster.class));
+
     }
 
     public static Class getClassForUri(String uri) {
