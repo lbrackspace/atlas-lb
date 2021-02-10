@@ -6,10 +6,7 @@ import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeExcep
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPRangeTooBigException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.NoAvailableClusterException;
+import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.pojos.VirtualIpAvailabilityReport;
 import org.openstack.atlas.service.domain.pojos.VirtualIpBlocks;
@@ -42,4 +39,6 @@ public interface ClusterService {
     public VirtualIpBlocks addVirtualIpBlocks(VirtualIpBlocks vipBlocks, Integer clusterId) throws BadRequestException, IPStringConversionException, IPBlocksOverLapException, IPRangeTooBigException, IPOctetOutOfRangeException, EntityNotFoundException;
 
     public ClusterType getClusterTypeByAccountId(Integer accountId);
+
+    public void deleteCluster(Cluster cluster) throws ClusterNotEmptyException;
 }

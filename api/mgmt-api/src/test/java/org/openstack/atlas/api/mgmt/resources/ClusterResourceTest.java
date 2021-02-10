@@ -6,9 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.cfg.ConfigurationKey;
@@ -16,10 +14,13 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.LbaasFault;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.ClusterNotEmptyException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.services.ClusterService;
 import org.openstack.atlas.service.domain.services.HostService;
+import org.rackspace.vtm.client.monitor.Argument;
 
 import javax.ws.rs.core.Response;
 
@@ -380,6 +381,42 @@ public class ClusterResourceTest {
             Assert.assertEquals(404, resp.getStatus());
             verify(hostService, times(1)).getRestEndPointHost(1);
             verify(hostService, times(1)).getRestEndPointHost(1);
+        }
+    }
+
+    public static class whenDeletingCluster {
+        @Mock
+        private ClusterService clusterService;
+        @InjectMocks
+        private ClusterResource clusterResource;
+        private Cluster cluster;
+        private Response response;
+
+        @Before
+        public void setup(){
+            MockitoAnnotations.initMocks(this);
+            clusterResource.setMockitoAuth(true);
+        }
+
+        @Test
+        public void shouldBeAbleToDeleteTheCluster() throws EntityNotFoundException, ClusterNotEmptyException {
+            doNothing().when(clusterService).deleteCluster(ArgumentMatchers.<Cluster>any());
+            response = clusterResource.deleteCluster();
+            Assert.assertEquals(Response.Status.ACCEPTED, response.getStatusInfo().toEnum());
+        }
+
+        @Test
+        public void shouldThrowEntityNotFoundExceptionWhenClusterNotFound() throws EntityNotFoundException, ClusterNotEmptyException {
+            doThrow(EntityNotFoundException.class).when(clusterService).deleteCluster(ArgumentMatchers.<Cluster>any());
+            response = clusterResource.deleteCluster();
+            Assert.assertEquals(404, response.getStatus());
+        }
+
+        @Test
+        public void shouldThrowClusterNotEmptyExceptionWhenThereIsHostAssociated() throws EntityNotFoundException, ClusterNotEmptyException {
+            doThrow(ClusterNotEmptyException.class).when(clusterService).deleteCluster(ArgumentMatchers.<Cluster>any());
+            response = clusterResource.deleteCluster();
+            Assert.assertEquals(500, response.getStatus());
         }
     }
 }
