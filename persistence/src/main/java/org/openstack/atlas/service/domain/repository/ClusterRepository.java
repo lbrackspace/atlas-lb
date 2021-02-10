@@ -2,6 +2,7 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.ClusterNotEmptyException;
 import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.exceptions.NoAvailableClusterException;
@@ -79,10 +80,9 @@ public class ClusterRepository {
         entityManager.persist(cluster);
     }
 
-    public void delete(Cluster cluster) {
+    public void delete(Cluster cluster){
         cluster = entityManager.merge(cluster);
         entityManager.remove(cluster);
-
     }
 
     public Cluster update(Cluster cluster) {
