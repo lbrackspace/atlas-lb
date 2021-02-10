@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5e35c6ef_f1ae8ee8",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/ClusterServiceImplTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-10T18:46:16Z",
+      "side": 1,
+      "message": "I\u0027m not sure what this test does. There\u0027s no asserts. could probably add negative test too",
+      "revId": "92fcb4263bec92d57d2c7c2ad92ea7ede944219f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
