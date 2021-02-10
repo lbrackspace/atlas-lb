@@ -1,6 +1,23 @@
 {
   "comments": [
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "8d0eb408_e8bd4a3a",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1017275
+      },
+      "writtenOn": "2021-02-10T19:26:21Z",
+      "side": 1,
+      "message": "When I try to delete a cluster using this patch I am getting a 500 response.",
+      "revId": "92fcb4263bec92d57d2c7c2ad92ea7ede944219f",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "5e35c6ef_f1ae8ee8",
