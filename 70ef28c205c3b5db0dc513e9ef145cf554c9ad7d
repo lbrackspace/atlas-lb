@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3b104dfd_311b4d71",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-10T18:43:21Z",
+      "side": 1,
+      "message": "This is functioning, I have one nit",
+      "revId": "70ef28c205c3b5db0dc513e9ef145cf554c9ad7d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "3f984d4e_5a7829ca",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/validation/validators/ClusterValidator.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-10T18:43:21Z",
+      "side": 1,
+      "message": "I think for *shared* context you can leave the forContext off. Look at other validator for \u0027shared expectations\u0027.",
+      "revId": "70ef28c205c3b5db0dc513e9ef145cf554c9ad7d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
