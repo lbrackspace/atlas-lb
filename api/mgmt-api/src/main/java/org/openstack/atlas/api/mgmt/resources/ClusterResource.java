@@ -9,6 +9,8 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
 import org.openstack.atlas.service.domain.entities.AccountLimit;
+import org.openstack.atlas.service.domain.exceptions.ClusterNotEmptyException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
 import org.openstack.atlas.service.domain.pojos.Hostsubnet;
@@ -318,6 +320,24 @@ public class ClusterResource extends ManagementDependencyProvider {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+
+    @DELETE
+    public Response deleteCluster(){
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
+        try {
+            org.openstack.atlas.service.domain.entities.Cluster domainCl =
+                    new org.openstack.atlas.service.domain.entities.Cluster();
+            domainCl.setId(id);
+            clusterService.deleteCluster(domainCl);
+            return Response.status(Response.Status.ACCEPTED).build();
+        }catch (ClusterNotEmptyException cne){
+            return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, cne.getMessage());
+        }catch (Exception e) {
+        return ResponseFactory.getErrorResponse(e, null, null);
+    }
     }
 
     public void setVirtualIpsResource(VirtualIpsResource virtualIpsResource) {

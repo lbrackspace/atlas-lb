@@ -11,10 +11,7 @@ import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeExcep
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPRangeTooBigException;
 import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
 import org.openstack.atlas.service.domain.entities.*;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.exceptions.ClusterStatusException;
-import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.NoAvailableClusterException;
+import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
 import org.openstack.atlas.service.domain.pojos.VirtualIpAvailabilityReport;
 import org.openstack.atlas.service.domain.pojos.VirtualIpBlock;
@@ -168,6 +165,17 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
     public ClusterType getClusterTypeByAccountId(Integer accountId) {
         ClusterType cType = clusterRepository.getClusterTypeByAccountId(accountId);
         return cType;
+    }
+
+    @Override
+    @Transactional
+    public void deleteCluster(Cluster cluster) throws ClusterNotEmptyException {
+        List<Host> hosts = getHosts(cluster.getId());
+        if(!hosts.isEmpty()){
+            throw new ClusterNotEmptyException(String
+                    .format("Before deleting a cluster make sure there is no host associated with cluster"));
+        }
+        clusterRepository.delete(cluster);
     }
 
     private boolean testForDuplicatesByCluster(VirtualIp vip, Integer clusterId) {
