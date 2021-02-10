@@ -170,6 +170,12 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
         return cType;
     }
 
+    @Override
+    @Transactional
+    public void deleteCluster(Cluster cluster) {
+        clusterRepository.delete(cluster);
+    }
+
     private boolean testForDuplicatesByCluster(VirtualIp vip, Integer clusterId) {
         List<VirtualIp> dbVips = virtualIpService.getVipsByClusterId(clusterId);
         for (VirtualIp nvip : dbVips) {
