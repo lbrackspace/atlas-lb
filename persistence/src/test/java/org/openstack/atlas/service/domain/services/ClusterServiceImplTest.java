@@ -9,11 +9,15 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.ClusterType;
+import org.openstack.atlas.service.domain.exceptions.ClusterNotEmptyException;
 import org.openstack.atlas.service.domain.repository.ClusterRepository;
 import org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl;
 
-import static org.mockito.Mockito.doReturn;
+import javax.xml.ws.Response;
+
+import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class ClusterServiceImplTest {
@@ -38,5 +42,42 @@ public class ClusterServiceImplTest {
            cType = clusterService.getClusterTypeByAccountId(1);
            Assert.assertEquals(cType, ClusterType.STANDARD);
        }
+   }
+
+   public static class whenDeletingCluster{
+
+       @Mock
+       private ClusterRepository clusterRepository;
+       @InjectMocks
+       private ClusterServiceImpl clusterService;
+       private Cluster cluster;
+       private Response response;
+
+       @Before
+       public void standUp(){
+           MockitoAnnotations.initMocks(this);
+           cluster = new Cluster();
+           cluster.setId(1);
+       }
+
+       @Test
+       public void shouldReturn200StatusCodeAfterDeletion() throws ClusterNotEmptyException {
+           clusterService.deleteCluster(cluster);
+           verify(clusterRepository, times(1)).delete(cluster);
+       }
+
+       @Test
+       public void shouldThrowIllegalStateExceptionWhenEntityAlreadyDeleted() throws ClusterNotEmptyException {
+           doNothing().doThrow( new IllegalStateException()).when(clusterRepository).delete(cluster);
+
+       }
+
+       @Test
+       public void shouldThrowIClusterNotEmptyExceptionWhenClusterHasHostAssociated() throws ClusterNotEmptyException {
+           doNothing().doThrow( new ClusterNotEmptyException("Cluster Not empty")).when(clusterRepository).delete(cluster);
+
+       }
+
+
    }
 }
