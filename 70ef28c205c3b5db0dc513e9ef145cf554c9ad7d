@@ -54,6 +54,23 @@
     {
       "unresolved": true,
       "key": {
+        "uuid": "e30b16a6_ab4c818f",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/validation/contexts/ClusterContext.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-15T20:32:34Z",
+      "side": 1,
+      "message": "Looking at this again I think we can get rid of this. I don\u0027t think clusters need special context here. We can use HttpRequestType.PUT and the like",
+      "revId": "70ef28c205c3b5db0dc513e9ef145cf554c9ad7d",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
         "uuid": "3f984d4e_5a7829ca",
         "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/validation/validators/ClusterValidator.java",
         "patchSetId": 3
