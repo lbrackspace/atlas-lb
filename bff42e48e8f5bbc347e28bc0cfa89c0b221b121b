@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "ac37b111_6049f29b",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/ClusterRepository.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-15T15:26:30Z",
+      "side": 1,
+      "message": "This logic should live in the service layer. The resource as well as service layer should verify the new exception you\u0027re throwing.",
+      "range": {
+        "startLine": 87,
+        "startChar": 0,
+        "endLine": 87,
+        "endChar": 109
+      },
+      "revId": "bff42e48e8f5bbc347e28bc0cfa89c0b221b121b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "475ad33c_a94ae31f",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/ClusterServiceImplTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-15T15:26:30Z",
+      "side": 1,
+      "message": "I\u0027m not sure this is proper syntax as it stands, but there\u0027s no actual service call being made i\u0027m not sure these are valid tests.",
+      "revId": "bff42e48e8f5bbc347e28bc0cfa89c0b221b121b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
