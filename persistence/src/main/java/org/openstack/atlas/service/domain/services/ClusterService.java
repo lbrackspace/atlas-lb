@@ -16,6 +16,8 @@ import java.util.List;
 public interface ClusterService {
     public Cluster get(Integer clusterId) throws EntityNotFoundException;
 
+    public Cluster create(Cluster cluster) throws BadRequestException;
+
     public Cluster getActiveCluster(Integer accountId, boolean hasPublicVip) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
 
     public List<Cluster> getAll();

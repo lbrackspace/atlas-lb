@@ -8,9 +8,11 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.ClusterType;
 import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ClusterNotEmptyException;
 import org.openstack.atlas.service.domain.repository.ClusterRepository;
 import org.openstack.atlas.service.domain.services.impl.ClusterServiceImpl;
@@ -196,4 +198,76 @@ public class ClusterServiceImplTest {
        }
 
    }
+
+    public static class whenCreatingCluster {
+
+       ClusterServiceImpl clusterService;
+       Cluster cluster;
+       Cluster dbCluster;
+
+       @Mock
+       ClusterRepository clusterRepository;
+
+       @Before
+       public void standUp() throws EntityNotFoundException {
+           MockitoAnnotations.initMocks(this);
+           clusterService = new ClusterServiceImpl();
+           clusterService.setClusterRepository(clusterRepository);
+
+           List<Cluster> clusters = new ArrayList<>();
+           dbCluster = new Cluster();
+           dbCluster.setId(1);
+           dbCluster.setName("dev1");
+           dbCluster.setDescription("test");
+           dbCluster.setDataCenter(DataCenter.DFW);
+           dbCluster.setClusterIpv6Cidr("2001:4801:79f1:1::/64");
+           dbCluster.setPassword("e2fed4da98a840a40788acb64940469d");
+           dbCluster.setUsername("admin");
+           dbCluster.setStatus(ClusterStatus.ACTIVE);
+           clusters.add(dbCluster);
+
+           cluster = new Cluster();
+           cluster.setName("dev2");
+           cluster.setDescription("test2");
+           cluster.setDataCenter(DataCenter.DFW);
+           cluster.setClusterIpv6Cidr("2001:4801:79f1:1::/64");
+           cluster.setPassword("e2fed4da98a840a40788acb64940469d");
+           cluster.setUsername("admin");
+           cluster.setStatus(ClusterStatus.ACTIVE);
+
+           when(clusterRepository.getAll()).thenReturn(clusters);
+       }
+
+       @Test
+       public void shouldCreateAValidCluster() throws Exception {
+           clusterService.create(cluster);
+           verify(clusterRepository, times(1)).save(cluster);
+           verify(clusterRepository, times(1)).getAll();
+       }
+
+       @Test(expected = BadRequestException.class)
+       public void shouldValidateAgainstDuplicateNames() throws BadRequestException {
+           cluster.setName("dev1");
+           clusterService.create(cluster);
+           verify(clusterRepository, times(1)).save(cluster);
+           verify(clusterRepository, times(1)).getAll();
+
+       }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldValidateAgainstInvalidPassword() throws BadRequestException {
+            cluster.setPassword("password");
+            clusterService.create(cluster);
+            verify(clusterRepository, times(1)).save(cluster);
+            verify(clusterRepository, times(1)).getAll();
+        }
+
+        @Test(expected = BadRequestException.class)
+        public void shouldValidateAgainstNullPassword() throws BadRequestException {
+            cluster.setPassword(null);
+            clusterService.create(cluster);
+            verify(clusterRepository, times(1)).save(cluster);
+            verify(clusterRepository, times(1)).getAll();
+        }
+    }
 }
