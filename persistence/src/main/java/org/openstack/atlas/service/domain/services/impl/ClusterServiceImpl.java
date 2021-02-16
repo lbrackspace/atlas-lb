@@ -22,6 +22,8 @@ import org.openstack.atlas.service.domain.pojos.VirtualIpBlocks;
 import org.openstack.atlas.service.domain.services.ClusterService;
 import org.openstack.atlas.service.domain.services.TicketService;
 import org.openstack.atlas.service.domain.services.VirtualIpService;
+import org.openstack.atlas.util.crypto.CryptoUtil;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,14 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
     @Override
     public Cluster get(Integer clusterId) throws EntityNotFoundException {
         return clusterRepository.getById(clusterId);
+    }
+
+    @Override
+    public Cluster create(Cluster cluster) throws BadRequestException {
+         checkForDuplicateNames(cluster.getName());
+         validateClusterPassword(cluster.getPassword());
+         clusterRepository.create(cluster);
+         return cluster;
     }
 
     @Override
@@ -178,5 +188,23 @@ public class ClusterServiceImpl extends BaseService implements ClusterService {
             }
         }
         return false;
+    }
+
+    public List<Cluster> checkForDuplicateNames(String clusterName) throws BadRequestException {
+        List<Cluster> dbClusters = getAll();
+        for (Cluster cluster: dbClusters) {
+            if (clusterName.equals(cluster.getName())) {
+                throw new BadRequestException("Cluster names must be unique");
+            }
+        }
+        return dbClusters;
+    }
+
+    public void validateClusterPassword(String password) throws BadRequestException {
+        try {
+            CryptoUtil.decrypt(password);
+        } catch (DecryptException e) {
+            throw new BadRequestException("Cluster password must be valid and encrypted with proper keys.");
+        }
     }
 }

@@ -79,6 +79,17 @@ public class ClusterRepository {
         entityManager.persist(cluster);
     }
 
+    public void create(Cluster cluster) {
+        // Requirement to allow specifying/updating the ID
+        if (cluster.getId() != null) {
+            entityManager.merge(cluster);
+            entityManager.flush();
+        } else {
+            entityManager.persist(cluster);
+            entityManager.flush();
+        }
+    }
+
     public void delete(Cluster cluster) {
         cluster = entityManager.merge(cluster);
         entityManager.remove(cluster);

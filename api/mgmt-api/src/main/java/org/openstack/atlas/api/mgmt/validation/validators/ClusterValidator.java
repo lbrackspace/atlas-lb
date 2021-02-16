@@ -22,7 +22,7 @@ public class ClusterValidator implements ResourceValidator<Cluster> {
                 Cluster.class) {
 
             {
-                // ARED EXPECTATIONS
+                // SHARED EXPECTATIONS
                 result(validationTarget().getName()).must().not().beEmptyOrNull().withMessage("Must provide a name.");
 
                 must().adhereTo(new Verifier<Cluster>() {
@@ -35,9 +35,9 @@ public class ClusterValidator implements ResourceValidator<Cluster> {
 
                 // POST EXPECTATIONS
                 result(validationTarget().getDataCenter()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a valid Data Center.");
+                result(validationTarget().getName()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a unique cluster name.");
                 result(validationTarget().getUsername()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a valid username.");
                 result(validationTarget().getPassword()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a valid password.");
-                result(validationTarget().getId()).must().not().exist().forContext(POST,PUT).withMessage("Must not include ID for this request.");
                 result(validationTarget().getDescription()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a description.");
                 result(validationTarget().getStatus()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a status.");
                 // PUT EXPECTATIONS

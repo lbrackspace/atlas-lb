@@ -1,5 +1,9 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.api.faults.HttpResponseBuilder;
+import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
+import org.openstack.atlas.api.validation.context.HttpRequestType;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
@@ -45,6 +49,31 @@ public class ClustersResource extends ManagementDependencyProvider {
 
             }
             return Response.status(200).entity(dataModelCls).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @POST
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response createCluster(Cluster cluster) {
+        if (!isUserInRole("ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        ValidatorResult res = ValidatorRepository.getValidatorFor(Cluster.class).validate(
+                cluster, HttpRequestType.POST);
+        if (!res.passedValidation()) {
+            return Response.status(400).entity(
+                    HttpResponseBuilder.buildBadRequestResponse(
+                            "Validation fault", res.getValidationErrorMessages())).build();
+        }
+
+        try {
+            org.openstack.atlas.service.domain.entities.Cluster domainCluster = getDozerMapper().map(
+                    cluster, org.openstack.atlas.service.domain.entities.Cluster.class);
+            clusterService.create(domainCluster);
+            return Response.status(Response.Status.ACCEPTED).entity(
+                    dozerMapper.map(domainCluster, Cluster.class, "SIMPLE_CL")).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
