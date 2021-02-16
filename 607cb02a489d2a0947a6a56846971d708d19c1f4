@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "66adee05_feddf4bc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 8
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-16T23:09:33Z",
+      "side": 1,
+      "message": "This works from what i can tell, have a consistency nit. ",
+      "revId": "607cb02a489d2a0947a6a56846971d708d19c1f4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "aaaa359b_888f4b1d",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/helpers/reflection/UriClassDiscover.java",
+        "patchSetId": 8
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-16T23:09:33Z",
+      "side": 1,
+      "message": "Should go ahead and keep this consistent. Import fq object in import section",
+      "revId": "607cb02a489d2a0947a6a56846971d708d19c1f4",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
