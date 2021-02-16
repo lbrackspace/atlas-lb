@@ -336,8 +336,8 @@ public class ClusterResource extends ManagementDependencyProvider {
         }catch (ClusterNotEmptyException cne){
             return ResponseFactory.getResponseWithStatus(Response.Status.BAD_REQUEST, cne.getMessage());
         }catch (Exception e) {
-        return ResponseFactory.getErrorResponse(e, null, null);
-     }
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
     }
 
     @PUT

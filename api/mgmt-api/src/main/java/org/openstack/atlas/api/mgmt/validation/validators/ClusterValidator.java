@@ -22,30 +22,21 @@ public class ClusterValidator implements ResourceValidator<Cluster> {
                 Cluster.class) {
 
             {
-                // ARED EXPECTATIONS
-                result(validationTarget().getName()).must().not().beEmptyOrNull().withMessage("Must provide a name.");
-
-                must().adhereTo(new Verifier<Cluster>() {
-
-                    @Override
-                    public VerifierResult verify(Cluster cluster) {
-                        return new VerifierResult(cluster.getNumberOfHostMachines() == null && cluster.getNumberOfLoadBalancingConfigurations() == null && cluster.getNumberOfUniqueCustomers() == null && cluster.getUtilization() == null);
-                    }
-                }).withMessage("Only the proper properties can be made into a request, please remove invalid elements.");
 
                 // POST EXPECTATIONS
                 result(validationTarget().getDataCenter()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a valid Data Center.");
+                result(validationTarget().getName()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a unique cluster name.");
                 result(validationTarget().getUsername()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a valid username.");
                 result(validationTarget().getPassword()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a valid password.");
                 result(validationTarget().getDescription()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a description.");
                 result(validationTarget().getStatus()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a status.");
-                //POST AND PUT EXPECTATIONS
-                result(validationTarget().getId()).must().not().exist().forContext(POST, PUT).withMessage("Must not include ID for this request.");
-                // PUT EXPECTATIONS
-                result(validationTarget().getNumberOfHostMachines()).must().not().exist().forContext(PUT).withMessage("Number of host Machines can not be updated in this request.");
-                result(validationTarget().getNumberOfLoadBalancingConfigurations()).must().not().exist().forContext(PUT).withMessage("Number of Load Balancing Configs can not be updated in this request.");
-                result(validationTarget().getUtilization()).must().not().exist().forContext(PUT).withMessage("Utilization can not be updated in this request.");
-                result(validationTarget().getNumberOfUniqueCustomers()).must().not().exist().forContext(PUT).withMessage("Number of unique customers can not be updated in this request.");
+
+                //Shared EXPECTATIONS
+                result(validationTarget().getNumberOfUniqueCustomers()).must().not().exist().withMessage("Number of unique customers can not be updated in this request.");
+                result(validationTarget().getUtilization()).must().not().exist().withMessage("Utilization can not be updated in this request.");
+                result(validationTarget().getNumberOfLoadBalancingConfigurations()).must().not().exist().withMessage("Number of Load Balancing Configs can not be updated in this request.");
+                result(validationTarget().getNumberOfHostMachines()).must().not().exist().withMessage("Number of host Machines can not be updated in this request.");
+                result(validationTarget().getId()).must().not().exist().withMessage("Must not include ID for this request.");
 
             }
         });

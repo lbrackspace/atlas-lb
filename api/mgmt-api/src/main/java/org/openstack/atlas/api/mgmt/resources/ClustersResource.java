@@ -1,7 +1,12 @@
 package org.openstack.atlas.api.mgmt.resources;
 
+import org.openstack.atlas.api.faults.HttpResponseBuilder;
+import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
+import org.openstack.atlas.api.validation.context.HttpRequestType;
+import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.management.operations.EsbRequest;
 import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
@@ -45,6 +50,32 @@ public class ClustersResource extends ManagementDependencyProvider {
 
             }
             return Response.status(200).entity(dataModelCls).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @POST
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response createCluster(Cluster cluster) {
+        if (!isUserInRole("ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        ValidatorResult res = ValidatorRepository.getValidatorFor(Cluster.class).validate(cluster, HttpRequestType.POST);
+        if (!res.passedValidation()) {
+            return getValidationFaultResponse(res.getValidationErrorMessages());
+        }
+
+        try {
+            org.openstack.atlas.service.domain.entities.Cluster domainCluster = getDozerMapper().map(
+                    cluster, org.openstack.atlas.service.domain.entities.Cluster.class);
+            try {
+                clusterService.create(domainCluster);
+            } catch (BadRequestException brex) {
+                return getValidationFaultResponse(brex.getMessage());
+            }
+            return Response.status(Response.Status.ACCEPTED).entity(
+                    dozerMapper.map(domainCluster, Cluster.class, "SIMPLE_CL")).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }

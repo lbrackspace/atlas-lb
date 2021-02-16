@@ -457,10 +457,10 @@ public class ClusterResourceTest {
         }
 
         @Test
-        public void shouldReturn400WhenClusterNotNamed() throws Exception  {
+        public void shouldAcceptWhenClusterNotNamed() throws Exception  {
             cluster.setName(null);
             Response response = clusterResource.updateCluster(cluster);
-            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals(200, response.getStatus());
         }
 
         @Test public void shouldReturn400WhenRequestHasUtilization() throws BadRequestException {
@@ -483,5 +483,144 @@ public class ClusterResourceTest {
             Assert.assertEquals(200, response.getStatus());
         }
 
+    }
+
+    public static class whenCreatingAcLuster {
+
+        ClustersResource clustersResource;
+
+        @Mock
+        ClusterService clusterService;
+
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster cluster;
+
+        @Before
+        public void setUp() {
+
+            MockitoAnnotations.initMocks(this);
+            clustersResource = new ClustersResource();
+            clustersResource.setClusterService(clusterService);
+            clustersResource.setMockitoAuth(true);
+            clustersResource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
+
+            cluster = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Cluster();
+            cluster.setName("dev");
+            cluster.setDescription("test");
+            cluster.setDataCenter(org.openstack.atlas.docs.loadbalancers.api.management.v1.DataCenter.DFW);
+            cluster.setClusterIpv6Cidr("2001:4801:79f1:1::/64");
+            cluster.setPassword("e2fed4da98a840a40788acb64940469d");
+            cluster.setUsername("admin");
+            cluster.setStatus(org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus.ACTIVE);
+
+        }
+
+        @Test
+        public void shouldReturn200WhenCreatingAValidCluster() {
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(202, response.getStatus());
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenCreatingAClusterWithoutStatus() {
+            cluster.setStatus(null);
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Must provide a status.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenCreatingAClusterWithInvalidDataCenter() {
+            cluster.setDataCenter(null);
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Must provide a valid Data Center.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenClusterNotNamed() {
+            cluster.setName(null);
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Must provide a unique cluster name.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWithInvalidUsername() {
+            cluster.setUsername(null);
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Must provide a valid username.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenNullPassword() {
+            cluster.setPassword(null);
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Must provide a valid password.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenInvalidUnEncryptedPassword() throws BadRequestException {
+            cluster.setPassword("testPassword");
+            doThrow(new BadRequestException("Cluster password must be valid and encrypted with proper keys.")).when(
+                    clusterService).create(any());
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Cluster password must be valid and encrypted with proper keys.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenRequestHasUtilization() {
+            cluster.setUtilization("0");
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Utilization can not be updated in this request.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenRequestNumberOfHostMachines() {
+            cluster.setNumberOfHostMachines(1);
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Number of host Machines can not be updated in this request.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenRequestNumberOfLoadBalancingConfigurations() {
+            cluster.setNumberOfLoadBalancingConfigurations(1);
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Number of Load Balancing Configs can not be updated in this request.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenRequestNumberOfUniqueCustomers() {
+            cluster.setNumberOfUniqueCustomers(1);
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Number of unique customers can not be updated in this request.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
+
+        @Test
+        public void shouldThrowBadRequestWhenClusterHasId()  {
+            cluster.setId(1);
+            Response response = clustersResource.createCluster(cluster);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals("Must not include ID for this request.",
+                    ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
+        }
     }
 }
