@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "eb14d2cd_6f9b7f47",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/ClusterResourceTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 414,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-16T14:49:27Z",
+      "side": 1,
+      "message": "Can you add a test that verifies the new exception that was added?",
+      "revId": "26e1cd17493c1dd10a98594d718a54de035510fb",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
