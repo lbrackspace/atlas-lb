@@ -24,6 +24,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "456a00c7_b7b2ef92",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/ClusterRepository.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-16T21:41:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ac37b111_6049f29b",
+      "range": {
+        "startLine": 87,
+        "startChar": 0,
+        "endLine": 87,
+        "endChar": 109
+      },
+      "revId": "bff42e48e8f5bbc347e28bc0cfa89c0b221b121b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "475ad33c_a94ae31f",
@@ -37,6 +61,24 @@
       "writtenOn": "2021-02-15T15:26:30Z",
       "side": 1,
       "message": "I\u0027m not sure this is proper syntax as it stands, but there\u0027s no actual service call being made i\u0027m not sure these are valid tests.",
+      "revId": "bff42e48e8f5bbc347e28bc0cfa89c0b221b121b",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "26521348_5e317d9a",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/ClusterServiceImplTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-16T21:41:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "475ad33c_a94ae31f",
       "revId": "bff42e48e8f5bbc347e28bc0cfa89c0b221b121b",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
