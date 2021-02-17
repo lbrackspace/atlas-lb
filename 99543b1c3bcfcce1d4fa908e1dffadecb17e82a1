@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "db55f136_6051032b",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 9
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-02-17T15:54:44Z",
+      "side": 1,
+      "message": "Changes lgtm, tested - working fine.",
+      "revId": "99543b1c3bcfcce1d4fa908e1dffadecb17e82a1",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
