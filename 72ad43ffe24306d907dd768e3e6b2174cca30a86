@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a6e6d8b5_c208f67c",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-22T19:58:44Z",
+      "side": 1,
+      "message": "Think we should start adding the exception case for GETs, but this is consistent with others for now.. lgtm fwii",
+      "revId": "72ad43ffe24306d907dd768e3e6b2174cca30a86",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
