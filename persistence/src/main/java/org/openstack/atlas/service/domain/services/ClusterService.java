@@ -16,6 +16,8 @@ import java.util.List;
 public interface ClusterService {
     public Cluster get(Integer clusterId) throws EntityNotFoundException;
 
+    public Cluster create(Cluster cluster) throws BadRequestException;
+
     public Cluster getActiveCluster(Integer accountId, boolean hasPublicVip) throws EntityNotFoundException, ClusterStatusException, NoAvailableClusterException;
 
     public List<Cluster> getAll();
@@ -40,7 +42,7 @@ public interface ClusterService {
 
     public ClusterType getClusterTypeByAccountId(Integer accountId);
 
-    public void deleteCluster(Cluster cluster) throws ClusterNotEmptyException;
+    public void deleteCluster(Cluster cluster) throws ClusterNotEmptyException, EntityNotFoundException;
 
     public void updateCluster(Cluster cluster, Integer clusterId) throws EntityNotFoundException, BadRequestException;
 
