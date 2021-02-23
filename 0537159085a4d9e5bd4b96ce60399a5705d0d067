@@ -16,6 +16,23 @@
       "message": "Changes look good to me",
       "revId": "0537159085a4d9e5bd4b96ce60399a5705d0d067",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "a4e0db22_670f3d4f",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1017275
+      },
+      "writtenOn": "2021-02-23T18:22:27Z",
+      "side": 1,
+      "message": "LGTM!",
+      "revId": "0537159085a4d9e5bd4b96ce60399a5705d0d067",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
