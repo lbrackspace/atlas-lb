@@ -16,6 +16,23 @@
       "message": "Think we should start adding the exception case for GETs, but this is consistent with others for now.. lgtm fwii",
       "revId": "72ad43ffe24306d907dd768e3e6b2174cca30a86",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "9921d730_c820bf89",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1017275
+      },
+      "writtenOn": "2021-02-24T21:55:42Z",
+      "side": 1,
+      "message": "lgtm",
+      "revId": "72ad43ffe24306d907dd768e3e6b2174cca30a86",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
