@@ -483,7 +483,7 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
 
         if(csa == null) {
             csa = new ClusterSourceAddresses();
-            hosts = hostRepository.getAllHostsByClusterId(clusterId);
+            hosts = hostRepository.getAllActiveHostsByClusterId(clusterId);
 
 
             for (Host h : hosts) {

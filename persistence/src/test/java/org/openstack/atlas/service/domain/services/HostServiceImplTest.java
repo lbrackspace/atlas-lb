@@ -123,7 +123,7 @@ public class HostServiceImplTest {
         public void ShouldReturnAListOfHostByClusterType(){
             RegionalSourceAddresses regionalSourceAddresses;
             ClusterType ctype = ClusterType.INTERNAL;
-            when(hostRepository.getAllHostsByClusterType(ArgumentMatchers.eq(ClusterType.INTERNAL))).thenReturn(hosts);
+            when(hostRepository.getAllActiveHostsByClusterType(ArgumentMatchers.eq(ClusterType.INTERNAL))).thenReturn(hosts);
             regionalSourceAddresses = hostService.getRegionalSourceAddresses(ctype, 1234);
             Assert.assertTrue(regionalSourceAddresses.getIpv4Servicenets().get(0).equals("ipv4s"));
             Assert.assertTrue(regionalSourceAddresses.getIpv6Servicenets().get(0).equals("ipv6s"));
@@ -147,7 +147,7 @@ public class HostServiceImplTest {
             rsa.setIpv6Publicnets(null);
             rsa.setIpv6Servicenets(null);
             RegionalSourceAddresses regionalSourceAddresses;
-            when(hostRepository.getAllHostsByClusterType(ArgumentMatchers.eq(ClusterType.INTERNAL))).thenReturn(hosts);
+            when(hostRepository.getAllActiveHostsByClusterType(ArgumentMatchers.eq(ClusterType.INTERNAL))).thenReturn(hosts);
             when(atlasCache.get(anyString())).thenReturn(rsa);
 
             regionalSourceAddresses = hostService.getRegionalSourceAddresses(ctype, 1234);

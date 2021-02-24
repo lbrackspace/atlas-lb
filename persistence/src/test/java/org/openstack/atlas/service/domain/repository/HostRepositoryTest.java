@@ -150,45 +150,56 @@ public class HostRepositoryTest {
 
        @Test
        public void shouldReturnListOfHostsWithSpecifiedClusterId(){
-           String hqlStr = "from Host h where h.cluster.id = :clusterId";
+           String hqlStr = "from Host h where h.cluster.id = :clusterId AND h.hostStatus not in (:hostStatus, :hostStatus1)";
            when(entityManager.createQuery(hqlStr)).thenReturn(qry);
            when(qry.setParameter("clusterId", 1)).thenReturn(qry);
            when(qry.getResultList()).thenReturn(hosts);
-           List<Host> hostList = hostRepository.getAllHostsByClusterId(1);
+           List<Host> hostList = hostRepository.getAllActiveHostsByClusterId(1);
            Assert.assertTrue(hostList.size() > 0);
+       }
+
+       @Test
+       public void shouldReturnNoListOfHostsWhenHostIsInactive(){
+           hosts.remove(0);
+           String hqlStr = "from Host h where h.cluster.id = :clusterId AND h.hostStatus not in (:hostStatus, :hostStatus1)";
+           when(entityManager.createQuery(hqlStr)).thenReturn(qry);
+           when(qry.setParameter("hostStatus", HostStatus.OFFLINE)).thenReturn(qry);
+           when(qry.getResultList()).thenReturn(hosts);
+           List<Host> hostList = hostRepository.getAllActiveHostsByClusterId(1);
+           Assert.assertEquals(0, hostList.size());
        }
 
        @Test
        public void shouldReturnEmptyListOfHostsWhenSpecifiedClusterIdDoestExist(){
            hosts.remove(0);
-           String hqlStr = "from Host h where h.cluster.id = :clusterId";
+           String hqlStr = "from Host h where h.cluster.id = :clusterId AND h.hostStatus not in (:hostStatus, :hostStatus1)";
            when(entityManager.createQuery(hqlStr)).thenReturn(qry);
            when(qry.setParameter("clusterId", 1)).thenReturn(qry);
            when(qry.getResultList()).thenReturn(hosts);
-           List<Host> hostList = hostRepository.getAllHostsByClusterId(1);
+           List<Host> hostList = hostRepository.getAllActiveHostsByClusterId(1);
            Assert.assertTrue(hostList.size() == 0);
        }
 
        @Test
        public void shouldReturnListOfActiveHostsWithSpecifiedClusterType(){
-           String hqlStr = "from Host h where h.cluster.clusterStatus = :clusterStatus AND h.cluster.clusterType = :clusterType";
+           String hqlStr = "from Host h where h.hostStatus not in (:hostStatus, :hostStatus1) AND h.cluster.clusterType = :clusterType";
            when(entityManager.createQuery(hqlStr)).thenReturn(qry);
-           when(qry.setParameter("clusterStatus", ClusterStatus.ACTIVE)).thenReturn(qry);
+           when(qry.setParameter("hostStatus", HostStatus.ACTIVE)).thenReturn(qry);
            when(qry.setParameter("clusterType", ClusterType.INTERNAL)).thenReturn(qry);
            when(qry.getResultList()).thenReturn(hosts);
-           List<Host> hostList = hostRepository.getAllHostsByClusterType(ClusterType.INTERNAL);
+           List<Host> hostList = hostRepository.getAllActiveHostsByClusterType(ClusterType.INTERNAL);
            Assert.assertTrue(hostList.size() > 0);
        }
 
        @Test
        public void shouldReturnEmptyListOfHostsWhenSpecifiedClusterTypeDoestMatch(){
            hosts.remove(0);
-           String hqlStr = "from Host h where h.cluster.clusterStatus = :clusterStatus AND h.cluster.clusterType = :clusterType";
+           String hqlStr = "from Host h where h.hostStatus not in (:hostStatus, :hostStatus1) AND h.cluster.clusterType = :clusterType";
            when(entityManager.createQuery(hqlStr)).thenReturn(qry);
-           when(qry.setParameter("clusterStatus", ClusterStatus.ACTIVE)).thenReturn(qry);
+           when(qry.setParameter("hostStatus", HostStatus.ACTIVE)).thenReturn(qry);
            when(qry.setParameter("clusterType", ClusterType.STANDARD)).thenReturn(qry);
            when(qry.getResultList()).thenReturn(hosts);
-           List<Host> hostList = hostRepository.getAllHostsByClusterType(ClusterType.STANDARD);
+           List<Host> hostList = hostRepository.getAllActiveHostsByClusterType(ClusterType.STANDARD);
            Assert.assertTrue(hostList.size() == 0);
        }
 

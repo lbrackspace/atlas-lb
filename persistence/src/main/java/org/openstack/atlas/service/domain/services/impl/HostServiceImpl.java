@@ -391,7 +391,7 @@ public class HostServiceImpl extends BaseService implements HostService {
 
         if(rsa == null) {
             rsa = new RegionalSourceAddresses();
-            hosts = hostRepository.getAllHostsByClusterType(cType);
+            hosts = hostRepository.getAllActiveHostsByClusterType(cType);
 
             for (Host h : hosts) {
                 if (h.getIpv4Public() != null) {rsa.getIpv4Publicnets().add(h.getIpv4Public());}

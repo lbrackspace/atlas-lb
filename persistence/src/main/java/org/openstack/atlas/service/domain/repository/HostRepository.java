@@ -485,18 +485,23 @@ public class HostRepository {
     }
 
     //CLB-1199
-    public List<Host> getAllHostsByClusterId(Integer cid){
-        String hqlStr = "from Host h where h.cluster.id = :clusterId";
+    public List<Host> getAllActiveHostsByClusterId(Integer cid){
+        String hqlStr = "from Host h where h.cluster.id = :clusterId AND h.hostStatus not in (:hostStatus, :hostStatus1)";
         List<Host> hosts;
-        hosts = entityManager.createQuery(hqlStr).setParameter("clusterId", cid).getResultList();
+        Query query = entityManager.createQuery(hqlStr);
+        query.setParameter("hostStatus", HostStatus.OFFLINE);
+        query.setParameter("hostStatus1", HostStatus.BURN_IN);
+        query.setParameter("clusterId", cid);
+        hosts = query.getResultList();
         return hosts;
     }
 
-    public List<Host> getAllHostsByClusterType(ClusterType clusterType){
+    public List<Host> getAllActiveHostsByClusterType(ClusterType clusterType){
         List<Host> hosts;
-        String hqlStr = "from Host h where h.cluster.clusterStatus = :clusterStatus AND h.cluster.clusterType = :clusterType";
+        String hqlStr = "from Host h where h.hostStatus not in (:hostStatus, :hostStatus1) AND h.cluster.clusterType = :clusterType";
         Query query = entityManager.createQuery(hqlStr);
-        query.setParameter("clusterStatus", ClusterStatus.ACTIVE);
+        query.setParameter("hostStatus", HostStatus.OFFLINE);
+        query.setParameter("hostStatus1", HostStatus.BURN_IN);
         query.setParameter("clusterType", clusterType);
         hosts = query.getResultList();
         return hosts;

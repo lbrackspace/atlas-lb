@@ -646,7 +646,7 @@ public class LoadBalancerServiceImplTest {
         @Test
         public void ShouldReturnAListOfHostByClusterType(){
             ClusterSourceAddresses clusterSourceAddresses;
-            when(hostRepository.getAllHostsByClusterId(ArgumentMatchers.anyInt())).thenReturn(hosts);
+            when(hostRepository.getAllActiveHostsByClusterId(ArgumentMatchers.anyInt())).thenReturn(hosts);
             clusterSourceAddresses = lbService.getClusterSourceAddresses(1, 1234);
             Assert.assertTrue(clusterSourceAddresses.getIpv4Servicenets().get(0).equals("ipv4s"));
             Assert.assertTrue(clusterSourceAddresses.getIpv6Servicenets().get(0).equals("ipv6s"));
@@ -667,7 +667,7 @@ public class LoadBalancerServiceImplTest {
             csa.setIpv4Servicenets(null);
             csa.setIpv4Publicnets(null);
             ClusterSourceAddresses clusterSourceAddresses;
-            when(hostRepository.getAllHostsByClusterId(ArgumentMatchers.anyInt())).thenReturn(hosts);
+            when(hostRepository.getAllActiveHostsByClusterId(ArgumentMatchers.anyInt())).thenReturn(hosts);
             when(atlasCache.get(anyString())).thenReturn(csa);
             clusterSourceAddresses = lbService.getClusterSourceAddresses(1, 1234);
             Assert.assertNull(clusterSourceAddresses.getIpv4Servicenets());
