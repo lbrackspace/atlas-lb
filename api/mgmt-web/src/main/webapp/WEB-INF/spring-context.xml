@@ -116,9 +116,7 @@
         <property name="loadBalancerStatusHistoryService" ref="loadBalancerStatusHistoryService"/>
         <property name="callbackService" ref="callbackService"/>
         <property name="reverseProxyLoadBalancerVTMService" ref="reverseProxyLoadBalancerVTMService"/>
-
         <property name="mgmtDozerMapperBuilderBean" ref="mgmtDozerMapperBuilderBean"/>
-
         <property name="clusterRepository" ref="clusterRepository"/>
         <property name="hostRepository" ref="hostRepository"/>
         <property name="loadBalancerRepository" ref="loadBalancerRepository"/>
@@ -138,6 +136,7 @@
         <property name="blacklistRepository" ref="blacklistRepository"/>
         <property name="allowedDomainsRepository" ref="allowedDomainsRepository"/>
         <property name="loadBalancerStatusHistoryRepository" ref="loadBalancerStatusHistoryRepository"/>
+        <property name="sslCipherProfileService" ref="sslCipherProfileService"/>
     </bean>
     <bean id="loadBalancingManagementImpl"
           class="org.openstack.atlas.api.mgmt.resources.RootResource"
@@ -151,6 +150,11 @@
                   scope="request">
                 <property name="allowedDomainsResource">
                     <bean class="org.openstack.atlas.api.mgmt.resources.AllowedDomainsResource"
+                          parent="managementDependencyProvider"
+                          scope="request"/>
+                </property>
+                <property name="sslCipherProfileResource">
+                    <bean class="org.openstack.atlas.api.mgmt.resources.SslCipherProfileResource"
                           parent="managementDependencyProvider"
                           scope="request"/>
                 </property>
@@ -224,8 +228,6 @@
                                   scope="request">
                                 <property name="virtualIpsResource" ref="mgmtVirtualIpsResource"/>
                                 <property name="errorpageResource" ref="mgmtErrorPageResource"/>
-
-
                             </bean>
                         </property>
                     </bean>

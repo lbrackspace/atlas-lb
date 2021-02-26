@@ -2,7 +2,9 @@ package org.openstack.atlas.service.domain.repository;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.service.domain.entities.Cluster;
 import org.openstack.atlas.service.domain.entities.SslCipherProfile;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +48,10 @@ public class SslCipherProfileRepository {
     public List<SslCipherProfile> fetchAllProfiles() throws EntityNotFoundException {
         List<SslCipherProfile> sslCipherProfiles = entityManager.createQuery("SELECT s FROM SslCipherProfile").getResultList();
         return sslCipherProfiles;
+    }
+
+    public void create(SslCipherProfile sslCipherProfile){
+        entityManager.persist(sslCipherProfile);
     }
 
 }

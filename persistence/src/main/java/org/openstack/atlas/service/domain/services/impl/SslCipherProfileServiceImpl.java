@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 import org.openstack.atlas.service.domain.entities.SslTermination;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.SslCipherProfileService;
 import org.springframework.stereotype.Service;
@@ -51,4 +52,13 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
         return false;
     }
 
+    @Override
+    public SslCipherProfile create(SslCipherProfile sslCipherProfile) throws BadRequestException {
+            if(!isCipherProfileAvailable(sslCipherProfile.getName())){
+                sslCipherProfileRepository.create(sslCipherProfile);
+                return sslCipherProfile;
+            }else{
+            throw new BadRequestException(String.format("Bad Request - profile with the same name already exists"));
+        }
+    }
 }
