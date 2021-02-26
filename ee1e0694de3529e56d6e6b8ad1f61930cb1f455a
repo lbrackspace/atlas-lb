@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2c7f5d46_a5e2b7ce",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-26T16:22:50Z",
+      "side": 1,
+      "message": "Mostly nits",
+      "revId": "ee1e0694de3529e56d6e6b8ad1f61930cb1f455a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "86da0e02_b8d67642",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/SslCipherProfileResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-26T16:22:50Z",
+      "side": 1,
+      "message": "Let\u0027s verify with ops which roles are allowed",
+      "revId": "ee1e0694de3529e56d6e6b8ad1f61930cb1f455a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6230ccfd_1c9e0e4d",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/providers/ManagementDependencyProvider.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 323,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-26T16:22:50Z",
+      "side": 1,
+      "message": "For clean/consistency sake, let\u0027s move this up above the mapper bean getter/setter",
+      "revId": "ee1e0694de3529e56d6e6b8ad1f61930cb1f455a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4970c743_d5699942",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/SslCipherProfileResourceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-26T16:22:50Z",
+      "side": 1,
+      "message": "We should verify the expected exception message",
+      "revId": "ee1e0694de3529e56d6e6b8ad1f61930cb1f455a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "29468002_c73960d3",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepository.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-26T16:22:50Z",
+      "side": 1,
+      "message": "Does this method throw badRequest?",
+      "revId": "ee1e0694de3529e56d6e6b8ad1f61930cb1f455a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "97f3e957_803e7b8e",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/SslCipherProfileServiceImpl.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-26T16:22:50Z",
+      "side": 1,
+      "message": "nit: formatting",
+      "revId": "ee1e0694de3529e56d6e6b8ad1f61930cb1f455a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "795b8b73_6a76a57a",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepositoryTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-02-26T16:22:50Z",
+      "side": 1,
+      "message": "copy paste method name?",
+      "revId": "ee1e0694de3529e56d6e6b8ad1f61930cb1f455a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
