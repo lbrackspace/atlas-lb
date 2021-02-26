@@ -939,4 +939,12 @@
         <xsd:attribute name="daysTillExpires" type="xsd:double" />
     </xsd:complexType>
 
+    <xsd:element name="sslCipherProfile" type="tns:sslCipherProfile"/>
+    <xsd:complexType name="sslCipherProfile">
+        <xsd:attribute name="id" type="xsd:int"/>
+        <xsd:attribute name="name" type="xsd:string"/>
+        <xsd:attribute name="ciphers" type="xsd:string"/>
+        <xsd:attribute name="comments" type="xsd:string"/>
+    </xsd:complexType>
+
 </xsd:schema>

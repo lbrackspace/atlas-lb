@@ -73,7 +73,7 @@ public class ManagementDependencyProvider {
     protected AllowedDomainsService allowedDomainsService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected Configuration configuration;
-
+    protected SslCipherProfileService sslCipherProfileService;
 
     public void init() throws Exception{
         dozerMapper = mgmtDozerMapperBuilderBean.getDozerMapperObject();
@@ -318,6 +318,14 @@ public class ManagementDependencyProvider {
 
     public void setMgmtDozerMapperBuilderBean(MgmtDozerMapperBuilderBean mgmtDozerMapperBuilderBean) {
         this.mgmtDozerMapperBuilderBean = mgmtDozerMapperBuilderBean;
+    }
+
+    public SslCipherProfileService getSslCipherProfileService() {
+        return sslCipherProfileService;
+    }
+
+    public void setSslCipherProfileService(SslCipherProfileService sslCipherProfileService) {
+        this.sslCipherProfileService = sslCipherProfileService;
     }
 
     public Set<String> getLDAPGroups() {
