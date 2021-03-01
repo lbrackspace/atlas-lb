@@ -1,9 +1,13 @@
 package org.openstack.atlas.api.mgmt.resources.providers;
 
-import java.util.ArrayList;
-import javax.ws.rs.core.HttpHeaders;
+import org.dozer.Mapper;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
+import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.api.mgmt.helpers.LDAPTools.MossoAuthConfig;
+import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
+import org.openstack.atlas.api.resources.providers.RequestStateContainer;
+import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.Host;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
@@ -12,21 +16,13 @@ import org.openstack.atlas.service.domain.events.repository.LoadBalancerEventRep
 import org.openstack.atlas.service.domain.repository.*;
 import org.openstack.atlas.service.domain.services.*;
 import org.openstack.atlas.service.domain.usage.repository.HostUsageRepository;
-import org.openstack.atlas.api.integration.AsyncService;
-import org.openstack.atlas.api.mgmt.helpers.LDAPTools.MossoAuthConfig;
-import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
-import org.openstack.atlas.api.resources.providers.RequestStateContainer;
 import org.openstack.atlas.util.ip.IPv6;
-import org.dozer.Mapper;
-import org.openstack.atlas.cfg.Configuration;
 
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class ManagementDependencyProvider {
@@ -73,7 +69,7 @@ public class ManagementDependencyProvider {
     protected AllowedDomainsService allowedDomainsService;
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected Configuration configuration;
-
+    protected SslCipherProfileService sslCipherProfileService;
 
     public void init() throws Exception{
         dozerMapper = mgmtDozerMapperBuilderBean.getDozerMapperObject();
@@ -310,6 +306,14 @@ public class ManagementDependencyProvider {
 
     public void setLoadBalancerStatusHistoryService(LoadBalancerStatusHistoryService loadBalancerStatusHistoryService) {
         this.loadBalancerStatusHistoryService = loadBalancerStatusHistoryService;
+    }
+
+    public SslCipherProfileService getSslCipherProfileService() {
+        return sslCipherProfileService;
+    }
+
+    public void setSslCipherProfileService(SslCipherProfileService sslCipherProfileService) {
+        this.sslCipherProfileService = sslCipherProfileService;
     }
 
     public MgmtDozerMapperBuilderBean getMgmtDozerMapperBuilderBean() {

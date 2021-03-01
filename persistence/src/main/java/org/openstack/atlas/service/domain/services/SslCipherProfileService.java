@@ -14,4 +14,6 @@ public interface SslCipherProfileService {
 
     boolean isCipherProfileAvailable(String profileName);
 
+    SslCipherProfile create(SslCipherProfile sslCipherProfile) throws BadRequestException;
+
 }

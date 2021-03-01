@@ -38,6 +38,7 @@ public final class ValidatorRepository {
         classKeyedValidatorMap.put(org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIps.class, new VirtualIpsValidator());
 
         classKeyedValidatorMap.put(org.openstack.atlas.docs.loadbalancers.api.management.v1.ZeusEvent.class, new ZeusEventValidator());
+        classKeyedValidatorMap.put(org.openstack.atlas.docs.loadbalancers.api.management.v1.SslCipherProfile.class, new SslCipherProfilesValidator());
 
         if (!classKeyedValidatorMap.containsKey(classOfObjectToValidate)) {
             throw new NullPointerException(String.format("No Validator registered in repository for Class: %s", classOfObjectToValidate.getName()));
