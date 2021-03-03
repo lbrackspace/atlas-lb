@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.SslCipherProfileRepository;
 import org.openstack.atlas.service.domain.services.impl.SslCipherProfileServiceImpl;
 
@@ -37,8 +38,8 @@ public class SslCipherProfileServiceImplTest {
        public void standUp(){
            MockitoAnnotations.initMocks(this);
            sslCipherProfile = new SslCipherProfile();
-           sslCipherProfileEntity = new SslCipherProfile();
            sslCipherProfile.setName("cName1");
+           sslCipherProfileEntity = new SslCipherProfile();
        }
 
        @Rule
@@ -62,6 +63,63 @@ public class SslCipherProfileServiceImplTest {
            doReturn(null).when(sslCipherProfileRepository).getByName(ArgumentMatchers.anyString());
            sslCipherProfileServiceImpl.create(sslCipherProfile);
            verify(sslCipherProfileRepository, times(1)).create(sslCipherProfile);
+       }
+   }
+
+   public static class whenUpdatingSslCipherProfile {
+
+       @Mock
+       private SslCipherProfileRepository sslCipherProfileRepository;
+       @InjectMocks
+       private SslCipherProfileServiceImpl sslCipherProfileServiceImpl;
+       private Response response;
+       private SslCipherProfile sslCipherProfile;
+       private SslCipherProfile sslCipherProfileEntity;
+
+       @Before
+       public void standUp(){
+           MockitoAnnotations.initMocks(this);
+           sslCipherProfile = new SslCipherProfile();
+           sslCipherProfile.setName("cName1");
+
+           sslCipherProfileEntity = new SslCipherProfile();
+           sslCipherProfileEntity.setId(2);
+           sslCipherProfileEntity.setCiphers("Ciphers");
+           sslCipherProfileEntity.setComments("comment2");
+           sslCipherProfileEntity.setName("cName2");
+
+       }
+
+       @Test(expected = BadRequestException.class)
+       public void shouldThrowBadRequestExceptionWhenProfileNameAlreadyExists()
+               throws BadRequestException, EntityNotFoundException {
+           sslCipherProfile.setName("cName2");
+           doReturn(sslCipherProfileEntity).when(sslCipherProfileRepository).getByName(ArgumentMatchers.anyString());
+           doReturn(sslCipherProfileEntity).when(sslCipherProfileRepository).getById(anyInt());
+           sslCipherProfileServiceImpl.update(1, sslCipherProfile);
+           verify(sslCipherProfileRepository, times(1)).update(sslCipherProfileEntity);
+
+       }
+
+       @Test(expected = EntityNotFoundException.class)
+       public void shouldThrowEntityNotFoundIfEntityDoesntExist() throws BadRequestException, EntityNotFoundException {
+           doThrow(EntityNotFoundException.class).when(
+                   sslCipherProfileRepository).getById(anyInt());
+           sslCipherProfileServiceImpl.update(1, sslCipherProfile);
+           verify(sslCipherProfileRepository, times(1)).update(sslCipherProfileEntity);
+       }
+
+       @Test()
+       public void shouldUpdateCipherProfileSettings() throws BadRequestException, EntityNotFoundException {
+           sslCipherProfile.setName("cName22");
+           sslCipherProfile.setCiphers("ciphers2");
+           doReturn(sslCipherProfileEntity).when(sslCipherProfileRepository).getById(anyInt());
+           sslCipherProfileServiceImpl.update(1, sslCipherProfile);
+           verify(sslCipherProfileRepository, times(1)).update(sslCipherProfileEntity);
+           Assert.assertEquals("2", sslCipherProfileEntity.getId().toString());
+           Assert.assertEquals("cName22", sslCipherProfileEntity.getName());
+           Assert.assertEquals("comment2", sslCipherProfileEntity.getComments());
+           Assert.assertEquals("ciphers2", sslCipherProfileEntity.getCiphers());
        }
    }
 }
