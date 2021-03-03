@@ -24,7 +24,9 @@ public class SslCipherProfilesValidator implements ResourceValidator<SslCipherPr
             {
                 result(validationTarget().getName()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide a valid cipher profile name");
                 result(validationTarget().getCiphers()).must().not().beEmptyOrNull().forContext(POST).withMessage("Must provide ciphers text");
-                result(validationTarget().getId()).must().not().exist().forContext(POST).withMessage("Must not include ID for this request");
+
+                // SHARED CONTEXT
+                result(validationTarget().getId()).must().not().exist().withMessage("Must not include ID for this request");
             }
         });
 

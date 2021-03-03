@@ -11,6 +11,8 @@ import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.SslCipherProfileService;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
+
 @Service
 public class SslCipherProfileServiceImpl extends BaseService implements SslCipherProfileService {
     private final Log LOG = LogFactory.getLog(SslCipherProfileServiceImpl.class);
@@ -23,9 +25,9 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
     @Override
     public SslCipherProfile getCipherProfileByLoadBalancerId(Integer lbId) throws EntityNotFoundException {
         LoadBalancer dbLb = loadBalancerRepository.getById(lbId);
-        if(dbLb != null) {
+        if (dbLb != null) {
             SslTermination sslTerm = dbLb.getSslTermination();
-            if(sslTerm != null){
+            if (sslTerm != null) {
                 return sslTerm.getCipherProfile();
             }
         }
@@ -36,7 +38,7 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
     public void setCipherProfileOnSslTermination(SslTermination sslTermination, String profileName) {
         SslCipherProfile profile = sslCipherProfileRepository.getByName(profileName);
         sslTermination.setCipherProfile(profile);
-        if(profile != null) {
+        if (profile != null) {
             sslTermination.setCipherList(profile.getCiphers());
         } else {
             sslTermination.setCipherList(StringUtils.EMPTY);
@@ -46,7 +48,7 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
     @Override
     public boolean isCipherProfileAvailable(String profileName) {
         SslCipherProfile profile = sslCipherProfileRepository.getByName(profileName);
-        if(profile != null){
+        if (profile != null) {
             return true;
         }
         return false;
@@ -54,11 +56,39 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
 
     @Override
     public SslCipherProfile create(SslCipherProfile sslCipherProfile) throws BadRequestException {
-            if(!isCipherProfileAvailable(sslCipherProfile.getName())){
-                sslCipherProfileRepository.create(sslCipherProfile);
-                return sslCipherProfile;
-            }else{
+        if (!isCipherProfileAvailable(sslCipherProfile.getName())) {
+            sslCipherProfileRepository.create(sslCipherProfile);
+            return sslCipherProfile;
+        } else {
             throw new BadRequestException(String.format("Bad Request - profile with the same name already exists"));
         }
+    }
+
+    @Override
+    @Transactional
+    public SslCipherProfile update(Integer id, SslCipherProfile queueSslCipherProfile) throws BadRequestException,
+            EntityNotFoundException {
+
+        SslCipherProfile dbSslCipherProfile = getById(id);
+
+        if (queueSslCipherProfile.getName() != null) {
+            if (!isCipherProfileAvailable(queueSslCipherProfile.getName())) {
+                dbSslCipherProfile.setName(queueSslCipherProfile.getName());
+            } else {
+                throw new BadRequestException(String.format("Bad Request - profile with the same name already exists"));
+            }
+        }
+
+        if (queueSslCipherProfile.getComments() != null) {
+            dbSslCipherProfile.setComments(queueSslCipherProfile.getComments());
+        }
+
+        if (queueSslCipherProfile.getCiphers() != null) {
+            dbSslCipherProfile.setCiphers(queueSslCipherProfile.getCiphers());
+        }
+
+        sslCipherProfileRepository.update(dbSslCipherProfile);
+        return dbSslCipherProfile;
+
     }
 }

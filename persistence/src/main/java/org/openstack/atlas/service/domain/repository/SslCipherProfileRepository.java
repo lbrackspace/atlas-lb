@@ -54,4 +54,10 @@ public class SslCipherProfileRepository {
         entityManager.persist(sslCipherProfile);
     }
 
+    public SslCipherProfile update(SslCipherProfile sslCipherProfile) {
+        LOG.info("Updating SslCipherProfile " + sslCipherProfile.getId() + "...");
+        sslCipherProfile = entityManager.merge(sslCipherProfile);
+        entityManager.flush();
+        return sslCipherProfile;
+    }
 }
