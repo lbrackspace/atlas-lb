@@ -16,4 +16,6 @@ public interface SslCipherProfileService {
 
     SslCipherProfile create(SslCipherProfile sslCipherProfile) throws BadRequestException;
 
+    SslCipherProfile update(Integer id, SslCipherProfile queueSslCipherProfile) throws BadRequestException, EntityNotFoundException;
+
 }

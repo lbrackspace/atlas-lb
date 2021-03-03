@@ -64,4 +64,46 @@ public class SslCipherProfileServiceImplTest {
            verify(sslCipherProfileRepository, times(1)).create(sslCipherProfile);
        }
    }
+
+   public static class whenUpdatingSslCipherProfile {
+
+       @Mock
+       private SslCipherProfileRepository sslCipherProfileRepository;
+       @InjectMocks
+       private SslCipherProfileServiceImpl sslCipherProfileServiceImpl;
+       private Response response;
+       private SslCipherProfile sslCipherProfile;
+       private SslCipherProfile sslCipherProfileEntity;
+
+       @Before
+       public void standUp(){
+           MockitoAnnotations.initMocks(this);
+           sslCipherProfile = new SslCipherProfile();
+           sslCipherProfileEntity = new SslCipherProfile();
+           sslCipherProfile.setName("cName1");
+       }
+
+       @Rule
+       public final ExpectedException expectedException = ExpectedException.none();
+
+       @Test(expected = BadRequestException.class)
+       public void shouldThrowBadRequestExceptionWhenProfileNameAlreadyExists() throws BadRequestException {
+           sslCipherProfileEntity.setName("cName1");
+           doReturn(sslCipherProfileEntity).when(sslCipherProfileRepository).getByName(ArgumentMatchers.anyString());
+           try{
+               sslCipherProfileServiceImpl.create(this.sslCipherProfile);
+           }catch(BadRequestException ex){
+               String message = "Bad Request - profile with the same name already exists";
+               Assert.assertEquals(message, ex.getMessage());
+               throw ex;
+           }
+       }
+
+       @Test()
+       public void shouldSaveProfileWhenProfileNameDoestExist() throws BadRequestException {
+           doReturn(null).when(sslCipherProfileRepository).getByName(ArgumentMatchers.anyString());
+           sslCipherProfileServiceImpl.create(sslCipherProfile);
+           verify(sslCipherProfileRepository, times(1)).create(sslCipherProfile);
+       }
+   }
 }

@@ -153,11 +153,6 @@
                           parent="managementDependencyProvider"
                           scope="request"/>
                 </property>
-                <property name="sslCipherProfileResource">
-                    <bean class="org.openstack.atlas.api.mgmt.resources.SslCipherProfileResource"
-                          parent="managementDependencyProvider"
-                          scope="request"/>
-                </property>
                 <property name="auditResource">
                     <bean id="auditResource"
                           class="org.openstack.atlas.api.mgmt.resources.AuditResource"
@@ -247,6 +242,7 @@
                 <property name="callbackResource" ref="callbackResource"/>
                 <property name="blackListResource" ref="blackListResource"/>
                 <property name="healthCheckResource" ref="healthCheckResource"/>
+                <property name="sslCipherProfilesResource" ref="sslCipherProfilesResource"/>
             </bean>
         </property>
     </bean>
@@ -315,6 +311,16 @@
         </property>
     </bean>
 
+    <bean name="sslCipherProfilesResource" class="org.openstack.atlas.api.mgmt.resources.SslCipherProfilesResourceslCipherProfilesResource"
+          parent="managementDependencyProvider"
+          scope="request">
+        <property name="sslCipherProfileResource" ref="sslCipherProfileResource"/>
+    </bean>
+
+    <bean name="sslCipherProfileResource" class="org.openstack.atlas.api.mgmt.resources.SslCipherProfileResource"
+          parent="managementDependencyProvider"
+          scope="request"/>
+
     <bean name="loadBalancersResource" class="org.openstack.atlas.api.mgmt.resources.LoadBalancersResource"
           parent="managementDependencyProvider"
           scope="request">
@@ -322,7 +328,6 @@
         <property name="accountLimitsResource" ref="accountLimitsResource"/>
         <property name="saveStateHistoryResource" ref="saveStateHistoryResource"/>
     </bean>
-
 
     <bean name="loadBalancerResource" class="org.openstack.atlas.api.mgmt.resources.LoadBalancerResource"
           parent="managementDependencyProvider"
