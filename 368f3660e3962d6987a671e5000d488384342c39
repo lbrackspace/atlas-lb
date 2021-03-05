@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b548bd92_b8f19b56",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/SslCipherProfileResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-05T19:11:15Z",
+      "side": 1,
+      "message": "NIT: keep the resource methods together, leave getters/setters at bottom",
+      "revId": "368f3660e3962d6987a671e5000d488384342c39",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "859a91fc_73bf5b32",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/SslCipherProfileResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-05T19:11:15Z",
+      "side": 1,
+      "message": "Think this operation is only allowed for ops",
+      "revId": "368f3660e3962d6987a671e5000d488384342c39",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "2bf47bfd_a40a58e3",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepository.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-05T19:11:15Z",
+      "side": 1,
+      "message": "Think we need a test for this repository method",
+      "revId": "368f3660e3962d6987a671e5000d488384342c39",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "032fafec_427ee829",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/SslCipherProfileRepository.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-05T19:11:15Z",
+      "side": 1,
+      "message": "In your service you\u0027re already loading the persistence context, don\u0027t think  you need to call merge here. We could/should probably ticket up fixes for other methods not doing similar.",
+      "revId": "368f3660e3962d6987a671e5000d488384342c39",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
