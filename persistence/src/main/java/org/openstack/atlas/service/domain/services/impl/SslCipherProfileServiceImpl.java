@@ -91,4 +91,13 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
         return dbSslCipherProfile;
 
     }
+    @Transactional
+    public void deleteSslCipherProfile(SslCipherProfile sslCipherProfile) throws EntityNotFoundException {
+
+        SslCipherProfile dbSslCipherProfile = sslCipherProfileRepository.getById(sslCipherProfile.getId());
+        sslCipherProfileRepository.delete(dbSslCipherProfile);
+
+    }
+
+
 }
