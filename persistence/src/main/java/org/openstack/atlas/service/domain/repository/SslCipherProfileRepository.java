@@ -60,4 +60,11 @@ public class SslCipherProfileRepository {
         entityManager.flush();
         return sslCipherProfile;
     }
+
+    public void delete(SslCipherProfile sslCipherProfile) {
+        entityManager.remove(sslCipherProfile);
+
+    }
+
+
 }

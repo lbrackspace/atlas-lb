@@ -46,6 +46,22 @@ public class SslCipherProfileResource extends ManagementDependencyProvider {
         }
     }
 
+    @DELETE
+    public Response deleteSslCipherProfile () {
+        if (!isUserInRole("ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        try {
+            org.openstack.atlas.service.domain.entities.SslCipherProfile sslCipherProfile = new org.openstack.atlas.service.domain.entities.SslCipherProfile();
+            sslCipherProfile.setId(id);
+            sslCipherProfileService.deleteSslCipherProfile(sslCipherProfile);
+            return Response.status(Response.Status.ACCEPTED).build();
+
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
     public void setId(int id) {
         this.id = id;
     }
@@ -53,4 +69,5 @@ public class SslCipherProfileResource extends ManagementDependencyProvider {
     public int getId() {
         return id;
     }
+
 }

@@ -142,4 +142,39 @@ public class SslCipherProfileResourceTest {
             Assert.assertEquals(202, response.getStatus());
         }
     }
+
+    public static class whenDeletingSslCipherProfile {
+
+        static final String mappingFile = "loadbalancing-dozer-management-mapping.xml";
+
+        @Mock
+        private SslCipherProfileService sslCipherProfileService;
+        @InjectMocks
+        private SslCipherProfileResource sslCipherProfileResource;
+
+
+        @Before
+        public void setUp() {
+
+            MockitoAnnotations.initMocks(this);
+            sslCipherProfileResource = new SslCipherProfileResource();
+            sslCipherProfileResource.setMockitoAuth(true);
+            sslCipherProfileResource.setSslCipherProfileService(sslCipherProfileService);
+        }
+
+        @Test
+        public void shouldReturn200UponSuccessfulDeletion() {
+
+            Response response = sslCipherProfileResource.deleteSslCipherProfile();
+            Assert.assertEquals(202, response.getStatus());
+        }
+
+        @Test
+        public void shouldReturn404WhenCipherProfileNotFound() throws EntityNotFoundException {
+            doThrow(EntityNotFoundException.class).when(sslCipherProfileService).deleteSslCipherProfile(any(org.openstack.atlas.service.domain.entities.SslCipherProfile.class));
+            Response response = sslCipherProfileResource.deleteSslCipherProfile();
+            Assert.assertEquals(404, response.getStatus());
+        }
+    }
+
 }

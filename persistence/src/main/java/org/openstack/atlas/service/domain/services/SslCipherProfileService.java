@@ -18,4 +18,5 @@ public interface SslCipherProfileService {
 
     SslCipherProfile update(Integer id, SslCipherProfile queueSslCipherProfile) throws BadRequestException, EntityNotFoundException;
 
+    public void deleteSslCipherProfile(SslCipherProfile sslCipherProfile) throws EntityNotFoundException;
 }

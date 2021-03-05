@@ -68,4 +68,33 @@ public class SslCipherProfileRepositoryTest {
            Assert.assertEquals(sslCipherProfile, retProfile);
        }
    }
+
+   public static class whenDeletingCipherProfile {
+
+       @Mock
+       private EntityManager entityManager;
+       @InjectMocks
+       private SslCipherProfileRepository sslCipherProfileRepository;
+       private SslCipherProfile sslCipherProfile;
+
+       @Before
+       public void standUp(){
+           MockitoAnnotations.initMocks(this);
+           sslCipherProfile = new SslCipherProfile();
+           sslCipherProfile.setId(2);
+           sslCipherProfile.setName("cProfile");
+           sslCipherProfile.setCiphers("ciphers");
+           sslCipherProfile.setComments("ciphers comment");
+       }
+
+       @Test
+       public void shouldDeleteSslProfile() throws Exception {
+
+           sslCipherProfileRepository.delete(sslCipherProfile);
+           verify(entityManager).remove(sslCipherProfile);
+
+       }
+
+   }
+
 }

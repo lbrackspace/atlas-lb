@@ -122,4 +122,40 @@ public class SslCipherProfileServiceImplTest {
            Assert.assertEquals("ciphers2", sslCipherProfileEntity.getCiphers());
        }
    }
+
+    public static class whenDeletingCipherProfile {
+
+        @Mock
+        private SslCipherProfileRepository sslCipherProfileRepository;
+        @InjectMocks
+        private SslCipherProfileServiceImpl sslCipherProfileServiceImpl;
+
+        SslCipherProfile sslCipherProfile;
+
+
+        @Before
+        public void setUp() {
+            MockitoAnnotations.initMocks(this);
+            sslCipherProfileServiceImpl = new SslCipherProfileServiceImpl();
+            sslCipherProfile = new SslCipherProfile();
+            sslCipherProfile.setId(1);
+            sslCipherProfileServiceImpl.setSslCipherProfileRepository(sslCipherProfileRepository);
+        }
+
+        @Test
+        public void shouldDeleteProfileWhenProfileExits() throws EntityNotFoundException {
+            when(sslCipherProfileRepository.getById(sslCipherProfile.getId())).thenReturn(sslCipherProfile);
+            sslCipherProfileServiceImpl.deleteSslCipherProfile(sslCipherProfile);
+            verify(sslCipherProfileRepository, times(1)).delete(sslCipherProfile);
+        }
+
+        @Test(expected = EntityNotFoundException.class)
+        public void shouldThrowEntityNotFoundException() throws EntityNotFoundException {
+            doThrow(EntityNotFoundException.class).when(sslCipherProfileRepository).getById(sslCipherProfile.getId());
+            sslCipherProfileServiceImpl.deleteSslCipherProfile(sslCipherProfile);
+
+        }
+
+    }
+
 }
