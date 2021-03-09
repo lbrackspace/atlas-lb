@@ -20,14 +20,13 @@ public class SslCipherProfileRepository {
     @PersistenceContext(unitName = "loadbalancing")
     private EntityManager entityManager;
 
-    public SslCipherProfile getById(Integer id) throws EntityNotFoundException {
+    public SslCipherProfile getById(Integer id) {
         SslCipherProfile profile = entityManager.find(SslCipherProfile.class, id);
-        if (profile == null) {
-            String errMsg = String.format("Cannot find the profile with id=%d", id);
-            LOG.warn(errMsg);
-            throw new EntityNotFoundException(errMsg);
+        if (profile != null) {
+            return profile;
+        }else{
+            return null;
         }
-        return profile;
     }
 
     public SslCipherProfile getByName(String name) {
@@ -45,8 +44,8 @@ public class SslCipherProfileRepository {
         return sslCipherProfiles;
     }
 
-    public List<SslCipherProfile> fetchAllProfiles() throws EntityNotFoundException {
-        List<SslCipherProfile> sslCipherProfiles = entityManager.createQuery("SELECT s FROM SslCipherProfile").getResultList();
+    public List<SslCipherProfile> fetchAllProfiles() {
+        List<SslCipherProfile> sslCipherProfiles = entityManager.createQuery("SELECT s FROM SslCipherProfile s").getResultList();
         return sslCipherProfiles;
     }
 

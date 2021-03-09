@@ -8,6 +8,7 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.SslCipherProfile;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.*;
@@ -17,6 +18,25 @@ import javax.ws.rs.core.Response;
 public class SslCipherProfileResource extends ManagementDependencyProvider {
 
     private int id;
+
+    @GET
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response getById(){
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
+        SslCipherProfile dataModelSslCipherProfile;
+        try {
+            org.openstack.atlas.service.domain.entities.SslCipherProfile domainSslCipherProfile = sslCipherProfileService.getById(id);
+            dataModelSslCipherProfile = getDozerMapper().map(domainSslCipherProfile, org.openstack.atlas.docs.loadbalancers.api.management.v1.SslCipherProfile.class);
+            return Response.status(200).entity(dataModelSslCipherProfile).build();
+        } catch(EntityNotFoundException ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+
+    }
 
     @PUT
     @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

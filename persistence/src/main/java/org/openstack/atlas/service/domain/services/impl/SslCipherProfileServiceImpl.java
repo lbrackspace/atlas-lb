@@ -10,8 +10,9 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.SslCipherProfileService;
 import org.springframework.stereotype.Service;
-
 import javax.transaction.Transactional;
+import java.util.List;
+
 
 @Service
 public class SslCipherProfileServiceImpl extends BaseService implements SslCipherProfileService {
@@ -19,7 +20,12 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
 
     @Override
     public SslCipherProfile getById(Integer id) throws EntityNotFoundException {
-        return sslCipherProfileRepository.getById(id);
+        SslCipherProfile profile = sslCipherProfileRepository.getById(id);
+        if(profile != null){
+            return  profile;
+        }else{
+            throw new EntityNotFoundException(String.format("There is no such cipher profile available with ID " + id));
+        }
     }
 
     @Override
@@ -99,5 +105,22 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
 
     }
 
+    public List<SslCipherProfile> fetchAllProfiles() throws EntityNotFoundException {
+        List<SslCipherProfile> sslCipherProfiles = sslCipherProfileRepository.fetchAllProfiles();
+        if(sslCipherProfiles.size() < 1){
+            throw new EntityNotFoundException(String.format("There are no cipher profiles available"));
+        }
+        return sslCipherProfiles;
+}
 
+    @Override
+    public SslCipherProfile getByName(String profileName) throws EntityNotFoundException {
+        SslCipherProfile profile = sslCipherProfileRepository.getByName(profileName);
+        if(profile != null){
+            return profile;
+        }else{
+            throw new EntityNotFoundException(String.format("There is no cipher profile available with the name " + profileName));
+        }
+
+    }
 }

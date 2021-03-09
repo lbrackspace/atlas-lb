@@ -8,13 +8,12 @@ import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.SslCipherProfile;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 public class SslCipherProfilesResource extends ManagementDependencyProvider {
     
@@ -50,6 +49,31 @@ public class SslCipherProfilesResource extends ManagementDependencyProvider {
         }catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+
+    @GET
+    @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response getAllCipherProfiles() {
+        if (!isUserInRole("cp,ops,support")) {
+            return ResponseFactory.accessDenied();
+        }
+        List<org.openstack.atlas.service.domain.entities.SslCipherProfile> domainSslCipherProfiles;
+        org.openstack.atlas.docs.loadbalancers.api.management.v1.SslCipherProfiles dataModelSslCipherProfiles  = new org.openstack.atlas.docs.loadbalancers.api.management.v1.SslCipherProfiles();
+        try {
+            domainSslCipherProfiles = sslCipherProfileService.fetchAllProfiles();
+            for (org.openstack.atlas.service.domain.entities.SslCipherProfile domainSslCipherProfile : domainSslCipherProfiles) {
+                dataModelSslCipherProfiles.getSslCipherProfiles().add(getDozerMapper().map(domainSslCipherProfile, org.openstack.atlas.docs.loadbalancers.api.management.v1.SslCipherProfile.class));
+            }
+            return Response.status(200).entity(dataModelSslCipherProfiles).build();
+        } catch(EntityNotFoundException ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    public SslCipherProfileResource getSslCipherProfileResource() {
+        return sslCipherProfileResource;
     }
 
     public void setSslCipherProfileResource(SslCipherProfileResource sslCipherProfileResource) {
