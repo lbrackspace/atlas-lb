@@ -939,6 +939,13 @@
         <xsd:attribute name="daysTillExpires" type="xsd:double" />
     </xsd:complexType>
 
+    <xsd:element name="sslCipherProfiles" type="tns:sslCipherProfiles"/>
+    <xsd:complexType name="sslCipherProfiles">
+        <xsd:sequence>
+            <xsd:element name="sslCipherProfile" type="tns:sslCipherProfile" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
     <xsd:element name="sslCipherProfile" type="tns:sslCipherProfile"/>
     <xsd:complexType name="sslCipherProfile">
         <xsd:attribute name="id" type="xsd:int"/>

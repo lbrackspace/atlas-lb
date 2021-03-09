@@ -4,6 +4,8 @@ import org.openstack.atlas.service.domain.entities.SslCipherProfile;
 import org.openstack.atlas.service.domain.entities.SslTermination;
 import org.openstack.atlas.service.domain.exceptions.*;
 
+import java.util.List;
+
 public interface SslCipherProfileService {
 
     SslCipherProfile getById(Integer id) throws EntityNotFoundException;
@@ -19,4 +21,8 @@ public interface SslCipherProfileService {
     SslCipherProfile update(Integer id, SslCipherProfile queueSslCipherProfile) throws BadRequestException, EntityNotFoundException;
 
     public void deleteSslCipherProfile(SslCipherProfile sslCipherProfile) throws EntityNotFoundException;
+
+    List<SslCipherProfile> fetchAllProfiles() throws EntityNotFoundException;
+
+    SslCipherProfile getByName(String name) throws EntityNotFoundException;
 }
