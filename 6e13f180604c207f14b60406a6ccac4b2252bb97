@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "68c24add_0d2d72bc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-10T15:19:32Z",
+      "side": 1,
+      "message": "Missing cipherprofilesresource test",
+      "revId": "6e13f180604c207f14b60406a6ccac4b2252bb97",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "4a7c6752_4d47aab6",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/SslCipherProfilesResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-10T15:19:32Z",
+      "side": 1,
+      "message": "We have get by ID. Unless this was a specific request we don\u0027t need this. If it was a specific request we should put the getByName as a query param and not this endpoint.",
+      "revId": "6e13f180604c207f14b60406a6ccac4b2252bb97",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
