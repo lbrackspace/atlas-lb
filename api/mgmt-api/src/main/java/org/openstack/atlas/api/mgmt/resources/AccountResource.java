@@ -39,7 +39,6 @@ public class AccountResource extends ManagementDependencyProvider {
 
     @GET
     @Path("loadbalancers")
-    // Implements Jira: SITESLB-220
     public Response retrieveLoadBalancers() {
         if (!isUserInRole("cp,ops,support,billing")) {
             return ResponseFactory.accessDenied();
