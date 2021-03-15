@@ -104,6 +104,11 @@ public class IPUtilsTest {
     }
 
     @Test
+    public void testShouldAcceptMiddleRightZeroCompressionIpv6() {
+        assertTrue("Expected acceptance pf \"1234::682a:3ae1::1\"", IPUtils.isValidIpv6String("1234:1234:1234::682a:3ae1::1"));
+    }
+
+    @Test
     public void testShouldRejectToManyOctetsIpv4() {
         assertFalse("expected rejection of 1.2.3.4.5 ", IPUtils.isValidIpv4String("1.2.3.4.5"));
     }
