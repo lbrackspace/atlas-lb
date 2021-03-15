@@ -83,9 +83,10 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
         List<Integer> accountIds;
         List<LoadBalancer> out = new ArrayList<LoadBalancer>();
         Integer clusterId = null;
+        List<Integer> clusterIds = new ArrayList<>();
         Integer accountId = null;
         Integer vipOctets = null;
-        VirtualIpv6 vip6;
+        VirtualIpv6 vip6 = null;
 
         IPv6 ipv6;
 
@@ -112,9 +113,8 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
                 IPv6Cidr foundCidr = new IPv6Cidr(cl.getClusterIpv6Cidr());
                 try {
                     matchfound = foundCidr.matches(searchCidr);
-                    if (matchfound) {  // This must be our cluster since the cidrs matched.
-                        clusterId = cl.getId();
-                        break;
+                    if (matchfound) {  // This might be our cluster since the cidrs matched, let's find others...
+                        clusterIds.add(cl.getId());
                     }
                 } catch (IpTypeMissMatchException ex) {
                     continue; // This one can't be it. Coulden't even match the IP type :(
@@ -130,8 +130,18 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
             accountId = accountIds.get(0);
         }
 
+        // Need to check all clusters. If we get a hit, use it, otherwise search the other clusters...
+        for (Integer cid : clusterIds) {
+            try {
+                vip6 = virtualIpRepository.getVirtualIpv6BytClusterAccountOctet(cid, accountId, vipOctets);
+            } catch (EntityNotFoundException ex) {
+                vip6 = null;
+            }
+        }
 
-        vip6 = virtualIpRepository.getVirtualIpv6BytClusterAccountOctet(clusterId, accountId, vipOctets);
+        if (vip6 == null) {
+            throw new EntityNotFoundException(String.format("Vip not found for cidr %s", searchCidr));
+        }
         return getLoadBalancerByVip6Id(vip6.getId());
     }
 
