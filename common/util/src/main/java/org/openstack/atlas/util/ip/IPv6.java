@@ -144,6 +144,36 @@ public class IPv6 implements Comparable<IPv6> {
             return out;
         }
 
+        if (negatives == 2 && (vals[3] == -1 && vals[nvals - 2] == -1)) { // Middle-right Compression
+            // Do left expand
+            j = nvals - 1;
+            i = nwords - 1;
+            while (vals[j] != -1) {
+                out[i] = vals[j];
+                i--;
+                j--;
+            }
+
+            // Do middle expand
+            j = nvals - 3;
+            i = nwords - 3;
+            while (vals[j] != -1) {
+                out[i] = vals[j];
+                i--;
+                j--;
+            }
+
+//            // Then do right Expand
+            j = 0;
+            i = 0;
+            while (vals[i] != -1) {
+                out[i] = vals[j];
+                i++;
+                j++;
+            }
+            return out;
+        }
+
         if (negatives == 2 && vals[0] == -1 && vals[1] == -1) { // Left Compression
             j = nvals - 1;
             i = nwords - 1;

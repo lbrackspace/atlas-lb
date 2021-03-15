@@ -18,6 +18,8 @@ public class IPv6Test {
     private final String zero_uncompressed = "0000:0000:0000:0000:0000:0000:0000:0000";
     private final String middle_compressed = "1234::5678";
     private final String middle_uncompressed = "1234:0000:0000:0000:0000:0000:0000:5678";
+    private final String middle_right_compressed = "2001:4800:7901::672a:3ae1::1";
+    private final String middle_right_uncompressed = "2001:4800:7901:0000:672a:3ae1:0000:0001";
     private final String ipv4Mixed_compressed = "::ffff:192.168.3.51";
     private final String ipv4Mixed_uncompressed = "0000:0000:0000:0000:0000:ffff:c0a8:0333";
     private final byte[] ipv4Mixed_bytes = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -1, -64, -88, 3, 51};
@@ -46,6 +48,11 @@ public class IPv6Test {
     @Test
     public void testMiddleCompress() throws IPStringConversionException {
         assertTrue("Expected middle compress to work", middle_uncompressed.equals(IPv6.expand(middle_compressed, 8)));
+    }
+
+    @Test
+    public void testMiddleCompress2() throws IPStringConversionException {
+        assertTrue("Expected middle-right compress to work", middle_right_uncompressed.equals(IPv6.expand(middle_right_compressed, 8)));
     }
 
     @Test(expected = IPStringConversionException.class)
