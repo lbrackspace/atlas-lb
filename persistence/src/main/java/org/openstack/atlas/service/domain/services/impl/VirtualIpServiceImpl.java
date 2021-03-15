@@ -81,20 +81,15 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     @Override
     public List<LoadBalancer> getLoadBalancerByVip6Address(String address) throws IPStringConversionException, EntityNotFoundException {
         List<Integer> accountIds;
-        List<LoadBalancer> out = new ArrayList<LoadBalancer>();
-        Integer clusterId = null;
+        List<Integer> clusterIds = new ArrayList<>();
         Integer accountId = null;
-        Integer vipOctets = null;
-        VirtualIpv6 vip6;
+        Integer vipOctets;
+        VirtualIpv6 vip6 = null;
 
         IPv6 ipv6;
 
         boolean matchfound;
-        List<LoadBalancer> loadbalancers;
-        ipv6 = new IPv6();
 
-
-        loadbalancers = new ArrayList<LoadBalancer>();
         ipv6 = new IPv6(address);
         ipv6.expand();
         try { // Find the vip octet
@@ -105,33 +100,51 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
         String[] strSplit = address.split(":");
         String searchSha = String.format("%s%s", strSplit[4], strSplit[5]);
-        IPv6Cidr searchCidr = new IPv6Cidr(String.format("%s:%s:%s:%s::/64",
-                strSplit[0], strSplit[1], strSplit[2], strSplit[3]));
+        String s3 = strSplit[3];
+        // handle for compressed zeros at last index
+        s3 = s3.equals("") ? ":/64" : s3 + "::/64";
+        IPv6Cidr searchCidr = new IPv6Cidr(String.format("%s:%s:%s:%s",
+                strSplit[0], strSplit[1], strSplit[2], s3));
+
+        // Build the cluster list from cidrs that match our searchCidr
         for (Cluster cl : clusterRepository.getAll()) {
             try {
                 IPv6Cidr foundCidr = new IPv6Cidr(cl.getClusterIpv6Cidr());
                 try {
                     matchfound = foundCidr.matches(searchCidr);
-                    if (matchfound) {  // This must be our cluster since the cidrs matched.
-                        clusterId = cl.getId();
-                        break;
+                    if (matchfound) {  // This might be our cluster since the cidrs matched, let's find others...
+                        clusterIds.add(cl.getId());
                     }
                 } catch (IpTypeMissMatchException ex) {
-                    continue; // This one can't be it. Coulden't even match the IP type :(
+                    continue; // Couldn't match the IP type...
                 }
 
             } catch (IPStringConversionException ex) {
-                continue; // This one is an even bigger fail pfft.
+                continue; // This one is an even bigger fail to parse the ipv6
             }
-        } // Hopefully we recovered the cluster from the Vip otherwise its null;
+        } // Hopefully we recovered at least one cluster from the information otherwise the list is empty.
 
         accountIds = virtualIpRepository.getAccountBySha1Sum(searchSha);
         if (accountIds.size() == 1) {
             accountId = accountIds.get(0);
         }
 
+        // Iterate through the cluster list. If we get a hit, use it, otherwise search the other clusters...
+        for (Integer cid : clusterIds) {
+            try {
+                vip6 = virtualIpRepository.getVirtualIpv6BytClusterAccountOctet(cid, accountId, vipOctets);
+                break;
+            } catch (EntityNotFoundException ex) {
+                vip6 = null;
+            }
+        }
 
-        vip6 = virtualIpRepository.getVirtualIpv6BytClusterAccountOctet(clusterId, accountId, vipOctets);
+        // If no clusters matched or no IPV6's were found with given criteria we return entity not found exception...
+        if (vip6 == null) {
+            throw new EntityNotFoundException(String.format("Vip not found for cidr %s", searchCidr.getCidr()));
+        }
+
+        // We found an IPV6 that matches, return the loadbalancers it belongs to...
         return getLoadBalancerByVip6Id(vip6.getId());
     }
 
