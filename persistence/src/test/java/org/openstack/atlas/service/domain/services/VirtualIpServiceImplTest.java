@@ -4,6 +4,8 @@ import org.junit.Test;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.TrafficType;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadBalancerDetails;
 import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.ClusterRepository;
 import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.repository.VirtualIpRepository;
 import org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl;
@@ -12,11 +14,11 @@ import org.junit.Ignore;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.junit.Assert;
+import org.openstack.atlas.util.ip.exception.IPStringConversionException;
 
 import java.util.*;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
 public class VirtualIpServiceImplTest {
@@ -373,6 +375,158 @@ public class VirtualIpServiceImplTest {
             Assert.assertNull(lbDetails.getProtocols());
         }
 
+    }
+
+    public static class WhenRetrievingLoadbalancersByIpv6Address {
+        VirtualIpRepository virtualIpRepository;
+        ClusterRepository clusterRepository;
+        LoadBalancerRepository loadBalancerRepository;
+        VirtualIpServiceImpl virtualIpService;
+
+        String ipAddress1 = "2001:4100:7901::682a:3ae1::1";
+        String ipAddress2 = "2002:4800:7801:0000:652a:35e1::2";
+        String ipAddress3 = "2001:4100:7901::682a:3ae1::1";
+        Integer accountId1 = 1234;
+        Integer accountId2 = 1235;
+        Integer lbId = 5678;
+        Integer vipId1 = 23945;
+        Integer vipId2 = 23946;
+        VirtualIpv6 vip1;
+        VirtualIpv6 vip2;
+        String sha1 = "682a3ae1";
+        String sha2= "652a35e1";
+
+        List<LoadBalancer> lbList = new ArrayList<LoadBalancer>();
+        List<Integer> accountIds = new ArrayList<>();
+        List<Cluster> clusterList = new ArrayList<>();
+        Cluster cluster1 = new Cluster();
+        Cluster cluster2 = new Cluster();
+        Cluster cluster3 = new Cluster();
+
+
+
+        @Before
+        public void standUp() {
+            virtualIpRepository = mock(VirtualIpRepository.class);
+            loadBalancerRepository = mock(LoadBalancerRepository.class);
+            clusterRepository = mock(ClusterRepository.class);
+            virtualIpService = new VirtualIpServiceImpl();
+            virtualIpService.setLoadBalancerRepository(loadBalancerRepository);
+            virtualIpService.setVirtualIpRepository(virtualIpRepository);
+            virtualIpService.setClusterRepository(clusterRepository);
+
+            vip1 = new VirtualIpv6();
+            vip1.setVipOctets(1);
+            vip1.setAccountId(accountId1);
+            vip1.setId(vipId1);
+            vip2 = new VirtualIpv6();
+            vip2.setVipOctets(2);
+            vip2.setAccountId(accountId2);
+            vip2.setId(vipId2);
+
+            cluster1.setClusterIpv6Cidr("2001:4100:7901::/64");
+            cluster1.setId(1);
+            cluster2.setClusterIpv6Cidr("2002:4800:7801:0000::/64");
+            cluster2.setId(2);
+            cluster3.setClusterIpv6Cidr("2001:4100:7901::/64");
+            cluster3.setId(3);
+
+            LoadBalancer newLb = new LoadBalancer();
+            newLb.setAccountId(accountId1);
+            lbList.add(newLb);
+
+        }
+
+        @Test
+        public void shouldReturnIpv6SingleClusterMatchCidr() throws EntityNotFoundException, IPStringConversionException {
+            clusterList.add(cluster1);
+            clusterList.add(cluster2);
+            accountIds.add(accountId1);
+            when(clusterRepository.getAll()).thenReturn(clusterList);
+            when(virtualIpRepository.getAccountBySha1Sum(sha1)).thenReturn(accountIds);
+            when(virtualIpRepository.getVirtualIpv6BytClusterAccountOctet(
+                    cluster1.getId(), accountId1, 1)).thenReturn(vip1);
+            when(virtualIpRepository.getLoadBalancerByVip6Address(vipId1)).thenReturn(lbList);
+
+            lbList = virtualIpService.getLoadBalancerByVip6Address(ipAddress1);
+
+            verify(virtualIpRepository, times(1)).getAccountBySha1Sum(sha1);
+            verify(virtualIpRepository, times(1)).getVirtualIpv6BytClusterAccountOctet(
+                    cluster1.getId(), accountId1, 1);
+            verify(virtualIpRepository, times(1)).getLoadBalancerByVip6Address(vipId1);
+            Assert.assertNotNull(lbList);
+            Assert.assertFalse(lbList.isEmpty());
+            Assert.assertEquals(accountId1, lbList.get(0).getAccountId());
+        }
+
+        @Test
+        public void shouldReturnIpv6SingleClusterMatchRightExpandedCidr() throws EntityNotFoundException, IPStringConversionException {
+            LoadBalancer newLb = new LoadBalancer();
+            newLb.setAccountId(accountId2);
+            lbList.clear();
+            lbList.add(newLb);
+            clusterList.add(cluster1);
+            clusterList.add(cluster2);
+            accountIds.add(accountId2);
+            when(clusterRepository.getAll()).thenReturn(clusterList);
+            when(virtualIpRepository.getAccountBySha1Sum(sha2)).thenReturn(accountIds);
+            when(virtualIpRepository.getVirtualIpv6BytClusterAccountOctet(
+                    cluster2.getId(), accountId2, 2)).thenReturn(vip2);
+            when(virtualIpRepository.getLoadBalancerByVip6Address(vipId2)).thenReturn(lbList);
+
+            lbList = virtualIpService.getLoadBalancerByVip6Address(ipAddress2);
+
+            verify(virtualIpRepository, times(1)).getAccountBySha1Sum(sha2);
+            verify(virtualIpRepository, times(1)).getVirtualIpv6BytClusterAccountOctet(
+                    cluster2.getId(), accountId2, 2);
+            verify(virtualIpRepository, times(1)).getLoadBalancerByVip6Address(vipId2);
+            Assert.assertNotNull(lbList);
+            Assert.assertFalse(lbList.isEmpty());
+            Assert.assertEquals(accountId2, lbList.get(0).getAccountId());
+        }
+
+        @Test
+        public void shouldReturnIpv6MultiClusterMatchCidr() throws EntityNotFoundException, IPStringConversionException {
+            clusterList.add(cluster1);
+            clusterList.add(cluster2);
+            clusterList.add(cluster3);
+            accountIds.add(accountId1);
+            when(clusterRepository.getAll()).thenReturn(clusterList);
+            when(virtualIpRepository.getAccountBySha1Sum(sha1)).thenReturn(accountIds);
+            when(virtualIpRepository.getVirtualIpv6BytClusterAccountOctet(
+                    cluster3.getId(), accountId1, 1)).thenReturn(vip1);
+            doThrow(EntityNotFoundException.class).when(virtualIpRepository).getVirtualIpv6BytClusterAccountOctet(
+                    cluster1.getId(), accountId1, 1);
+            when(virtualIpRepository.getLoadBalancerByVip6Address(vipId1)).thenReturn(lbList);
+
+            lbList = virtualIpService.getLoadBalancerByVip6Address(ipAddress1);
+
+            verify(virtualIpRepository, times(1)).getAccountBySha1Sum(sha1);
+            verify(virtualIpRepository, times(1)).getVirtualIpv6BytClusterAccountOctet(
+                    cluster3.getId(), accountId1, 1);
+            verify(virtualIpRepository, times(1)).getLoadBalancerByVip6Address(vipId1);
+            Assert.assertNotNull(lbList);
+            Assert.assertFalse(lbList.isEmpty());
+            Assert.assertEquals(accountId1, lbList.get(0).getAccountId());
+        }
+
+        @Test(expected = EntityNotFoundException.class)
+        public void shouldFailIpv6SingleClusterMatchCidr() throws EntityNotFoundException, IPStringConversionException {
+            clusterList.add(cluster2);
+            accountIds.add(accountId1);
+            when(clusterRepository.getAll()).thenReturn(clusterList);
+            when(virtualIpRepository.getAccountBySha1Sum(sha1)).thenReturn(accountIds);
+            when(virtualIpRepository.getVirtualIpv6BytClusterAccountOctet(
+                    cluster2.getId(), accountId1, 1)).thenReturn(vip1);
+            when(virtualIpRepository.getLoadBalancerByVip6Address(vipId1)).thenReturn(lbList);
+
+            lbList = virtualIpService.getLoadBalancerByVip6Address(ipAddress1);
+
+            verify(virtualIpRepository, times(1)).getAccountBySha1Sum(sha1);
+            verify(virtualIpRepository, times(1)).getVirtualIpv6BytClusterAccountOctet(
+                    cluster2.getId(), accountId1, 1);
+            verify(virtualIpRepository, times(0)).getLoadBalancerByVip6Address(vipId1);
+        }
     }
 
     public static class WhenRetrievingVirtualIps {

@@ -196,6 +196,18 @@ public class IPv6 implements Comparable<IPv6> {
             }
             return out;
         }
+
+        if (negatives == 1 && vals[nvals - 1] == -1 && vals[nvals - 2] == 0) { // far-right Compression
+            j = 0;
+            i = 0;
+            while (vals[i] != -1) {
+                out[i] = vals[j];
+                i++;
+                j++;
+            }
+            return out;
+        }
+
         if (negatives == 0 && nvals == nwords) { // No Compression Straight copy;
             for (i = 0; i < nwords; i++) {
                 out[i] = vals[i];
