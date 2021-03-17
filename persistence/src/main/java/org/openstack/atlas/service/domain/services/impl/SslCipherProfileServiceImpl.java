@@ -10,7 +10,8 @@ import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.services.SslCipherProfileService;
 import org.springframework.stereotype.Service;
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 
@@ -97,6 +98,7 @@ public class SslCipherProfileServiceImpl extends BaseService implements SslCiphe
         return dbSslCipherProfile;
 
     }
+
     @Transactional
     public void deleteSslCipherProfile(SslCipherProfile sslCipherProfile) throws EntityNotFoundException {
 
