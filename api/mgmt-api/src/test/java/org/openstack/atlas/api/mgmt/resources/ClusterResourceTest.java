@@ -7,23 +7,34 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.*;
+import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
+import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.cfg.ConfigurationKey;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.LbaasFault;
-import org.openstack.atlas.service.domain.entities.*;
+import org.openstack.atlas.service.domain.entities.Cluster;
+import org.openstack.atlas.service.domain.entities.Host;
+import org.openstack.atlas.service.domain.entities.HostStatus;
+import org.openstack.atlas.service.domain.entities.Zone;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ClusterNotEmptyException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
+import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.services.ClusterService;
 import org.openstack.atlas.service.domain.services.HostService;
+import org.openstack.atlas.service.domain.services.NotificationService;
+import org.openstack.atlas.util.crypto.exception.DecryptException;
+import org.rackspace.vtm.client.exception.VTMRestClientException;
+import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
 
 import javax.ws.rs.core.Response;
-
+import java.net.MalformedURLException;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -622,5 +633,58 @@ public class ClusterResourceTest {
             Assert.assertEquals("Must not include ID for this request.",
                     ((BadRequest) response.getEntity()).getValidationErrors().getMessages().get(0));
         }
+    }
+
+    public static class whenGettingTheUtilization {
+
+        @Mock
+        ManagementDependencyProvider managementDependencyProvider;
+        @Mock
+        ClusterService clusterService;
+        @Mock
+        HostRepository hostRepository;
+        @Mock
+        ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
+        @Mock
+        NotificationService notificationService;
+        @InjectMocks
+        ClusterResource clusterResource;
+
+        List<Host> hosts;
+        long hostConnections = 5;
+        int conn = 3;
+
+
+        @Before
+        public void setUp() throws RemoteException, VTMRestClientException, RollBackException, InsufficientRequestException, VTMRestClientObjectNotFoundException, DecryptException, EntityNotFoundException, MalformedURLException {
+        MockitoAnnotations.initMocks(this);
+        hosts = new ArrayList<Host>();
+        Host h1 = new Host();
+        Host h2 = new Host();
+        hosts.add(h1);
+        hosts.add(h2);
+        doReturn(hostRepository).when(managementDependencyProvider).getHostRepository();
+        doReturn(hostConnections).when(hostRepository).getHostsConnectionsForCluster(ArgumentMatchers.anyInt());
+        doReturn(hosts).when(clusterService).getHosts(ArgumentMatchers.anyInt());
+
+        }
+
+        @Test
+        public void shouldReturnUtilization() throws Exception {
+            doReturn(conn).when(reverseProxyLoadBalancerVTMService).getTotalCurrentConnectionsForHost(ArgumentMatchers.any());
+            String response = clusterResource.getUtilization(5);
+            Assert.assertEquals("100.0 %", response);
+        }
+
+        @Test
+        public void shouldThrowRemoteException() throws Exception {
+            doThrow(RemoteException.class).when(reverseProxyLoadBalancerVTMService).getTotalCurrentConnectionsForHost(ArgumentMatchers.any());
+            String response = clusterResource.getUtilization(5);
+            verify(notificationService, times(2)).saveAlert(ArgumentMatchers.any(),ArgumentMatchers.any(),ArgumentMatchers.anyString());
+        }
+
+
+
+
     }
 }
