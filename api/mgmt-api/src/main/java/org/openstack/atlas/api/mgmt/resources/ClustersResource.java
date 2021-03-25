@@ -45,8 +45,9 @@ public class ClustersResource extends ManagementDependencyProvider {
                 cl.setNumberOfHostMachines(getClusterRepository().getHosts(cl.getId()).size());
                 cl.setNumberOfUniqueCustomers(getClusterRepository().getNumberOfUniqueAccountsForCluster(cl.getId()));
                 cl.setNumberOfLoadBalancingConfigurations(getClusterRepository().getNumberOfLoadBalancersForCluster(cl.getId()));
-                /* TODO: Read ticket SITESLB-1360 */ //cl.setUtilization(getUtilization(domainCl.getId()));
-                cl.setUtilization("0.0%");
+                /* TODO: Read ticket SITESLB-1360 */
+                cl.setUtilization(getUtilization(cl));
+//                cl.setUtilization("0.0%");
 
             }
             return Response.status(200).entity(dataModelCls).build();
