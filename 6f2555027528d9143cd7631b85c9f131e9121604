@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "aedc9320_426ec520",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-25T14:45:31Z",
+      "side": 1,
+      "message": "Need resource tests as well. ",
+      "revId": "6f2555027528d9143cd7631b85c9f131e9121604",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "54756b10_30c730df",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/integration/threads/ReverseProxyLoadBalancerServiceVTMImplTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 440,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-25T14:45:31Z",
+      "side": 1,
+      "message": "Test the failure cases, verify the return values make sure they didn\u0027t break somewhere",
+      "revId": "6f2555027528d9143cd7631b85c9f131e9121604",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1b7f74fa_01dbb140",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ClusterResource.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 316,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-25T14:45:31Z",
+      "side": 1,
+      "message": "Remove useless comments",
+      "revId": "6f2555027528d9143cd7631b85c9f131e9121604",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c481becf_563ad305",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ClusterResource.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 318,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-25T14:45:31Z",
+      "side": 1,
+      "message": "Remove unused code",
+      "revId": "6f2555027528d9143cd7631b85c9f131e9121604",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8cb19c96_c9049013",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ClustersResource.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-25T14:45:31Z",
+      "side": 1,
+      "message": "remove useless comments",
+      "revId": "6f2555027528d9143cd7631b85c9f131e9121604",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5a90d176_ac10380b",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ClustersResource.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-25T14:45:31Z",
+      "side": 1,
+      "message": "No need to leave old code. Remove it.",
+      "revId": "6f2555027528d9143cd7631b85c9f131e9121604",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
