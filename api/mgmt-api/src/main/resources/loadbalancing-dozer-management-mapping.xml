@@ -142,6 +142,15 @@
         </field>
     </mapping>
 
+    <mapping map-null="false">
+        <class-a bean-factory="org.openstack.atlas.api.mgmt.mapper.dozer.factory.NodeFactory">org.openstack.atlas.docs.loadbalancers.api.management.v1.Node</class-a>
+        <class-b>org.openstack.atlas.service.domain.entities.Node</class-b>
+        <field>
+            <a>address</a>
+            <b>ipAddress</b>
+        </field>
+    </mapping>
+
 
     <mapping map-null="false">
         <class-a>org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet</class-a>
