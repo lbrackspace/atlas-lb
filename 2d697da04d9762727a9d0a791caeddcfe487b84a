@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "602736cb_cdfa07d3",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ClusterResource.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 316,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-26T14:02:35Z",
+      "side": 1,
+      "message": "Resource tests?",
+      "revId": "2d697da04d9762727a9d0a791caeddcfe487b84a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "dc060108_e7e188d3",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ClustersResource.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-26T14:02:35Z",
+      "side": 1,
+      "message": "Resource tests?",
+      "revId": "2d697da04d9762727a9d0a791caeddcfe487b84a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
