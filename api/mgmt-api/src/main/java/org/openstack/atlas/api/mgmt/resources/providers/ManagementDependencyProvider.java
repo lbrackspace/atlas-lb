@@ -70,6 +70,7 @@ public class ManagementDependencyProvider {
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected Configuration configuration;
     protected SslCipherProfileService sslCipherProfileService;
+    protected NodeService nodeService;
 
     public void init() throws Exception{
         dozerMapper = mgmtDozerMapperBuilderBean.getDozerMapperObject();
@@ -314,6 +315,12 @@ public class ManagementDependencyProvider {
 
     public void setSslCipherProfileService(SslCipherProfileService sslCipherProfileService) {
         this.sslCipherProfileService = sslCipherProfileService;
+    }
+
+    public NodeService getNodeService() {return  nodeService;}
+
+    public void setNodeService(NodeService nodeService) {
+        this.nodeService = nodeService;
     }
 
     public MgmtDozerMapperBuilderBean getMgmtDozerMapperBuilderBean() {
