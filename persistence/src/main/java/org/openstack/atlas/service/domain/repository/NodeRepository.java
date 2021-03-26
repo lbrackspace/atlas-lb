@@ -85,6 +85,17 @@ public class NodeRepository {
         entityManager.flush();
     }
 
+    public Node getById(Integer id) throws EntityNotFoundException {
+        List<Node> nodeList = entityManager.createQuery("from Node n where n.id = :id").setParameter("id",
+                id).getResultList();
+        if (nodeList.isEmpty()) {
+            String errMsg = String.format("Cannot access node {id=%d}", id);
+            LOG.warn(errMsg);
+            throw new EntityNotFoundException(errMsg);
+        }
+        return nodeList.get(0);
+    }
+
     public NodeMap getNodeMap(Integer accountId, Integer loadbalancerId) {
         List<Node> nodes;
         NodeMap nodeMap = new NodeMap();
