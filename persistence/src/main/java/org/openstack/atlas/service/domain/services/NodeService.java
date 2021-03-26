@@ -11,7 +11,7 @@ import java.util.Set;
 
 public interface NodeService {
 
-    public Set<Node> getAllNodesByAccountIdLoadBalancerId(Integer accountId,Integer loadBalancerId) throws EntityNotFoundException;
+    public Set<Node> getAllNodesByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId) throws EntityNotFoundException;
 
     public Set<Node> getNodesByAccountIdLoadBalancerId(Integer accountId, Integer loadBalancerId, Integer... p) throws EntityNotFoundException, DeletedStatusException;
 
@@ -33,7 +33,7 @@ public interface NodeService {
 
     public boolean nodeToDeleteIsNotLastActive(LoadBalancer lb, Node deleteNode);
 
-    public NodeMap getNodeMap(Integer accountId,Integer loadbalancerId);
+    public NodeMap getNodeMap(Integer accountId, Integer loadbalancerId);
 
     public List<Node> getNodesByIds(Collection<Integer> ids);
 
@@ -41,5 +41,12 @@ public interface NodeService {
 
     public void delNode(LoadBalancer lb, int nid) throws EntityNotFoundException;
 
-    public List<String> prepareForNodesDeletion(Integer accountId,Integer loadBalancerId,List<Integer> ids) throws EntityNotFoundException;
-}
+    public List<String> prepareForNodesDeletion(Integer accountId, Integer loadBalancerId, List<Integer> ids) throws EntityNotFoundException;
+
+    public Node getNodeById(Integer id) throws EntityNotFoundException;
+
+    public LoadBalancer deleteNode(LoadBalancer loadBalancer, Node nodeToDelete) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException;
+
+    public LoadBalancer updateNode(LoadBalancer msgLb, Node nodeToUpdate) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException;
+
+    }
