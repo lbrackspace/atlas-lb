@@ -115,9 +115,44 @@
         <property name="sessionTransacted" value="true"/>
     </bean>
 
-    <bean id="deleteRateLimitListener"
-          class="org.openstack.atlas.api.mgmt.async.DeleteRateLimitListener"
+    <bean id="mgmtDeleteNodeListener"
+          class="org.openstack.atlas.api.mgmt.async.MgmtDeleteNodeListener"
           parent="mgmtBaseListener"/>
+
+    <bean id="mgmtDeleteNodeListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="mgmtDeleteNodeListener"/>
+        <property name="destinationName" value="DELETE_NODE_MGMT"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="mgmtUpdateNodeListener"
+          class="org.openstack.atlas.api.mgmt.async.MgmtUpdateNodeListener"
+          parent="mgmtBaseListener"/>
+
+    <bean id="mgmtUpdateNodeListenerContainer"
+          class="org.springframework.jms.listener.DefaultMessageListenerContainer">
+        <property name="connectionFactory" ref="jmsPooledConnectionFactory"/>
+        <property name="messageListener" ref="mgmtUpdateNodeListener"/>
+        <property name="destinationName" value="UPDATE_NODE_MGMT"/>
+        <property name="concurrentConsumers" value="${lbass.default.concurrent.consumers}"/>
+        <property name="maxConcurrentConsumers" value="${lbaas.default.max.concurrent.consumers}"/>
+        <property name="receiveTimeout" value="${lbaas.default.receive.timeout}"/>
+        <property name="idleTaskExecutionLimit" value="${lbaas.default.idle.task.execution.limit}"/>
+        <property name="idleConsumerLimit" value="${lbaas.default.idle.consumer.limit}"/>
+        <property name="sessionTransacted" value="true"/>
+    </bean>
+
+    <bean id="deleteRateLimitListener"
+    class="org.openstack.atlas.api.mgmt.async.DeleteRateLimitListener"
+    parent="mgmtBaseListener"/>
+
 
     <bean id="deleteRateLimitListenerContainer"
           class="org.springframework.jms.listener.DefaultMessageListenerContainer">

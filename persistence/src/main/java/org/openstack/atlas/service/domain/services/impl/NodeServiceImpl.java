@@ -87,6 +87,13 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         return nodes;
     }
 
+    @Transactional
+    @Override
+    public Node getNodeById(Integer id) throws EntityNotFoundException {
+        Node node = nodeRepository.getById(id);
+        return node;
+    }
+
     @Override
     @Transactional
     public Set<Node> createNodes(LoadBalancer newNodesLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException, LimitReachedException {
@@ -200,6 +207,70 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             }
         }
 
+        // Won't delete secondary nodes until you also delete Health Monitor
+        NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
+        if (npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null) {
+            throw new BadRequestException(Constants.NoMonitorForSecNodes);
+        }
+
+        // No secondary nodes unless there are primary nodes
+        if (npc.hasSecondary() && !npc.hasPrimary()) {
+            throw new BadRequestException(Constants.NoPrimaryNodeError);
+        }
+
+        LOG.debug("Updating the lb status to pending_update");
+        oldLbNodes.setStatus(LoadBalancerStatus.PENDING_UPDATE);
+        oldLbNodes.setUserName(msgLb.getUserName());
+        nodeRepository.update(oldLbNodes);
+
+        //Set status record
+        loadBalancerStatusHistoryService.save(oldLbNodes.getAccountId(), oldLbNodes.getId(), LoadBalancerStatus.PENDING_UPDATE);
+        return oldLbNodes;
+    }
+
+    @Override
+    @Transactional
+    public LoadBalancer updateNode(LoadBalancer msgLb, Node nodeToUpdate) throws EntityNotFoundException, BadRequestException {
+        LoadBalancer oldLbNodes = loadBalancerRepository.getByIdAndAccountId(msgLb.getId(), msgLb.getAccountId());
+        //Prevent hibernate flushing updated object on failure...
+        loadBalancerRepository.detach(oldLbNodes);
+
+        if (!loadBalancerContainsNode(oldLbNodes, nodeToUpdate)) {
+            LOG.warn("Node to update not found. Sending response to client...");
+            throw new EntityNotFoundException(String.format("Node with id #%d not found for loadbalancer #%d", nodeToUpdate.getId(),
+                    msgLb.getId()));
+        }
+
+        LOG.debug("Nodes on dbLoadbalancer: " + oldLbNodes.getNodes().size());
+        for (Node n : oldLbNodes.getNodes()) {
+            if (n.getId().equals(nodeToUpdate.getId())) {
+                LOG.info("Node to be updated found: " + n.getId());
+                if (nodeToUpdate.getType() != null) {
+                    n.setType(nodeToUpdate.getType());
+                }
+                if (nodeToUpdate.getCondition() != null) {
+                    n.setCondition(nodeToUpdate.getCondition());
+                }
+                if (nodeToUpdate.getIpAddress() != null) {
+                    n.setIpAddress(nodeToUpdate.getIpAddress());
+                }
+                if (nodeToUpdate.getPort() != null) {
+                    n.setPort(nodeToUpdate.getPort());
+                }
+                if (nodeToUpdate.getStatus() != null) {
+                    n.setStatus(nodeToUpdate.getStatus());
+                }
+                if (nodeToUpdate.getWeight() != null) {
+                    n.setWeight(nodeToUpdate.getWeight());
+                }
+                if (nodeToUpdate.getType() != null) {
+                    n.setType(nodeToUpdate.getType());
+                }
+                n.setToBeUpdated(true);
+                break;
+            }
+        }
+
         // Won't delete secondary nodes untill you also delete Health Monitor
         NodesPrioritiesContainer npc = new NodesPrioritiesContainer(oldLbNodes.getNodes());
         if (npc.hasSecondary() && oldLbNodes.getHealthMonitor() == null) {
@@ -220,6 +291,7 @@ public class NodeServiceImpl extends BaseService implements NodeService {
         loadBalancerStatusHistoryService.save(oldLbNodes.getAccountId(), oldLbNodes.getId(), LoadBalancerStatus.PENDING_UPDATE);
         return oldLbNodes;
     }
+
 
     @Override
     @Transactional
@@ -248,6 +320,25 @@ public class NodeServiceImpl extends BaseService implements NodeService {
             //Set status record
             loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
         }
+        return loadBalancer;
+    }
+
+    @Override
+    @DeadLockRetry
+    @Transactional()
+    public LoadBalancer deleteNode(LoadBalancer loadBalancer, Node nodeToDelete) throws EntityNotFoundException {
+        LoadBalancer dbLoadBalancer = loadBalancerRepository.getByIdAndAccountId(loadBalancer.getId(), loadBalancer.getAccountId());
+
+        if (!loadBalancerContainsNode(dbLoadBalancer, nodeToDelete)) {
+            LOG.warn("Node to delete not found. Sending response to client...");
+            throw new EntityNotFoundException(String.format("Node with id #%d not found for loadbalancer #%d", nodeToDelete.getId(),
+                    loadBalancer.getId()));
+        }
+
+        String message = StringHelper.immutableLoadBalancer(dbLoadBalancer);
+        //Set status record
+        loadBalancerStatusHistoryService.save(dbLoadBalancer.getAccountId(), dbLoadBalancer.getId(), LoadBalancerStatus.PENDING_UPDATE);
+
         return loadBalancer;
     }
 
@@ -388,4 +479,5 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
         return validationErrors;
     }
+
 }

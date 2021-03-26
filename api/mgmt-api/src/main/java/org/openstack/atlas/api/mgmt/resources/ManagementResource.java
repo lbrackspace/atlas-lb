@@ -29,6 +29,7 @@ public class ManagementResource extends ManagementDependencyProvider {
     private HealthCheckResource healthCheckResource;
     private AllowedDomainsResource allowedDomainsResource;
     private SslCipherProfilesResource sslCipherProfilesResource;
+    private NodesResource nodesResource;
 
     @Path("accounts")
     public AccountsResource retrieveAccountsResource() {
@@ -112,6 +113,9 @@ public class ManagementResource extends ManagementDependencyProvider {
 
     @Path("cipherprofiles")
     public SslCipherProfilesResource retrieveSslCipherProfilesResource() { return sslCipherProfilesResource; }
+
+    @Path("nodes")
+    public NodesResource retrieveNodesResource() {return nodesResource; }
 
     @GET
     @Path("ciphers")
@@ -209,4 +213,11 @@ public class ManagementResource extends ManagementDependencyProvider {
     public void setSslCipherProfilesResource(SslCipherProfilesResource sslCipherProfilesResource) {
         this.sslCipherProfilesResource = sslCipherProfilesResource;
     }
+
+    public NodesResource getNodesResource() {return nodesResource; }
+
+    public void setNodesResource(NodesResource nodesResource) {
+        this.nodesResource = nodesResource;
+    }
+
 }
