@@ -70,6 +70,7 @@ public class ManagementDependencyProvider {
     protected LoadBalancerStatusHistoryService loadBalancerStatusHistoryService;
     protected Configuration configuration;
     protected SslCipherProfileService sslCipherProfileService;
+    protected NodeService nodeService;
 
     public void init() throws Exception{
         dozerMapper = mgmtDozerMapperBuilderBean.getDozerMapperObject();

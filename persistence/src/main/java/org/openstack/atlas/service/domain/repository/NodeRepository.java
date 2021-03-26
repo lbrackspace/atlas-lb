@@ -85,6 +85,22 @@ public class NodeRepository {
         entityManager.flush();
     }
 
+    public Node getById(Integer id) throws EntityNotFoundException {
+        List<Node> nodeList = entityManager.createQuery("from Node n where n.id = :id").setParameter("id",
+                id).getResultList();
+        if (nodeList.isEmpty()) {
+            String errMsg = String.format("Cannot access cluster {id=%d}", id);
+            LOG.warn(errMsg);
+            throw new EntityNotFoundException(errMsg);
+        }
+        return nodeList.get(0);
+    }
+
+    public void delete(Node node) {
+        node = entityManager.merge(node);
+        entityManager.remove(node);
+    }
+
     public NodeMap getNodeMap(Integer accountId, Integer loadbalancerId) {
         List<Node> nodes;
         NodeMap nodeMap = new NodeMap();
@@ -108,6 +124,13 @@ public class NodeRepository {
         }
         doomedNodes = entityManager.createQuery(qStr).getResultList();
         return doomedNodes;
+    }
+
+    public Node update(Node node) {
+        LOG.info("Updating node " + node.getId() + "...");
+        node = entityManager.merge(node);
+        entityManager.flush();
+        return node;
     }
 
     public LoadBalancer update(LoadBalancer loadBalancer) {

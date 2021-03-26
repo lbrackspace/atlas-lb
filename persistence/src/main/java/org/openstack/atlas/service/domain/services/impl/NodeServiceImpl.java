@@ -156,6 +156,38 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
     @Override
     @Transactional
+    public Node update(Node node) throws EntityNotFoundException {
+
+        Node dbNode = nodeRepository.getById(node.getId());
+
+        if(node.getLoadbalancer() == null){
+            node.setLoadbalancer(dbNode.getLoadbalancer());
+        }
+        if(node.getCondition() == null) {
+            node.setCondition(dbNode.getCondition());
+        }
+        if(node.getIpAddress() == null) {
+            node.setIpAddress(dbNode.getIpAddress());
+        }
+        if(node.getPort() == null) {
+            node.setPort(dbNode.getPort());
+        }
+        if(node.getStatus() == null) {
+            node.setStatus(dbNode.getStatus());
+        }
+        if(node.getType() == null) {
+            node.setType(dbNode.getType());
+        }
+        if(node.getWeight() == null) {
+            node.setWeight(dbNode.getWeight());
+        }
+
+       return nodeRepository.update(node);
+
+    }
+
+    @Override
+    @Transactional
     public LoadBalancer updateNode(LoadBalancer msgLb) throws EntityNotFoundException, ImmutableEntityException, UnprocessableEntityException, BadRequestException {
         LoadBalancer oldLbNodes = loadBalancerRepository.getByIdAndAccountId(msgLb.getId(), msgLb.getAccountId());
         //Prevent hibernate flushing updated object on failure...
@@ -388,4 +420,13 @@ public class NodeServiceImpl extends BaseService implements NodeService {
 
         return validationErrors;
     }
+
+    @Override
+    @Transactional
+    public void delete(Node node) throws EntityNotFoundException {
+        Node dbNode = nodeRepository.getById(node.getId());
+        nodeRepository.delete(dbNode);
+    }
+
+
 }

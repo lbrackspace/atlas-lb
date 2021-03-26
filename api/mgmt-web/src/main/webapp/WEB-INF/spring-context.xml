@@ -243,6 +243,7 @@
                 <property name="blackListResource" ref="blackListResource"/>
                 <property name="healthCheckResource" ref="healthCheckResource"/>
                 <property name="sslCipherProfilesResource" ref="sslCipherProfilesResource"/>
+<!--                <property name="nodeResource" ref="nodeResource"/>-->
             </bean>
         </property>
     </bean>
@@ -320,6 +321,11 @@
     <bean name="sslCipherProfileResource" class="org.openstack.atlas.api.mgmt.resources.SslCipherProfileResource"
           parent="managementDependencyProvider"
           scope="request"/>
+
+    <bean name="nodeResource" class="org.openstack.atlas.api.mgmt.resources.NodeResource"
+          parent="managementDependencyProvider"
+          scope="request">
+    </bean>
 
     <bean name="loadBalancersResource" class="org.openstack.atlas.api.mgmt.resources.LoadBalancersResource"
           parent="managementDependencyProvider"
