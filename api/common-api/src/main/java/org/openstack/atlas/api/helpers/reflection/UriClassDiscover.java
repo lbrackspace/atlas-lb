@@ -50,6 +50,7 @@ public class UriClassDiscover {
         getrList().add(new REFCN(".*\\d+/loadbalancers/bounce/certificatemapping(\\.json|\\.xml)?/?$", CertificateMapping.class));
         getrList().add(new REFCN(".*/management/hosts(\\.json|\\.xml)?/?$", Host.class));
         getrList().add(new REFCN(".*/management/clusters/\\d+(\\.json|\\.xml)?/?$", Cluster.class));
+        getrList().add(new REFCN(".*/management/nodes/\\d+(\\.json|\\.xml)?/?$", org.openstack.atlas.docs.loadbalancers.api.management.v1.Node.class));
 
     }
 

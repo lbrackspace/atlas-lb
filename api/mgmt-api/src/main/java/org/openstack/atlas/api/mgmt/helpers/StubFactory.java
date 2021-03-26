@@ -7,6 +7,8 @@ import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancer;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIps;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Node;
+import org.openstack.atlas.docs.loadbalancers.api.v1.Nodes;
 import org.openstack.atlas.docs.loadbalancers.api.v1.Created;
 import org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancerUsageRecord;
 
