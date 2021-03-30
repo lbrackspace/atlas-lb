@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0ede0f2b_24c04f39",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/ClusterResourceTest.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 638,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-30T15:18:32Z",
+      "side": 1,
+      "message": "Should verify the retrieveClusterMethod that uses this as well.",
+      "revId": "fd3465655e91c918babc2472948b99f0a8f0865a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "fa77063e_de3452c1",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/ClustersResourceTest.java",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-03-30T15:18:32Z",
+      "side": 1,
+      "message": "Should verify the retrieveAllClusters Method that uses this as well.",
+      "revId": "fd3465655e91c918babc2472948b99f0a8f0865a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
