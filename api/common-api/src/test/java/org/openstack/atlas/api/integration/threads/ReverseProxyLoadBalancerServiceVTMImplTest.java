@@ -3,8 +3,10 @@ package org.openstack.atlas.api.integration.threads;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -29,8 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @RunWith(Enclosed.class)
@@ -356,6 +358,116 @@ public class ReverseProxyLoadBalancerServiceVTMImplTest {
             Assert.assertTrue(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf3.com"));
             Assert.assertFalse(lbEndpointConfig.getFailoverTrafficManagerNames().contains("nf2.com"));
 
+        }
+    }
+
+    public static class getTotalCurrentConnectionsForHost{
+
+        @Mock
+        HostService hostService;
+        @Mock
+        Configuration configuration;
+        @Mock
+        LoadBalancerRepository loadBalancerRepository;
+        @Mock
+        LoadBalancerServiceImpl loadBalancerService;
+        @Mock
+        ReverseProxyLoadBalancerVTMAdapter reverseProxyLoadBalancerVTMAdapter;
+        @Spy
+        ReverseProxyLoadBalancerServiceVTMImpl reverseProxyLoadBalancerServiceVTM;
+
+        Cluster cluster;
+        Host failOverHost;
+        Host soapEndPointHost;
+        LoadBalancer loadBalancer;
+        Host host;
+        List<String> failOverHostNames;
+        List<Host> failoverHosts;
+        String logFileLocation;
+        Integer loadBalancerId;
+
+        @Before
+        public void standUp() throws EntityNotFoundException, RemoteException, RollBackException, VTMRestClientObjectNotFoundException, VTMRestClientException, InsufficientRequestException {
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancerService = new LoadBalancerServiceImpl();
+            loadBalancer = new LoadBalancer();
+            host = new Host();
+            cluster = new Cluster();
+            soapEndPointHost = new Host();
+            failOverHost = new Host();
+            failOverHostNames = new ArrayList<>();
+            failoverHosts = new ArrayList<>();
+
+            reverseProxyLoadBalancerServiceVTM = spy(new ReverseProxyLoadBalancerServiceVTMImpl());
+            reverseProxyLoadBalancerServiceVTM.setLoadBalancerService(loadBalancerService);
+            reverseProxyLoadBalancerServiceVTM.setHostService(hostService);
+            reverseProxyLoadBalancerServiceVTM.setConfiguration(configuration);
+            reverseProxyLoadBalancerServiceVTM.setReverseProxyLoadBalancerVTMAdapter(reverseProxyLoadBalancerVTMAdapter);
+
+            host.setName("testHost");
+            host.setId(1);
+            host.setEndpoint("https://test.com:3030/soap");
+            host.setRestEndpoint("https://test/api/tm/7.0/config/active/");
+            host.setHostStatus(HostStatus.ACTIVE);
+            host.setTrafficManagerName("n1.com");
+            host.setZone(Zone.A);
+            cluster.setId(1);
+            cluster.setName("testCluster");
+            loadBalancer.setHost(host);
+            loadBalancer.setName("testLB");
+            loadBalancer.setId(1);
+            loadBalancer.setStatus(LoadBalancerStatus.ACTIVE);
+            soapEndPointHost.setId(2);
+            soapEndPointHost.setEndpoint("https://soapEndPointHostTest/soap");
+            failOverHost.setEndpoint("failover.com/soap");
+            failOverHost.setTrafficManagerName("nf1.com");
+            failOverHost.setZone(Zone.A);
+            loadBalancerId = 1;
+            failOverHostNames.add("nf1.com");
+            failoverHosts.add(failOverHost);
+            logFileLocation = "test";
+            host.setCluster(cluster);
+            loadBalancerService.setLoadBalancerRepository(loadBalancerRepository);
+            loadBalancerRepository.setLoadBalancerAttrs(loadBalancer);
+            loadBalancerService.setLoadBalancerAttrs(loadBalancer);
+
+            when(loadBalancerRepository.getById(anyInt())).thenReturn(loadBalancer);
+            when(hostService.getRestEndPointHost(anyInt())).thenReturn(soapEndPointHost);
+            when(hostService.getFailoverHostNames(anyInt())).thenReturn(failOverHostNames);
+            when(hostService.getFailoverHosts(anyInt())).thenReturn(failoverHosts);
+            when(configuration.getString(anyString())).thenReturn(logFileLocation);
+        }
+
+        @Rule
+        public final ExpectedException exception = ExpectedException.none();
+
+        @Test
+        public void getTotalCurrentConnectionsForHost() throws Exception{
+            reverseProxyLoadBalancerServiceVTM.getTotalCurrentConnectionsForHost(host);
+            verify(reverseProxyLoadBalancerVTMAdapter, times(1)).getTotalCurrentConnectionsForHost(any(LoadBalancerEndpointConfiguration.class));
+        }
+
+        @Test
+        public void shouldThrowRuntimeExceptionWhenEndpointIsInvalid() throws Exception{
+            host.setEndpoint("abc");
+            exception.expect(RuntimeException.class);
+            exception.expectMessage("Invalid endpoint...");
+            reverseProxyLoadBalancerServiceVTM.getTotalCurrentConnectionsForHost(host);
+        }
+
+        @Test
+        public void shouldThrowRuntimeExceptionWhenInvalidRestEndpoint() throws Exception{
+            host.setRestEndpoint(null);
+            exception.expect(RuntimeException.class);
+            reverseProxyLoadBalancerServiceVTM.getTotalCurrentConnectionsForHost(host);
+        }
+
+        @Test
+        public void shouldThrowStringIndexOutOfBoundsException() throws Exception{
+            host.setRestEndpoint("http://localhost:8080/rest/endpoint");
+            exception.expect(StringIndexOutOfBoundsException.class);
+            reverseProxyLoadBalancerServiceVTM.getTotalCurrentConnectionsForHost(host);
         }
     }
 }
