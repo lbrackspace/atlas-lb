@@ -40,6 +40,8 @@ public class EsbRequest implements Serializable {
     private RateLimit rateLimit;
     private List<BlacklistItem> blacklistItems;
     private BlacklistItem blacklistItem;
+    private VirtualIpType virtualIpType;
+    private Boolean addVips;
 
     public void setBlacklistItems(List<BlacklistItem> blacklistItems) {
         this.blacklistItems = blacklistItems;
@@ -220,5 +222,21 @@ public class EsbRequest implements Serializable {
 
     public void setAccountGroup(AccountGroup accountGroup) {
         this.accountGroup = accountGroup;
+    }
+
+    public VirtualIpType getVirtualIpType() {
+        return virtualIpType;
+    }
+
+    public void setVirtualIpType(VirtualIpType virtualIpType) {
+        this.virtualIpType = virtualIpType;
+    }
+
+    public Boolean getAddVips() {
+        return addVips;
+    }
+
+    public void setAddVips(Boolean addVips) {
+        this.addVips = addVips;
     }
 }
