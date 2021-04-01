@@ -5,11 +5,11 @@
     <parent>
         <groupId>org.openstack.atlas</groupId>
         <artifactId>atlas-rest-clients</artifactId>
-        <version>1.27.17</version>
+        <version>1.27.18-SNAPSHOT</version>
     </parent>
 
     <artifactId>vtm-rest-client</artifactId>
-    <version>1.27.17</version>
+    <version>1.27.18-SNAPSHOT</version>
 
     <name>Openstack :: Atlas :: Rest Clients :: VTM</name>
     <description>
