@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "3f9e2b7c_92ca0f9e",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-06T13:20:28Z",
+      "side": 1,
+      "message": "Found few typos, rest of the things lgtm!",
+      "revId": "2c9b7c5bf06e9bf69cd609fedd8288ccddb25dc3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9649c06f_0c46b7ba",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/NodesResource.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-06T13:20:28Z",
+      "side": 1,
+      "message": "A typo! should be getNodeResource.",
+      "revId": "2c9b7c5bf06e9bf69cd609fedd8288ccddb25dc3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "00068ea7_9fa064ca",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/repository/NodeRepository.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-06T13:20:28Z",
+      "side": 1,
+      "message": "A Typo maybe? \"Cannot access cluster\"?",
+      "revId": "2c9b7c5bf06e9bf69cd609fedd8288ccddb25dc3",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
