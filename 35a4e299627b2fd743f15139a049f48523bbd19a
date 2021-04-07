@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d1176493_52a02805",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ClusterResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 421,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-07T14:50:11Z",
+      "side": 1,
+      "message": "This will end up setting a single host in the esbreq container. If this is handled in listener this part may be removed. Would just need to pass the subnet here",
+      "revId": "35a4e299627b2fd743f15139a049f48523bbd19a",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
