@@ -356,7 +356,7 @@ public class ReverseProxyLoadBalancerServiceVTMImpl implements ReverseProxyLoadB
 
     @Override
     public void deleteSubnetMappings(Host host, Hostssubnet hostssubnet) throws RollBackException, MalformedURLException, DecryptException {
-        LoadBalancerEndpointConfiguration hostConfig = getConfig(host);
+        LoadBalancerEndpointConfiguration hostConfig = getConfigHost(host);
         try {
             reverseProxyLoadBalancerVTMAdapter.deleteSubnetMappings(hostConfig, hostssubnet);
         } catch (RollBackException af) {

@@ -1,25 +1,8 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.adapter.exceptions.VTMRollBackException;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
-import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
-import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
-import org.openstack.atlas.service.domain.entities.AccountLimit;
-import org.openstack.atlas.service.domain.exceptions.ClusterNotEmptyException;
-import org.openstack.atlas.service.domain.exceptions.BadRequestException;
-import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
-import org.openstack.atlas.service.domain.pojos.Hostssubnet;
-import org.openstack.atlas.service.domain.pojos.Hostsubnet;
-import org.openstack.atlas.service.domain.pojos.NetInterface;
-import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
-
-import org.openstack.atlas.util.crypto.CryptoUtil;
-import org.openstack.atlas.util.ip.IPv4Cidrs;
-import org.openstack.atlas.util.ip.IPv4Cidr;
-import org.openstack.atlas.service.domain.services.helpers.AlertType;
 import org.openstack.atlas.api.faults.HttpResponseBuilder;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.mapper.dozer.DomainToRestModel;
@@ -27,17 +10,32 @@ import org.openstack.atlas.api.mgmt.repository.ValidatorRepository;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.api.validation.context.HttpRequestType;
 import org.openstack.atlas.api.validation.results.ValidatorResult;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
+import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
+import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
+import org.openstack.atlas.service.domain.entities.AccountLimit;
+import org.openstack.atlas.service.domain.entities.VirtualIpType;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
+import org.openstack.atlas.service.domain.exceptions.ClusterNotEmptyException;
+import org.openstack.atlas.service.domain.management.operations.EsbRequest;
+import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
+import org.openstack.atlas.service.domain.pojos.Hostsubnet;
+import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdClusterId;
+import org.openstack.atlas.service.domain.pojos.NetInterface;
+import org.openstack.atlas.service.domain.services.helpers.AlertType;
+import org.openstack.atlas.util.crypto.CryptoUtil;
+import org.openstack.atlas.util.ip.IPUtils;
+import org.openstack.atlas.util.ip.IPv4Cidr;
+import org.openstack.atlas.util.ip.IPv4Cidrs;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
-import org.openstack.atlas.util.ip.IPUtils;
+import java.util.*;
 
 public class ClusterResource extends ManagementDependencyProvider {
 
@@ -369,6 +367,59 @@ public class ClusterResource extends ManagementDependencyProvider {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
 
+    }
+
+    @PUT
+    @Path("subnetmappings")
+    @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+    public Response putHostsSubnetMappings(org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet rHostssubnet,
+                                           @QueryParam("addpublicvips") Boolean addpublicvips,
+                                           @QueryParam("addservicenetvips") Boolean addservicenetvips) {
+        if (!isUserInRole("cp,ops")) {
+            return ResponseFactory.accessDenied();
+        }
+
+        VirtualIpType vipType = null;
+        boolean addVips = false;
+        if (addpublicvips != null && addpublicvips) {
+            vipType =  VirtualIpType.PUBLIC;
+            addVips = true;
+        } else if (addservicenetvips != null && addservicenetvips) {
+            vipType =  VirtualIpType.SERVICENET;
+            addVips = true;
+        }
+
+        org.openstack.atlas.service.domain.entities.Cluster dCluster;
+        try {
+            dCluster = clusterService.get(id);
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
+
+        EsbRequest req = new EsbRequest();
+        org.openstack.atlas.service.domain.pojos.Hostssubnet dHostssubnet;
+        if (rHostssubnet.getHostsubnets().size() != 1) {
+            ValidationErrors vFault = new ValidationErrors();
+            BadRequest badRequest = new BadRequest();
+            badRequest.setCode(400);
+            badRequest.setMessage("Invalid request");
+            vFault.getMessages().add("Please specify only one host per request");
+            return Response.status(400).entity(badRequest).build();
+        }
+
+        dHostssubnet = getDozerMapper().map(rHostssubnet, org.openstack.atlas.service.domain.pojos.Hostssubnet.class);
+        req.setHostssubnet(dHostssubnet);
+        req.setCluster(dCluster);
+
+        req.setAddVips(addVips);
+        req.setVirtualIpType(vipType);
+
+        try {
+            getManagementAsyncService().callAsyncLoadBalancingOperation(Operation.SET_HOSTS_SUBNET_MAPPINGS, req);
+            return Response.status(202).build();
+        } catch (Exception ex) {
+            return ResponseFactory.getErrorResponse(ex, null, null);
+        }
     }
 
     public void setVirtualIpsResource(VirtualIpsResource virtualIpsResource) {
