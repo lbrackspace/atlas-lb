@@ -16,6 +16,108 @@
       "message": "lgtm",
       "revId": "277481b8c11cb750a553c0ba2ecdc5daad2846ca",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0406b0cc_60c89dda",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 5
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-07T18:12:04Z",
+      "side": 1,
+      "message": "mostly tests and nit reviews. nodesResource needs a test too",
+      "revId": "277481b8c11cb750a553c0ba2ecdc5daad2846ca",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "24a6bb56_fb3a6eba",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/async/MgmtDeleteNodeListener.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-07T18:12:04Z",
+      "side": 1,
+      "message": "Remove unused code",
+      "revId": "277481b8c11cb750a553c0ba2ecdc5daad2846ca",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "bf0277c9_a9539c39",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/validation/validators/NodeValidator.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-07T18:12:04Z",
+      "side": 1,
+      "message": "They\u0027re all PUT",
+      "revId": "277481b8c11cb750a553c0ba2ecdc5daad2846ca",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0a04ba25_03dcdabb",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/validation/validators/NodeValidator.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-07T18:12:04Z",
+      "side": 1,
+      "message": "Wonder if considering this is a mgmt call that we should allow the node ip to be updated?",
+      "revId": "277481b8c11cb750a553c0ba2ecdc5daad2846ca",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0f87de33_743ef050",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/NodeResourceTest.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-07T18:12:04Z",
+      "side": 1,
+      "message": "Should verify some of the other validations like id in request",
+      "revId": "277481b8c11cb750a553c0ba2ecdc5daad2846ca",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "737f01e9_b858fd92",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/NodeResourceTest.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-07T18:12:04Z",
+      "side": 1,
+      "message": "Should verify the other failure cases too like service failure: LoadBalancer loadBalancer \u003d nodeService.deleteNode(msgLb, node);",
+      "revId": "277481b8c11cb750a553c0ba2ecdc5daad2846ca",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
