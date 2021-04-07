@@ -3,16 +3,24 @@ package org.openstack.atlas.api.mgmt.resources;
 import org.dozer.DozerBeanMapperBuilder;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.openstack.atlas.adapter.exceptions.InsufficientRequestException;
 import org.openstack.atlas.adapter.exceptions.RollBackException;
 import org.openstack.atlas.api.integration.ReverseProxyLoadBalancerVTMService;
+import org.openstack.atlas.api.mgmt.integration.ManagementAsyncService;
+import org.openstack.atlas.api.mgmt.integration.ManagementAsyncServiceImpl;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
 import org.openstack.atlas.cfg.Configuration;
 import org.openstack.atlas.cfg.ConfigurationKey;
+import org.openstack.atlas.cfg.RestApiConfiguration;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cidr;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostsubnet;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.NetInterface;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.LbaasFault;
@@ -23,8 +31,11 @@ import org.openstack.atlas.service.domain.entities.Zone;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.ClusterNotEmptyException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.management.operations.EsbRequest;
+import org.openstack.atlas.service.domain.operations.Operation;
 import org.openstack.atlas.service.domain.operations.OperationResponse;
 import org.openstack.atlas.service.domain.pojos.Hostssubnet;
+import org.openstack.atlas.service.domain.repository.ClusterRepository;
 import org.openstack.atlas.service.domain.repository.HostRepository;
 import org.openstack.atlas.service.domain.services.ClusterService;
 import org.openstack.atlas.service.domain.services.HostService;
@@ -32,7 +43,10 @@ import org.openstack.atlas.service.domain.services.NotificationService;
 import org.openstack.atlas.util.crypto.exception.DecryptException;
 import org.rackspace.vtm.client.exception.VTMRestClientException;
 import org.rackspace.vtm.client.exception.VTMRestClientObjectNotFoundException;
+import sun.net.util.IPAddressUtil;
 
+import javax.jms.JMSException;
+import javax.jms.Session;
 import javax.ws.rs.core.Response;
 import java.net.MalformedURLException;
 import java.rmi.RemoteException;
@@ -673,7 +687,7 @@ public class ClusterResourceTest {
         public void shouldReturnUtilization() throws Exception {
             doReturn(conn).when(reverseProxyLoadBalancerVTMService).getTotalCurrentConnectionsForHost(ArgumentMatchers.any());
             String response = clusterResource.getUtilization(5);
-            Assert.assertEquals("100.0 %", response);
+            Assert.assertEquals("120.0 %", response);
         }
 
         @Test
@@ -736,6 +750,171 @@ public class ClusterResourceTest {
             doThrow(EntityNotFoundException.class).when(clusterService).get(ArgumentMatchers.eq(0));
             response = clusterResource.retrieveCluster();
             Assert.assertEquals(404, response.getStatus());
+        }
+
+    }
+
+    public static class WhenUpdatingSubnets {
+        static final String mappingFile = "loadbalancing-dozer-management-mapping.xml";
+
+        private ManagementAsyncService asyncService;
+        private ClusterResource clusterResource;
+        private OperationResponse operationResponse;
+        private Hostsubnet hsub;
+        private org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet hsubs;
+        private NetInterface ni;
+        private Cidr cidr;
+        private Hostsubnet hsub2;
+        private org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet hsubs2;
+        private NetInterface ni2;
+        private Cidr cidr2;
+        private ReverseProxyLoadBalancerVTMService reverseProxyLoadBalancerVTMService;
+        private ClusterService clusterService;
+        private Host host1;
+        private Host host2;
+        private List<Host> hosts;
+        private org.openstack.atlas.service.domain.pojos.Hostssubnet hostssubnet;
+        private org.openstack.atlas.service.domain.pojos.NetInterface netInterface;
+        private org.openstack.atlas.service.domain.pojos.NetInterface netInterface2;
+        private org.openstack.atlas.service.domain.pojos.Cidr cidr3;
+        private ManagementDependencyProvider managementDependencyProvider;
+        private ManagementAsyncServiceImpl managementAsyncServiceimpl;
+        private Session session;
+
+        @Mock
+        private RestApiConfiguration config;
+
+        @Before
+        public void setUp() throws EntityNotFoundException {
+            MockitoAnnotations.initMocks(this);
+            clusterResource = new ClusterResource();
+            clusterResource.setMockitoAuth(true);
+            managementDependencyProvider = mock(ManagementDependencyProvider.class);
+            ClusterRepository crepo = mock(ClusterRepository.class);
+            asyncService = mock(ManagementAsyncService.class);
+            reverseProxyLoadBalancerVTMService = mock(ReverseProxyLoadBalancerVTMService.class);
+            clusterService = mock(ClusterService.class);
+            clusterResource.setManagementAsyncService(asyncService);
+            clusterResource.setClusterService(clusterService);
+            clusterResource.setReverseProxyLoadBalancerVTMService(reverseProxyLoadBalancerVTMService);
+            clusterResource.setConfiguration(config);
+
+            clusterResource.setId(1);
+            clusterResource.setClusterRepository(crepo);
+            operationResponse = new OperationResponse();
+            operationResponse.setExecutedOkay(true);
+            clusterResource.setDozerMapper(DozerBeanMapperBuilder.create()
+                    .withMappingFiles(mappingFile)
+                    .build());
+            host1 = new Host();
+            host1.setMaxConcurrentConnections(2);
+            host1.setHostStatus(HostStatus.ACTIVE);
+            host2 = new Host();
+            host2.setMaxConcurrentConnections(2);
+            host2.setHostStatus(HostStatus.ACTIVE);
+            hosts = new ArrayList<Host>();
+            hosts.add(host1);
+            hosts.add(host2);
+            netInterface = new org.openstack.atlas.service.domain.pojos.NetInterface();
+            netInterface2 = new org.openstack.atlas.service.domain.pojos.NetInterface();
+            cidr3 = new org.openstack.atlas.service.domain.pojos.Cidr();
+            cidr3.setBlock("123.78.1.2/27");
+            hostssubnet = new org.openstack.atlas.service.domain.pojos.Hostssubnet();
+            org.openstack.atlas.service.domain.pojos.Hostsubnet h1 = new org.openstack.atlas.service.domain.pojos.Hostsubnet();
+            h1.setName("t1");
+            hostssubnet.getHostsubnets().add(h1);
+
+            h1.getNetInterfaces().add(netInterface);
+            h1.getNetInterfaces().add(netInterface2);
+
+            when(crepo.getHosts(anyInt())).thenReturn(hosts);
+            when(clusterService.getHosts(anyInt())).thenReturn(hosts);
+            when(config.getString(Matchers.<ConfigurationKey>any())).thenReturn("REST");
+
+        }
+
+        @Before
+        public void standUpSubnet() {
+            hsub = new Hostsubnet();
+            hsubs = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet();
+            ni = new NetInterface();
+            cidr = new Cidr();
+            ni.setName("name");
+
+            hsub2 = new Hostsubnet();
+            hsubs2 = new org.openstack.atlas.docs.loadbalancers.api.management.v1.Hostssubnet();
+            ni2 = new NetInterface();
+            cidr2 = new Cidr();
+            ni2.setName("name2");
+            cidr2.setBlock("123.78.1.1/27");
+            ni2.getCidrs().add(cidr2);
+            hsub2.getNetInterfaces().add(ni2);
+            hsubs2.getHostsubnets().add(hsub2);
+        }
+
+        @Test
+        public void shouldReturn202WhenESBisNormalWhenAddSubnetWIpv6() throws Exception {
+            cidr.setBlock("fe80::200:f8ff:fe21:67cf/16");
+
+            ni.getCidrs().add(cidr);
+            hsub.getNetInterfaces().add(ni);
+            hsubs.getHostsubnets().add(hsub);
+            Response resp = clusterResource.putHostsSubnetMappings(hsubs, false, false);
+            Assert.assertEquals(202, resp.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(0)).setSubnetMappings(any(), any());
+            verify(asyncService, times(1)).callAsyncLoadBalancingOperation(
+                    eq(Operation.SET_HOST_SUBNET_MAPPINGS), any(EsbRequest.class));        }
+
+        @Test
+        public void shouldReturn202whenESBisNormalWhenAddSubnetWIpv4() throws Exception {
+            cidr.setBlock("192.168.0.1/24");
+
+            ni.getCidrs().add(cidr);
+            hsub.getNetInterfaces().add(ni);
+            hsubs.getHostsubnets().add(hsub);
+            Response resp = clusterResource.putHostsSubnetMappings(hsubs, false, false);
+            Assert.assertEquals(202, resp.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(0)).setSubnetMappings(any(), any());
+            verify(asyncService, times(1)).callAsyncLoadBalancingOperation(
+                    eq(Operation.SET_HOST_SUBNET_MAPPINGS), any(EsbRequest.class));
+        }
+
+        @Test
+        public void shouldFailWithMultipleSubnets() throws Exception {
+            cidr.setBlock("192.168.0.1/24");
+
+            ni.getCidrs().add(cidr);
+            hsub.getNetInterfaces().add(ni);
+            hsubs.getHostsubnets().add(hsub);
+            hsubs.getHostsubnets().add(hsub);
+            Response resp = clusterResource.putHostsSubnetMappings(hsubs, false, false);
+            Assert.assertEquals(400, resp.getStatus());
+            verify(reverseProxyLoadBalancerVTMService, times(0)).setSubnetMappings(any(), any());
+            verify(asyncService, times(0)).callAsyncLoadBalancingOperation(
+                    eq(Operation.SET_HOST_SUBNET_MAPPINGS), any(EsbRequest.class));
+        }
+
+        @Test
+        public void shouldReturn500WhenAsyncCallThrowsException() throws Exception {
+            cidr.setBlock("192.168.0.1/24");
+            ni.getCidrs().add(cidr);
+            hsub.getNetInterfaces().add(ni);
+            hsubs.getHostsubnets().add(hsub);
+            doReturn(asyncService).when(managementDependencyProvider).getManagementAsyncService();
+            doThrow(JMSException.class).when(asyncService).callAsyncLoadBalancingOperation(ArgumentMatchers.any(), ArgumentMatchers.<EsbRequest>any());
+            Response resp = clusterResource.putHostsSubnetMappings(hsubs, false, false);
+            Assert.assertEquals(500, resp.getStatus());
+        }
+
+        @Test
+        public void shouldReturn400BadRequestInCaseOfMultipleSubnets() throws Exception {
+            cidr.setBlock("192.168.0.1/24");
+            ni.getCidrs().add(cidr);
+            hsub.getNetInterfaces().add(ni);
+            hsubs.getHostsubnets().add(hsub);
+            hsubs.getHostsubnets().add(hsub2);
+            Response resp = clusterResource.putHostsSubnetMappings(hsubs, false, false);
+            Assert.assertEquals("Invalid request", ((BadRequest)resp.getEntity()).getMessage());
         }
 
     }
