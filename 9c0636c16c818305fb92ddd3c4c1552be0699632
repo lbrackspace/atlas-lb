@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "a34487e8_2335397a",
+        "filename": "persistence/src/main/java/org/openstack/atlas/service/domain/services/impl/NodeServiceImpl.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-08T16:32:19Z",
+      "side": 1,
+      "message": "since we\u0027re allowing mgmt to update node address we need to include the logic for it here",
+      "revId": "9c0636c16c818305fb92ddd3c4c1552be0699632",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
