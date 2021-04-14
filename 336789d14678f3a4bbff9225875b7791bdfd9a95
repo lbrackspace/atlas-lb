@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "d3359c2d_abf84eac",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ClusterResource.java",
+        "patchSetId": 5
+      },
+      "lineNbr": 418,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-14T18:35:23Z",
+      "side": 1,
+      "message": "This is calling the wrong listener. We\u0027ll need to add the operation and listener mapping for this to work",
+      "revId": "336789d14678f3a4bbff9225875b7791bdfd9a95",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
