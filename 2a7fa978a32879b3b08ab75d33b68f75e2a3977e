@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "9bf4912a_05b92ce9",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/async/MgmtSetHostsSubnetMappingListener.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-14T13:57:39Z",
+      "side": 1,
+      "message": "If rollback happens above we don\u0027t want to execute the rest of this code",
+      "revId": "2a7fa978a32879b3b08ab75d33b68f75e2a3977e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
