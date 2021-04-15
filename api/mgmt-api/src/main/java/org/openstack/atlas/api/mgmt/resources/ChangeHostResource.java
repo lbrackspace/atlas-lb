@@ -2,6 +2,7 @@ package org.openstack.atlas.api.mgmt.resources;
 
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.ValidationErrors;
 import org.openstack.atlas.service.domain.entities.Host;
@@ -15,9 +16,17 @@ import org.openstack.atlas.service.domain.entities.VirtualIpv6;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.pojos.Hostssubnet;
+import org.openstack.atlas.service.domain.pojos.Hostsubnet;
 import org.openstack.atlas.service.domain.pojos.MessageDataContainer;
+import org.openstack.atlas.service.domain.pojos.NetInterface;
+import org.openstack.atlas.service.domain.services.helpers.SslTerminationHelper;
+import org.openstack.atlas.util.b64aes.Aes;
 import org.openstack.atlas.util.ca.zeus.ZeusCrtFile;
 import org.openstack.atlas.util.ca.zeus.ZeusUtils;
+import org.openstack.atlas.util.ip.IPv4Cidrs;
+import org.openstack.atlas.util.ip.IPv4Cidr;
+import org.openstack.atlas.util.ip.IPUtils;
 
 import javax.ws.rs.PUT;
 import javax.ws.rs.QueryParam;
@@ -27,6 +36,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.ACTIVE;
 import static org.openstack.atlas.service.domain.entities.LoadBalancerStatus.PENDING_UPDATE;
@@ -40,6 +52,7 @@ public class ChangeHostResource extends ManagementDependencyProvider {
     private static final String SAMEHOST = "The supplied newHostId is the same as the Load Balancer's existing HostID. No action will be performed.";
     private static final String LOCKFAIL = "Can't lock LB. No action will be performed.";
     private static final String SHAREDLOCKFAIL = "This Load Balancer uses a shared VIP, and a lock could not be established on all LBs sharing that VIP. No action will be performed.";
+    private static final String IPADDR_BREAK = "The loadbalancer's IP address is not found in the target host machine subnet mappings.";
     private static final ZeusUtils zeusUtils;
     private int loadBalancerId;
 
@@ -106,13 +119,25 @@ public class ChangeHostResource extends ManagementDependencyProvider {
                     String crt = sslTerm.getCertificate();
                     String key = sslTerm.getPrivatekey();
                     String imd = sslTerm.getIntermediateCertificate();
-                    ZeusCrtFile zcf = zeusUtils.buildZeusCrtFileLbassValidation(key, crt, imd);
-                    if (zcf.hasFatalErrors()) {
+                    try {
+                        ZeusCrtFile zcf = zeusUtils.buildZeusCrtFileLbassValidation(Aes.b64decryptGCM_str(key,
+                                configuration.getString(PublicApiServiceConfigurationKeys.term_crypto_key),
+                                SslTerminationHelper.getCertificateMappingIv(
+                                        sslTerm.getId(), lbToMove.getAccountId(), lbToMove.getId())), crt, imd);
+                        if (zcf.hasFatalErrors()) {
+                            BadRequest sslFault = new BadRequest();
+                            sslFault.setValidationErrors(new ValidationErrors());
+                            sslFault.getValidationErrors().getMessages().add(SSLTERMBREAK);
+                            sslFault.getValidationErrors().getMessages().add("SSL Termination broken for LB #" + lbToMove.getId());
+                            sslFault.getValidationErrors().getMessages().addAll(zcf.getFatalErrorList());
+                            return Response.status(Response.Status.BAD_REQUEST).entity(sslFault).build();
+                        }
+                    } catch (Exception ex) {
                         BadRequest sslFault = new BadRequest();
                         sslFault.setValidationErrors(new ValidationErrors());
                         sslFault.getValidationErrors().getMessages().add(SSLTERMBREAK);
-                        sslFault.getValidationErrors().getMessages().add("SSL Termination broken for LB #" + lbToMove.getId());
-                        sslFault.getValidationErrors().getMessages().addAll(zcf.getFatalErrorList());
+                        sslFault.getValidationErrors().getMessages().add("SSL Termination key decryption failed for LB #" + lbToMove.getId());
+                        sslFault.getValidationErrors().getMessages().add(ex.getMessage());
                         return Response.status(Response.Status.BAD_REQUEST).entity(sslFault).build();
                     }
                 }
@@ -124,6 +149,16 @@ public class ChangeHostResource extends ManagementDependencyProvider {
                     suspendedFail.getValidationErrors().getMessages().add("Will not attempt to move Suspended LB #" + lbToMove.getId());
                     return Response.status(Response.Status.BAD_REQUEST).entity(suspendedFail).build();
                 }
+            }
+
+            //Safety check to verify if loadbalancer's IP address is with in the Subnet mappings of the target host machine
+            boolean isVIPAvailableAtHost = verifyVIPinTargetHost(newHost, LBsToMove);
+            if(!isVIPAvailableAtHost){
+                BadRequest nwFault = new BadRequest();
+                nwFault.setValidationErrors(new ValidationErrors());
+                nwFault.getValidationErrors().getMessages().add(IPADDR_BREAK);
+                nwFault.getValidationErrors().getMessages().add("IP address not found with in the target host, will not attempt to move LB #" + lb.getId());
+                return Response.status(Response.Status.BAD_REQUEST).entity(nwFault).build();
             }
 
             List<LoadBalancer> pendingLBs = new ArrayList<LoadBalancer>();
@@ -165,6 +200,40 @@ public class ChangeHostResource extends ManagementDependencyProvider {
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
         }
+    }
+
+    /**
+     * Safety check to verify if loadbalancer's IP address is with in the subnet mappings of the target host machine.
+     * @param LBsToMove
+     * @throws Exception
+     */
+    private boolean verifyVIPinTargetHost(Host newHost, Map<Integer, LoadBalancer> LBsToMove) throws Exception {
+        Hostssubnet dbHostssubnet = reverseProxyLoadBalancerVTMService.getSubnetMappings(newHost);
+        IPv4Cidrs ipv4Cidrs = new IPv4Cidrs();
+        Set<String> ipv4CidrsBlocks = new HashSet<String>();
+        for (Hostsubnet hostsubnet : dbHostssubnet.getHostsubnets()) {
+            for (NetInterface ni : hostsubnet.getNetInterfaces()) {
+                for (org.openstack.atlas.service.domain.pojos.Cidr cidr : ni.getCidrs()) {
+                    String block = cidr.getBlock();
+                    if (IPUtils.isValidIpv4Subnet(block)) {
+                        ipv4CidrsBlocks.add(block);// Avoid the duplicates we will be seeing by adding to a set only
+                    }
+                }
+            }
+        }
+        for (String block : ipv4CidrsBlocks) {
+            ipv4Cidrs.getCidrs().add(new IPv4Cidr(block));
+        }
+        //get IPV4 addresses of the lb and verify if they are in the host's subnet mappings
+        String ipAddress;
+        for (LoadBalancer lbToMove : LBsToMove.values()) {
+            for (Iterator<LoadBalancerJoinVip> it = lbToMove.getLoadBalancerJoinVipSet().iterator(); it.hasNext();) {
+                ipAddress = it.next().getVirtualIp().getIpAddress();
+                if(!ipv4Cidrs.contains(ipAddress))
+                    return false;
+            }
+        }
+        return true;
     }
 
     public void setLoadBalancerId(int id) {
