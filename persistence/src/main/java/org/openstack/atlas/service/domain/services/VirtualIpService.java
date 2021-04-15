@@ -99,4 +99,7 @@ public interface VirtualIpService {
     public Account updateOrCreateAccountRecord(Account account) throws NoSuchAlgorithmException, EntityNotFoundException;
 
     public boolean deleteAccountRecord(Integer aid);
+
+    public void updateClusterForVirtualIp(VirtualIp virtualIp);
+
 }

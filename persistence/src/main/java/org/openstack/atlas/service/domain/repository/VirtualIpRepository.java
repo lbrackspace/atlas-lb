@@ -372,6 +372,12 @@ public class VirtualIpRepository {
         entityManager.remove(virtualIp);
     }
 
+    public void updateVirtualIpCluster(VirtualIp virtualIp) {
+        LOG.info("Updating VIP " + virtualIp.getId() + "...");
+        entityManager.merge(virtualIp);
+        entityManager.flush();
+    }
+
     public VirtualIp getById(Integer id) throws EntityNotFoundException {
         VirtualIp virtualIp = entityManager.find(VirtualIp.class, id);
         if (virtualIp == null) {

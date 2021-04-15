@@ -492,6 +492,14 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
     }
 
     @Override
+    @Transactional
+    public void updateClusterForVirtualIp(VirtualIp virtualIp) {
+
+        virtualIpRepository.updateVirtualIpCluster(virtualIp);
+
+    }
+
+    @Override
     public List<VirtualIp> getVipsByClusterId(Integer clusterId) {
         return virtualIpRepository.getVipsByClusterId(clusterId);
     }

@@ -1,28 +1,28 @@
 package org.openstack.atlas.api.mgmt.resources;
 
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIp;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpAvailabilityReport;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpAvailabilityReports;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIps;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.LoadBalancers;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpBlocks;
-import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadBalancerDetails;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.*;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4Range;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
+import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPCidrBlockOutOfRangeException;
+import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
+import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException;
 import org.openstack.atlas.service.domain.entities.LoadBalancer;
 import org.openstack.atlas.api.helpers.ResponseFactory;
 import org.openstack.atlas.api.mgmt.resources.providers.ManagementDependencyProvider;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.services.VirtualIpService;
+import org.openstack.atlas.service.domain.services.impl.VirtualIpServiceImpl;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.POST;
 
 public class VirtualIpsResource extends ManagementDependencyProvider {
 
     private VirtualIpResource virtualIpResource;
+    private ClusterResource clusterResource;
     private VirtualIpAvailabilityReports vipAvailabilityReports;
     private int id;
     private Integer accountId;
@@ -134,6 +134,60 @@ public class VirtualIpsResource extends ManagementDependencyProvider {
     public void setVirtualIpResource(VirtualIpResource virtualIpResource) {
         this.virtualIpResource = virtualIpResource;
     }
+
+    @Path("migrate")
+    @PUT
+    public Response updateClusterForVipBlock(@QueryParam("oldClusterId") Integer oldClusterId, @QueryParam("newClusterId") Integer newClusterId, Cidr cidr) throws IPOctetOutOfRangeException, IPStringConversionException, IPCidrBlockOutOfRangeException {
+        if (!isUserInRole("ops")) {
+            return ResponseFactory.accessDenied();
+        }
+        boolean isInRange = false;
+        List<org.openstack.atlas.service.domain.entities.VirtualIp> oldInRangeClusterIps = new ArrayList<>();
+        IPv4Range iPv4Range = IPv4ToolSet.ipv4BlockToRange(cidr.getBlock());
+        Long loIp = iPv4Range.getLo();
+        Long hiIp = iPv4Range.getHi();
+        List<org.openstack.atlas.service.domain.entities.VirtualIp> vipsToBeUpdated = new ArrayList<>();
+        try {
+            List<org.openstack.atlas.service.domain.entities.VirtualIp> oldClusterIps = virtualIpService.getVipsByClusterId(oldClusterId);
+            org.openstack.atlas.service.domain.entities.Cluster updatedCluster = clusterService.get(newClusterId);
+            for(org.openstack.atlas.service.domain.entities.VirtualIp virtualIp : oldClusterIps) {
+
+                if(virtualIp.getIpAddress().equals(loIp.toString()) || isInRange){
+                    isInRange = true;
+                    oldInRangeClusterIps.add(virtualIp);
+                } else if (virtualIp.getIpAddress().equals(hiIp.toString())) {
+                    isInRange = false;
+                    break;
+                 }
+            }
+            if(oldInRangeClusterIps.isEmpty()){
+                throw new EntityNotFoundException("cannot find VIPS in that range for cluster " + oldClusterId);
+            }
+                for(org.openstack.atlas.service.domain.entities.VirtualIp inRangeIp : oldInRangeClusterIps) {
+                    if(!inRangeIp.isAllocated()){
+                        inRangeIp.setCluster(updatedCluster);
+                        vipsToBeUpdated.add(inRangeIp);
+                    }
+                }
+                for(org.openstack.atlas.service.domain.entities.VirtualIp vipToBeUpdated : vipsToBeUpdated) {
+                    virtualIpService.updateClusterForVirtualIp(vipToBeUpdated);
+                }
+            return Response.status(200).entity(cidr).build();
+
+        } catch (Exception e) {
+
+            return ResponseFactory.getErrorResponse(e, null, null);
+
+        }
+
+
+
+
+
+
+    }
+
+
 
     public void setId(int id) {
         this.id = id;
