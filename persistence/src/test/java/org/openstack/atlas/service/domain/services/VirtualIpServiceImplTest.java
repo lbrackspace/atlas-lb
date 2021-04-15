@@ -1,8 +1,13 @@
 package org.openstack.atlas.service.domain.services;
 
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cidr;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.TrafficType;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadBalancerDetails;
+import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPCidrBlockOutOfRangeException;
+import org.openstack.atlas.lb.helpers.ipstring.exceptions.IPOctetOutOfRangeException;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.repository.ClusterRepository;
@@ -704,4 +709,55 @@ public class VirtualIpServiceImplTest {
             verify(virtualIpRepository, times(1)).batchPersist(vips);
         }
     }
+
+    public static class whenMigratingVipsToCluster {
+
+        VirtualIpServiceImpl virtualIpService;
+        @Mock
+        VirtualIpRepository virtualIpRepository;
+        Cidr cidr;
+        Integer newClusterId;
+        List<String> addresses;
+
+        @Before
+        public void setUp() {
+            MockitoAnnotations.initMocks(this);
+            virtualIpService = new VirtualIpServiceImpl();
+            virtualIpService.setVirtualIpRepository(virtualIpRepository);
+            cidr = new Cidr();
+            addresses = new ArrayList<>();
+            cidr.setBlock("10.25.0.0/30");
+            newClusterId = 1;
+            addresses.add("10.25.0.0");
+            addresses.add("10.25.0.1");
+            addresses.add("10.25.0.2");
+            addresses.add("10.25.0.3");
+
+        }
+        @Test
+        public void shouldPassListOfAddressAndId() throws IPOctetOutOfRangeException, org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException, IPCidrBlockOutOfRangeException {
+            virtualIpService.migrateVipsToClusterByCidrBlock(newClusterId, cidr);
+            verify(virtualIpRepository, times(1)).migrateVIPsByCidrBlock(1, addresses);
+
+        }
+        @Test(expected = IPCidrBlockOutOfRangeException.class)
+        public void shouldThrowBlockOutOfRangeException() throws IPOctetOutOfRangeException, org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException, IPCidrBlockOutOfRangeException {
+            cidr.setBlock("10.25.0.0/35");
+            virtualIpService.migrateVipsToClusterByCidrBlock(newClusterId, cidr);
+
+        }
+        @Test(expected = org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException.class)
+        public void shouldThrowIPStringConversionException() throws IPOctetOutOfRangeException, org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException, IPCidrBlockOutOfRangeException {
+            cidr.setBlock("10.25.0.0.0.00/30");
+            virtualIpService.migrateVipsToClusterByCidrBlock(newClusterId, cidr);
+
+        }
+        @Test(expected = IPOctetOutOfRangeException.class)
+        public void shouldThrowIpOctetOutOfRangeException() throws IPOctetOutOfRangeException, org.openstack.atlas.lb.helpers.ipstring.exceptions.IPStringConversionException, IPCidrBlockOutOfRangeException {
+            cidr.setBlock("10.2.256.0/30");
+            virtualIpService.migrateVipsToClusterByCidrBlock(newClusterId, cidr);
+        }
+
+    }
+
 }
