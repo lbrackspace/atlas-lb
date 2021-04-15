@@ -372,6 +372,12 @@ public class VirtualIpRepository {
         entityManager.remove(virtualIp);
     }
 
+    public void updateVirtualIpCluster(VirtualIp virtualIp) {
+        LOG.info("Updating VIP " + virtualIp.getId() + "...");
+        entityManager.merge(virtualIp);
+        entityManager.flush();
+    }
+
     public VirtualIp getById(Integer id) throws EntityNotFoundException {
         VirtualIp virtualIp = entityManager.find(VirtualIp.class, id);
         if (virtualIp == null) {
@@ -466,6 +472,32 @@ public class VirtualIpRepository {
         sb.append(generateFormattedValuesForList(vips));
         return sb.toString();
     }
+
+    public void migrateVIPsByCidrBlock(Integer newClusterId, List<String> viplist){
+        List<String> vipBatch = new ArrayList<>();
+        for ( int i = 0; i < viplist.size(); i++ ) {
+            vipBatch.add(viplist.get(i));
+            if (i % 20 == 0) {
+                String query = generateBatchInsertQueryForMigration(vipBatch);
+                entityManager.createNativeQuery(query).executeUpdate();
+                vipBatch.clear();
+            }
+        }
+    }
+
+    public String generateBatchInsertQueryForMigration(List<String> vipsList) {
+        final StringBuilder sb = new StringBuilder();
+
+        sb.append("UPDATE virtual_ip_ipv4 set cluster_id = %s");
+
+        for(vipsList)
+
+        sb.append(generateFormattedValuesForList(vips));
+        return sb.toString();
+    }
+
+
+
 
     private String generateFormattedValuesForList(Collection<VirtualIp> vips) {
         String queryString = "";

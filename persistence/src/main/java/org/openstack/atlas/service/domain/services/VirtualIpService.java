@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.services;
 
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cidr;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadBalancerDetails;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
@@ -99,4 +100,7 @@ public interface VirtualIpService {
     public Account updateOrCreateAccountRecord(Account account) throws NoSuchAlgorithmException, EntityNotFoundException;
 
     public boolean deleteAccountRecord(Integer aid);
+
+    public void migrateVipsToClusterByCidrBlock(Integer newClusterId, Cidr cidr);
+
 }

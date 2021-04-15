@@ -1,7 +1,9 @@
 package org.openstack.atlas.service.domain.services.impl;
 
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cidr;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.TrafficType;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.VirtualIpLoadBalancerDetails;
+import org.openstack.atlas.lb.helpers.ipstring.IPv4ToolSet;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.*;
 import org.openstack.atlas.service.domain.services.AccountLimitService;
@@ -489,6 +491,15 @@ public class VirtualIpServiceImpl extends BaseService implements VirtualIpServic
 
         virtualIpRepository.deleteVirtualIp(virtualIp);
         LOG.info(String.format("Successfully removed virtual ip '%d' from cluster.", virtualIp.getId()));
+    }
+
+    @Override
+    @Transactional
+    public void migrateVipsToClusterByCidrBlock(Integer newClusterId, Cidr cidr) {
+        List<String> vipsToUpdate = IPv4ToolSet.ipv4BlockToIpStrings(cidr.getBlock());
+
+        virtualIpRepository.migrateVIPsByCidrBlock(newClusterId, vipsToUpdate);
+
     }
 
     @Override
