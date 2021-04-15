@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.repository;
 
+import org.hibernate.jpa.internal.EntityManagerImpl;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -146,4 +147,49 @@ public class VirtualIpRepositoryTest {
 
        }
    }
+
+   public static class whenMigratingVipsToCluster {
+
+       VirtualIpRepository virtualIpRepository;
+
+       @Mock
+       EntityManagerImpl entityManager;
+       @Mock
+       Query qry;
+       List<String> addresses;
+       List<String> batchAddresses;
+
+
+       @Before
+       public void setUp() {
+           MockitoAnnotations.initMocks(this);
+           virtualIpRepository = new VirtualIpRepository();
+           virtualIpRepository.setEntityManager(entityManager);
+           addresses = new ArrayList<>();
+           addresses.add("192.25.0.1");
+
+           when(entityManager.createNativeQuery(any())).thenReturn(qry);
+       }
+       @Test
+       public void shouldMigrate40Times() {
+           addresses.clear();
+           for (int i = 1; i <= 40; i++) {
+               addresses.add("192.25.0." + i);
+           }
+           virtualIpRepository.migrateVIPsByCidrBlock(1, addresses);
+           verify(entityManager, times(40)).createNativeQuery(any());
+       }
+       @Test
+       public void shouldInsertQueryForOneAddress() {
+           String qry = virtualIpRepository.generateBatchInsertQueryForMigration("192.25.0.1", 1);
+           Assert.assertEquals("UPDATE virtual_ip_ipv4 set cluster_id = 1 where ip_address = '192.25.0.1' AND is_allocated = 0", qry);
+       }
+       @Test
+       public void shouldMigrate1Time() {
+           virtualIpRepository.migrateVIPsByCidrBlock(1, addresses);
+           verify(entityManager, times(1)).createNativeQuery(any());
+       }
+
+
+    }
 }

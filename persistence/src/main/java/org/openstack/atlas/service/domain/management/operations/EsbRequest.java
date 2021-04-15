@@ -1,5 +1,6 @@
 package org.openstack.atlas.service.domain.management.operations;
 
+import org.openstack.atlas.docs.loadbalancers.api.management.v1.Cidr;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.entities.AccountGroup;
 import org.openstack.atlas.service.domain.entities.BlacklistItem;
@@ -42,6 +43,25 @@ public class EsbRequest implements Serializable {
     private BlacklistItem blacklistItem;
     private VirtualIpType virtualIpType;
     private Boolean addVips;
+    private Cidr cidr;
+    private Integer clusterId;
+
+
+    public Cidr getCidr() {
+        return cidr;
+    }
+
+    public void setCidr(Cidr cidr) {
+        this.cidr = cidr;
+    }
+
+    public Integer getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Integer clusterId) {
+        this.clusterId = clusterId;
+    }
 
     public void setBlacklistItems(List<BlacklistItem> blacklistItems) {
         this.blacklistItems = blacklistItems;
