@@ -18,6 +18,46 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "c0fc9102_d4a48eb3",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-19T12:53:56Z",
+      "side": 1,
+      "message": "A typo! Giving error while trying to deploy",
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "5c39ee01_d88cb2eb",
+        "filename": "api/mgmt-web/src/main/webapp/WEB-INF/jms-queues-mgmt.xml",
+        "patchSetId": 3
+      },
+      "lineNbr": 280,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-19T12:53:56Z",
+      "side": 1,
+      "message": "It Should be MigrateVipsToClusterListener.",
+      "range": {
+        "startLine": 280,
+        "startChar": 52,
+        "endLine": 280,
+        "endChar": 84
+      },
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0935f3fe_5b4b8c5c",
