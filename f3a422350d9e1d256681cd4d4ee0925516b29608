@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "e5369e26_9481b859",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 9
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-19T15:51:49Z",
+      "side": 1,
+      "message": "Remove unrelated code",
+      "revId": "f3a422350d9e1d256681cd4d4ee0925516b29608",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0ab78aac_a42452e5",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/resources/ClusterResource.java",
+        "patchSetId": 9
+      },
+      "lineNbr": 458,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-04-19T15:51:49Z",
+      "side": 1,
+      "message": "Should go ahead and remove this, it\u0027s part of another ticket no need to update unrelated code in patches",
+      "revId": "f3a422350d9e1d256681cd4d4ee0925516b29608",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
