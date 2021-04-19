@@ -5,10 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentMatchers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.service.domain.entities.*;
 
@@ -57,8 +54,11 @@ public class VirtualIpRepositoryTest {
        @Test
        public void shouldPersistASingleVip() {
            virtualIpRepository.batchPersist(vipList);
-           verify(entityManager, times(1)).createNativeQuery(any());
-       }
+           ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+           verify(entityManager, times(1)).createNativeQuery(argument.capture());
+           Assert.assertEquals("INSERT INTO virtual_ip_ipv4" +
+                   " (ip_address, type,cluster_id, is_allocated) " +
+                   "VALUES('192.168.0.1','PUBLIC',1,0)", argument.getValue());       }
 
        @Test
        public void shouldPersistATwoBatches() throws Exception {
@@ -80,7 +80,7 @@ public class VirtualIpRepositoryTest {
        @Test
        public void shouldPersistATwoBatchesOnePartiallyFull() {
            vipList.clear();
-           // 40 vips will give us two batches
+           // 30 vips will give us two batches
            for (int i = 1; i <= 30; i++) {
                VirtualIp vip = new VirtualIp();
                vip.setId(i);
@@ -95,9 +95,31 @@ public class VirtualIpRepositoryTest {
        }
 
        @Test
+       public void shouldPersistASingBatchesPartiallyFull() {
+           vipList.clear();
+           // 10 vips will give us one batch
+           for (int i = 1; i <= 6; i++) {
+               VirtualIp vip = new VirtualIp();
+               vip.setId(i);
+               vip.setIpAddress("192.168.1." + i);
+               vip.setCluster(cluster);
+               vip.setVipType(VirtualIpType.PUBLIC);
+               vip.setAllocated(false);
+               vipList.add(vip);
+           }
+           virtualIpRepository.batchPersist(vipList);
+           ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+           verify(entityManager, times(1)).createNativeQuery(argument.capture());
+           Assert.assertEquals("INSERT INTO virtual_ip_ipv4" +
+                   " (ip_address, type,cluster_id, is_allocated) " +
+                   "VALUES('192.168.1.1','PUBLIC',1,0),('192.168.1.2','PUBLIC',1,0)," +
+                   "('192.168.1.3','PUBLIC',1,0),('192.168.1.4','PUBLIC',1,0)," +
+                   "('192.168.1.5','PUBLIC',1,0),('192.168.1.6','PUBLIC',1,0)", argument.getValue());
+       }
+
+       @Test
        public void verifyBatchInsertQueryGenerationForMultiVips() {
            vipList.clear();
-           // 40 vips will give us two batches
            for (int i = 1; i <= 2; i++) {
                VirtualIp vip = new VirtualIp();
                vip.setId(i);
