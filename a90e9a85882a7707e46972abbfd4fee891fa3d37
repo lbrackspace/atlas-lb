@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "c51ad609_4058f5ce",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-19T09:35:33Z",
+      "side": 1,
+      "message": "mostly nit-picks, rest lgtm!",
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0935f3fe_5b4b8c5c",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/repository/VirtualIpRepositoryTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-19T09:35:33Z",
+      "side": 1,
+      "message": "What\u0027s the use of creating VirtualIp object in this scenario?",
+      "range": {
+        "startLine": 155,
+        "startChar": 14,
+        "endLine": 156,
+        "endChar": 28
+      },
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "80531732_82113117",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/repository/VirtualIpRepositoryTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-19T09:35:33Z",
+      "side": 1,
+      "message": "a typo!",
+      "range": {
+        "startLine": 163,
+        "startChar": 25,
+        "endLine": 163,
+        "endChar": 32
+      },
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "0b9f935b_396ca704",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/VirtualIpServiceImplTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 744,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-19T09:35:33Z",
+      "side": 1,
+      "message": "a typo!",
+      "range": {
+        "startLine": 744,
+        "startChar": 36,
+        "endLine": 744,
+        "endChar": 39
+      },
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
