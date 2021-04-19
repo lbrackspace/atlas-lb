@@ -449,9 +449,9 @@ public class VirtualIpRepository {
 
     public void batchPersist(List<VirtualIp> viplist){
         List<VirtualIp> vipBatch = new ArrayList<>();
-        for ( int i = 0; i < viplist.size(); i++ ) {
-            vipBatch.add(viplist.get(i));
-            if (i % 20 == 0) {
+        for ( int i = 1; i <= viplist.size(); i++ ) {
+            vipBatch.add(viplist.get(i-1));
+            if (i % 20 == 0 || i == viplist.size()) {
                 String query = generateBatchInsertQuery(vipBatch);
                 entityManager.createNativeQuery(query).executeUpdate();
                 vipBatch.clear();
