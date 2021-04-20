@@ -16,6 +16,24 @@
       "message": "Might want some error handling here so whole op doesn\u0027t fail if one does. Should maybe consider handling OFFLINE hosts differently also.",
       "revId": "ba407f2471821926238c1296c9798e93e22e98a5",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "2f642d1d_609c2135",
+        "filename": "api/mgmt-api/src/main/java/org/openstack/atlas/api/mgmt/async/MgmtSetHostsSubnetMappingListener.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-04-20T08:04:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c6147fe1_fe4e51c3",
+      "revId": "ba407f2471821926238c1296c9798e93e22e98a5",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
