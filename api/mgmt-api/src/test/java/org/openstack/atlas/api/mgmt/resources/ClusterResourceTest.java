@@ -687,7 +687,7 @@ public class ClusterResourceTest {
         public void shouldReturnUtilization() throws Exception {
             doReturn(conn).when(reverseProxyLoadBalancerVTMService).getTotalCurrentConnectionsForHost(ArgumentMatchers.any());
             String response = clusterResource.getUtilization(5);
-            Assert.assertEquals("120.0 %", response);
+            Assert.assertEquals("100.0 %", response);
         }
 
         @Test
