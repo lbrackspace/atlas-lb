@@ -82,6 +82,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "67a0ad4c_23cec2b5",
+        "filename": "api/mgmt-web/src/main/webapp/WEB-INF/jms-queues-mgmt.xml",
+        "patchSetId": 3
+      },
+      "lineNbr": 280,
+      "author": {
+        "id": 1017275
+      },
+      "writtenOn": "2021-04-23T20:16:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5c39ee01_d88cb2eb",
+      "range": {
+        "startLine": 280,
+        "startChar": 52,
+        "endLine": 280,
+        "endChar": 84
+      },
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0935f3fe_5b4b8c5c",
@@ -116,6 +140,30 @@
         "id": 1018589
       },
       "writtenOn": "2021-04-20T11:28:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0935f3fe_5b4b8c5c",
+      "range": {
+        "startLine": 155,
+        "startChar": 14,
+        "endLine": 156,
+        "endChar": 28
+      },
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "1fbe2f23_590ae7c8",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/repository/VirtualIpRepositoryTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 1017275
+      },
+      "writtenOn": "2021-04-23T20:16:16Z",
       "side": 1,
       "message": "Done",
       "parentUuid": "0935f3fe_5b4b8c5c",
@@ -176,6 +224,30 @@
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     },
     {
+      "unresolved": false,
+      "key": {
+        "uuid": "83f62efe_2c67fa4f",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/repository/VirtualIpRepositoryTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 1017275
+      },
+      "writtenOn": "2021-04-23T20:16:16Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "80531732_82113117",
+      "range": {
+        "startLine": 163,
+        "startChar": 25,
+        "endLine": 163,
+        "endChar": 32
+      },
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
       "unresolved": true,
       "key": {
         "uuid": "0b9f935b_396ca704",
@@ -210,6 +282,30 @@
         "id": 1018589
       },
       "writtenOn": "2021-04-20T11:28:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "0b9f935b_396ca704",
+      "range": {
+        "startLine": 744,
+        "startChar": 36,
+        "endLine": 744,
+        "endChar": 39
+      },
+      "revId": "a90e9a85882a7707e46972abbfd4fee891fa3d37",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "0b33bc96_c342454a",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/services/VirtualIpServiceImplTest.java",
+        "patchSetId": 3
+      },
+      "lineNbr": 744,
+      "author": {
+        "id": 1017275
+      },
+      "writtenOn": "2021-04-23T20:16:16Z",
       "side": 1,
       "message": "Done",
       "parentUuid": "0b9f935b_396ca704",
