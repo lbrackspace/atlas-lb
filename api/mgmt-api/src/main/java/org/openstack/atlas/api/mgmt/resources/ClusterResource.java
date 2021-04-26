@@ -311,7 +311,8 @@ public class ClusterResource extends ManagementDependencyProvider {
             dataModelCls.setNumberOfHostMachines(clusterService.getHosts(domainCl.getId()).size());
             dataModelCls.setNumberOfUniqueCustomers(clusterService.getNumberOfUniqueAccountsForCluster(domainCl.getId()));
             dataModelCls.setNumberOfLoadBalancingConfigurations(clusterService.getNumberOfActiveLoadBalancersForCluster(domainCl.getId()));
-            dataModelCls.setUtilization(getUtilization(domainCl.getId()));
+//            dataModelCls.setUtilization(getUtilization(domainCl.getId()));
+            dataModelCls.setUtilization("0.0%");
             return Response.status(200).entity(dataModelCls).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
