@@ -71,7 +71,7 @@ public class HostEndpointPollerJob extends AbstractJob {
                 }
 
                 LOG.info("Host: " + host.getId() + " is being updated in the database.");
-                hostRepository.update(host);
+                hostRepository.updateEndpoints(host);
                 LOG.info("Finished updating host: " + host.getId() + " in the database.");
             }
         } catch (Exception e) {
