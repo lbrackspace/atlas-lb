@@ -60,6 +60,10 @@ public class ApacheCommonsConfiguration implements Configuration {
         }
     }
 
+    public boolean isModified() {
+        return configurationFileLastModifiedTimestamp != configurationFile.lastModified();
+    }
+
     @Override
     public String getString(ConfigurationKey key) throws ConfigurationInitializationException {
         checkState();
