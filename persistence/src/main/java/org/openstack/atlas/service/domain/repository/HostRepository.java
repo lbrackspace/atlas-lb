@@ -5,14 +5,15 @@ import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.docs.loadbalancers.api.management.v1.ClusterStatus;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.exceptions.OutOfVipsException;
 import org.openstack.atlas.service.domain.pojos.Customer;
 import org.openstack.atlas.service.domain.pojos.LoadBalancerCountByAccountIdHostId;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import javax.persistence.*;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -183,6 +184,27 @@ public class HostRepository {
         entityManager.flush();
         return host;
     }
+
+    public Host updateEndpoints(Host host) throws EntityNotFoundException {
+        LOG.info(String.format("Updating the Host rest endpoint active field, for Host ID: %s", host.getId()+"..."));
+        Host hostToUpdate;
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Host> criteria = builder.createQuery(Host.class);
+        Root<Host> hostRoot = criteria.from(Host.class);
+        Predicate hostId = builder.equal(hostRoot.get(Host_.id), host.getId());
+        criteria.select(hostRoot)
+                .where(hostId);
+        try {
+        hostToUpdate = entityManager.createQuery(criteria).setLockMode(LockModeType.PESSIMISTIC_WRITE).setMaxResults(1).getSingleResult();
+        } catch (Exception e) {
+            LOG.error(e);
+            throw new EntityNotFoundException(Constants.HostNotFound);
+        }
+        hostToUpdate.setRestEndpointActive(host.getRestEndpointActive());
+        entityManager.merge(hostToUpdate);
+        return hostToUpdate;
+        }
+
 
     public Host getFirstAvailableSoapEndPointHost() throws EntityNotFoundException {
         String hqlStr = "from Host h where h.soapEndpointActive = 1 "
