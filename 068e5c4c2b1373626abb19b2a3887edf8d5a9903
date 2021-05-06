@@ -16,6 +16,40 @@
       "message": "lgtm!",
       "revId": "068e5c4c2b1373626abb19b2a3887edf8d5a9903",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "133cc035_40049ac4",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-05-06T15:03:38Z",
+      "side": 1,
+      "message": "nit; we shouldn\u0027t be putting ticket/internal things into public code",
+      "revId": "068e5c4c2b1373626abb19b2a3887edf8d5a9903",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "536c7d90_988ad4b1",
+        "filename": "persistence/src/test/java/org/openstack/atlas/service/domain/repository/HostRepositoryTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 216,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-05-06T15:03:38Z",
+      "side": 1,
+      "message": "remove ticket info",
+      "revId": "068e5c4c2b1373626abb19b2a3887edf8d5a9903",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
