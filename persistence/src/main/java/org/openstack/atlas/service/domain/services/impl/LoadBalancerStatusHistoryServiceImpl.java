@@ -4,6 +4,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatus;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.repository.LoadBalancerStatusHistoryRepository;
 import org.openstack.atlas.service.domain.services.LoadBalancerStatusHistoryService;
 import org.springframework.stereotype.Service;
 
@@ -27,4 +29,14 @@ public class LoadBalancerStatusHistoryServiceImpl extends BaseService implements
         loadBalancerStatusHistory.setCreated(Calendar.getInstance());
         return loadBalancerStatusHistoryRepository.save(loadBalancerStatusHistory);
     }
+
+    @Override
+    public void deleteLBStatusHistoryOlderThanSixMonths() throws EntityNotFoundException {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -180);
+        loadBalancerStatusHistoryRepository.deleteStatusHistoryForLBOlderThanSixMonths(cal);
+    }
+
+
+
 }
