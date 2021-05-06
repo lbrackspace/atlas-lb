@@ -4,6 +4,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory;
 import org.openstack.atlas.service.domain.entities.UserPages;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 @Repository
@@ -53,4 +56,14 @@ public class LoadBalancerStatusHistoryRepository {
             return lbshlist;
         }
     }
+
+    public void deleteStatusHistoryForLBOlderThanSixMonths(Calendar cal) throws EntityNotFoundException {
+        try{
+            entityManager.createQuery("DELETE FROM LoadBalancerStatusHistory a where a.created <= :days").setParameter("days", cal).executeUpdate();
+        } catch (Exception e) {
+            LOG.error(e);
+            throw new EntityNotFoundException(Constants.LBStatusHistoryNotFound);
+        }
+    }
+
 }
