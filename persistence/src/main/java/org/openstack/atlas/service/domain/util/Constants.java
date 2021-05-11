@@ -26,5 +26,4 @@ public final class Constants {
     public static final String AH_USAGE_EVENT_FAILURE = "FailedAtomHopperUsageEvent";
     public static final String AH_USAGE_EVENT_AUTHOR = "AtomHopperUsageAuthor";
     public static final String DEFAUlT_CIPHER_PROFILE_NAME = "default";
-    public static final String HostNotFound = "Host not found";
 }
