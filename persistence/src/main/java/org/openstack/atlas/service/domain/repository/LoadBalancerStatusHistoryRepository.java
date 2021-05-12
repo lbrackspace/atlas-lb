@@ -60,7 +60,7 @@ public class LoadBalancerStatusHistoryRepository {
     public List<LoadBalancerStatusHistory> getLBStatusHistoryOlderThanSixMonths(Calendar cal) {
 
         List<LoadBalancerStatusHistory> lbshlist;
-        lbshlist = entityManager.createQuery("Select e FROM LoadBalancerStatusHistory e WHERE e.created <= :days").setParameter("days", cal).getResultList();
+        lbshlist = entityManager.createQuery("Select e FROM LoadBalancerStatusHistory e WHERE e.created <= :days").setParameter("days", cal).setMaxResults(5000).getResultList();
         return  lbshlist;
     }
 
@@ -80,8 +80,8 @@ public class LoadBalancerStatusHistoryRepository {
                         .setParameter("ids", lbshIds)
                         .executeUpdate();
                 lbshIds.clear();
+                lbshBatch.clear();
             }
-            lbshBatch.clear();
         }
     }
 }

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.verify;
@@ -47,6 +48,7 @@ public class LoadBalancerStatusHistoryRepositoryTest {
             lbshList.add(lbsh);
             when(entityManager.createQuery(anyString())).thenReturn(qry);
             when(qry.setParameter(ArgumentMatchers.anyString(), ArgumentMatchers.any())).thenReturn(qry);
+            when(qry.setMaxResults(anyInt())).thenReturn(qry);
             when(qry.getResultList()).thenReturn(lbshList);
         }
 
