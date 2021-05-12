@@ -60,28 +60,22 @@ public class LoadBalancerStatusHistoryRepository {
     public List<LoadBalancerStatusHistory> getLBStatusHistoryOlderThanSixMonths(Calendar cal) {
 
         List<LoadBalancerStatusHistory> lbshlist;
-        lbshlist = entityManager.createQuery("Select e FROM LoadBalancerStatusHistory e WHERE e.created <= :days").setParameter("days", cal).getResultList();
+        lbshlist = entityManager.createQuery("Select e FROM LoadBalancerStatusHistory e WHERE e.created <= :days").setParameter("days", cal).setMaxResults(5000).getResultList();
         return  lbshlist;
     }
 
     public void batchDeleteStatusHistoryForLBOlderThanSixMonths(Calendar cal) {
         List<LoadBalancerStatusHistory> lbshList;
         lbshList = getLBStatusHistoryOlderThanSixMonths(cal);
-        List<LoadBalancerStatusHistory> lbshBatch = new ArrayList<>();
-        List<Integer> lbshIds = new ArrayList<>();
-
+        List<Integer> lbshBatch = new ArrayList<>();
         for ( int i = 1; i <= lbshList.size(); i++ ) {
-            lbshBatch.add(lbshList.get(i-1));
+            lbshBatch.add(lbshList.get(i-1).getId());
             if (i % 100 == 0 || i == lbshList.size()) {
-                for (LoadBalancerStatusHistory loadBalancerStatusHistory : lbshBatch){
-                    lbshIds.add(loadBalancerStatusHistory.getId());
-                }
                 entityManager.createQuery("DELETE LoadBalancerStatusHistory e WHERE e.id in (:ids)")
-                        .setParameter("ids", lbshIds)
+                        .setParameter("ids", lbshBatch)
                         .executeUpdate();
-                lbshIds.clear();
+                lbshBatch.clear();
             }
-            lbshBatch.clear();
         }
     }
 }
