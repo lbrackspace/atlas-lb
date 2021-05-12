@@ -4,6 +4,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openstack.atlas.service.domain.entities.LoadBalancerStatusHistory;
 import org.openstack.atlas.service.domain.entities.UserPages;
+import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
+import org.openstack.atlas.service.domain.util.Constants;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 @Repository
@@ -51,6 +54,34 @@ public class LoadBalancerStatusHistoryRepository {
             return new ArrayList<LoadBalancerStatusHistory>();
         } else {
             return lbshlist;
+        }
+    }
+
+    public List<LoadBalancerStatusHistory> getLBStatusHistoryOlderThanSixMonths(Calendar cal) {
+
+        List<LoadBalancerStatusHistory> lbshlist;
+        lbshlist = entityManager.createQuery("Select e FROM LoadBalancerStatusHistory e WHERE e.created <= :days").setParameter("days", cal).getResultList();
+        return  lbshlist;
+    }
+
+    public void batchDeleteStatusHistoryForLBOlderThanSixMonths(Calendar cal) {
+        List<LoadBalancerStatusHistory> lbshList;
+        lbshList = getLBStatusHistoryOlderThanSixMonths(cal);
+        List<LoadBalancerStatusHistory> lbshBatch = new ArrayList<>();
+        List<Integer> lbshIds = new ArrayList<>();
+
+        for ( int i = 1; i <= lbshList.size(); i++ ) {
+            lbshBatch.add(lbshList.get(i-1));
+            if (i % 100 == 0 || i == lbshList.size()) {
+                for (LoadBalancerStatusHistory loadBalancerStatusHistory : lbshBatch){
+                    lbshIds.add(loadBalancerStatusHistory.getId());
+                }
+                entityManager.createQuery("DELETE LoadBalancerStatusHistory e WHERE e.id in (:ids)")
+                        .setParameter("ids", lbshIds)
+                        .executeUpdate();
+                lbshIds.clear();
+            }
+            lbshBatch.clear();
         }
     }
 }
