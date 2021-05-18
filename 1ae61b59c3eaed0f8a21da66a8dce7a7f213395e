@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "f6022f45_697446e5",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 2
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-05-18T12:44:32Z",
+      "side": 1,
+      "message": "Findings:\n1) Assert error msg for 400 status\n2) Negative scenario for retrieveBlacklist\n3) Test cases for sameBlacklistItems missing (please ignore if left on purpose)",
+      "revId": "1ae61b59c3eaed0f8a21da66a8dce7a7f213395e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "b6911ec4_603cce24",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/BlackListResourceTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-05-18T12:44:32Z",
+      "side": 1,
+      "message": "Can we assert the exact error message for all 400s?",
+      "revId": "1ae61b59c3eaed0f8a21da66a8dce7a7f213395e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "95468d12_d5a5b95b",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/BlackListResourceTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 132,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-05-18T12:44:32Z",
+      "side": 1,
+      "message": "Can we assert the exact error message for all 400s?",
+      "revId": "1ae61b59c3eaed0f8a21da66a8dce7a7f213395e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "814cdcaa_e5d17d0f",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/BlackListResourceTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-05-18T12:44:32Z",
+      "side": 1,
+      "message": "Can we assert the exact error message for all 400s?",
+      "revId": "1ae61b59c3eaed0f8a21da66a8dce7a7f213395e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "6b437678_463b2b07",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/BlackListResourceTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-05-18T12:44:32Z",
+      "side": 1,
+      "message": "Can we assert the exact error message for all 400s?",
+      "revId": "1ae61b59c3eaed0f8a21da66a8dce7a7f213395e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "59872df2_7a5b7d12",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/BlackListResourceTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-05-18T12:44:32Z",
+      "side": 1,
+      "message": "Negative scenario?",
+      "revId": "1ae61b59c3eaed0f8a21da66a8dce7a7f213395e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "99e1250f_7dc92b5f",
+        "filename": "api/mgmt-api/src/test/java/org/openstack/atlas/api/mgmt/resources/BlackListResourceTest.java",
+        "patchSetId": 2
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-05-18T12:44:32Z",
+      "side": 1,
+      "message": "sameBlacklistItems test cases missing.",
+      "revId": "1ae61b59c3eaed0f8a21da66a8dce7a7f213395e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
