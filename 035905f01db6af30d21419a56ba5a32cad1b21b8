@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "10bc2897_bb9e9643",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-05-26T16:37:30Z",
+      "side": 1,
+      "message": "lgtm, just freaking out with the topic changes gerrit made.. ",
+      "revId": "035905f01db6af30d21419a56ba5a32cad1b21b8",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
