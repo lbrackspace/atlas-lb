@@ -45,7 +45,7 @@ public class LoadBalancersResource extends CommonDependencyProvider {
 
     @GET
     @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
-    public Response retrieveLoadBalancers(@QueryParam("status") String status, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker, @QueryParam("page") Integer page, @QueryParam("changes-since") String changedSince, @QueryParam("nodeaddress") String nodeAddress) {
+    public Response retrieveLoadBalancers(@QueryParam("name") String name, @QueryParam("status") String status, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit, @QueryParam("marker") Integer marker, @QueryParam("page") Integer page, @QueryParam("changes-since") String changedSince, @QueryParam("nodeaddress") String nodeAddress) {
         if (requestHeaders.getRequestHeader("Accept").get(0).equals(APPLICATION_ATOM_XML)) {
             return getFeedResponse(page);
         }
@@ -58,6 +58,17 @@ public class LoadBalancersResource extends CommonDependencyProvider {
         try {
             if (nodeAddress != null) {
                 domainLbs = loadBalancerService.getLoadBalancersWithNode(nodeAddress, accountId);
+                for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
+                    dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "LB_NAME_ID_STATUS"));
+                }
+            }else if (nodeAddress == null && name != null) {
+
+                if ("".equals(name)) {
+                    BadRequestException badRequestException = new BadRequestException("Must supply LoadBalancer name to process this request.");
+                    return ResponseFactory.getErrorResponse(badRequestException, null, null);
+                }
+
+                domainLbs = loadBalancerService.getLoadbalancersByName(name, offset, limit);
                 for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
                     dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "LB_NAME_ID_STATUS"));
                 }
@@ -89,6 +100,33 @@ public class LoadBalancersResource extends CommonDependencyProvider {
                     dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));
                 }
             }
+            return Response.status(200).entity(dataModelLbs).build();
+        } catch (Exception e) {
+            return ResponseFactory.getErrorResponse(e, null, null);
+        }
+    }
+
+    @GET
+    @Produces({APPLICATION_XML, APPLICATION_JSON, APPLICATION_ATOM_XML})
+    public Response retrieveLoadBalancers(@QueryParam("name") String name, @QueryParam("offset") Integer offset, @QueryParam("limit") Integer limit) {
+
+        List<org.openstack.atlas.service.domain.entities.LoadBalancer> domainLbs;
+        org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers dataModelLbs = new org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancers();
+
+        try {
+
+            if ("".equals(name) || name == null) {
+                BadRequestException badRequestException = new BadRequestException("Must supply LoadBalancer name to process this request.");
+                return ResponseFactory.getErrorResponse(badRequestException, null, null);
+            }
+                if (limit == null || limit < 0 || limit > 100) {
+                    limit = 100;
+                }
+                domainLbs = loadBalancerService.getLoadbalancersByName(name, offset, limit);
+
+                for (org.openstack.atlas.service.domain.entities.LoadBalancer domainLb : domainLbs) {
+                    dataModelLbs.getLoadBalancers().add(dozerMapper.map(domainLb, org.openstack.atlas.docs.loadbalancers.api.v1.LoadBalancer.class, "SIMPLE_LB"));
+                }
             return Response.status(200).entity(dataModelLbs).build();
         } catch (Exception e) {
             return ResponseFactory.getErrorResponse(e, null, null);
