@@ -517,6 +517,11 @@ public class LoadBalancerServiceImpl extends BaseService implements LoadBalancer
         return csa;
     }
 
+    @Override
+    public List<LoadBalancer> getLoadbalancersByName(String name, Integer offset, Integer limit) {
+        return loadBalancerRepository.getLoadbalancersByName(name, offset, limit);
+    }
+
     @Transactional
     public UserPages getUserPages(Integer id, Integer accountId) throws EntityNotFoundException {
         LoadBalancer dLb = loadBalancerRepository.getByIdAndAccountId(id, accountId);
