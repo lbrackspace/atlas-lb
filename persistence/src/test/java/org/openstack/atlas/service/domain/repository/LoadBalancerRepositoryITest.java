@@ -6,17 +6,31 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentMatchers;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.openstack.atlas.service.domain.Base;
 import org.openstack.atlas.service.domain.entities.*;
 import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.pojos.LbIdAccountId;
+import org.openstack.atlas.service.domain.services.impl.LoadBalancerServiceImpl;
 import org.openstack.atlas.util.common.CalendarUtils;
 //import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Set;
 import org.openstack.atlas.util.debug.Debug;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.when;
 
 @RunWith(Enclosed.class)
 public class LoadBalancerRepositoryITest {
@@ -156,6 +170,54 @@ public class LoadBalancerRepositoryITest {
             final Calendar now = Calendar.getInstance();
             final Set<LbIdAccountId> loadBalancersActiveDuringPeriod = loadBalancerRepository.getLoadBalancersActiveDuringPeriod(loadBalancer.getProvisioned(), now);
             Assert.assertFalse(loadBalancersActiveDuringPeriod.isEmpty());
+        }
+    }
+
+    public static class whenGettingLoadBalancersByName{
+
+        @Mock
+        private Query query;
+        @Mock
+        private EntityManager entityManager;
+        @InjectMocks
+        private LoadBalancerRepository loadBalancerRepository;
+        private LoadBalancer loadBalancer1;
+        private LoadBalancer loadBalancer2;
+        private List<LoadBalancer> loadBalancerList;
+        private String qStr = "SELECT lb FROM LoadBalancer lb";
+
+
+        @Before
+        public void setup(){
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancer1 = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+            loadBalancer1.setName("first-loadBalancer");
+            loadBalancer1.setAccountId(1);
+            loadBalancer1.setPort(8080);
+
+            loadBalancer2 = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+            loadBalancer2.setName("first-loadBalancer");
+            loadBalancer2.setAccountId(1);
+            loadBalancer2.setPort(8081);
+
+            loadBalancerList = new ArrayList<>();
+            loadBalancerList.add(loadBalancer1);
+            loadBalancerList.add(loadBalancer2);
+
+            when(entityManager.createQuery(anyString())).thenReturn(query);
+            when(query.setParameter(ArgumentMatchers.anyString(), ArgumentMatchers.anyString())).thenReturn(query);
+            when(query.getResultList()).thenReturn(loadBalancerList);
+
+        }
+
+        @Test
+        public void shouldReturnLoadBalancersListAndReturnStatus200(){
+            Integer expected = 2;
+            List<LoadBalancer> response = loadBalancerRepository.getLoadbalancersByName("first_loadBalancer", 0, 99);
+            Integer actual = response.size();
+            Assert.assertEquals(expected, actual);
+
         }
     }
 }
