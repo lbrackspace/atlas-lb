@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "8f8189eb_b39a2a16",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-05-28T14:37:15Z",
+      "side": 1,
+      "message": "I think things can be cleaned up a bit ingeneral and be able to reuse some of the methods already available. Maybe need to overload them or something, but it\u0027s really just adding another search param. ",
+      "revId": "07bd0e76af17716ecf3823e830c516bcb3f6598c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "1d924c7f_f922be8f",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/LoadBalancersResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-05-28T14:37:15Z",
+      "side": 1,
+      "message": "? indent/formatting bork.",
+      "revId": "07bd0e76af17716ecf3823e830c516bcb3f6598c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "c6984a37_30fb3eab",
+        "filename": "api/common-api/src/main/java/org/openstack/atlas/api/resources/LoadBalancersResource.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-05-28T14:37:15Z",
+      "side": 1,
+      "message": "This shouldn\u0027t be it\u0027s own path. It should be a query param on the main retrieveLoadbalancers call.",
+      "revId": "07bd0e76af17716ecf3823e830c516bcb3f6598c",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
