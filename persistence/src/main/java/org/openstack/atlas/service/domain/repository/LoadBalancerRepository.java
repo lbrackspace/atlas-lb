@@ -2003,7 +2003,7 @@ public class LoadBalancerRepository {
         cq = new CustomQuery(selectClause);
         cq.addParam("lb.name", "=", "name", name);
         qStr = cq.getQueryString();
-        q = entityManager.createQuery(qStr).setParameter("name", name);
+        q = entityManager.createQuery(qStr + " AND lb.status <> 'DELETED' AND lb.status <> 'PENDING_DELETE'").setParameter("name", name);
         if (limit != null) {
             cq.setLimit(limit);
             q.setMaxResults(cq.getLimit());
