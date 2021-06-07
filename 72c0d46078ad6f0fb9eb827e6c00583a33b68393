@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "be42cbab_256d2690",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 1
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-06-07T13:03:57Z",
+      "side": 1,
+      "message": "Two scenarios need to be added:\n1) Scenario where endTimeParam is following ISO-8601 but startTimeParam does\u0027t.\n2) Exception scenario where starttime \u003e endtime.",
+      "revId": "72c0d46078ad6f0fb9eb827e6c00583a33b68393",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "e95e2eef_22382b00",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/resources/UsageResourceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-06-07T13:03:57Z",
+      "side": 1,
+      "message": "This test case is only covering scenario when endTimeParam is not following ISO-8601 format. It checks for endTimeParam only and throws the exception. \n\nNeed to add one scenario where endTimeParam is following ISO-8601 but startTimeParam does\u0027t so that we can test startTimeParam as well.",
+      "revId": "72c0d46078ad6f0fb9eb827e6c00583a33b68393",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": true,
+      "key": {
+        "uuid": "8b1d65e9_d6d1412e",
+        "filename": "api/common-api/src/test/java/org/openstack/atlas/api/resources/UsageResourceTest.java",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 1018589
+      },
+      "writtenOn": "2021-06-07T13:03:57Z",
+      "side": 1,
+      "message": "Should test a scenario where starttime \u003e endtime",
+      "revId": "72c0d46078ad6f0fb9eb827e6c00583a33b68393",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    }
+  ]
+}
