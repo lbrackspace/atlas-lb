@@ -16,6 +16,23 @@
       "message": "LGTM!",
       "revId": "22351a4bb8c6783ff295a7be1a59d12646f42f6e",
       "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
+    },
+    {
+      "unresolved": false,
+      "key": {
+        "uuid": "7b3802c1_93c3d7fc",
+        "filename": "/PATCHSET_LEVEL",
+        "patchSetId": 3
+      },
+      "lineNbr": 0,
+      "author": {
+        "id": 1001832
+      },
+      "writtenOn": "2021-06-08T20:16:18Z",
+      "side": 1,
+      "message": "I don\u0027t think we want to include DELETED items in the query. ",
+      "revId": "22351a4bb8c6783ff295a7be1a59d12646f42f6e",
+      "serverId": "d5d70762-12d0-45a1-890d-524b12d3f735"
     }
   ]
 }
