@@ -2,12 +2,16 @@ package org.openstack.atlas.api.resources;
 
 import junit.framework.Assert;
 
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.model.Feed;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.openstack.atlas.api.atom.AtomFeedAdapter;
 import org.openstack.atlas.api.helpers.PaginationHelper;
 import org.openstack.atlas.api.integration.AsyncService;
 import org.openstack.atlas.api.mapper.dozer.MapperBuilder;
@@ -15,8 +19,11 @@ import org.openstack.atlas.cfg.PublicApiServiceConfigurationKeys;
 import org.openstack.atlas.cfg.RestApiConfiguration;
 import org.openstack.atlas.docs.loadbalancers.api.v1.*;
 import org.openstack.atlas.docs.loadbalancers.api.v1.faults.BadRequest;
+import org.openstack.atlas.docs.loadbalancers.api.v1.faults.GeneralFault;
+import org.openstack.atlas.service.domain.exceptions.BadRequestException;
 import org.openstack.atlas.service.domain.exceptions.EntityNotFoundException;
 import org.openstack.atlas.service.domain.operations.Operation;
+import org.openstack.atlas.service.domain.repository.LoadBalancerRepository;
 import org.openstack.atlas.service.domain.services.LoadBalancerService;
 import org.openstack.atlas.service.domain.services.VirtualIpService;
 import org.powermock.api.mockito.PowerMockito;
@@ -28,6 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.w3.atom.Link;
 
 import javax.jms.JMSException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -243,17 +251,28 @@ public class LoadBalancersResourceTest {
 
         @Mock
         private LoadBalancerService loadBalancerService;
+        @Mock
+        private HttpHeaders requestHeaders;
+        @Mock
+        private List<String> headersList;
+        @Mock
+        private AtomFeedAdapter atomFeedAdapter;
+        @Mock
+        private Feed feed;
+        @Mock
+        private LoadBalancerRepository lbRepository;
         @InjectMocks
         private LoadBalancersResource loadBalancersResource;
         private org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer1;
         private org.openstack.atlas.service.domain.entities.LoadBalancer loadBalancer2;
         private List<org.openstack.atlas.service.domain.entities.LoadBalancer> loadBalancerList;
-
+        private List<Entry> entryList;
 
         @Before
         public void setUp() {
             MockitoAnnotations.initMocks(this);
             loadBalancersResource.setDozerMapper(MapperBuilder.getConfiguredMapper(publicDozerConfigFile));
+            loadBalancersResource.setAccountId(1);
             loadBalancer1 = new org.openstack.atlas.service.domain.entities.LoadBalancer();
             loadBalancer1.setName("first-loadBalancer");
             loadBalancer1.setAccountId(1);
@@ -268,36 +287,70 @@ public class LoadBalancersResourceTest {
             loadBalancerList.add(loadBalancer1);
             loadBalancerList.add(loadBalancer2);
 
+            entryList = new ArrayList<>();
+
+            doReturn("Accept").when(headersList).get(ArgumentMatchers.eq(0));
+            doReturn(headersList).when(requestHeaders).getRequestHeader(ArgumentMatchers.anyString());
+            doReturn(entryList).when(feed).getEntries();
+            doReturn(feed).when(atomFeedAdapter).getFeed(ArgumentMatchers.any());
             doReturn(loadBalancerList).when(loadBalancerService).getLoadbalancersByName(ArgumentMatchers.anyString(), ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt());
         }
 
         @Test
+        public void ShouldReturnListOfLoadBalancersAsAFeedResponse() {
+            doReturn("application/atom+xml").when(headersList).get(ArgumentMatchers.eq(0));
+            doReturn(loadBalancerList).when(lbRepository).getByAccountId(ArgumentMatchers.anyInt(), ArgumentMatchers.any());
+            Response response = loadBalancersResource.retrieveLoadBalancers("first-loadBalancer", null, 0, 99,1,2, null,  null);
+            Assert.assertEquals(200, response.getStatus());
+        }
+
+        @Test
+        public void ShouldThrowExceptionWhenFailsToGetListOfLoadBalancersAsAFeedResponse() {
+            doReturn("application/atom+xml").when(headersList).get(ArgumentMatchers.eq(0));
+            doThrow(Exception.class).when(lbRepository).getByAccountId(ArgumentMatchers.anyInt(), ArgumentMatchers.any());
+            Response response = loadBalancersResource.retrieveLoadBalancers("first-loadBalancer", null, 0, 99,1,2, null,  null);
+            Assert.assertEquals(500, response.getStatus());
+        }
+
+        @Test
+        public void ShouldReturnAListOfLoadBalancersIdentifiedWithTheNodeAddress() {
+            Response response = loadBalancersResource.retrieveLoadBalancers(null, null, 0, 99,1,2, null,  "10.1.1.1");
+            Assert.assertEquals(200, response.getStatus());
+        }
+
+        @Test
         public void ShouldReturnAListOfLoadBalancersIdentifiedWithTheName() {
-        Response response = loadBalancersResource.retrieveLoadBalancers("first-loadBalancer", 0, 99);
+        Response response = loadBalancersResource.retrieveLoadBalancers("first-loadBalancer", null, 0, 99,1,2, null,  null);
         Assert.assertEquals(200, response.getStatus());
         }
 
         @Test
         public void ShouldThrowBadRequestExceptionWhenNamePassedIsEmptyString() {
             String expected = "Must supply LoadBalancer name to process this request.";
-            Response response = loadBalancersResource.retrieveLoadBalancers("", 0, 99);
+            Response response = loadBalancersResource.retrieveLoadBalancers("", "ACTIVE", 0, 99,1,2, null,  null);
             Assert.assertEquals(400, response.getStatus());
             Assert.assertEquals(expected, ((BadRequest)response.getEntity()).getMessage());
         }
 
         @Test
-        public void ShouldThrowBadRequestExceptionWhenNamePassedIsNull() {
-            String expected = "Must supply LoadBalancer name to process this request.";
-            Response response = loadBalancersResource.retrieveLoadBalancers(null, 0, 99);
-            Assert.assertEquals(400, response.getStatus());
-            Assert.assertEquals(expected, ((BadRequest)response.getEntity()).getMessage());
+        public void ShouldReturnAListOfLoadBalancersWhenNameAndNodeAddressBothAreNull() {
+            Response response = loadBalancersResource.retrieveLoadBalancers(null, "ACTIVE", 0, 99,1,2, "2011-05-19T08:07:08-0500",  null);
+            Assert.assertEquals(200, response.getStatus());
         }
 
         @Test
-        public void ShouldThrowException() {
-          doThrow(Exception.class).when(loadBalancerService).getLoadbalancersByName(ArgumentMatchers.anyString(),
-                  ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt());
-            Response response = loadBalancersResource.retrieveLoadBalancers("first-loadBalancer", 0, 99);
+        public void ShouldThrowConverterException() {
+            String expected = "Date parameters must follow ISO-8601 format";
+            Response response = loadBalancersResource.retrieveLoadBalancers(null, "ACTIVE", 0, 99,1,2, "2011-05-1908:07:08-0500",  null);
+            Assert.assertEquals(400, response.getStatus());
+            Assert.assertEquals(expected, ((GeneralFault)response.getEntity()).getMessage());
+        }
+
+        @Test
+        public void ShouldThrowException() throws BadRequestException {
+            doThrow(Exception.class).when(loadBalancerService).getLoadbalancersGeneric(ArgumentMatchers.anyInt(),
+                  ArgumentMatchers.anyString(), ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt());
+            Response response = loadBalancersResource.retrieveLoadBalancers(null, null, 0, 99,1,2, null, null);
             Assert.assertEquals(500, response.getStatus());
         }
     }
