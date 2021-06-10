@@ -1992,4 +1992,27 @@ public class LoadBalancerRepository {
 
         return false;
     }
+
+    public List<LoadBalancer> getLoadbalancersByName(String name, Integer offset, Integer limit) {
+        List<LoadBalancer> lbs = new ArrayList<LoadBalancer>();
+        String selectClause;
+        CustomQuery cq;
+        Query q;
+        String qStr;
+        selectClause = "SELECT lb FROM LoadBalancer lb";
+        cq = new CustomQuery(selectClause);
+        cq.addParam("lb.name", "=", "name", name);
+        qStr = cq.getQueryString();
+        q = entityManager.createQuery(qStr + " AND lb.status <> 'DELETED' AND lb.status <> 'PENDING_DELETE'").setParameter("name", name);
+        if (limit != null) {
+            cq.setLimit(limit);
+            q.setMaxResults(cq.getLimit());
+        }
+        if (offset != null) {
+            cq.setOffset(offset);
+            q.setFirstResult(cq.getOffset());
+        }
+        lbs = q.getResultList();
+        return lbs;
+    }
 }

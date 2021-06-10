@@ -17,16 +17,14 @@ import org.openstack.atlas.service.domain.repository.*;
 import org.openstack.atlas.service.domain.services.impl.*;
 import org.openstack.atlas.service.domain.util.CacheKeyGen;
 
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(Enclosed.class)
@@ -682,4 +680,49 @@ public class LoadBalancerServiceImplTest {
         }
 
     }
+    public static class retrieveLoadBalancersByName{
+
+        @Mock
+        private LoadBalancerRepository loadBalancerRepository;
+
+        @InjectMocks
+        private LoadBalancerServiceImpl loadBalancerService = new LoadBalancerServiceImpl();
+
+        private LoadBalancer loadBalancer1;
+        private LoadBalancer loadBalancer2;
+        private List<LoadBalancer> loadBalancerList;
+
+
+        @Before
+        public void setup(){
+            MockitoAnnotations.initMocks(this);
+
+            loadBalancer1 = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+            loadBalancer1.setName("first-loadBalancer");
+            loadBalancer1.setAccountId(1);
+            loadBalancer1.setPort(8080);
+
+            loadBalancer2 = new org.openstack.atlas.service.domain.entities.LoadBalancer();
+            loadBalancer2.setName("first-loadBalancer");
+            loadBalancer2.setAccountId(1);
+            loadBalancer2.setPort(8081);
+
+            loadBalancerList = new ArrayList<>();
+            loadBalancerList.add(loadBalancer1);
+            loadBalancerList.add(loadBalancer2);
+
+            doReturn(loadBalancerList).when(loadBalancerRepository).getLoadbalancersByName(ArgumentMatchers.anyString(), ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt());
+        }
+
+        @Test
+        public void shouldReturnLoadBalancersListAndReturnStatus200(){
+            Integer expected = 2;
+            List<LoadBalancer> response = loadBalancerService.getLoadbalancersByName("first_loadBalancer", 0, 99);
+            Integer actual = response.size();
+            Assert.assertEquals(expected, actual);
+
+        }
+    }
+
+
 }
