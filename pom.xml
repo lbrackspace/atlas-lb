@@ -5,14 +5,14 @@
     <name>Openstack :: Atlas :: Parent</name>
     <groupId>org.openstack.atlas</groupId>
     <artifactId>atlas-parent</artifactId>
-    <version>1.27.22</version>
+    <version>1.27.23-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <scm>
         <url>scm:git:ssh://git@atlaslb-github-sync/Cloud-Loadbalancers/atlas-lb.git</url>
         <developerConnection>scm:git:ssh://git@atlaslb-github-sync/Cloud-Loadbalancers/atlas-lb.git</developerConnection>
         <connection>scm:git:ssh://git@atlaslb-github-sync/Cloud-Loadbalancers/atlas-lb.git</connection>
-        <tag>atlas-parent-1.27.22</tag>
+        <tag>atlas-parent-1.27.00</tag>
     </scm>
 
     <organization>
