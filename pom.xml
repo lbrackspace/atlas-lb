@@ -9,11 +9,11 @@
     <packaging>pom</packaging>
 
     <scm>
-        <url>scm:git:ssh://lbrackspace@review.gerrithub.io:29418/lbrackspace/atlas-lb/</url>
-        <developerConnection>scm:git:ssh://lbrackspace@review.gerrithub.io:29418/lbrackspace/atlas-lb/</developerConnection>
-        <connection>scm:git:ssh://lbrackspace@review.gerrithub.io:29418/lbrackspace/atlas-lb/</connection>
-      <tag>atlas-parent-1.27.00</tag>
-  </scm>
+        <url>scm:git:ssh://git@atlaslb-github-sync:Cloud-Loadbalancers/atlas-lb/</url>
+        <developerConnection>scm:git:ssh://git@atlaslb-github-sync:Cloud-Loadbalancers/atlas-lb/</developerConnection>
+        <connection>scm:git:ssh://git@atlaslb-github-sync:Cloud-Loadbalancers/atlas-lb/</connection>
+        <tag>atlas-parent-1.27.00</tag>
+    </scm>
 
     <organization>
         <name>Openstack</name>
